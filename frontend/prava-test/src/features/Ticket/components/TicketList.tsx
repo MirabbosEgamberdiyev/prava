@@ -1,6 +1,7 @@
-import { Alert, Button, Center, Grid, Group, Pagination, Paper, Skeleton, Stack, Text, Title } from "@mantine/core";
-import { IconAlertCircle } from "@tabler/icons-react";
+import { Alert, Button, Center, Grid, Group, Pagination, Paper, Skeleton, Stack, Title } from "@mantine/core";
+import { IconAlertCircle, IconTicket } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { EmptyState } from "../../../components/common/EmptyState";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { useMemo, useState } from "react";
@@ -75,12 +76,16 @@ export function TicketList() {
         </Group>
         <Grid gutter="md">
           {Array.from({ length: 8 }).map((_, i) => (
-            <Grid.Col key={i} span={{ base: 6, md: 4, lg: 4, xl: 3 }}>
+            <Grid.Col key={i} span={{ base: 12, sm: 6, md: 4, lg: 4, xl: 3 }}>
               <Paper withBorder p="md" radius="md">
-                <Stack gap="sm" align="center">
-                  <Skeleton height={40} width={40} circle />
-                  <Skeleton height={16} width="60%" radius="sm" />
-                  <Skeleton height={12} width="40%" radius="sm" />
+                <Stack gap="sm">
+                  <Skeleton height={20} width="70%" radius="sm" />
+                  <Skeleton height={14} width="40%" radius="sm" />
+                  <Skeleton height={10} width="100%" radius="sm" />
+                  <Skeleton height={10} width="100%" radius="sm" />
+                  <Skeleton height={10} width="100%" radius="sm" />
+                  <Skeleton height={8} width="100%" radius="xl" />
+                  <Skeleton height={36} width="100%" radius="md" />
                 </Stack>
               </Paper>
             </Grid.Col>
@@ -115,14 +120,15 @@ export function TicketList() {
       </Group>
 
       {tickets.length === 0 ? (
-        <Center h="50vh">
-          <Text c="dimmed">{t("ticket.notFound")}</Text>
-        </Center>
+        <EmptyState
+          icon={<IconTicket size={48} color="gray" style={{ opacity: 0.5 }} />}
+          title={t("ticket.notFound")}
+        />
       ) : (
         <>
           <Grid gutter="md">
             {tickets.map((ticket) => (
-              <Grid.Col key={ticket.id} span={{ base: 6, md: 4, lg: 4, xl: 3 }}>
+              <Grid.Col key={ticket.id} span={{ base: 12, sm: 6, md: 4, lg: 4, xl: 3 }}>
                 <TicketCard
                   ticket={ticket}
                   onClick={handleTicketClick}

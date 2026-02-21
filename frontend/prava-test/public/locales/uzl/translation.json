@@ -343,6 +343,9 @@
     "loading": "Bilet yuklanmoqda...",
     "startError": "Bilet imtihonini boshlashda xatolik yuz berdi",
     "loadError": "Biletlarni yuklashda xatolik yuz berdi",
+    "completed": "Yakunlangan",
+    "inProgress": "Jarayonda",
+    "notStarted": "Boshlanmagan",
     "mode": {
       "simple": "Oddiy test",
       "simpleDesc": "Natija oxirida ko'rsatiladi",
@@ -531,7 +534,9 @@
     "loadError": "Statistikani yuklashda xatolik",
     "lastAttempt": "Oxirgi urinish",
     "hours": "s",
-    "minutes": "d"
+    "minutes": "d",
+    "emptyTitle": "Statistika topilmadi",
+    "emptyDescription": "Imtihon topshiring va statistikangizni ko'ring"
   },
   "guestExam": {
     "title": "Bepul sinov imtihoni",

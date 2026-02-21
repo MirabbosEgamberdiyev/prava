@@ -343,6 +343,9 @@
     "loading": "Loading ticket...",
     "startError": "Error starting ticket exam",
     "loadError": "Error loading tickets",
+    "completed": "Completed",
+    "inProgress": "In Progress",
+    "notStarted": "Not Started",
     "mode": {
       "simple": "Simple Test",
       "simpleDesc": "See results at the end",
@@ -531,7 +534,9 @@
     "loadError": "Failed to load statistics",
     "lastAttempt": "Last Attempt",
     "hours": "h",
-    "minutes": "m"
+    "minutes": "m",
+    "emptyTitle": "No statistics found",
+    "emptyDescription": "Take an exam to see your statistics"
   },
   "guestExam": {
     "title": "Free Trial Exam",

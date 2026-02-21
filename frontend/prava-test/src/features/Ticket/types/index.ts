@@ -1,3 +1,6 @@
+// Ticket status type
+export type TicketStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
+
 // Ko'p tilli matn interfeysi
 export interface LocalizedText {
   uzl: string;

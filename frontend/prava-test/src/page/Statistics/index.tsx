@@ -13,7 +13,7 @@ import {
   Table,
   Badge,
   Center,
-  Loader,
+  Skeleton,
   ScrollArea,
   Tabs,
   ThemeIcon,
@@ -30,13 +30,13 @@ import {
   IconClock,
   IconCheck,
   IconX,
-  IconMinus,
   IconRefresh,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { useLanguage } from "../../hooks/useLanguage";
+import { EmptyState } from "../../components/common/EmptyState";
 import type { LocalizedText } from "../../types";
 
 type TimePeriod = "today" | "week" | "month" | "all";
@@ -109,8 +109,12 @@ const periodToUrl: Record<TimePeriod, string> = {
   all: "/api/v2/my-statistics",
 };
 
+function clamp(value: number): number {
+  return Math.min(100, Math.max(0, value));
+}
+
 function formatTime(seconds: number, hLabel = "h", mLabel = "m"): string {
-  if (!seconds) return `0${mLabel}`;
+  if (!seconds || !Number.isFinite(seconds) || seconds < 0) return `0${mLabel}`;
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
   if (hrs > 0) return `${hrs}${hLabel} ${mins}${mLabel}`;
@@ -145,7 +149,54 @@ const StatCard = ({
 
 function safePercent(value: number | undefined | null): string {
   const num = value ?? 0;
-  return isNaN(num) ? "0.0" : num.toFixed(1);
+  if (!Number.isFinite(num)) return "0.0";
+  return clamp(num).toFixed(1);
+}
+
+function safePercentNum(value: number | undefined | null): number {
+  const num = value ?? 0;
+  if (!Number.isFinite(num)) return 0;
+  return clamp(num);
+}
+
+function safeDivide(numerator: number, denominator: number): number {
+  if (denominator === 0 || !Number.isFinite(numerator) || !Number.isFinite(denominator)) return 0;
+  return numerator / denominator;
+}
+
+/** Build RingProgress sections that always sum to 100, with gray fallback at 0% */
+function buildRingSections(sections: { value: number; color: string; tooltip?: string }[]): { value: number; color: string; tooltip?: string }[] {
+  const total = sections.reduce((sum, s) => sum + s.value, 0);
+  if (total === 0) return [{ value: 100, color: "gray.3" }];
+  return sections;
+}
+
+function StatsSkeleton() {
+  return (
+    <Stack gap="lg">
+      <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Paper key={i} p="md" radius="md" withBorder shadow="sm">
+            <Group justify="space-between" mb="xs">
+              <Skeleton height={12} width="60%" radius="sm" />
+              <Skeleton height={20} width={20} circle />
+            </Group>
+            <Skeleton height={24} width="40%" radius="sm" />
+          </Paper>
+        ))}
+      </SimpleGrid>
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <Paper key={i} p="lg" radius="md" withBorder shadow="sm">
+            <Skeleton height={14} width="40%" radius="sm" mb="md" />
+            <Center>
+              <Skeleton height={160} width={160} circle />
+            </Center>
+          </Paper>
+        ))}
+      </SimpleGrid>
+    </Stack>
+  );
 }
 
 const Statistics_Page = () => {
@@ -186,17 +237,19 @@ const Statistics_Page = () => {
 
   const passRate =
     stats && stats.totalExams > 0
-      ? Math.round((stats.passedExams / stats.totalExams) * 100)
+      ? clamp(Math.round(safeDivide(stats.passedExams, stats.totalExams) * 100))
       : 0;
+
+  // Normalize accuracy: handle both 0-1 fraction and 0-100 percentage formats
+  const normalizedAccuracy = stats
+    ? (stats.accuracy > 0 && stats.accuracy <= 1 ? stats.accuracy * 100 : stats.accuracy)
+    : 0;
 
   return (
     <>
       <Group justify="space-between" align="center" mb="lg">
         <Group gap="sm">
           <Title order={2}>{t("statistics.title")}</Title>
-          {isValidating && !isLoading && (
-            <Loader size="xs" />
-          )}
         </Group>
         <Tooltip label={t("statistics.refreshing")}>
           <ActionIcon
@@ -232,13 +285,17 @@ const Statistics_Page = () => {
         </Alert>
       )}
 
-      {isLoading && (
-        <Center py="xl">
-          <Loader size="lg" />
-        </Center>
+      {isLoading && <StatsSkeleton />}
+
+      {!isLoading && stats && stats.totalExams === 0 && (
+        <EmptyState
+          icon={<IconChartBar size={48} color="gray" style={{ opacity: 0.5 }} />}
+          title={t("statistics.emptyTitle")}
+          description={t("statistics.emptyDescription")}
+        />
       )}
 
-      {!isLoading && stats && (
+      {!isLoading && stats && stats.totalExams > 0 && (
         <Tabs defaultValue="overview">
           <Tabs.List mb="md">
             <Tabs.Tab value="overview" leftSection={<IconChartBar size={16} />}>
@@ -326,9 +383,9 @@ const Statistics_Page = () => {
                           {passRate}%
                         </Text>
                       }
-                      sections={[
+                      sections={buildRingSections([
                         { value: passRate, color: passRate >= 70 ? "green" : passRate >= 50 ? "yellow" : "red" },
-                      ]}
+                      ])}
                     />
                   </Center>
                   <Group justify="center" mt="md" gap="lg">
@@ -352,63 +409,65 @@ const Statistics_Page = () => {
                   <Text size="sm" fw={600} mb="md">
                     {t("statistics.answerAccuracy")}
                   </Text>
-                  {stats.totalQuestions > 0 ? (
-                    <>
-                      <Center>
-                        <RingProgress
-                          size={160}
-                          thickness={14}
-                          roundCaps
-                          label={
-                            <Text size="lg" ta="center" fw={700}>
-                              {safePercent(stats.accuracy)}%
+                  {(() => {
+                    const correctPct = clamp(safeDivide(stats.totalCorrectAnswers, stats.totalQuestions) * 100);
+                    const incorrectPct = clamp(safeDivide(stats.totalIncorrectAnswers, stats.totalQuestions) * 100);
+                    const unansweredPct = clamp(100 - correctPct - incorrectPct);
+
+                    return (
+                      <>
+                        <Center>
+                          <RingProgress
+                            size={160}
+                            thickness={14}
+                            roundCaps
+                            label={
+                              <Text size="lg" ta="center" fw={700}>
+                                {safePercent(normalizedAccuracy)}%
+                              </Text>
+                            }
+                            sections={buildRingSections([
+                              {
+                                value: correctPct,
+                                color: "green",
+                                tooltip: `${t("statistics.correct")}: ${stats.totalCorrectAnswers}`,
+                              },
+                              {
+                                value: incorrectPct,
+                                color: "red",
+                                tooltip: `${t("statistics.incorrect")}: ${stats.totalIncorrectAnswers}`,
+                              },
+                              {
+                                value: unansweredPct,
+                                color: "gray",
+                                tooltip: `${t("statistics.unanswered")}: ${stats.totalUnanswered ?? 0}`,
+                              },
+                            ])}
+                          />
+                        </Center>
+                        <Group justify="center" mt="md" gap="lg">
+                          <Group gap="xs">
+                            <Badge size="xs" color="green" circle />
+                            <Text size="xs" c="dimmed">
+                              {stats.totalCorrectAnswers}
                             </Text>
-                          }
-                          sections={[
-                            {
-                              value: stats.totalQuestions > 0 ? (stats.totalCorrectAnswers / stats.totalQuestions) * 100 : 0,
-                              color: "green",
-                              tooltip: `${t("statistics.correct")}: ${stats.totalCorrectAnswers}`,
-                            },
-                            {
-                              value: stats.totalQuestions > 0 ? (stats.totalIncorrectAnswers / stats.totalQuestions) * 100 : 0,
-                              color: "red",
-                              tooltip: `${t("statistics.incorrect")}: ${stats.totalIncorrectAnswers}`,
-                            },
-                            {
-                              value: stats.totalQuestions > 0 ? ((stats.totalUnanswered ?? 0) / stats.totalQuestions) * 100 : 0,
-                              color: "gray",
-                              tooltip: `${t("statistics.unanswered")}: ${stats.totalUnanswered ?? 0}`,
-                            },
-                          ]}
-                        />
-                      </Center>
-                      <Group justify="center" mt="md" gap="lg">
-                        <Group gap="xs">
-                          <Badge size="xs" color="green" circle />
-                          <Text size="xs" c="dimmed">
-                            {stats.totalCorrectAnswers}
-                          </Text>
+                          </Group>
+                          <Group gap="xs">
+                            <Badge size="xs" color="red" circle />
+                            <Text size="xs" c="dimmed">
+                              {stats.totalIncorrectAnswers}
+                            </Text>
+                          </Group>
+                          <Group gap="xs">
+                            <Badge size="xs" color="gray" circle />
+                            <Text size="xs" c="dimmed">
+                              {stats.totalUnanswered ?? 0}
+                            </Text>
+                          </Group>
                         </Group>
-                        <Group gap="xs">
-                          <Badge size="xs" color="red" circle />
-                          <Text size="xs" c="dimmed">
-                            {stats.totalIncorrectAnswers}
-                          </Text>
-                        </Group>
-                        <Group gap="xs">
-                          <Badge size="xs" color="gray" circle />
-                          <Text size="xs" c="dimmed">
-                            {stats.totalUnanswered ?? 0}
-                          </Text>
-                        </Group>
-                      </Group>
-                    </>
-                  ) : (
-                    <Center py="xl">
-                      <Text c="dimmed">{t("statistics.noData")}</Text>
-                    </Center>
-                  )}
+                      </>
+                    );
+                  })()}
                 </Paper>
               </SimpleGrid>
 
@@ -433,7 +492,7 @@ const Statistics_Page = () => {
                           </Group>
                         </Group>
                         <Progress
-                          value={topic.accuracy ?? topic.averageScore ?? 0}
+                          value={safePercentNum(topic.accuracy ?? topic.averageScore)}
                           color={topic.averageScore >= 70 ? "green" : topic.averageScore >= 50 ? "yellow" : "red"}
                           size="sm"
                           radius="xl"
@@ -465,10 +524,9 @@ const Statistics_Page = () => {
                     </Table.Thead>
                     <Table.Tbody>
                       {stats.packageStats.map((pkg) => {
-                        const pkgPassRate =
-                          pkg.totalExams > 0
-                            ? Math.round((pkg.passedExams / pkg.totalExams) * 100)
-                            : 0;
+                        const pkgPassRate = clamp(
+                          Math.round(safeDivide(pkg.passedExams, pkg.totalExams) * 100)
+                        );
                         return (
                           <Table.Tr key={pkg.packageId}>
                             <Table.Td fw={500}>{localize(pkg.packageName)}</Table.Td>
@@ -601,62 +659,63 @@ const Statistics_Page = () => {
                     <Text size="sm" fw={600} mb="md">
                       {t("statistics.marathonPassRate")}
                     </Text>
-                    <Center>
-                      <RingProgress
-                        size={140}
-                        thickness={12}
-                        roundCaps
-                        label={
-                          <Text size="md" ta="center" fw={700}>
-                            {stats.marathonStats.totalExams > 0
-                              ? Math.round(
-                                  (stats.marathonStats.passedExams / stats.marathonStats.totalExams) * 100
-                                )
-                              : 0}
-                            %
-                          </Text>
-                        }
-                        sections={[
-                          {
-                            value:
-                              stats.marathonStats.totalExams > 0
-                                ? (stats.marathonStats.passedExams / stats.marathonStats.totalExams) * 100
-                                : 0,
-                            color: "green",
-                          },
-                        ]}
-                      />
-                    </Center>
+                    {(() => {
+                      const mPassRate = clamp(
+                        Math.round(safeDivide(stats.marathonStats!.passedExams, stats.marathonStats!.totalExams) * 100)
+                      );
+                      return (
+                        <Center>
+                          <RingProgress
+                            size={140}
+                            thickness={12}
+                            roundCaps
+                            label={
+                              <Text size="md" ta="center" fw={700}>
+                                {mPassRate}%
+                              </Text>
+                            }
+                            sections={buildRingSections([
+                              { value: mPassRate, color: "green" },
+                            ])}
+                          />
+                        </Center>
+                      );
+                    })()}
                   </Paper>
 
                   <Paper p="lg" radius="md" withBorder shadow="sm">
                     <Text size="sm" fw={600} mb="md">
                       {t("statistics.marathonAccuracy")}
                     </Text>
-                    <Center>
-                      <RingProgress
-                        size={140}
-                        thickness={12}
-                        roundCaps
-                        label={
-                          <Text size="md" ta="center" fw={700}>
-                            {safePercent(stats.marathonStats.accuracy)}%
-                          </Text>
-                        }
-                        sections={[
-                          {
-                            value: stats.marathonStats.accuracy ?? 0,
-                            color: "cyan",
-                          },
-                        ]}
-                      />
-                    </Center>
-                    <Group justify="center" mt="sm">
-                      <Text size="xs" c="dimmed">
-                        {stats.marathonStats.totalCorrectAnswers}/{stats.marathonStats.totalQuestions}{" "}
-                        {t("statistics.correct").toLowerCase()}
-                      </Text>
-                    </Group>
+                    {(() => {
+                      const mAccuracy = stats.marathonStats!.accuracy;
+                      const normalizedMAcc = mAccuracy > 0 && mAccuracy <= 1 ? mAccuracy * 100 : mAccuracy;
+                      return (
+                        <>
+                          <Center>
+                            <RingProgress
+                              size={140}
+                              thickness={12}
+                              roundCaps
+                              label={
+                                <Text size="md" ta="center" fw={700}>
+                                  {safePercent(normalizedMAcc)}%
+                                </Text>
+                              }
+                              sections={buildRingSections([
+                                { value: safePercentNum(normalizedMAcc), color: "cyan" },
+                              ])}
+                            />
+                          </Center>
+                          <Group justify="center" mt="sm">
+                            <Text size="xs" c="dimmed">
+                              {stats.marathonStats!.totalCorrectAnswers}/{stats.marathonStats!.totalQuestions}{" "}
+                              {t("statistics.correct").toLowerCase()}
+                            </Text>
+                          </Group>
+                        </>
+                      );
+                    })()}
                   </Paper>
                 </SimpleGrid>
               </Stack>
@@ -673,12 +732,11 @@ const Statistics_Page = () => {
       )}
 
       {!isLoading && !stats && (
-        <Paper p="xl" radius="md" withBorder ta="center">
-          <IconMinus size={48} color="gray" style={{ opacity: 0.5 }} />
-          <Text c="dimmed" mt="sm">
-            {t("statistics.noData")}
-          </Text>
-        </Paper>
+        <EmptyState
+          icon={<IconChartBar size={48} color="gray" style={{ opacity: 0.5 }} />}
+          title={t("statistics.emptyTitle")}
+          description={t("statistics.emptyDescription")}
+        />
       )}
     </>
   );

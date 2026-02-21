@@ -1,25 +1,19 @@
-.cardUnattempted {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  border-left: 4px solid transparent;
-}
-
-.cardAttempted {
+.card {
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
   border-left: 4px solid;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.cardUnattempted:hover,
-.cardAttempted:hover {
+.card:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-:global([data-mantine-color-scheme="dark"]) .cardUnattempted:hover,
-:global([data-mantine-color-scheme="dark"]) .cardAttempted:hover {
+:global([data-mantine-color-scheme="dark"]) .card:hover {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
