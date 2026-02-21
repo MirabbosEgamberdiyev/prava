@@ -62,8 +62,12 @@ yarn dev
 
 ## Deployment
 
-Manual deployment (no CI/CD):
-1. Push to GitHub
-2. SSH into server
-3. `git pull` on server
-4. Rebuild and restart services
+Automated via `auto-deploy.sh`:
+- Cron polls GitHub every 10 minutes
+- Only rebuilds changed components (backend / user frontend / admin frontend)
+- Logs: `/var/log/prava-deploy.log`
+
+Manual trigger:
+```bash
+ssh root@164.68.100.190 "bash /opt/prava/auto-deploy.sh"
+```
