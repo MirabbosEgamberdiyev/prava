@@ -82,8 +82,14 @@ services:
 
 volumes:
   postgres_data:
+    external: true
+    name: prava-online_postgres_data
   app_uploads:
+    external: true
+    name: prava-online_app_uploads
   app_logs:
+    external: true
+    name: prava-online_app_logs
 
 networks:
   prava-network:
