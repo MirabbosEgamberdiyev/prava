@@ -101,14 +101,34 @@ export function QuizContent({
     }
   }, [isTimeUp, timeUpTriggered, errorLimitMode]);
 
+  // Auto-advance timer ref (for cleanup)
+  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Ref to always have latest goToNextQuestion (avoid stale closure)
+  const goToNextQuestionRef = useRef<() => void>(() => {});
+
   // Question timing
   const questionStartTime = useRef<number>(Date.now());
   const timeSpentPerQuestion = useRef<Record<number, number>>({});
 
   useEffect(() => {
+    // Clear any pending auto-advance timer when question changes
+    if (autoAdvanceTimer.current) {
+      clearTimeout(autoAdvanceTimer.current);
+      autoAdvanceTimer.current = null;
+    }
     questionStartTime.current = Date.now();
     setExplanationOpen(false);
   }, [activeQuiz]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceTimer.current) {
+        clearTimeout(autoAdvanceTimer.current);
+      }
+    };
+  }, []);
 
   const currentQuestion = questions[activeQuiz];
   const isAnswered = selectedAnswers[activeQuiz] !== undefined;
@@ -136,6 +156,9 @@ export function QuizContent({
       setActiveQuiz((prev) => prev + 1);
     }
   }, [activeQuiz, questions.length]);
+
+  // Keep ref in sync so timers always call the latest version
+  goToNextQuestionRef.current = goToNextQuestion;
 
   const goToPrevQuestion = useCallback(() => {
     if (activeQuiz > 0) {
@@ -180,6 +203,12 @@ export function QuizContent({
   const handleSelectAnswer = (questionIndex: number, optionIndex: number) => {
     if (selectedAnswers[questionIndex] !== undefined) return;
 
+    // Clear any pending auto-advance timer
+    if (autoAdvanceTimer.current) {
+      clearTimeout(autoAdvanceTimer.current);
+      autoAdvanceTimer.current = null;
+    }
+
     const timeSpent = Math.floor(
       (Date.now() - questionStartTime.current) / 1000,
     );
@@ -197,10 +226,17 @@ export function QuizContent({
       }
     }
 
-    // Auto-advance after 1s (only when explanation is NOT shown)
-    if (!showExplanation && questionIndex < questions.length - 1) {
-      setTimeout(() => goToNextQuestion(), 1000);
+    // No auto-advance on last question
+    if (questionIndex >= questions.length - 1) return;
+
+    // Auto-advance only when explanation is NOT shown (700ms delay)
+    if (!showExplanation) {
+      autoAdvanceTimer.current = setTimeout(
+        () => goToNextQuestionRef.current(),
+        700,
+      );
     }
+    // When showExplanation=true: wait for user to open & close explanation
   };
 
   const handleFinishExam = () => {
@@ -460,7 +496,21 @@ export function QuizContent({
                     color="blue"
                     fullWidth
                     mt="md"
-                    onClick={() => setExplanationOpen((o) => !o)}
+                    onClick={() => {
+                      const wasOpen = explanationOpen;
+                      setExplanationOpen((o) => !o);
+
+                      // When closing explanation → auto-advance to next question after 500ms
+                      if (wasOpen && !isLastQuestion) {
+                        if (autoAdvanceTimer.current) {
+                          clearTimeout(autoAdvanceTimer.current);
+                        }
+                        autoAdvanceTimer.current = setTimeout(
+                          () => goToNextQuestionRef.current(),
+                          500,
+                        );
+                      }
+                    }}
                   >
                     {explanationOpen
                       ? t("marathon.hideExplanation")

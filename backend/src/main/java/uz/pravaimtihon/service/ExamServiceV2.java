@@ -279,7 +279,11 @@ public class ExamServiceV2 {
                 .orElseThrow(() -> new ResourceNotFoundException("error.exam.session.not.found"));
 
         if (session.getStatus() == ExamStatus.COMPLETED) {
-            throw new BusinessException("error.exam.session.already.completed");
+            // Idempotent: allaqachon tugatilgan — mavjud natijani qaytarish
+            log.info("Double-submit aniqlandi: sessionId={}, allaqachon COMPLETED", session.getId());
+            List<ExamAnswer> existingAnswers = answerRepository
+                    .findByExamSessionIdOrderByQuestionOrder(session.getId());
+            return buildResultResponse(session, existingAnswers);
         }
 
         if (session.getStatus() == ExamStatus.ABANDONED) {
@@ -309,7 +313,9 @@ public class ExamServiceV2 {
 
             AnswerSubmitRequest userAnswer = answerMap.get(question.getId());
 
-            if (userAnswer != null && userAnswer.getSelectedOptionIndex() != null) {
+            if (userAnswer != null && userAnswer.getSelectedOptionIndex() != null
+                    && examAnswer.getSelectedOptionIndex() == null) {
+                // Faqat hali javob berilmagan savollarni yangilash
                 examAnswer.submitAnswer(
                         userAnswer.getSelectedOptionIndex(),
                         userAnswer.getTimeSpentSeconds()
