@@ -156,20 +156,22 @@ export function TicketCard({ ticket, onClick, stats }: TicketCardProps) {
                 {avgScore}%
               </Text>
             </Group>
-            <Group justify="space-between" gap="xs">
-              <Text size="xs" c="dimmed">{t("ticket.bestScore")}</Text>
-              <Text size="xs" fw={600} c={hasStats && stats.bestScore != null ? (clamp(Math.round(stats.bestScore)) >= 70 ? "green" : "red") : "dimmed"}>
-                {hasStats && stats.bestScore != null ? `${clamp(Math.round(stats.bestScore))}%` : "—"}
-              </Text>
-            </Group>
-            <Group justify="space-between" gap="xs">
-              <Text size="xs" c="dimmed">{t("ticket.lastAttempt")}</Text>
-              <Text size="xs" c="dimmed">
-                {hasStats && stats.lastAttemptDate
-                  ? new Date(stats.lastAttemptDate).toLocaleDateString()
-                  : "—"}
-              </Text>
-            </Group>
+            {hasStats && stats.bestScore != null && (
+              <Group justify="space-between" gap="xs">
+                <Text size="xs" c="dimmed">{t("ticket.bestScore")}</Text>
+                <Text size="xs" fw={600} c={clamp(Math.round(stats.bestScore)) >= 70 ? "green" : "red"}>
+                  {clamp(Math.round(stats.bestScore))}%
+                </Text>
+              </Group>
+            )}
+            {hasStats && stats.lastAttemptDate && (
+              <Group justify="space-between" gap="xs">
+                <Text size="xs" c="dimmed">{t("ticket.lastAttempt")}</Text>
+                <Text size="xs" c="dimmed">
+                  {new Date(stats.lastAttemptDate).toLocaleDateString()}
+                </Text>
+              </Group>
+            )}
             <Progress
               value={avgScore}
               color={hasStats ? scoreColor : "gray"}
