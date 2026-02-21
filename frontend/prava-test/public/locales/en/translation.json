@@ -384,6 +384,7 @@
     "failed": "Failed",
     "inProgress": "In Progress",
     "abandoned": "Abandoned",
+    "expired": "Expired",
     "empty": "You haven't taken any exams yet",
     "exam": "Exam",
     "passedLabel": "Passed",

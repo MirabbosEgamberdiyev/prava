@@ -384,6 +384,7 @@
     "failed": "Yiqilgan",
     "inProgress": "Jarayonda",
     "abandoned": "Tashlab ketilgan",
+    "expired": "Muddati o'tgan",
     "empty": "Hali imtihon topshirmadingiz",
     "exam": "Imtihon",
     "passedLabel": "O'tdi",

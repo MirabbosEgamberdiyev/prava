@@ -1,25 +1,26 @@
 import {
   Badge,
-  Center,
   Flex,
   Group,
-  Loader,
   Pagination,
   Paper,
   Progress,
   ScrollArea,
   SegmentedControl,
+  Skeleton,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
-import { IconClock } from "@tabler/icons-react";
-import { useState } from "react";
+import { IconClock, IconHistory } from "@tabler/icons-react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { useLanguage } from "../../../hooks/useLanguage";
+import { EmptyState } from "../../../components/common/EmptyState";
 import type { ExamHistoryResponse, ExamHistoryItem, HistoryFilterStatus } from "../types";
+import { getApiStatus } from "../types";
 
 export function ExamHistoryPage() {
   const { t } = useTranslation();
@@ -28,15 +29,24 @@ export function ExamHistoryPage() {
   const [page, setPage] = useState(0);
   const [filter, setFilter] = useState<HistoryFilterStatus>("ALL");
 
+  const apiStatus = getApiStatus(filter);
   const apiUrl =
-    filter === "ALL"
+    apiStatus === null
       ? `/api/v2/exams/history?page=${page}&size=20&sortBy=startedAt&direction=DESC&lang=${lang}`
-      : `/api/v2/exams/history/status/${filter}?page=${page}&size=20&lang=${lang}`;
+      : `/api/v2/exams/history/status/${apiStatus}?page=${page}&size=20&lang=${lang}`;
 
   const { data: historyResponse, isLoading } =
     useSWR<ExamHistoryResponse>(apiUrl);
 
   const history = historyResponse?.data;
+
+  // Client-side filter for COMPLETED (passed only) and FAILED (not passed)
+  const filteredContent = useMemo(() => {
+    if (!history?.content) return [];
+    if (filter === "COMPLETED") return history.content.filter((item) => item.passed);
+    if (filter === "FAILED") return history.content.filter((item) => !item.passed);
+    return history.content;
+  }, [history?.content, filter]);
 
   const filterOptions = [
     { label: t("history.all"), value: "ALL" },
@@ -52,6 +62,7 @@ export function ExamHistoryPage() {
   };
 
   const formatDuration = (seconds: number) => {
+    if (!seconds || !Number.isFinite(seconds) || seconds < 0) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
@@ -71,12 +82,14 @@ export function ExamHistoryPage() {
   const getStatusColor = (item: ExamHistoryItem) => {
     if (item.status === "IN_PROGRESS") return "blue";
     if (item.status === "ABANDONED") return "gray";
+    if (item.status === "EXPIRED") return "orange";
     return item.passed ? "green" : "red";
   };
 
   const getStatusLabel = (item: ExamHistoryItem) => {
     if (item.status === "IN_PROGRESS") return t("history.inProgress");
     if (item.status === "ABANDONED") return t("history.abandoned");
+    if (item.status === "EXPIRED") return t("history.expired");
     return item.passed ? t("history.passedLabel") : t("history.failedLabel");
   };
 
@@ -87,6 +100,8 @@ export function ExamHistoryPage() {
     if (item.isMarathon) return t("marathon.title");
     return t("history.exam");
   };
+
+  const totalPages = history?.totalPages ?? 0;
 
   return (
     <>
@@ -107,20 +122,38 @@ export function ExamHistoryPage() {
       </ScrollArea>
 
       {isLoading && (
-        <Center py="xl">
-          <Loader size="md" />
-        </Center>
-      )}
-
-      {!isLoading && (!history || history.content.length === 0) && (
-        <Paper p="xl" radius="md" withBorder shadow="sm" ta="center">
-          <Text c="dimmed">{t("history.empty")}</Text>
-        </Paper>
-      )}
-
-      {history && history.content.length > 0 && (
         <Stack gap="sm">
-          {history.content.map((item) => (
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Paper key={i} p="md" radius="md" withBorder shadow="sm">
+              <Flex
+                justify="space-between"
+                align="center"
+                gap="sm"
+              >
+                <Stack gap={4} style={{ flex: 1 }}>
+                  <Skeleton height={18} width="50%" radius="sm" />
+                  <Skeleton height={12} width="30%" radius="sm" />
+                </Stack>
+                <Stack gap={2} style={{ width: 200 }}>
+                  <Skeleton height={16} width="100%" radius="xl" />
+                  <Skeleton height={10} width="60%" radius="sm" ml="auto" />
+                </Stack>
+              </Flex>
+            </Paper>
+          ))}
+        </Stack>
+      )}
+
+      {!isLoading && filteredContent.length === 0 && (
+        <EmptyState
+          icon={<IconHistory size={48} color="gray" style={{ opacity: 0.5 }} />}
+          title={t("history.empty")}
+        />
+      )}
+
+      {!isLoading && filteredContent.length > 0 && (
+        <Stack gap="sm">
+          {filteredContent.map((item) => (
             <Paper
               key={item.sessionId}
               p="md"
@@ -185,12 +218,12 @@ export function ExamHistoryPage() {
             </Paper>
           ))}
 
-          {history.totalPages > 1 && (
+          {totalPages > 1 && (
             <Flex justify="center" mt="md">
               <Pagination
                 value={page + 1}
                 onChange={(p) => setPage(p - 1)}
-                total={history.totalPages}
+                total={totalPages}
               />
             </Flex>
           )}
