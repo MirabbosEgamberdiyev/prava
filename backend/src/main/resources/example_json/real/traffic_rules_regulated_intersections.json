@@ -1,0 +1,158 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_regulated_intersections",
+      "nameUzl": "Tartibga solingan chorrahalar",
+      "nameUzc": "Тартибга солинган чорраҳалар",
+      "nameEn": "Regulated Intersections",
+      "nameRu": "Регулируемые перекрёстки",
+      "descriptionUzl": "Svetofor ishoralari bilan boshqariladigan chorrahalarda chapga burilish va qayrilib olish, qo‘shimcha tarmoq yashil ishorasi, tramvay ustunligi, chorrahani tugatish va piyodalarga yo‘l berish bo‘yicha savollar.",
+      "descriptionUzc": "Светофор ишоралари билан бошқариладиган чорраҳаларда чапга бурилиш ва қайрилиб олиш, қўшимча тармоқ яшил ишораси, трамвай устунлиги, чорраҳани тугатиш ва пиёдаларга йўл бериш бўйича саволлар.",
+      "descriptionEn": "Questions on left turns/U-turns at traffic light-controlled intersections, additional green arrow, tram priority, clearing the intersection and yielding to pedestrians.",
+      "descriptionRu": "Вопросы по левым поворотам/разворотам на регулируемых светофорами перекрёстках, дополнительной зелёной стрелке, преимуществу трамвая, завершению проезда и уступке пешеходам.",
+      "iconUrl": null,
+      "displayOrder": 15,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Svetoforning ruxsat etuvchi ishorasida chapga burilayotgan haydovchi kimga yo‘l berishi kerak?",
+      "textUzc": "Светофорнинг рухсат этувчи ишорасида чапга бурилаётган ҳайдовчи кимга йўл бериши керак?",
+      "textEn": "At a permissive traffic light signal, to whom must a driver turning left yield?",
+      "textRu": "При разрешающем сигнале светофора кому должен уступить водитель, поворачивающий налево?",
+      "explanationUzl": "99-bandga ko‘ra: qarama-qarshi tomondan to‘g‘riga harakatlanayotgan va o‘ngga burilayotgan transport vositalariga yo‘l berish shart. Tramvay haydovchilari ham shu qoidaga amal qiladi.",
+      "explanationUzc": "99-бандга кўра: қарама-қарши томондан тўғрига ҳаракатланаётган ва ўнгга бурилаётган транспорт воситаларига йўл бериш шарт. Трамвай ҳайдовчилари ҳам шу қоидага амал қилади.",
+      "explanationEn": "According to clause 99: yield to oncoming straight-moving and right-turning vehicles. Tram drivers follow the same rule.",
+      "explanationRu": "Согласно пункту 99: уступить встречному прямо идущему и поворачивающему направо. Водители трамваев также обязаны соблюдать это правило.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech kimga", "textUzc": "Ҳеч кимга", "textEn": "No one", "textRu": "Никому" },
+        { "optionIndex": 1, "textUzl": "Qarama-qarshi to‘g‘ri va o‘ngga burilayotganlarga", "textUzc": "Қарама-қарши тўғри ва ўнгга бурилаётганларга", "textEn": "Oncoming straight and right-turning", "textRu": "Встречному прямо и направо" },
+        { "optionIndex": 2, "textUzl": "Faqat piyodalarga", "textUzc": "Фақат пиёдаларга", "textEn": "Only pedestrians", "textRu": "Только пешеходам" },
+        { "optionIndex": 3, "textUzl": "Faqat tramvayga", "textUzc": "Фақат трамвайга", "textEn": "Only tram", "textRu": "Только трамваю" },
+        { "optionIndex": 4, "textUzl": "O‘ngdan kelganlarga", "textUzc": "Ўнгдан келганларга", "textEn": "From right", "textRu": "С правой стороны" },
+        { "optionIndex": 5, "textUzl": "Barcha transportga", "textUzc": "Барча транспортга", "textEn": "All vehicles", "textRu": "Всем ТС" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qo‘shimcha tarmoqning yashil yo‘naltirgich ishorasi yoqilganda haydovchi kimga yo‘l berishi kerak?",
+      "textUzc": "Қўшимча тармоқнинг яшил йўналиргичи ишораси ёқилганда ҳайдовчи кимга йўл бериши керак?",
+      "textEn": "When the additional green arrow is on, to whom must the driver yield?",
+      "textRu": "При включённой дополнительной зелёной стрелке кому должен уступить водитель?",
+      "explanationUzl": "100-bandga ko‘ra: qo‘shimcha tarmoqning yashil yo‘naltirgichi yoqilganda boshqa yo‘nalishlardan harakatlanayotgan transport vositalariga yo‘l berish shart.",
+      "explanationUzc": "100-бандга кўра: қўшимча тармоқнинг яшил йўналиргичи ёқилганда бошқа йўналишлардан ҳаракатланаётган транспорт воситаларига йўл бериш шарт.",
+      "explanationEn": "According to clause 100: yield to vehicles from other directions when additional green arrow is on.",
+      "explanationRu": "Согласно пункту 100: уступить ТС из других направлений при включённой дополнительной зелёной стрелке.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech kimga", "textUzc": "Ҳеч кимга", "textEn": "No one", "textRu": "Никому" },
+        { "optionIndex": 1, "textUzl": "Boshqa yo‘nalishlardagi transportga", "textUzc": "Бошқа йўналишлардаги транспортга", "textEn": "Vehicles from other directions", "textRu": "ТС из других направлений" },
+        { "optionIndex": 2, "textUzl": "Faqat piyodalarga", "textUzc": "Фақат пиёдаларга", "textEn": "Only pedestrians", "textRu": "Только пешеходам" },
+        { "optionIndex": 3, "textUzl": "Faqat tramvayga", "textUzc": "Фақат трамвайга", "textEn": "Only tram", "textRu": "Только трамваю" },
+        { "optionIndex": 4, "textUzl": "O‘z yo‘nalishidagi transportga", "textUzc": "Ўз йўналишидаги транспортга", "textEn": "Own direction traffic", "textRu": "ТС своего направления" },
+        { "optionIndex": 5, "textUzl": "Faqat o‘ngdan kelganlarga", "textUzc": "Фақат ўнгдан келганларга", "textEn": "Only from right", "textRu": "Только с правой стороны" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Svetofor ishorasi tramvay va relssiz transportga bir vaqtda ruxsat bersa, kim oldin o‘tish huquqiga ega?",
+      "textUzc": "Светофор ишораси трамвай ва релссиз транспортга бир вақтда рухсат берса, ким олдин ўтиш ҳуқуқига эга?",
+      "textEn": "If traffic light permits tram and non-rail vehicles simultaneously, who has priority?",
+      "textRu": "Если сигнал светофора разрешает одновременно трамваю и безрельсовым ТС, кто имеет преимущество?",
+      "explanationUzl": "101-bandga ko‘ra: harakatlanish yo‘nalishidan qat’i nazar, **tramvay** oldin o‘tish huquqiga ega bo‘ladi.",
+      "explanationUzc": "101-бандга кўра: ҳаракатланиш йўналишидан қатъи назар, **трамвай** олдин ўтиш ҳуқуқига эга бўлади.",
+      "explanationEn": "According to clause 101: regardless of direction, the **tram** has priority.",
+      "explanationRu": "Согласно пункту 101: независимо от направления, **трамвай** имеет преимущество.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Relssiz transport", "textUzc": "Релссиз транспорт", "textEn": "Non-rail vehicle", "textRu": "Безрельсовое ТС" },
+        { "optionIndex": 1, "textUzl": "Tramvay", "textUzc": "Трамвай", "textEn": "Tram", "textRu": "Трамвай" },
+        { "optionIndex": 2, "textUzl": "Hech kim ustun emas", "textUzc": "Ҳеч ким устун эмас", "textEn": "No priority", "textRu": "Никто не имеет преимущества" },
+        { "optionIndex": 3, "textUzl": "Faqat piyodalar", "textUzc": "Фақат пиёдалар", "textEn": "Only pedestrians", "textRu": "Только пешеходы" },
+        { "optionIndex": 4, "textUzl": "O‘ngdan kelgan transport", "textUzc": "Ўнгдан келган транспорт", "textEn": "From right", "textRu": "С правой стороны" },
+        { "optionIndex": 5, "textUzl": "Chapdan kelgan transport", "textUzc": "Чапдан келган транспорт", "textEn": "From left", "textRu": "С левой стороны" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qo‘shimcha tarmoq yashil ishorasi yoqilganda tramvay kimga yo‘l berishi kerak?",
+      "textUzc": "Қўшимча тармоқ яшил ишораси ёқилганда трамвай кимга йўл бериши керак?",
+      "textEn": "When additional green arrow is on, to whom must the tram yield?",
+      "textRu": "При включённой дополнительной зелёной стрелке трамвай кому должен уступить?",
+      "explanationUzl": "101-band oxiriga ko‘ra: qo‘shimcha tarmoqning yashil yo‘naltirgich ishorasi yo‘nalishida harakatlanayotgan tramvay boshqa yo‘nalishlarda harakatlanayotgan transport vositalariga yo‘l berishi kerak.",
+      "explanationUzc": "101-банд охирига кўра: қўшимча тармоқнинг яшил йўналиргичи ишораси йўналишида ҳаракатланаётган трамвай бошқа йўналишларда ҳаракатланаётган транспорт воситаларига йўл бериши керак.",
+      "explanationEn": "According to the end of clause 101: tram on additional green arrow direction must yield to vehicles from other directions.",
+      "explanationRu": "Согласно концу пункта 101: трамвай в направлении дополнительной зелёной стрелки должен уступить ТС из других направлений.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech kimga", "textUzc": "Ҳеч кимга", "textEn": "No one", "textRu": "Никому" },
+        { "optionIndex": 1, "textUzl": "Boshqa yo‘nalishdagi transportga", "textUzc": "Бошқа йўналишдаги транспортга", "textEn": "Vehicles from other directions", "textRu": "ТС из других направлений" },
+        { "optionIndex": 2, "textUzl": "Faqat piyodalarga", "textUzc": "Фақат пиёдаларга", "textEn": "Only pedestrians", "textRu": "Только пешеходам" },
+        { "optionIndex": 3, "textUzl": "O‘z yo‘nalishidagi transportga", "textUzc": "Ўз йўналишидаги транспортга", "textEn": "Own direction traffic", "textRu": "ТС своего направления" },
+        { "optionIndex": 4, "textUzl": "Faqat o‘ngdan kelganlarga", "textUzc": "Фақат ўнгдан келганларга", "textEn": "Only from right", "textRu": "Только с правой стороны" },
+        { "optionIndex": 5, "textUzl": "Chapdan kelganlarga", "textUzc": "Чапдан келганларга", "textEn": "From left", "textRu": "С левой стороны" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Svetoforning ruxsat etuvchi ishorasida chorrahaga kirgan haydovchi nima qilishi kerak?",
+      "textUzc": "Светофорнинг рухсат этувчи ишорасида чорраҳага кирган ҳайдовчи нима қилиши керак?",
+      "textEn": "What must a driver who entered the intersection on a permissive signal do?",
+      "textRu": "Что должен сделать водитель, въехавший на перекрёсток на разрешающий сигнал?",
+      "explanationUzl": "102-bandga ko‘ra: undan chiqishda svetofor ishoralaridan qat’i nazar mo‘ljallangan yo‘nalishda harakatni davom ettirishi kerak (to‘xtash chizig‘i bo‘lsa har bir svetoforga amal qilish shart).",
+      "explanationUzc": "102-бандга кўра: ундан чиқишда светофор ишораларидан қатъи назар мўлжалланган йўналишда ҳаракатни давом эттириши керак (тўхташ чизиғи бўлса ҳар бир светофорга амал қилиш шарт).",
+      "explanationEn": "According to clause 102: continue in intended direction regardless of subsequent signals (if stop lines, obey each light).",
+      "explanationRu": "Согласно пункту 102: продолжить в намеченном направлении независимо от последующих сигналов (при линиях остановки — подчиняться каждому светофору).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Вернуться назад" },
+        { "optionIndex": 1, "textUzl": "Mo‘ljallangan yo‘nalishda davom ettirish", "textUzc": "Мўлжалланган йўналишда давом эттириш", "textEn": "Continue in intended direction", "textRu": "Продолжить в намеченном направлении" },
+        { "optionIndex": 2, "textUzl": "To‘xtab turish", "textUzc": "Тўхтаб туриш", "textEn": "Stop", "textRu": "Остановиться" },
+        { "optionIndex": 3, "textUzl": "Faqat piyodalarga yo‘l berib", "textUzc": "Фақат пиёдаларга йўл бериб", "textEn": "Yield only to pedestrians", "textRu": "Уступить только пешеходам" },
+        { "optionIndex": 4, "textUzl": "Keyingi ishorani kutish", "textUzc": "Кейинги ишорани кутиш", "textEn": "Wait for next signal", "textRu": "Ждать следующий сигнал" },
+        { "optionIndex": 5, "textUzl": "Orqaga qaytib chiqish", "textUzc": "Орқага қайтиб чиқиш", "textEn": "Reverse out", "textRu": "Выехать назад" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Svetoforning ruxsat etuvchi ishorasi yonganda chorrahada nima qilish kerak?",
+      "textUzc": "Светофорнинг рухсат этувчи ишораси ёнганда чорраҳада нима қилиш керак?",
+      "textEn": "What to do at intersection when permissive signal is on?",
+      "textRu": "Что делать на перекрёстке при включённом разрешающем сигнале?",
+      "explanationUzl": "103-bandga ko‘ra: chorraha orqali harakatlanishni tugallayotgan transport vositalari va tegishli yo‘nalishda o‘tishni tugallayotgan piyoda(lar)ga yo‘l berish shart.",
+      "explanationUzc": "103-бандга кўра: чорраҳа орқали ҳаракатланишни тугатлаётган транспорт воситалари ва тегишли йўналишда ўтишни тугатлаётган пиёда(лар)га йўл бериш шарт.",
+      "explanationEn": "According to clause 103: yield to vehicles finishing crossing the intersection and pedestrians finishing crossing in permitted direction.",
+      "explanationRu": "Согласно пункту 103: уступить ТС, завершающим проезд перекрёстка, и пешеходам, завершающим переход в разрешённом направлении.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "To‘xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться" },
+        { "optionIndex": 1, "textUzl": "Tugatayotgan transport va piyodalarga yo‘l berish", "textUzc": "Тугатаётган транспорт ва пиёдаларга йўл бериш", "textEn": "Yield to finishing vehicles and pedestrians", "textRu": "Уступить завершающим проезд и пешеходам" },
+        { "optionIndex": 2, "textUzl": "Tezlikni oshirish", "textUzc": "Тезликни ошириш", "textEn": "Increase speed", "textRu": "Увеличить скорость" },
+        { "optionIndex": 3, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Вернуться назад" },
+        { "optionIndex": 4, "textUzl": "Faqat tramvayga yo‘l berish", "textUzc": "Фақат трамвайга йўл бериш", "textEn": "Yield only to tram", "textRu": "Уступить только трамваю" },
+        { "optionIndex": 5, "textUzl": "Hech kimga yo‘l bermasdan o‘tish", "textUzc": "Ҳеч кимга йўл бермасдан ўтиш", "textEn": "Pass without yielding", "textRu": "Проехать без уступки" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

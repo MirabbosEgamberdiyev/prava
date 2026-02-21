@@ -1,0 +1,95 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/prava_online_db
+    username: prava_user
+    password: prava_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    show-sql: false
+    hibernate:
+      # ✅ CRITICAL: 'update' - yangi columnlar qo'shadi, lekin HECH NARSANI O'CHIRMAYDI
+      # ❌ 'create' - har safar ma'lumotlarni o'chiradi (HECH QACHON ishlatmang!)
+      # ❌ 'create-drop' - to'xtaganda ham o'chiradi (HECH QACHON ishlatmang!)
+      # ✅ 'validate' - faqat tekshiradi, o'zgartirmaydi (eng xavfsiz, lekin yangi field qo'shib bo'lmaydi)
+      # ✅ 'update' - yangi qo'shadi, mavjudni saqlab qoladi (TAVSIYA ETILADI)
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    out-of-order: false
+    clean-disabled: true
+
+logging:
+  level:
+    root: WARN
+    org.springframework: WARN
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql: OFF
+
+server:
+  port: 8080
+
+app:
+  # ✅ PRODUCTION JWT SECRET - Bu production serverda .env faylda bo'lishi kerak
+  jwt:
+    secret: ${JWT_SECRET:PravaOnlineProductionSecretKey2024MustBe32CharsOrMoreForSecurity!}
+
+  verification:
+    test-mode:
+      enabled: false
+      default-code: "123456"
+
+  sms:
+    enabled: true
+    test-mode:
+      log-only: false
+
+  email:
+    enabled: true
+    test-mode:
+      log-only: false
+
+  # Production CORS — faqat real domains
+  security:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:5174,https://pravaonline.uz,https://www.pravaonline.uz,https://admin.pravaonline.uz}
+    oauth:
+      google:
+        enabled: true
+
+  # Telegram Bot — env variable orqali
+  telegram:
+    bot-token: ${TELEGRAM_BOT_TOKEN:8485868847:AAGR9eBV1qibgJfXHpqZ04JlbyrjemaTrGA}
+    bot-username: ${TELEGRAM_BOT_USERNAME:pravaonlineuzbot}
+    webhook-url: ${TELEGRAM_WEBHOOK_URL:https://pravaonline.uz/api/v1/telegram/webhook}
+    base-url: ${TELEGRAM_BASE_URL:https://pravaonline.uz}
+
+  storage:
+    local:
+      enabled: true
+      path: /app/uploads
+
+  default-users:
+    enabled: true
+
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      base-path: /actuator
+      exposure:
+        include: health
+  endpoint:
+    health:
+      enabled: true
+      show-details: when-authorized
+      probes:
+        enabled: true
+  server:
+    port: 8080

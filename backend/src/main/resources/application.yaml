@@ -1,0 +1,279 @@
+spring:
+  application:
+    name: prava-online
+
+  # Database Configuration
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/prava_online_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:1234}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+
+  # Flyway Configuration
+  # DISABLED: Using Hibernate ddl-auto for schema management
+  # Enable when you have a complete migration set starting from V1
+  flyway:
+    enabled: false
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    schemas: public
+    validate-on-migrate: false
+
+  # Cache Configuration
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=30m
+    cache-names:
+      - questions
+      - packages
+      - topics
+      - leaderboard
+      - dashboard_stats
+      - topic_stats
+      - user_stats
+
+  # Mail Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.mail.ru}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_USERNAME:mirabbosegamberdiyev7@mail.ru}
+    password: ${MAIL_PASSWORD:r2CePkKRjrebdGl5oR1s}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          starttls:
+            enable: false
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+        transport:
+          protocol: smtps
+    test-connection: false
+
+  # Internationalization
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+    cache-duration: 3600
+
+  # File Upload Configuration
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
+      file-size-threshold: 2MB
+
+# Application Configuration
+app:
+  # ✅ FIXED: JWT secret must be at least 256 bits (32 characters)
+  jwt:
+    secret: ${JWT_SECRET:MirabbosEgamberdiyevPravaOnlineSecretKey1234567890123456789012345678901}
+    access-token-expiration: 86400000
+    refresh-token-expiration: 2592000000
+    issuer: prava-online
+
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:237372892439-4bju17u6k3cjoil26p148m21ilmecd9s.apps.googleusercontent.com}
+
+  oauth:
+    google:
+      enabled: true
+      auto-register: true
+    telegram:
+      enabled: true
+      auth-data-max-age-seconds: 86400  # 24 hours
+
+  # Telegram Bot Configuration (for Login Widget verification + Bot commands)
+  telegram:
+    bot-token: ${TELEGRAM_BOT_TOKEN:8485868847:AAGR9eBV1qibgJfXHpqZ04JlbyrjemaTrGA}
+    bot-username: ${TELEGRAM_BOT_USERNAME:pravaonlineuzbot}
+    webhook-url: ${TELEGRAM_WEBHOOK_URL:}
+    base-url: ${TELEGRAM_BASE_URL:https://pravaonline.uz}
+
+  # Security
+  security:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,https://pravaonline.uz,https://www.pravaonline.uz,https://admin.pravaonline.uz}
+    rate-limit:
+      enabled: true
+      requests-per-minute: 200
+
+  # Question Data Initialization
+  init:
+    question-data:
+      enabled: ${INIT_QUESTION_DATA:true}
+      force-reimport: ${FORCE_REIMPORT:false}
+
+  # Verification Configuration
+  verification:
+    test-mode:
+      enabled: ${VERIFICATION_TEST_MODE:false}
+      default-code: "123456"
+
+  # SMS Configuration
+  sms:
+    provider: eskiz
+    enabled: ${SMS_ENABLED:false}
+    mock: ${SMS_MOCK:false}
+    test-mode:
+      log-only: true
+    eskiz:
+      email: ${ESKIZ_EMAIL:egamberdiyevmirabbos7@gmail.com}
+      password: ${ESKIZ_PASSWORD:kIhEt04V7R95uQYlmwaWNFFDzdrbv1bSK0VxEnfa}
+
+  # Email Configuration
+  email:
+    enabled: ${EMAIL_ENABLED:false}
+    test-mode:
+      log-only: true
+
+  # File Storage Configuration
+  storage:
+    type: ${STORAGE_TYPE:local}
+    fallback-to-local: ${FALLBACK_TO_LOCAL:true}
+
+    # Local Storage
+    local:
+      upload-dir: ${UPLOAD_DIR:uploads}
+      base-url: ${BASE_URL:http://localhost:8080}
+
+    # AWS S3
+    s3:
+      bucket: ${S3_BUCKET:}
+      region: ${S3_REGION:us-east-1}
+      access-key: ${S3_ACCESS_KEY:}
+      secret-key: ${S3_SECRET_KEY:}
+      base-url: ${S3_BASE_URL:}
+
+    # Cloudinary
+    cloudinary:
+      cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+      api-key: ${CLOUDINARY_API_KEY:}
+      api-secret: ${CLOUDINARY_API_SECRET:}
+      base-url: ${CLOUDINARY_BASE_URL:}
+
+  # File Upload Limits
+  file:
+    limits:
+      image:
+        max-size-mb: 10
+        allowed-types: image/jpeg,image/png,image/gif,image/webp,image/svg+xml
+      video:
+        max-size-mb: 500
+        allowed-types: video/mp4,video/webm,video/ogg,video/avi,video/quicktime
+      document:
+        max-size-mb: 50
+        allowed-types: application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain
+      other:
+        max-size-mb: 100
+        allowed: true
+
+  # Exam Business Rules (ALL values externalized - no magic numbers in code)
+  exam:
+    # Default values
+    default-duration-minutes: 30
+    passing-score-percentage: 70
+    # Boundary values
+    min-duration-minutes: 5
+    max-duration-minutes: 180
+    min-questions-per-exam: 1
+    max-questions-per-exam: 100
+    # Marathon mode configuration
+    marathon-min-duration-minutes: 10
+    marathon-default-passing-score: 70
+    marathon-min-questions: 5
+    marathon-max-questions: 100
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    uz.pravaimtihon: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%X{requestId}] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%X{requestId}] [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/prava-online.log
+    max-size: 10MB
+    max-history: 30
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  http2:
+    enabled: true
+  compression:
+    enabled: true
+    min-response-size: 1024
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
+  error:
+    include-message: always
+    include-binding-errors: always
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+# ✅ FIXED: Actuator Configuration
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      enabled: true
+      show-details: when-authorized
+      probes:
+        enabled: true
+    caches:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# OpenAPI Documentation
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: false

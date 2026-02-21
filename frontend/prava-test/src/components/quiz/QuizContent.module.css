@@ -1,0 +1,8 @@
+.optionPaper {
+  transition: all 0.2s ease;
+}
+
+.optionPaper[data-clickable="true"]:hover {
+  border-color: var(--mantine-color-blue-4) !important;
+  transform: translateX(4px);
+}

@@ -1,0 +1,130 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_external_lighting",
+      "nameUzl": "Tashqi yoritish asboblaridan foydalanish",
+      "nameUzc": "Ташқи ёритиш асбобларидан фойдаланиш",
+      "nameEn": "Use of External Lighting Devices",
+      "nameRu": "Использование внешних световых приборов",
+      "descriptionUzl": "Qorong‘i vaqt va yetarlicha ko‘rinmaydigan sharoitda fara chiroqlari, tumanga qarshi chiroqlar, sutkaning yorug‘ vaqtida yaqinni yorituvchi fara talablari, ko‘zi qamashganda choralar, “Avtopoyezd” belgisi va loyihali fara chiroqlaridan foydalanish bo‘yicha savollar.",
+      "descriptionUzc": "Қоронғи вақт ва етарлича кўринмайдиган шароитда фара чироқлари, туманга қарши чироқлар, кундузи яқинни ёритувчи фара талаблари, кўзи қамашганда чоралар, “Автопоезд” белгиси ва лойиҳали фара чироқларидан фойдаланиш бўйича саволлар.",
+      "descriptionEn": "Questions on headlights in dark/poor visibility, fog lights, daytime low beams requirements, actions when dazzled, “Road Train” sign and use of projector/searchlights.",
+      "descriptionRu": "Вопросы по фарам в тёмное время и недостаточной видимости, противотуманным фарам, обязательным ближнему свету днём, действиям при ослеплении, знаку «Автопоезд» и использованию прожекторных фар.",
+      "iconUrl": null,
+      "displayOrder": 21,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Qorong‘i vaqt va yetarlicha ko‘rinmaydigan sharoitda mexanik transport vositalarida qaysi yoritish asboblari yoqilgan bo‘lishi kerak?",
+      "textUzc": "Қоронғи вақт ва етарлича кўринмайдиган шароитда механик транспорт воситаларида қайси ёритиш асбоблари ёқилган бўлиши керак?",
+      "textEn": "In dark time and poor visibility, which lighting devices must be on in mechanical vehicles?",
+      "textRu": "В тёмное время суток и при недостаточной видимости какие световые приборы должны быть включены на механических ТС?",
+      "explanationUzl": "134-bandga ko‘ra: uzoqni yoki yaqinni yorituvchi fara chiroqlari (mopedlarda ham), tirkamalarda va shatakka olinganlarda gabarit chiroqlari.",
+      "explanationUzc": "134-бандга кўра: узоқни ёки яқинни ёритувчи фара чироқлари (мопедларда ҳам), тиркамаларда ва шатакка олинганларда габарит чироқлари.",
+      "explanationEn": "According to clause 134: high or low beam headlights (also on mopeds), on trailers and towed vehicles — position lights.",
+      "explanationRu": "Согласно пункту 134: дальний или ближний свет фар (также на мопедах), на прицепах и буксируемых — габаритные огни.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat orqa chiroqlar", "textUzc": "Фақат орқа чироқлар", "textEn": "Only rear lights", "textRu": "Только задние огни" },
+        { "optionIndex": 1, "textUzl": "Uzoqni yoki yaqinni yorituvchi fara chiroqlari", "textUzc": "Узоқни ёки яқинни ёритувчи фара чироқлари", "textEn": "High or low beam headlights", "textRu": "Дальний или ближний свет фар" },
+        { "optionIndex": 2, "textUzl": "Faqat tumanga qarshi chiroqlar", "textUzc": "Фақат туманга қарши чироқлар", "textEn": "Only fog lights", "textRu": "Только противотуманные" },
+        { "optionIndex": 3, "textUzl": "Hech qanday chiroq shart emas", "textUzc": "Ҳеч қандай чироқ шарт эмас", "textEn": "No lights required", "textRu": "Никакие огни не требуются" },
+        { "optionIndex": 4, "textUzl": "Faqat avariya ishorasi", "textUzc": "Фақат авария ишораси", "textEn": "Only hazard lights", "textRu": "Только аварийная сигнализация" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qachon uzoqni yorituvchi fara o‘rniga yaqinni yorituvchi fara yoqilishi kerak?",
+      "textUzc": "Қачон узоқни ёритувчи фара ўрнига яқинни ёритувчи фара ёқилиши керак?",
+      "textEn": "When must high beam be replaced with low beam?",
+      "textRu": "Когда дальний свет необходимо переключить на ближний?",
+      "explanationUzl": "135-bandga ko‘ra: yo‘l yoritilgan bo‘lsa, qarama-qarshi transportga 150 m dan yaqin masofada, haydovchi ko‘zini qamashtirganda va boshqa holatlarda.",
+      "explanationUzc": "135-бандга кўра: йўл ёритилган бўлса, қарама-қарши транспортга 150 м дан яқин масофада, ҳайдовчи кўзини қамаштирганда ва бошқа ҳолатларда.",
+      "explanationEn": "According to clause 135: on lit roads, within 150 m of oncoming vehicle, when dazzling driver and other cases.",
+      "explanationRu": "Согласно пункту 135: на освещённых дорогах, за 150 м до встречного ТС, при ослеплении водителя и в других случаях.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qachon", "textUzc": "Ҳеч қачон", "textEn": "Never", "textRu": "Никогда" },
+        { "optionIndex": 1, "textUzl": "Yo‘l yoritilgan bo‘lsa, qarama-qarshi transport yaqinlashganda va ko‘z qamashtirganda", "textUzc": "Йўл ёритилган бўлса, қарама-қарши транспорт яқинлашганда ва кўз қамаштирганда", "textEn": "On lit roads, near oncoming and when dazzling", "textRu": "На освещённых дорогах, при приближении встречного и ослеплении" },
+        { "optionIndex": 2, "textUzl": "Faqat kechasi", "textUzc": "Фақат кечаси", "textEn": "Only at night", "textRu": "Только ночью" },
+        { "optionIndex": 3, "textUzl": "Faqat tumanda", "textUzc": "Фақат туманда", "textEn": "Only in fog", "textRu": "Только в тумане" },
+        { "optionIndex": 4, "textUzl": "Faqat aholi punktida", "textUzc": "Фақат аҳоли пунктида", "textEn": "Only in populated areas", "textRu": "Только в населённых пунктах" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Ko‘zi qamashgan haydovchi nima qilishi kerak?",
+      "textUzc": "Кўзи қамашган ҳайдовчи нима қилиши керак?",
+      "textEn": "What must a dazzled driver do?",
+      "textRu": "Что должен сделать ослеплённый водитель?",
+      "explanationUzl": "135-band oxiriga ko‘ra: avariya ishoralarini yoqishi, harakatlanish bo‘lagini o‘zgartirmasdan tezlikni kamaytirishi va to‘xtashi kerak.",
+      "explanationUzc": "135-банд охирига кўра: авария ишораларини ёқиши, ҳаракатланиш боғини ўзгартирмасдан тезликни камайтириши ва тўхташи керак.",
+      "explanationEn": "According to the end of clause 135: turn on hazard lights, reduce speed without changing lane and stop.",
+      "explanationRu": "Согласно концу пункта 135: включить аварийную сигнализацию, снизить скорость без смены полосы и остановиться.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tezlikni oshirish", "textUzc": "Тезликни ошириш", "textEn": "Increase speed", "textRu": "Увеличить скорость" },
+        { "optionIndex": 1, "textUzl": "Avariya ishorasini yoqish, tezlikni kamaytirish va to‘xtash", "textUzc": "Авария ишорасини ёқиш, тезликни камайтириш ва тўхташ", "textEn": "Turn on hazards, reduce speed and stop", "textRu": "Включить аварийку, снизить скорость и остановиться" },
+        { "optionIndex": 2, "textUzl": "Faqat chapga burilish", "textUzc": "Фақат чапга бурилиш", "textEn": "Only turn left", "textRu": "Только повернуть налево" },
+        { "optionIndex": 3, "textUzl": "Hech narsa qilmasdan davom ettirish", "textUzc": "Ҳеч нарса қилмасдан давом эттириш", "textEn": "Continue without action", "textRu": "Продолжить без действий" },
+        { "optionIndex": 4, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Движение назад" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "To‘xtagan transport vositasida qorong‘i vaqtda qaysi chiroqlar yoqilgan bo‘lishi kerak?",
+      "textUzc": "Тўхтаган транспорт воситасида қоронғи вақтда қайси чироқлар ёқилган бўлиши керак?",
+      "textEn": "In dark time, which lights must be on in a stopped vehicle?",
+      "textRu": "В тёмное время суток какие огни должны быть включены на стоящем ТС?",
+      "explanationUzl": "136-bandga ko‘ra: gabarit fara chiroqlari yoqilgan bo‘lishi kerak; yetarlicha ko‘rinmaydigan sharoitda qo‘shimcha yaqinni yorituvchi, tumanga qarshi va orqa tumanga qarshi chiroqlar yoqilishi mumkin.",
+      "explanationUzc": "136-бандга кўра: габарит фара чироқлари ёқилган бўлиши керак; етарлича кўринмайдиган шароитда қўшимча яқинни ёритувчи, туманга қарши ва орқа туманга қарши чироқлар ёқилиши мумкин.",
+      "explanationEn": "According to clause 136: position lights must be on; in poor visibility additionally low beam, fog lights and rear fog lights may be on.",
+      "explanationRu": "Согласно пункту 136: габаритные огни должны быть включены; при недостаточной видимости дополнительно ближний свет, противотуманные фары и задние противотуманные фонари могут быть включены.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat avariya ishorasi", "textUzc": "Фақат авария ишораси", "textEn": "Only hazard lights", "textRu": "Только аварийная сигнализация" },
+        { "optionIndex": 1, "textUzl": "Gabarit chiroqlari", "textUzc": "Габарит чироқлари", "textEn": "Position lights", "textRu": "Габаритные огни" },
+        { "optionIndex": 2, "textUzl": "Faqat uzoqni yorituvchi fara", "textUzc": "Фақат узоқни ёритувчи фара", "textEn": "Only high beam", "textRu": "Только дальний свет" },
+        { "optionIndex": 3, "textUzl": "Hech qanday chiroq shart emas", "textUzc": "Ҳеч қандай чироқ шарт эмас", "textEn": "No lights required", "textRu": "Никакие огни не требуются" },
+        { "optionIndex": 4, "textUzl": "Faqat orqa chiroqlar", "textUzc": "Фақат орқа чироқлар", "textEn": "Only rear lights", "textRu": "Только задние огни" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Sutkaning yorug‘ vaqtida qachon yaqinni yorituvchi fara chiroqlari yoqilishi kerak?",
+      "textUzc": "Кундузи яқинни ёритувчи фара чироқлари қачон ёқилиши керак?",
+      "textEn": "When must low beam headlights be on during daylight?",
+      "textRu": "Когда днём обязательно включать ближний свет фар?",
+      "explanationUzl": "138-bandga ko‘ra: tashkiliy jamlanma safida, avtobus va yo‘nalishli transportda, bolalar guruhini tashishda, xavfli/katta/og‘ir yuk tashishda, shatakka olishda, kuchli yog‘ingarchilikda, mototsikl va mopedlarda.",
+      "explanationUzc": "138-бандга кўра: ташкилий жамланма сафида, автобус ва йўналишли транспортда, болалар гуруҳини ташишда, хавфли/катта/оғир юк ташишда, шатакка олишда, кучли ёғингарчиликда, мотоцикл ва мопедларда.",
+      "explanationEn": "According to clause 138: in organized convoys, buses and public transport, child transportation, hazardous/large/heavy cargo, towing, heavy rain/snow, motorcycles and mopeds.",
+      "explanationRu": "Согласно пункту 138: в организованных колоннах, автобусах и маршрутках, при перевозке детей, опасных/крупногабаритных/тяжёлых грузов, буксировке, сильных осадках, на мотоциклах и мопедах.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qachon", "textUzc": "Ҳеч қачон", "textEn": "Never", "textRu": "Никогда" },
+        { "optionIndex": 1, "textUzl": "Bolalar tashish, yuk tashish, shatakka olish va kuchli yog‘ingarchilikda", "textUzc": "Болалар ташиш, юк ташиш, шатакка олиш ва кучли ёғингарчиликда", "textEn": "Child transport, cargo, towing and heavy precipitation", "textRu": "Перевозка детей, грузов, буксировка и сильные осадки" },
+        { "optionIndex": 2, "textUzl": "Faqat qorong‘i vaqtda", "textUzc": "Фақат қоронғи вақтда", "textEn": "Only at dark time", "textRu": "Только в тёмное время" },
+        { "optionIndex": 3, "textUzl": "Faqat tunellarda", "textUzc": "Фақат туннелларда", "textEn": "Only in tunnels", "textRu": "Только в тоннелях" },
+        { "optionIndex": 4, "textUzl": "Faqat aholi punktida", "textUzc": "Фақат аҳоли пунктида", "textEn": "Only in populated areas", "textRu": "Только в населённых пунктах" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

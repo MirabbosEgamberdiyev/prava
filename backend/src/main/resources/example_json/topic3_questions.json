@@ -1,0 +1,104 @@
+{
+  "questions": [
+    {
+      "textUzl": "Uzluksiz oq chiziq nimani bildiradi?",
+      "textUzc": "Узлуксиз оқ чизиқ нимани билдиради?",
+      "textEn": "What does a solid white line mean?",
+      "textRu": "Что означает сплошная белая линия?",
+      "explanationUzl": "Uzluksiz chiziqni kesib o‘tish taqiqlanadi.",
+      "explanationUzc": "Узлуксиз чизиқни кесиб ўтиш тақиқланади.",
+      "explanationEn": "Crossing a solid line is prohibited.",
+      "explanationRu": "Пересекать сплошную линию запрещено.",
+      "topicId": 3,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Kesib o‘tish taqiqlangan", "textUzc": "Кесиб ўтиш тақиқланган", "textEn": "No crossing", "textRu": "Пересекать нельзя" },
+        { "optionIndex": 1, "textUzl": "Kesish mumkin", "textUzc": "Кесиш мумкин", "textEn": "Can cross", "textRu": "Можно пересекать" },
+        { "optionIndex": 2, "textUzl": "Ogohlantirish", "textUzc": "Огоҳлантириш", "textEn": "Warning", "textRu": "Предупреждение" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": "http://localhost:8080/api/v1/files/questions/9c81d7ba-d5df-420e-a61d-5d93be64fe15.png",
+      "isActive": true
+    },
+    {
+      "textUzl": "Uzilgan (punktir) chiziq qachon kesib o‘tiladi?",
+      "textUzc": "Узилган (пунктир) чизиқ қачон кесиб ўтилади?",
+      "textEn": "When can a broken line be crossed?",
+      "textRu": "Когда можно пересекать прерывистую линию?",
+      "explanationUzl": "Xavfsiz bo‘lsa kesib o‘tiladi.",
+      "explanationUzc": "Хавфсиз бўлса кесиб ўтилади.",
+      "explanationEn": "It can be crossed if it is safe.",
+      "explanationRu": "Можно пересекать, если это безопасно.",
+      "topicId": 3,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qachon", "textUzc": "Ҳеч қачон", "textEn": "Never", "textRu": "Никогда" },
+        { "optionIndex": 1, "textUzl": "Xavfsiz bo‘lsa", "textUzc": "Хавфсиз бўлса", "textEn": "If safe", "textRu": "Если безопасно" },
+        { "optionIndex": 2, "textUzl": "Faqat kechasi", "textUzc": "Фақат кечаси", "textEn": "Only at night", "textRu": "Только ночью" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Zebra chiziqlari nimani bildiradi?",
+      "textUzc": "Зебра чизиқлари нимани билдиради?",
+      "textEn": "What do zebra markings indicate?",
+      "textRu": "Что обозначает разметка «зебра»?",
+      "explanationUzl": "Zebra piyodalar o‘tish joyini bildiradi.",
+      "explanationUzc": "Зебра пиёдалар ўтиш жойини билдиради.",
+      "explanationEn": "Zebra markings indicate a pedestrian crossing.",
+      "explanationRu": "Зебра обозначает пешеходный переход.",
+      "topicId": 3,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Piyodalar o‘tish joyi", "textUzc": "Пиёдалар ўтиш жойи", "textEn": "Pedestrian crossing", "textRu": "Пешеходный переход" },
+        { "optionIndex": 1, "textUzl": "To‘xtash joyi", "textUzc": "Тўхташ жойи", "textEn": "Stop area", "textRu": "Место остановки" },
+        { "optionIndex": 2, "textUzl": "Xavfli hudud", "textUzc": "Хавфли ҳудуд", "textEn": "Danger zone", "textRu": "Опасная зона" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qo‘sh uzluksiz chiziq nimani anglatadi?",
+      "textUzc": "Қўш узлуксиз чизиқ нимани англатади?",
+      "textEn": "What does a double solid line mean?",
+      "textRu": "Что означает двойная сплошная линия?",
+      "explanationUzl": "Qo‘sh uzluksiz chiziqni kesib o‘tish mutlaqo taqiqlanadi.",
+      "explanationUzc": "Қўш узлуксиз чизиқни кесиб ўтиш мутлақо тақиқланади.",
+      "explanationEn": "Crossing a double solid line is strictly prohibited.",
+      "explanationRu": "Пересечение двойной сплошной строго запрещено.",
+      "topicId": 3,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Kesish mumkin", "textUzc": "Кесиш мумкин", "textEn": "Can cross", "textRu": "Можно пересекать" },
+        { "optionIndex": 1, "textUzl": "Mutlaqo taqiqlangan", "textUzc": "Мутлақо тақиқланган", "textEn": "Strictly prohibited", "textRu": "Строго запрещено" },
+        { "optionIndex": 2, "textUzl": "Faqat burilishda", "textUzc": "Фақат бурилишда", "textEn": "Only when turning", "textRu": "Только при повороте" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Sariq yo‘l chizig‘i nimani bildiradi?",
+      "textUzc": "Сариқ йўл чизиғи нимани билдиради?",
+      "textEn": "What does a yellow road marking mean?",
+      "textRu": "Что означает желтая дорожная разметка?",
+      "explanationUzl": "Sariq chiziq to‘xtash taqiqlanganini bildiradi.",
+      "explanationUzc": "Сариқ чизиқ тўхташ тақиқланганини билдиради.",
+      "explanationEn": "Yellow markings indicate no stopping.",
+      "explanationRu": "Желтая разметка означает запрет остановки.",
+      "topicId": 3,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tezlash", "textUzc": "Тезлаш", "textEn": "Speed up", "textRu": "Ускориться" },
+        { "optionIndex": 1, "textUzl": "Ogohlantirish", "textUzc": "Огоҳлантириш", "textEn": "Warning", "textRu": "Предупреждение" },
+        { "optionIndex": 2, "textUzl": "To‘xtash taqiqlangan", "textUzc": "Тўхташ тақиқланган", "textEn": "No stopping", "textRu": "Остановка запрещена" }
+      ],
+      "correctAnswerIndex": 2,
+      "imageUrl": "http://localhost:8080/api/v1/files/questions/9c81d7ba-d5df-420e-a61d-5d93be64fe15.png",
+      "isActive": true
+    }
+  ]
+}

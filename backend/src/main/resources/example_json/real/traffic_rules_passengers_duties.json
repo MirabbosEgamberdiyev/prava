@@ -1,0 +1,160 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_passengers_duties",
+      "nameUzl": "Yo‘lovchilarning majburiyatlari",
+      "nameUzc": "Йўловчиларнинг мажбуриятлари",
+      "nameEn": "Duties of Passengers",
+      "nameRu": "Обязанности пассажиров",
+      "descriptionUzl": "Yo‘lovchilarning transport vositasiga chiqishi/tushishi, xavfsizlik kamarlari va motoshlem taqishi, haydovchini chalg‘itmaslik, eshik ochmaslik va boshqa taqiqlar bo‘yicha savollar.",
+      "descriptionUzc": "Йўловчиларнинг транспорт воситасига чиқиши/тушиши, хавфсизлик камарлари ва мотошлем тақиши, ҳайдовчини чалғитмаслик, эшик очмаслик ва бошқа тақиқлар бўйича саволлар.",
+      "descriptionEn": "Questions on passengers boarding/exiting, fastening seat belts/helmets, not distracting driver, not opening doors while moving and other prohibitions.",
+      "descriptionRu": "Вопросы по посадке/высадке пассажиров, пристёгиванию ремней/шлемов, не отвлекать водителя, не открывать двери в движении и другие запреты.",
+      "iconUrl": null,
+      "displayOrder": 5,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Yo‘lovchilar transport vositasiga qachon chiqishi va tushishi kerak?",
+      "textUzc": "Йўловчилар транспорт воситасига қачон чиқиши ва тушиши керак?",
+      "textEn": "When must passengers board and exit the vehicle?",
+      "textRu": "Когда пассажиры должны входить и выходить из транспортного средства?",
+      "explanationUzl": "23-bandga ko‘ra: transport vositasi **to‘liq to‘xtagandan so‘ng** trotuar yoki yo‘l yoqasi tomondan chiqish/tushish majburiy.",
+      "explanationUzc": "23-бандга кўра: транспорт воситаси **тўлиқ тўхтагандан сўнг** тротуар ёки йўл ёқаси томонидан чиқиш/тушиш мажбурий.",
+      "explanationEn": "According to clause 23: only after the vehicle has **fully stopped**, from the sidewalk or shoulder side.",
+      "explanationRu": "Согласно пункту 23: только после **полной остановки** ТС, со стороны тротуара или обочины.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Harakat paytida", "textUzc": "Ҳаракат пайтида", "textEn": "While moving", "textRu": "Во время движения" },
+        { "optionIndex": 1, "textUzl": "To‘liq to‘xtaganidan keyin", "textUzc": "Тўлиқ тўхтаганидан кейин", "textEn": "After full stop", "textRu": "После полной остановки" },
+        { "optionIndex": 2, "textUzl": "Faqat haydovchi ruxsati bilan", "textUzc": "Фақат ҳайдовчи рухсати билан", "textEn": "Only with driver permission", "textRu": "Только с разрешения водителя" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Xavfsizlik kamarlari bilan jihozlangan transportda yo‘lovchilar nima qilishi shart?",
+      "textUzc": "Хавфсизлик камарлари билан жиҳозланган транспортда йўловчилар нима қилиши шарт?",
+      "textEn": "What must passengers do in vehicles equipped with seat belts?",
+      "textRu": "Что обязаны делать пассажиры в ТС, оборудованных ремнями безопасности?",
+      "explanationUzl": "23-bandga ko‘ra (9-bandga havola): harakatlanishdan oldin xavfsizlik kamarlarini taqib olish shart.",
+      "explanationUzc": "23-бандга кўра (9-бандга ҳавола): ҳаракатланишдан олдин хавфсизлик камарларини тақиб олиш шарт.",
+      "explanationEn": "Before starting movement, fasten seat belts (clause 23 referring to 9).",
+      "explanationRu": "Перед началом движения пристегнуть ремни безопасности (пункт 23 со ссылкой на 9).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Taqmaslik mumkin", "textUzc": "Тақмаслик мумкин", "textEn": "Optional", "textRu": "Не обязательно" },
+        { "optionIndex": 1, "textUzl": "Harakatdan oldin taqish shart", "textUzc": "Ҳаракатдан олдин тақиш шарт", "textEn": "Fasten before movement", "textRu": "Пристегнуть перед движением" },
+        { "optionIndex": 2, "textUzl": "Faqat haydovchi taqishi kerak", "textUzc": "Фақат ҳайдовчи тақиши керак", "textEn": "Only driver must", "textRu": "Только водитель обязан" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Mototsikl yoki mopedda yo‘lovchi nima qilishi shart?",
+      "textUzc": "Мотоцикл ёки мопедда йўловчи нима қилиши шарт?",
+      "textEn": "What must a passenger on motorcycle or moped do?",
+      "textRu": "Что обязан сделать пассажир на мотоцикле или мопеде?",
+      "explanationUzl": "23-bandga ko‘ra: harakatlanishdan oldin motoshlemni qadab olish shart.",
+      "explanationUzc": "23-бандга кўра: ҳаракатланишдан олдин мотошлемни қадаб олиш шарт.",
+      "explanationEn": "Before movement, fasten the helmet (clause 23).",
+      "explanationRu": "Перед движением застегнуть шлем (пункт 23).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat kiyish yetarli", "textUzc": "Фақат кийиш етарли", "textEn": "Just wear", "textRu": "Просто надеть" },
+        { "optionIndex": 1, "textUzl": "Qadab olish shart", "textUzc": "Қадаб олиш шарт", "textEn": "Fasten it", "textRu": "Застегнуть" },
+        { "optionIndex": 2, "textUzl": "Shart emas", "textUzc": "Шарт эмас", "textEn": "Not required", "textRu": "Не обязательно" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yo‘lovchilarga transport harakatida nima taqiqlangan?",
+      "textUzc": "Йўловчиларга транспорт ҳаракатида нима тақиқланган?",
+      "textEn": "What is prohibited for passengers during vehicle movement?",
+      "textRu": "Что запрещено пассажирам во время движения ТС?",
+      "explanationUzl": "24-bandga ko‘ra: haydovchini chalg‘itish, bortli yuk mashinasida tik turish/o‘tirish, eshik ochish, salondan tana qismlarini chiqarish (qo‘ldan tashqari).",
+      "explanationUzc": "24-бандга кўра: ҳайдовчини чалғитиш, бортли юк машинасида тик туриш/ўтириш, эшик очиш, салондан тана қисмларини чиқариш (қўлдан ташқари).",
+      "explanationEn": "Disturb driver, stand/sit on sides or cargo in trucks, open doors, protrude body parts (except hands) (clause 24).",
+      "explanationRu": "Отвлекать водителя, стоять/сидеть на бортах грузовика, открывать двери, высовывать части тела (кроме рук) (пункт 24).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat eshik ochish", "textUzc": "Фақат эшик очиш", "textEn": "Only opening doors", "textRu": "Только открывать двери" },
+        { "optionIndex": 1, "textUzl": "Haydovchini chalg‘itish va eshik ochish", "textUzc": "Ҳайдовчини чалғитиш ва эшик очиш", "textEn": "Disturb driver and open doors", "textRu": "Отвлекать водителя и открывать двери" },
+        { "optionIndex": 2, "textUzl": "Hech narsa taqiqlanmagan", "textUzc": "Ҳеч нарса тақиқланмаган", "textEn": "Nothing prohibited", "textRu": "Ничего запрещено" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Harakat paytida bortli yuk avtomobilida yo‘lovchi qayerda o‘tirishi mumkin?",
+      "textUzc": "Ҳаракат пайтида бортли юк автомобилида йўловчи қаерда ўтириши мумкин?",
+      "textEn": "Where can passengers sit during movement in open truck?",
+      "textRu": "Где могут сидеть пассажиры во время движения в бортовом грузовике?",
+      "explanationUzl": "24-bandga ko‘ra: tik turish, bortlarda yoki yuk ustida o‘tirish **taqiqlangan**.",
+      "explanationUzc": "24-бандга кўра: тик туриш, бортларда ёки юк устида ўтириш **тақиқланган**.",
+      "explanationEn": "Standing, sitting on sides or on cargo is **prohibited** (clause 24).",
+      "explanationRu": "Стоять, сидеть на бортах или на грузе **запрещено** (пункт 24).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Bortlarda yoki yuk ustida", "textUzc": "Бортларда ёки юк устида", "textEn": "On sides or cargo", "textRu": "На бортах или на грузе" },
+        { "optionIndex": 1, "textUzl": "Taqiqlangan, mumkin emas", "textUzc": "Тақиқланган, мумкин эмас", "textEn": "Prohibited", "textRu": "Запрещено" },
+        { "optionIndex": 2, "textUzl": "Faqat tik turish mumkin", "textUzc": "Фақат тик туриш мумкин", "textEn": "Only standing allowed", "textRu": "Только стоять разрешено" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yo‘lovchilarning talablarini nazorat qiluvchi kim?",
+      "textUzc": "Йўловчиларнинг талабларини назорат қилувчи ким?",
+      "textEn": "Who controls the fulfillment of these passenger duties?",
+      "textRu": "Кто контролирует выполнение этих обязанностей пассажиров?",
+      "explanationUzl": "24-band oxiriga ko‘ra: bu talablarning bajarilishini **haydovchi** nazorat qilishi kerak.",
+      "explanationUzc": "24-банд охирига кўра: бу талабларнинг бажарилишини **ҳайдовчи** назорат қилиши керак.",
+      "explanationEn": "The **driver** must control the fulfillment of these requirements (end of clause 24).",
+      "explanationRu": "**Водитель** обязан контролировать выполнение этих требований (конец пункта 24).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Yo‘lovchilar o‘zlari", "textUzc": "Йўловчилар ўзлари", "textEn": "Passengers themselves", "textRu": "Сами пассажиры" },
+        { "optionIndex": 1, "textUzl": "Haydovchi", "textUzc": "Ҳайдовчи", "textEn": "The driver", "textRu": "Водитель" },
+        { "optionIndex": 2, "textUzl": "Yo‘l politsiyasi", "textUzc": "Йўл полицияси", "textEn": "Traffic police", "textRu": "Дорожная полиция" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Agar trotuar tomondan chiqish iloji bo‘lmasa, yo‘lovchi qayerdan chiqishi mumkin?",
+      "textUzc": "Агар тротуар томонидан чиқиш иложи бўлмаса, йўловчи қаердан чиқиши мумкин?",
+      "textEn": "If impossible from sidewalk side, from where can passenger exit?",
+      "textRu": "Если невозможно со стороны тротуара, откуда можно выходить пассажиру?",
+      "explanationUzl": "23-bandga ko‘ra: agar xavf tug‘dirmasa va xalaqit bermasa, **qatnov qismi** tomonidan chiqish/tushish mumkin.",
+      "explanationUzc": "23-бандга кўра: агар хавф туғдирмаса ва халақит бермаса, **қатнов қисми** томонидан чиқиш/тушиш мумкин.",
+      "explanationEn": "From the roadway side, if it doesn't create danger or obstruction (clause 23).",
+      "explanationRu": "Со стороны проезжей части, если не создаёт опасности и помех (пункт 23).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat trotuardan", "textUzc": "Фақат тротуардан", "textEn": "Only from sidewalk", "textRu": "Только с тротуара" },
+        { "optionIndex": 1, "textUzl": "Qatnov qismi tomonidan, agar xavfsiz bo‘lsa", "textUzc": "Қатнов қисми томонидан, агар хавфсиз бўлса", "textEn": "From roadway if safe", "textRu": "Со стороны проезжей части, если безопасно" },
+        { "optionIndex": 2, "textUzl": "Umuman chiqmaslik kerak", "textUzc": "Умуман чиқмаслик керак", "textEn": "Not exit at all", "textRu": "Вообще не выходить" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

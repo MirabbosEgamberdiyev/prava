@@ -1,0 +1,16 @@
+# application-dev.yaml
+app:
+  verification:
+    test-mode:
+      enabled: true              # ✅ Test mode ON
+      default-code: "123456"     # ✅ Fixed code for testing
+
+  sms:
+    enabled: false               # ✅ SMS disabled
+    test-mode:
+      log-only: true             # ✅ Only log, no API calls
+
+  email:
+    enabled: true                # ✅ Email enabled
+    test-mode:
+      log-only: false            # ✅ Send real emails (optional)

@@ -1,0 +1,160 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_stopping_parking",
+      "nameUzl": "To‘xtash va to‘xtab turish",
+      "nameUzc": "Тўхташ ва тўхтаб туриш",
+      "nameEn": "Stopping and Parking",
+      "nameRu": "Остановка и стоянка",
+      "descriptionUzl": "To‘xtash va to‘xtab turish ruxsat etilgan joylar, taqiqlangan joylar, yuk mashinalari uchun cheklovlar, majburiy to‘xtash, eshik ochish va transportni qoldirish talablari bo‘yicha savollar.",
+      "descriptionUzc": "Тўхташ ва тўхтаб туриш рухсат этилган жойлар, тақиқланган жойлар, юк машиналари учун чекловлар, мажбурий тўхташ, эшик очиш ва транспортни қолдириш талаблари бўйича саволлар.",
+      "descriptionEn": "Questions on permitted stopping and parking locations, prohibited places, restrictions for trucks, forced stops, door opening and leaving vehicle requirements.",
+      "descriptionRu": "Вопросы по разрешённым местам остановки и стоянки, запрещённым местам, ограничениям для грузовиков, вынужденной остановке, открыванию дверей и требованиям при оставлении ТС.",
+      "iconUrl": null,
+      "displayOrder": 12,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Transport vositalariga to‘xtash va to‘xtab turish qayerda ruxsat etiladi?",
+      "textUzc": "Транспорт воситаларига тўхташ ва тўхтаб туриш қаерда рухсат этилади?",
+      "textEn": "Where is stopping and parking permitted for vehicles?",
+      "textRu": "Где разрешена остановка и стоянка транспортных средств?",
+      "explanationUzl": "88-bandga ko‘ra: yo‘lning o‘ng tomonida yo‘l yoqasida yoki qatnov qismi chetida; aholi punktlarida tramvay yo‘li bo‘lmagan ikki tomonlama va bir tomonlama yo‘llarda chap tomonda ham ruxsat. Yuk mashinalari (3,5 t dan ortiq) chap tomonda faqat yuk ortish/tushirish uchun.",
+      "explanationUzc": "88-бандга кўра: йўлнинг ўнг томонида йўл ёқасида ёки қатнов қисми чегида; аҳоли пунктларида трамвай йўли бўлмаган икки томонлама ва бир томонлама йўлларда чап томонда ҳам рухсат. Юк машиналари (3,5 т дан ортиқ) чап томонда фақат юк ортиш/тушириш учун.",
+      "explanationEn": "According to clause 88: on the right side of the road, shoulder or edge; in populated areas on left side for two-way roads without tram tracks and one-way roads. Trucks over 3.5 t on left only for loading/unloading.",
+      "explanationRu": "Согласно пункту 88: на правой стороне дороги, обочине или краю; в населённых пунктах слева на двусторонних дорогах без трамвайных путей и односторонних. Грузовики свыше 3,5 т слева только для погрузки/разгрузки.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat chap tomonda", "textUzc": "Фақат чап томонда", "textEn": "Only on left side", "textRu": "Только слева" },
+        { "optionIndex": 1, "textUzl": "O‘ng tomonda va aholi punktlarida chapda", "textUzc": "Ўнг томонда ва аҳоли пунктларида чапда", "textEn": "Right side and left in populated areas", "textRu": "Справа и слева в населённых пунктах" },
+        { "optionIndex": 2, "textUzl": "Har qanday joyda", "textUzc": "Ҳар қандай жойда", "textEn": "Anywhere", "textRu": "Везде" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qatnov qismida transport vositalarini qanday qo‘yish mumkin?",
+      "textUzc": "Қатнов қисмида транспорт воситаларини қандай қўйиш мумкин?",
+      "textEn": "How can vehicles be parked on the roadway?",
+      "textRu": "Как можно ставить транспортные средства на проезжей части?",
+      "explanationUzl": "89-bandga ko‘ra: bir qator qilib, parallel ravishda, qatnov qismi chetiga xalaqit bermasdan; ikki g‘ildiraklilar ikki qator qilib qo‘yilishi mumkin.",
+      "explanationUzc": "89-бандга кўра: бир қатор қилиб, параллел равишда, қатнов қисми чегига халақит бермасдан; икки ғилдираклар икки қатор қилиб қўйилиши мумкин.",
+      "explanationEn": "According to clause 89: in one row, parallel to the edge, without obstruction; two-wheelers in two rows allowed.",
+      "explanationRu": "Согласно пункту 89: в один ряд, параллельно краю, без помех; двухколёсные в два ряда разрешены.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Istagan tartibda", "textUzc": "Истаган тартибда", "textEn": "Any way", "textRu": "Любым способом" },
+        { "optionIndex": 1, "textUzl": "Bir qator qilib, parallel ravishda", "textUzc": "Бир қатор қилиб, параллел равишда", "textEn": "In one row, parallel", "textRu": "В один ряд, параллельно" },
+        { "optionIndex": 2, "textUzl": "Faqat vertikal ravishda", "textUzc": "Фақат вертикал равишда", "textEn": "Only vertically", "textRu": "Только вертикально" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qaysi joylarda to‘xtash taqiqlangan?",
+      "textUzc": "Қайси жойларда тўхташ тақиқланган?",
+      "textEn": "Where is stopping prohibited?",
+      "textRu": "Где запрещена остановка?",
+      "explanationUzl": "91-bandga ko‘ra: tramvay yo‘llarida, temir yo‘l kesishmalarida, tunnellarda, ko‘priklar va ostida, piyodalar o‘tish joylarida, ko‘rinish 100 m dan kam joylarda, chorrahalarda, bekatlarda va boshqalarda.",
+      "explanationUzc": "91-бандга кўра: трамвай йўлларида, темир йўл кесишмаларида, туннелларда, кўприклар ва остида, пиёдалар ўтиш жойларида, кўриниш 100 м дан кам жойларда, чорраҳаларда, бекатларда ва бошқаларда.",
+      "explanationEn": "According to clause 91: tram tracks, railway crossings, tunnels, bridges/under, pedestrian crossings, visibility <100 m, intersections, bus stops etc.",
+      "explanationRu": "Согласно пункту 91: трамвайные пути, ж/д переезды, туннели, мосты/под ними, пешеходные переходы, видимость менее 100 м, перекрёстки, остановки и др.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har qanday joyda ruxsat", "textUzc": "Ҳар қандай жойда рухсат", "textEn": "Allowed anywhere", "textRu": "Разрешено везде" },
+        { "optionIndex": 1, "textUzl": "Tramvay yo‘li, ko‘prik, piyodalar o‘tish joyida va boshqalar", "textUzc": "Трамвай йўли, кўприк, пиёдалар ўтиш жойида ва бошқалар", "textEn": "Tram tracks, bridges, pedestrian crossings etc.", "textRu": "Трамвайные пути, мосты, пешеходные переходы и др." },
+        { "optionIndex": 2, "textUzl": "Faqat aholi punktida", "textUzc": "Фақат аҳоли пунктида", "textEn": "Only in populated areas", "textRu": "Только в населённых пунктах" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "To‘xtash taqiqlangan joyda majburiy to‘xtash bo‘lsa, haydovchi nima qilishi kerak?",
+      "textUzc": "Тўхташ тақиқланган жойда мажбурий тўхташ бўлса, ҳайдовчи нима қилиши керак?",
+      "textEn": "What must a driver do if forced to stop in a no-stopping zone?",
+      "textRu": "Что должен сделать водитель при вынужденной остановке в зоне запрета остановки?",
+      "explanationUzl": "93-bandga ko‘ra: transportni yo‘l chetiga olib chiqish va ushbu joydan olib ketish choralarini ko‘rishi shart.",
+      "explanationUzc": "93-бандга кўра: транспортни йўл чегига олиб чиқиш ва ушбу жойдан олиб кетиш чораларини кўриши шарт.",
+      "explanationEn": "According to clause 93: move vehicle to the roadside and take measures to remove it.",
+      "explanationRu": "Согласно пункту 93: отвести ТС к краю дороги и принять меры к его удалению.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Joyida qoldirish", "textUzc": "Жойида қолдириш", "textEn": "Leave in place", "textRu": "Оставить на месте" },
+        { "optionIndex": 1, "textUzl": "Yo‘l chetiga olib chiqish va olib ketish chorasi", "textUzc": "Йўл чегига олиб чиқиш ва олиб кетиш чораси", "textEn": "Move to roadside and remove", "textRu": "Отвести к краю и удалить" },
+        { "optionIndex": 2, "textUzl": "Faqat avariya ishorasini yoqish", "textUzc": "Фақат авария ишорасини ёқиш", "textEn": "Only turn on hazards", "textRu": "Только включить аварийку" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "To‘xtab turish qayerda taqiqlangan?",
+      "textUzc": "Тўхтаб туриш қаерда тақиқланган?",
+      "textEn": "Where is parking prohibited?",
+      "textRu": "Где запрещена стоянка?",
+      "explanationUzl": "92-bandga ko‘ra: to‘xtash taqiqlangan joylarda, aholi punktlaridan tashqarida 2.1 belgi yo‘llarda, temir yo‘l kesishmalaridan 50 m yaqinida, 3.27–3.30 va 1.4, 1.10 chiziqlar ta’sirida.",
+      "explanationUzc": "92-бандга кўра: тўхташ тақиқланган жойларда, аҳоли пунктларидан ташқарида 2.1 белги йўлларда, темир йўл кесишмаларидан 50 м яқинида, 3.27–3.30 ва 1.4, 1.10 чизиқлар таъсирида.",
+      "explanationEn": "According to clause 92: in no-stopping zones, outside populated areas on 2.1 sign roads, within 50 m of railway crossings, under 3.27–3.30 signs and 1.4, 1.10 markings.",
+      "explanationRu": "Согласно пункту 92: в зонах запрета остановки, за населёнными пунктами на дорогах со знаком 2.1, в пределах 50 м от ж/д переездов, в зоне знаков 3.27–3.30 и разметки 1.4, 1.10.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har doim ruxsat", "textUzc": "Ҳар доим рухсат", "textEn": "Always allowed", "textRu": "Всегда разрешена" },
+        { "optionIndex": 1, "textUzl": "To‘xtash taqiqlangan joylarda va temir yo‘l yaqinida", "textUzc": "Тўхташ тақиқланган жойларда ва темир йўл яқинида", "textEn": "In no-stopping zones and near railway", "textRu": "В зонах запрета остановки и у ж/д" },
+        { "optionIndex": 2, "textUzl": "Faqat aholi punktida", "textUzc": "Фақат аҳоли пунктида", "textEn": "Only in populated areas", "textRu": "Только в населённых пунктах" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Transport vositasining eshiklarini qachon ochish taqiqlangan?",
+      "textUzc": "Транспорт воситасининг эшикларини қачон очиш тақиқланган?",
+      "textEn": "When is opening vehicle doors prohibited?",
+      "textRu": "Когда запрещено открывать двери транспортного средства?",
+      "explanationUzl": "94-bandga ko‘ra: yo‘l harakati ishtirokchilariga xalaqit bersa yoki xavf tug‘dirsa taqiqlangan.",
+      "explanationUzc": "94-бандга кўра: йўл ҳаракати иштирокчиларига халақит берса ёки хавф туғдирса тақиқланган.",
+      "explanationEn": "According to clause 94: prohibited if it obstructs or endangers other road users.",
+      "explanationRu": "Согласно пункту 94: запрещено, если создаёт помехи или опасность другим участникам движения.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har doim mumkin", "textUzc": "Ҳар доим мумкин", "textEn": "Always allowed", "textRu": "Всегда разрешено" },
+        { "optionIndex": 1, "textUzl": "Xalaqit yoki xavf bo‘lsa taqiqlangan", "textUzc": "Халақит ёки хавф бўлса тақиқланган", "textEn": "Prohibited if obstructs or dangerous", "textRu": "Запрещено при помехах или опасности" },
+        { "optionIndex": 2, "textUzl": "Faqat harakat paytida", "textUzc": "Фақат ҳаракат пайтида", "textEn": "Only while moving", "textRu": "Только во время движения" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Haydovchi transportni qoldirganda nima qilishi kerak?",
+      "textUzc": "Ҳайдовчи транспортни қолдирганда нима қилиши керак?",
+      "textEn": "What must a driver do when leaving the vehicle?",
+      "textRu": "Что должен сделать водитель при оставлении ТС?",
+      "explanationUzl": "95-bandga ko‘ra: o‘z-o‘zidan harakatlanib ketish yoki o‘g‘irlanishni istisno qiladigan ehtiyot choralarini ko‘rgandan keyingina qoldirishi mumkin.",
+      "explanationUzc": "95-бандга кўра: ўз-ўзидан ҳаракатланиб кетиш ёки ўғирланишни истисно қиладиган эҳтиёт чораларини кўргандан кейингина қолдириши мумкин.",
+      "explanationEn": "According to clause 95: take measures to prevent self-movement or theft before leaving.",
+      "explanationRu": "Согласно пункту 95: принять меры против самопроизвольного движения или угона перед оставлением.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech narsa qilmasdan qoldirish", "textUzc": "Ҳеч нарса қилмасдан қолдириш", "textEn": "Leave without measures", "textRu": "Оставить без мер" },
+        { "optionIndex": 1, "textUzl": "Ehtiyot choralarini ko‘rish", "textUzc": "Эҳтиёт чораларини кўриш", "textEn": "Take precautions", "textRu": "Принять меры предосторожности" },
+        { "optionIndex": 2, "textUzl": "Faqat eshikni ochiq qoldirish", "textUzc": "Фақат эшикни очиқ қолдириш", "textEn": "Leave doors open", "textRu": "Оставить двери открытыми" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

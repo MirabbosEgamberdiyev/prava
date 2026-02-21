@@ -1,0 +1,160 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_speed_limits",
+      "nameUzl": "Harakatlanish tezligi",
+      "nameUzc": "Ҳаракатланиш тезлиги",
+      "nameEn": "Speed of Movement",
+      "nameRu": "Скорость движения",
+      "descriptionUzl": "Umumiy tezlik talablari, aholi punktlari va tashqarisidagi chegaralar, transport turlari bo‘yicha cheklovlar, tezlikni oshirish/kamaytirish holatlari va taqiqlar bo‘yicha savollar.",
+      "descriptionUzc": "Умумий тезлик талаблари, аҳоли пунктлари ва ташқарисидаги чегаралар, транспорт турлари бўйича чекловлар, тезликни ошириш/камайтириш ҳолатлари ва тақиқлар бўйича саволлар.",
+      "descriptionEn": "Questions on general speed requirements, limits in populated and unpopulated areas, restrictions by vehicle type, cases for increasing/decreasing speed and prohibitions.",
+      "descriptionRu": "Вопросы по общим требованиям к скорости, ограничениям в населённых и ненаселённых пунктах, ограничениям по типу ТС, случаям увеличения/уменьшения скорости и запретам.",
+      "iconUrl": null,
+      "displayOrder": 11,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Haydovchi harakat tezligini qanday tanlashi kerak?",
+      "textUzc": "Ҳайдовчи ҳаракат тезлигини қандай танлаши керак?",
+      "textEn": "How should a driver choose the speed of movement?",
+      "textRu": "Как водитель должен выбирать скорость движения?",
+      "explanationUzl": "77-bandga ko‘ra: serqatnovlik, transport va yuk holati, yo‘l va ob-havo sharoiti, ko‘rinishni hisobga olib, xavfsizlikni ta’minlovchi tezlikda harakatlanishi kerak.",
+      "explanationUzc": "77-бандга кўра: серқатновлик, транспорт ва юк ҳолати, йўл ва об-ҳаво шароити, кўринишни ҳисобга олиб, хавфсизликни таъминловчи тезликда ҳаракатланиши керак.",
+      "explanationEn": "According to clause 77: considering traffic density, vehicle/load condition, road/weather, visibility — choose speed ensuring safety.",
+      "explanationRu": "Согласно пункту 77: учитывая интенсивность движения, состояние ТС/груза, дорогу/погоду, видимость — выбирать скорость, обеспечивающую безопасность.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat belgilangan maksimal tezlikda", "textUzc": "Фақат белгиланган максимал тезликда", "textEn": "Only at maximum allowed", "textRu": "Только на максимальной разрешённой" },
+        { "optionIndex": 1, "textUzl": "Xavfsizlikni ta’minlovchi tezlikda", "textUzc": "Хавфсизликни таъминловчи тезликда", "textEn": "At speed ensuring safety", "textRu": "На скорости, обеспечивающей безопасность" },
+        { "optionIndex": 2, "textUzl": "Faqat 60 km/soatda", "textUzc": "Фақат 60 км/соатда", "textEn": "Only 60 km/h", "textRu": "Только 60 км/ч" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Aholi punktlarida umumiy tezlik chegarasi qancha?",
+      "textUzc": "Аҳоли пунктларида умумий тезлик чегараси қанча?",
+      "textEn": "What is the general speed limit in populated areas?",
+      "textRu": "Какова общая скорость в населённых пунктах?",
+      "explanationUzl": "78-bandga ko‘ra: aholi punktlarida soatiga **70 km**dan oshirmasdan (maktab yaqinida 30 km, turar joyda 20 km). Nukus va Toshkentda 60 km.",
+      "explanationUzc": "78-бандга кўра: аҳоли пунктларида соатига **70 км**дан оширмасдан (мактаб яқинида 30 км, турар жойда 20 км). Нукус ва Тошкентда 60 км.",
+      "explanationEn": "According to clause 78: in populated areas not exceeding **70 km/h** (30 km near schools, 20 km in residential areas). In Nukus and Tashkent — 60 km/h.",
+      "explanationRu": "Согласно пункту 78: в населённых пунктах не более **70 км/ч** (30 км у школ, 20 км в жилых зонах). В Нукусе и Ташкенте — 60 км/ч.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "50 km/soat", "textUzc": "50 км/соат", "textEn": "50 km/h", "textRu": "50 км/ч" },
+        { "optionIndex": 1, "textUzl": "70 km/soat (ba’zi joylarda kamroq)", "textUzc": "70 км/соат (баъзи жойларда камроқ)", "textEn": "70 km/h (less in some areas)", "textRu": "70 км/ч (меньше в некоторых местах)" },
+        { "optionIndex": 2, "textUzl": "100 km/soat", "textUzc": "100 км/соат", "textEn": "100 km/h", "textRu": "100 км/ч" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Aholi punktlaridan tashqarida yengil avtomobillar uchun tezlik chegarasi qancha?",
+      "textUzc": "Аҳоли пунктларидан ташқарида енгил автомобиллар учун тезлик чегараси қанча?",
+      "textEn": "What is the speed limit for passenger cars outside populated areas?",
+      "textRu": "Какова скорость для легковых автомобилей за пределами населённых пунктов?",
+      "explanationUzl": "79-bandga ko‘ra: yengil avtomobillar va 3,5 tonnagacha yuk mashinalari uchun **100 km/soat**.",
+      "explanationUzc": "79-бандга кўра: енгил автомобиллар ва 3,5 тоннагача юк машиналари учун **100 км/соат**.",
+      "explanationEn": "According to clause 79: passenger cars and trucks up to 3.5 tons — **100 km/h**.",
+      "explanationRu": "Согласно пункту 79: легковые автомобили и грузовики до 3,5 т — **100 км/ч**.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "80 km/soat", "textUzc": "80 км/соат", "textEn": "80 km/h", "textRu": "80 км/ч" },
+        { "optionIndex": 1, "textUzl": "100 km/soat", "textUzc": "100 км/соат", "textEn": "100 km/h", "textRu": "100 км/ч" },
+        { "optionIndex": 2, "textUzl": "70 km/soat", "textUzc": "70 км/соат", "textEn": "70 km/h", "textRu": "70 км/ч" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Shaharlararo avtobuslar uchun tashqaridagi tezlik chegarasi qancha?",
+      "textUzc": "Шаҳарлараро автобуслар учун ташқаридаги тезлик чегараси қанча?",
+      "textEn": "What is the speed limit for intercity buses outside populated areas?",
+      "textRu": "Какова скорость для междугородных автобусов за пределами населённых пунктов?",
+      "explanationUzl": "79-bandga ko‘ra: shaharlararo avtobuslar va mikroavtobuslar uchun **90 km/soat**.",
+      "explanationUzc": "79-бандга кўра: шаҳарлараро автобуслар ва микроавтобуслар учун **90 км/соат**.",
+      "explanationEn": "According to clause 79: intercity buses and minibuses — **90 km/h**.",
+      "explanationRu": "Согласно пункту 79: междугородные автобусы и микроавтобусы — **90 км/ч**.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "100 km/soat", "textUzc": "100 км/соат", "textEn": "100 km/h", "textRu": "100 км/ч" },
+        { "optionIndex": 1, "textUzl": "90 km/soat", "textUzc": "90 км/соат", "textEn": "90 km/h", "textRu": "90 км/ч" },
+        { "optionIndex": 2, "textUzl": "80 km/soat", "textUzc": "80 км/соат", "textEn": "80 km/h", "textRu": "80 км/ч" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yuk avtomobillarida odam tashiyotganda tezlik chegarasi qancha?",
+      "textUzc": "Юк автомобилларида одам ташиётганда тезлик чегараси қанча?",
+      "textEn": "What is the speed limit when transporting people in cargo trucks?",
+      "textRu": "Какова скорость при перевозке людей в грузовых автомобилях?",
+      "explanationUzl": "80-bandga ko‘ra: yukxonasida odam tashiyotgan yuk avtomobillariga **60 km/soat**dan oshirmasdan.",
+      "explanationUzc": "80-бандга кўра: юкхонасида одам ташиётган юк автомобилларига **60 км/соат**дан оширмасдан.",
+      "explanationEn": "According to clause 80: when carrying people in cargo area — not exceeding **60 km/h**.",
+      "explanationRu": "Согласно пункту 80: при перевозке людей в кузове грузовика — не более **60 км/ч**.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "80 km/soat", "textUzc": "80 км/соат", "textEn": "80 km/h", "textRu": "80 км/ч" },
+        { "optionIndex": 1, "textUzl": "60 km/soat", "textUzc": "60 км/соат", "textEn": "60 km/h", "textRu": "60 км/ч" },
+        { "optionIndex": 2, "textUzl": "100 km/soat", "textUzc": "100 км/соат", "textEn": "100 km/h", "textRu": "100 км/ч" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Haydovchiga tezlikni oshirish qachon taqiqlanadi?",
+      "textUzc": "Ҳайдовчига тезликни ошириш қачон тақиқланади?",
+      "textEn": "When is exceeding speed prohibited for a driver?",
+      "textRu": "Когда водителю запрещено превышать скорость?",
+      "explanationUzl": "81-bandga ko‘ra: texnik tavsifnomasidagi maksimaldan, “Tezligi cheklangan” belgisidagi tezlikdan oshirish, zaruriyatsiz past tezlikda xalaqit berish, keskin tormoz berish taqiqlanadi.",
+      "explanationUzc": "81-бандга кўра: техник тавсифномасидаги максималдан, “Тезлиги чекланган” белгисидаги тезликдан ошириш, зарурийсиз паст тезликда халақит бериш, кескин тормоз бериш тақиқланади.",
+      "explanationEn": "According to clause 81: exceeding technical max, limit sign, unnecessary slow driving obstructing others, unnecessary hard braking.",
+      "explanationRu": "Согласно пункту 81: превышать технический максимум, знак ограничения, ненужное медленное движение с помехами, ненужное резкое торможение.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qachon taqiqlanmaydi", "textUzc": "Ҳеч қачон тақиқланмайди", "textEn": "Never prohibited", "textRu": "Никогда не запрещено" },
+        { "optionIndex": 1, "textUzl": "Texnik maksimaldan va belgilardan oshirishda", "textUzc": "Техник максималдан ва белгилардан оширишда", "textEn": "Exceeding technical max and signs", "textRu": "Превышение тех. максимума и знаков" },
+        { "optionIndex": 2, "textUzl": "Faqat kechasi", "textUzc": "Фақат кечаси", "textEn": "Only at night", "textRu": "Только ночью" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Bolalar guruhini tashiyotgan transport uchun tezlik chegarasi qancha?",
+      "textUzc": "Болалар гуруҳини ташиётган транспорт учун тезлик чегараси қанча?",
+      "textEn": "What is the speed limit for vehicles transporting children groups?",
+      "textRu": "Какова скорость для ТС, перевозящих организованные группы детей?",
+      "explanationUzl": "80-bandga ko‘ra: bolalar guruhini tashkiliy tashiyotgan transport vositalariga **60 km/soat**dan oshirmasdan.",
+      "explanationUzc": "80-бандга кўра: болалар гуруҳини ташкилий ташиётган транспорт воситаларига **60 км/соат**дан оширмасдан.",
+      "explanationEn": "According to clause 80: for organized transportation of children groups — not exceeding **60 km/h**.",
+      "explanationRu": "Согласно пункту 80: для организованной перевозки групп детей — не более **60 км/ч**.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "80 km/soat", "textUzc": "80 км/соат", "textEn": "80 km/h", "textRu": "80 км/ч" },
+        { "optionIndex": 1, "textUzl": "60 km/soat", "textUzc": "60 км/соат", "textEn": "60 km/h", "textRu": "60 км/ч" },
+        { "optionIndex": 2, "textUzl": "100 km/soat", "textUzc": "100 км/соат", "textEn": "100 km/h", "textRu": "100 км/ч" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

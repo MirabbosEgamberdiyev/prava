@@ -1,0 +1,130 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_railway_crossings",
+      "nameUzl": "Temir yo‘l kesishmalari orqali harakatlanish",
+      "nameUzc": "Темир йўл кесишмалари орқали ҳаракатланиш",
+      "nameEn": "Movement Through Railway Crossings",
+      "nameRu": "Движение через железнодорожные переезды",
+      "descriptionUzl": "Temir yo‘l kesishmalariga yaqinlashganda choralar, shlagbaum va svetofor ishoralari, taqiqlangan holatlar, to‘xtash masofalari, majburiy to‘xtab qolishda haydovchi majburiyatlari va poyezdga to‘xtash ishorasi berish bo‘yicha savollar.",
+      "descriptionUzc": "Темир йўл кесишмаларига яқинлашганда чоралар, шлагбаум ва светофор ишоралари, тақиқланган ҳолатлар, тўхташ масофалари, мажбурий тўхтаб қолишда ҳайдовчи мажбуриятлари ва поездга тўхташ ишораси бериш бўйича саволлар.",
+      "descriptionEn": "Questions on actions approaching railway crossings, barrier and light signals, prohibited cases, stopping distances, duties in case of forced stop and signaling stop to train.",
+      "descriptionRu": "Вопросы по действиям при приближении к ж/д переезду, шлагбауму и сигналам светофора, запрещённым случаям, расстояниям остановки, обязанностям при вынужденной остановке и подаче сигнала остановки поезду.",
+      "iconUrl": null,
+      "displayOrder": 17,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Temir yo‘l kesishmasiga yaqinlashayotgan haydovchi nimalarga amal qilishi kerak?",
+      "textUzc": "Темир йўл кесишмасига яқинлашаётган ҳайдовчи нималарга амал қилиши керак?",
+      "textEn": "What must a driver approaching a railway crossing obey?",
+      "textRu": "Чему должен подчиняться водитель, приближающийся к железнодорожному переезду?",
+      "explanationUzl": "117-bandga ko‘ra: kesishma navbatchisi ko‘rsatmalariga, svetofor ishoralariga, yo‘l belgilari va chiziqlariga, shlagbaum holatiga amal qilishi va poyezd yo‘qligiga ishonch hosil qilishi shart.",
+      "explanationUzc": "117-бандга кўра: кесишма навбатчиси кўрсатмаларига, светофор ишораларига, йўл белгилари ва чизиқларига, шлагбаум ҳолатига амал қилиши ва поезд йўқлигига ишонч ҳосил қилиши шарт.",
+      "explanationEn": "According to clause 117: obey crossing attendant instructions, traffic lights, signs/markings, barrier status and ensure no train approaching.",
+      "explanationRu": "Согласно пункту 117: выполнять указания дежурного, сигналы светофора, знаки и разметку, положение шлагбаума и убедиться в отсутствии приближающегося поезда.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat tezlikni oshirish", "textUzc": "Фақат тезликни ошириш", "textEn": "Only increase speed", "textRu": "Только увеличить скорость" },
+        { "optionIndex": 1, "textUzl": "Svetofor, shlagbaum, navbatchi va poyezd yo‘qligiga ishonch hosil qilish", "textUzc": "Светофор, шлагбаум, навбатчи ва поезд йўқлигига ишонч ҳосил қилиш", "textEn": "Obey lights, barrier, attendant and ensure no train", "textRu": "Соблюдать светофор, шлагбаум, дежурного и убедиться в отсутствии поезда" },
+        { "optionIndex": 2, "textUzl": "Faqat orqaga qaytish", "textUzc": "Фақат орқага қайтиш", "textEn": "Only reverse", "textRu": "Только задним ходом" },
+        { "optionIndex": 3, "textUzl": "Hech narsa qilmasdan o‘tish", "textUzc": "Ҳеч нарса қилмасдан ўтиш", "textEn": "Pass without action", "textRu": "Проехать без действий" },
+        { "optionIndex": 4, "textUzl": "Faqat signal berish", "textUzc": "Фақат сигнал бериш", "textEn": "Only give signal", "textRu": "Только подать сигнал" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Shlagbaum yopiq yoki yopila boshlaganda temir yo‘l kesishmasiga kirish mumkinmi?",
+      "textUzc": "Шлагбаум ёпиқ ёки ёпила бошлаганда темир йўл кесишмасига кириш мумкинми?",
+      "textEn": "Is it allowed to enter railway crossing when barrier is closed or closing?",
+      "textRu": "Разрешён ли въезд на ж/д переезд при закрытом или закрывающемся шлагбауме?",
+      "explanationUzl": "118-bandga ko‘ra: shlagbaum yopiq yoki yopila boshlaganda, kesishmani to‘suvchi qurilma ko‘tarilib turgan yoki ko‘tarila boshlaganda kirish **taqiqlanadi**.",
+      "explanationUzc": "118-бандга кўра: шлагбаум ёпиқ ёки ёпила бошлаганда, кесишмани тўсувчи қурилма кўтарилиб турган ёки кўтарила бошлаганда кириш **тақиқланади**.",
+      "explanationEn": "According to clause 118: **prohibited** when barrier closed/closing or barrier-lifting device raised/rising.",
+      "explanationRu": "Согласно пункту 118: **запрещён** при закрытом/закрывающемся шлагбауме или поднятом/поднимающемся заграждающем устройстве.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ha, mumkin", "textUzc": "Ҳа, мумкин", "textEn": "Yes, allowed", "textRu": "Да, разрешён" },
+        { "optionIndex": 1, "textUzl": "Yo‘q, taqiqlangan", "textUzc": "Йўқ, тақиқланган", "textEn": "No, prohibited", "textRu": "Нет, запрещён" },
+        { "optionIndex": 2, "textUzl": "Faqat yashil chiroqda", "textUzc": "Фақат яшил чироқда", "textEn": "Only on green", "textRu": "Только на зелёный" },
+        { "optionIndex": 3, "textUzl": "Faqat navbatchi ruxsati bilan", "textUzc": "Фақат навбатчи рухсати билан", "textEn": "Only with attendant permission", "textRu": "Только с разрешения дежурного" },
+        { "optionIndex": 4, "textUzl": "Faqat kechasi mumkin", "textUzc": "Фақат кечаси мумкин", "textEn": "Only at night", "textRu": "Только ночью" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Temir yo‘l kesishmasiga kirish taqiqlangan holatlar qaysilar?",
+      "textUzc": "Темир йўл кесишмасига кириш тақиқланган ҳолатлар қайсилар?",
+      "textEn": "In which cases is entering railway crossing prohibited?",
+      "textRu": "В каких случаях запрещён въезд на железнодорожный переезд?",
+      "explanationUzl": "118-bandga ko‘ra: shlagbaum yopiq/yopila boshlaganda, svetofor taqiqlovchi ishorasida, navbatchi taqiqlovchi ishorasida, kesishmadan keyin tirbandlik bo‘lsa, poyezd yaqinlashayotgan bo‘lsa va boshqa holatlarda (qarama-qarshi chiziqqa chiqib aylanib o‘tish, shlagbaumni o‘zboshimchalik bilan ochish va h.k.).",
+      "explanationUzc": "118-бандга кўра: шлагбаум ёпиқ/ёпила бошлаганда, светофор тақиқловчи ишорасида, навбатчи тақиқловчи ишорасида, кесишмадан кейин тирбандлик бўлса, поезд яқинлашаётган бўлса ва бошқа ҳолатларда (қарама-қарши чизиққа чиқиб айланиб ўтиш, шлагбаумни ўзбошимчалик билан очиш ва ҳ.к.).",
+      "explanationEn": "According to clause 118: prohibited when barrier closed/closing, prohibitive light signal, prohibitive attendant signal, congestion after crossing, approaching train and others (crossing opposite lane, unauthorized barrier opening etc.).",
+      "explanationRu": "Согласно пункту 118: запрещён при закрытом/закрывающемся шлагбауме, запрещающем сигнале светофора, запрещающем сигнале дежурного, заторе после переезда, приближающемся поезде и других (выезд на встречную, самовольное открытие шлагбаума и т.д.).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qachon taqiqlanmaydi", "textUzc": "Ҳеч қачон тақиқланмайди", "textEn": "Never prohibited", "textRu": "Никогда не запрещён" },
+        { "optionIndex": 1, "textUzl": "Shlagbaum yopiq, svetofor taqiqlovchi, poyezd yaqinlashayotgan va boshqalarda", "textUzc": "Шлагбаум ёпиқ, светофор тақиқловчи, поезд яқинлашаётган ва бошқаларда", "textEn": "Barrier closed, prohibitive light, approaching train etc.", "textRu": "Закрытый шлагбаум, запрещающий сигнал, приближающийся поезд и др." },
+        { "optionIndex": 2, "textUzl": "Faqat yashil chiroqda taqiqlanadi", "textUzc": "Фақат яшил чироқда тақиқланади", "textEn": "Only on green", "textRu": "Только на зелёный" },
+        { "optionIndex": 3, "textUzl": "Faqat kechasi taqiqlanadi", "textUzc": "Фақат кечаси тақиқланади", "textEn": "Only at night", "textRu": "Только ночью" },
+        { "optionIndex": 4, "textUzl": "Faqat navbatchi yo‘q joyda", "textUzc": "Фақат навбатчи йўқ жойда", "textEn": "Only without attendant", "textRu": "Только без дежурного" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Temir yo‘l kesishmasida to‘xtash masofasi qancha bo‘lishi kerak?",
+      "textUzc": "Темир йўл кесишмасида тўхташ масофаси қанча бўлиши керак?",
+      "textEn": "What is the required stopping distance at railway crossing?",
+      "textRu": "Каково расстояние остановки на железнодорожном переезде?",
+      "explanationUzl": "119-bandga ko‘ra: to‘xtash chizig‘i yoki 2.5 belgisidan oldin, bo‘lmasa shlagbaumga 5 m, shlagbaum bo‘lmasa birinchi temir yo‘l iziga 10 m qolganda to‘xtash kerak.",
+      "explanationUzc": "119-бандга кўра: тўхташ чизиғи ёки 2.5 белгисидан олдин, бўлмаса шлагбаумга 5 м, шлагбаум бўлмаса биринчи темир йўл изига 10 м қолганда тўхташ керак.",
+      "explanationEn": "According to clause 119: before stop line or 2.5 sign, or if absent — 5 m from barrier, or if no barrier — 10 m from first rail.",
+      "explanationRu": "Согласно пункту 119: перед линией остановки или знаком 2.5, при их отсутствии — за 5 м от шлагбаума, а если шлагбаума нет — за 10 м от первого рельса.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "1 metr", "textUzc": "1 метр", "textEn": "1 m", "textRu": "1 м" },
+        { "optionIndex": 1, "textUzl": "Shlagbaumga 5 m, izga 10 m", "textUzc": "Шлагбаумга 5 м, изга 10 м", "textEn": "5 m to barrier, 10 m to rail", "textRu": "5 м до шлагбаума, 10 м до рельса" },
+        { "optionIndex": 2, "textUzl": "50 metr", "textUzc": "50 метр", "textEn": "50 m", "textRu": "50 м" },
+        { "optionIndex": 3, "textUzl": "Faqat 2 metr", "textUzc": "Фақат 2 метр", "textEn": "Only 2 m", "textRu": "Только 2 м" },
+        { "optionIndex": 4, "textUzl": "Hech qanday masofa shart emas", "textUzc": "Ҳеч қандай масофа шарт эмас", "textEn": "No distance required", "textRu": "Без расстояния" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Temir yo‘l kesishmasida majburan to‘xtab qolgan transport haydovchisi nima qilishi kerak?",
+      "textUzc": "Темир йўл кесишмасида мажбурий тўхтаб қолган транспорт ҳайдовчиси нима қилиши керак?",
+      "textEn": "What must the driver do if vehicle is forced to stop on railway crossing?",
+      "textRu": "Что должен сделать водитель при вынужденной остановке ТС на железнодорожном переезде?",
+      "explanationUzl": "120-bandga ko‘ra: darhol odamlarni tushirish va kesishmani bo‘shatish choralarini ko‘rishi; yaqinlashayotgan poyezdga to‘xtash ishorasi berish uchun ikki kishini yuborish (yoki bir kishini ko‘rinmaydigan tomonga); umumiy xatar ishorasi berish; poyezd ko‘ringanda yugurib to‘xtash ishorasi berish.",
+      "explanationUzc": "120-бандга кўра: дарҳол одамларни тушириш ва кесишмани бўшатиш чораларини кўриши; яқинлашаётган поездга тўхташ ишораси бериш учун икки кишини юбориш (ёки бир кишини кўринмайдиган томонга); умумий хатар ишораси бериш; поезд кўринганда югуриб тўхташ ишораси бериш.",
+      "explanationEn": "According to clause 120: immediately unload people and clear crossing; send two people (or one to blind side) to signal stop to approaching train; give general danger signal; run to train and signal stop when visible.",
+      "explanationRu": "Согласно пункту 120: немедленно высадить людей и освободить переезд; послать двоих (или одного на невидимую сторону) для подачи сигнала остановки приближающемуся поезду; подать сигнал общей опасности; бежать к поезду и подавать сигнал остановки при видимости.",
+      "topicId": 1,
+      "difficulty": "HARD",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Joyida qoldirish", "textUzc": "Жойида қолдириш", "textEn": "Leave in place", "textRu": "Оставить на месте" },
+        { "optionIndex": 1, "textUzl": "Odamlar tushirib, kesishmani bo‘shatish va poyezdga signal berish choralarini ko‘rish", "textUzc": "Одамлар тушириб, кесишмани бўшатиш ва поездга сигнал бериш чораларини кўриш", "textEn": "Unload people, clear crossing and signal train", "textRu": "Высадить людей, освободить переезд и сигнализировать поезду" },
+        { "optionIndex": 2, "textUzl": "Faqat avariya ishorasini yoqish", "textUzc": "Фақат авария ишорасини ёқиш", "textEn": "Only turn on hazards", "textRu": "Только включить аварийку" },
+        { "optionIndex": 3, "textUzl": "Tezlikni oshirib o‘tib ketish", "textUzc": "Тезликни ошириб ўтиб кетиш", "textEn": "Speed up and pass", "textRu": "Ускориться и проехать" },
+        { "optionIndex": 4, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Вернуться назад" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_public_transport_priority",
+      "nameUzl": "Yo‘nalishli transport vositalarining imtiyozlari",
+      "nameUzc": "Йўналишли транспорт воситаларининг имтиёзлари",
+      "nameEn": "Privileges of Public Transport Vehicles",
+      "nameRu": "Преимущества маршрутных транспортных средств",
+      "descriptionUzl": "Tramvayning imtiyozi, ajratilgan tasmada boshqa transportning harakati va to‘xtashi taqiqlari, qayta tizilish va yo‘lovchilarni chiqarish/tushirish ruxsatlari, bekatdan chiqayotgan avtobus/trolleybuslarga yo‘l berish, bekatlardan tashqari yo‘lovchi olish/tushirish taqiqlari bo‘yicha savollar.",
+      "descriptionUzc": "Трамвайнинг имтиёзи, ажратилган тасмада бошқа транспортнинг ҳаракати ва тўхташи тақиқлари, қайта тизилиш ва йўловчиларни чиқариш/тушириш рухсатлари, бекатдан чиқаётган автобус/троллейбусларга йўл бериш, бекатлардан ташқари йўловчи олиш/тушириш тақиқлари бўйича саволлар.",
+      "descriptionEn": "Questions on tram priority, prohibition of other vehicles in dedicated lanes, lane changing and passenger boarding/alighting permissions, yielding to buses/trolleybuses departing stops, prohibition of boarding/alighting outside stops (except taxis).",
+      "descriptionRu": "Вопросы по преимуществу трамвая, запрету движения и стоянки других ТС в выделенной полосе, перестроению и посадке/высадке пассажиров, уступке автобусам/троллейбусам при выезде с остановки, запрету посадки/высадки вне остановок (кроме маршрутных такси).",
+      "iconUrl": null,
+      "displayOrder": 20,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Tramvay qayerda relssiz transport vositalariga nisbatan imtiyozga ega?",
+      "textUzc": "Трамвай қаерда релссиз транспорт воситаларига нисбатан имтиёзга эга?",
+      "textEn": "Where does the tram have priority over non-rail vehicles?",
+      "textRu": "Где трамвай имеет преимущество перед безрельсовыми ТС?",
+      "explanationUzl": "131-bandga ko‘ra: tramvay yo‘llari chorrahadan tashqarida qatnov qismini kesib o‘tadigan joylarda (depodan chiqish joylari bundan mustasno) relssiz transport vositalariga nisbatan imtiyozga ega.",
+      "explanationUzc": "131-бандга кўра: трамвай йўллари чорраҳадан ташқарида қатнов қисмини кесиб ўтадиган жойларда (деподан чиқиш жойлари бундан мустасно) релссиз транспорт воситаларига нисбатан имтиёзга эга.",
+      "explanationEn": "According to clause 131: tram has priority over non-rail vehicles where tram tracks cross the roadway outside intersections (except depot exits).",
+      "explanationRu": "Согласно пункту 131: трамвай имеет преимущество перед безрельсовыми ТС в местах пересечения трамвайных путей с проезжей частью вне перекрёстков (кроме выездов из депо).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat chorrahada", "textUzc": "Фақат чорраҳада", "textEn": "Only at intersections", "textRu": "Только на перекрёстках" },
+        { "optionIndex": 1, "textUzl": "Chorrahadan tashqarida yo‘l kesish joylarida", "textUzc": "Чорраҳадан ташқарида йўл кесиш жойларида", "textEn": "Outside intersections where tracks cross roadway", "textRu": "Вне перекрёстков в местах пересечения путей с проезжей частью" },
+        { "optionIndex": 2, "textUzl": "Depodan chiqish joylarida", "textUzc": "Деподан чиқиш жойларида", "textEn": "At depot exits", "textRu": "При выездах из депо" },
+        { "optionIndex": 3, "textUzl": "Umuman imtiyoz yo‘q", "textUzc": "Умуман имтиёз йўқ", "textEn": "No priority at all", "textRu": "Вообще нет преимущества" },
+        { "optionIndex": 4, "textUzl": "Faqat aholi punktlarida", "textUzc": "Фақат аҳоли пунктларида", "textEn": "Only in populated areas", "textRu": "Только в населённых пунктах" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yo‘nalishli transport uchun ajratilgan tasmada boshqa transportning harakati va to‘xtashi qanday?",
+      "textUzc": "Йўналишли транспорт учун ажратилган тасмада бошқа транспортнинг ҳаракати ва тўхташи қандай?",
+      "textEn": "How is movement and stopping of other vehicles in lanes dedicated to public transport?",
+      "textRu": "Каково движение и стоянка других ТС в полосе, выделенной для маршрутного транспорта?",
+      "explanationUzl": "132-bandga ko‘ra: 5.9, 5.10.1–5.10.3 belgilari bilan ajratilgan tasmada boshqa transport vositalarining harakatlanishi va to‘xtashi **taqiqlanadi**.",
+      "explanationUzc": "132-бандга кўра: 5.9, 5.10.1–5.10.3 белгилари билан ажратилган тасмада бошқа транспорт воситаларининг ҳаракатланиши ва тўхташи **тақиқланади**.",
+      "explanationEn": "According to clause 132: movement and stopping of other vehicles in lanes marked by signs 5.9, 5.10.1–5.10.3 is **prohibited**.",
+      "explanationRu": "Согласно пункту 132: движение и стоянка других ТС в полосах, выделенных знаками 5.9, 5.10.1–5.10.3 **запрещены**.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ruxsat etilgan", "textUzc": "Рухсат этилган", "textEn": "Allowed", "textRu": "Разрешено" },
+        { "optionIndex": 1, "textUzl": "Taqiqlangan", "textUzc": "Тақиқланган", "textEn": "Prohibited", "textRu": "Запрещено" },
+        { "optionIndex": 2, "textUzl": "Faqat kechasi ruxsat", "textUzc": "Фақат кечаси рухсат", "textEn": "Only at night allowed", "textRu": "Только ночью разрешено" },
+        { "optionIndex": 3, "textUzl": "Faqat yuk mashinalariga ruxsat", "textUzc": "Фақат юк машиналарига рухсат", "textEn": "Only for trucks", "textRu": "Только грузовикам" },
+        { "optionIndex": 4, "textUzl": "Faqat piyodalar uchun", "textUzc": "Фақат пиёдалар учун", "textEn": "Only for pedestrians", "textRu": "Только пешеходам" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Ajratilgan tasma uzuq-uzuq chiziq bilan ajratilgan bo‘lsa, burilmoqchi bo‘layotgan transport qanday qilishi kerak?",
+      "textUzc": "Ажратилган тасма узоқ-узоқ чизиқ билан ажратилган бўлса, бурилмоқчи бўлаётган транспорт қандай қилиши керак?",
+      "textEn": "If dedicated lane is separated by broken line, what should turning vehicle do?",
+      "textRu": "Если выделенная полоса отделена прерывистой линией, что должен сделать поворачивающий ТС?",
+      "explanationUzl": "132-bandga ko‘ra: burilmoqchi bo‘layotgan transport vositalari bu tasmaga **qayta tizilishlari** kerak.",
+      "explanationUzc": "132-бандга кўра: бурилмоқчи бўлаётган транспорт воситалари бу тасмага **қайта тизилишлари** керак.",
+      "explanationEn": "According to clause 132: turning vehicles must **change into** this lane.",
+      "explanationRu": "Согласно пункту 132: поворачивающие ТС должны **перестроиться** в эту полосу.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tasmani kesib o‘tmasdan o‘tish", "textUzc": "Тасмани кесиб ўтмасдан ўтиш", "textEn": "Pass without entering lane", "textRu": "Проехать не заезжая в полосу" },
+        { "optionIndex": 1, "textUzl": "Tasmaga qayta tizilish", "textUzc": "Тасмага қайта тизилиш", "textEn": "Change into the lane", "textRu": "Перестроиться в полосу" },
+        { "optionIndex": 2, "textUzl": "To‘xtab turish", "textUzc": "Тўхтаб туриш", "textEn": "Stop", "textRu": "Остановиться" },
+        { "optionIndex": 3, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Вернуться назад" },
+        { "optionIndex": 4, "textUzl": "Faqat signal berish", "textUzc": "Фақат сигнал бериш", "textEn": "Only give signal", "textRu": "Только подать сигнал" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Bekatdan chiqayotgan avtobus va trolleybuslarga aholi punktlarida kim yo‘l berishi kerak?",
+      "textUzc": "Бекатдан чиқаётган автобус ва троллейбусларга аҳоли пунктларида ким йўл бериши керак?",
+      "textEn": "In populated areas, who must yield to buses and trolleybuses departing from stops?",
+      "textRu": "В населённых пунктах кто должен уступить автобусам и троллейбусам, отъезжающим от остановки?",
+      "explanationUzl": "133-bandga ko‘ra: haydovchilar bekatdan harakatlanishni boshlayotgan avtobus va trolleybuslarga yo‘l berishlari kerak.",
+      "explanationUzc": "133-бандга кўра: ҳайдовчилар бекатдан ҳаракатланишни бошлаётган автобус ва троллейбусларга йўл беришлари керак.",
+      "explanationEn": "According to clause 133: drivers must yield to buses and trolleybuses starting from stops in populated areas.",
+      "explanationRu": "Согласно пункту 133: водители обязаны уступить автобусам и троллейбусам, начинающим движение от остановки в населённых пунктах.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech kim", "textUzc": "Ҳеч ким", "textEn": "No one", "textRu": "Никто" },
+        { "optionIndex": 1, "textUzl": "Boshqa haydovchilar", "textUzc": "Бошқа ҳайдовчилар", "textEn": "Other drivers", "textRu": "Другие водители" },
+        { "optionIndex": 2, "textUzl": "Faqat piyodalar", "textUzc": "Фақат пиёдалар", "textEn": "Only pedestrians", "textRu": "Только пешеходы" },
+        { "optionIndex": 3, "textUzl": "Faqat yuk mashinalari", "textUzc": "Фақат юк машиналари", "textEn": "Only trucks", "textRu": "Только грузовики" },
+        { "optionIndex": 4, "textUzl": "Faqat tramvaylar", "textUzc": "Фақат трамвайлар", "textEn": "Only trams", "textRu": "Только трамваи" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yo‘nalishli transport vositalariga bekatlardan tashqari joylarda yo‘lovchi olish va tushirish mumkinmi?",
+      "textUzc": "Йўналишли транспорт воситаларига бекатлардан ташқари жойларда йўловчи олиш ва тушириш мумкинми?",
+      "textEn": "Is it allowed for public transport to pick up/drop off passengers outside designated stops?",
+      "textRu": "Разрешено ли маршрутным ТС производить посадку/высадку пассажиров вне остановок?",
+      "explanationUzl": "133-bandga ko‘ra: yo‘nalishli transport vositalariga bekatlardan tashqari joylarda yo‘lovchi olish va tushirish **taqiqlanadi** (yo‘nalishli taksilar bundan mustasno).",
+      "explanationUzc": "133-бандга кўра: йўналишли транспорт воситаларига бекатлардан ташқари жойларда йўловчи олиш ва тушириш **тақиқланади** (йўналишли таксилар бундан мустасно).",
+      "explanationEn": "According to clause 133: public transport prohibited from boarding/alighting passengers outside stops (**except route taxis**).",
+      "explanationRu": "Согласно пункту 133: маршрутным ТС запрещена посадка/высадка пассажиров вне остановок (**кроме маршрутных такси**).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ha, mumkin", "textUzc": "Ҳа, мумкин", "textEn": "Yes, allowed", "textRu": "Да, разрешено" },
+        { "optionIndex": 1, "textUzl": "Yo‘q, taqiqlanadi (taksilardan tashqari)", "textUzc": "Йўқ, тақиқланади (таксилардан ташқари)", "textEn": "No, prohibited (except taxis)", "textRu": "Нет, запрещено (кроме такси)" },
+        { "optionIndex": 2, "textUzl": "Faqat kechasi mumkin", "textUzc": "Фақат кечаси мумкин", "textEn": "Only at night", "textRu": "Только ночью" },
+        { "optionIndex": 3, "textUzl": "Faqat ruxsat bilan", "textUzc": "Фақат рухсат билан", "textEn": "Only with permission", "textRu": "Только с разрешением" },
+        { "optionIndex": 4, "textUzl": "Faqat piyodalar uchun", "textUzc": "Фақат пиёдалар учун", "textEn": "Only for pedestrians", "textRu": "Только для пешеходов" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_passenger_transportation",
+      "nameUzl": "Odam tashish",
+      "nameUzc": "Одам ташиш",
+      "nameEn": "Passenger Transportation",
+      "nameRu": "Перевозка людей",
+      "descriptionUzl": "Yuk avtomobillarida odam tashish shartlari va haydovchi talablari, yukxona jihozlanishi, moslashtirilmagan yuk mashinalarida odamlar, shaharlararo va bolalar tashish qoidalari, haydovchi majburiyatlari, taqiqlangan holatlar (bolalar yukxonasida, kabina tashqarisida, mototsikllarda va ortiqcha odamlar) bo‘yicha savollar.",
+      "descriptionUzc": "Юк автомобилларида одам ташиш шартлари ва ҳайдовчи талаблари, юкхона жиҳозланиши, мослаштирилмаган юк машиналарида одамлар, шаҳарлараро ва болалар ташиш қоидалари, ҳайдовчи мажбуриятлари, тақиқланган ҳолатлар (болалар юкхонасида, кабина ташқарисида, мотоциклларда ва ортиқча одамлар) бўйича саволлар.",
+      "descriptionEn": "Questions on conditions for carrying people in trucks, driver requirements, cargo area equipment, passengers in non-adapted trucks, intercity and child group transportation rules, driver duties, prohibited cases (children in cargo area, outside cabin, on motorcycles, excess passengers).",
+      "descriptionRu": "Вопросы по условиям перевозки людей в грузовиках, требованиям к водителю, оборудованию кузова, пассажирам в неадаптированных грузовиках, правилам междугородных и организованных детских перевозок, обязанностям водителя, запрещённым случаям (дети в кузове, вне кабины, на мотоциклах, сверх нормы).",
+      "iconUrl": null,
+      "displayOrder": 24,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Yuk avtomobilining yukxonasida odam tashish uchun haydovchi qanday talablarga javob berishi kerak?",
+      "textUzc": "Юк автомобилининг юкхонасида одам ташиш учун ҳайдовчи қандай талабларга жавоб бериши керак?",
+      "textEn": "What requirements must the driver meet to carry people in a truck cargo area?",
+      "textRu": "Каким требованиям должен соответствовать водитель для перевозки людей в кузове грузовика?",
+      "explanationUzl": "152-bandga ko‘ra: “C” toifasi huquqiga ega, 8 nafardan ortiq odam bo‘lmasa va kamida 3 yil “C” toifasida haydovchilik tajribasi bo‘lishi kerak. 8 nafardan ortiq bo‘lsa “D” toifasi ham talab etiladi.",
+      "explanationUzc": "152-бандга кўра: “C” тоифаси ҳуқуқига эга, 8 нафардан ортиқ одам бўлмаса ва камида 3 йил “C” тоифасида ҳайдовчилик тажрибаси бўлиши керак. 8 нафардан ортиқ бўлса “D” тоифаси ҳам талаб этилади.",
+      "explanationEn": "According to clause 152: must have “C” category license, no more than 8 people (including cabin) and at least 3 years “C” experience. Over 8 people requires “D” category as well.",
+      "explanationRu": "Согласно пункту 152: должен иметь право на управление категории «C», не более 8 человек (с учётом кабины) и стаж не менее 3 лет по категории «C». Более 8 человек — также категория «D».",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat “B” toifasi bilan", "textUzc": "Фақат “B” тоифаси билан", "textEn": "Only “B” category", "textRu": "Только категория «B»" },
+        { "optionIndex": 1, "textUzl": "“C” toifasi, 3 yil tajriba va 8 nafardan ortiq bo‘lsa “D” ham", "textUzc": "“C” тоифаси, 3 йил тажриба ва 8 нафардан ортиқ бўлса “D” ҳам", "textEn": "“C” category, 3 years experience and “D” if over 8 people", "textRu": "Категория «C», стаж 3 года и «D» при более 8 человек" },
+        { "optionIndex": 2, "textUzl": "Hech qanday toifa shart emas", "textUzc": "Ҳеч қандай тоифа шарт эмас", "textEn": "No category required", "textRu": "Категория не требуется" },
+        { "optionIndex": 3, "textUzl": "Faqat “D” toifasi bilan", "textUzc": "Фақат “D” тоифаси билан", "textEn": "Only “D” category", "textRu": "Только категория «D»" },
+        { "optionIndex": 4, "textUzl": "Faqat 1 yil tajriba bilan", "textUzc": "Фақат 1 йил тажриба билан", "textEn": "Only 1 year experience", "textRu": "Только 1 год стажа" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yuk avtomobili yukxonasida odam tashish uchun yukxona borti qancha balandlikda bo‘lishi kerak?",
+      "textUzc": "Юк автомобили юкхонасида одам ташиш учун юкхона борти қанча баландликда бўлиши керак?",
+      "textEn": "What is the minimum side height for carrying people in a truck cargo area?",
+      "textRu": "Какова минимальная высота борта кузова грузовика для перевозки людей?",
+      "explanationUzl": "153-bandga ko‘ra: borti 1,3 metrdan kam bo‘lmasligi shart, 0,3–0,5 m balandlikda o‘rindiqlar jihozlangan bo‘lishi kerak.",
+      "explanationUzc": "153-бандга кўра: борти 1,3 метрдан кам бўлмаслиги шарт, 0,3–0,5 м баландликда ўриндиқлар жиҳозланган бўлиши керак.",
+      "explanationEn": "According to clause 153: sides at least 1.3 m high, seats fixed at 0.3–0.5 m height.",
+      "explanationRu": "Согласно пункту 153: борта не менее 1,3 м, сиденья закреплены на высоте 0,3–0,5 м.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "0,5 metr", "textUzc": "0,5 метр", "textEn": "0.5 m", "textRu": "0,5 м" },
+        { "optionIndex": 1, "textUzl": "1,3 metrdan kam bo‘lmasligi", "textUzc": "1,3 метрдан кам бўлмаслиги", "textEn": "At least 1.3 m", "textRu": "Не менее 1,3 м" },
+        { "optionIndex": 2, "textUzl": "2 metr", "textUzc": "2 метр", "textEn": "2 m", "textRu": "2 м" },
+        { "optionIndex": 3, "textUzl": "Borti bo‘lishi shart emas", "textUzc": "Борти бўлиши шарт эмас", "textEn": "No sides required", "textRu": "Борта не требуются" },
+        { "optionIndex": 4, "textUzl": "Faqat 1 metr", "textUzc": "Фақат 1 метр", "textEn": "Only 1 m", "textRu": "Только 1 м" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Moslashtirilmagan yuk avtomobillarida qaysi shaxslar bo‘lishiga yo‘l qo‘yiladi?",
+      "textUzc": "Мослаштирилмаган юк автомобилларида қайси шахслар бўлишига йўл қўйилади?",
+      "textEn": "Which persons are allowed in non-adapted truck cargo areas?",
+      "textRu": "Какие лица допускаются в кузове неадаптированных грузовиков?",
+      "explanationUzl": "154-bandga ko‘ra: faqat yukni olish yoki kuzatib borayotgan shaxslar, bort sathidan pastda o‘rindiqlar bilan ta’minlangan bo‘lishi kerak.",
+      "explanationUzc": "154-бандга кўра: фақат юкни олиш ёки кузатиб бораётган шахслар, борт сатҳидан пастда ўриндиқлар билан таъминланган бўлиши керак.",
+      "explanationEn": "According to clause 154: only persons going to collect/load cargo or escorting it, must be provided with seats below side level.",
+      "explanationRu": "Согласно пункту 154: только лица, едущие за грузом или сопровождающие его, должны быть обеспечены сиденьями ниже уровня борта.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har qanday odamlar", "textUzc": "Ҳар қандай одамлар", "textEn": "Any people", "textRu": "Любые люди" },
+        { "optionIndex": 1, "textUzl": "Faqat yukni olish/kuzatuvchi shaxslar", "textUzc": "Фақат юкни олиш/кузатувчи шахслар", "textEn": "Only cargo collectors/escorts", "textRu": "Только сопровождающие груз" },
+        { "optionIndex": 2, "textUzl": "Bolalar guruhlari", "textUzc": "Болалар гуруҳлари", "textEn": "Child groups", "textRu": "Группы детей" },
+        { "optionIndex": 3, "textUzl": "Umuman odamlar bo‘lmasligi kerak", "textUzc": "Умуман одамлар бўлмаслиги керак", "textEn": "No people allowed", "textRu": "Люди вообще не допускаются" },
+        { "optionIndex": 4, "textUzl": "Faqat haydovchi yaqinlari", "textUzc": "Фақат ҳайдовчи яқинлари", "textEn": "Only driver's relatives", "textRu": "Только родственники водителя" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Bolalar guruhini tashkiliy tashishda avtobusda kim bo‘lishi shart?",
+      "textUzc": "Болалар гуруҳини ташкилий ташишда автобусда ким бўлиши шарт?",
+      "textEn": "Who must be present in the bus during organized child group transportation?",
+      "textRu": "Кто обязан присутствовать в автобусе при организованной перевозке групп детей?",
+      "explanationUzl": "156-bandga ko‘ra: katta yoshli kuzatib boruvchi(lar) bo‘lishi shart. “Bolalar guruhini tashish” belgisi old va orqada o‘rnatilishi kerak.",
+      "explanationUzc": "156-бандга кўра: катта ёшли кузатиб борувчи(лар) бўлиши шарт. “Болалар гуруҳини ташиш” белгиси олди ва орқада ўрнатилиши керак.",
+      "explanationEn": "According to clause 156: adult supervisor(s) must be present. “Children Transportation” sign front and rear.",
+      "explanationRu": "Согласно пункту 156: должны быть взрослые сопровождающие. Знак «Перевозка детей» спереди и сзади.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech kim shart emas", "textUzc": "Ҳеч ким шарт эмас", "textEn": "No one required", "textRu": "Никто не обязателен" },
+        { "optionIndex": 1, "textUzl": "Katta yoshli kuzatuvchi(lar)", "textUzc": "Катта ёшли кузатувчи(лар)", "textEn": "Adult supervisor(s)", "textRu": "Взрослые сопровождающие" },
+        { "optionIndex": 2, "textUzl": "Faqat haydovchi", "textUzc": "Фақат ҳайдовчи", "textEn": "Only driver", "textRu": "Только водитель" },
+        { "optionIndex": 3, "textUzl": "Faqat ota-onalar", "textUzc": "Фақат ота-оналар", "textEn": "Only parents", "textRu": "Только родители" },
+        { "optionIndex": 4, "textUzl": "Politsiya xodimi", "textUzc": "Полиция ходими", "textEn": "Police officer", "textRu": "Сотрудник полиции" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Harakatni boshlashdan oldin haydovchi yo‘lovchilarga nima haqida tushuncha berishi kerak?",
+      "textUzc": "Ҳаракатни бошлашдан олдин ҳайдовчи йўловчиларга нима ҳақида тушунча бериши керак?",
+      "textEn": "Before starting movement, what must the driver explain to passengers?",
+      "textRu": "Перед началом движения что должен разъяснить водитель пассажирам?",
+      "explanationUzl": "157-bandga ko‘ra: xavfsizlik choralari, avtomobilga chiqish, tushish va joylashish tartibi haqida tushuncha berishi kerak. Xavfsiz tashish shartlari ta’minlanganligiga ishonch hosil qilishi lozim.",
+      "explanationUzc": "157-бандга кўра: хавфсизлик чоралари, автомобильга чиқиш, тушиш ва жойлашиш тартиби ҳақида тушунча бериши керак. Хавфсиз ташиш шартлари таъминланганлигига ишонч ҳосил қилиши лозим.",
+      "explanationEn": "According to clause 157: explain safety measures, boarding, alighting and seating procedure. Ensure safe transportation conditions.",
+      "explanationRu": "Согласно пункту 157: разъяснить меры безопасности, порядок посадки, высадки и размещения. Убедиться в обеспечении безопасных условий перевозки.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech narsa", "textUzc": "Ҳеч нарса", "textEn": "Nothing", "textRu": "Ничего" },
+        { "optionIndex": 1, "textUzl": "Xavfsizlik choralari va chiqish/tushish tartibi", "textUzc": "Хавфсизлик чоралари ва чиқиш/тушиш тартиби", "textEn": "Safety measures and boarding/alighting procedure", "textRu": "Меры безопасности и порядок посадки/высадки" },
+        { "optionIndex": 2, "textUzl": "Faqat tezlik haqida", "textUzc": "Фақат тезлик ҳақида", "textEn": "Only about speed", "textRu": "Только о скорости" },
+        { "optionIndex": 3, "textUzl": "Faqat yo‘l haqida", "textUzc": "Фақат йўл ҳақида", "textEn": "Only about route", "textRu": "Только о маршруте" },
+        { "optionIndex": 4, "textUzl": "Faqat ob-havo haqida", "textUzc": "Фақат об-ҳаво ҳақида", "textEn": "Only about weather", "textRu": "Только о погоде" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

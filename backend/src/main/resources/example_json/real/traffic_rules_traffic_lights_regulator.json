@@ -1,0 +1,180 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_traffic_lights_regulator",
+      "nameUzl": "Svetofor va tartibga soluvchining ishoralari",
+      "nameUzc": "Светофор ва тартибга солувчининг ишоралари",
+      "nameEn": "Traffic Lights and Regulator Signals",
+      "nameRu": "Светофоры и сигналы регулировщика",
+      "descriptionUzl": "Svetofor ishoralari (yashil, sariq, qizil, miltillovchi, yo‘naltirgich, reversiv, piyoda/velosiped), tartibga soluvchi qo‘l ishoralari, to‘xtash joyi, sariqdan keyin harakat davom ettirish va ustunlik qoidalari bo‘yicha savollar.",
+      "descriptionUzc": "Светофор ишоралари (яшил, сариқ, қизил, милтилловчи, йўналиргичи, реверсив, пиёда/велосипед), тартибга солувчи қўл ишоралари, тўхташ жойи, сариқдан кейин ҳаракат давом эттириш ва устунлик қоидалари бўйича саволлар.",
+      "descriptionEn": "Questions on traffic light signals (green, yellow, red, flashing, arrow, reversible, pedestrian/bike), regulator hand signals, stopping line, continuing after yellow, priority rules.",
+      "descriptionRu": "Вопросы по сигналам светофоров (зелёный, жёлтый, красный, мигающий, стрелка, реверсивный, пешеходный/велосипедный), жестам регулировщика, линии остановки, продолжению после жёлтого, приоритетам.",
+      "iconUrl": null,
+      "displayOrder": 7,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Svetoforning yashil ishorasi nimani bildiradi?",
+      "textUzc": "Светофорнинг яшил ишораси нимани билдиради?",
+      "textEn": "What does the green traffic light signal mean?",
+      "textRu": "Что означает зелёный сигнал светофора?",
+      "explanationUzl": "31-bandga ko‘ra: yashil ishora **harakatlanishga ruxsat beradi**.",
+      "explanationUzc": "31-бандга кўра: яшил ишора **ҳаракатланишга рухсат беради**.",
+      "explanationEn": "According to clause 31: green signal **permits movement**.",
+      "explanationRu": "Согласно пункту 31: зелёный сигнал **разрешает движение**.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Harakatni taqiqlaydi", "textUzc": "Ҳаракатни тақиқлайди", "textEn": "Prohibits movement", "textRu": "Запрещает движение" },
+        { "optionIndex": 1, "textUzl": "Harakatlanishga ruxsat beradi", "textUzc": "Ҳаракатланишга рухсат беради", "textEn": "Permits movement", "textRu": "Разрешает движение" },
+        { "optionIndex": 2, "textUzl": "Ehtiyotkorlik choralarini bildiradi", "textUzc": "Эҳтиёткорлик чораларини билдиради", "textEn": "Indicates caution", "textRu": "Указывает на осторожность" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Miltillovchi sariq ishora nimani bildiradi?",
+      "textUzc": "Милтилловчи сариқ ишора нимани билдиради?",
+      "textEn": "What does a flashing yellow signal mean?",
+      "textRu": "Что означает мигающий жёлтый сигнал?",
+      "explanationUzl": "31-bandga ko‘ra: ehtiyotkorlik choralarini ko‘rgan holda harakatlanishga ruxsat beradi va tartibga solinmagan chorraha yoki o‘tish joyi borligidan ogohlantiradi.",
+      "explanationUzc": "31-бандга кўра: эҳтиёткорлик чораларини кўрган ҳолда ҳаракатланишга рухсат беради ва тартибга солинмаган чорраҳа ёки ўтиш жойи борлигидан огоҳлантиради.",
+      "explanationEn": "Permits movement with caution, warns of unregulated intersection or crossing (clause 31).",
+      "explanationRu": "Разрешает движение с осторожностью, предупреждает о нерегулируемом перекрёстке или переходе (пункт 31).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "To‘liq taqiqlaydi", "textUzc": "Тўлиқ тақиқлайди", "textEn": "Fully prohibits", "textRu": "Полностью запрещает" },
+        { "optionIndex": 1, "textUzl": "Ehtiyotkorlik bilan harakatlanishga ruxsat", "textUzc": "Эҳтиёткорлик билан ҳаракатланишга рухсат", "textEn": "Permits with caution", "textRu": "Разрешает с осторожностью" },
+        { "optionIndex": 2, "textUzl": "Faqat piyodalarga ruxsat", "textUzc": "Фақат пиёдаларга рухсат", "textEn": "Only for pedestrians", "textRu": "Только для пешеходов" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qizil va sariq ishoralar bir vaqtda yonganda nimani bildiradi?",
+      "textUzc": "Қизил ва сариқ ишоралар бир вақтда ёнганда нимани билдиради?",
+      "textEn": "What does simultaneous red and yellow signals mean?",
+      "textRu": "Что означает одновременное включение красного и жёлтого сигналов?",
+      "explanationUzl": "31-bandga ko‘ra: harakatlanishni taqiqlaydi va ko‘p o‘tmay yashil ishora yonishi haqida axborot beradi.",
+      "explanationUzc": "31-бандга кўра: ҳаракатланишни тақиқлайди ва кўп ўтмай яшил ишора ёниши ҳақида маълумот беради.",
+      "explanationEn": "Prohibits movement and informs that green will soon appear (clause 31).",
+      "explanationRu": "Запрещает движение и информирует о скором включении зелёного (пункт 31).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Harakatga ruxsat", "textUzc": "Ҳаракатга рухсат", "textEn": "Permits movement", "textRu": "Разрешает движение" },
+        { "optionIndex": 1, "textUzl": "Taqiqlaydi va yashil yaqinlashmoqda", "textUzc": "Тақиқлайди ва яшил яқинлашмоқда", "textEn": "Prohibits and green is coming", "textRu": "Запрещает и зелёный скоро" },
+        { "optionIndex": 2, "textUzl": "Ehtiyotkorlik bildiradi", "textUzc": "Эҳтиёткорлик билдиради", "textEn": "Indicates caution", "textRu": "Указывает на осторожность" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Svetoforning yo‘naltirgich ishoralari qaysi yo‘nalishga ta’sir qiladi?",
+      "textUzc": "Светофорнинг йўналиргичи ишоралари қайси йўналишга таъсир қилади?",
+      "textEn": "To which direction do arrow traffic light signals apply?",
+      "textRu": "На какое направление распространяются стрелочные сигналы светофора?",
+      "explanationUzl": "32-bandga ko‘ra: yo‘naltirgich ishoralar **faqat ko‘rsatilgan yo‘nalishga** ta’sir qiladi.",
+      "explanationUzc": "32-бандга кўра: йўналиргичи ишоралар **фақат кўрсатилган йўналишга** таъсир қилади.",
+      "explanationEn": "According to clause 32: arrow signals affect **only the indicated direction**.",
+      "explanationRu": "Согласно пункту 32: стрелки действуют **только на указанное направление**.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Barcha yo‘nalishlarga", "textUzc": "Барча йўналишларга", "textEn": "All directions", "textRu": "На все направления" },
+        { "optionIndex": 1, "textUzl": "Faqat ko‘rsatilgan yo‘nalishga", "textUzc": "Фақат кўрсатилган йўналишга", "textEn": "Only indicated direction", "textRu": "Только на указанное направление" },
+        { "optionIndex": 2, "textUzl": "Faqat piyodalarga", "textUzc": "Фақат пиёдаларга", "textEn": "Only pedestrians", "textRu": "Только пешеходам" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tartibga soluvchining qo‘li yuqoriga ko‘tarilganda nima bo‘ladi?",
+      "textUzc": "Тартибга солувчининг қўли юқорига кўтарилганда нима бўлади?",
+      "textEn": "What happens when the regulator raises his hand up?",
+      "textRu": "Что происходит, когда регулировщик поднимает руку вверх?",
+      "explanationUzl": "38-bandga ko‘ra: barcha transport va piyodalarning harakatlanishi taqiqlanadi (42-band istisnolari bundan mustasno).",
+      "explanationUzc": "38-бандга кўра: барча транспорт ва пиёдаларнинг ҳаракатланиши тақиқланади (42-банд истиснолари бундан мустасно).",
+      "explanationEn": "According to clause 38: prohibits movement of all vehicles and pedestrians (except cases in clause 42).",
+      "explanationRu": "Согласно пункту 38: запрещает движение всех ТС и пешеходов (кроме случаев пункта 42).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Harakatga ruxsat", "textUzc": "Ҳаракатга рухсат", "textEn": "Permits movement", "textRu": "Разрешает движение" },
+        { "optionIndex": 1, "textUzl": "Hammaga taqiqlaydi", "textUzc": "Ҳаммага тақиқлайди", "textEn": "Prohibits everyone", "textRu": "Запрещает всем" },
+        { "optionIndex": 2, "textUzl": "Faqat chapga ruxsat", "textUzc": "Фақат чапга рухсат", "textEn": "Only left turn", "textRu": "Только налево" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Sariq ishoradan keyin harakatni davom ettirish mumkinmi?",
+      "textUzc": "Сариқ ишорадан кейин ҳаракатни давом эттириш мумкинми?",
+      "textEn": "Can movement continue after the yellow signal?",
+      "textRu": "Можно ли продолжить движение после жёлтого сигнала?",
+      "explanationUzl": "42-bandga ko‘ra: agar keskin tormoz bermasdan to‘xtashga ulgurilmasa, harakatni davom ettirishga ruxsat beriladi.",
+      "explanationUzc": "42-бандга кўра: агар кескин тормоз бермасдан тўхташга улгурилмаса, ҳаракатни давом эттиришга рухсат берилади.",
+      "explanationEn": "According to clause 42: if unable to stop without emergency braking, allowed to continue.",
+      "explanationRu": "Согласно пункту 42: если нельзя остановиться без экстренного торможения, разрешено продолжить.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qachon mumkin emas", "textUzc": "Ҳеч қачон мумкин эмас", "textEn": "Never allowed", "textRu": "Никогда нельзя" },
+        { "optionIndex": 1, "textUzl": "Agar to‘xtash imkonsiz bo‘lsa, mumkin", "textUzc": "Агар тўхташ имконсиз бўлса, мумкин", "textEn": "If impossible to stop, allowed", "textRu": "Если нельзя остановиться, разрешено" },
+        { "optionIndex": 2, "textUzl": "Faqat piyodalar uchun", "textUzc": "Фақат пиёдалар учун", "textEn": "Only for pedestrians", "textRu": "Только для пешеходов" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tartibga soluvchi ishoralari svetoforga zid bo‘lsa, nimaga amal qilish kerak?",
+      "textUzc": "Тартибга солувчи ишоралари светофорга зид бўлса, нимага амал қилиш керак?",
+      "textEn": "If regulator signals contradict traffic lights, what to follow?",
+      "textRu": "Если сигналы регулировщика противоречат светофору, чему следовать?",
+      "explanationUzl": "43-bandga ko‘ra: **tartibga soluvchining ishoralari va ko‘rsatmalariga** amal qilish kerak.",
+      "explanationUzc": "43-бандга кўра: **тартибга солувчининг ишоралари ва кўрсатмаларига** амал қилиш керак.",
+      "explanationEn": "According to clause 43: **follow the regulator's signals and instructions**.",
+      "explanationRu": "Согласно пункту 43: **следовать сигналам и указаниям регулировщика**.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Svetoforga", "textUzc": "Светофорга", "textEn": "Traffic light", "textRu": "Светофору" },
+        { "optionIndex": 1, "textUzl": "Tartibga soluvchiga", "textUzc": "Тартибга солувчига", "textEn": "Regulator", "textRu": "Регулировщику" },
+        { "optionIndex": 2, "textUzl": "Yo‘l belgilariga", "textUzc": "Йўл белгиларига", "textEn": "Road signs", "textRu": "Дорожным знакам" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Svetofor ishlamayotgan bo‘lsa, haydovchi nima qilishi kerak?",
+      "textUzc": "Светофор ишламаётган бўлса, ҳайдовчи нима қилиши керак?",
+      "textEn": "What should a driver do if the traffic light is not working?",
+      "textRu": "Что должен сделать водитель, если светофор не работает?",
+      "explanationUzl": "43-band oxiriga ko‘ra: boshqa yo‘nalishdagi svetofor ham ishlamayotganligiga ishonch hosil qilib, xavfsizlikni ta’minlab harakatni davom ettirishi mumkin.",
+      "explanationUzc": "43-банд охирига кўра: бошқа йўналишдаги светофор ҳам ишламаётганлигига ишонч ҳосил қилиб, хавфсизликни таъминлаб ҳаракатни давом эттириши мумкин.",
+      "explanationEn": "According to the end of clause 43: after confirming the cross direction light is also off, continue with safety ensured.",
+      "explanationRu": "Согласно концу пункта 43: убедившись, что светофор в поперечном направлении тоже не работает, продолжить с обеспечением безопасности.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qachon harakatlanmaslik", "textUzc": "Ҳеч қачон ҳаракатланмаслик", "textEn": "Never move", "textRu": "Никогда не двигаться" },
+        { "optionIndex": 1, "textUzl": "Xavfsizlikni ta’minlab davom ettirish", "textUzc": "Хавфсизликни таъминлаб давом эттириш", "textEn": "Continue ensuring safety", "textRu": "Продолжить с обеспечением безопасности" },
+        { "optionIndex": 2, "textUzl": "Faqat orqaga qaytish", "textUzc": "Фақат орқага қайтиш", "textEn": "Only reverse", "textRu": "Только задним ходом" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

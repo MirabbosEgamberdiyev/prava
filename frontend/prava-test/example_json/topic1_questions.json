@@ -1,0 +1,107 @@
+{
+  "questions": [
+    {
+      "textUzl": "Qizil svetofor signalida nima qilish kerak?",
+      "textUzc": "Қизил светофор сигналида нима қилиш керак?",
+      "textEn": "What should you do at a red traffic light?",
+      "textRu": "Что нужно делать на красный сигнал светофора?",
+      "explanationUzl": "Qizil signal harakatni taqiqlaydi.",
+      "explanationUzc": "Қизил сигнал ҳаракатни тақиқлайди.",
+      "explanationEn": "Red light prohibits movement.",
+      "explanationRu": "Красный сигнал запрещает движение.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "To‘xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться" },
+        { "optionIndex": 1, "textUzl": "Davom etish", "textUzc": "Давом этиш", "textEn": "Continue", "textRu": "Продолжить" },
+        { "optionIndex": 2, "textUzl": "Tezlash", "textUzc": "Тезлаш", "textEn": "Speed up", "textRu": "Ускориться" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Shahar ichida ruxsat etilgan maksimal tezlik qancha?",
+      "textUzc": "Шаҳар ичида рухсат этилган максимал тезлик қанча?",
+      "textEn": "What is the maximum speed allowed in the city?",
+      "textRu": "Какая максимальная скорость в городе?",
+      "explanationUzl": "Aksariyat hollarda shahar ichida 60 km/soat.",
+      "explanationUzc": "Кўп ҳолларда шаҳарда 60 км/соат.",
+      "explanationEn": "In most cases, it is 60 km/h in cities.",
+      "explanationRu": "В большинстве случаев в городе 60 км/ч.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "50 km/soat", "textUzc": "50 км/соат", "textEn": "50 km/h", "textRu": "50 км/ч" },
+        { "optionIndex": 1, "textUzl": "60 km/soat", "textUzc": "60 км/соат", "textEn": "60 km/h", "textRu": "60 км/ч" },
+        { "optionIndex": 2, "textUzl": "70 km/soat", "textUzc": "70 км/соат", "textEn": "70 km/h", "textRu": "70 км/ч" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+
+    {
+      "textUzl": "Piyodalar o‘tish joyida haydovchi nima qilishi kerak?",
+      "textUzc": "Пиёдалар ўтиш жойида ҳайдовчи нима қилиши керак?",
+      "textEn": "What must a driver do at a pedestrian crossing?",
+      "textRu": "Что должен сделать водитель на пешеходном переходе?",
+      "explanationUzl": "Haydovchi piyodaga yo‘l berishi shart.",
+      "explanationUzc": "Ҳайдовчи пиёдага йўл бериши шарт.",
+      "explanationEn": "The driver must give way to pedestrians.",
+      "explanationRu": "Водитель обязан уступить дорогу пешеходу.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Yo‘l berish", "textUzc": "Йўл бериш", "textEn": "Give way", "textRu": "Уступить" },
+        { "optionIndex": 1, "textUzl": "Signal berish", "textUzc": "Сигнал бериш", "textEn": "Honk", "textRu": "Сигналить" },
+        { "optionIndex": 2, "textUzl": "Tez o‘tish", "textUzc": "Тез ўтиш", "textEn": "Pass quickly", "textRu": "Быстро проехать" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+
+    {
+      "textUzl": "Tormoz ishlamay qolsa nima qilish kerak?",
+      "textUzc": "Тормоз ишламай қолса нима қилиш керак?",
+      "textEn": "What should you do if brakes fail?",
+      "textRu": "Что делать если тормоза отказали?",
+      "explanationUzl": "Dvigatel va qo‘l tormozidan foydalaniladi.",
+      "explanationUzc": "Двигатель ва қўл тормозидан фойдаланилади.",
+      "explanationEn": "Use engine braking and handbrake.",
+      "explanationRu": "Использовать торможение двигателем и ручник.",
+      "topicId": 1,
+      "difficulty": "HARD",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Qo‘l tormozi", "textUzc": "Қўл тормози", "textEn": "Handbrake", "textRu": "Ручник" },
+        { "optionIndex": 1, "textUzl": "Tezlash", "textUzc": "Тезлаш", "textEn": "Accelerate", "textRu": "Ускориться" },
+        { "optionIndex": 2, "textUzl": "Dvigatelni o‘chirish", "textUzc": "Двигателни ўчириш", "textEn": "Turn off engine", "textRu": "Выключить двигатель" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+
+    {
+      "textUzl": "Sariq svetofor nimani bildiradi?",
+      "textUzc": "Сариқ светофор нимани билдиради?",
+      "textEn": "What does yellow traffic light mean?",
+      "textRu": "Что означает желтый сигнал светофора?",
+      "explanationUzl": "Haydovchi harakatga tayyor bo‘lishi kerak.",
+      "explanationUzc": "Ҳайдовчи ҳаракатга тайёр бўлиши керак.",
+      "explanationEn": "Driver must prepare for movement change.",
+      "explanationRu": "Водитель должен подготовиться.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "To‘xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться" },
+        { "optionIndex": 1, "textUzl": "Tezlash", "textUzc": "Тезлаш", "textEn": "Speed up", "textRu": "Ускориться" },
+        { "optionIndex": 2, "textUzl": "Tayyorlanish", "textUzc": "Тайёрланиш", "textEn": "Get ready", "textRu": "Приготовиться" }
+      ],
+      "correctAnswerIndex": 2,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

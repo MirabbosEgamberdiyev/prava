@@ -1,0 +1,305 @@
+{
+  "questions": [
+    {
+      "textUzl": "Qizil svetofor signalida nima qilish kerak?",
+      "textUzc": "Қизил светофор сигналида нима қилиш керак?",
+      "textEn": "What to do at red traffic light?",
+      "textRu": "Что делать на красный сигнал светофора?",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться"},
+        {"optionIndex": 1, "textUzl": "Davom etish", "textUzc": "Давом етиш", "textEn": "Continue", "textRu": "Продолжить"},
+        {"optionIndex": 2, "textUzl": "Tezlashtirish", "textUzc": "Тезлаштириш", "textEn": "Speed up", "textRu": "Ускориться"}
+      ]
+    },
+    {
+      "textUzl": "Shahar ichida maksimal tezlik qancha?",
+      "textUzc": "Шаҳар ичида максимал тезлик қанча?",
+      "textEn": "Maximum speed in the city?",
+      "textRu": "Максимальная скорость в городе?",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "50 km/s", "textUzc": "50 км/с", "textEn": "50 km/h", "textRu": "50 км/ч"},
+        {"optionIndex": 1, "textUzl": "60 km/s", "textUzc": "60 км/с", "textEn": "60 km/h", "textRu": "60 км/ч"},
+        {"optionIndex": 2, "textUzl": "70 km/s", "textUzc": "70 км/с", "textEn": "70 km/h", "textRu": "70 км/ч"}
+      ]
+    },
+    {
+      "textUzl": "Piyodalar yo'lagida to'xtash mumkinmi?",
+      "textUzc": "Пиёдалар йўлагида тўхташ мумкинми?",
+      "textEn": "Can you stop on pedestrian crossing?",
+      "textRu": "Можно остановиться на пешеходном переходе?",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Ha", "textUzc": "Ҳа", "textEn": "Yes", "textRu": "Да"},
+        {"optionIndex": 1, "textUzl": "Yo'q", "textUzc": "Йўқ", "textEn": "No", "textRu": "Нет"},
+        {"optionIndex": 2, "textUzl": "Ba'zan", "textUzc": "Баъзан", "textEn": "Sometimes", "textRu": "Иногда"}
+      ]
+    },
+    {
+      "textUzl": "Xavfsiz quvib o'tish uchun nima kerak?",
+      "textUzc": "Хавфсиз қувиб ўтиш учун нима керак?",
+      "textEn": "What is needed for safe overtaking?",
+      "textRu": "Что нужно для безопасного обгона?",
+      "topicId": 1,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Tezlik", "textUzc": "Тезлик", "textEn": "Speed", "textRu": "Скорость"},
+        {"optionIndex": 1, "textUzl": "Signal", "textUzc": "Сигнал", "textEn": "Signal", "textRu": "Сигнал"},
+        {"optionIndex": 2, "textUzl": "Yetarli masofa va ko'rish", "textUzc": "Етарли масофа ва кўриш", "textEn": "Sufficient distance and visibility", "textRu": "Достаточное расстояние и видимость"}
+      ]
+    },
+    {
+      "textUzl": "Tormoz ishlamasa nima qilish kerak?",
+      "textUzc": "Тормоз ишламаса нима қилиш керак?",
+      "textEn": "What to do if brakes fail?",
+      "textRu": "Что делать если тормоза отказали?",
+      "topicId": 1,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Qo'l tormozi va dvigatel", "textUzc": "Қўл тормози ва двигател", "textEn": "Handbrake and engine", "textRu": "Ручник и двигатель"},
+        {"optionIndex": 1, "textUzl": "Tezlashtirish", "textUzc": "Тезлаштириш", "textEn": "Accelerate", "textRu": "Ускориться"},
+        {"optionIndex": 2, "textUzl": "Hech narsa", "textUzc": "Ҳеч нарса", "textEn": "Nothing", "textRu": "Ничего"}
+      ]
+    },
+    {
+      "textUzl": "Qizil uchburchak belgi nima?",
+      "textUzc": "Қизил учбурчак белги нима?",
+      "textEn": "What is red triangle sign?",
+      "textRu": "Что такое красный треугольник?",
+      "topicId": 2,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Ogohlantiruv", "textUzc": "Огоҳлантирув", "textEn": "Warning", "textRu": "Предупреждение"},
+        {"optionIndex": 1, "textUzl": "Taqiq", "textUzc": "Тақиқ", "textEn": "Prohibition", "textRu": "Запрет"},
+        {"optionIndex": 2, "textUzl": "Axborot", "textUzc": "Ахборот", "textEn": "Information", "textRu": "Информация"}
+      ]
+    },
+    {
+      "textUzl": "Ko'k doira belgi nimani anglatadi?",
+      "textUzc": "Кўк доира белги нимани англатади?",
+      "textEn": "What does blue circle sign mean?",
+      "textRu": "Что означает синий круг?",
+      "topicId": 2,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Taqiq", "textUzc": "Тақиқ", "textEn": "Prohibition", "textRu": "Запрет"},
+        {"optionIndex": 1, "textUzl": "Majburiy", "textUzc": "Мажбурий", "textEn": "Mandatory", "textRu": "Обязательно"},
+        {"optionIndex": 2, "textUzl": "Maslahat", "textUzc": "Маслахат", "textEn": "Advice", "textRu": "Совет"}
+      ]
+    },
+    {
+      "textUzl": "Qizil doira oq chiziqli belgi?",
+      "textUzc": "Қизил доира оқ чизиқли белги?",
+      "textEn": "Red circle with white line sign?",
+      "textRu": "Красный круг с белой линией?",
+      "topicId": 2,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Стоп"},
+        {"optionIndex": 1, "textUzl": "Sekinlash", "textUzc": "Секинлаш", "textEn": "Slow down", "textRu": "Снизить скорость"},
+        {"optionIndex": 2, "textUzl": "Kirish taqiq", "textUzc": "Кириш тақиқ", "textEn": "No entry", "textRu": "Въезд запрещен"}
+      ]
+    },
+    {
+      "textUzl": "Yashil to'rtburchak belgi qaysi guruh?",
+      "textUzc": "Яшил тўртбурчак белги қайси гуруҳ?",
+      "textEn": "Green rectangle sign category?",
+      "textRu": "Зеленый прямоугольник категория?",
+      "topicId": 2,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Taqiq", "textUzc": "Тақиқ", "textEn": "Prohibition", "textRu": "Запрет"},
+        {"optionIndex": 1, "textUzl": "Ogohlantiruv", "textUzc": "Огоҳлантирув", "textEn": "Warning", "textRu": "Предупреждение"},
+        {"optionIndex": 2, "textUzl": "Axborot", "textUzc": "Ахборот", "textEn": "Information", "textRu": "Информация"}
+      ]
+    },
+    {
+      "textUzl": "P belgisi nimani bildiradi?",
+      "textUzc": "P белгиси нимани билдиради?",
+      "textEn": "What does P sign mean?",
+      "textRu": "Что означает знак P?",
+      "topicId": 2,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Parking", "textUzc": "Паркинг", "textEn": "Parking", "textRu": "Парковка"},
+        {"optionIndex": 1, "textUzl": "Piyoda", "textUzc": "Пиёда", "textEn": "Pedestrian", "textRu": "Пешеход"},
+        {"optionIndex": 2, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановка"}
+      ]
+    },
+    {
+      "textUzl": "Uzluksiz oq chiziq nimani bildiradi?",
+      "textUzc": "Узлуксиз оқ чизиқ нимани билдиради?",
+      "textEn": "What does solid white line mean?",
+      "textRu": "Что означает сплошная белая линия?",
+      "topicId": 3,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Kesib o'tish taqiq", "textUzc": "Кесиб ўтиш тақиқ", "textEn": "No crossing", "textRu": "Пересекать нельзя"},
+        {"optionIndex": 1, "textUzl": "Kesish mumkin", "textUzc": "Кесиш мумкин", "textEn": "Can cross", "textRu": "Можно пересекать"},
+        {"optionIndex": 2, "textUzl": "Ehtiyot bo'lish", "textUzc": "Эҳтиёт бўлиш", "textEn": "Be careful", "textRu": "Будь осторожен"}
+      ]
+    },
+    {
+      "textUzl": "Uzilgan chiziq qachon kesish mumkin?",
+      "textUzc": "Узилган чизиқ қачон кесиш мумкин?",
+      "textEn": "When can you cross broken line?",
+      "textRu": "Когда можно пересекать прерывистую?",
+      "topicId": 3,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Hech qachon", "textUzc": "Ҳеч қачон", "textEn": "Never", "textRu": "Никогда"},
+        {"optionIndex": 1, "textUzl": "Xavfsiz bo'lsa", "textUzc": "Хавфсиз бўлса", "textEn": "If safe", "textRu": "Если безопасно"},
+        {"optionIndex": 2, "textUzl": "Faqat kechasi", "textUzc": "Фақат кечаси", "textEn": "Only night", "textRu": "Только ночью"}
+      ]
+    },
+    {
+      "textUzl": "Sariq yo'l belgilanishi nimani bildiradi?",
+      "textUzc": "Сариқ йўл белгиланиши нимани билдиради?",
+      "textEn": "What does yellow road marking mean?",
+      "textRu": "Что означает желтая разметка?",
+      "topicId": 3,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Tezlash", "textUzc": "Тезлаш", "textEn": "Speed up", "textRu": "Ускориться"},
+        {"optionIndex": 1, "textUzl": "Ehtiyot", "textUzc": "Эҳтиёт", "textEn": "Caution", "textRu": "Осторожно"},
+        {"optionIndex": 2, "textUzl": "To'xtash taqiq", "textUzc": "Тўхташ тақиқ", "textEn": "No stopping", "textRu": "Остановка запрещена"}
+      ]
+    },
+    {
+      "textUzl": "Zebra chiziqlar nimani bildiradi?",
+      "textUzc": "Зебра чизиқлар нимани билдиради?",
+      "textEn": "What do zebra stripes mean?",
+      "textRu": "Что означают полосы зебра?",
+      "topicId": 3,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Piyoda o'tish joyi", "textUzc": "Пиёда ўтиш жойи", "textEn": "Pedestrian crossing", "textRu": "Пешеходный переход"},
+        {"optionIndex": 1, "textUzl": "To'xtash joyi", "textUzc": "Тўхташ жойи", "textEn": "Stopping place", "textRu": "Место остановки"},
+        {"optionIndex": 2, "textUzl": "Xavfli hudud", "textUzc": "Хавфли худуд", "textEn": "Danger zone", "textRu": "Опасная зона"}
+      ]
+    },
+    {
+      "textUzl": "Qo'sh uzluksiz chiziq nimani anglatadi?",
+      "textUzc": "Қўш узлуксиз чизиқ нимани англатади?",
+      "textEn": "What does double solid line mean?",
+      "textRu": "Что означает двойная сплошная?",
+      "topicId": 3,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Kesish mumkin", "textUzc": "Кесиш мумкин", "textEn": "Can cross", "textRu": "Можно пересекать"},
+        {"optionIndex": 1, "textUzl": "Mutlaqo taqiq", "textUzc": "Мутлақо тақиқ", "textEn": "Strictly prohibited", "textRu": "Строго запрещено"},
+        {"optionIndex": 2, "textUzl": "Ehtiyot bilan", "textUzc": "Эҳтиёт билан", "textEn": "With caution", "textRu": "С осторожностью"}
+      ]
+    },
+    {
+      "textUzl": "Yashil svetofor nimani anglatadi?",
+      "textUzc": "Яшил светофор нимани англатади?",
+      "textEn": "What does green light mean?",
+      "textRu": "Что означает зеленый свет?",
+      "topicId": 4,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Harakat mumkin", "textUzc": "Ҳаракат мумкин", "textEn": "Can proceed", "textRu": "Можно ехать"},
+        {"optionIndex": 1, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться"},
+        {"optionIndex": 2, "textUzl": "Sekinlash", "textUzc": "Секинлаш", "textEn": "Slow down", "textRu": "Снизить скорость"}
+      ]
+    },
+    {
+      "textUzl": "Sariq svetofor nimani bildiradi?",
+      "textUzc": "Сариқ светофор нимани билдиради?",
+      "textEn": "What does yellow light mean?",
+      "textRu": "Что означает желтый свет?",
+      "topicId": 4,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Tezlash", "textUzc": "Тезлаш", "textEn": "Speed up", "textRu": "Ускориться"},
+        {"optionIndex": 1, "textUzl": "Davom etish", "textUzc": "Давом етиш", "textEn": "Continue", "textRu": "Продолжить"},
+        {"optionIndex": 2, "textUzl": "Tayyor bo'lish", "textUzc": "Тайёр бўлиш", "textEn": "Be ready", "textRu": "Приготовиться"}
+      ]
+    },
+    {
+      "textUzl": "Miltillovchi yashil signal nimani anglatadi?",
+      "textUzc": "Милтилловчи яшил сигнал нимани англатади?",
+      "textEn": "What does flashing green mean?",
+      "textRu": "Что означает мигающий зеленый?",
+      "topicId": 4,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться"},
+        {"optionIndex": 1, "textUzl": "Tez tugaydi", "textUzc": "Тез тугайди", "textEn": "Ending soon", "textRu": "Скоро закончится"},
+        {"optionIndex": 2, "textUzl": "Tezlash", "textUzc": "Тезлаш", "textEn": "Speed up", "textRu": "Ускориться"}
+      ]
+    },
+    {
+      "textUzl": "Svetofor ishlamasa nima qilish kerak?",
+      "textUzc": "Светофор ишламаса нима қилиш керак?",
+      "textEn": "What to do if traffic light not working?",
+      "textRu": "Что делать если светофор не работает?",
+      "topicId": 4,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Yo'l belgilariga rioya qilish", "textUzc": "Йўл белгиларига риоя қилиш", "textEn": "Follow road signs", "textRu": "Следовать дорожным знакам"},
+        {"optionIndex": 1, "textUzl": "Tez o'tish", "textUzc": "Тез ўтиш", "textEn": "Pass quickly", "textRu": "Быстро проехать"},
+        {"optionIndex": 2, "textUzl": "Kutish", "textUzc": "Кутиш", "textEn": "Wait", "textRu": "Ждать"}
+      ]
+    },
+    {
+      "textUzl": "Qizil va sariq birgalikda nimani anglatadi?",
+      "textUzc": "Қизил ва сариқ биргаликда нимани англатади?",
+      "textEn": "What does red and yellow together mean?",
+      "textRu": "Что означает красный и желтый вместе?",
+      "topicId": 4,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться"},
+        {"optionIndex": 1, "textUzl": "Ehtiyot", "textUzc": "Эҳтиёт", "textEn": "Caution", "textRu": "Осторожно"},
+        {"optionIndex": 2, "textUzl": "Tez orada yashil", "textUzc": "Тез орада яшил", "textEn": "Soon green", "textRu": "Скоро зеленый"}
+      ]
+    }
+  ]
+}
+

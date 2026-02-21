@@ -1,0 +1,67 @@
+# ========================
+# Prava Online - Monorepo
+# ========================
+
+# ---- Node.js / Frontend ----
+node_modules/
+dist/
+dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---- Java / Backend ----
+target/
+*.jar
+*.war
+*.class
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ---- IDE ----
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+.project
+.classpath
+.settings/
+.factorypath
+.springBeans
+.sts4-cache
+.apt_generated
+*.sw?
+.qodo/
+
+# ---- Environment / Secrets ----
+.env
+.env.local
+.env.*.local
+backend/.env
+backend/client_secret*.json
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- Logs ----
+*.log
+logs/
+
+# ---- Uploads ----
+uploads/
+
+# ---- Build ----
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ---- Claude ----
+.claude/
+
+# ---- Misc ----
+*.local
+nul
+test_output.txt

@@ -1,0 +1,220 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_warning_emergency_signals",
+      "nameUzl": "Ogohlantiruvchi va avariya (xavf-xatar) ishoralari",
+      "nameUzc": "Огоҳлантирувчи ва авария (хавф-хатар) ишоралари",
+      "nameEn": "Warning and Emergency (Hazard) Signals",
+      "nameRu": "Предупредительные и аварийные (опасные) сигналы",
+      "descriptionUzl": "Burilish, to‘xtash ishoralari, tovushli signal, fara chiroqlarini yoqib-o‘chirish, avariya ishorasi (barcha burilish chiroqlari miltillashi), avariya belgisini o‘rnatish masofalari va holatlari bo‘yicha savollar.",
+      "descriptionUzc": "Бурилиш, тўхташ ишоралари, товушли сигнал, фара чироқларини ёқиб-ўчириш, авария ишораси (барча бурилиш чироқлари милтиллаши), авария белгисини ўрнатиш масофалари ва ҳолатлари бўйича саволлар.",
+      "descriptionEn": "Questions on turn signals, stop signals, horn use, headlight flashing, hazard lights (all turn signals flashing), emergency triangle placement distances and situations.",
+      "descriptionRu": "Вопросы по сигналам поворота, остановки, звуковому сигналу, миганию фар, аварийной сигнализации (мигание всех поворотников), расстояниям установки знака аварийной остановки и ситуациям.",
+      "iconUrl": null,
+      "displayOrder": 8,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Ogohlantiruvchi ishoralarga qaysilar kiradi?",
+      "textUzc": "Огоҳлантирувчи ишораларга қайсилар киради?",
+      "textEn": "Which are considered warning signals?",
+      "textRu": "Какие считаются предупредительными сигналами?",
+      "explanationUzl": "44-bandga ko‘ra: burilish miltillovchi chiroq yoki qo‘l ishorasi, to‘xtash fara chirog‘i, tovushli ishoralar, fara yoqib-o‘chirish, kunduzi yaqinni yorituvchi fara yoqish.",
+      "explanationUzc": "44-бандга кўра: бурилиш милтилловчи чироқ ёки қўл ишораси, тўхташ фара чироғи, товушли ишоралар, фара ёқиб-ўчириш, кундузи яқинни ёритувчи фара ёқиш.",
+      "explanationEn": "According to clause 44: turn signals (light/hand), brake lights, horn, headlight flashing, daytime high beams.",
+      "explanationRu": "Согласно пункту 44: сигналы поворота (световой/жест рукой), стоп-сигналы, звуковой сигнал, мигание фар, дневной ближний/дальний свет.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat tovushli signal", "textUzc": "Фақат товушли сигнал", "textEn": "Only horn", "textRu": "Только звуковой сигнал" },
+        { "optionIndex": 1, "textUzl": "Burilish, tovushli, fara yoqib-o‘chirish va boshqalar", "textUzc": "Бурилиш, товушли, фара ёқиб-ўчириш ва бошқалар", "textEn": "Turn, horn, flashing lights etc.", "textRu": "Поворот, звуковой, мигание фар и др." },
+        { "optionIndex": 2, "textUzl": "Faqat avariya ishorasi", "textUzc": "Фақат авария ишораси", "textEn": "Only hazard lights", "textRu": "Только аварийная сигнализация" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Haydovchi burilishdan oldin nima qilishi shart?",
+      "textUzc": "Ҳайдовчи бурилишдан олдин нима қилиши шарт?",
+      "textEn": "What must a driver do before turning?",
+      "textRu": "Что обязан сделать водитель перед поворотом?",
+      "explanationUzl": "45-bandga ko‘ra: tegishli yo‘nalishni ko‘rsatuvchi yorug‘lik ishorasini yoqish yoki qo‘l bilan ishora berish shart.",
+      "explanationUzc": "45-бандга кўра: тегишли йўналишни кўрсатувчи ёруғлик ишорасини ёқиш ёки қўл билан ишора бериш шарт.",
+      "explanationEn": "According to clause 45: turn on corresponding direction indicator or give hand signal.",
+      "explanationRu": "Согласно пункту 45: включить соответствующий указатель поворота или подать сигнал рукой.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech narsa qilish shart emas", "textUzc": "Ҳеч нарса қилиш шарт эмас", "textEn": "Nothing required", "textRu": "Ничего не нужно" },
+        { "optionIndex": 1, "textUzl": "Burilish ishorasini berish shart", "textUzc": "Бурилиш ишорасини бериш шарт", "textEn": "Give turn signal", "textRu": "Подать сигнал поворота" },
+        { "optionIndex": 2, "textUzl": "Faqat tovushli signal berish", "textUzc": "Фақат товушли сигнал бериш", "textEn": "Only horn", "textRu": "Только звуковой сигнал" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Chapga burilish uchun qo‘l ishorasi qanday beriladi?",
+      "textUzc": "Чапга бурилиш учун қўл ишораси қандай берилади?",
+      "textEn": "How to give a hand signal for left turn?",
+      "textRu": "Как подаётся жест рукой для левого поворота?",
+      "explanationUzl": "45-bandga ko‘ra: chap qo‘lni yonga uzatish yoki o‘ng qo‘lni bukib yuqoriga ko‘tarish.",
+      "explanationUzc": "45-бандга кўра: чап қўлни ёнга узатиш ёки ўнг қўлни букиб юқорига кўтариш.",
+      "explanationEn": "According to clause 45: extend left arm sideways or bend right arm at elbow upward.",
+      "explanationRu": "Согласно пункту 45: вытянуть левую руку в сторону или согнуть правую руку в локте вверх.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "O‘ng qo‘lni yonga uzatish", "textUzc": "Ўнг қўлни ёнга узатиш", "textEn": "Extend right arm sideways", "textRu": "Вытянуть правую руку в сторону" },
+        { "optionIndex": 1, "textUzl": "Chap qo‘lni yonga uzatish", "textUzc": "Чап қўлни ёнга узатиш", "textEn": "Extend left arm sideways", "textRu": "Вытянуть левую руку в сторону" },
+        { "optionIndex": 2, "textUzl": "Ikki qo‘lni yuqoriga ko‘tarish", "textUzc": "Икки қўлни юқорига кўтариш", "textEn": "Raise both arms up", "textRu": "Поднять обе руки вверх" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "To‘xtash ishorasi qanday beriladi?",
+      "textUzc": "Тўхташ ишораси қандай берилади?",
+      "textEn": "How to give a stop hand signal?",
+      "textRu": "Как подаётся сигнал остановки рукой?",
+      "explanationUzl": "45-bandga ko‘ra: chap yoki o‘ng qo‘lni yuqoriga ko‘tarib beriladi.",
+      "explanationUzc": "45-бандга кўра: чап ёки ўнг қўлни юқорига кўтариб берилади.",
+      "explanationEn": "According to clause 45: raise left or right arm upward.",
+      "explanationRu": "Согласно пункту 45: поднять левую или правую руку вверх.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Qo‘lni pastga tushirish", "textUzc": "Қўлни пастга тушириш", "textEn": "Lower arm down", "textRu": "Опустить руку вниз" },
+        { "optionIndex": 1, "textUzl": "Qo‘lni yuqoriga ko‘tarish", "textUzc": "Қўлни юқорига кўтариш", "textEn": "Raise arm up", "textRu": "Поднять руку вверх" },
+        { "optionIndex": 2, "textUzl": "Qo‘lni oldinga uzatish", "textUzc": "Қўлни олдинга узатиш", "textEn": "Extend arm forward", "textRu": "Вытянуть руку вперёд" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Burilish ishorasini qachon to‘xtatish kerak?",
+      "textUzc": "Бурилиш ишорасини қачон тўхтатиш керак?",
+      "textEn": "When to turn off the turn signal?",
+      "textRu": "Когда выключать сигнал поворота?",
+      "explanationUzl": "46-bandga ko‘ra: manyovrni tugallagach, **darhol** to‘xtatilishi kerak.",
+      "explanationUzc": "46-бандга кўра: манёврни тугаллагач, **дарҳол** тўхтатилиши керак.",
+      "explanationEn": "According to clause 46: immediately after completing the maneuver.",
+      "explanationRu": "Согласно пункту 46: немедленно после завершения манёвра.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Manyovrdan keyin ham davom ettirish", "textUzc": "Манёврдан кейин ҳам давом эттириш", "textEn": "Continue after maneuver", "textRu": "Продолжать после манёвра" },
+        { "optionIndex": 1, "textUzl": "Manyovr tugagach darhol to‘xtatish", "textUzc": "Манёвр тугагач дарҳол тўхтатиш", "textEn": "Stop immediately after maneuver", "textRu": "Немедленно после манёвра" },
+        { "optionIndex": 2, "textUzl": "Faqat chorrahada to‘xtatish", "textUzc": "Фақат чорраҳада тўхтатиш", "textEn": "Only at intersection", "textRu": "Только на перекрёстке" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Avariya ishorasi (barcha burilish chiroqlari miltillashi) qachon yoqilishi kerak?",
+      "textUzc": "Авария ишораси (барча бурилиш чироқлари милтиллаши) қачон ёқилиши керак?",
+      "textEn": "When must hazard lights be turned on?",
+      "textRu": "Когда обязательно включать аварийную сигнализацию?",
+      "explanationUzl": "50-bandga ko‘ra: YTH sodir bo‘lganda, majburiy to‘xtashda, fara qamashtirganda, shatakka olinganda, bolalar chiqayotganda/tushayotganda va boshqa xavfli hollarda.",
+      "explanationUzc": "50-бандга кўра: ЙТҲ содир бўлганда, мажбурий тўхташда, фара қамаштирганда, шатакка олинганда, болалар чиқаётганда/тушаётганда ва бошқа хавфли ҳолларда.",
+      "explanationEn": "According to clause 50: in road accidents, forced stops, blinding headlights, towing, children boarding/exiting, and other dangerous situations.",
+      "explanationRu": "Согласно пункту 50: при ДТП, вынужденной остановке, ослеплении фарами, буксировке, посадке/высадке детей и других опасных ситуациях.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat kechasi", "textUzc": "Фақат кечаси", "textEn": "Only at night", "textRu": "Только ночью" },
+        { "optionIndex": 1, "textUzl": "YTH va majburiy to‘xtashda va boshqalar", "textUzc": "ЙТҲ ва мажбурий тўхташда ва бошқалар", "textEn": "In accidents, forced stops etc.", "textRu": "При ДТП, вынужденной остановке и др." },
+        { "optionIndex": 2, "textUzl": "Faqat tezlik oshirganda", "textUzc": "Фақат тезлик оширғанда", "textEn": "Only when speeding", "textRu": "Только при превышении скорости" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Avariya belgisi (uchburchak) qayerda va qancha masofada o‘rnatilishi kerak?",
+      "textUzc": "Авария белгиси (учбурчак) қаерда ва қанча масофада ўрнатилиши керак?",
+      "textEn": "Where and at what distance should the emergency triangle be placed?",
+      "textRu": "Где и на каком расстоянии ставить знак аварийной остановки?",
+      "explanationUzl": "51-bandga ko‘ra: aholi punktida 15 metrdan, tashqarida 30 metrdan kam bo‘lmasligi kerak; YTH, majburiy to‘xtash va ko‘rinish cheklangan joylarda.",
+      "explanationUzc": "51-бандга кўра: аҳоли пунктида 15 метрдан, ташқарида 30 метрдан кам бўлмаслиги керак; ЙТҲ, мажбурий тўхташ ва кўриниш чекланган жойларда.",
+      "explanationEn": "According to clause 51: not less than 15 m in populated areas, 30 m outside; in accidents, forced stops and limited visibility.",
+      "explanationRu": "Согласно пункту 51: не менее 15 м в населённых пунктах, 30 м за пределами; при ДТП, вынужденной остановке и ограниченной видимости.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "5 metr masofada", "textUzc": "5 метр масофада", "textEn": "At 5 m", "textRu": "На 5 м" },
+        { "optionIndex": 1, "textUzl": "Aholi punktida 15 m, tashqarida 30 m", "textUzc": "Аҳоли пунктида 15 м, ташқарида 30 м", "textEn": "15 m in town, 30 m outside", "textRu": "15 м в населённом пункте, 30 м вне" },
+        { "optionIndex": 2, "textUzl": "Faqat 10 metr", "textUzc": "Фақат 10 метр", "textEn": "Only 10 m", "textRu": "Только 10 м" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Shatakka olingan transportda avariya ishorasi ishlamasa nima qilish kerak?",
+      "textUzc": "Шатакка олинган транспортда авария ишораси ишламаса нима қилиш керак?",
+      "textEn": "What to do if hazard lights don't work on towed vehicle?",
+      "textRu": "Что делать, если аварийка не работает на буксируемом ТС?",
+      "explanationUzl": "52-bandga ko‘ra: orqa qismiga **avariya sababli to‘xtash belgisi** o‘rnatilishi kerak.",
+      "explanationUzc": "52-бандга кўра: орқа қисмига **авария сабабли тўхташ белгиси** ўрнатилиши керак.",
+      "explanationEn": "According to clause 52: place **emergency stop sign** on the rear.",
+      "explanationRu": "Согласно пункту 52: установить **знак аварийной остановки** сзади.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech narsa qilish shart emas", "textUzc": "Ҳеч нарса қилиш шарт эмас", "textEn": "Nothing required", "textRu": "Ничего не нужно" },
+        { "optionIndex": 1, "textUzl": "Orqaga avariya belgisi o‘rnatish", "textUzc": "Орқага авария белгиси ўрнатиш", "textEn": "Place emergency sign on rear", "textRu": "Установить знак аварийки сзади" },
+        { "optionIndex": 2, "textUzl": "Faqat oldinga o‘rnatish", "textUzc": "Фақат олдинга ўрнатиш", "textEn": "Only front", "textRu": "Только спереди" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tovushli ishorani qayerda va qachon ishlatish mumkin?",
+      "textUzc": "Товушли ишорани қаерда ва қачон ишлатиш мумкин?",
+      "textEn": "Where and when can the horn be used?",
+      "textRu": "Где и когда можно использовать звуковой сигнал?",
+      "explanationUzl": "48-bandga ko‘ra: aholi punktlaridan tashqarida quvib o‘tish uchun va hodisani oldini olish uchun zarur hollarda; boshqa hollarda taqiqlangan.",
+      "explanationUzc": "48-бандга кўра: аҳоли пунктларидан ташқарида қувиб ўтиш учун ва ҳодисани олдини олиш учун зарур ҳолларда; бошқа ҳолларда тақиқланган.",
+      "explanationEn": "According to clause 48: outside populated areas for overtaking warning and to prevent accidents; prohibited otherwise.",
+      "explanationRu": "Согласно пункту 48: за пределами населённых пунктов для предупреждения обгона и предотвращения ДТП; в других случаях запрещено.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har qanday joyda", "textUzc": "Ҳар қандай жойда", "textEn": "Anywhere", "textRu": "Везде" },
+        { "optionIndex": 1, "textUzl": "Tashqarida quvib o‘tish va xavfni oldini olish uchun", "textUzc": "Ташқарида қувиб ўтиш ва хавфни олдини олиш учун", "textEn": "Outside for overtaking and prevention", "textRu": "За городом для обгона и предотвращения" },
+        { "optionIndex": 2, "textUzl": "Faqat aholi punktida", "textUzc": "Фақат аҳоли пунктида", "textEn": "Only in town", "textRu": "Только в населённом пункте" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Fara chiroqlarini yoqib-o‘chirib ogohlantirish nimani bildiradi?",
+      "textUzc": "Фара чироқларини ёқиб-ўчириб огоҳлантириш нимани билдиради?",
+      "textEn": "What does flashing headlights mean?",
+      "textRu": "Что означает мигание фарами?",
+      "explanationUzl": "49-bandga ko‘ra: tovushli ishora o‘rniga yoki birga quvib o‘tish haqida ogohlantirish uchun ishlatiladi.",
+      "explanationUzc": "49-бандга кўра: товушли ишора ўрнига ёки бирга қувиб ўтиш ҳақида огоҳлантириш учун ишлатилади.",
+      "explanationEn": "According to clause 49: as an alternative or together with horn for overtaking warning.",
+      "explanationRu": "Согласно пункту 49: как альтернатива или вместе со звуковым сигналом для предупреждения об обгоне.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "To‘xtashni bildiradi", "textUzc": "Тўхташни билдиради", "textEn": "Indicates stop", "textRu": "Указывает на остановку" },
+        { "optionIndex": 1, "textUzl": "Quvib o‘tish haqida ogohlantirish", "textUzc": "Қувиб ўтиш ҳақида огоҳлантириш", "textEn": "Overtaking warning", "textRu": "Предупреждение об обгоне" },
+        { "optionIndex": 2, "textUzl": "Xavf-xatar ishorasi", "textUzc": "Хавф-хатар ишораси", "textEn": "Hazard signal", "textRu": "Аварийный сигнал" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

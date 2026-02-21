@@ -1,0 +1,160 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_starting_maneuvering",
+      "nameUzl": "Harakatlanishni boshlash, manyovr qilish",
+      "nameUzc": "Ҳаракатланишни бошлаш, манёвр қилиш",
+      "nameEn": "Starting Movement and Maneuvering",
+      "nameRu": "Начало движения и маневрирование",
+      "descriptionUzl": "Harakatni boshlash, qayta tizilish, burilish, qayrilib olish, quvib o‘tish, aylanib o‘tish, yondosh hududdan chiqish, orqaga harakatlanish, qayrilib olish taqiqlangan joylar va xavfsizlik talablari bo‘yicha savollar.",
+      "descriptionUzc": "Ҳаракатни бошлаш, қайта тизилиш, бурилиш, қайрилиб олиш, қувиб ўтиш, айланиб ўтиш, ёндош ҳудуддан чиқиш, орқага ҳаракатланиш, қайрилиб олиш тақиқланган жойлар ва хавфсизлик талаблари бўйича саволлар.",
+      "descriptionEn": "Questions on starting movement, lane changing, turning, U-turns, overtaking, entering from adjacent areas, reversing, prohibited U-turn locations and safety requirements.",
+      "descriptionRu": "Вопросы по началу движения, перестроению, поворотам, развороту, обгону, выезду из прилегающих территорий, движению задним ходом, местам, где разворот запрещён, и требованиям безопасности.",
+      "iconUrl": null,
+      "displayOrder": 9,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Haydovchi manyovr qilishdan oldin nima qilishi kerak?",
+      "textUzc": "Ҳайдовчи манёвр қилишдан олдин нима қилиши керак?",
+      "textEn": "What must a driver do before performing a maneuver?",
+      "textRu": "Что обязан сделать водитель перед выполнением манёвра?",
+      "explanationUzl": "53-bandga ko‘ra: manyovr boshqa ishtirokchilarga xavf tug‘dirmasligi kerak (xavfsizlikni ta’minlash majburiy).",
+      "explanationUzc": "53-бандга кўра: манёвр бошқа иштирокчиларга хавф туғдирмаслиги керак (хавфсизликни таъминлаш мажбурий).",
+      "explanationEn": "According to clause 53: the maneuver must not create danger for other road users (safety must be ensured).",
+      "explanationRu": "Согласно пункту 53: манёвр не должен создавать опасности для других участников (обязательно обеспечить безопасность).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech narsa qilish shart emas", "textUzc": "Ҳеч нарса қилиш шарт эмас", "textEn": "Nothing required", "textRu": "Ничего не нужно" },
+        { "optionIndex": 1, "textUzl": "Xavf tug‘dirmasligini ta’minlash", "textUzc": "Хавф туғдирмаслигини таъминлаш", "textEn": "Ensure no danger", "textRu": "Обеспечить отсутствие опасности" },
+        { "optionIndex": 2, "textUzl": "Faqat signal berish", "textUzc": "Фақат сигнал бериш", "textEn": "Only give signal", "textRu": "Только подать сигнал" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yondosh hududdan yo‘lga chiqayotgan haydovchi kimga yo‘l berishi kerak?",
+      "textUzc": "Ёндош ҳудуддан йўлга чиқаётган ҳайдовчи кимга йўл бериши керак?",
+      "textEn": "To whom must a driver exiting an adjacent area yield?",
+      "textRu": "Кому должен уступить водитель, выезжающий из прилегающей территории?",
+      "explanationUzl": "54-bandga ko‘ra: yo‘lda harakatlanayotgan piyodalar va transport vositalariga, shuningdek chiqishda kesib o‘tayotgan piyodalar va velosipedchilarga yo‘l berish shart.",
+      "explanationUzc": "54-бандга кўра: йўлда ҳаракатланаётган пиёдалар ва транспорт воситаларига, шунингдек чиқишда кесиб ўтаётган пиёдалар ва велосипедчиларга йўл бериш шарт.",
+      "explanationEn": "According to clause 54: yield to pedestrians and vehicles on the road, and to those crossing during exit.",
+      "explanationRu": "Согласно пункту 54: уступить пешеходам и ТС на дороге, а также пересекающим при выезде.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech kimga", "textUzc": "Ҳеч кимга", "textEn": "No one", "textRu": "Никому" },
+        { "optionIndex": 1, "textUzl": "Yo‘ldagi piyodalar va transportga", "textUzc": "Йўлдаги пиёдалар ва транспортга", "textEn": "To road pedestrians and vehicles", "textRu": "Пешеходам и ТС на дороге" },
+        { "optionIndex": 2, "textUzl": "Faqat tez harakatlanayotganlarga", "textUzc": "Фақат тез ҳаракатланаётганларга", "textEn": "Only fast-moving", "textRu": "Только быстро движущимся" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qayta tizilishda haydovchi kimga yo‘l berishi kerak?",
+      "textUzc": "Қайта тизилишда ҳайдовчи кимга йўл бериши керак?",
+      "textEn": "To whom must a driver yield when changing lanes?",
+      "textRu": "Кому должен уступить водитель при перестроении?",
+      "explanationUzl": "55-bandga ko‘ra: harakat yo‘nalishini o‘zgartirmasdan harakatlanayotgan yo‘lakay transport vositalariga yo‘l berish shart. Bir vaqtda qayta tizilayotganda o‘ngdagiga yo‘l beriladi.",
+      "explanationUzc": "55-бандга кўра: ҳаракат йўналишини ўзгартирмасдан ҳаракатланаётган йўлакей транспорт воситаларига йўл бериш шарт. Бир вақтда қайта тизилаётганда ўнггагига йўл берилади.",
+      "explanationEn": "According to clause 55: yield to vehicles not changing direction. When simultaneous, yield to right.",
+      "explanationRu": "Согласно пункту 55: уступить не меняющим полосу. При одновременном — уступить правому.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Chapdagiga", "textUzc": "Чапдагига", "textEn": "To the left", "textRu": "Левому" },
+        { "optionIndex": 1, "textUzl": "O‘ngdagiga va yo‘lakey transportga", "textUzc": "Ўнгдагига ва йўлакей транспортга", "textEn": "To the right and adjacent", "textRu": "Правому и соседнему" },
+        { "optionIndex": 2, "textUzl": "Hech kimga", "textUzc": "Ҳеч кимга", "textEn": "No one", "textRu": "Никому" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Aylanma harakatli chorrahaga kirishdan oldin qaysi holatni egallash kerak?",
+      "textUzc": "Айланма ҳаракатли чорраҳага киришдан олдин қайси ҳолатни эгаллаш керак?",
+      "textEn": "Which lane to occupy before entering a roundabout?",
+      "textRu": "Какую полосу занять перед въездом на кольцевую развязку?",
+      "explanationUzl": "56-bandga ko‘ra: burilishdan boshqa hollarda eng chetki holatni egallash shart (o‘ng yoki chap burilish uchun mos holat).",
+      "explanationUzc": "56-бандга кўра: бурилишдан бошқа ҳолларда энг четки ҳолатни эгаллаш шарт (ўнг ёки чап бурилиш учун мос ҳолат).",
+      "explanationEn": "According to clause 56: occupy the extreme lane before turning (except for other cases).",
+      "explanationRu": "Согласно пункту 56: занять крайнюю полосу перед поворотом (кроме других случаев).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "O‘rta holatni", "textUzc": "Ўрта ҳолатни", "textEn": "Middle lane", "textRu": "Среднюю полосу" },
+        { "optionIndex": 1, "textUzl": "Eng chetki holatni", "textUzc": "Энг четки ҳолатни", "textEn": "Extreme lane", "textRu": "Крайнюю полосу" },
+        { "optionIndex": 2, "textUzl": "Istagan holatni", "textUzc": "Истаган ҳолатни", "textEn": "Any lane", "textRu": "Любую полосу" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qayrilib olish taqiqlangan joylar qaysilar?",
+      "textUzc": "Қайрилиб олиш тақиқланган жойлар қайсилар?",
+      "textEn": "Where is U-turn prohibited?",
+      "textRu": "Где запрещён разворот?",
+      "explanationUzl": "62-bandga ko‘ra: piyodalar o‘tish joylarida, tunnellarda, ko‘priklar va ostida, temir yo‘l kesishmalarida, ko‘rinish 100 m dan kam joylarda.",
+      "explanationUzc": "62-бандга кўра: пиёдалар ўтиш жойларида, туннелларда, кўприклар ва остида, темир йўл кесишмаларида, кўриниш 100 м дан кам жойларда.",
+      "explanationEn": "According to clause 62: pedestrian crossings, tunnels, bridges and under them, railway crossings, visibility less than 100 m.",
+      "explanationRu": "Согласно пункту 62: пешеходные переходы, туннели, мосты и под ними, ж/д переезды, видимость менее 100 м.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat chorrahada", "textUzc": "Фақат чорраҳада", "textEn": "Only at intersection", "textRu": "Только на перекрёстке" },
+        { "optionIndex": 1, "textUzl": "Piyodalar o‘tish joyi, tunnel va boshqalar", "textUzc": "Пиёдалар ўтиш жойи, туннел ва бошқалар", "textEn": "Pedestrian crossing, tunnel etc.", "textRu": "Пешеходный переход, туннель и др." },
+        { "optionIndex": 2, "textUzl": "Har qanday joyda ruxsat", "textUzc": "Ҳар қандай жойда рухсат", "textEn": "Allowed anywhere", "textRu": "Разрешено везде" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Orqaga harakatlanish qayerda taqiqlangan?",
+      "textUzc": "Орқага ҳаракатланиш қаерда тақиқланган?",
+      "textEn": "Where is reversing prohibited?",
+      "textRu": "Где запрещено движение задним ходом?",
+      "explanationUzl": "63-bandga ko‘ra: chorrahalarda va qayrilib olish taqiqlangan joylarda (62-band).",
+      "explanationUzc": "63-бандга кўра: чорраҳаларда ва қайрилиб олиш тақиқланган жойларда (62-банд).",
+      "explanationEn": "According to clause 63: at intersections and places where U-turn is prohibited (clause 62).",
+      "explanationRu": "Согласно пункту 63: на перекрёстках и в местах, где запрещён разворот (пункт 62).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har qanday joyda mumkin", "textUzc": "Ҳар қандай жойда мумкин", "textEn": "Allowed anywhere", "textRu": "Разрешено везде" },
+        { "optionIndex": 1, "textUzl": "Chorrahalarda va taqiqlangan joylarda", "textUzc": "Чорраҳаларда ва тақиқланган жойларда", "textEn": "At intersections and prohibited places", "textRu": "На перекрёстках и в запрещённых местах" },
+        { "optionIndex": 2, "textUzl": "Faqat aholi punktida", "textUzc": "Фақат аҳоли пунктида", "textEn": "Only in populated areas", "textRu": "Только в населённых пунктах" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Chorrahadan tashqarida chapga burilishda kimga yo‘l berish kerak?",
+      "textUzc": "Чорраҳадан ташқарида чапга бурилишда кимга йўл бериш керак?",
+      "textEn": "To whom to yield when turning left outside intersection?",
+      "textRu": "Кому уступить при левом повороте вне перекрёстка?",
+      "explanationUzl": "59-bandga ko‘ra: qarama-qarshi yo‘nalishdan kelgan transport va bir yo‘nalishdagi tramvayga yo‘l berish shart.",
+      "explanationUzc": "59-бандга кўра: қарама-қарши йўналишдан келган транспорт ва бир йўналишдаги трамвайга йўл бериш шарт.",
+      "explanationEn": "According to clause 59: yield to oncoming vehicles and tram in same direction.",
+      "explanationRu": "Согласно пункту 59: уступить встречному транспорту и трамваю попутного направления.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech kimga", "textUzc": "Ҳеч кимга", "textEn": "No one", "textRu": "Никому" },
+        { "optionIndex": 1, "textUzl": "Qarama-qarshi va tramvayga", "textUzc": "Қарама-қарши ва трамвайга", "textEn": "Oncoming and tram", "textRu": "Встречному и трамваю" },
+        { "optionIndex": 2, "textUzl": "Faqat o‘ngdagiga", "textUzc": "Фақат ўнгдагига", "textEn": "Only right", "textRu": "Только правому" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

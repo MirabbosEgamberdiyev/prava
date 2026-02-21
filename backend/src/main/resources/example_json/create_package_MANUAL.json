@@ -1,0 +1,20 @@
+{
+  "nameUzl": "Yo'l belgilari test paketi",
+  "nameUzc": "Йўл белгилари тест пакети",
+  "nameEn": "Road Signs Test Package",
+  "nameRu": "Тестовый пакет дорожных знаков",
+  "descriptionUzl": "Yo'l belgilarini bilish darajasini tekshirish uchun maxsus tanlangan savollar",
+  "descriptionUzc": "Йўл белгиларини билиш даражасини текшириш учун махсус танланган саволлар",
+  "descriptionEn": "Specially selected questions to test knowledge of road signs",
+  "descriptionRu": "Специально отобранные вопросы для проверки знаний дорожных знаков",
+  "questionCount": 5,
+  "durationMinutes": 10,
+  "passingScore": 80,
+  "generationType": "MANUAL",
+  "topicId": null,
+  "isFree": true,
+  "price": 0,
+  "orderIndex": 1,
+  "isActive": true,
+  "questionIds": [1, 2, 3, 4, 5]
+}

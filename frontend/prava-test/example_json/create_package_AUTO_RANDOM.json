@@ -1,0 +1,20 @@
+{
+  "nameUzl": "Umumiy bilim testi",
+  "nameUzc": "Умумий билим тести",
+  "nameEn": "General Knowledge Test",
+  "nameRu": "Общий тест знаний",
+  "descriptionUzl": "Barcha mavzulardan tasodifiy savollar",
+  "descriptionUzc": "Барча мавзулардан тасодифий саволлар",
+  "descriptionEn": "Random questions from all topics",
+  "descriptionRu": "Случайные вопросы из всех тем",
+  "questionCount": 20,
+  "durationMinutes": 30,
+  "passingScore": 70,
+  "generationType": "AUTO_RANDOM",
+  "topicId": null,
+  "isFree": true,
+  "price": 0,
+  "orderIndex": 2,
+  "isActive": true,
+  "questionIds": []
+}

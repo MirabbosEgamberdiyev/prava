@@ -1,0 +1,120 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_overtaking",
+      "nameUzl": "Quvib o‘tish",
+      "nameUzc": "Қувиб ўтиш",
+      "nameEn": "Overtaking",
+      "nameRu": "Обгон",
+      "descriptionUzl": "Quvib o‘tishni boshlashdan oldin ishonch hosil qilish, chapga burilish ishorasi, quvib o‘tilayotganni to‘sqinlik qilmaslik, tugallash tartibi, taqiqlangan joylar va sekin harakatlanayotgan transport uchun talablar bo‘yicha savollar.",
+      "descriptionUzc": "Қувиб ўтишни бошлашдан олдин ишонч ҳосил қилиш, чапга бурилиш ишораси, қувиб ўтилаётганни тўсқинлик қилмаслик, тугаллаш тартиби, тақиқланган жойлар ва секин ҳаракатланаётган транспорт учун талаблар бўйича саволлар.",
+      "descriptionEn": "Questions on preparations before overtaking, left turn signal, not hindering the overtaken vehicle, completing overtaking, prohibited locations and requirements for slow-moving vehicles.",
+      "descriptionRu": "Вопросы по подготовке к обгону, сигналу левого поворота, не создавать помех обгоняемому, завершению обгона, запрещённым местам и требованиям для тихоходных ТС.",
+      "iconUrl": null,
+      "displayOrder": 12,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Quvib o‘tishni boshlashdan oldin haydovchi nimalarga ishonch hosil qilishi kerak?",
+      "textUzc": "Қувиб ўтишни бошлашдан олдин ҳайдовчи нималарга ишонч ҳосил қилиши керак?",
+      "textEn": "What must the driver ensure before starting overtaking?",
+      "textRu": "В чём должен убедиться водитель перед началом обгона?",
+      "explanationUzl": "82-bandga ko‘ra: chapga burilish ishorasi yoqilganda: quvib o‘tish bo‘lagi bo‘sh, xavf yo‘q, xalaqit bermaydi; orqada quvib o‘tish boshlanmagan; oldinda chap burilish ishorasi yo‘q; tugallaganda xalaqit bermasdan qaytish mumkin.",
+      "explanationUzc": "82-бандга кўра: чапга бурилиш ишораси ёқилганда: қувиб ўтиш боғи бўш, хавф йўқ, халақит бермайди; орқада қувиб ўтиш бошланмаган; олдинда чап бурилиш ишораси йўқ; тугаллагач халақит бермасдан қайтиш мумкин.",
+      "explanationEn": "According to clause 82: with left turn signal on: overtaking lane free and safe, no interference, no one starting overtake behind, no left signal ahead, can return safely.",
+      "explanationRu": "Согласно пункту 82: с включённым сигналом левого поворота: полоса обгона свободна и безопасна, нет помех, никто не начал обгон сзади, нет сигнала поворота впереди, можно безопасно вернуться.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat oldinga qarash", "textUzc": "Фақат олдинга қараш", "textEn": "Only look forward", "textRu": "Только смотреть вперёд" },
+        { "optionIndex": 1, "textUzl": "Bo‘shlik, xavfsizlik va qaytish imkoniyatiga", "textUzc": "Бўшлик, хавфсизлик ва қайтиш имкониятига", "textEn": "Free lane, safety and return possibility", "textRu": "Свободная полоса, безопасность и возможность возврата" },
+        { "optionIndex": 2, "textUzl": "Faqat tezlikni oshirishga", "textUzc": "Фақат тезликни оширишга", "textEn": "Only increasing speed", "textRu": "Только увеличению скорости" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Quvib o‘tilayotgan transport haydovchisi nima qilishi taqiqlangan?",
+      "textUzc": "Қувиб ўтилаётган транспорт ҳайдовчиси нима қилиши тақиқланган?",
+      "textEn": "What is prohibited for the driver of the overtaken vehicle?",
+      "textRu": "Что запрещено водителю обгоняемого ТС?",
+      "explanationUzl": "84-bandga ko‘ra: tezlikni oshirish yoki boshqa xatti-harakatlar bilan quvib o‘tishga to‘sqinlik qilish taqiqlanadi.",
+      "explanationUzc": "84-бандга кўра: тезликни ошириш ёки бошқа хатти-ҳаракатлар билан қувиб ўтишга тўсқинлик қилиш тақиқланади.",
+      "explanationEn": "According to clause 84: prohibited to increase speed or otherwise hinder overtaking.",
+      "explanationRu": "Согласно пункту 84: запрещено увеличивать скорость или иным образом препятствовать обгону.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tezlikni kamaytirish", "textUzc": "Тезликни камайтириш", "textEn": "Decrease speed", "textRu": "Уменьшать скорость" },
+        { "optionIndex": 1, "textUzl": "To‘sqinlik qilish va tezlik oshirish", "textUzc": "Тўсқинлик қилиш ва тезлик ошириш", "textEn": "Hinder and increase speed", "textRu": "Препятствовать и увеличивать скорость" },
+        { "optionIndex": 2, "textUzl": "Signal berish", "textUzc": "Сигнал бериш", "textEn": "Give signal", "textRu": "Подавать сигнал" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Quvib o‘tishni tugallagandan so‘ng haydovchi nima qilishi kerak?",
+      "textUzc": "Қувиб ўтишни тугаллагач ҳайдовчи нима қилиши керак?",
+      "textEn": "What must the driver do after completing overtaking?",
+      "textRu": "Что должен сделать водитель после завершения обгона?",
+      "explanationUzl": "85-bandga ko‘ra: ilgari egallagan harakatlanish yo‘nalishiga **qaytishi** shart.",
+      "explanationUzc": "85-бандга кўра: илгари эгаллаган ҳаракатланиш йўналишига **қайтиши** шарт.",
+      "explanationEn": "According to clause 85: must return to the previously occupied lane.",
+      "explanationRu": "Согласно пункту 85: должен вернуться в ранее занимаемую полосу.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Chap tasmasida qolish", "textUzc": "Чап тасмасида қолиш", "textEn": "Stay in left lane", "textRu": "Оставаться в левой полосе" },
+        { "optionIndex": 1, "textUzl": "Ilgari egallagan qatorga qaytish", "textUzc": "Илгари эгаллаган қаторга қайтиш", "textEn": "Return to previous lane", "textRu": "Вернуться в предыдущую полосу" },
+        { "optionIndex": 2, "textUzl": "To‘xtab turish", "textUzc": "Тўхтаб туриш", "textEn": "Stop", "textRu": "Остановиться" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Quvib o‘tish qayerda taqiqlangan?",
+      "textUzc": "Қувиб ўтиш қаерда тақиқланган?",
+      "textEn": "Where is overtaking prohibited?",
+      "textRu": "Где запрещён обгон?",
+      "explanationUzl": "86-bandga ko‘ra: tartibga solingan va solinmaydigan chorrahalarda (asosiy bo‘lmagan yo‘llarda), ko‘priklar va ostida, piyodalar o‘tish joylarida, temir yo‘l kesishmalarida, ko‘rinish 100 m dan kam joylarda va 3.20, 3.22 belgilari ta’sirida.",
+      "explanationUzc": "86-бандга кўра: тартибга солинган ва солинмайдиган чорраҳаларда (асосий бўлмаган йўлларда), кўприклар ва остида, пиёдалар ўтиш жойларида, темир йўл кесишмаларида, кўриниш 100 м дан кам жойларда ва 3.20, 3.22 белгилари таъсирида.",
+      "explanationEn": "According to clause 86: regulated and unregulated intersections (non-main roads), bridges and under, pedestrian crossings, railway crossings, visibility <100 m, and under signs 3.20, 3.22.",
+      "explanationRu": "Согласно пункту 86: регулируемые и нерегулируемые перекрёстки (неглавные дороги), мосты и под ними, пешеходные переходы, ж/д переезды, видимость менее 100 м, в зоне знаков 3.20, 3.22.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har qanday joyda ruxsat", "textUzc": "Ҳар қандай жойда рухсат", "textEn": "Allowed anywhere", "textRu": "Разрешён везде" },
+        { "optionIndex": 1, "textUzl": "Chorraha, ko‘prik, piyodalar o‘tish joyida va boshqalar", "textUzc": "Чорраҳа, кўприк, пиёдалар ўтиш жойида ва бошқалар", "textEn": "Intersections, bridges, pedestrian crossings etc.", "textRu": "Перекрёстки, мосты, пешеходные переходы и др." },
+        { "optionIndex": 2, "textUzl": "Faqat aholi punktida", "textUzc": "Фақат аҳоли пунктида", "textEn": "Only in populated areas", "textRu": "Только в населённых пунктах" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Sekin harakatlanayotgan transport haydovchisi nima qilishi kerak?",
+      "textUzc": "Секин ҳаракатланаётган транспорт ҳайдовчиси нима қилиши керак?",
+      "textEn": "What must the driver of a slow-moving vehicle do?",
+      "textRu": "Что обязан сделать водитель тихоходного ТС?",
+      "explanationUzl": "87-bandga ko‘ra: aholi punktlaridan tashqarida quvib o‘tish qiyin bo‘lsa, o‘ng tomoniga olishi va zarur bo‘lsa to‘xtab ortda to‘planganlarni o‘tkazib yuborishi kerak.",
+      "explanationUzc": "87-бандга кўра: аҳоли пунктларидан ташқарида қувиб ўтиш қийин бўлса, ўнг томонига олиши ва зарур бўлса тўхтаб ортда тўпланганларни ўтказиб юбориши керак.",
+      "explanationEn": "According to clause 87: outside populated areas if overtaking difficult, move to right and stop to let accumulated vehicles pass if necessary.",
+      "explanationRu": "Согласно пункту 87: за пределами населённых пунктов при трудном обгоне — прижаться вправо и остановиться, чтобы пропустить скопившиеся ТС при необходимости.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tezlikni oshirish", "textUzc": "Тезликни ошириш", "textEn": "Increase speed", "textRu": "Увеличить скорость" },
+        { "optionIndex": 1, "textUzl": "O‘ng tomoniga olish va zarur bo‘lsa to‘xtash", "textUzc": "Ўнг томонига олиш ва зарур бўлса тўхташ", "textEn": "Move to right and stop if needed", "textRu": "Прижаться вправо и остановиться при необходимости" },
+        { "optionIndex": 2, "textUzl": "Hech narsa qilmaslik", "textUzc": "Ҳеч нарса қилмаслик", "textEn": "Do nothing", "textRu": "Ничего не делать" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

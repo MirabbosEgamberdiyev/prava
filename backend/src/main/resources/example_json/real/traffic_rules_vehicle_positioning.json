@@ -1,0 +1,180 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_vehicle_positioning",
+      "nameUzl": "Yo‘lning qatnov qismida transport vositalarining joylashuvi",
+      "nameUzc": "Йўлнинг қатнов қисмида транспорт воситаларининг жойлашуви",
+      "nameEn": "Positioning of Vehicles on the Roadway",
+      "nameRu": "Расположение транспортных средств на проезжей части",
+      "descriptionUzl": "Tasmalarga joylashuv, chap/o‘ng chetga yaqin harakat, qarama-qarshi yo‘nalishga chiqish taqiqlari, yuk avtomobillari uchun cheklovlar, tramvay yo‘llari, oraliq masofalar, to‘siq va xavfsizlik orolchalari bo‘yicha savollar.",
+      "descriptionUzc": "Тасмаларга жойлашув, чап/ўнг четга яқин ҳаракат, қарама-қарши йўналишга чиқиш тақиқлари, юк автомобиллари учун чекловлар, трамвай йўллари, оралиқ масофалар, тўсиқ ва хавфсизлик оролчалари бўйича саволлар.",
+      "descriptionEn": "Questions on lane positioning, staying close to right/left edge, prohibition of entering opposite direction, restrictions for trucks, tram tracks, safe distances, obstacles and safety islands.",
+      "descriptionRu": "Вопросы по расположению по полосам, движению ближе к правому/левому краю, запрету выезда на встречную полосу, ограничениям для грузовиков, трамвайным путям, безопасным дистанциям, препятствиям и островкам безопасности.",
+      "iconUrl": null,
+      "displayOrder": 10,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Relssiz transport vositalari tasmalari qanday belgilanadi?",
+      "textUzc": "Релссиз транспорт воситалари тасмалари қандай белгиланади?",
+      "textEn": "How are lanes for non-rail vehicles determined?",
+      "textRu": "Как определяются полосы для безрельсовых ТС?",
+      "explanationUzl": "64-bandga ko‘ra: chiziqlar va 5.8.1, 5.8.2, 5.8.7, 5.8.8 belgilari bilan; bo‘lmasa haydovchi kenglik, oraliq va gabaritlarni hisobga olib o‘zi aniqlaydi.",
+      "explanationUzc": "64-бандга кўра: чизиқлар ва 5.8.1, 5.8.2, 5.8.7, 5.8.8 белгилари билан; бўлмаса ҳайдовчи кенглик, оралиқ ва габаритларни ҳисобга олиб ўзи аниқлайди.",
+      "explanationEn": "According to clause 64: by road markings and signs 5.8.1 etc.; otherwise driver determines based on width, spacing and dimensions.",
+      "explanationRu": "Согласно пункту 64: разметкой и знаками 5.8.1 и т.д.; иначе водитель определяет по ширине, интервалам и габаритам.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat haydovchi o‘zi", "textUzc": "Фақат ҳайдовчи ўзи", "textEn": "Only by driver", "textRu": "Только водителем" },
+        { "optionIndex": 1, "textUzl": "Chiziqlar va belgilarga ko‘ra", "textUzc": "Чизиқлар ва белгиларга кўра", "textEn": "By markings and signs", "textRu": "По разметке и знакам" },
+        { "optionIndex": 2, "textUzl": "Faqat politsiya belgilaydi", "textUzc": "Фақат полиция белгилайди", "textEn": "Only police", "textRu": "Только полицией" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Ikki tomonlama harakatli yo‘llarda qarama-qarshi tasmalarga chiqish taqiqlanganmi?",
+      "textUzc": "Икки томонлама ҳаракатли йўлларда қарама-қарши тасмаларга чиқиш тақиқланганми?",
+      "textEn": "Is entering opposite lanes prohibited on two-way roads?",
+      "textRu": "Запрещён ли выезд на встречную полосу на дорогах с двусторонним движением?",
+      "explanationUzl": "64-bandga ko‘ra: tramvay yo‘li, ajratuvchi mintaqa, uzluksiz chiziqlar bilan ajratilgan yo‘llarda **taqiqlanadi**.",
+      "explanationUzc": "64-бандга кўра: трамвай йўли, ажратувчи минтақа, узлуксиз чизиқлар билан ажратилган йўлларда **тақиқланади**.",
+      "explanationEn": "According to clause 64: **prohibited** on roads separated by tram tracks, divider, solid lines.",
+      "explanationRu": "Согласно пункту 64: **запрещён** на дорогах с трамвайными путями, разделителем, сплошными линиями.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ruxsat etilgan", "textUzc": "Рухсат этилган", "textEn": "Allowed", "textRu": "Разрешён" },
+        { "optionIndex": 1, "textUzl": "Taqiqlangan", "textUzc": "Тақиқланган", "textEn": "Prohibited", "textRu": "Запрещён" },
+        { "optionIndex": 2, "textUzl": "Faqat kechasi ruxsat", "textUzc": "Фақат кечаси рухсат", "textEn": "Only at night", "textRu": "Только ночью" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Uch tasmali ikki tomonlama yo‘lda o‘rta qatorga qachon chiqish mumkin?",
+      "textUzc": "Уч тасмали икки томонлама йўлда ўрта қаторга қачон чиқиш мумкин?",
+      "textEn": "When can you enter the middle lane on a three-lane two-way road?",
+      "textRu": "Когда можно выезжать на среднюю полосу на трёхполосной дороге с двусторонним движением?",
+      "explanationUzl": "66-bandga ko‘ra: faqat quvib o‘tish, aylanib o‘tish, chapga burilish va qayrilib olish uchun; chetki chap qatorni egallash taqiqlangan.",
+      "explanationUzc": "66-бандга кўра: фақат қувиб ўтиш, айланиб ўтиш, чапга бурилиш ва қайрилиб олиш учун; четки чап қаторни эгаллаш тақиқланган.",
+      "explanationEn": "According to clause 66: only for overtaking, passing, left turn and U-turn; occupying extreme left lane prohibited.",
+      "explanationRu": "Согласно пункту 66: только для обгона, объезда, левого поворота и разворота; занятие крайней левой полосы запрещено.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har doim mumkin", "textUzc": "Ҳар доим мумкин", "textEn": "Always allowed", "textRu": "Всегда разрешено" },
+        { "optionIndex": 1, "textUzl": "Faqat quvib o‘tish va burilish uchun", "textUzc": "Фақат қувиб ўтиш ва бурилиш учун", "textEn": "Only for overtaking and turning", "textRu": "Только для обгона и поворота" },
+        { "optionIndex": 2, "textUzl": "Umuman mumkin emas", "textUzc": "Умуман мумкин эмас", "textEn": "Never allowed", "textRu": "Никогда не разрешено" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Aholi punktlaridan tashqarida haydovchilar qayerga yaqinroq harakatlanishi kerak?",
+      "textUzc": "Аҳоли пунктларидан ташқарида ҳайдовчилар қаерга яқинроқ ҳаракатланиши керак?",
+      "textEn": "Where should drivers stay closer outside populated areas?",
+      "textRu": "Где должны двигаться ближе водители за пределами населённых пунктов?",
+      "explanationUzl": "67-bandga ko‘ra: qatnov qismining **o‘ng chetiga** yaqinroq; o‘ng tasmalar bo‘sh bo‘lganda chap tasmalarni egallash taqiqlanadi.",
+      "explanationUzc": "67-бандга кўра: қатнов қисмининг **ўнг чегига** яқинроқ; ўнг тасмалар бўш бўлганда чап тасмаларни эгаллаш тақиқланган.",
+      "explanationEn": "According to clause 67: closer to the **right edge**; prohibited to occupy left lanes if right are free.",
+      "explanationRu": "Согласно пункту 67: ближе к **правому краю**; запрещено занимать левые полосы, если правые свободны.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Chap chetiga", "textUzc": "Чап чегига", "textEn": "Left edge", "textRu": "К левому краю" },
+        { "optionIndex": 1, "textUzl": "O‘ng chetiga", "textUzc": "Ўнг чегига", "textEn": "Right edge", "textRu": "К правому краю" },
+        { "optionIndex": 2, "textUzl": "O‘rtaga", "textUzc": "Ўртага", "textEn": "Middle", "textRu": "К середине" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tezligi 40 km/soatdan oshmaydigan transport qaysi qatorida harakatlanishi kerak?",
+      "textUzc": "Тезлиги 40 км/соатдан ошмайдиган транспорт қайси қаторида ҳаракатланиши керак?",
+      "textEn": "In which lane should vehicles with max speed 40 km/h move?",
+      "textRu": "В какой полосе должны двигаться ТС с максимальной скоростью 40 км/ч?",
+      "explanationUzl": "68-bandga ko‘ra: chetki o‘ng qatorida (quvib o‘tish, chap burilish, qayrilib olish va chap tomon to‘xtashdan tashqari).",
+      "explanationUzc": "68-бандга кўра: четки ўнг қаторида (қувиб ўтиш, чап бурилиш, қайрилиб олиш ва чап томон тўхташдан ташқари).",
+      "explanationEn": "According to clause 68: extreme right lane (except for overtaking, left turn, U-turn and left-side stopping).",
+      "explanationRu": "Согласно пункту 68: крайняя правая полоса (кроме обгона, левого поворота, разворота и остановки слева).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Chap qatorida", "textUzc": "Чап қаторида", "textEn": "Left lane", "textRu": "Левая полоса" },
+        { "optionIndex": 1, "textUzl": "Chetki o‘ng qatorida", "textUzc": "Четки ўнг қаторида", "textEn": "Extreme right lane", "textRu": "Крайняя правая полоса" },
+        { "optionIndex": 2, "textUzl": "O‘rta qatorida", "textUzc": "Ўрта қаторида", "textEn": "Middle lane", "textRu": "Средняя полоса" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tramvay yo‘lidan qaysi hollarda foydalanish mumkin?",
+      "textUzc": "Трамвай йўлидан қайси ҳолларда фойдаланиш мумкин?",
+      "textEn": "In which cases can tram tracks be used?",
+      "textRu": "В каких случаях можно использовать трамвайные пути?",
+      "explanationUzl": "69-bandga ko‘ra: bir yo‘nalishdagi chap tomonidagi tramvay yo‘lidan (boshqa tasmalar band bo‘lganda), tramvayga xalaqit bermasdan foydalanish mumkin; qarama-qarshi yo‘nalishdagi tramvay yo‘lidan taqiqlangan.",
+      "explanationUzc": "69-бандга кўра: бир йўналишдаги чап томонидаги трамвай йўлидан (бошқа тасмалар банд бўлганда), трамвайга халақит бермасдан фойдаланиш мумкин; қарама-қарши йўналишдаги трамвай йўлидан тақиқланган.",
+      "explanationEn": "According to clause 69: same-direction left-side tram tracks (if other lanes occupied), without hindering tram; opposite-direction prohibited.",
+      "explanationRu": "Согласно пункту 69: попутные трамвайные пути слева (если другие полосы заняты), без помех трамваю; встречные запрещены.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har doim mumkin", "textUzc": "Ҳар доим мумкин", "textEn": "Always allowed", "textRu": "Всегда разрешено" },
+        { "optionIndex": 1, "textUzl": "Bir yo‘nalishda, xalaqit bermasdan", "textUzc": "Бир йўналишда, халақит бермасдан", "textEn": "Same direction, without hindrance", "textRu": "Попутно, без помех" },
+        { "optionIndex": 2, "textUzl": "Umuman mumkin emas", "textUzc": "Умуман мумкин эмас", "textEn": "Never allowed", "textRu": "Никогда не разрешено" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qatnov qismi chiziqlar bilan ajratilgan bo‘lsa, harakat qayerda amalga oshirilishi kerak?",
+      "textUzc": "Қатнов қисми чизиқлар билан ажратилган бўлса, ҳаракат қаерда амалга оширилиши керак?",
+      "textEn": "If roadway is divided by markings, where must movement occur?",
+      "textRu": "Если проезжая часть разделена разметкой, где должно происходить движение?",
+      "explanationUzl": "70-bandga ko‘ra: qat’iy ravishda belgilangan tasmalarda; faqat qayta tizilishda uzuq-uzuq chiziqlarni bosib o‘tish mumkin.",
+      "explanationUzc": "70-бандга кўра: қатъий равишда белгиланган тасмаларда; фақат қайта тизилишда узоқ-узоқ чизиқларни босиб ўтиш мумкин.",
+      "explanationEn": "According to clause 70: strictly in designated lanes; crossing broken lines only for lane change.",
+      "explanationRu": "Согласно пункту 70: строго по обозначенным полосам; пересекать прерывистые линии только при перестроении.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Istagan joyda", "textUzc": "Истаган жойда", "textEn": "Anywhere", "textRu": "В любом месте" },
+        { "optionIndex": 1, "textUzl": "Belgilangan tasmalarda", "textUzc": "Белгиланган тасмаларда", "textEn": "In designated lanes", "textRu": "По обозначенным полосам" },
+        { "optionIndex": 2, "textUzl": "Faqat o‘rta tasmalarda", "textUzc": "Фақат ўрта тасмаларда", "textEn": "Only middle lanes", "textRu": "Только в средних полосах" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Orqaga harakatlanishda haydovchi nima qilishi shart?",
+      "textUzc": "Орқага ҳаракатланишда ҳайдовчи нима қилиши шарт?",
+      "textEn": "What must a driver do during reversing?",
+      "textRu": "Что обязан сделать водитель при движении задним ходом?",
+      "explanationUzl": "63-bandga ko‘ra: xavfsizlikni ta’minlashi va boshqa ishtirokchilarga xalaqit bermasligi; zarur bo‘lsa yordamdan foydalanish shart.",
+      "explanationUzc": "63-бандга кўра: хавфсизликни таъминлаши ва бошқа иштирокчиларга халақит бермаслиги; зарур бўлса ёрдамдан фойдаланиш шарт.",
+      "explanationEn": "According to clause 63: ensure safety and not obstruct others; use assistance if necessary.",
+      "explanationRu": "Согласно пункту 63: обеспечить безопасность и не создавать помех; при необходимости использовать помощь.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tez harakatlanish", "textUzc": "Тез ҳаракатланиш", "textEn": "Move fast", "textRu": "Двигаться быстро" },
+        { "optionIndex": 1, "textUzl": "Xavfsizlikni ta’minlash va xalaqit bermaslik", "textUzc": "Хавфсизликни таъминлаш ва халақит бермаслик", "textEn": "Ensure safety and no obstruction", "textRu": "Обеспечить безопасность и отсутствие помех" },
+        { "optionIndex": 2, "textUzl": "Faqat yolg‘iz harakatlanish", "textUzc": "Фақат ёлғиз ҳаракатланиш", "textEn": "Only alone", "textRu": "Только в одиночку" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

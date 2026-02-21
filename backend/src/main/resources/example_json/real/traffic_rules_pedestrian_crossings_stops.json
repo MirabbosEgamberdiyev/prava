@@ -1,0 +1,174 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_pedestrian_crossings_stops",
+      "nameUzl": "Piyodalar o‘tish joylari va yo‘nalishli transport vositalarining bekatlari",
+      "nameUzc": "Пиёдалар ўтиш жойлари ва йўналишли транспорт воситаларининг бекатлари",
+      "nameEn": "Pedestrian Crossings and Stops of Public Transport Vehicles",
+      "nameRu": "Пешеходные переходы и остановки маршрутных транспортных средств",
+      "descriptionUzl": "Tartibga solinmagan va solingan piyodalar o‘tish joylarida yo‘l berish, tirbandlikda o‘tish joyiga kirmaslik, ko‘zi ojiz piyodalar, yo‘nalishli transport bekatlarida yo‘lovchilarga yo‘l berish, bolalar guruhini tashish transportiga yaqinlashganda choralar bo‘yicha savollar.",
+      "descriptionUzc": "Тартибга солинмаган ва солинган пиёдалар ўтиш жойларида йўл бериш, тирбандликда ўтиш жойига кирмаслик, кўзи ожиз пиёдалар, йўналишли транспорт бекатларида йўловчиларга йўл бериш, болалар гуруҳини ташиш транспортига яқинлашганда чоралар бўйича саволлар.",
+      "descriptionEn": "Questions on yielding at unregulated/regulated pedestrian crossings, not entering crossings during congestion, blind pedestrians, yielding to passengers at public stops, measures near vehicles transporting children.",
+      "descriptionRu": "Вопросы по уступке на нерегулируемых/регулируемых пешеходных переходах, запрету въезда на переход при заторе, слепым пешеходам, уступке пассажирам на остановках маршруток, мерам при приближении к ТС с детьми.",
+      "iconUrl": null,
+      "displayOrder": 17,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Tartibga solinmagan piyodalar o‘tish joyiga yaqinlashayotgan haydovchi nima qilishi kerak?",
+      "textUzc": "Тартибга солинмаган пиёдалар ўтиш жойига яқинлашаётган ҳайдовчи нима қилиши керак?",
+      "textEn": "What must a driver do when approaching an unregulated pedestrian crossing?",
+      "textRu": "Что должен сделать водитель при приближении к нерегулируемому пешеходному переходу?",
+      "explanationUzl": "109-bandga ko‘ra: qatnov qismini kesib o‘tayotgan piyoda(lar)ni o‘tkazib yuborish uchun tezligini kamaytirishi yoki to‘xtashi shart.",
+      "explanationUzc": "109-бандга кўра: қатнов қисмини кесиб ўтаётган пиёда(лар)ни ўтказиб юбориш учун тезлигини камайтириши ёки тўхташи шарт.",
+      "explanationEn": "According to clause 109: reduce speed or stop to allow pedestrians crossing the roadway.",
+      "explanationRu": "Согласно пункту 109: снизить скорость или остановиться, чтобы пропустить пешеходов, пересекающих проезжую часть.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tezlikni oshirish", "textUzc": "Тезликни ошириш", "textEn": "Increase speed", "textRu": "Увеличить скорость" },
+        { "optionIndex": 1, "textUzl": "Tezlikni kamaytirish yoki to‘xtash", "textUzc": "Тезликни камайтириш ёки тўхташ", "textEn": "Reduce speed or stop", "textRu": "Снизить скорость или остановиться" },
+        { "optionIndex": 2, "textUzl": "Faqat signal berish", "textUzc": "Фақат сигнал бериш", "textEn": "Only give signal", "textRu": "Только подать сигнал" },
+        { "optionIndex": 3, "textUzl": "Hech narsa qilmasdan o‘tish", "textUzc": "Ҳеч нарса қилмасдан ўтиш", "textEn": "Pass without action", "textRu": "Проехать без действий" },
+        { "optionIndex": 4, "textUzl": "Faqat orqaga qaytish", "textUzc": "Фақат орқага қайтиш", "textEn": "Only reverse", "textRu": "Только задним ходом" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Bir transport vositasi piyodalar o‘tish joyida sekinlashsa yoki to‘xtasa, qo‘shni tasmalardagi haydovchilar nima qilishi mumkin?",
+      "textUzc": "Бир транспорт воситаси пиёдалар ўтиш жойида секинлашса ёки тўхтаса, қўшни тасмалардаги ҳайдовчилар нима қилиши мумкин?",
+      "textEn": "If one vehicle slows or stops at pedestrian crossing, what can drivers in adjacent lanes do?",
+      "textRu": "Если одно ТС замедлилось или остановилось на пешеходном переходе, что могут сделать водители в соседних полосах?",
+      "explanationUzl": "110-bandga ko‘ra: piyoda(lar) yo‘qligiga ishonch hosil qilgandan so‘nggina harakatni davom ettirish mumkin.",
+      "explanationUzc": "110-бандга кўра: пиёда(лар) йўқлигига ишонч ҳосил қилгандан сўнггина ҳаракатни давом эттириш мумкин.",
+      "explanationEn": "According to clause 110: continue only after confirming no pedestrians are present.",
+      "explanationRu": "Согласно пункту 110: продолжить только после убеждения в отсутствии пешеходов.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Darhol o‘tib ketish", "textUzc": "Дарҳол ўтиб кетиш", "textEn": "Immediately pass", "textRu": "Немедленно проехать" },
+        { "optionIndex": 1, "textUzl": "Piyoda yo‘qligiga ishonch hosil qilib davom ettirish", "textUzc": "Пиёда йўқлигига ишонч ҳосил қилиб давом эттириш", "textEn": "Continue after confirming no pedestrians", "textRu": "Продолжить после убеждения в отсутствии пешеходов" },
+        { "optionIndex": 2, "textUzl": "To‘xtab turish", "textUzc": "Тўхтаб туриш", "textEn": "Stop", "textRu": "Остановиться" },
+        { "optionIndex": 3, "textUzl": "Faqat signal berish", "textUzc": "Фақат сигнал бериш", "textEn": "Only signal", "textRu": "Только подать сигнал" },
+        { "optionIndex": 4, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Вернуться назад" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tartibga solingan piyodalar o‘tish joyida ruxsat etuvchi ishora yonganda haydovchi nima qilishi kerak?",
+      "textUzc": "Тартибга солинган пиёдалар ўтиш жойида рухсат этувчи ишора ёнганда ҳайдовчи нима қилиши керак?",
+      "textEn": "At regulated pedestrian crossing with permissive signal, what must the driver do?",
+      "textRu": "На регулируемом пешеходном переходе при разрешающем сигнале что должен сделать водитель?",
+      "explanationUzl": "111-bandga ko‘ra: ruxsat etuvchi ishora yonganda ham piyoda(lar)ga qatnov qismini kesib o‘tishni tugallashiga imkon berish kerak.",
+      "explanationUzc": "111-бандга кўра: рухсат этувчи ишора ёнганда ҳам пиёда(лар)га қатнов қисмини кесиб ўтишни тугаллашига имкон бериш керак.",
+      "explanationEn": "According to clause 111: even on permissive signal, allow pedestrians to finish crossing.",
+      "explanationRu": "Согласно пункту 111: даже при разрешающем сигнале дать возможность пешеходам завершить переход.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Darhol o‘tib ketish", "textUzc": "Дарҳол ўтиб кетиш", "textEn": "Immediately pass", "textRu": "Немедленно проехать" },
+        { "optionIndex": 1, "textUzl": "Piyodalarga o‘tishni tugallashiga imkon berish", "textUzc": "Пиёдаларга ўтишни тугаллашига имкон бериш", "textEn": "Allow pedestrians to finish crossing", "textRu": "Дать пешеходам завершить переход" },
+        { "optionIndex": 2, "textUzl": "To‘xtab turish", "textUzc": "Тўхтаб туриш", "textEn": "Stop", "textRu": "Остановиться" },
+        { "optionIndex": 3, "textUzl": "Faqat signal berish", "textUzc": "Фақат сигнал бериш", "textEn": "Only signal", "textRu": "Только подать сигнал" },
+        { "optionIndex": 4, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Вернуться назад" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Piyodalar o‘tish joyidan keyin tirbandlik bo‘lsa, haydovchi nima qilishi kerak?",
+      "textUzc": "Пиёдалар ўтиш жойидан кейин тирбандлик бўлса, ҳайдовчи нима қилиши керак?",
+      "textEn": "If congestion after pedestrian crossing, what must the driver do?",
+      "textRu": "Если затор после пешеходного перехода, что должен сделать водитель?",
+      "explanationUzl": "112-bandga ko‘ra: tirbandlik tufayli piyodalar o‘tish joyida to‘xtashga majbur bo‘ladigan bo‘lsa, piyodalar o‘tish joyiga kirish taqiqlanadi.",
+      "explanationUzc": "112-бандга кўра: тирбандлик туфайли пиёдалар ўтиш жойида тўхташга мажбур бўладиган бўлса, пиёдалар ўтиш жойига кириш тақиқланади.",
+      "explanationEn": "According to clause 112: prohibited to enter pedestrian crossing if congestion would force stopping on it.",
+      "explanationRu": "Согласно пункту 112: запрещён въезд на пешеходный переход, если из-за затора придётся остановиться на нём.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Kirib o‘tish", "textUzc": "Кириб ўтиш", "textEn": "Enter and pass", "textRu": "Въехать и проехать" },
+        { "optionIndex": 1, "textUzl": "Piyodalar o‘tish joyiga kirmaslik", "textUzc": "Пиёдалар ўтиш жойига кирмаслик", "textEn": "Not enter the crossing", "textRu": "Не въезжать на переход" },
+        { "optionIndex": 2, "textUzl": "To‘xtab turish", "textUzc": "Тўхтаб туриш", "textEn": "Stop", "textRu": "Остановиться" },
+        { "optionIndex": 3, "textUzl": "Faqat tezlikni kamaytirish", "textUzc": "Фақат тезликни камайтириш", "textEn": "Only reduce speed", "textRu": "Только снизить скорость" },
+        { "optionIndex": 4, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Вернуться назад" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Ko‘zi ojiz piyoda oq hassa bilan ishora bersa, haydovchi nima qilishi kerak?",
+      "textUzc": "Кўзи ожиз пиёда оқ ҳасса билан ишора берса, ҳайдовчи нима қилиши керак?",
+      "textEn": "If blind pedestrian signals with white cane, what must the driver do?",
+      "textRu": "Если слепой пешеход подаёт сигнал белой тростью, что должен сделать водитель?",
+      "explanationUzl": "113-bandga ko‘ra: barcha hollarda, shu jumladan piyodalar o‘tish joylaridan tashqarida ham ko‘zi ojiz piyoda(lar)ni o‘tkazib yuborishi kerak.",
+      "explanationUzc": "113-бандга кўра: барча ҳолларда, шу жумладан пиёдалар ўтиш жойларидан ташқарида ҳам кўзи ожиз пиёда(лар)ни ўтказиб юбориши керак.",
+      "explanationEn": "According to clause 113: in all cases, including outside crossings, yield to blind pedestrians signaling with white cane.",
+      "explanationRu": "Согласно пункту 113: во всех случаях, в том числе вне пешеходных переходов, пропустить слепых пешеходов с белой тростью.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Darhol o‘tib ketish", "textUzc": "Дарҳол ўтиб кетиш", "textEn": "Immediately pass", "textRu": "Немедленно проехать" },
+        { "optionIndex": 1, "textUzl": "O‘tkazib yuborish", "textUzc": "Ўтказиб юбориш", "textEn": "Allow to pass", "textRu": "Пропустить" },
+        { "optionIndex": 2, "textUzl": "Faqat signal berish", "textUzc": "Фақат сигнал бериш", "textEn": "Only signal", "textRu": "Только подать сигнал" },
+        { "optionIndex": 3, "textUzl": "To‘xtash shart emas", "textUzc": "Тўхташ шарт эмас", "textEn": "No need to stop", "textRu": "Не обязательно останавливаться" },
+        { "optionIndex": 4, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Вернуться назад" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yo‘nalishli transport bekatida yo‘lovchilar chiqayotganda haydovchi nima qilishi kerak?",
+      "textUzc": "Йўналишли транспорт бекатида йўловчилар чиқаётганда ҳайдовчи нима қилиши керак?",
+      "textEn": "When passengers are exiting at public transport stop, what must the driver do?",
+      "textRu": "При высадке пассажиров на остановке маршрутного ТС что должен сделать водитель?",
+      "explanationUzl": "114-bandga ko‘ra: bekatda to‘xtagan yo‘nalishli transport vositasi eshiklari tomon borayotgan yoki kelayotgan piyoda(lar)ga yo‘l berish kerak.",
+      "explanationUzc": "114-бандга кўра: бекатда тўхтаган йўналишли транспорт воситаси эшиклари томон бораётган ёки келаётган пиёда(лар)га йўл бериш керак.",
+      "explanationEn": "According to clause 114: yield to pedestrians approaching or leaving the doors of stopped public transport.",
+      "explanationRu": "Согласно пункту 114: уступить пешеходам, идущим к дверям или от дверей остановившегося маршрутного ТС.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Darhol o‘tib ketish", "textUzc": "Дарҳол ўтиб кетиш", "textEn": "Immediately pass", "textRu": "Немедленно проехать" },
+        { "optionIndex": 1, "textUzl": "Piyodalarga yo‘l berish", "textUzc": "Пиёдаларга йўл бериш", "textEn": "Yield to pedestrians", "textRu": "Уступить пешеходам" },
+        { "optionIndex": 2, "textUzl": "To‘xtab turish", "textUzc": "Тўхтаб туриш", "textEn": "Stop", "textRu": "Остановиться" },
+        { "optionIndex": 3, "textUzl": "Faqat signal berish", "textUzc": "Фақат сигнал бериш", "textEn": "Only signal", "textRu": "Только подать сигнал" },
+        { "optionIndex": 4, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Вернуться назад" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "“Bolalar guruhini tashish” belgisi o‘rnatilgan transport to‘xtaganda haydovchi nima qilishi kerak?",
+      "textUzc": "“Болалар гуруҳини ташиш” белгиси ўрнатилган транспорт тўхтаганда ҳайдовчи нима қилиши керак?",
+      "textEn": "When vehicle with “Children Transportation” sign stops, what must the driver do?",
+      "textRu": "При остановке ТС со знаком «Перевозка детей» что должен сделать водитель?",
+      "explanationUzl": "115-bandga ko‘ra: unga yaqinlashayotgan haydovchi tezlikni kamaytirishi, zarur bo‘lsa to‘xtashi va bolalarni o‘tkazib yuborishi shart.",
+      "explanationUzc": "115-бандга кўра: унга яқинлашаётган ҳайдовчи тезликни камайтириши, зарур бўлса тўхташи ва болаларни ўтказиб юбориши шарт.",
+      "explanationEn": "According to clause 115: approaching driver must reduce speed, stop if necessary and allow children to pass.",
+      "explanationRu": "Согласно пункту 115: приближающийся водитель должен снизить скорость, при необходимости остановиться и пропустить детей.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tezlikni oshirish", "textUzc": "Тезликни ошириш", "textEn": "Increase speed", "textRu": "Увеличить скорость" },
+        { "optionIndex": 1, "textUzl": "Tezlikni kamaytirish, zarur bo‘lsa to‘xtash va bolalarni o‘tkazish", "textUzc": "Тезликни камайтириш, зарур бўлса тўхташ ва болаларни ўтказиш", "textEn": "Reduce speed, stop if needed and let children pass", "textRu": "Снизить скорость, остановиться при необходимости и пропустить детей" },
+        { "optionIndex": 2, "textUzl": "Faqat signal berish", "textUzc": "Фақат сигнал бериш", "textEn": "Only signal", "textRu": "Только подать сигнал" },
+        { "optionIndex": 3, "textUzl": "Hech narsa qilmasdan o‘tish", "textUzc": "Ҳеч нарса қилмасдан ўтиш", "textEn": "Pass without action", "textRu": "Проехать без действий" },
+        { "optionIndex": 4, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Вернуться назад" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

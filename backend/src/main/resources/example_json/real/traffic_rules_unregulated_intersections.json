@@ -1,0 +1,131 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_unregulated_intersections",
+      "nameUzl": "Tartibga solinmagan chorrahalar",
+      "nameUzc": "Тартибга солинмаган чорраҳалар",
+      "nameEn": "Unregulated Intersections",
+      "nameRu": "Нерегулируемые перекрёстки",
+      "descriptionUzl": "Teng ahamiyatli va teng ahamiyatsiz yo‘llar kesishgan chorrahalar, asosiy va ikkinchi darajali yo‘llar, tramvay ustunligi, chapga burilishda yo‘l berish va qorong‘i vaqtda yo‘l holatini aniqlay olmaslik bo‘yicha savollar.",
+      "descriptionUzc": "Тенг аҳамиятли ва тенг аҳамиятсиз йўллар кесишган чорраҳалар, асосий ва иккинчи даражали йўллар, трамвай устунлиги, чапга бурилишда йўл бериш ва қоронғи вақтда йўл ҳолатини аниқлай олмаслик бўйича саволлар.",
+      "descriptionEn": "Questions on intersections of equal and unequal importance roads, main and secondary roads, tram priority, yielding when turning left and when road surface cannot be determined (night, mud, snow).",
+      "descriptionRu": "Вопросы по перекрёсткам равнозначных и неравнозначных дорог, главной и второстепенной дорогам, преимуществу трамвая, уступке при левом повороте и когда покрытие дороги не видно (ночь, грязь, снег).",
+      "iconUrl": null,
+      "displayOrder": 16,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Ikkinchi darajali yo‘ldan harakatlanayotgan haydovchi kimga yo‘l berishi kerak?",
+      "textUzc": "Иккинчи даражали йўлдан ҳаракатланаётган ҳайдовчи кимга йўл бериши керак?",
+      "textEn": "To whom must a driver on a secondary road yield?",
+      "textRu": "Кому должен уступить водитель на второстепенной дороге?",
+      "explanationUzl": "104-bandga ko‘ra: asosiy yo‘ldan yaqinlashayotgan transport vositalariga, ularning keyingi harakat yo‘nalishidan qat’i nazar yo‘l berish shart.",
+      "explanationUzc": "104-бандга кўра: асосий йўлдан яқинлашаётган транспорт воситаларига, уларнинг кейинги ҳаракат йўналишидан қатъи назар йўл бериш шарт.",
+      "explanationEn": "According to clause 104: yield to vehicles approaching from the main road, regardless of their further direction.",
+      "explanationRu": "Согласно пункту 104: уступить ТС, приближающимся по главной дороге, независимо от их дальнейшего направления.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech kimga", "textUzc": "Ҳеч кимга", "textEn": "No one", "textRu": "Никому" },
+        { "optionIndex": 1, "textUzl": "Asosiy yo‘ldan kelganlarga", "textUzc": "Асосий йўлдан келганларга", "textEn": "From main road", "textRu": "С главной дороги" },
+        { "optionIndex": 2, "textUzl": "Faqat o‘ngdan kelganlarga", "textUzc": "Фақат ўнгдан келганларга", "textEn": "Only from right", "textRu": "Только справа" },
+        { "optionIndex": 3, "textUzl": "Faqat chapdan kelganlarga", "textUzc": "Фақат чапдан келганларга", "textEn": "Only from left", "textRu": "Только слева" },
+        { "optionIndex": 4, "textUzl": "Barcha yo‘nalishdagi transportga", "textUzc": "Барча йўналишдаги транспортга", "textEn": "All directions", "textRu": "Всем направлениям" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Teng ahamiyatli yo‘llar kesishgan chorrahada kim oldin o‘tish huquqiga ega?",
+      "textUzc": "Тенг аҳамиятли йўллар кесишган чорраҳада ким олдин ўтиш ҳуқуқига эга?",
+      "textEn": "Who has priority at intersection of equal roads?",
+      "textRu": "Кто имеет преимущество на перекрёстке равнозначных дорог?",
+      "explanationUzl": "105-bandga ko‘ra: o‘ngdan yaqinlashayotgan transport vositalariga yo‘l berish shart (tramvay haydovchilari ham o‘zaro shu qoidaga amal qiladi).",
+      "explanationUzc": "105-бандга кўра: ўнгдан яқинлашаётган транспорт воситаларига йўл бериш шарт (трамвай ҳайдовчилари ҳам ўзаро шу қоидага амал қилади).",
+      "explanationEn": "According to clause 105: yield to vehicles approaching from the right (tram drivers follow the same rule mutually).",
+      "explanationRu": "Согласно пункту 105: уступить ТС, приближающимся справа (водители трамваев также соблюдают это правило между собой).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Chapdan kelganlarga", "textUzc": "Чапдан келганларга", "textEn": "From left", "textRu": "Слева" },
+        { "optionIndex": 1, "textUzl": "O‘ngdan kelganlarga yo‘l berish", "textUzc": "Ўнгдан келганларга йўл бериш", "textEn": "Yield to from right", "textRu": "Уступить справа" },
+        { "optionIndex": 2, "textUzl": "Hech kim ustun emas", "textUzc": "Ҳеч ким устун эмас", "textEn": "No priority", "textRu": "Никто не имеет преимущества" },
+        { "optionIndex": 3, "textUzl": "Faqat tramvayga", "textUzc": "Фақат трамвайга", "textEn": "Only tram", "textRu": "Только трамваю" },
+        { "optionIndex": 4, "textUzl": "Tez harakatlanayotganlarga", "textUzc": "Тез ҳаракатланаётганларга", "textEn": "To faster ones", "textRu": "Более быстрым" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Asosiy yo‘lning yo‘nalishi chorrahada o‘zgarganda, haydovchilar nimaga amal qilishi kerak?",
+      "textUzc": "Асосий йўлнинг йўналиши чорраҳада ўзгарганда, ҳайдовчилар нимага амал қилиши керак?",
+      "textEn": "When main road changes direction at intersection, what do drivers follow?",
+      "textRu": "Когда направление главной дороги меняется на перекрёстке, чему следуют водители?",
+      "explanationUzl": "106-bandga ko‘ra: asosiy yo‘lda harakatlanayotgan haydovchilar o‘zaro teng ahamiyatli yo‘llar chorrahasi qoidasiga amal qilishlari kerak (ikkinchi darajali yo‘llardagilar ham shunday).",
+      "explanationUzc": "106-бандга кўра: асосий йўлда ҳаракатланаётган ҳайдовчилар ўзаро тенг аҳамиятли йўллар чорраҳаси қоидасига амал қилишлари керак (иккинчи даражали йўллардагилар ҳам шундай).",
+      "explanationEn": "According to clause 106: drivers on main road follow rules of equal importance intersections among themselves (same for secondary roads).",
+      "explanationRu": "Согласно пункту 106: водители на главной дороге соблюдают правила перекрёстка равнозначных дорог между собой (то же для второстепенных).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Asosiy yo‘l qoidasiga", "textUzc": "Асосий йўл қоидасига", "textEn": "Main road rules", "textRu": "Правилам главной дороги" },
+        { "optionIndex": 1, "textUzl": "Teng ahamiyatli chorraha qoidasiga", "textUzc": "Тенг аҳамиятли чорраҳа қоидасига", "textEn": "Equal importance intersection rules", "textRu": "Правилам равнозначного перекрёстка" },
+        { "optionIndex": 2, "textUzl": "Faqat o‘ngdan kelganlarga", "textUzc": "Фақат ўнгдан келганларга", "textEn": "Only from right", "textRu": "Только уступать справа" },
+        { "optionIndex": 3, "textUzl": "Hech qanday qoida yo‘q", "textUzc": "Ҳеч қандай қоида йўқ", "textEn": "No rules", "textRu": "Нет правил" },
+        { "optionIndex": 4, "textUzl": "Faqat tramvayga", "textUzc": "Фақат трамвайга", "textEn": "Only tram", "textRu": "Только трамваю" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Chapga burilish yoki qayrilib olishda kimga yo‘l berish kerak?",
+      "textUzc": "Чапга бурилиш ёки қайрилиб олишда кимга йўл бериш керак?",
+      "textEn": "To whom to yield when turning left or making U-turn?",
+      "textRu": "Кому уступить при левом повороте или развороте?",
+      "explanationUzl": "107-bandga ko‘ra: teng ahamiyatli yo‘ldan qarama-qarshi yo‘nalishdan to‘g‘riga yoki o‘ngga harakatlanayotgan transport vositalariga yo‘l berish shart (tramvay haydovchilari ham o‘zaro shu qoidaga amal qiladi).",
+      "explanationUzc": "107-бандга кўра: тенг аҳамиятли йўлдан қарама-қарши йўналишдан тўғрига ёки ўнгга ҳаракатланаётган транспорт воситаларига йўл бериш шарт (трамвай ҳайдовчилари ҳам ўзаро шу қоидага амал қилади).",
+      "explanationEn": "According to clause 107: yield to oncoming straight or right-turning vehicles on equal road (tram drivers follow mutually).",
+      "explanationRu": "Согласно пункту 107: уступить встречному прямо и направо на равнозначной дороге (водители трамваев также соблюдают это между собой).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat o‘ngdan kelganlarga", "textUzc": "Фақат ўнгдан келганларга", "textEn": "Only from right", "textRu": "Только справа" },
+        { "optionIndex": 1, "textUzl": "Qarama-qarshi to‘g‘ri va o‘ngga burilayotganlarga", "textUzc": "Қарама-қарши тўғри ва ўнгга бурилаётганларга", "textEn": "Oncoming straight and right-turning", "textRu": "Встречному прямо и направо" },
+        { "optionIndex": 2, "textUzl": "Hech kimga", "textUzc": "Ҳеч кимга", "textEn": "No one", "textRu": "Никому" },
+        { "optionIndex": 3, "textUzl": "Faqat tramvayga", "textUzc": "Фақат трамвайга", "textEn": "Only tram", "textRu": "Только трамваю" },
+        { "optionIndex": 4, "textUzl": "Chapdan kelganlarga", "textUzc": "Чапдан келганларга", "textEn": "From left", "textRu": "Слева" },
+        { "optionIndex": 5, "textUzl": "Barcha transportga", "textUzc": "Барча транспортга", "textEn": "All vehicles", "textRu": "Всем ТС" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yo‘l qoplamasi aniqlanmasa (qorong‘i, loy, qor) va imtiyoz belgilari bo‘lmasa, haydovchi o‘zini qanday yo‘lda deb hisoblashi kerak?",
+      "textUzc": "Йўл қопламаси аниқланмаса (қоронғи, лой, қор) ва имтиёз белгилари бўлмаса, ҳайдовчи ўзини қандай йўлда деб ҳисоблаши керак?",
+      "textEn": "If road surface cannot be determined (dark, mud, snow) and no priority signs, how should driver consider own road?",
+      "textRu": "Если покрытие дороги не видно (ночь, грязь, снег) и нет знаков приоритета, как водитель должен считать свою дорогу?",
+      "explanationUzl": "108-bandga ko‘ra: u o‘zini **ikkinchi darajali yo‘lda** deb hisoblashi kerak.",
+      "explanationUzc": "108-бандга кўра: у ўзини **иккинчи даражали йўлда** деб ҳисоблаши керак.",
+      "explanationEn": "According to clause 108: consider himself on **secondary road**.",
+      "explanationRu": "Согласно пункту 108: считать себя на **второстепенной дороге**.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Asosiy yo‘lda", "textUzc": "Асосий йўлда", "textEn": "On main road", "textRu": "На главной дороге" },
+        { "optionIndex": 1, "textUzl": "Ikkinchi darajali yo‘lda", "textUzc": "Иккинчи даражали йўлда", "textEn": "On secondary road", "textRu": "На второстепенной дороге" },
+        { "optionIndex": 2, "textUzl": "Hech qanday yo‘lda emas", "textUzc": "Ҳеч қандай йўлда эмас", "textEn": "No road", "textRu": "Не на дороге" },
+        { "optionIndex": 3, "textUzl": "Teng ahamiyatli yo‘lda", "textUzc": "Тенг аҳамиятли йўлда", "textEn": "On equal road", "textRu": "На равнозначной дороге" },
+        { "optionIndex": 4, "textUzl": "Faqat tramvay yo‘lida", "textUzc": "Фақат трамвай йўлида", "textEn": "On tram track", "textRu": "На трамвайных путях" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

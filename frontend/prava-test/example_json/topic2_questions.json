@@ -1,0 +1,104 @@
+{
+  "questions": [
+    {
+      "textUzl": "Qizil uchburchak shaklidagi yo‘l belgisi nimani anglatadi?",
+      "textUzc": "Қизил учбурчак шаклидаги йўл белгиси нимани англатади?",
+      "textEn": "What does a red triangle road sign mean?",
+      "textRu": "Что означает дорожный знак в виде красного треугольника?",
+      "explanationUzl": "Qizil uchburchak belgilar ogohlantiruvchi hisoblanadi.",
+      "explanationUzc": "Қизил учбурчак белгилар огоҳлантирувчи ҳисобланади.",
+      "explanationEn": "Red triangle signs are warning signs.",
+      "explanationRu": "Красные треугольные знаки являются предупреждающими.",
+      "topicId": 2,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ogohlantiruvchi", "textUzc": "Огоҳлантирувчи", "textEn": "Warning", "textRu": "Предупреждающий" },
+        { "optionIndex": 1, "textUzl": "Taqiqlovchi", "textUzc": "Тақиқловчи", "textEn": "Prohibitory", "textRu": "Запрещающий" },
+        { "optionIndex": 2, "textUzl": "Axborot", "textUzc": "Ахборот", "textEn": "Information", "textRu": "Информационный" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Ko‘k doira shaklidagi belgi nimani bildiradi?",
+      "textUzc": "Кўк доира шаклидаги белги нимани билдиради?",
+      "textEn": "What does a blue circular sign indicate?",
+      "textRu": "Что означает синий круглый знак?",
+      "explanationUzl": "Ko‘k doira majburiy harakatni bildiradi.",
+      "explanationUzc": "Кўк доира мажбурий ҳаракатни билдиради.",
+      "explanationEn": "Blue circular signs indicate mandatory actions.",
+      "explanationRu": "Синие круглые знаки обозначают обязательные действия.",
+      "topicId": 2,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Taqiq", "textUzc": "Тақиқ", "textEn": "Prohibition", "textRu": "Запрет" },
+        { "optionIndex": 1, "textUzl": "Majburiy", "textUzc": "Мажбурий", "textEn": "Mandatory", "textRu": "Обязательно" },
+        { "optionIndex": 2, "textUzl": "Ogohlantirish", "textUzc": "Огоҳлантириш", "textEn": "Warning", "textRu": "Предупреждение" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qizil doira oq chiziqli belgi nimani anglatadi?",
+      "textUzc": "Қизил доира оқ чизиқли белги нимани англатади?",
+      "textEn": "What does a red circle with a white bar mean?",
+      "textRu": "Что означает красный круг с белой полосой?",
+      "explanationUzl": "Bu belgi kirish taqiqlanganini bildiradi.",
+      "explanationUzc": "Бу белги кириш тақиқланганини билдиради.",
+      "explanationEn": "This sign means no entry.",
+      "explanationRu": "Этот знак означает «въезд запрещен».",
+      "topicId": 2,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "To‘xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Стоп" },
+        { "optionIndex": 1, "textUzl": "Sekinlash", "textUzc": "Секинлаш", "textEn": "Slow down", "textRu": "Снизить скорость" },
+        { "optionIndex": 2, "textUzl": "Kirish taqiqlangan", "textUzc": "Кириш тақиқланган", "textEn": "No entry", "textRu": "Въезд запрещен" }
+      ],
+      "correctAnswerIndex": 2,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yashil to‘rtburchak belgilar qaysi guruhga kiradi?",
+      "textUzc": "Яшил тўртбурчак белгилар қайси гуруҳга киради?",
+      "textEn": "Which group do green rectangular signs belong to?",
+      "textRu": "К какой группе относятся зеленые прямоугольные знаки?",
+      "explanationUzl": "Yashil to‘rtburchak belgilar axborot beradi.",
+      "explanationUzc": "Яшил тўртбурчак белгилар ахборот беради.",
+      "explanationEn": "Green rectangular signs provide information.",
+      "explanationRu": "Зеленые прямоугольные знаки являются информационными.",
+      "topicId": 2,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Taqiqlovchi", "textUzc": "Тақиқловчи", "textEn": "Prohibitory", "textRu": "Запрещающие" },
+        { "optionIndex": 1, "textUzl": "Ogohlantiruvchi", "textUzc": "Огоҳлантирувчи", "textEn": "Warning", "textRu": "Предупреждающие" },
+        { "optionIndex": 2, "textUzl": "Axborot", "textUzc": "Ахборот", "textEn": "Information", "textRu": "Информационные" }
+      ],
+      "correctAnswerIndex": 2,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "“P” belgisi nimani bildiradi?",
+      "textUzc": "“P” белгиси нимани билдиради?",
+      "textEn": "What does the “P” sign indicate?",
+      "textRu": "Что означает знак «P»?",
+      "explanationUzl": "Bu belgi avtoturargohni bildiradi.",
+      "explanationUzc": "Бу белги автотураргоҳни билдиради.",
+      "explanationEn": "This sign indicates parking.",
+      "explanationRu": "Этот знак обозначает парковку.",
+      "topicId": 2,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Avtoturargoh", "textUzc": "Автотураргоҳ", "textEn": "Parking", "textRu": "Парковка" },
+        { "optionIndex": 1, "textUzl": "Piyoda", "textUzc": "Пиёда", "textEn": "Pedestrian", "textRu": "Пешеход" },
+        { "optionIndex": 2, "textUzl": "To‘xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановка" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

@@ -1,0 +1,220 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_accident_duties",
+      "nameUzl": "Yo‘l-transport hodisasi sodir bo‘lganda haydovchining majburiyatlari",
+      "nameUzc": "Йўл-транспорт ҳодисаси содир бўлганда ҳайдовчининг мажбуриятлари",
+      "nameEn": "Driver's Duties in Case of Road Accident",
+      "nameRu": "Обязанности водителя при дорожно-транспортном происшествии",
+      "descriptionUzl": "YTH sodir bo‘lganda haydovchining darhol to‘xtashi, yordam ko‘rsatishi, joyni qayd etishi, IIOga xabar berishi va sug‘urta holatidagi istisnolar bo‘yicha savollar.",
+      "descriptionUzc": "ЙТҲ содир бўлганда ҳайдовчининг дарҳол тўхташи, ёрдам кўрсатиши, жойни қайд этиши, ИИОга хабар бериши ва суғурта ҳолатидаги истиснолар бўйича саволлар.",
+      "descriptionEn": "Questions on immediate stop, aid to injured, scene fixation, notification to police and exceptions in insurance cases during road accidents.",
+      "descriptionRu": "Вопросы по немедленной остановке, помощи пострадавшим, фиксации места, уведомлению полиции и исключениям при страховых случаях при ДТП.",
+      "iconUrl": null,
+      "displayOrder": 3,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "YTH sodir bo‘lganda haydovchi birinchi navbatda nima qilishi shart?",
+      "textUzc": "ЙТҲ содир бўлганда ҳайдовчи биринчи навбатда нима қилиши шарт?",
+      "textEn": "What must a driver do first in case of a road accident?",
+      "textRu": "Что водитель обязан сделать в первую очередь при ДТП?",
+      "explanationUzl": "13-bandga ko‘ra: transport vositasini darhol to‘xtatishi, avariya ishoralarini yoqishi va to‘xtash belgisini o‘rnatishi, joydan hech narsani qo‘zg‘atmasligi shart.",
+      "explanationUzc": "13-бандга кўра: транспорт воситасини дарҳол тўхтатиши, авария ишораларини ёқиши ва тўхташ белгисини ўрнатиши, жойдан ҳеч нарсани қўзғатмаслиги шарт.",
+      "explanationEn": "Clause 13: immediately stop the vehicle, turn on hazard lights, set up emergency triangle, do not move anything at the scene.",
+      "explanationRu": "Пункт 13: немедленно остановить ТС, включить аварийку, выставить знак, ничего не перемещать.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Darhol IIOga qo‘ng‘iroq qilish", "textUzc": "Дарҳол ИИОга қўнғироқ қилиш", "textEn": "Immediately call police", "textRu": "Немедленно звонить в полицию" },
+        { "optionIndex": 1, "textUzl": "To‘xtash, avariya ishoralari va belgi o‘rnatish", "textUzc": "Тўхташ, авария ишоралари ва белги ўрнатиш", "textEn": "Stop, hazard lights and emergency sign", "textRu": "Остановить, аварийка и знак" },
+        { "optionIndex": 2, "textUzl": "Faqat fotosuratga olish", "textUzc": "Фақат фотосуратга олиш", "textEn": "Only take photos", "textRu": "Только сфотографировать" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tan jarohati olganlarga birinchi tibbiy yordam ko‘rsatishdan keyin haydovchi nima qilishi kerak?",
+      "textUzc": "Тан жароҳати олганларга биринчи тиббий ёрдам кўрсатишдан кейин ҳайдовчи нима қилиши керак?",
+      "textEn": "After providing first aid to the injured, what must the driver do?",
+      "textRu": "После оказания первой помощи пострадавшим, что должен сделать водитель?",
+      "explanationUzl": "Tez tibbiy yordam va favqulodda qutqaruv xizmatlarini chaqirishi shart. Shoshilinch hollarda jarohatlanganlarni tibbiyot muassasasiga yetkazishi va qaytib kelishi kerak.",
+      "explanationUzc": "Тез тиббий ёрдам ва фавқулодда қутқарув хизматларини чақириши шарт. Шошилнч ҳолларда жароҳатланганларни тиббиёт муассасасига етказиши ва қайтиб келиши керак.",
+      "explanationEn": "Call ambulance and emergency services. In urgent cases, transport injured to hospital and return.",
+      "explanationRu": "Вызвать скорую и экстренные службы. В срочных случаях доставить пострадавших в больницу и вернуться.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Joyni darhol bo‘shatish", "textUzc": "Жойни дарҳол бўшатиш", "textEn": "Immediately clear the scene", "textRu": "Немедленно освободить место" },
+        { "optionIndex": 1, "textUzl": "Tez yordam chaqirish va shoshilinch hollarda yetkazish", "textUzc": "Тез ёрдам чақириш ва шошилнч ҳолларда етказиш", "textEn": "Call ambulance and transport if urgent", "textRu": "Вызвать скорую и доставить при необходимости" },
+        { "optionIndex": 2, "textUzl": "Faqat guvohlar yozib olish", "textUzc": "Фақат гувоҳлар ёзиб олиш", "textEn": "Only note witnesses", "textRu": "Только записать свидетелей" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Agar YTH qatnov qismini to‘sib qo‘ysa, haydovchi avval nima qilishi kerak?",
+      "textUzc": "Агар ЙТҲ қатнов қисмини тўсиб қўйса, ҳайдовчи аввал нима қилиши керак?",
+      "textEn": "If the accident blocks traffic, what must the driver do first?",
+      "textRu": "Если ДТП блокирует проезжую часть, что водитель должен сделать сначала?",
+      "explanationUzl": "Transport vositalarining joylashuvi, buyumlar va izlarni guvohlar ishtirokida, fotosurat/video bilan qayd etishi, keyin qatnov qismini bo‘shatishi shart.",
+      "explanationUzc": "Транспорт воситаларининг жойлашуви, буюмлар ва изларни гувоҳлар иштирокида, фотосурат/видео билан қайд этиши, кейин қатнов қисмини бўшатиши шарт.",
+      "explanationEn": "First fix positions, items and traces with witnesses/photos/video, then clear the roadway.",
+      "explanationRu": "Сначала зафиксировать положение ТС, предметы и следы с свидетелями/фото/видео, затем освободить проезжую часть.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Darhol joydan chiqib ketish", "textUzc": "Дарҳол жойдан чиқиб кетиш", "textEn": "Immediately leave the scene", "textRu": "Немедленно уехать" },
+        { "optionIndex": 1, "textUzl": "Joylashuvni qayd etib, keyin bo‘shatish", "textUzc": "Жойлашувни қайд этиб, кейин бўшатиш", "textEn": "Fix scene then clear", "textRu": "Зафиксировать, потом освободить" },
+        { "optionIndex": 2, "textUzl": "Faqat IIO kutish", "textUzc": "Фақат ИИО кутиш", "textEn": "Just wait for police", "textRu": "Просто ждать полицию" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "YTHda jarohatlanganlarni o‘z transport vositasida tibbiyot muassasasiga olib borganda haydovchi nima qilishi kerak?",
+      "textUzc": "ЙТҲда жароҳатланганларни ўз транспорт воситасида тиббиёт муассасасига олиб борганда ҳайдовчи нима қилиши керак?",
+      "textEn": "When transporting injured to hospital in own vehicle, what must the driver do?",
+      "textRu": "При доставке пострадавших в больницу на своём ТС, что обязан сделать водитель?",
+      "explanationUzl": "U yerda o‘z ma’lumotlari, raqam belgisini bildirishi, shaxsiy hujjatlarini ko‘rsatishi va hodisa joyiga qaytib kelishi shart.",
+      "explanationUzc": "У ерда ўз маълумотлари, рақам белгисини билдириши, шахсий ҳужжатларини кўрсатиши ва ҳодиса жойига қайтиб келиши шарт.",
+      "explanationEn": "Provide personal info, plate number, show documents and return to the scene.",
+      "explanationRu": "Сообщить свои данные, номер, предъявить документы и вернуться на место.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Qaytib kelmasdan ketaverishi mumkin", "textUzc": "Қайтиб келмасдан кетавериши мумкин", "textEn": "Can leave without returning", "textRu": "Может уехать без возвращения" },
+        { "optionIndex": 1, "textUzl": "Ma’lumot berib, qaytib kelishi shart", "textUzc": "Маълумот бериб, қайтиб келиши шарт", "textEn": "Provide info and return", "textRu": "Сообщить данные и вернуться" },
+        { "optionIndex": 2, "textUzl": "Faqat tez yordam chaqirishi yetarli", "textUzc": "Фақат тез ёрдам чақириши етарли", "textEn": "Just call ambulance is enough", "textRu": "Достаточно вызвать скорую" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Sug‘urta bo‘yicha xabarnoma tuzilganda haydovchi IIOga xabar berishi shartmi?",
+      "textUzc": "Суғурта бўйича хабарнома тузилганда ҳайдовчи ИИОга хабар бериши шартми?",
+      "textEn": "Is it mandatory to notify police if an insurance notification form is filled?",
+      "textRu": "Обязательно ли сообщать в полицию, если оформлена страховочная извещение?",
+      "explanationUzl": "14-bandga ko‘ra: sug‘urta qonunchiligida belgilangan tartibda xabarnoma tuzilganda DYHHX yoki IIOga xabar bermaslik mumkin (istisno holati).",
+      "explanationUzc": "14-бандга кўра: суғурта қонунчилигида белгиланган тартибда хабарнома тузилганда ДЙҲХХ ёки ИИОга хабар бермаслик мумкин (истисно ҳолати).",
+      "explanationEn": "Clause 14: if notification form is completed according to insurance law, notification to police is not required.",
+      "explanationRu": "Пункт 14: при оформлении извещения по страховому порядку можно не сообщать в полицию.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Shart, har doim xabar berish kerak", "textUzc": "Шарт, ҳар доим хабар бериш керак", "textEn": "Mandatory always", "textRu": "Обязательно всегда" },
+        { "optionIndex": 1, "textUzl": "Mumkin emas, xabar bermaslikka ruxsat", "textUzc": "Мумкин эмас, хабар бермасликка рухсат", "textEn": "Not required, allowed not to notify", "textRu": "Не обязательно, можно не сообщать" },
+        { "optionIndex": 2, "textUzl": "Faqat jarohat bo‘lsa shart", "textUzc": "Фақат жароҳат бўлса шарт", "textEn": "Only if injured", "textRu": "Только при пострадавших" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "YTH joyini qayd etishda qanday vositalardan foydalanish mumkin?",
+      "textUzc": "ЙТҲ жойини қайд этишда қандай воситалардан фойдаланиш мумкин?",
+      "textEn": "What tools can be used to record the accident scene?",
+      "textRu": "Какие средства можно использовать для фиксации места ДТП?",
+      "explanationUzl": "Guvohlar ishtirokida, fotosurat yoki videoyozuv vositalari bilan, turgan o‘rnini chizuvchi moslamalar yordamida (13-band).",
+      "explanationUzc": "Гувоҳлар иштирокида, фотосурат ёки видеойозув воситалари билан, турган ўрнини чизувчи мосламалар ёрдамида (13-банд).",
+      "explanationEn": "With witnesses, photos/video, drawing schemes (clause 13).",
+      "explanationRu": "С свидетелями, фото/видео, схемами (пункт 13).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat guvohlar so‘zi bilan", "textUzc": "Фақат гувоҳлар сўзи билан", "textEn": "Only witnesses' words", "textRu": "Только слова свидетелей" },
+        { "optionIndex": 1, "textUzl": "Foto/video, chizmalar va guvohlar bilan", "textUzc": "Фото/видео, чизмалар ва гувоҳлар билан", "textEn": "Photos/video, drawings and witnesses", "textRu": "Фото/видео, схемы и свидетели" },
+        { "optionIndex": 2, "textUzl": "Faqat IIO xodimi qayd etishi kerak", "textUzc": "Фақат ИИО ходими қайд этиши керак", "textEn": "Only police must record", "textRu": "Только полиция должна фиксировать" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "YTHda guvohlarning ma’lumotlarini nima uchun yozib olish kerak?",
+      "textUzc": "ЙТҲда гувоҳларнинг маълумотларини нима учун ёзиб олиш керак?",
+      "textEn": "Why must the driver note witnesses' details in an accident?",
+      "textRu": "Зачем водителю записывать данные свидетелей при ДТП?",
+      "explanationUzl": "IIO xodimlarining kelishini kutish va hodisa haqida xabar berish uchun guvohlarning ism-familiyasi va manzilini yozib olish shart (13-band oxiri).",
+      "explanationUzc": "ИИО ходимларининг келишини кутиш ва ҳодиса ҳақида хабар бериш учун гувоҳларнинг исм-фамилияси ва манзилини ёзиб олиш шарт (13-банд охири).",
+      "explanationEn": "To wait for police and report the incident with witnesses' names and addresses (end of clause 13).",
+      "explanationRu": "Для ожидания полиции и сообщения о происшествии с именами и адресами свидетелей (конец пункта 13).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat sug‘urta uchun", "textUzc": "Фақат суғурта учун", "textEn": "Only for insurance", "textRu": "Только для страховки" },
+        { "optionIndex": 1, "textUzl": "IIOga xabar berish va kutish uchun", "textUzc": "ИИОга хабар бериш ва кутиш учун", "textEn": "For reporting to police and waiting", "textRu": "Для сообщения полиции и ожидания" },
+        { "optionIndex": 2, "textUzl": "Shaxsiy arxiv uchun", "textUzc": "Шахсий архив учун", "textEn": "For personal archive", "textRu": "Для личного архива" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "YTHda transport vositasini joyidan qo‘zg‘atish mumkinmi?",
+      "textUzc": "ЙТҲда транспорт воситасини жойидан қўзғатиш мумкинми?",
+      "textEn": "Is it allowed to move the vehicle from its position after an accident?",
+      "textRu": "Разрешено ли перемещать ТС с места ДТП?",
+      "explanationUzl": "Taqiqlangan! Transport vositasi va hodisaga daxldor buyumlarni joyidan qo‘zg‘atmasligi shart (13-band boshlanishi). Faqat qatnov qismini bo‘shatish uchun qayd etgandan keyin mumkin.",
+      "explanationUzc": "Тақиқланган! Транспорт воситаси ва ҳодисаға дахлдор буюмларни жойидан қўзғатмаслиги шарт (13-банд бошланиши). Фақат қатнов қисмини бўшатиш учун қайд этгандан кейин мумкин.",
+      "explanationEn": "Prohibited! Do not move vehicle or items (beginning of clause 13). Only after recording for clearing roadway.",
+      "explanationRu": "Запрещено! Не перемещать ТС и предметы (начало пункта 13). Только после фиксации для освобождения проезжей части.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ha, darhol qo‘zg‘atish mumkin", "textUzc": "Ҳа, дарҳол қўзғатиш мумкин", "textEn": "Yes, can move immediately", "textRu": "Да, можно сразу перемещать" },
+        { "optionIndex": 1, "textUzl": "Yo‘q, qo‘zg‘atmaslik shart", "textUzc": "Йўқ, қўзғатмаслик шарт", "textEn": "No, prohibited to move", "textRu": "Нет, запрещено перемещать" },
+        { "optionIndex": 2, "textUzl": "Faqat IIO ruxsati bilan", "textUzc": "Фақат ИИО рухсати билан", "textEn": "Only with police permission", "textRu": "Только с разрешения полиции" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "YTHda avariya belgisini qayerga o‘rnatish kerak?",
+      "textUzc": "ЙТҲда авария белгисини қаерга ўрнатиш керак?",
+      "textEn": "Where to place the emergency stop sign in case of accident?",
+      "textRu": "Куда выставлять знак аварийной остановки при ДТП?",
+      "explanationUzl": "Qoidalarning 51-bandi talablariga muvofiq (masofa va joylashuv bo‘yicha, shahar ichida 15 m, tashqarida 30 m va h.k.).",
+      "explanationUzc": "Қоидаларнинг 51-банди талабларига мувофиқ (масофа ва жойлашув бўйича, шаҳар ичида 15 м, ташқарида 30 м ва ҳ.к.).",
+      "explanationEn": "According to clause 51 requirements (distance and placement: 15m in city, 30m outside etc.).",
+      "explanationRu": "Согласно требованиям пункта 51 (расстояние и размещение: 15 м в городе, 30 м за городом и т.д.).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat avtomobil yoniga", "textUzc": "Фақат автомобиль ёнига", "textEn": "Only next to the car", "textRu": "Только рядом с машиной" },
+        { "optionIndex": 1, "textUzl": "51-band talablariga muvofiq", "textUzc": "51-банд талабларига мувофиқ", "textEn": "According to clause 51", "textRu": "Согласно пункту 51" },
+        { "optionIndex": 2, "textUzl": "Umuman o‘rnatmaslik mumkin", "textUzc": "Умуман ўрнатмаслик мумкин", "textEn": "No need to place", "textRu": "Не обязательно выставлять" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "YTHda hodisa joyini tark etish qanday javobgarlikka olib keladi?",
+      "textUzc": "ЙТҲда ҳодиса жойини тарк этиш қандай жавобгарликка олиб келади?",
+      "textEn": "What liability arises from leaving the accident scene?",
+      "textRu": "Какое наказание за оставление места ДТП?",
+      "explanationUzl": "Matnda to‘g‘ridan-to‘g‘ri ko‘rsatilmagan, lekin umumiy qoidalarga ko‘ra (va qonunchilikda) joyni tark etish jiddiy jarima va huquqdan mahrum qilishga olib keladi (masalan, MJK 137-moddasi bo‘yicha 15 BHM jarima).",
+      "explanationUzc": "Матнда тўғридан-тўғри кўрсатилмаган, лекин умумий қоидаларга кўра (ва қонунчиликда) жойни тарк этиш жиддий жарима ва ҳуқуқдан маҳрум қилишга олиб келади (масалан, МЖК 137-моддаси бўйича 15 БҲМ жарима).",
+      "explanationEn": "Not directly in text, but generally (by law) leaving scene leads to severe fine and license suspension (e.g., 15 BCU under article 137).",
+      "explanationRu": "Не прямо в тексте, но по закону оставление места — серьёзный штраф и лишение прав (например, 15 БР по ст.137).",
+      "topicId": 1,
+      "difficulty": "HARD",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qanday javobgarlik yo‘q", "textUzc": "Ҳеч қандай жавобгарлик йўқ", "textEn": "No liability", "textRu": "Нет ответственности" },
+        { "optionIndex": 1, "textUzl": "Jarima va huquqdan mahrum qilish", "textUzc": "Жарима ва ҳуқуқдан маҳрум қилиш", "textEn": "Fine and license suspension", "textRu": "Штраф и лишение прав" },
+        { "optionIndex": 2, "textUzl": "Faqat ogohlantirish", "textUzc": "Фақат огоҳлантириш", "textEn": "Only warning", "textRu": "Только предупреждение" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

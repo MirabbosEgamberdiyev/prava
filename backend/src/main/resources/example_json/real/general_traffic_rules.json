@@ -1,0 +1,120 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules",
+      "nameUzl": "Yo‘l harakati qoidalari",
+      "nameUzc": "Йўл ҳаракати қоидалари",
+      "nameEn": "Traffic Rules",
+      "nameRu": "Правила дорожного движения",
+      "descriptionUzl": "Yo‘l harakati umumiy qoidalari, asosiy tushunchalar, ishtirokchilarning majburiyatlari va ta’riflar bo‘yicha savollar.",
+      "descriptionUzc": "Йўл ҳаракати умумий қоидалари, асосий тушунчалар, иштирокчиларнинг мажбуриятлари ва таърифлар бўйича саволлар.",
+      "descriptionEn": "Questions on general traffic rules, basic concepts, obligations of participants and definitions.",
+      "descriptionRu": "Вопросы по общим правилам дорожного движения, основным понятиям, обязанностям участников и определениям.",
+      "iconUrl": null,
+      "displayOrder": 1,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "O‘zbekiston Respublikasi yo‘llarida transport vositalari qaysi tomonga harakatlanishi belgilangan?",
+      "textUzc": "Ўзбекистон Республикаси йўлларида транспорт воситалари қайси томонга ҳаракатланиши белгиланган?",
+      "textEn": "On which side must vehicles move on the roads of the Republic of Uzbekistan?",
+      "textRu": "По какой стороне должны двигаться транспортные средства на дорогах Республики Узбекистан?",
+      "explanationUzl": "O‘zbekiston Respublikasida yo‘l harakati **o‘ng tomonlama** tartibda tashkil etilgan (2-band). Bu ko‘pchilik mamlakatlarda qo‘llaniladigan standart hisoblanadi.",
+      "explanationUzc": "Ўзбекистон Республикасида йўл ҳаракати **ўнг томонлама** тартибда ташкил этилган (2-банд). Бу кўпчилик мамлакатларда қўлланиладиган стандарт ҳисобланади.",
+      "explanationEn": "Right-hand traffic is established in the Republic of Uzbekistan (clause 2). This is the most common traffic arrangement worldwide.",
+      "explanationRu": "В Республике Узбекистан установлено правостороннее движение (пункт 2). Это наиболее распространённая схема организации движения в мире.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "O‘ng tomonga", "textUzc": "Ўнг томонга", "textEn": "To the right", "textRu": "Направо" },
+        { "optionIndex": 1, "textUzl": "Chap tomonga", "textUzc": "Чап томонга", "textEn": "To the left", "textRu": "Налево" },
+        { "optionIndex": 2, "textUzl": "Ikkala tomonga ham", "textUzc": "Иккала томонга ҳам", "textEn": "Both sides", "textRu": "В обе стороны" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yo‘l harakati ishtirokchisi kim deb ataladi?",
+      "textUzc": "Йўл ҳаракати иштирокчиси ким деб аталади?",
+      "textEn": "Who is considered a road user (participant in traffic)?",
+      "textRu": "Кто считается участником дорожного движения?",
+      "explanationUzl": "Yo‘l harakati ishtirokchisi — yo‘l harakati jarayonida haydovchi, yo‘lovchi yoki piyoda sifatida bevosita ishtirok etayotgan shaxs (ta’riflar bo‘limi).",
+      "explanationUzc": "Йўл ҳаракати иштирокчиси — йўл ҳаракати жараёнида ҳайдовчи, йўловчи ёки пиёда сифатида бевосита иштирок этаётган шахс.",
+      "explanationEn": "A road user is any person directly participating in traffic as a driver, passenger or pedestrian.",
+      "explanationRu": "Участник дорожного движения — любое лицо, непосредственно участвующее в дорожном движении в качестве водителя, пассажира или пешехода.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat haydovchilar", "textUzc": "Фақат ҳайдовчилар", "textEn": "Only drivers", "textRu": "Только водители" },
+        { "optionIndex": 1, "textUzl": "Haydovchi, yo‘lovchi va piyodalar", "textUzc": "Ҳайдовчи, йўловчи ва пиёдалар", "textEn": "Drivers, passengers and pedestrians", "textRu": "Водители, пассажиры и пешеходы" },
+        { "optionIndex": 2, "textUzl": "Faqat piyodalar", "textUzc": "Фақат пиёдалар", "textEn": "Only pedestrians", "textRu": "Только пешеходы" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "«Avariya holatini yuzaga keltirish» deganda nima tushuniladi?",
+      "textUzc": "«Авария ҳолатини юзага келтириш» деганда нима тушунилади?",
+      "textEn": "What is meant by «creating an emergency situation»?",
+      "textRu": "Что понимается под «созданием аварийной обстановки»?",
+      "explanationUzl": "Boshqa ishtirokchilarni harakat yo‘nalishi yoki tezligini keskin o‘zgartirishga majbur qilish, shuningdek o‘z yoki boshqalarning xavfsizligini ta’minlash uchun favqulodda choralar ko‘rishga majburlash.",
+      "explanationUzc": "Бошқа иштирокчиларни ҳаракат йўналиши ёки тезлигини кескин ўзгартиришга мажбур қилиш, шунингдек ўз ёки бошқаларнинг хавфсизлигини таъминлаш учун фавқулодда чоралар кўришга мажбурлаш.",
+      "explanationEn": "Forcing other participants to suddenly change direction or speed, or to take emergency measures to ensure their own or others' safety.",
+      "explanationRu": "Принуждение других участников резко изменить направление или скорость движения, либо принять экстренные меры для обеспечения собственной или чужой безопасности.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Oddiy sekinlash", "textUzc": "Оддий секинлаш", "textEn": "Normal slowing down", "textRu": "Обычное замедление" },
+        { "optionIndex": 1, "textUzl": "Boshqalarni keskin harakatga majburlash", "textUzc": "Бошқаларни кескин ҳаракатга мажбурлаш", "textEn": "Forcing others into sudden action", "textRu": "Принуждение других к резким действиям" },
+        { "optionIndex": 2, "textUzl": "Signal berish", "textUzc": "Сигнал бериш", "textEn": "Giving a signal", "textRu": "Подача сигнала" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "«Yetarlicha ko‘rinmaslik» holati qanday sharoitlarda yuzaga keladi?",
+      "textUzc": "«Етарлича кўринмаслик» ҳолати қандай шароитларда юзага келади?",
+      "textEn": "Under what conditions does «insufficient visibility» occur?",
+      "textRu": "При каких условиях возникает «недостаточная видимость»?",
+      "explanationUzl": "Yomg‘ir, qor, tuman, kunning g‘ira-shira vaqtida yo‘lning ko‘rinish masofasi **300 metrdan kam** bo‘lganda.",
+      "explanationUzc": "Ёмғир, қор, туман, куннинг ғира-шира вақтида йўлнинг кўриниш масофаси **300 метрдан кам** бўлганда.",
+      "explanationEn": "When visibility distance is less than **300 meters** due to rain, snow, fog, or twilight.",
+      "explanationRu": "Когда расстояние видимости составляет менее **300 метров** из-за дождя, снега, тумана или сумерек.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "500 metrdan kam", "textUzc": "500 метрдан кам", "textEn": "Less than 500 m", "textRu": "Менее 500 м" },
+        { "optionIndex": 1, "textUzl": "300 metrdan kam", "textUzc": "300 метрдан кам", "textEn": "Less than 300 m", "textRu": "Менее 300 м" },
+        { "optionIndex": 2, "textUzl": "100 metrdan kam", "textUzc": "100 метрдан кам", "textEn": "Less than 100 m", "textRu": "Менее 100 м" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yondosh hududdan chiqayotgan transport vositasi kimlarga yo‘l berishi shart?",
+      "textUzc": "Ёндош ҳудуддан чиқаётган транспорт воситаси кимларга йўл бериши шарт?",
+      "textEn": "To whom must a vehicle exiting an adjacent territory give way?",
+      "textRu": "Кому должно уступить дорогу транспортное средство, выезжающее из прилегающей территории?",
+      "explanationUzl": "Yondosh hududdan (hovli, mahalla, YPX, заправка va h.k.) chiqayotgan transport vositasi **barcha** yo‘l harakati ishtirokchilariga yo‘l berishi shart.",
+      "explanationUzc": "Ёндош ҳудуддан (ҳовли, маҳалла, АЗС ва ҳ.к.) чиқаётган транспорт воситаси **барча** йўл ҳаракати иштирокчиларига йўл бериши шарт.",
+      "explanationEn": "Vehicles exiting adjacent areas (yards, residential zones, gas stations, etc.) must give way to **all** road users.",
+      "explanationRu": "Транспортные средства, выезжающие из прилегающих территорий (дворы, жилые зоны, АЗС и т.д.), обязаны уступить дорогу **всем** участникам движения.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat piyodalarga", "textUzc": "Фақат пиёдаларга", "textEn": "Only to pedestrians", "textRu": "Только пешеходам" },
+        { "optionIndex": 1, "textUzl": "Barcha ishtirokchilarga", "textUzc": "Барча иштирокчиларга", "textEn": "To all participants", "textRu": "Всем участникам" },
+        { "optionIndex": 2, "textUzl": "Faqat avtobuslarga", "textUzc": "Фақат автобусларга", "textEn": "Only to buses", "textRu": "Только автобусам" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

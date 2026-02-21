@@ -1,0 +1,130 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_cargo_transportation",
+      "nameUzl": "Yuk tashish",
+      "nameUzc": "Юк ташиш",
+      "nameEn": "Cargo Transportation",
+      "nameRu": "Перевозка грузов",
+      "descriptionUzl": "Yukning vazni va taqsimlanishi, mahkamlanishi, ko‘rinishni cheklamasligi, tashqi chiroqlar va raqamlarni to‘smasligi, to‘kiladigan yuklarni yopish, katta o‘lchamli yuk belgilari, gabaritdan chiqishi, DYHXX bilan kelishuv talablari bo‘yicha savollar.",
+      "descriptionUzc": "Юкнинг вазни ва тақсимланиши, маҳкамланиши, кўринишни чекламаслиги, ташқи чироқлар ва рақамларни тўсмаслиги, тўкиладиган юкларни ёпиш, катта ўлчамли юк белгилари, габаритдан чиқиши, ДЙҲХХ билан келишув талаблари бўйича саволлар.",
+      "descriptionEn": "Questions on cargo weight/distribution, securing, not obstructing visibility/lights/plates, covering loose cargo, oversized load signs, exceeding dimensions, coordination with traffic police.",
+      "descriptionRu": "Вопросы по массе/распределению груза, креплению, не создавать помех видимости/свету/номерам, укрытию сыпучих грузов, знакам крупногабаритного груза, превышению габаритов, согласованию с ГАИ.",
+      "iconUrl": null,
+      "displayOrder": 25,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Tashilayotgan yukning vazni va o‘qlarga tushadigan og‘irlik qanday bo‘lishi kerak?",
+      "textUzc": "Ташиладиган юкнинг вазни ва ўқларга тушадиган оғирлик қандай бўлиши керак?",
+      "textEn": "What must be the weight of the cargo and its distribution on axles?",
+      "textRu": "Каковы должны быть масса перевозимого груза и распределение нагрузки по осям?",
+      "explanationUzl": "160-bandga ko‘ra: qonunchilikda va ishlab chiqargan korxona tomonidan belgilangan miqdordan oshmasligi kerak.",
+      "explanationUzc": "160-бандга кўра: қонунчиликда ва ишлаб чиқарувчи корхона томонидан белгиланган миқдордан ошмаслиги керак.",
+      "explanationEn": "According to clause 160: must not exceed limits set by legislation and manufacturer.",
+      "explanationRu": "Согласно пункту 160: не должна превышать норм, установленных законодательством и изготовителем.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qanday cheklov yo‘q", "textUzc": "Ҳеч қандай чеклов йўқ", "textEn": "No limits", "textRu": "Без ограничений" },
+        { "optionIndex": 1, "textUzl": "Qonunchilik va ishlab chiqaruvchi belgilagan miqdordan oshmasligi kerak", "textUzc": "Қонунчилик ва ишлаб чиқарувчи белгиланган миқдордан ошмаслиги керак", "textEn": "Not exceed legislative and manufacturer limits", "textRu": "Не превышать норм законодательства и изготовителя" },
+        { "optionIndex": 2, "textUzl": "Faqat 10 tonna", "textUzc": "Фақат 10 тонна", "textEn": "Only 10 tons", "textRu": "Только 10 тонн" },
+        { "optionIndex": 3, "textUzl": "Faqat o‘qlarga teng taqsimlanishi", "textUzc": "Фақат ўқларга тенг тақсимланиши", "textEn": "Only equal distribution on axles", "textRu": "Только равномерно по осям" },
+        { "optionIndex": 4, "textUzl": "Yuk og‘irligi haydovchi vaznidan kam bo‘lishi kerak", "textUzc": "Юк оғирлиги ҳайдовчи вазнидан кам бўлиши керак", "textEn": "Cargo lighter than driver", "textRu": "Груз легче водителя" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Haydovchi yukning holatini qachon va qanday nazorat qilishi kerak?",
+      "textUzc": "Ҳайдовчи юкнинг ҳолатини қачон ва қандай назорат қилиши керак?",
+      "textEn": "When and how must the driver monitor cargo condition?",
+      "textRu": "Когда и как водитель обязан контролировать состояние груза?",
+      "explanationUzl": "161-bandga ko‘ra: harakatni boshlashdan oldin yukning to‘g‘ri joylashgan va mahkamlanganligiga ishonch hosil qilishi, harakat vaqtida tushib ketmasligi va xalaqit bermasligini ta’minlashi kerak.",
+      "explanationUzc": "161-бандга кўра: ҳаракатни бошлашдан олдин юкнинг тўғри жойлашган ва маҳкамланганлигига ишонч ҳосил қилиши, ҳаракат вақтида тушиб кетмаслиги ва халақит бермаслигини таъминлаши керак.",
+      "explanationEn": "According to clause 161: before starting ensure proper placement/securing, during movement prevent falling and obstruction.",
+      "explanationRu": "Согласно пункту 161: перед началом движения убедиться в правильной укладке и креплении, в пути обеспечить, чтобы груз не падал и не создавал помех.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat boshlashdan oldin", "textUzc": "Фақат бошлашдан олдин", "textEn": "Only before starting", "textRu": "Только перед началом" },
+        { "optionIndex": 1, "textUzl": "Boshlashdan oldin va harakat vaqtida", "textUzc": "Бошлашдан олдин ва ҳаракат вақтида", "textEn": "Before starting and during movement", "textRu": "Перед началом и в пути" },
+        { "optionIndex": 2, "textUzl": "Faqat to‘xtagan paytda", "textUzc": "Фақат тўхтаган пайтда", "textEn": "Only when stopped", "textRu": "Только на остановке" },
+        { "optionIndex": 3, "textUzl": "Umuman nazorat qilish shart emas", "textUzc": "Умуман назорат қилиш шарт эмас", "textEn": "No monitoring required", "textRu": "Контроль не требуется" },
+        { "optionIndex": 4, "textUzl": "Faqat yuk tushirish paytida", "textUzc": "Фақат юк тушириш пайтда", "textEn": "Only during unloading", "textRu": "Только при разгрузке" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yuk tashishda qaysi shartlarga amal qilish kerak?",
+      "textUzc": "Юк ташишда қайси шартларга амал қилиш керак?",
+      "textEn": "What conditions must be met for cargo transportation?",
+      "textRu": "Какие условия должны соблюдаться при перевозке грузов?",
+      "explanationUzl": "162-bandga ko‘ra: haydovchiga ko‘rinishni cheklamasligi, boshqarishni qiyinlashtirmasligi, chiroqlar/raqamlar/ishoralarni to‘smasligi, to‘kiladigan yuklar brezent bilan yopilishi va boshqalar.",
+      "explanationUzc": "162-бандга кўра: ҳайдовчига кўринишни чекламаслиги, бошқаришни қийинлаштирмаслиги, чироқлар/рақамлар/ишораларни тўсмаслиги, тўкиладиган юклар брезент билан ёпилиши ва бошқалар.",
+      "explanationEn": "According to clause 162: not obstruct driver visibility, not affect control/balance, not cover lights/plates/signals, loose cargo covered with tarpaulin etc.",
+      "explanationRu": "Согласно пункту 162: не ограничивать обзор водителю, не затруднять управление, не закрывать световые приборы/номера/сигналы, сыпучие грузы укрыты брезентом и т.д.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qanday shart yo‘q", "textUzc": "Ҳеч қандай шарт йўқ", "textEn": "No conditions", "textRu": "Без условий" },
+        { "optionIndex": 1, "textUzl": "Ko‘rinishni cheklamaslik, chiroq/raqamlarni to‘smaslik, yukni mahkamlash", "textUzc": "Кўринишни чекламаслик, чироқ/рақамларни тўсмаслик, юкни маҳкамлаш", "textEn": "Not obstruct visibility, lights/plates, secure cargo", "textRu": "Не ограничивать обзор, не закрывать свет/номера, крепить груз" },
+        { "optionIndex": 2, "textUzl": "Faqat yukni yopish", "textUzc": "Фақат юкни ёпиш", "textEn": "Only cover cargo", "textRu": "Только укрывать груз" },
+        { "optionIndex": 3, "textUzl": "Faqat tezlikni cheklash", "textUzc": "Фақат тезликни чеклаш", "textEn": "Only limit speed", "textRu": "Только ограничивать скорость" },
+        { "optionIndex": 4, "textUzl": "Faqat kechasi tashish", "textUzc": "Фақат кечаси ташиш", "textEn": "Only at night", "textRu": "Только ночью" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Katta o‘lchamli yuk qanday belgilanishi kerak?",
+      "textUzc": "Катта ўлчамли юк қандай белгиланиши керак?",
+      "textEn": "How should oversized cargo be marked?",
+      "textRu": "Как должен быть обозначен крупногабаритный груз?",
+      "explanationUzl": "163-bandga ko‘ra: oldi yoki orqaga 1 m, yon tomonga 0,4 m dan ortiq chiqsa “Katta o‘lchamli yuk” belgisi bilan, qorong‘i va yetarlicha ko‘rinmaydigan sharoitda qo‘shimcha chiroq/yorug‘lik qaytargichlar bilan.",
+      "explanationUzc": "163-бандга кўра: олди ёки орқага 1 м, ён томонга 0,4 м дан ортиқ чиқса “Катта ўлчамли юк” белгиси билан, қоронғи ва етарлича кўринмайдиган шароитда қўшимча чироқ/ёруғлик қайтаргичлар билан.",
+      "explanationEn": "According to clause 163: if protrudes >1 m front/rear or >0.4 m sides — “Oversized Load” sign, in dark/poor visibility additional white front/red rear lights/reflectors.",
+      "explanationRu": "Согласно пункту 163: при вылете >1 м спереди/сзади или >0,4 м по бокам — знак «Крупногабаритный груз», в тёмное время и недостаточной видимости дополнительные белый спереди/красный сзади огонь/отражатель.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qanday belgi shart emas", "textUzc": "Ҳеч қандай белги шарт эмас", "textEn": "No marking required", "textRu": "Обозначение не требуется" },
+        { "optionIndex": 1, "textUzl": "“Katta o‘lchamli yuk” belgisi va qorong‘ida chiroqlar bilan", "textUzc": "“Катта ўлчамли юк” белгиси ва қоронғида чироқлар билан", "textEn": "“Oversized Load” sign and lights in dark", "textRu": "Знак «Крупногабаритный груз» и огни в темноте" },
+        { "optionIndex": 2, "textUzl": "Faqat qizil chiroq bilan", "textUzc": "Фақат қизил чироқ билан", "textEn": "Only red light", "textRu": "Только красный огонь" },
+        { "optionIndex": 3, "textUzl": "Faqat oq chiroq bilan", "textUzc": "Фақат оқ чироқ билан", "textEn": "Only white light", "textRu": "Только белый огонь" },
+        { "optionIndex": 4, "textUzl": "Faqat “Tezlik cheklangan” belgisi bilan", "textUzc": "Фақат “Тезлик чекланган” белгиси билан", "textEn": "Only “Speed Limit” sign", "textRu": "Только знак «Ограничение скорости»" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Katta hajmli va og‘ir vaznli yuklarni tashish qachon DYHXX bilan kelishilishi kerak?",
+      "textUzc": "Катта ҳажмли ва оғир вазнли юкларни ташиш қачон ДЙҲХХ билан келишилиши керак?",
+      "textEn": "When must transportation of large/heavy cargo be coordinated with traffic police?",
+      "textRu": "Когда перевозка крупногабаритных и тяжеловесных грузов должна быть согласована с ГАИ?",
+      "explanationUzl": "164-bandga ko‘ra: eni 2,55 m (refrijerator 2,6 m), balandligi 4 m, uzunligi yakka TС uchun 12 m, avtopoyezd uchun 20 m dan ortiq yoki yuk old/orqa 2 m dan ortiq chiqsa.",
+      "explanationUzc": "164-бандга кўра: ени 2,55 м (рефрижератор 2,6 м), баландлиги 4 м, узунлиги якка ТС учун 12 м, автопоезд учун 20 м дан ортиқ ёки юк олди/орқа 2 м дан ортиқ чиқса.",
+      "explanationEn": "According to clause 164: width >2.55 m (2.6 m for refrigerated), height >4 m, length >12 m single/>20 m combination, or protrusion >2 m front/rear.",
+      "explanationRu": "Согласно пункту 164: ширина >2,55 м (2,6 м для рефрижераторов), высота >4 м, длина >12 м одиночное/>20 м автопоезд, или вылет >2 м спереди/сзади.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har doim", "textUzc": "Ҳар доим", "textEn": "Always", "textRu": "Всегда" },
+        { "optionIndex": 1, "textUzl": "Gabaritdan ortiq chiqsa yoki belgilangan o‘lchamlardan oshsa", "textUzc": "Габаритдан ортиқ чиқса ёки белгиланган ўлчамлардан ошса", "textEn": "When exceeding dimensions", "textRu": "При превышении габаритов" },
+        { "optionIndex": 2, "textUzl": "Faqat 1 tonnadan ortiq yukda", "textUzc": "Фақат 1 тоннадан ортиқ юкда", "textEn": "Only over 1 ton", "textRu": "Только при грузе свыше 1 тонны" },
+        { "optionIndex": 3, "textUzl": "Umuman kelishuv shart emas", "textUzc": "Умуман келишув шарт эмас", "textEn": "No coordination required", "textRu": "Согласование не требуется" },
+        { "optionIndex": 4, "textUzl": "Faqat kechasi", "textUzc": "Фақат кечаси", "textEn": "Only at night", "textRu": "Только ночью" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

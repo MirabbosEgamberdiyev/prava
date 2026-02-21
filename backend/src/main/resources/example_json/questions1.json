@@ -1,0 +1,604 @@
+{
+  "questions": [
+    {
+      "textUzl": "Qizil svetofor signalida nima qilish kerak?",
+      "textUzc": "Қизил светофор сигналида нима қилиш керак?",
+      "textEn": "What to do at red traffic light?",
+      "textRu": "Что делать на красный сигнал светофора?",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться"},
+        {"optionIndex": 1, "textUzl": "Davom etish", "textUzc": "Давом етиш", "textEn": "Continue", "textRu": "Продолжить"},
+        {"optionIndex": 2, "textUzl": "Tezlashtirish", "textUzc": "Тезлаштириш", "textEn": "Speed up", "textRu": "Ускориться"}
+      ]
+    },
+    {
+      "textUzl": "Shahar ichida maksimal tezlik qancha?",
+      "textUzc": "Шаҳар ичида максимал тезлик қанча?",
+      "textEn": "Maximum speed in the city?",
+      "textRu": "Максимальная скорость в городе?",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "50 km/s", "textUzc": "50 км/с", "textEn": "50 km/h", "textRu": "50 км/ч"},
+        {"optionIndex": 1, "textUzl": "60 km/s", "textUzc": "60 км/с", "textEn": "60 km/h", "textRu": "60 км/ч"},
+        {"optionIndex": 2, "textUzl": "70 km/s", "textUzc": "70 км/с", "textEn": "70 km/h", "textRu": "70 км/ч"}
+      ]
+    },
+    {
+      "textUzl": "Piyodalar yo'lagida to'xtash mumkinmi?",
+      "textUzc": "Пиёдалар йўлагида тўхташ мумкинми?",
+      "textEn": "Can you stop on pedestrian crossing?",
+      "textRu": "Можно остановиться на пешеходном переходе?",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Ha", "textUzc": "Ҳа", "textEn": "Yes", "textRu": "Да"},
+        {"optionIndex": 1, "textUzl": "Yo'q", "textUzc": "Йўқ", "textEn": "No", "textRu": "Нет"},
+        {"optionIndex": 2, "textUzl": "Ba'zan", "textUzc": "Баъзан", "textEn": "Sometimes", "textRu": "Иногда"}
+      ]
+    },
+    {
+      "textUzl": "Xavfsiz quvib o'tish uchun nima kerak?",
+      "textUzc": "Хавфсиз қувиб ўтиш учун нима керак?",
+      "textEn": "What is needed for safe overtaking?",
+      "textRu": "Что нужно для безопасного обгона?",
+      "topicId": 1,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Tezlik", "textUzc": "Тезлик", "textEn": "Speed", "textRu": "Скорость"},
+        {"optionIndex": 1, "textUzl": "Signal", "textUzc": "Сигнал", "textEn": "Signal", "textRu": "Сигнал"},
+        {"optionIndex": 2, "textUzl": "Yetarli masofa va ko'rish", "textUzc": "Етарли масофа ва кўриш", "textEn": "Sufficient distance and visibility", "textRu": "Достаточное расстояние и видимость"}
+      ]
+    },
+    {
+      "textUzl": "Tormoz ishlamasa nima qilish kerak?",
+      "textUzc": "Тормоз ишламаса нима қилиш керак?",
+      "textEn": "What to do if brakes fail?",
+      "textRu": "Что делать если тормоза отказали?",
+      "topicId": 1,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Qo'l tormozi va dvigatel", "textUzc": "Қўл тормози ва двигател", "textEn": "Handbrake and engine", "textRu": "Ручник и двигатель"},
+        {"optionIndex": 1, "textUzl": "Tezlashtirish", "textUzc": "Тезлаштириш", "textEn": "Accelerate", "textRu": "Ускориться"},
+        {"optionIndex": 2, "textUzl": "Hech narsa", "textUzc": "Ҳеч нарса", "textEn": "Nothing", "textRu": "Ничего"}
+      ]
+    },
+    {
+      "textUzl": "Qizil uchburchak belgi nima?",
+      "textUzc": "Қизил учбурчак белги нима?",
+      "textEn": "What is red triangle sign?",
+      "textRu": "Что такое красный треугольник?",
+      "topicId": 2,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Ogohlantiruv", "textUzc": "Огоҳлантирув", "textEn": "Warning", "textRu": "Предупреждение"},
+        {"optionIndex": 1, "textUzl": "Taqiq", "textUzc": "Тақиқ", "textEn": "Prohibition", "textRu": "Запрет"},
+        {"optionIndex": 2, "textUzl": "Axborot", "textUzc": "Ахборот", "textEn": "Information", "textRu": "Информация"}
+      ]
+    },
+    {
+      "textUzl": "Ko'k doira belgi nimani anglatadi?",
+      "textUzc": "Кўк доира белги нимани англатади?",
+      "textEn": "What does blue circle sign mean?",
+      "textRu": "Что означает синий круг?",
+      "topicId": 2,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Taqiq", "textUzc": "Тақиқ", "textEn": "Prohibition", "textRu": "Запрет"},
+        {"optionIndex": 1, "textUzl": "Majburiy", "textUzc": "Мажбурий", "textEn": "Mandatory", "textRu": "Обязательно"},
+        {"optionIndex": 2, "textUzl": "Maslahat", "textUzc": "Маслахат", "textEn": "Advice", "textRu": "Совет"}
+      ]
+    },
+    {
+      "textUzl": "Qizil doira oq chiziqli belgi?",
+      "textUzc": "Қизил доира оқ чизиқли белги?",
+      "textEn": "Red circle with white line sign?",
+      "textRu": "Красный круг с белой линией?",
+      "topicId": 2,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Стоп"},
+        {"optionIndex": 1, "textUzl": "Sekinlash", "textUzc": "Секинлаш", "textEn": "Slow down", "textRu": "Снизить скорость"},
+        {"optionIndex": 2, "textUzl": "Kirish taqiq", "textUzc": "Кириш тақиқ", "textEn": "No entry", "textRu": "Въезд запрещен"}
+      ]
+    },
+    {
+      "textUzl": "Yashil to'rtburchak belgi qaysi guruh?",
+      "textUzc": "Яшил тўртбурчак белги қайси гуруҳ?",
+      "textEn": "Green rectangle sign category?",
+      "textRu": "Зеленый прямоугольник категория?",
+      "topicId": 2,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Taqiq", "textUzc": "Тақиқ", "textEn": "Prohibition", "textRu": "Запрет"},
+        {"optionIndex": 1, "textUzl": "Ogohlantiruv", "textUzc": "Огоҳлантирув", "textEn": "Warning", "textRu": "Предупреждение"},
+        {"optionIndex": 2, "textUzl": "Axborot", "textUzc": "Ахборот", "textEn": "Information", "textRu": "Информация"}
+      ]
+    },
+    {
+      "textUzl": "P belgisi nimani bildiradi?",
+      "textUzc": "P белгиси нимани билдиради?",
+      "textEn": "What does P sign mean?",
+      "textRu": "Что означает знак P?",
+      "topicId": 2,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Parking", "textUzc": "Паркинг", "textEn": "Parking", "textRu": "Парковка"},
+        {"optionIndex": 1, "textUzl": "Piyoda", "textUzc": "Пиёда", "textEn": "Pedestrian", "textRu": "Пешеход"},
+        {"optionIndex": 2, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановка"}
+      ]
+    },
+    {
+      "textUzl": "Uzluksiz oq chiziq nimani bildiradi?",
+      "textUzc": "Узлуксиз оқ чизиқ нимани билдиради?",
+      "textEn": "What does solid white line mean?",
+      "textRu": "Что означает сплошная белая линия?",
+      "topicId": 3,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Kesib o'tish taqiq", "textUzc": "Кесиб ўтиш тақиқ", "textEn": "No crossing", "textRu": "Пересекать нельзя"},
+        {"optionIndex": 1, "textUzl": "Kesish mumkin", "textUzc": "Кесиш мумкин", "textEn": "Can cross", "textRu": "Можно пересекать"},
+        {"optionIndex": 2, "textUzl": "Ehtiyot bo'lish", "textUzc": "Эҳтиёт бўлиш", "textEn": "Be careful", "textRu": "Будь осторожен"}
+      ]
+    },
+    {
+      "textUzl": "Uzilgan chiziq qachon kesish mumkin?",
+      "textUzc": "Узилган чизиқ қачон кесиш мумкин?",
+      "textEn": "When can you cross broken line?",
+      "textRu": "Когда можно пересекать прерывистую?",
+      "topicId": 3,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Hech qachon", "textUzc": "Ҳеч қачон", "textEn": "Never", "textRu": "Никогда"},
+        {"optionIndex": 1, "textUzl": "Xavfsiz bo'lsa", "textUzc": "Хавфсиз бўлса", "textEn": "If safe", "textRu": "Если безопасно"},
+        {"optionIndex": 2, "textUzl": "Faqat kechasi", "textUzc": "Фақат кечаси", "textEn": "Only night", "textRu": "Только ночью"}
+      ]
+    },
+    {
+      "textUzl": "Sariq yo'l belgilanishi nimani bildiradi?",
+      "textUzc": "Сариқ йўл белгиланиши нимани билдиради?",
+      "textEn": "What does yellow road marking mean?",
+      "textRu": "Что означает желтая разметка?",
+      "topicId": 3,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Tezlash", "textUzc": "Тезлаш", "textEn": "Speed up", "textRu": "Ускориться"},
+        {"optionIndex": 1, "textUzl": "Ehtiyot", "textUzc": "Эҳтиёт", "textEn": "Caution", "textRu": "Осторожно"},
+        {"optionIndex": 2, "textUzl": "To'xtash taqiq", "textUzc": "Тўхташ тақиқ", "textEn": "No stopping", "textRu": "Остановка запрещена"}
+      ]
+    },
+    {
+      "textUzl": "Zebra chiziqlar nimani bildiradi?",
+      "textUzc": "Зебра чизиқлар нимани билдиради?",
+      "textEn": "What do zebra stripes mean?",
+      "textRu": "Что означают полосы зебра?",
+      "topicId": 3,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Piyoda o'tish joyi", "textUzc": "Пиёда ўтиш жойи", "textEn": "Pedestrian crossing", "textRu": "Пешеходный переход"},
+        {"optionIndex": 1, "textUzl": "To'xtash joyi", "textUzc": "Тўхташ жойи", "textEn": "Stopping place", "textRu": "Место остановки"},
+        {"optionIndex": 2, "textUzl": "Xavfli hudud", "textUzc": "Хавфли худуд", "textEn": "Danger zone", "textRu": "Опасная зона"}
+      ]
+    },
+    {
+      "textUzl": "Qo'sh uzluksiz chiziq nimani anglatadi?",
+      "textUzc": "Қўш узлуксиз чизиқ нимани англатади?",
+      "textEn": "What does double solid line mean?",
+      "textRu": "Что означает двойная сплошная?",
+      "topicId": 3,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Kesish mumkin", "textUzc": "Кесиш мумкин", "textEn": "Can cross", "textRu": "Можно пересекать"},
+        {"optionIndex": 1, "textUzl": "Mutlaqo taqiq", "textUzc": "Мутлақо тақиқ", "textEn": "Strictly prohibited", "textRu": "Строго запрещено"},
+        {"optionIndex": 2, "textUzl": "Ehtiyot bilan", "textUzc": "Эҳтиёт билан", "textEn": "With caution", "textRu": "С осторожностью"}
+      ]
+    },
+    {
+      "textUzl": "Yashil svetofor nimani anglatadi?",
+      "textUzc": "Яшил светофор нимани англатади?",
+      "textEn": "What does green light mean?",
+      "textRu": "Что означает зеленый свет?",
+      "topicId": 4,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Harakat mumkin", "textUzc": "Ҳаракат мумкин", "textEn": "Can proceed", "textRu": "Можно ехать"},
+        {"optionIndex": 1, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться"},
+        {"optionIndex": 2, "textUzl": "Sekinlash", "textUzc": "Секинлаш", "textEn": "Slow down", "textRu": "Снизить скорость"}
+      ]
+    },
+    {
+      "textUzl": "Sariq svetofor nimani bildiradi?",
+      "textUzc": "Сариқ светофор нимани билдиради?",
+      "textEn": "What does yellow light mean?",
+      "textRu": "Что означает желтый свет?",
+      "topicId": 4,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Tezlash", "textUzc": "Тезлаш", "textEn": "Speed up", "textRu": "Ускориться"},
+        {"optionIndex": 1, "textUzl": "Davom etish", "textUzc": "Давом етиш", "textEn": "Continue", "textRu": "Продолжить"},
+        {"optionIndex": 2, "textUzl": "Tayyor bo'lish", "textUzc": "Тайёр бўлиш", "textEn": "Be ready", "textRu": "Приготовиться"}
+      ]
+    },
+    {
+      "textUzl": "Miltillovchi yashil signal nimani anglatadi?",
+      "textUzc": "Милтилловчи яшил сигнал нимани англатади?",
+      "textEn": "What does flashing green mean?",
+      "textRu": "Что означает мигающий зеленый?",
+      "topicId": 4,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться"},
+        {"optionIndex": 1, "textUzl": "Tez tugaydi", "textUzc": "Тез тугайди", "textEn": "Ending soon", "textRu": "Скоро закончится"},
+        {"optionIndex": 2, "textUzl": "Tezlash", "textUzc": "Тезлаш", "textEn": "Speed up", "textRu": "Ускориться"}
+      ]
+    },
+    {
+      "textUzl": "Svetofor ishlamasa nima qilish kerak?",
+      "textUzc": "Светофор ишламаса нима қилиш керак?",
+      "textEn": "What to do if traffic light not working?",
+      "textRu": "Что делать если светофор не работает?",
+      "topicId": 4,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Yo'l belgilariga rioya qilish", "textUzc": "Йўл белгиларига риоя қилиш", "textEn": "Follow road signs", "textRu": "Следовать дорожным знакам"},
+        {"optionIndex": 1, "textUzl": "Tez o'tish", "textUzc": "Тез ўтиш", "textEn": "Pass quickly", "textRu": "Быстро проехать"},
+        {"optionIndex": 2, "textUzl": "Kutish", "textUzc": "Кутиш", "textEn": "Wait", "textRu": "Ждать"}
+      ]
+    },
+    {
+      "textUzl": "Qizil va sariq birgalikda nimani anglatadi?",
+      "textUzc": "Қизил ва сариқ биргаликда нимани англатади?",
+      "textEn": "What does red and yellow together mean?",
+      "textRu": "Что означает красный и желтый вместе?",
+      "topicId": 4,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "To'xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться"},
+        {"optionIndex": 1, "textUzl": "Ehtiyot", "textUzc": "Эҳтиёт", "textEn": "Caution", "textRu": "Осторожно"},
+        {"optionIndex": 2, "textUzl": "Tez orada yashil", "textUzc": "Тез орада яшил", "textEn": "Soon green", "textRu": "Скоро зеленый"}
+      ]
+    },
+    {
+      "textUzl": "Chorrahada o'ng tomonga burilishda kimga yo'l berish kerak?",
+      "textUzc": "Чоррахада ўнг томонга бурилишда кимга йўл бериш керак?",
+      "textEn": "Who has priority when turning right at intersection?",
+      "textRu": "Кому уступить дорогу при повороте направо на перекрестке?",
+      "topicId": 5,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Piyodalarga", "textUzc": "Пиёдаларга", "textEn": "Pedestrians", "textRu": "Пешеходам"},
+        {"optionIndex": 1, "textUzl": "Hech kimga", "textUzc": "Ҳеч кимга", "textEn": "Nobody", "textRu": "Никому"},
+        {"optionIndex": 2, "textUzl": "Faqat velosipedchilarga", "textUzc": "Фақат велосипедчиларга", "textEn": "Only cyclists", "textRu": "Только велосипедистам"}
+      ]
+    },
+    {
+      "textUzl": "Reglamentlanmagan chorrahada kim birinchi o'tadi?",
+      "textUzc": "Регламентланмаган чоррахада ким биринчи ўтади?",
+      "textEn": "Who goes first at uncontrolled intersection?",
+      "textRu": "Кто первый проезжает нерегулируемый перекресток?",
+      "topicId": 5,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Chap tomondan kelayotgan", "textUzc": "Чап томондан келаётган", "textEn": "Coming from left", "textRu": "Приближающийся слева"},
+        {"optionIndex": 1, "textUzl": "O'ng tomondan kelayotgan", "textUzc": "Ўнг томондан келаётган", "textEn": "Coming from right", "textRu": "Приближающийся справа"},
+        {"optionIndex": 2, "textUzl": "Tezroq kelgan", "textUzc": "Тезроқ келган", "textEn": "Who arrives faster", "textRu": "Кто быстрее приехал"}
+      ]
+    },
+    {
+      "textUzl": "T-shaklli chorrahada asosiy yo'lda kim?",
+      "textUzc": "T-шакилли чоррахада асосий йўлда ким?",
+      "textEn": "Who is on main road at T-intersection?",
+      "textRu": "Кто на главной дороге на T-образном перекрестке?",
+      "topicId": 5,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "To'g'ri yo'lda ketayotgan", "textUzc": "Тўғри йўлда кетаётган", "textEn": "Going straight", "textRu": "Едущий прямо"},
+        {"optionIndex": 1, "textUzl": "Burilayotgan", "textUzc": "Бурилаётган", "textEn": "Turning", "textRu": "Поворачивающий"},
+        {"optionIndex": 2, "textUzl": "Barcha teng", "textUzc": "Барча тенг", "textEn": "All equal", "textRu": "Все равны"}
+      ]
+    },
+    {
+      "textUzl": "Chorrahada chapga burilishda qaysi qatordan borish kerak?",
+      "textUzc": "Чоррахада чапга бурилишда қайси қатордан бориш керак?",
+      "textEn": "Which lane to use for left turn at intersection?",
+      "textRu": "По какой полосе поворачивать налево на перекрестке?",
+      "topicId": 5,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "O'ng qatordan", "textUzc": "Ўнг қатордан", "textEn": "Right lane", "textRu": "По правой полосе"},
+        {"optionIndex": 1, "textUzl": "Istalgan qatordan", "textUzc": "Исталган қатордан", "textEn": "Any lane", "textRu": "По любой полосе"},
+        {"optionIndex": 2, "textUzl": "Chap qatordan", "textUzc": "Чап қатордан", "textEn": "Left lane", "textRu": "По левой полосе"}
+      ]
+    },
+    {
+      "textUzl": "Doira shaklidagi chorrahada kimga ustunlik beriladi?",
+      "textUzc": "Доира шаклидаги чоррахада кимга устунлик берилади?",
+      "textEn": "Who has priority at roundabout?",
+      "textRu": "Кто имеет преимущество на круговом перекрестке?",
+      "topicId": 5,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Kirayotgan transport", "textUzc": "Кираётган транспорт", "textEn": "Entering vehicle", "textRu": "Въезжающий транспорт"},
+        {"optionIndex": 1, "textUzl": "Doirada harakatlanayotgan", "textUzc": "Доирада ҳаракатланаётган", "textEn": "Already in circle", "textRu": "Уже в кругу"},
+        {"optionIndex": 2, "textUzl": "Teng huquqli", "textUzc": "Тенг ҳуқуқли", "textEn": "Equal rights", "textRu": "Равные права"}
+      ]
+    },
+    {
+      "textUzl": "Quvib o'tishdan oldin nima qilish shart?",
+      "textUzc": "Қувиб ўтишдан олдин нима қилиш шарт?",
+      "textEn": "What must you do before overtaking?",
+      "textRu": "Что нужно сделать перед обгоном?",
+      "topicId": 6,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Signal berish va tekshirish", "textUzc": "Сигнал бериш ва текшириш", "textEn": "Signal and check", "textRu": "Подать сигнал и проверить"},
+        {"optionIndex": 1, "textUzl": "Faqat tezlash", "textUzc": "Фақат тезлаш", "textEn": "Just accelerate", "textRu": "Просто ускориться"},
+        {"optionIndex": 2, "textUzl": "Signal kerak emas", "textUzc": "Сигнал керак эмас", "textEn": "No signal needed", "textRu": "Сигнал не нужен"}
+      ]
+    },
+    {
+      "textUzl": "Qaysi joylarda quvib o'tish taqiqlangan?",
+      "textUzc": "Қайси жойларда қувиб ўтиш тақиқланган?",
+      "textEn": "Where is overtaking prohibited?",
+      "textRu": "Где обгон запрещен?",
+      "topicId": 6,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Faqat chorrahalarda", "textUzc": "Фақат чоррахаларда", "textEn": "Only at intersections", "textRu": "Только на перекрестках"},
+        {"optionIndex": 1, "textUzl": "Hech qayerda", "textUzc": "Ҳеч қаерда", "textEn": "Nowhere", "textRu": "Нигде"},
+        {"optionIndex": 2, "textUzl": "Ko'rinmas joylarda va piyoda o'tish joyida", "textUzc": "Кўринмас жойларда ва пиёда ўтиш жойида", "textEn": "Low visibility and crossings", "textRu": "В местах плохой видимости и на переходах"}
+      ]
+    },
+    {
+      "textUzl": "Ko'prikda quvib o'tish mumkinmi?",
+      "textUzc": "Кўприкда қувиб ўтиш мумкинми?",
+      "textEn": "Can you overtake on a bridge?",
+      "textRu": "Можно обгонять на мосту?",
+      "topicId": 6,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Ha, har doim", "textUzc": "Ҳа, ҳар доим", "textEn": "Yes, always", "textRu": "Да, всегда"},
+        {"optionIndex": 1, "textUzl": "Yo'q, taqiqlangan", "textUzc": "Йўқ, тақиқланган", "textEn": "No, prohibited", "textRu": "Нет, запрещено"},
+        {"optionIndex": 2, "textUzl": "Faqat keng ko'prikda", "textUzc": "Фақат кенг кўприкда", "textEn": "Only on wide bridge", "textRu": "Только на широком мосту"}
+      ]
+    },
+    {
+      "textUzl": "Oldingizda mashina quvib o'tayotgan bo'lsa nima qilasiz?",
+      "textUzc": "Олдингизда машина қувиб ўтаётган бўлса нима қиласиз?",
+      "textEn": "What to do if car ahead is overtaking?",
+      "textRu": "Что делать если машина впереди обгоняет?",
+      "topicId": 6,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Kutish kerak", "textUzc": "Кутиш керак", "textEn": "Must wait", "textRu": "Нужно ждать"},
+        {"optionIndex": 1, "textUzl": "O'zingiz ham o'tish", "textUzc": "Ўзингиз ҳам ўтиш", "textEn": "Also overtake", "textRu": "Тоже обогнать"},
+        {"optionIndex": 2, "textUzl": "Signal berib to'xtatish", "textUzc": "Сигнал бериб тўхтатиш", "textEn": "Signal to stop", "textRu": "Сигнализировать об остановке"}
+      ]
+    },
+    {
+      "textUzl": "Ikki qatorli yo'lda quvib o'tayotganingizda qarshi tomondan mashina ko'rinsangiz?",
+      "textUzc": "Икки қаторли йўлда қувиб ўтаётганингизда қарши томондан машина кўринсангиз?",
+      "textEn": "When overtaking on two-lane road and see oncoming car?",
+      "textRu": "При обгоне на двухполосной дороге увидели встречную машину?",
+      "topicId": 6,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Tezlash kerak", "textUzc": "Тезлаш керак", "textEn": "Speed up", "textRu": "Ускориться"},
+        {"optionIndex": 1, "textUzl": "O'z qatoringizga qaytish", "textUzc": "Ўз қаторингизга қайтиш", "textEn": "Return to your lane", "textRu": "Вернуться в свою полосу"},
+        {"optionIndex": 2, "textUzl": "Davom etish", "textUzc": "Давом етиш", "textEn": "Continue", "textRu": "Продолжить"}
+      ]
+    },
+    {
+      "textUzl": "Piyoda o'tish joyidan oldin necha metrda to'xtash mumkin?",
+      "textUzc": "Пиёда ўтиш жойидан олдин неча метрда тўхташ мумкин?",
+      "textEn": "How many meters before crossing can you stop?",
+      "textRu": "За сколько метров до перехода можно остановиться?",
+      "topicId": 7,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Kamida 5 metr", "textUzc": "Камида 5 метр", "textEn": "At least 5 meters", "textRu": "Минимум 5 метров"},
+        {"optionIndex": 1, "textUzl": "To'g'ridan-to'g'ri", "textUzc": "Тўғридан-тўғри", "textEn": "Right at it", "textRu": "Прямо на нем"},
+        {"optionIndex": 2, "textUzl": "Farqi yo'q", "textUzc": "Фарқи йўқ", "textEn": "Doesn't matter", "textRu": "Без разницы"}
+      ]
+    },
+    {
+      "textUzl": "Yo'l chetida to'xtashda mashinani qanday qo'yish kerak?",
+      "textUzc": "Йўл четида тўхташда машинани қандай қўйиш керак?",
+      "textEn": "How to position car when parking on roadside?",
+      "textRu": "Как поставить машину при остановке на обочине?",
+      "topicId": 7,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Yo'l o'rtasida", "textUzc": "Йўл ўртасида", "textEn": "In middle of road", "textRu": "Посреди дороги"},
+        {"optionIndex": 1, "textUzl": "Qiyshiq", "textUzc": "Қийшиқ", "textEn": "Diagonally", "textRu": "По диагонали"},
+        {"optionIndex": 2, "textUzl": "Yo'lga parallel", "textUzc": "Йўлга параллел", "textEn": "Parallel to road", "textRu": "Параллельно дороге"}
+      ]
+    },
+    {
+      "textUzl": "Avtobusning to'xtash joyidan keyin qancha masofada to'xtash mumkin?",
+      "textUzc": "Автобуснинг тўхташ жойидан кейин қанча масофада тўхташ мумкин?",
+      "textEn": "What distance after bus stop can you park?",
+      "textRu": "На каком расстоянии после автобусной остановки можно парковаться?",
+      "topicId": 7,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "10 metr", "textUzc": "10 метр", "textEn": "10 meters", "textRu": "10 метров"},
+        {"optionIndex": 1, "textUzl": "15 metr", "textUzc": "15 метр", "textEn": "15 meters", "textRu": "15 метров"},
+        {"optionIndex": 2, "textUzl": "20 metr", "textUzc": "20 метр", "textEn": "20 meters", "textRu": "20 метров"}
+      ]
+    },
+    {
+      "textUzl": "To'xtash va turish o'rtasida qanday farq bor?",
+      "textUzc": "Тўхташ ва туриш ўртасида қандай фарқ бор?",
+      "textEn": "What's the difference between stopping and parking?",
+      "textRu": "В чем разница между остановкой и стоянкой?",
+      "topicId": 7,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "To'xtash 5 daqiqagacha", "textUzc": "Тўхташ 5 дақиқагача", "textEn": "Stopping up to 5 minutes", "textRu": "Остановка до 5 минут"},
+        {"optionIndex": 1, "textUzl": "Farqi yo'q", "textUzc": "Фарқи йўқ", "textEn": "No difference", "textRu": "Нет разницы"},
+        {"optionIndex": 2, "textUzl": "To'xtash 10 daqiqagacha", "textUzc": "Тўхташ 10 дақиқагача", "textEn": "Stopping up to 10 minutes", "textRu": "Остановка до 10 минут"}
+      ]
+    },
+    {
+      "textUzl": "Kechasi to'xtab turganda qanday chiroq yoqish kerak?",
+      "textUzc": "Кечаси тўхтаб турганда қандай чироқ ёқиш керак?",
+      "textEn": "What lights to use when parked at night?",
+      "textRu": "Какие огни включать при ночной парковке?",
+      "topicId": 7,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Uzzoq nurli", "textUzc": "Уззоқ нурли", "textEn": "High beam", "textRu": "Дальний свет"},
+        {"optionIndex": 1, "textUzl": "Hech narsa", "textUzc": "Ҳеч нарса", "textEn": "Nothing", "textRu": "Ничего"},
+        {"optionIndex": 2, "textUzl": "Gabarit chiroqlari", "textUzc": "Габарит чироқлари", "textEn": "Parking lights", "textRu": "Габаритные огни"}
+      ]
+    },
+    {
+      "textUzl": "Piyoda yo'lagidan necha metr narida turish mumkin?",
+      "textUzc": "Пиёда йўлагидан неча метр нарида туриш мумкин?",
+      "textEn": "How far from pedestrian crossing can you park?",
+      "textRu": "На каком расстоянии от пешеходного перехода можно парковаться?",
+      "topicId": 8,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Kamida 5 metr", "textUzc": "Камида 5 метр", "textEn": "At least 5 meters", "textRu": "Минимум 5 метров"},
+        {"optionIndex": 1, "textUzl": "2 metr", "textUzc": "2 метр", "textEn": "2 meters", "textRu": "2 метра"},
+        {"optionIndex": 2, "textUzl": "1 metr", "textUzc": "1 метр", "textEn": "1 meter", "textRu": "1 метр"}
+      ]
+    },
+    {
+      "textUzl": "Piyoda yo'lni qayerdan kesib o'tishi kerak?",
+      "textUzc": "Пиёда йўлни қаердан кесиб ўтиши керак?",
+      "textEn": "Where should pedestrians cross the road?",
+      "textRu": "Где пешеходы должны переходить дорогу?",
+      "topicId": 8,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Istalgan joydan", "textUzc": "Исталган жойдан", "textEn": "Anywhere", "textRu": "Где угодно"},
+        {"optionIndex": 1, "textUzl": "Piyoda o'tish joyidan", "textUzc": "Пиёда ўтиш жойидан", "textEn": "At crossing", "textRu": "На переходе"},
+        {"optionIndex": 2, "textUzl": "Chorrahadan", "textUzc": "Чоррахадан", "textEn": "At intersection", "textRu": "На перекрестке"}
+      ]
+    },
+    {
+      "textUzl": "Piyoda yo'lagida haydovchi nima qilishi kerak?",
+      "textUzc": "Пиёда йўлагида ҳайдовчи нима қилиши керак?",
+      "textEn": "What must driver do at pedestrian crossing?",
+      "textRu": "Что должен делать водитель на пешеходном переходе?",
+      "topicId": 8,
+      "difficulty": "EASY",
+      "correctAnswerIndex": 0,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Piyodalarga yo'l berish", "textUzc": "Пиёдаларга йўл бериш", "textEn": "Give way to pedestrians", "textRu": "Уступить дорогу пешеходам"},
+        {"optionIndex": 1, "textUzl": "Signal berib o'tish", "textUzc": "Сигнал бериб ўтиш", "textEn": "Honk and pass", "textRu": "Посигналить и проехать"},
+        {"optionIndex": 2, "textUzl": "Tezroq o'tish", "textUzc": "Тезроқ ўтиш", "textEn": "Pass quickly", "textRu": "Быстро проехать"}
+      ]
+    },
+    {
+      "textUzl": "Bolalar ko'chada o'ynayotgan bo'lsa nima qilish kerak?",
+      "textUzc": "Болалар кўчада ўйнаётган бўлса нима қилиш керак?",
+      "textEn": "What to do if children playing on street?",
+      "textRu": "Что делать если дети играют на улице?",
+      "topicId": 8,
+      "difficulty": "MEDIUM",
+      "correctAnswerIndex": 2,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Signal berish", "textUzc": "Сигнал бериш", "textEn": "Honk", "textRu": "Сигналить"},
+        {"optionIndex": 1, "textUzl": "Tez o'tish", "textUzc": "Тез ўтиш", "textEn": "Pass quickly", "textRu": "Быстро проехать"},
+        {"optionIndex": 2, "textUzl": "Sekinlash va ehtiyot bo'lish", "textUzc": "Секинлаш ва эҳтиёт бўлиш", "textEn": "Slow down and be careful", "textRu": "Снизить скорость и быть осторожным"}
+      ]
+    },
+    {
+      "textUzl": "Tramvay to'xtab turib yo'lovchi tushirayotganda nima qilish kerak?",
+      "textUzc": "Трамвай тўхтаб туриб йўловчи тушираётганда нима қилиш керак?",
+      "textEn": "What to do when tram stopped and passengers getting off?",
+      "textRu": "Что делать когда трамвай остановился и высаживает пассажиров?",
+      "topicId": 8,
+      "difficulty": "HARD",
+      "correctAnswerIndex": 1,
+      "isActive": true,
+      "options": [
+        {"optionIndex": 0, "textUzl": "Davom etish", "textUzc": "Давом етиш", "textEn": "Continue", "textRu": "Продолжить"},
+        {"optionIndex": 1, "textUzl": "To'xtash va kutish", "textUzc": "Тўхташ ва кутиш", "textEn": "Stop and wait", "textRu": "Остановиться и ждать"},
+        {"optionIndex": 2, "textUzl": "Ehtiyot bilan o'tish", "textUzc": "Эҳтиёт билан ўтиш", "textEn": "Pass carefully", "textRu": "Проехать осторожно"}
+      ]
+    }
+  ]
+}

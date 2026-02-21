@@ -1,0 +1,260 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_pedestrians_duties",
+      "nameUzl": "Piyodalarning majburiyatlari",
+      "nameUzc": "Пиёдаларнинг мажбуриятлари",
+      "nameEn": "Duties of Pedestrians",
+      "nameRu": "Обязанности пешеходов",
+      "descriptionUzl": "Piyodalar harakatlanishi, yo‘l kesib o‘tish, tashkiliy jamlanma, telefon va chalg‘ituvchi vositalardan foydalanish taqiqlari, maxsus xizmat transportiga yo‘l berish bo‘yicha savollar.",
+      "descriptionUzc": "Пиёдалар ҳаракатланиши, йўл кесиб ўтиш, ташкилий жамланма, телефон ва чалғитувчи воситалардан фойдаланиш тақиқлари, махсус хизмат транспортига йўл бериш бўйича саволлар.",
+      "descriptionEn": "Questions on pedestrian movement, crossing roads, group movement, prohibition of phone/distraction use, yielding to emergency vehicles.",
+      "descriptionRu": "Вопросы по движению пешеходов, переходу дороги, организованному движению, запрету на телефон/отвлекающие устройства, уступке спецтранспорту.",
+      "iconUrl": null,
+      "displayOrder": 4,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Piyodalar asosan qayerdan harakatlanishi kerak?",
+      "textUzc": "Пиёдалар асосан қаердан ҳаракатланиши керак?",
+      "textEn": "Where should pedestrians primarily move?",
+      "textRu": "Где преимущественно должны двигаться пешеходы?",
+      "explanationUzl": "15-bandga ko‘ra: trotuarlar, piyodalar yo‘lkalaridan, piyoda va velosiped yo‘lkalaridan, yo‘q bo‘lsa yo‘l yoqasidan harakatlanish shart.",
+      "explanationUzc": "15-бандга кўра: тротуарлар, пиёдалар йўлкаларидан, пиёда ва велосипед йўлкаларидан, йўқ бўлса йўл ёқасидан ҳаракатланиш шарт.",
+      "explanationEn": "According to clause 15: sidewalks, pedestrian paths, pedestrian and bicycle paths, or road shoulders if absent.",
+      "explanationRu": "Согласно пункту 15: по тротуарам, пешеходным дорожкам, пешеходно-велосипедным дорожкам или обочине.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Qatnov qismi o‘rtasidan", "textUzc": "Қатнов қисми ўртасидан", "textEn": "Middle of roadway", "textRu": "По середине проезжей части" },
+        { "optionIndex": 1, "textUzl": "Trotuardan yoki yo‘l yoqasidan", "textUzc": "Тротуардан ёки йўл ёқасидан", "textEn": "From sidewalk or shoulder", "textRu": "По тротуару или обочине" },
+        { "optionIndex": 2, "textUzl": "Faqat chorrahada", "textUzc": "Фақат чорраҳада", "textEn": "Only at intersections", "textRu": "Только на перекрёстках" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qatnov qismi chetida harakatlanayotgan piyodalar qaysi yo‘nalishda yurishi kerak?",
+      "textUzc": "Қатнов қисми чегида ҳаракатланаётган пиёдалар қайси йўналишда юриши керак?",
+      "textEn": "In which direction should pedestrians walk along the edge of the roadway?",
+      "textRu": "В каком направлении должны идти пешеходы по краю проезжей части?",
+      "explanationUzl": "Transport vositalarining harakatiga **qarama-qarshi** yo‘nalishda (15-band). Nogiron aravachasi yoki velosiped yetaklaganlar esa bir yo‘nalishda yuradi.",
+      "explanationUzc": "Транспорт воситаларининг ҳаракатига **қарама-қарши** йўналишда (15-банд). Ногирон аравачаси ёки велосипед етаклаганлар эса бир йўналишда юради.",
+      "explanationEn": "Against the direction of vehicle traffic (clause 15). For wheelchair users or those leading vehicles — with the flow.",
+      "explanationRu": "Навстречу движению транспорта (пункт 15). Для колясочников или ведущих ТС — по ходу движения.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Transport yo‘nalishi bo‘ylab", "textUzc": "Транспорт йўналиши бўйлаб", "textEn": "With traffic flow", "textRu": "По ходу движения" },
+        { "optionIndex": 1, "textUzl": "Qarama-qarshi yo‘nalishda", "textUzc": "Қарама-қарши йўналишда", "textEn": "Against traffic", "textRu": "Навстречу движению" },
+        { "optionIndex": 2, "textUzl": "Har ikkala yo‘nalishda ham", "textUzc": "Ҳар иккала йўналишда ҳам", "textEn": "Both directions", "textRu": "В оба направления" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Piyodalarning tashkiliy jamlanmasida bir qatorda nechta kishi bo‘lishi mumkin?",
+      "textUzc": "Пиёдаларнинг ташкилий жамланмасида бир қаторда нечта киши бўлиши мумкин?",
+      "textEn": "How many people max in one row for organized pedestrian group?",
+      "textRu": "Сколько человек максимум в одном ряду в организованной колонне пешеходов?",
+      "explanationUzl": "16-bandga ko‘ra: **to‘rt kishidan ortiq bo‘lmasdan**, transport yo‘nalishi bo‘ylab o‘ng tomondan harakatlanish.",
+      "explanationUzc": "16-бандга кўра: **тўрт кишидан ортиқ бўлмасдан**, транспорт йўналиши бўйлаб ўнг томондан ҳаракатланиш.",
+      "explanationEn": "No more than four in a row, right side along traffic direction (clause 16).",
+      "explanationRu": "Не более четырёх в ряд, справа по ходу движения (пункт 16).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Cheksiz", "textUzc": "Чексиз", "textEn": "Unlimited", "textRu": "Без ограничений" },
+        { "optionIndex": 1, "textUzl": "To‘rt kishidan ortiq emas", "textUzc": "Тўрт кишидан ортиқ эмас", "textEn": "No more than four", "textRu": "Не более четырёх" },
+        { "optionIndex": 2, "textUzl": "Ikki kishidan ortiq emas", "textUzc": "Икки кишидан ортиқ эмас", "textEn": "No more than two", "textRu": "Не более двух" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Piyodalar yo‘lni qayerdan kesib o‘tishi kerak?",
+      "textUzc": "Пиёдалар йўлни қаердан кесиб ўтиши керак?",
+      "textEn": "Where should pedestrians cross the road?",
+      "textRu": "Где пешеходы должны переходить дорогу?",
+      "explanationUzl": "17-bandga ko‘ra: piyodalar o‘tish joylaridan, yer osti/usti o‘tish joylaridan, yo‘q bo‘lsa chorrahada trotuar chiziqlari bo‘ylab.",
+      "explanationUzc": "17-бандга кўра: пиёдалар ўтиш жойларидан, ер ости/усти ўтиш жойларидан, йўқ бўлса чорраҳада тротуар чизиқлари бўйлаб.",
+      "explanationEn": "From pedestrian crossings, under/overpasses, or at intersections along sidewalk lines (clause 17).",
+      "explanationRu": "По пешеходным переходам, подземным/надземным, или на перекрёстках по линиям тротуаров (пункт 17).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Istagan joydan", "textUzc": "Истаган жойдан", "textEn": "Any place", "textRu": "В любом месте" },
+        { "optionIndex": 1, "textUzl": "Piyodalar o‘tish joyidan yoki chorrahada", "textUzc": "Пиёдалар ўтиш жойидан ёки чорраҳада", "textEn": "From crossing or intersection", "textRu": "По переходу или на перекрёстке" },
+        { "optionIndex": 2, "textUzl": "Faqat yer ostidan", "textUzc": "Фақат ер остидан", "textEn": "Only underground", "textRu": "Только подземным" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yo‘lni tartibga solinadigan joyda piyodalar nimalarga amal qilishi kerak?",
+      "textUzc": "Йўлни тартибга солинган жойда пиёдалар нималарга амал қилиши керак?",
+      "textEn": "What must pedestrians obey at regulated crossings?",
+      "textRu": "Чему должны подчиняться пешеходы на регулируемом переходе?",
+      "explanationUzl": "18-bandga ko‘ra: tartibga soluvchi yoki piyodalar svetoforiga, yo‘q bo‘lsa transport svetoforiga amal qilish shart.",
+      "explanationUzc": "18-бандга кўра: тартибга солувчи ёки пиёдалар светофорига, йўқ бўлса транспорт светофорига амал қилиш шарт.",
+      "explanationEn": "To regulator signals or pedestrian lights, or vehicle lights if absent (clause 18).",
+      "explanationRu": "Сигналам регулировщика или пешеходному светофору, или транспортному при отсутствии (пункт 18).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat o‘z xohishiga", "textUzc": "Фақат ўз хоҳишига", "textEn": "Own wish only", "textRu": "Только по своему желанию" },
+        { "optionIndex": 1, "textUzl": "Svetofor va tartibga soluvchiga", "textUzc": "Светофор ва тартибга солувчига", "textEn": "To lights and regulator", "textRu": "Светофору и регулировщику" },
+        { "optionIndex": 2, "textUzl": "Transport tezligiga", "textUzc": "Транспорт тезлигига", "textEn": "Vehicle speed", "textRu": "Скорости транспорта" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tartibga solinmaydigan o‘tish joyida piyoda nima qilishi kerak?",
+      "textUzc": "Тартибга солинмайдиган ўтиш жойида пиёда нима қилиши керак?",
+      "textEn": "What must a pedestrian do at unregulated crossing?",
+      "textRu": "Что должен сделать пешеход на нерегулируемом переходе?",
+      "explanationUzl": "19-bandga ko‘ra: yaqinlashayotgan transport masofa va tezligini baholab, xavfsiz ekanligiga ishonch hosil qilgandan keyin o‘tishi mumkin.",
+      "explanationUzc": "19-бандга кўра: яқинлашаётган транспорт масофа ва тезлигини баҳолаб, хавфсиз эканлигига ишонч ҳосил қилгандан кейин ўтиши мумкин.",
+      "explanationEn": "Assess distance and speed of approaching vehicles, cross only when safe (clause 19).",
+      "explanationRu": "Оценить расстояние и скорость приближающихся ТС, переходить только убедившись в безопасности (пункт 19).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Darhol o‘tish", "textUzc": "Дарҳол ўтиш", "textEn": "Cross immediately", "textRu": "Переходить сразу" },
+        { "optionIndex": 1, "textUzl": "Transportni baholab, xavfsiz bo‘lganda o‘tish", "textUzc": "Транспортни баҳолаб, хавфсиз бўлганда ўтиш", "textEn": "Assess and cross if safe", "textRu": "Оценить и переходить при безопасности" },
+        { "optionIndex": 2, "textUzl": "Faqat yashil chiroqda", "textUzc": "Фақат яшил чироқда", "textEn": "Only on green", "textRu": "Только на зелёный" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yo‘l kesib o‘tayotganda piyodaga telefondan foydalanish mumkinmi?",
+      "textUzc": "Йўл кесиб ўтаётганда пиёдага телефондан фойдаланиш мумкинми?",
+      "textEn": "Can pedestrians use phone while crossing the road?",
+      "textRu": "Можно ли пешеходам пользоваться телефоном при переходе дороги?",
+      "explanationUzl": "19-band oxiriga ko‘ra: qatnov qismida va o‘tish joylarida telefon, video, radio, kitob o‘qish va chalg‘ituvchi vositalar taqiqlangan.",
+      "explanationUzc": "19-банд охирига кўра: қатнов қисмида ва ўтиш жойларида телефон, видео, радио, китоб ўқиш ва чалғитувчи воситалар тақиқланган.",
+      "explanationEn": "Prohibited on roadway and crossings: phone, watching video, listening radio, reading (clause 19 end).",
+      "explanationRu": "Запрещено на проезжей части и переходах: телефон, просмотр видео, радио, чтение (конец пункта 19).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ha, mumkin", "textUzc": "Ҳа, мумкин", "textEn": "Yes, allowed", "textRu": "Да, разрешено" },
+        { "optionIndex": 1, "textUzl": "Yo‘q, taqiqlangan", "textUzc": "Йўқ, тақиқланган", "textEn": "No, prohibited", "textRu": "Нет, запрещено" },
+        { "optionIndex": 2, "textUzl": "Faqat yashil chiroqda", "textUzc": "Фақат яшил чироқда", "textEn": "Only on green", "textRu": "Только на зелёный" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "To‘xtab turgan avtobusdan yo‘lni qayerdan kesib o‘tish kerak?",
+      "textUzc": "Тўхтаб турган автобусдан йўлни қаердан кесиб ўтиш керак?",
+      "textEn": "From which side to cross the road near a stopped bus?",
+      "textRu": "С какой стороны переходить дорогу у стоящего автобуса?",
+      "explanationUzl": "19-bandga ko‘ra: avtobus va trolleybusning **orqa** tomonidan, tramvayning **oldi** tomonidan kesib o‘tish shart.",
+      "explanationUzc": "19-бандга кўра: автобус ва троллейбуснинг **орқа** томонидан, трамвайнинг **олди** томонидан кесиб ўтиш шарт.",
+      "explanationEn": "From the rear of bus/trolleybus, front of tram (clause 19).",
+      "explanationRu": "Сзади автобуса/троллейбуса, спереди трамвая (пункт 19).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Old tomondan", "textUzc": "Олд томонидан", "textEn": "From front", "textRu": "Спереди" },
+        { "optionIndex": 1, "textUzl": "Orqa tomondan", "textUzc": "Орқа томонидан", "textEn": "From rear", "textRu": "Сзади" },
+        { "optionIndex": 2, "textUzl": "Istagan tomondan", "textUzc": "Истаган томонидан", "textEn": "Any side", "textRu": "С любой стороны" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "O‘tishga ulgurmagan piyoda qayerda to‘xtashi kerak?",
+      "textUzc": "Ўтишга улгурмаган пиёда қаерда тўхташи керак?",
+      "textEn": "Where should a pedestrian who didn't finish crossing stop?",
+      "textRu": "Где должен остановиться пешеход, не успевший перейти?",
+      "explanationUzl": "20-bandga ko‘ra: xavfsizlik orolchasida yoki qarama-qarshi yo‘nalishlarni ajratuvchi chiziqda to‘xtash lozim.",
+      "explanationUzc": "20-бандга кўра: хавфсизлик оролчасида ёки қарама-қарши йўналишларни ажратувчи чизиқда тўхташ лозим.",
+      "explanationEn": "On safety island or dividing line between opposing flows (clause 20).",
+      "explanationRu": "На островке безопасности или разделительной линии встречных потоков (пункт 20).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Qatnov qismi o‘rtasida", "textUzc": "Қатнов қисми ўртасида", "textEn": "Middle of roadway", "textRu": "Посреди проезжей части" },
+        { "optionIndex": 1, "textUzl": "Xavfsizlik orolchasida yoki ajratuvchi chiziqda", "textUzc": "Хавфсизлик оролчасида ёки ажратувчи чизиқда", "textEn": "Safety island or dividing line", "textRu": "На островке или разделителе" },
+        { "optionIndex": 2, "textUzl": "Orqaga qaytib ketishi kerak", "textUzc": "Орқага қайтиб кетиши керак", "textEn": "Return back", "textRu": "Вернуться назад" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Maxsus xizmat transporti yaqinlashganda piyodalar nima qilishi kerak?",
+      "textUzc": "Махсус хизмат транспорти яқинлашганда пиёдалар нима қилиши керак?",
+      "textEn": "What must pedestrians do when emergency vehicle approaches?",
+      "textRu": "Что должны сделать пешеходы при приближении спецтранспорта?",
+      "explanationUzl": "21-bandga ko‘ra: qatnov qismidan o‘tmaslik, harakatlanayotganlar zudlik bilan yo‘l berib bo‘shatishi shart.",
+      "explanationUzc": "21-бандга кўра: қатнов қисмидан ўтмаслик, ҳаракатланаётганлар зудлик билан йўл бериб бўшатиши шарт.",
+      "explanationEn": "Do not cross, those on road immediately yield and clear (clause 21).",
+      "explanationRu": "Не переходить, находящиеся на проезжей части немедленно уступить и освободить (пункт 21).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Yo‘l berish va bo‘shatish", "textUzc": "Йўл бериш ва бўшатиш", "textEn": "Yield and clear", "textRu": "Уступить и освободить" },
+        { "optionIndex": 1, "textUzl": "Tezroq o‘tib ketish", "textUzc": "Тезроқ ўтиб кетиш", "textEn": "Cross faster", "textRu": "Быстрее перейти" },
+        { "optionIndex": 2, "textUzl": "To‘xtab turish", "textUzc": "Тўхтаб туриш", "textEn": "Just stop", "textRu": "Просто остановиться" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yo‘nalishli transport (avtobus)ni kutishda piyodalar qayerda turishi kerak?",
+      "textUzc": "Йўналишли транспорт (автобус)ни кутишда пиёдалар қаерда туриши керак?",
+      "textEn": "Where to wait for public transport?",
+      "textRu": "Где ждать общественный транспорт?",
+      "explanationUzl": "22-bandga ko‘ra: baland kutish maydonchalarida, yo‘q bo‘lsa trotuar yoki yo‘l yoqasida kutish shart. To‘liq to‘xtaganidan keyin chiqish mumkin.",
+      "explanationUzc": "22-бандга кўра: баланд кутиш майдончаларида, йўқ бўлса тротуар ёки йўл ёқасида кутиш шарт. Тўлиқ тўхтаганидан кейин чиқиш мумкин.",
+      "explanationEn": "On raised platforms or sidewalk/shoulder; board only after full stop (clause 22).",
+      "explanationRu": "На приподнятых площадках или тротуаре/обочине; входить после полной остановки (пункт 22).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Qatnov qismida", "textUzc": "Қатнов қисмида", "textEn": "On roadway", "textRu": "На проезжей части" },
+        { "optionIndex": 1, "textUzl": "Trotuarda yoki baland platformada", "textUzc": "Тротуарда ёки баланд платформада", "textEn": "On sidewalk or raised platform", "textRu": "На тротуаре или приподнятой площадке" },
+        { "optionIndex": 2, "textUzl": "Yo‘l o‘rtasida", "textUzc": "Йўл ўртасида", "textEn": "Middle of road", "textRu": "Посреди дороги" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Bolalar guruhini qayerdan va qachon olib yurish mumkin?",
+      "textUzc": "Болалар гуруҳини қаердан ва қачон олиб юриш мумкин?",
+      "textEn": "Where and when can groups of children be led?",
+      "textRu": "Где и когда можно вести группу детей?",
+      "explanationUzl": "16-band oxiriga ko‘ra: trotuarlar va piyodalar yo‘lkalaridan, yo‘q bo‘lsa yo‘l yoqasidan, faqat yorug‘ vaqtda va katta yoshdagilar kuzatuvida.",
+      "explanationUzc": "16-банд охирига кўра: тротуарлар ва пиёдалар йўлкаларидан, йўқ бўлса йўл ёқасидан, фақат ёруғ вақтда ва катта ёшдагилар кузатувида.",
+      "explanationEn": "On sidewalks/paths or shoulder, only daytime under adult supervision (end of clause 16).",
+      "explanationRu": "По тротуарам/дорожкам или обочине, только днём под присмотром взрослых (конец пункта 16).",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Qorong‘ida qatnov qismida", "textUzc": "Қоронғида қатнов қисмида", "textEn": "At night on roadway", "textRu": "Ночью по проезжей части" },
+        { "optionIndex": 1, "textUzl": "Yorug‘ vaqtda trotuardan, kuzatuv bilan", "textUzc": "Ёруғ вақтда тротуардан, кузатув билан", "textEn": "Daytime on sidewalk with supervision", "textRu": "Днём по тротуару с сопровождением" },
+        { "optionIndex": 2, "textUzl": "Istagan vaqtda", "textUzc": "Истаган вақтда", "textEn": "Any time", "textRu": "В любое время" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_special_vehicles",
+      "nameUzl": "Maxsus transport vositalarining imtiyozlari",
+      "nameUzc": "Махсус транспорт воситаларининг имтиёзлари",
+      "nameEn": "Privileges of Special Vehicles",
+      "nameRu": "Преимущества специальных транспортных средств",
+      "descriptionUzl": "Tezkor va maxsus xizmatlar transporti (ko‘k/qizil mayoqcha), zarg‘aldoq/sariq mayoqcha, imtiyozlar, yo‘l berish majburiyati, quvib o‘tish taqiqlari va xavfsizlik shartlari bo‘yicha savollar.",
+      "descriptionUzc": "Тезкор ва махсус хизматлар транспорти (кўк/қизил маяқча), зарғалдоқ/сариқ маяқча, имтиёзлар, йўл бериш мажбурияти, қувиб ўтиш тақиқлари ва хавфсизлик шартлари бўйича саволлар.",
+      "descriptionEn": "Questions on privileges of emergency/special service vehicles (blue/red lights), yellow flashing lights, obligation to yield, prohibition of overtaking and safety conditions.",
+      "descriptionRu": "Вопросы по преимуществам транспортных средств оперативных и специальных служб (синий/красный маячок), жёлтым проблесковым маячкам, обязанности уступить дорогу, запрету обгона и условиям безопасности.",
+      "iconUrl": null,
+      "displayOrder": 6,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Tezkor va maxsus xizmat transporti haydovchilari qaysi mayoqcha yoqilganda imtiyozga ega bo‘ladi?",
+      "textUzc": "Тезкор ва махсус хизмат транспорти ҳайдовчилари қайси маяқча ёқилганда имтиёзга эга бўлади?",
+      "textEn": "When do drivers of emergency/special service vehicles have privileges?",
+      "textRu": "Когда водители оперативных и специальных служб имеют преимущества?",
+      "explanationUzl": "25-bandga ko‘ra: ko‘k yoki qizil (yoki ikkalasi) yalt-yalt etuvchi mayoqcha VA maxsus tovushli ishora yoqilganda imtiyoz beriladi.",
+      "explanationUzc": "25-бандга кўра: кўк ёки қизил (ёки иккаласи) ялт-ялт этувчи маяқча ВА махсус товушли ишора ёқилганда имтиёз берилади.",
+      "explanationEn": "According to clause 25: privileges apply when blue or red (or both) flashing lights AND special sound signal are on.",
+      "explanationRu": "Согласно пункту 25: преимущество даётся при включённом синем или красном (или обоих) проблесковом маячке И специальном звуковом сигнале.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat mayoqcha yoqilganda", "textUzc": "Фақат маяқча ёқилганда", "textEn": "Only flashing light", "textRu": "Только маячок" },
+        { "optionIndex": 1, "textUzl": "Mayoqcha va tovushli signal birga", "textUzc": "Маяқча ва товушли сигнал бирга", "textEn": "Light and sound together", "textRu": "Маячок и звук вместе" },
+        { "optionIndex": 2, "textUzl": "Hech qanday mayoqcha bo‘lmasa ham", "textUzc": "Ҳеч қандай маяқча бўлмаса ҳам", "textEn": "Even without light", "textRu": "Даже без маячка" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Barcha haydovchilar qaysi transportga yo‘l berishi shart?",
+      "textUzc": "Барча ҳайдовчилар қайси транспортга йўл бериши шарт?",
+      "textEn": "Which vehicles must all drivers yield to?",
+      "textRu": "Каким транспортным средствам обязаны уступать все водители?",
+      "explanationUzl": "26-bandga ko‘ra: ko‘k/qizil mayoqcha VA tovushli ishora yoqilgan tezkor/maxsus transportga va ular kuzatuvidagi yaqinni yorituvchi fara yoqilgan transportlarga yo‘l berish majburiy.",
+      "explanationUzc": "26-бандга кўра: кўк/қизил маяқча ВА товушли ишора ёқилган тезкор/махсус транспортга ва улар кузатувидаги яқинни ёритувчи фара ёқилган транспортларга йўл бериш мажбурий.",
+      "explanationEn": "According to clause 26: emergency vehicles with blue/red flashing lights and sound signal, and escorted vehicles with high beams on.",
+      "explanationRu": "Согласно пункту 26: оперативным службам с синим/красным мигалкой и сиреной, а также сопровождаемым ТС с включённым ближним/дальним светом.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat oddiy avtomobillarga", "textUzc": "Фақат оддий автомобилларга", "textEn": "Only regular cars", "textRu": "Только обычным автомобилям" },
+        { "optionIndex": 1, "textUzl": "Tezkor va maxsus xizmat transportiga", "textUzc": "Тезкор ва махсус хизмат транспортига", "textEn": "To emergency/special vehicles", "textRu": "Оперативным и специальным службам" },
+        { "optionIndex": 2, "textUzl": "Faqat yuk mashinalariga", "textUzc": "Фақат юк машиналарига", "textEn": "Only trucks", "textRu": "Только грузовикам" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tezkor xizmat transportini quvib o‘tish mumkinmi?",
+      "textUzc": "Тезкор хизмат транспортини қувиб ўтиш мумкинми?",
+      "textEn": "Is it allowed to overtake emergency vehicles?",
+      "textRu": "Разрешено ли обгонять транспорт оперативных служб?",
+      "explanationUzl": "26-band oxiriga ko‘ra: mazkur turdagi transport vositalarini **quvib o‘tish taqiqlanadi**.",
+      "explanationUzc": "26-банд охирига кўра: мазкур турдаги транспорт воситаларини **қувиб ўтиш тақиқланади**.",
+      "explanationEn": "According to the end of clause 26: overtaking such vehicles is **prohibited**.",
+      "explanationRu": "Согласно концу пункта 26: обгон таких ТС **запрещён**.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ha, mumkin", "textUzc": "Ҳа, мумкин", "textEn": "Yes, allowed", "textRu": "Да, разрешено" },
+        { "optionIndex": 1, "textUzl": "Yo‘q, taqiqlangan", "textUzc": "Йўқ, тақиқланган", "textEn": "No, prohibited", "textRu": "Нет, запрещено" },
+        { "optionIndex": 2, "textUzl": "Faqat qarama-qarshi yo‘nalishda", "textUzc": "Фақат қарама-қарши йўналишда", "textEn": "Only oncoming lane", "textRu": "Только по встречной" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Zarg‘aldoq yoki sariq mayoqcha qachon yoqilishi kerak?",
+      "textUzc": "Зарғалдоқ ёки сариқ маяқча қачон ёқилиши керак?",
+      "textEn": "When must yellow flashing lights be turned on?",
+      "textRu": "Когда должны быть включены жёлтые проблесковые маячки?",
+      "explanationUzl": "28-bandga ko‘ra: yo‘l qurilishi/ta’mirlash, nosoz transportni evakuatsiya, og‘ir/katta hajmli/xavfli yuk kuzatuvida, velosipedchilar jamlanmasini kuzatishda.",
+      "explanationUzc": "28-бандга кўра: йўл қурилиши/таъмирлаш, носоз транспортни эвакуация, оғир/катта ҳажмли/хавфли юк кузатувида, велосипедчилар жамланмасини кузатишда.",
+      "explanationEn": "According to clause 28: road works, towing broken vehicles, escorting oversized/hazardous cargo, escorting bicycle groups.",
+      "explanationRu": "Согласно пункту 28: дорожные работы, эвакуация неисправных ТС, сопровождение крупногабаритных/опасных грузов, велосипедных колонн.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tezkor xizmat uchun", "textUzc": "Тезкор хизмат учун", "textEn": "For emergency services", "textRu": "Для оперативных служб" },
+        { "optionIndex": 1, "textUzl": "Yo‘l ta’miri va xavfli yuk kuzatuvida", "textUzc": "Йўл таъмири ва хавфли юк кузатувида", "textEn": "Road repair and hazardous cargo escort", "textRu": "При ремонте дорог и сопровождении опасных грузов" },
+        { "optionIndex": 2, "textUzl": "Faqat oddiy avtomobillarda", "textUzc": "Фақат оддий автомобилларда", "textEn": "Only regular cars", "textRu": "Только на обычных автомобилях" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Sariq mayoqcha yoqilgan transport imtiyozga ega bo‘ladimi?",
+      "textUzc": "Сариқ маяқча ёқилган транспорт имтиёзга эга бўладими?",
+      "textEn": "Does a vehicle with yellow flashing light have privileges?",
+      "textRu": "Даёт ли преимущество транспорт с жёлтым маячком?",
+      "explanationUzl": "28-band oxiriga ko‘ra: sariq mayoqcha **imtiyoz bermaydi**, faqat xavf haqida ogohlantiradi.",
+      "explanationUzc": "28-банд охирига кўра: сариқ маяқча **имтиёз бермайди**, фақат хавф ҳақида огоҳлантиради.",
+      "explanationEn": "According to the end of clause 28: yellow light does **not grant privileges**, only warns of danger.",
+      "explanationRu": "Согласно концу пункта 28: жёлтый маячок **не даёт преимущества**, только предупреждает об опасности.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ha, to‘liq imtiyoz beradi", "textUzc": "Ҳа, тўлиқ имтиёз беради", "textEn": "Yes, full privileges", "textRu": "Да, полное преимущество" },
+        { "optionIndex": 1, "textUzl": "Yo‘q, faqat ogohlantiradi", "textUzc": "Йўқ, фақат огоҳлантиради", "textEn": "No, only warns", "textRu": "Нет, только предупреждает" },
+        { "optionIndex": 2, "textUzl": "Faqat kechasi imtiyoz beradi", "textUzc": "Фақат кечаси имтиёз беради", "textEn": "Only at night", "textRu": "Только ночью" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Sariq mayoqcha yoqilgan transport qaysi qoidalardan chetga chiqishi mumkin?",
+      "textUzc": "Сариқ маяқча ёқилган транспорт қайси қоидалардан четга чиқиши мумкин?",
+      "textEn": "Which rules can a vehicle with yellow flashing light violate?",
+      "textRu": "Какие правила может нарушать транспорт с жёлтым маячком?",
+      "explanationUzl": "29-bandga ko‘ra: yo‘l ta’miri va evakuatsiyada ma’lum belgi/chiziq va bandlardan (2.2, 2.4–2.6, 3.11–3.14, 3.17.2, 3.20 dan tashqari) chetga chiqishi mumkin, xavfsizlik sharti bilan.",
+      "explanationUzc": "29-бандга кўра: йўл таъмири ва эвакуацияда муайян белги/чизиқ ва бандлардан (2.2, 2.4–2.6, 3.11–3.14, 3.17.2, 3.20 дан ташқари) четга чиқиши мумкин, хавфсизлик шарти билан.",
+      "explanationEn": "According to clause 29: during road works/towing, can disregard certain signs/lines and clauses (except 2.2, 2.4–2.6, etc.), with safety ensured.",
+      "explanationRu": "Согласно пункту 29: при дорожных работах/эвакуации могут не соблюдать некоторые знаки/линии и пункты (кроме 2.2, 2.4–2.6 и т.д.), с обеспечением безопасности.",
+      "topicId": 1,
+      "difficulty": "HARD",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qanday chetga chiqish mumkin emas", "textUzc": "Ҳеч қандай четга чиқиш мумкин эмас", "textEn": "No exceptions", "textRu": "Никаких исключений" },
+        { "optionIndex": 1, "textUzl": "Muayyan belgi va bandlardan, xavfsizlik sharti bilan", "textUzc": "Муайян белги ва бандлардан, хавфсизлик шарти билан", "textEn": "Certain signs and clauses, with safety", "textRu": "Некоторые знаки и пункты, с обеспечением безопасности" },
+        { "optionIndex": 2, "textUzl": "Faqat tezlik chegarasidan", "textUzc": "Фақат тезлик чегарасидан", "textEn": "Only speed limit", "textRu": "Только ограничение скорости" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tezkor transport yaqinlashganda haydovchi tezligini qanday o‘zgartirishi kerak?",
+      "textUzc": "Тезкор транспорт яқинлашганда ҳайдовчи тезлигини қандай ўзгартириши керак?",
+      "textEn": "How should a driver change speed when emergency vehicle approaches?",
+      "textRu": "Как водитель должен изменить скорость при приближении оперативного транспорта?",
+      "explanationUzl": "27-bandga ko‘ra: to‘xtab turgan tezkor transportga yaqinlashganda tezlikni **darhol to‘xtash imkoniyatini beradigan darajada kamaytirish** shart.",
+      "explanationUzc": "27-бандга кўра: тўхтаб турган тезкор транспортга яқинлашганда тезликни **дарҳол тўхташ имкониятини берадиган даражада камайтириш** шарт.",
+      "explanationEn": "According to clause 27: reduce speed immediately to a level allowing instant stop near a stopped emergency vehicle.",
+      "explanationRu": "Согласно пункту 27: снизить скорость немедленно до уровня, обеспечивающего мгновенную остановку у стоящего оперативного ТС.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tezlikni oshirish", "textUzc": "Тезликни ошириш", "textEn": "Increase speed", "textRu": "Увеличить скорость" },
+        { "optionIndex": 1, "textUzl": "To‘xtash imkoniyatini beradigan darajada kamaytirish", "textUzc": "Тўхташ имкониятини берадиган даражада камайтириш", "textEn": "Reduce to instant stop level", "textRu": "Снизить до уровня мгновенной остановки" },
+        { "optionIndex": 2, "textUzl": "Hech o‘zgartirmaslik", "textUzc": "Ҳеч ўзгартирмаслик", "textEn": "No change", "textRu": "Не менять" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Kuzatuvdagi transport vositalarida qaysi chiroq yoqilgan bo‘lishi shart?",
+      "textUzc": "Кузатувдаги транспорт воситаларида қайси чироқ ёқилган бўлиши шарт?",
+      "textEn": "Which lights must be on in escorted vehicles?",
+      "textRu": "Какие фары должны быть включены в сопровождаемых ТС?",
+      "explanationUzl": "25-band oxiriga ko‘ra: kuzatuvdagi transport vositalarida **yaqinni yorituvchi fara chiroqlari** yoqilgan bo‘lishi shart.",
+      "explanationUzc": "25-банд охирига кўра: кузатувдаги транспорт воситаларида **яқинни ёритувчи фара чироқлари** ёқилган бўлиши шарт.",
+      "explanationEn": "According to the end of clause 25: high-beam (or low-beam) headlights must be on in escorted vehicles.",
+      "explanationRu": "Согласно концу пункта 25: в сопровождаемых ТС должны быть включены **ближний или дальний свет** фар.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat orqa chiroqlar", "textUzc": "Фақат орқа чироқлар", "textEn": "Only rear lights", "textRu": "Только задние огни" },
+        { "optionIndex": 1, "textUzl": "Yaqinni yorituvchi fara chiroqlari", "textUzc": "Яқинни ёритувчи фара чироқлари", "textEn": "High/low beam headlights", "textRu": "Ближний/дальний свет фар" },
+        { "optionIndex": 2, "textUzl": "Hech qanday chiroq shart emas", "textUzc": "Ҳеч қандай чироқ шарт эмас", "textEn": "No lights required", "textRu": "Никакие огни не требуются" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

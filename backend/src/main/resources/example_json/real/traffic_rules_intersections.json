@@ -1,0 +1,135 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_intersections",
+      "nameUzl": "Chorrahalarda harakatlanish",
+      "nameUzc": "Чорраҳаларда ҳаракатланиш",
+      "nameEn": "Movement at Intersections",
+      "nameRu": "Движение на перекрёстках",
+      "descriptionUzl": "Chorrahalarda piyodalar va velosipedchilarga yo‘l berish, tirbandlikda chorrahaga kirmaslik, tartibga solingan va solinmagan chorrahalar, aylanma harakat ustunligi bo‘yicha savollar.",
+      "descriptionUzc": "Чорраҳаларда пиёдалар ва велосипедчиларга йўл бериш, тирбандликда чорраҳага кирмаслик, тартибга солинган ва солинмаган чорраҳалар, айланма ҳаракат устунлиги бўйича саволлар.",
+      "descriptionEn": "Questions on yielding to pedestrians/cyclists at intersections, not entering during congestion, regulated/unregulated intersections, priority at roundabouts.",
+      "descriptionRu": "Вопросы по уступке пешеходам/велосипедистам на перекрёстках, запрету въезда при заторе, регулируемым/нерегулируемым перекрёсткам, преимуществу на кольцевых развязках.",
+      "iconUrl": null,
+      "displayOrder": 14,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Chapga yoki o‘ngga burilayotgan haydovchi kimga yo‘l berishi kerak?",
+      "textUzc": "Чапга ёки ўнгга бурилаётган ҳайдовчи кимга йўл бериши керак?",
+      "textEn": "To whom must a driver turning left or right yield?",
+      "textRu": "Кому должен уступить водитель при повороте налево или направо?",
+      "explanationUzl": "96-bandga ko‘ra: kesishayotgan yo‘l qatnov qismidan o‘tayotgan piyoda(lar)ga va velosiped yo‘lkasidan yo‘l kesib o‘tayotgan velosipedchi(lar)ga yo‘l berish shart.",
+      "explanationUzc": "96-бандга кўра: кесишайотган йўл қатнов қисмидан ўтаётган пиёда(лар)га ва велосипед йўлкасидан йўл кесиб ўтаётган велосипедчи(лар)га йўл бериш шарт.",
+      "explanationEn": "According to clause 96: yield to pedestrians crossing the intersecting roadway and cyclists crossing the bicycle path.",
+      "explanationRu": "Согласно пункту 96: уступить пешеходам, пересекающим проезжую часть пересекаемой дороги, и велосипедистам, пересекающим велосипедную дорожку.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech kimga", "textUzc": "Ҳеч кимга", "textEn": "No one", "textRu": "Никому" },
+        { "optionIndex": 1, "textUzl": "Piyodalar va velosipedchilarga", "textUzc": "Пиёдалар ва велосипедчиларга", "textEn": "To pedestrians and cyclists", "textRu": "Пешеходам и велосипедистам" },
+        { "optionIndex": 2, "textUzl": "Faqat qarama-qarshi transportga", "textUzc": "Фақат қарама-қарши транспортга", "textEn": "Only oncoming traffic", "textRu": "Только встречному транспорту" },
+        { "optionIndex": 3, "textUzl": "Faqat o‘ngdan kelganlarga", "textUzc": "Фақат ўнгдан келганларга", "textEn": "Only from right", "textRu": "Только с правой стороны" },
+        { "optionIndex": 4, "textUzl": "Faqat chapdan kelganlarga", "textUzc": "Фақат чапдан келганларга", "textEn": "Only from left", "textRu": "Только с левой стороны" },
+        { "optionIndex": 5, "textUzl": "Barcha yo‘nalishdagi transportga", "textUzc": "Барча йўналишдаги транспортга", "textEn": "All directions traffic", "textRu": "Транспорту во всех направлениях" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tirbandlik tufayli chorrahaga kirish mumkinmi?",
+      "textUzc": "Тирбандлик туфайли чорраҳага кириш мумкинми?",
+      "textEn": "Is it allowed to enter an intersection during congestion?",
+      "textRu": "Разрешён ли въезд на перекрёсток при заторе?",
+      "explanationUzl": "97-bandga ko‘ra: tirbandlik tufayli majburiy to‘xtab ko‘ndalang yo‘nalishga to‘sqinlik qilsa, chorrahaga kirish taqiqlanadi (to‘xtash chizig‘i yoki belgisidan o‘tib bo‘lgan haydovchiga ham).",
+      "explanationUzc": "97-бандга кўра: тирбандлик туфайли мажбурий тўхтаб кўндалаң йўналишга тўсқинлик қилса, чорраҳага кириш тақиқланади (тўхташ чизиғи ёки белгисидан ўтиб бўлган ҳайдовчига ҳам).",
+      "explanationEn": "According to clause 97: prohibited to enter intersection if it would cause obstruction to cross traffic due to congestion (even if past stop line/sign).",
+      "explanationRu": "Согласно пункту 97: запрещён въезд на перекрёсток, если из-за затора создаст помехи поперечному направлению (даже если проехал линию остановки/знак).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ha, mumkin", "textUzc": "Ҳа, мумкин", "textEn": "Yes, allowed", "textRu": "Да, разрешён" },
+        { "optionIndex": 1, "textUzl": "Yo‘q, taqiqlangan", "textUzc": "Йўқ, тақиқланган", "textEn": "No, prohibited", "textRu": "Нет, запрещён" },
+        { "optionIndex": 2, "textUzl": "Faqat yashil chiroqda", "textUzc": "Фақат яшил чироқда", "textEn": "Only on green", "textRu": "Только на зелёный" },
+        { "optionIndex": 3, "textUzl": "Faqat tartibga soluvchi bo‘lsa", "textUzc": "Фақат тартибга солувчи бўлса", "textEn": "Only if regulator present", "textRu": "Только при регулировщике" },
+        { "optionIndex": 4, "textUzl": "Faqat kechasi mumkin", "textUzc": "Фақат кечаси мумкин", "textEn": "Only at night", "textRu": "Только ночью" },
+        { "optionIndex": 5, "textUzl": "Hech qachon taqiqlanmaydi", "textUzc": "Ҳеч қачон тақиқланмайди", "textEn": "Never prohibited", "textRu": "Никогда не запрещён" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tartibga solingan chorraha qanday aniqlanadi?",
+      "textUzc": "Тартибга солинган чорраҳа қандай аниқланади?",
+      "textEn": "How is a regulated intersection defined?",
+      "textRu": "Как определяется регулируемый перекрёсток?",
+      "explanationUzl": "98-bandga ko‘ra: harakatlanish navbati svetofor yoki tartibga soluvchining ishoralari bilan boshqariladigan chorraha — tartibga solingan.",
+      "explanationUzc": "98-бандга кўра: ҳаракатланиш навбати светофор ёки тартибга солувчининг ишоралари билан бошқариладиган чорраҳа — тартибга солинган.",
+      "explanationEn": "According to clause 98: intersection controlled by traffic lights or regulator signals is regulated.",
+      "explanationRu": "Согласно пункту 98: перекрёсток, движение на котором регулируется светофорами или сигналами регулировщика — регулируемый.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat miltillovchi sariq bilan", "textUzc": "Фақат милтилловчи сариқ билан", "textEn": "Only with flashing yellow", "textRu": "Только мигающим жёлтым" },
+        { "optionIndex": 1, "textUzl": "Svetofor yoki tartibga soluvchi ishorasi bilan", "textUzc": "Светофор ёки тартибга солувчи ишораси билан", "textEn": "With lights or regulator", "textRu": "Светофорами или регулировщиком" },
+        { "optionIndex": 2, "textUzl": "Faqat imtiyoz belgilari bilan", "textUzc": "Фақат имтиёз белгилари билан", "textEn": "Only priority signs", "textRu": "Только знаками приоритета" },
+        { "optionIndex": 3, "textUzl": "Hech qanday ishora bo‘lmasa", "textUzc": "Ҳеч қандай ишора бўлмаса", "textEn": "No signals", "textRu": "Без сигналов" },
+        { "optionIndex": 4, "textUzl": "Faqat aylanma harakatda", "textUzc": "Фақат айланма ҳаракатда", "textEn": "Only at roundabout", "textRu": "Только на кольцевой" },
+        { "optionIndex": 5, "textUzl": "Har qanday chorrahada", "textUzc": "Ҳар қандай чорраҳада", "textEn": "Any intersection", "textRu": "На любом перекрёстке" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tartibga solinmagan chorrahada haydovchilar nimaga amal qilishi kerak?",
+      "textUzc": "Тартибга солинмаган чорраҳада ҳайдовчилар нимага амал қилиши керак?",
+      "textEn": "What must drivers follow at unregulated intersections?",
+      "textRu": "Чему должны следовать водители на нерегулируемых перекрёстках?",
+      "explanationUzl": "98-bandga ko‘ra: tartibga solinmagan chorrahalar qoidalari va o‘rnatilgan imtiyoz belgilari talablariga amal qilish shart.",
+      "explanationUzc": "98-бандга кўра: тартибга солинмаган чорраҳалар қоидалари ва ўрнатилган имтиёз белгилари талабларига амал қилиш шарт.",
+      "explanationEn": "According to clause 98: follow rules for unregulated intersections and priority signs installed.",
+      "explanationRu": "Согласно пункту 98: соблюдать правила для нерегулируемых перекрёстков и требования установленных знаков приоритета.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat svetoforga", "textUzc": "Фақат светофорга", "textEn": "Only traffic lights", "textRu": "Только светофорам" },
+        { "optionIndex": 1, "textUzl": "Tartibga solinmagan qoidalar va imtiyoz belgilari", "textUzc": "Тартибга солинмаган қоидалар ва имтиёз белгилари", "textEn": "Unregulated rules and priority signs", "textRu": "Правилам нерегулируемых и знакам приоритета" },
+        { "optionIndex": 2, "textUzl": "Hech qanday qoida yo‘q", "textUzc": "Ҳеч қандай қоида йўқ", "textEn": "No rules", "textRu": "Нет правил" },
+        { "optionIndex": 3, "textUzl": "Faqat o‘ngdan kelganlarga", "textUzc": "Фақат ўнгдан келганларга", "textEn": "Only from right", "textRu": "Только уступать справа" },
+        { "optionIndex": 4, "textUzl": "Faqat tezlikka qarab", "textUzc": "Фақат тезликка қараб", "textEn": "Only by speed", "textRu": "Только по скорости" },
+        { "optionIndex": 5, "textUzl": "Faqat piyodalarga", "textUzc": "Фақат пиёдаларга", "textEn": "Only pedestrians", "textRu": "Только пешеходам" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Aylanma harakatlanish chorrahasida kim ustunlikka ega?",
+      "textUzc": "Айланма ҳаракатланиш чорраҳасида ким устунликка эга?",
+      "textEn": "Who has priority at a roundabout?",
+      "textRu": "Кто имеет преимущество на кольцевой развязке?",
+      "explanationUzl": "98-band oxiriga ko‘ra: aylanma harakatlanish chorrahasida aylanaga kirib kelayotgan transport vositalari aylanaga kirib kelayotganlarga nisbatan ustunlikka ega.",
+      "explanationUzc": "98-банд охирига кўра: айланма ҳаракатланиш чорраҳасида айланага кириб келаётган транспорт воситалари айланага кириб келаётганларга нисбатан устунликка эга.",
+      "explanationEn": "According to the end of clause 98: vehicles already on the roundabout have priority over those entering.",
+      "explanationRu": "Согласно концу пункта 98: преимущество имеют ТС, уже находящиеся на кольце, перед въезжающими.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Aylanaga kirayotganlar", "textUzc": "Айланага кираётганлар", "textEn": "Entering vehicles", "textRu": "Въезжающие" },
+        { "optionIndex": 1, "textUzl": "Aylanaga kirib kelganlar", "textUzc": "Айланага кириб келганлар", "textEn": "Vehicles already on roundabout", "textRu": "Находящиеся на кольце" },
+        { "optionIndex": 2, "textUzl": "Faqat piyodalar", "textUzc": "Фақат пиёдалар", "textEn": "Only pedestrians", "textRu": "Только пешеходы" },
+        { "optionIndex": 3, "textUzl": "Hech kim ustun emas", "textUzc": "Ҳеч ким устун эмас", "textEn": "No priority", "textRu": "Никто не имеет преимущества" },
+        { "optionIndex": 4, "textUzl": "Faqat chapdan kelganlar", "textUzc": "Фақат чапдан келганлар", "textEn": "Only from left", "textRu": "Только слева" },
+        { "optionIndex": 5, "textUzl": "Faqat o‘ngdan kelganlar", "textUzc": "Фақат ўнгдан келганлар", "textEn": "Only from right", "textRu": "Только справа" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

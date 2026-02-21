@@ -1,0 +1,90 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: prava-postgres
+    environment:
+      POSTGRES_DB: prava_online_db
+      POSTGRES_USER: prava_user
+      POSTGRES_PASSWORD: prava_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prava_user -d prava_online_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - prava-network
+
+  # Spring Boot Application
+  app:
+    container_name: prava-online
+    build: .
+    image: prava-online:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      # Database connection
+      DB_URL: jdbc:postgresql://postgres:5432/prava_online_db
+      DB_USERNAME: prava_user
+      DB_PASSWORD: prava_password
+      SPRING_PROFILES_ACTIVE: prod
+
+      # ✅ CRITICAL: JWT Secret MUST be 32+ characters (256 bits minimum)
+      JWT_SECRET: ${JWT_SECRET:-PravaOnlineProductionSecretKey2024MustBe32CharsOrMoreForSecurity!}
+
+      # CORS — production domains
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://pravaonline.uz,https://www.pravaonline.uz,https://admin.pravaonline.uz}
+
+      # OAuth & Mail (optional - app will work without these)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      ESKIZ_EMAIL: ${ESKIZ_EMAIL:-}
+      ESKIZ_PASSWORD: ${ESKIZ_PASSWORD:-}
+
+      # Telegram Bot
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-8485868847:AAGR9eBV1qibgJfXHpqZ04JlbyrjemaTrGA}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-pravaonlineuzbot}
+      TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-https://pravaonline.uz/api/v1/telegram/webhook}
+    volumes:
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
+    healthcheck:
+      # ✅ FIXED: Use curl instead of wget + correct endpoint
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - prava-network
+
+volumes:
+  postgres_data:
+  app_uploads:
+  app_logs:
+
+networks:
+  prava-network:
+    driver: bridge

@@ -1,0 +1,120 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_drivers_duties",
+      "nameUzl": "Haydovchilarning umumiy vazifalari",
+      "nameUzc": "Ҳайдовчиларнинг умумий вазифалари",
+      "nameEn": "General Duties of Drivers",
+      "nameRu": "Общие обязанности водителей",
+      "descriptionUzl": "Haydovchilarning majburiy olib yurishi kerak bo'lgan hujjatlar, haydovchilik toifalari, xavfsizlik kamarlari, motoshlem, taqiqlar va boshqa umumiy talablar bo'yicha savollar.",
+      "descriptionUzc": "Ҳайдовчиларнинг мажбурий олиб юриши керак бўлган ҳужжатлар, ҳайдовчилик тоифалари, хавфсизлик камарлари, мотошлем, тақиқлар ва бошқа умумий талаблар бўйича саволлар.",
+      "descriptionEn": "Questions on mandatory documents drivers must carry, driving categories, seat belts, helmets, prohibitions and other general requirements.",
+      "descriptionRu": "Вопросы по обязательным документам, которые должен иметь водитель, категориям прав, ремням безопасности, шлемам, запретам и другим общим требованиям.",
+      "iconUrl": null,
+      "displayOrder": 2,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Mexanik transport vositasi haydovchisi IIO xodimlari talab qilganda qaysi hujjatlarni taqdim etishi shart?",
+      "textUzc": "Механик транспорт воситаси ҳайдовчиси ИИО ходимлари талаб қилганда қайси ҳужжатларни тақдим этиши шарт?",
+      "textEn": "Which documents must a driver of a mechanical vehicle present upon request of Internal Affairs officers?",
+      "textRu": "Какие документы обязан предъявить водитель механического транспортного средства по требованию сотрудников органов внутренних дел?",
+      "explanationUzl": "7-bandga ko'ra, haydovchilik guvohnomasi (taloni bilan), transport vositasini ro'yxatdan o'tkazish guvohnomasi, sug'urta polisi, egasi bo'lmaganda ishonchnoma va boshqalar majburiy. Biometrik pasport bo'lsa, ko'pchilik hujjatlar planshet orqali tekshiriladi.",
+      "explanationUzc": "7-бандга кўра, ҳайдовчилик гувоҳномаси (тали билан), транспорт воситасини рўйхатдан ўтказиш гувоҳномаси, суғурта полиси, эгаси бўлмаганда ишончнома ва бошқалар мажбурий. Биометрик паспорт бўлса, кўпчилик ҳужжатлар планшет орқали текширилади.",
+      "explanationEn": "According to clause 7, driver's license (with coupon), vehicle registration certificate, insurance policy, power of attorney if not owner, etc. With biometric passport, most are checked via tablet.",
+      "explanationRu": "Согласно пункту 7, водительское удостоверение (с талоном), свидетельство о регистрации ТС, полис ОСАГО, доверенность при отсутствии собственника и т.д. При наличии биометрического паспорта большинство проверяется через планшет.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat haydovchilik guvohnomasi va sug'urta polisi", "textUzc": "Фақат ҳайдовчилик гувоҳномаси ва суғурта полиси", "textEn": "Only driver's license and insurance policy", "textRu": "Только водительское удостоверение и полис ОСАГО" },
+        { "optionIndex": 1, "textUzl": "Ro'yxatdan o'tkazish guvohnomasi, sug'urta polisi va haydovchilik guvohnomasi (boshqalar shart bo'lsa)", "textUzc": "Рўйхатдан ўтказиш гувоҳномаси, суғурта полиси ва ҳайдовчилик гувоҳномаси (бошқалар шарт бўлса)", "textEn": "Registration certificate, insurance policy and driver's license (others if required)", "textRu": "Свидетельство о регистрации, полис ОСАГО и водительское удостоверение (остальные при необходимости)" },
+        { "optionIndex": 2, "textUzl": "Faqat texnik ko'rikdan o'tganlik haqida ma'lumot", "textUzc": "Фақат техник кўрикдан ўтганлик ҳақида маълумот", "textEn": "Only technical inspection certificate", "textRu": "Только талон техосмотра" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "«B» toifasi qaysi transport vositalarini boshqarishga ruxsat beradi?",
+      "textUzc": "«B» тоифаси қайси транспорт воситаларини бошқаришга рухсат беради?",
+      "textEn": "What vehicles does category «B» allow to drive?",
+      "textRu": "Какие транспортные средства разрешает водить категория «B»?",
+      "explanationUzl": "8-bandga ko'ra, ruxsat etilgan to'liq vazni 3500 kg dan oshmaydigan, o'rindiqlar soni 8 tadan ortiq bo'lmagan avtomobillar va ma'lum tirkamali variantlar.",
+      "explanationUzc": "8-бандга кўра, рухсат этилган тўлиқ вазни 3500 кг дан ошмайдиган, ўриндиқлар сони 8 тадан ортиқ бўлмаган автомобиллар ва муайян тиркамали вариантлар.",
+      "explanationEn": "According to clause 8, vehicles with permitted gross weight not exceeding 3500 kg, no more than 8 seats excluding driver, and certain trailers.",
+      "explanationRu": "Согласно пункту 8, ТС с разрешенной максимальной массой не более 3500 кг, не более 8 мест кроме водителя, и определённые прицепы.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat yuk avtomobillari (3500 kg dan ortiq)", "textUzc": "Фақат юк автомобиллари (3500 кг дан ортиқ)", "textEn": "Only trucks over 3500 kg", "textRu": "Только грузовики свыше 3500 кг" },
+        { "optionIndex": 1, "textUzl": "3500 kg gacha bo'lgan avtomobillar va ma'lum tirkamalar", "textUzc": "3500 кг гача бўлган автомобиллар ва муайян тиркамалар", "textEn": "Cars up to 3500 kg and certain trailers", "textRu": "Автомобили до 3500 кг и определённые прицепы" },
+        { "optionIndex": 2, "textUzl": "Yo'lovchi avtobuslari (8 o'rindiqdan ortiq)", "textUzc": "Йўловчи автобуслари (8 ўриндиқдан ортиқ)", "textEn": "Passenger buses (more than 8 seats)", "textRu": "Пассажирские автобусы (более 8 мест)" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Xavfsizlik kamarini taqmaslikka kimlarga ruxsat beriladi?",
+      "textUzc": "Хавфсизлик камарини тақмасликка кимларга рухсат берилади?",
+      "textEn": "Who is allowed not to wear a seat belt?",
+      "textRu": "Кому разрешается не пристегиваться ремнём безопасности?",
+      "explanationUzl": "9-bandga ko'ra: 12 yoshgacha orqa o'rindiqdagi bolalar, homilador ayollar, kasallik bo'yicha tibbiy ma'lumotnomasi bor bemorlar, o'quv instruktori, maxsus xizmat transporti haydovchilari va yo'lovchilari.",
+      "explanationUzc": "9-бандга кўра: 12 ёшгача орқа ўриндиқдаги болалар, ҳомиладор аёллар, касаллик бўйича тиббий маълумотномаси бор беморлар, ўқув инструктори, махсус хизмат транспорти ҳайдовчилари ва йўловчилари.",
+      "explanationEn": "According to clause 9: children under 12 on rear seats, pregnant women, patients with medical certificate, training instructor, special service drivers/passengers.",
+      "explanationRu": "Согласно пункту 9: дети до 12 лет на заднем сиденье, беременные, больные с медсправкой, инструктор, водители и пассажиры спецслужб.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Barcha yo'lovchilar, agar xohlasa", "textUzc": "Барча йўловчилар, агар хоҳласа", "textEn": "All passengers if they wish", "textRu": "Все пассажиры по желанию" },
+        { "optionIndex": 1, "textUzl": "12 yoshgacha orqa o'rindiqdagi bolalar va homilador ayollar", "textUzc": "12 ёшгача орқа ўриндиқдаги болалар ва ҳомиладор аёллар", "textEn": "Children under 12 on rear seats and pregnant women", "textRu": "Дети до 12 лет на заднем сиденье и беременные" },
+        { "optionIndex": 2, "textUzl": "Faqat haydovchi taqishi shart", "textUzc": "Фақат ҳайдовчи тақиши шарт", "textEn": "Only the driver is required", "textRu": "Только водитель обязан" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Haydovchi transport vositasini qaysi holatda boshqarishi qat'iyan taqiqlanadi?",
+      "textUzc": "Ҳайдовчи транспорт воситасини қайси ҳолатда бошқариши қатъиян тақиқланади?",
+      "textEn": "In which condition is a driver strictly prohibited from driving a vehicle?",
+      "textRu": "В каком состоянии водителю строго запрещено управлять транспортным средством?",
+      "explanationUzl": "12-bandga ko'ra: mast holatda (alkogol, giyohvand moddalar, charchoq, kasallik), sezgirlikni susaytiruvchi dorilar ta'sirida, texnik nosozliklar (tormoz, rul, fara va boshqalar) mavjud bo'lsa.",
+      "explanationUzc": "12-бандга кўра: маст ҳолатда (алкоголь, гиёҳванд моддалар, чарчоқ, касаллик), сезгирликни сусайтирувчи дорилар таъсирида, техник носозликлар (тормоз, рул, фара ва бошқалар) мавжуд бўлса.",
+      "explanationEn": "Clause 12 prohibits driving under influence (alcohol, drugs, fatigue, illness), under sedatives, with technical faults (brakes, steering, lights).",
+      "explanationRu": "Пункт 12 запрещает управление в состоянии опьянения (алкоголь, наркотики, усталость, болезнь), под действием седативов, при технических неисправностях (тормоза, руль, свет).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat tezlikni oshirganda", "textUzc": "Фақат тезликни оширгада", "textEn": "Only when exceeding speed", "textRu": "Только при превышении скорости" },
+        { "optionIndex": 1, "textUzl": "Mast holatda yoki texnik nosozlik bo'lganda", "textUzc": "Маст ҳолатда ёки техник носозлик бўлганда", "textEn": "Under influence or with technical fault", "textRu": "В состоянии опьянения или при неисправности" },
+        { "optionIndex": 2, "textUzl": "Telefon gaplashganda faqat", "textUzc": "Телефон гаплашганда фақат", "textEn": "Only while talking on phone", "textRu": "Только при разговоре по телефону" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Mototsikl va moped haydovchisi hamda yo'lovchilari nima qilishi shart?",
+      "textUzc": "Мотоцикл ва мопед ҳайдовчиси ҳамда йўловчилари нима қилиши шарт?",
+      "textEn": "What must motorcycle and moped drivers and passengers do?",
+      "textRu": "Что обязаны делать водители и пассажиры мотоциклов и мопедов?",
+      "explanationUzl": "9-band oxiriga ko'ra, maxsus motoshlem kiyish va uni qadab olish shart (mototsikl, elektromototsikl, moped va skuter uchun).",
+      "explanationUzc": "9-банд охирига кўра, махсус мотошлем кийиш ва уни қадаб олиш шарт (мотоцикл, электромотоцикл, мопед ва скутер учун).",
+      "explanationEn": "According to the end of clause 9, wearing and fastening a special motorcycle helmet is mandatory for motorcycles, electric motorcycles, mopeds and scooters.",
+      "explanationRu": "Согласно концу пункта 9, обязательно надевать и фиксировать специальный мотошлем для мотоциклов, электромотоциклов, мопедов и скутеров.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat qo'lqop kiyish", "textUzc": "Фақат қўлқоп кийиш", "textEn": "Only wear gloves", "textRu": "Только надевать перчатки" },
+        { "optionIndex": 1, "textUzl": "Maxsus motoshlem kiyish va qadab olish", "textUzc": "Махсус мотошлем кийиш ва қадаб олиш", "textEn": "Wear and fasten special helmet", "textRu": "Надевать и фиксировать мотошлем" },
+        { "optionIndex": 2, "textUzl": "Xavfsizlik kamarini taqish", "textUzc": "Хавфсизлик камарини тақиш", "textEn": "Fasten seat belt", "textRu": "Пристёгивать ремень безопасности" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

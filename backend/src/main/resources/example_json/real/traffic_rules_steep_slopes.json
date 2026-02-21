@@ -1,0 +1,86 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_steep_slopes",
+      "nameUzl": "Tik balandlik va nishabliklarda harakatlanish",
+      "nameUzc": "Тик баландлик ва нишабликларда ҳаракатланиш",
+      "nameEn": "Movement on Steep Slopes and Descents",
+      "nameRu": "Движение на крутых подъёмах и спусках",
+      "descriptionUzl": "Nishabliklarda to‘siq bo‘lsa yo‘l berish, tormoz ishlamay qolganda avariya yo‘liga yo‘naltirish, 1.13 belgisi qismida ssepleniye ajratilgan holda harakatlanish taqiqlari bo‘yicha savollar.",
+      "descriptionUzc": "Нишабликларда тўсиқ бўлса йўл бериш, тормоз ишламай қолганда авария йўлига йўналтириш, 1.13 белгиси қисмида сцепление ажратилган ҳолда ҳаракатланиш тақиқлари бўйича саволлар.",
+      "descriptionEn": "Questions on yielding when obstacle on slope, directing to emergency escape ramp if brakes fail, prohibition of disengaged clutch on sections marked 1.13.",
+      "descriptionRu": "Вопросы по уступке при препятствии на уклоне, направлении в аварийный съезд при отказе тормозов, запрете движения с выключенным сцеплением на участках со знаком 1.13.",
+      "iconUrl": null,
+      "displayOrder": 20,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Nishablikda qarama-qarshi yo‘nalishda harakatlanishni qiyinlashtiradigan to‘siq bo‘lsa, kim yo‘l berishi kerak?",
+      "textUzc": "Нишабликда қарама-қарши йўналишда ҳаракатланишни қийинлаштирадиган тўсиқ бўлса, ким йўл бериши керак?",
+      "textEn": "On a slope, if there's an obstacle hindering opposite direction traffic, who must yield?",
+      "textRu": "На уклоне, если есть препятствие, затрудняющее встречное движение, кто должен уступить?",
+      "explanationUzl": "128-bandga ko‘ra: nishablikka harakatlanayotgan (yuqoriga chiqayotgan) transport vositasining haydovchisi yo‘l berishi kerak.",
+      "explanationUzc": "128-бандга кўра: нишабликка ҳаракатланаётган (юқорига чиқаётган) транспорт воситасининг ҳайдовчиси йўл бериши керак.",
+      "explanationEn": "According to clause 128: the driver ascending the slope must yield.",
+      "explanationRu": "Согласно пункту 128: водитель, движущийся на подъём, должен уступить.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Pastga tushayotgan transport", "textUzc": "Пастга тушаётган транспорт", "textEn": "Descending vehicle", "textRu": "Спуск" },
+        { "optionIndex": 1, "textUzl": "Yuqoriga chiqayotgan transport", "textUzc": "Юқорига чиқаётган транспорт", "textEn": "Ascending vehicle", "textRu": "Подъём" },
+        { "optionIndex": 2, "textUzl": "Hech kim yo‘l bermaydi", "textUzc": "Ҳеч ким йўл бермайди", "textEn": "No one yields", "textRu": "Никто не уступает" },
+        { "optionIndex": 3, "textUzl": "Faqat piyodalar", "textUzc": "Фақат пиёдалар", "textEn": "Only pedestrians", "textRu": "Только пешеходы" },
+        { "optionIndex": 4, "textUzl": "Ikki tomon ham birdek", "textUzc": "Икки томон ҳам бирдек", "textEn": "Both equally", "textRu": "Оба одинаково" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tik nishablikda tormoz tizimi ishlamay qolganda haydovchi nima qilishi kerak?",
+      "textUzc": "Тик нишабликда тормоз тизими ишламай қолганда ҳайдовчи нима қилиши керак?",
+      "textEn": "If brakes fail on a steep descent, what must the driver do?",
+      "textRu": "При отказе тормозов на крутом спуске что должен сделать водитель?",
+      "explanationUzl": "129-bandga ko‘ra: transportni 5.40 yo‘l belgisi bilan belgilangan avariyali holatlarga mo‘ljallangan yo‘lga yo‘naltirish kerak.",
+      "explanationUzc": "129-бандга кўра: транспортни 5.40 йўл белгиси билан белгиланган аварияли ҳолатларга мўлжалланган йўлга йўналтириш керак.",
+      "explanationEn": "According to clause 129: direct the vehicle to the emergency escape ramp marked by sign 5.40.",
+      "explanationRu": "Согласно пункту 129: направить ТС в аварийный съезд, обозначенный знаком 5.40.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tezlikni oshirish", "textUzc": "Тезликни ошириш", "textEn": "Increase speed", "textRu": "Увеличить скорость" },
+        { "optionIndex": 1, "textUzl": "Avariya yo‘liga yo‘naltirish", "textUzc": "Авария йўлига йўналтириш", "textEn": "Direct to emergency ramp", "textRu": "Направить в аварийный съезд" },
+        { "optionIndex": 2, "textUzl": "To‘xtash chizig‘ida to‘xtash", "textUzc": "Тўхташ чизиғида тўхташ", "textEn": "Stop at stop line", "textRu": "Остановиться у линии остановки" },
+        { "optionIndex": 3, "textUzl": "Orqaga harakatlanish", "textUzc": "Орқага ҳаракатланиш", "textEn": "Reverse", "textRu": "Движение назад" },
+        { "optionIndex": 4, "textUzl": "Hech narsa qilmaslik", "textUzc": "Ҳеч нарса қилмаслик", "textEn": "Do nothing", "textRu": "Ничего не делать" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "1.13 yo‘l belgisi o‘rnatilgan yo‘l qismida qanday harakatlanish taqiqlangan?",
+      "textUzc": "1.13 йўл белгиси ўрнатилган йўл қисмида қандай ҳаракатланиш тақиқланган?",
+      "textEn": "What movement is prohibited on road section marked with sign 1.13?",
+      "textRu": "Какое движение запрещено на участке дороги со знаком 1.13?",
+      "explanationUzl": "130-bandga ko‘ra: uzatma va ilashish mexanizmi (ssepleniye) ajratilgan holatda harakatlanish **taqiqlanadi**.",
+      "explanationUzc": "130-бандга кўра: узатма ва илашиш механизми (сцепление) ажратилган ҳолатда ҳаракатланиш **тақиқланади**.",
+      "explanationEn": "According to clause 130: movement with disengaged clutch is **prohibited**.",
+      "explanationRu": "Согласно пункту 130: движение с выключенным сцеплением **запрещено**.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ssepleniye ajratilgan holda harakatlanish mumkin", "textUzc": "Сцепление ажратилган ҳолда ҳаракатланиш мумкин", "textEn": "Disengaged clutch allowed", "textRu": "С выключенным сцеплением разрешено" },
+        { "optionIndex": 1, "textUzl": "Ssepleniye ajratilgan holda harakatlanish taqiqlangan", "textUzc": "Сцепление ажратилган ҳолда ҳаракатланиш тақиқланган", "textEn": "Disengaged clutch prohibited", "textRu": "С выключенным сцеплением запрещено" },
+        { "optionIndex": 2, "textUzl": "Faqat tezlikni kamaytirish", "textUzc": "Фақат тезликни камайтириш", "textEn": "Only reduce speed", "textRu": "Только снижать скорость" },
+        { "optionIndex": 3, "textUzl": "Faqat orqaga harakatlanish", "textUzc": "Фақат орқага ҳаракатланиш", "textEn": "Only reverse", "textRu": "Только задним ходом" },
+        { "optionIndex": 4, "textUzl": "Hech qanday cheklov yo‘q", "textUzc": "Ҳеч қандай чеклов йўқ", "textEn": "No restrictions", "textRu": "Без ограничений" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

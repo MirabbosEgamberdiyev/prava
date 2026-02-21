@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /auth/
+Disallow: /me
+Disallow: /api/
+Sitemap: https://pravaonline.uz/sitemap.xml

@@ -1,0 +1,152 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_residential_areas",
+      "nameUzl": "Turar joy dahalarida harakatlanish",
+      "nameUzc": "Турар жой даҳаларида ҳаракатланиш",
+      "nameEn": "Movement in Residential Areas",
+      "nameRu": "Движение в жилых зонах",
+      "descriptionUzl": "Turar joy dahalarida (5.38 va 5.39 belgilari bilan) piyodalar imtiyozlari, taqiqlangan harakatlar (o‘qitish, dvigatel ishlatib to‘xtash, yuk mashinalari to‘xtashi), piyodalar xavfsizligi, dahadan chiqishda yo‘l berish va hovli hududlariga qo‘llanilishi bo‘yicha savollar.",
+      "descriptionUzc": "Турар жой даҳаларида (5.38 ва 5.39 белгилари билан) пиёдалар имтиёзлари, тақиқланган ҳаракатлар (ўқитиш, двигател ишлатиб тўхташ, юк машиналари тўхташи), пиёдалар хавфсизлиги, даҳадан чиқишда йўл бериш ва ҳовли ҳудудларига қўлланиши бўйича саволлар.",
+      "descriptionEn": "Questions on residential zones (signs 5.38/5.39): pedestrian priority, prohibitions (training, idling engine, heavy truck parking), pedestrian safety, yielding when exiting, and applicability to courtyards.",
+      "descriptionRu": "Вопросы по жилым зонам (знаки 5.38/5.39): преимущество пешеходов, запреты (обучение, работа двигателя на стоянке, стоянка тяжёлых грузовиков), безопасность пешеходов, уступка при выезде, применение к дворовым территориям.",
+      "iconUrl": null,
+      "displayOrder": 19,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Turar joy dahalarida piyodalar qayerda harakatlanishi mumkin?",
+      "textUzc": "Турар жой даҳаларида пиёдалар қаерда ҳаракатланиши мумкин?",
+      "textEn": "Where can pedestrians move in residential areas?",
+      "textRu": "Где могут двигаться пешеходы в жилых зонах?",
+      "explanationUzl": "123-bandga ko‘ra: trotuarlar hamda qatnov qismida harakatlanishga ruxsat etiladi. Piyodalar imtiyozga ega, lekin asossiz xalaqit bermasliklari kerak.",
+      "explanationUzc": "123-бандга кўра: тротуарлар ҳамда қатнов қисмида ҳаракатланишга рухсат этилади. Пиёдалар имтиёзга эга, лекин асоссиз халақит бермасликлари керак.",
+      "explanationEn": "According to clause 123: on sidewalks and roadway. Pedestrians have priority but must not unreasonably obstruct vehicles.",
+      "explanationRu": "Согласно пункту 123: по тротуарам и проезжей части. Пешеходы имеют преимущество, но не должны создавать необоснованные помехи.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat trotuarda", "textUzc": "Фақат тротуарда", "textEn": "Only on sidewalk", "textRu": "Только по тротуару" },
+        { "optionIndex": 1, "textUzl": "Trotuarda va qatnov qismida", "textUzc": "Тротуарда ва қатнов қисмида", "textEn": "On sidewalk and roadway", "textRu": "По тротуару и проезжей части" },
+        { "optionIndex": 2, "textUzl": "Faqat qatnov qismida", "textUzc": "Фақат қатнов қисмида", "textEn": "Only on roadway", "textRu": "Только по проезжей части" },
+        { "optionIndex": 3, "textUzl": "Umuman taqiqlangan", "textUzc": "Умуман тақиқланган", "textEn": "Completely prohibited", "textRu": "Полностью запрещено" },
+        { "optionIndex": 4, "textUzl": "Faqat belgilangan joylarda", "textUzc": "Фақат белгиланган жойларда", "textEn": "Only in marked places", "textRu": "Только в обозначенных местах" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Turar joy dahalarida mexanik transport vositalarini boshqarishni o‘rgatish mumkinmi?",
+      "textUzc": "Турар жой даҳаларида механик транспорт воситаларини бошқаришни ўргатиш мумкинми?",
+      "textEn": "Is it allowed to teach driving mechanical vehicles in residential zones?",
+      "textRu": "Разрешено ли обучение вождению механических ТС в жилых зонах?",
+      "explanationUzl": "124-bandga ko‘ra: mexanik transport vositalarini boshqarishni o‘rgatish **taqiqlanadi**.",
+      "explanationUzc": "124-бандга кўра: механик транспорт воситаларини бошқаришни ўргатиш **тақиқланади**.",
+      "explanationEn": "According to clause 124: teaching driving of mechanical vehicles is **prohibited**.",
+      "explanationRu": "Согласно пункту 124: обучение вождению механических ТС **запрещено**.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ha, mumkin", "textUzc": "Ҳа, мумкин", "textEn": "Yes, allowed", "textRu": "Да, разрешено" },
+        { "optionIndex": 1, "textUzl": "Yo‘q, taqiqlangan", "textUzc": "Йўқ, тақиқланган", "textEn": "No, prohibited", "textRu": "Нет, запрещено" },
+        { "optionIndex": 2, "textUzl": "Faqat kechasi mumkin", "textUzc": "Фақат кечаси мумкин", "textEn": "Only at night", "textRu": "Только ночью" },
+        { "optionIndex": 3, "textUzl": "Faqat ruxsat bilan", "textUzc": "Фақат рухсат билан", "textEn": "Only with permission", "textRu": "Только с разрешением" },
+        { "optionIndex": 4, "textUzl": "Faqat yengil avtomobillarda", "textUzc": "Фақат енгил автомобилларда", "textEn": "Only in passenger cars", "textRu": "Только на легковых" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Turar joy dahalarida dvigateli ishlab turgan holda to‘xtab turish mumkinmi?",
+      "textUzc": "Турар жой даҳаларида двигатели ишлаб турган ҳолда тўхтаб туриш мумкинми?",
+      "textEn": "Is idling engine parking allowed in residential zones?",
+      "textRu": "Разрешена ли стоянка с работающим двигателем в жилых зонах?",
+      "explanationUzl": "124-bandga ko‘ra: dvigateli ishlab turgan holda to‘xtab turish **taqiqlanadi**.",
+      "explanationUzc": "124-бандга кўра: двигатели ишлаб турган ҳолда тўхтаб туриш **тақиқланади**.",
+      "explanationEn": "According to clause 124: parking with engine running is **prohibited**.",
+      "explanationRu": "Согласно пункту 124: стоянка с работающим двигателем **запрещена**.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ha, mumkin", "textUzc": "Ҳа, мумкин", "textEn": "Yes, allowed", "textRu": "Да, разрешено" },
+        { "optionIndex": 1, "textUzl": "Yo‘q, taqiqlangan", "textUzc": "Йўқ, тақиқланган", "textEn": "No, prohibited", "textRu": "Нет, запрещено" },
+        { "optionIndex": 2, "textUzl": "Faqat 5 daqiqa mumkin", "textUzc": "Фақат 5 дақиқа мумкин", "textEn": "Only 5 minutes allowed", "textRu": "Только 5 минут разрешено" },
+        { "optionIndex": 3, "textUzl": "Faqat kechasi mumkin", "textUzc": "Фақат кечаси мумкин", "textEn": "Only at night", "textRu": "Только ночью" },
+        { "optionIndex": 4, "textUzl": "Faqat ruxsat bilan", "textUzc": "Фақат рухсат билан", "textEn": "Only with permission", "textRu": "Только с разрешением" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Turar joy dahalarida 3,5 t dan ortiq yuk mashinalarining to‘xtashi qayerda mumkin?",
+      "textUzc": "Турар жой даҳаларида 3,5 т дан ортиқ юк машиналарининг тўхташи қаерда мумкин?",
+      "textEn": "Where can trucks over 3.5 t park in residential zones?",
+      "textRu": "Где могут стоять грузовики свыше 3,5 т в жилых зонах?",
+      "explanationUzl": "124-bandga ko‘ra: maxsus ajratilgan, yo‘l belgilari va/yoki chiziqlar bilan belgilangan joylardan tashqarida **taqiqlanadi**.",
+      "explanationUzc": "124-бандга кўра: махсус ажратилган, йўл белгилари ва/ёки чизиқлар билан белгиланган жойлардан ташқарида **тақиқланади**.",
+      "explanationEn": "According to clause 124: prohibited outside specially designated areas marked by signs/markings.",
+      "explanationRu": "Согласно пункту 124: запрещена стоянка вне специально отведённых мест, обозначенных знаками и/или разметкой.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har qanday joyda", "textUzc": "Ҳар қандай жойда", "textEn": "Anywhere", "textRu": "В любом месте" },
+        { "optionIndex": 1, "textUzl": "Faqat maxsus belgilangan joylarda", "textUzc": "Фақат махсус белгиланган жойларда", "textEn": "Only in specially designated areas", "textRu": "Только в специально отведённых местах" },
+        { "optionIndex": 2, "textUzl": "Faqat o‘ng yo‘l yoqasida", "textUzc": "Фақат ўнг йўл ёқасида", "textEn": "Only on right shoulder", "textRu": "Только на правой обочине" },
+        { "optionIndex": 3, "textUzl": "Chap qatorida", "textUzc": "Чап қаторида", "textEn": "In left lane", "textRu": "В левой полосе" },
+        { "optionIndex": 4, "textUzl": "Umuman taqiqlangan", "textUzc": "Умуман тақиқланган", "textEn": "Completely prohibited", "textRu": "Полностью запрещена" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Turar joy dahalarida haydovchilar nima ta’minlashi zarur?",
+      "textUzc": "Турар жой даҳаларида ҳайдовчилар нима таъминлаши зарур?",
+      "textEn": "What must drivers ensure in residential zones?",
+      "textRu": "Что обязаны обеспечить водители в жилых зонах?",
+      "explanationUzl": "125-bandga ko‘ra: piyodalar xavfsizligini, shuningdek hududdagi inshoot, qurilma va o‘simliklarning shikastlanmasligini ta’minlash zarur.",
+      "explanationUzc": "125-бандга кўра: пиёдалар хавфсизлигини, шунингдек ҳудуддаги иншоот, қурилма ва ўсимликларнинг шикастланмаслигини таъминлаш зарур.",
+      "explanationEn": "According to clause 125: ensure pedestrian safety and prevent damage to buildings, structures and plants in the area.",
+      "explanationRu": "Согласно пункту 125: обеспечить безопасность пешеходов и предотвратить повреждение зданий, сооружений и насаждений в зоне.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat tezlikni oshirish", "textUzc": "Фақат тезликни ошириш", "textEn": "Only increase speed", "textRu": "Только увеличить скорость" },
+        { "optionIndex": 1, "textUzl": "Piyodalar xavfsizligi va hududga zarar yetkazmaslik", "textUzc": "Пиёдалар хавфсизлиги ва ҳудудга зарар етказмаслик", "textEn": "Pedestrian safety and no damage to area", "textRu": "Безопасность пешеходов и отсутствие повреждений зоне" },
+        { "optionIndex": 2, "textUzl": "Faqat to‘xtash", "textUzc": "Фақат тўхташ", "textEn": "Only parking", "textRu": "Только стоянку" },
+        { "optionIndex": 3, "textUzl": "Signal berish", "textUzc": "Сигнал бериш", "textEn": "Give signals", "textRu": "Подавать сигналы" },
+        { "optionIndex": 4, "textUzl": "Tez harakatlanish", "textUzc": "Тез ҳаракатланиш", "textEn": "Fast movement", "textRu": "Быстрое движение" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Turar joy dahasidan chiqishda haydovchi nima qilishi kerak?",
+      "textUzc": "Турар жой даҳасидан чиқишда ҳайдовчи нима қилиши керак?",
+      "textEn": "When exiting a residential zone, what must the driver do?",
+      "textRu": "При выезде из жилой зоны что должен сделать водитель?",
+      "explanationUzl": "126-bandga ko‘ra: boshqa harakat qatnashchilariga yo‘l berish kerak.",
+      "explanationUzc": "126-бандга кўра: бошқа ҳаракат қатнашчиларига йўл бериш керак.",
+      "explanationEn": "According to clause 126: yield to other road users.",
+      "explanationRu": "Согласно пункту 126: уступить дорогу другим участникам движения.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tezlikni oshirish", "textUzc": "Тезликни ошириш", "textEn": "Increase speed", "textRu": "Увеличить скорость" },
+        { "optionIndex": 1, "textUzl": "Boshqa qatnashchilarga yo‘l berish", "textUzc": "Бошқа қатнашчиларга йўл бериш", "textEn": "Yield to others", "textRu": "Уступить другим" },
+        { "optionIndex": 2, "textUzl": "To‘xtab turish", "textUzc": "Тўхтаб туриш", "textEn": "Stop", "textRu": "Остановиться" },
+        { "optionIndex": 3, "textUzl": "Signal bermasdan chiqish", "textUzc": "Сигнал бермасдан чиқиш", "textEn": "Exit without signal", "textRu": "Выехать без сигнала" },
+        { "optionIndex": 4, "textUzl": "Faqat chapga burilish", "textUzc": "Фақат чапга бурилиш", "textEn": "Only left turn", "textRu": "Только налево" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

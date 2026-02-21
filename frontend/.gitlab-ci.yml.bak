@@ -1,0 +1,71 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: "20"
+
+# ─── BUILD: prava-test (user frontend) ───────────────────────────────
+build-user:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  cache:
+    key: user-${CI_COMMIT_REF_SLUG}
+    paths:
+      - prava-test/node_modules/
+  script:
+    - cd prava-test
+    - yarn install --frozen-lockfile
+    - npx vite build
+  artifacts:
+    paths:
+      - prava-test/dist/
+    expire_in: 1 hour
+  only:
+    - main
+    - merge_requests
+
+# ─── BUILD: prava-admin (admin frontend) ─────────────────────────────
+build-admin:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  cache:
+    key: admin-${CI_COMMIT_REF_SLUG}
+    paths:
+      - prava-admin/node_modules/
+  script:
+    - cd prava-admin
+    - yarn install --frozen-lockfile
+    - npx vite build
+  artifacts:
+    paths:
+      - prava-admin/dist/
+    expire_in: 1 hour
+  only:
+    - main
+    - merge_requests
+
+# ─── DEPLOY: both apps to production server ──────────────────────────
+deploy-production:
+  stage: deploy
+  image: alpine:latest
+  dependencies:
+    - build-user
+    - build-admin
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H ${DEPLOY_HOST} >> ~/.ssh/known_hosts 2>/dev/null || true
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" prava-test/dist/ deploy@${DEPLOY_HOST}:/var/www/pravaonline.uz/
+    - rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" prava-admin/dist/ deploy@${DEPLOY_HOST}:/var/www/admin/
+    - ssh -o StrictHostKeyChecking=no deploy@${DEPLOY_HOST} "sudo systemctl reload nginx"
+  environment:
+    name: production
+    url: https://pravaonline.uz
+  only:
+    - main

@@ -1,0 +1,130 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_officials_and_citizens_obligations",
+      "nameUzl": "Mansabdor shaxslarning va fuqarolarning yo‘l harakati xavfsizligini ta’minlash, transport vositalarini yo‘lga chiqarish, raqam va taniqli belgilarni o‘rnatish bo‘yicha majburiyatlari",
+      "nameUzc": "Мансабдор шахсларнинг ва фуқароларнинг йўл ҳаракати хавфсизлигини таъминлаш, транспорт воситаларини йўлга чиқариш, рақам ва таниқли белгиларни ўрнатиш бўйича мажбуриятлари",
+      "nameEn": "Obligations of Officials and Citizens to Ensure Road Safety, Release Vehicles on the Road, Install License Plates and Identification Signs",
+      "nameRu": "Обязанности должностных лиц и граждан по обеспечению безопасности дорожного движения, выпуску транспортных средств на дорогу, установке государственных регистрационных знаков и опознавательных знаков",
+      "descriptionUzl": "Transportning texnik holati, ro‘yxatdan o‘tkazish, raqam belgilari, taniqlik belgilari (“Avtopoyezd”, “Turumlangan”, “Bolalar guruhini tashish”, “Kar haydovchi”, “Boshqarishni o‘rgatish”, “Tezlik cheklangan”, “Xavfli yuk”, “Katta o‘lchamli yuk” va boshqalar), chiroq-mayoqchalar, taqiqlangan holatlar va mansabdor shaxslar majburiyatlari bo‘yicha savollar.",
+      "descriptionUzc": "Транспортнинг техник ҳолати, рўйхатдан ўтказиш, рақам белгилари, таниқли белгилари (“Автопоезд”, “Турумланган”, “Болалар гуруҳини ташиш”, “Кар ҳайдовчи”, “Бошқаришни ўргатиш”, “Тезлик чекланган”, “Хавфли юк”, “Катта ўлчамли юк” ва бошқалар), чироқ-майоқчалар, тақиқланган ҳолатлар ва мансабдор шахслар мажбуриятлари бўйича саволлар.",
+      "descriptionEn": "Questions on vehicle technical condition, registration, license plates, identification signs (“Road Train”, “Studded Tires”, “Children Transportation”, “Deaf Driver”, “Training Vehicle”, “Speed Limited”, “Dangerous Cargo”, “Oversized Load” etc.), flashing lights, prohibited cases and officials' responsibilities.",
+      "descriptionRu": "Вопросы по техническому состоянию ТС, регистрации, госномерам, опознавательным знакам («Автопоезд», «Шипы», «Перевозка детей», «Глухой водитель», «Учебное ТС», «Ограничение скорости», «Опасный груз», «Крупногабаритный груз» и др.), проблесковым маячкам, запрещённым случаям и обязанностям должностных лиц.",
+      "iconUrl": null,
+      "displayOrder": 27,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Transport vositalarining texnik holati qanday talablarga muvofiq bo‘lishi kerak?",
+      "textUzc": "Транспорт воситаларининг техник ҳолати қандай талабларга мувофиқ бўлиши керак?",
+      "textEn": "What requirements must the technical condition of vehicles meet?",
+      "textRu": "Каким требованиям должно соответствовать техническое состояние транспортных средств?",
+      "explanationUzl": "174-bandga ko‘ra: “Yo‘l harakati xavfsizligi to‘g‘risida”gi Qonun va texnik tartibga solish normativ hujjatlar talablariga muvofiq bo‘lishi kerak. Ro‘yxatdan o‘tkazish va sug‘urta belgilangan muddatlarda amalga oshirilishi lozim.",
+      "explanationUzc": "174-бандга кўра: “Йўл ҳаракати хавфсизлиги тўғрисида”ги Қонун ва техник тартибга солиш норматив ҳужжатлар талабларига мувофиқ бўлиши керак. Рўйхатдан ўтказиш ва суғурта белгиланган муддатларда амалга оширилиши лозим.",
+      "explanationEn": "According to clause 174: must comply with the Road Safety Law and technical regulation documents. Registration and insurance in established terms.",
+      "explanationRu": "Согласно пункту 174: должно соответствовать Закону «О безопасности дорожного движения» и нормативным документам технического регулирования. Регистрация и страхование в установленные сроки.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qanday talab yo‘q", "textUzc": "Ҳеч қандай талаб йўқ", "textEn": "No requirements", "textRu": "Нет требований" },
+        { "optionIndex": 1, "textUzl": "Qonun va texnik normativ hujjatlar talablariga muvofiq", "textUzc": "Қонун ва техник норматив ҳужжатлар талабларига мувофиқ", "textEn": "Law and technical regulation requirements", "textRu": "Закону и нормам техрегулирования" },
+        { "optionIndex": 2, "textUzl": "Faqat ro‘yxatdan o‘tkazish yetarli", "textUzc": "Фақат рўйхатдан ўтказиш етарли", "textEn": "Only registration sufficient", "textRu": "Достаточно только регистрации" },
+        { "optionIndex": 3, "textUzl": "Faqat sug‘urta bo‘lsa yetarli", "textUzc": "Фақат суғурта бўлса етарли", "textEn": "Only insurance sufficient", "textRu": "Достаточно только страховки" },
+        { "optionIndex": 4, "textUzl": "Faqat haydovchi xohishiga ko‘ra", "textUzc": "Фақат ҳайдовчи хоҳишига кўра", "textEn": "Only at driver's wish", "textRu": "Только по желанию водителя" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Mexanik transport vositalarida qanday raqam belgilari o‘rnatilishi shart?",
+      "textUzc": "Механик транспорт воситаларида қандай рақам белгилари ўрнатилиши шарт?",
+      "textEn": "What license plates must be installed on mechanical vehicles?",
+      "textRu": "Какие государственные регистрационные знаки должны быть установлены на механических ТС?",
+      "explanationUzl": "175-bandga ko‘ra: tegishli namunadagi ro‘yxatdan o‘tkazish davlat raqam belgilari ko‘zda tutilgan joylarda o‘rnatilgan bo‘lishi shart. Yuk mashinalari, tirkamalar va avtobuslarda orqa devorga raqam va harflar yozilishi kerak.",
+      "explanationUzc": "175-бандга кўра: тегишли намунадаги рўйхатдан ўтказиш давлат рақам белгилари кўзда тутилган жойларда ўрнатилган бўлиши шарт. Юк машиналари, тиркамалар ва автобусларда орқа деворга рақам ва ҳарфлар ёзилиши керак.",
+      "explanationEn": "According to clause 175: appropriate standard state registration plates in designated places. On trucks, trailers and buses — number and letters on rear body.",
+      "explanationRu": "Согласно пункту 175: соответствующие образцы государственных регистрационных знаков в предусмотренных местах. На грузовиках, прицепах и автобусах — номер и буквы на задней стенке кузова.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat old tomonda", "textUzc": "Фақат олди томонда", "textEn": "Only front", "textRu": "Только спереди" },
+        { "optionIndex": 1, "textUzl": "Tegishli joylarda standart raqam belgilari", "textUzc": "Тегишли жойларда стандарт рақам белгилари", "textEn": "Standard plates in designated places", "textRu": "Стандартные знаки в предусмотренных местах" },
+        { "optionIndex": 2, "textUzl": "Umuman raqam shart emas", "textUzc": "Умуман рақам шарт эмас", "textEn": "No plates required", "textRu": "Знаки не требуются" },
+        { "optionIndex": 3, "textUzl": "Faqat orqa tomonda", "textUzc": "Фақат орқа томонда", "textEn": "Only rear", "textRu": "Только сзади" },
+        { "optionIndex": 4, "textUzl": "Faqat qo‘lda yozilgan raqam", "textUzc": "Фақат қўлда ёзилган рақам", "textEn": "Only handwritten number", "textRu": "Только рукописный номер" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "“Avtopoyezd” taniqlik belgisi qayerda va qachon o‘rnatilishi kerak?",
+      "textUzc": "“Автопоезд” таниқлик белгиси қаерда ва қачон ўрнатилиши керак?",
+      "textEn": "Where and when must the “Road Train” identification sign be installed?",
+      "textRu": "Где и когда должен быть установлен опознавательный знак «Автопоезд»?",
+      "explanationUzl": "176-bandga ko‘ra: tirkamali yuk mashinalari va traktorlarda, tutashtirilgan avtobus/trolleybuslarda tomning old qismiga uchta zarg‘aldoq chiroq yoki sariq uchburchak belgi.",
+      "explanationUzc": "176-бандга кўра: тиркамали юк машиналари ва тракторларда, тутштирилган автобус/троллейбусларда томнинг олди қисмига учта зарғалдоқ чироқ ёки сариқ учбурчак белги.",
+      "explanationEn": "According to clause 176: on trucks/tractors with trailers, articulated buses/trolleybuses — three yellow lights or yellow triangle sign on front roof.",
+      "explanationRu": "Согласно пункту 176: на грузовиках/тракторах с прицепами, сочленённых автобусах/троллейбусах — три жёлтых огня или жёлтый треугольник на передней части крыши.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat tirkamasiz transportda", "textUzc": "Фақат тиркамасиз транспортда", "textEn": "Only without trailer", "textRu": "Только без прицепа" },
+        { "optionIndex": 1, "textUzl": "Tirkamali transportda va tutashtirilganlarda", "textUzc": "Тиркамали транспортда ва тутштирилганларда", "textEn": "With trailers and articulated vehicles", "textRu": "С прицепами и сочленёнными ТС" },
+        { "optionIndex": 2, "textUzl": "Umuman o‘rnatilmaydi", "textUzc": "Умуман ўрнатилмайди", "textEn": "Not installed", "textRu": "Не устанавливается" },
+        { "optionIndex": 3, "textUzl": "Faqat yengil avtomobillarda", "textUzc": "Фақат енгил автомобилларда", "textEn": "Only passenger cars", "textRu": "Только легковые" },
+        { "optionIndex": 4, "textUzl": "Faqat kechasi", "textUzc": "Фақат кечаси", "textEn": "Only at night", "textRu": "Только ночью" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "“Bolalar guruhini tashish” belgisi qanday ko‘rinishda bo‘ladi?",
+      "textUzc": "“Болалар гуруҳини ташиш” белгиси қандай кўринишда бўлади?",
+      "textEn": "What does the “Children Transportation” sign look like?",
+      "textRu": "Как выглядит знак «Перевозка детей»?",
+      "explanationUzl": "176-bandga ko‘ra: qizil hoshiyali, ichida 1.21 belgisi tasviri tushirilgan sariq to‘rtburchak (kvadrat), tomonlari 250–300 mm, hoshiya kengligi 1/10 qismi.",
+      "explanationUzc": "176-бандга кўра: қизил ҳошияли, ичида 1.21 белгиси тасвири тушган сариқ тўртбурчак (квадрат), томонлари 250–300 мм, ҳошия кенглиги 1/10 қисми.",
+      "explanationEn": "According to clause 176: red-bordered yellow square/rectangle with 1.21 sign image, sides 250–300 mm, border 1/10 of side.",
+      "explanationRu": "Согласно пункту 176: жёлтый квадрат/прямоугольник с красной каймой и изображением знака 1.21, стороны 250–300 мм, кайма 1/10 стороны.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Qora doira", "textUzc": "Қора доира", "textEn": "Black circle", "textRu": "Чёрный круг" },
+        { "optionIndex": 1, "textUzl": "Sariq to‘rtburchak qizil hoshiya bilan va bolalar tasviri", "textUzc": "Сариқ тўртбурчак қизил ҳошия билан ва болалар тасвири", "textEn": "Yellow rectangle with red border and children image", "textRu": "Жёлтый прямоугольник с красной каймой и изображением детей" },
+        { "optionIndex": 2, "textUzl": "Oq uchburchak", "textUzc": "Оқ учбурчак", "textEn": "White triangle", "textRu": "Белый треугольник" },
+        { "optionIndex": 3, "textUzl": "Qizil kvadrat", "textUzc": "Қизил квадрат", "textEn": "Red square", "textRu": "Красный квадрат" },
+        { "optionIndex": 4, "textUzl": "Zarg‘aldoq chiziqlar", "textUzc": "Зарғалдоқ чизиқлар", "textEn": "Yellow stripes", "textRu": "Жёлтые полосы" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Transport vositalaridan foydalanish qaysi holatlarda taqiqlanadi?",
+      "textUzc": "Транспорт воситаларидан фойдаланиш қайси ҳолатларда тақиқланади?",
+      "textEn": "In which cases is use of vehicles prohibited?",
+      "textRu": "В каких случаях запрещено использование транспортных средств?",
+      "explanationUzl": "179-bandga ko‘ra: texnik nosoz, ruxsatsiz qayta jihozlangan, ro‘yxatdan o‘tmagan, belgilangan tartibda ko‘rikdan o‘tmagan, maxsus chiroq va tovush ishoralari ruxsatsiz va boshqa holatlarda.",
+      "explanationUzc": "179-бандга кўра: техник носоз, рухсатсиз қайта жиҳозланган, рўйхатдан ўтмаган, белгиланган тартибда кўрикдан ўтмаган, махсус чироқ ва товуш ишоралари рухсатсиз ва бошқа ҳолатларда.",
+      "explanationEn": "According to clause 179: technical faults, unauthorized modifications, unregistered, no inspection, unauthorized special signals and other cases.",
+      "explanationRu": "Согласно пункту 179: технические неисправности, несанкционированные переоборудования, незарегистрированные, не прошедшие техосмотр, несанкционированные спецсигналы и другие случаи.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qachon taqiqlanmaydi", "textUzc": "Ҳеч қачон тақиқланмайди", "textEn": "Never prohibited", "textRu": "Никогда не запрещено" },
+        { "optionIndex": 1, "textUzl": "Texnik nosoz, ruxsatsiz jihozlangan, ko‘rikdan o‘tmagan va boshqalarda", "textUzc": "Техник носоз, рухсатсиз жиҳозланган, кўрикдан ўтмаган ва бошқаларда", "textEn": "Technical faults, unauthorized equipment, no inspection etc.", "textRu": "Технические неисправности, несанкционированное оборудование, не пройден техосмотр и др." },
+        { "optionIndex": 2, "textUzl": "Faqat qorong‘i vaqtda", "textUzc": "Фақат қоронғи вақтда", "textEn": "Only at night", "textRu": "Только в тёмное время" },
+        { "optionIndex": 3, "textUzl": "Faqat yuk tashishda", "textUzc": "Фақат юк ташишда", "textEn": "Only when carrying cargo", "textRu": "Только при перевозке груза" },
+        { "optionIndex": 4, "textUzl": "Faqat shahar ichida", "textUzc": "Фақат шаҳар ичида", "textEn": "Only in city", "textRu": "Только в городе" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

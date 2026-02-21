@@ -1,0 +1,20 @@
+{
+  "nameUzl": "Svetofor signallari bo'yicha test",
+  "nameUzc": "Светофор сигналлари бўйича тест",
+  "nameEn": "Traffic Lights Test",
+  "nameRu": "Тест по сигналам светофора",
+  "descriptionUzl": "Svetofor signallarini bilishni tekshirish",
+  "descriptionUzc": "Светофор сигналларини билишни текшириш",
+  "descriptionEn": "Test your knowledge of traffic light signals",
+  "descriptionRu": "Проверка знаний сигналов светофора",
+  "questionCount": 4,
+  "durationMinutes": 15,
+  "passingScore": 75,
+  "generationType": "AUTO_TOPIC",
+  "topicId": 3,
+  "isFree": false,
+  "price": 5000,
+  "orderIndex": 3,
+  "isActive": true,
+  "questionIds": []
+}

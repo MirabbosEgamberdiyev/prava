@@ -1,0 +1,99 @@
+{
+  "questions": [
+    {
+      "textUzl": "Teng huquqli chorrahada kim birinchi o‘tadi?",
+      "textUzc": "Тенг ҳуқуқли чорраҳада ким биринчи ўтади?",
+      "textEn": "Who goes first at an equal intersection?",
+      "textRu": "Кто проезжает первым на равнозначном перекрестке?",
+      "explanationUzl": "O‘ng tomondan kelayotgan transport ustun hisoblanadi.",
+      "explanationUzc": "Ўнг томондан келаётган транспорт устун ҳисобланади.",
+      "explanationEn": "The vehicle coming from the right has priority.",
+      "explanationRu": "Приоритет у транспорта справа.",
+      "topicId": 5,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Chap tomondan kelgan", "textUzc": "Чап томондан келган", "textEn": "From the left", "textRu": "Слева" },
+        { "optionIndex": 1, "textUzl": "O‘ng tomondan kelgan", "textUzc": "Ўнг томондан келган", "textEn": "From the right", "textRu": "Справа" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": "http://localhost:8080/api/v1/files/questions/9c81d7ba-d5df-420e-a61d-5d93be64fe15.png",
+      "isActive": true
+    },
+    {
+      "textUzl": "Chorraha oldida svetofor ishlamasa nimaga amal qilinadi?",
+      "textUzc": "Чорраҳа олдида светофор ишламаса нимага амал қилинади?",
+      "textEn": "What should be followed if traffic lights do not work at an intersection?",
+      "textRu": "Чему следовать если светофор на перекрестке не работает?",
+      "explanationUzl": "Yo‘l belgilari va ustuvorlik qoidalariga amal qilinadi.",
+      "explanationUzc": "Йўл белгилари ва устуворлик қоидаларига амал қилинади.",
+      "explanationEn": "Road signs and priority rules must be followed.",
+      "explanationRu": "Следуют дорожным знакам и правилам приоритета.",
+      "topicId": 5,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Svetoforga", "textUzc": "Светофорга", "textEn": "Traffic lights", "textRu": "Светофору" },
+        { "optionIndex": 1, "textUzl": "Yo‘l belgilariga", "textUzc": "Йўл белгиларига", "textEn": "Road signs", "textRu": "Дорожным знакам" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Asosiy yo‘lda harakatlanayotgan transportning huquqi qanday?",
+      "textUzc": "Асосий йўлда ҳаракатланаётган транспортнинг ҳуқуқи қандай?",
+      "textEn": "What is the priority of a vehicle on the main road?",
+      "textRu": "Какое преимущество у транспорта на главной дороге?",
+      "explanationUzl": "Asosiy yo‘ldagi transport ustun huquqqa ega.",
+      "explanationUzc": "Асосий йўлдаги транспорт устун ҳуқуққа эга.",
+      "explanationEn": "Vehicles on the main road have priority.",
+      "explanationRu": "Транспорт на главной дороге имеет приоритет.",
+      "topicId": 5,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Yo‘l berishi kerak", "textUzc": "Йўл бериши керак", "textEn": "Must give way", "textRu": "Должен уступить" },
+        { "optionIndex": 1, "textUzl": "Ustun huquqqa ega", "textUzc": "Устун ҳуқуққа эга", "textEn": "Has priority", "textRu": "Имеет приоритет" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": "http://localhost:8080/api/v1/files/questions/9c81d7ba-d5df-420e-a61d-5d93be64fe15.png",
+      "isActive": true
+    },
+    {
+      "textUzl": "Chapga burilayotgan haydovchi kimga yo‘l beradi?",
+      "textUzc": "Чапга бурилаётган ҳайдовчи кимга йўл беради?",
+      "textEn": "Who must a driver give way to when turning left?",
+      "textRu": "Кому уступает водитель при повороте налево?",
+      "explanationUzl": "Qarshi tomondan to‘g‘ri kelayotgan transportga.",
+      "explanationUzc": "Қарши томондан тўғри келаётган транспортга.",
+      "explanationEn": "To oncoming vehicles going straight.",
+      "explanationRu": "Встречному транспорту, движущемуся прямо.",
+      "topicId": 5,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Qarshi tomondan to‘g‘ri kelayotganlarga", "textUzc": "Қарши томондан тўғри келаётганларга", "textEn": "Oncoming straight vehicles", "textRu": "Встречным прямо" },
+        { "optionIndex": 1, "textUzl": "Orqadan kelayotganlarga", "textUzc": "Орқадан келаётганларга", "textEn": "Vehicles behind", "textRu": "Сзади идущим" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Tartibga solinmagan chorrahada ustuvorlik qanday aniqlanadi?",
+      "textUzc": "Тартибга солинмаган чорраҳада устуворлик қандай аниқланади?",
+      "textEn": "How is priority determined at an uncontrolled intersection?",
+      "textRu": "Как определяется приоритет на нерегулируемом перекрестке?",
+      "explanationUzl": "O‘ng qo‘l qoidasi asosida aniqlanadi.",
+      "explanationUzc": "Ўнг қўл қоидаси асосида аниқланади.",
+      "explanationEn": "Based on the right-hand rule.",
+      "explanationRu": "По правилу правой руки.",
+      "topicId": 5,
+      "difficulty": "HARD",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Chap qo‘l qoidasi", "textUzc": "Чап қўл қоидаси", "textEn": "Left-hand rule", "textRu": "Правило левой руки" },
+        { "optionIndex": 1, "textUzl": "O‘ng qo‘l qoidasi", "textUzc": "Ўнг қўл қоидаси", "textEn": "Right-hand rule", "textRu": "Правило правой руки" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

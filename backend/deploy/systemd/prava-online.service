@@ -1,0 +1,67 @@
+# ======================================================
+# Spring Boot Service — prava-online
+# Path: /etc/systemd/system/prava-online.service
+# ======================================================
+
+[Unit]
+Description=Prava Online Spring Boot Application
+Documentation=https://pravaonline.uz
+After=network.target network-online.target
+Wants=network-online.target
+Requires=network.target
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/home/deploy/prava-online
+
+# ─── Java executable va JAR ───
+ExecStart=/usr/bin/java \
+    -Xms256m \
+    -Xmx512m \
+    -XX:+UseG1GC \
+    -XX:MaxGCPauseMillis=200 \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Dserver.address=0.0.0.0 \
+    -Dserver.port=8080 \
+    -Dspring.profiles.active=prod \
+    -jar /home/deploy/prava-online/app.jar
+
+# ─── Graceful shutdown ───
+ExecStop=/bin/kill -SIGTERM $MAINPID
+SuccessExitStatus=143
+TimeoutStopSec=30
+
+# ─── Restart policy ───
+Restart=on-failure
+RestartSec=10
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+# ─── Environment ───
+Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64"
+Environment="SPRING_PROFILES_ACTIVE=prod"
+EnvironmentFile=-/home/deploy/prava-online/.env
+
+# ─── Security hardening ───
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/deploy/prava-online/logs /home/deploy/prava-online/uploads /tmp
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+# ─── Logging ───
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=prava-online
+
+# ─── Resource limits ───
+LimitNOFILE=65535
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target

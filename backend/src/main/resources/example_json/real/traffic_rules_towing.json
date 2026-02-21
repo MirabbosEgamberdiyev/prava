@@ -1,0 +1,108 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_towing",
+      "nameUzl": "Mexanik transport vositalarini shatakka olish",
+      "nameUzc": "Механик транспорт воситаларини шатакка олиш",
+      "nameEn": "Towing of Mechanical Vehicles",
+      "nameRu": "Буксировка механических транспортных средств",
+      "descriptionUzl": "Shatakka olish usullari (qattiq/egiluvchan ulagich), haydovchi mavjudligi, odam tashish taqiqlari, ulagich uzunligi, belgilash, taqiqlangan holatlar (rul ishlamasa, ikki TС, uzunlik, vazn, mototsikl va sirpanchiq yo‘lda) bo‘yicha savollar.",
+      "descriptionUzc": "Шатакка олиш усуллари (қаттиқ/эгилувчан улагичи), ҳайдовчи мавжудлиги, одам ташиш тақиқлари, улагичи узунлиги, белгилаш, тақиқланган ҳолатлар (руль ишламаса, икки ТС, узунлик, вазн, мотоцикл ва сирпанчиқ йўлда) бўйича саволлар.",
+      "descriptionEn": "Questions on towing methods (rigid/flexible hitch), driver presence, passenger prohibition, hitch length, marking, prohibited cases (steering failure, multiple vehicles, length, weight, motorcycles, slippery roads).",
+      "descriptionRu": "Вопросы по способам буксировки (жёсткая/гибкая сцепка), наличию водителя, запрету перевозки людей, длине сцепки, обозначению, запрещённым случаям (отказ руля, несколько ТС, длина, масса, мотоциклы, скользкая дорога).",
+      "iconUrl": null,
+      "displayOrder": 22,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Mexanik transport vositalarini shatakka olishda qanday shart bajarilishi kerak?",
+      "textUzc": "Механик транспорт воситаларини шатакка олишда қандай шарт бажарилиши керак?",
+      "textEn": "What condition must be met when towing mechanical vehicles?",
+      "textRu": "Какое условие обязательно при буксировке механических ТС?",
+      "explanationUzl": "142-bandga ko‘ra: shatakka olingan transport vositasining rul boshqaruvida haydovchi bo‘lishi shart (qattiq ulagich konstruktsiyasi izdan chiqmasligini ta’minlasa bundan mustasno).",
+      "explanationUzc": "142-бандга кўра: шатакка олинган транспорт воситасининг руль бошқарувида ҳайдовчи бўлиши шарт (қаттиқ улагичи конструкцияси издан чиқмаслигини таъминласа бундан мустасно).",
+      "explanationEn": "According to clause 142: there must be a driver at the steering wheel of the towed vehicle (except when rigid hitch ensures following the track).",
+      "explanationRu": "Согласно пункту 142: в буксируемом ТС должен быть водитель за рулём (кроме случаев, когда жёсткая сцепка обеспечивает следование по колее).",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Haydovchi bo‘lishi shart emas", "textUzc": "Ҳайдовчи бўлиши шарт эмас", "textEn": "No driver required", "textRu": "Водитель не обязателен" },
+        { "optionIndex": 1, "textUzl": "Shatakka olingan TСda haydovchi bo‘lishi shart", "textUzc": "Шатакка олинган ТСда ҳайдовчи бўлиши шарт", "textEn": "Driver in towed vehicle required", "textRu": "Водитель в буксируемом ТС обязателен" },
+        { "optionIndex": 2, "textUzl": "Faqat qattiq ulagichda mumkin", "textUzc": "Фақат қаттиқ улагичида мумкин", "textEn": "Only with rigid hitch", "textRu": "Только жёсткой сцепкой" },
+        { "optionIndex": 3, "textUzl": "Ikki haydovchi bo‘lishi kerak", "textUzc": "Икки ҳайдовчи бўлиши керак", "textEn": "Two drivers required", "textRu": "Два водителя обязательны" },
+        { "optionIndex": 4, "textUzl": "Faqat egiluvchan ulagichda", "textUzc": "Фақат эгилувчан улагичида", "textEn": "Only with flexible hitch", "textRu": "Только гибкой сцепкой" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Shatakka olishda qaysi transportda odam tashish taqiqlangan?",
+      "textUzc": "Шатакка олишда қайси транспортда одам ташиш тақиқланган?",
+      "textEn": "In which vehicles is passenger transportation prohibited during towing?",
+      "textRu": "В каких ТС запрещена перевозка людей при буксировке?",
+      "explanationUzl": "143-bandga ko‘ra: shatakka olingan avtobus, trolleybus, yuk mashinasi yukxonasida; qisman ortish yo‘li bilan shatakka olishda shatakka olingan va olgan transportning kabinasida va yukxonasida odamlar bo‘lishi taqiqlanadi.",
+      "explanationUzc": "143-бандга кўра: шатакка олинган автобус, троллейбус, юк машинаси юкхонасида; қисман ортиш йўли билан шатакка олишда шатакка олинган ва олган транспортнинг кабинасида ва юкхонасида одамлар бўлиши тақиқланади.",
+      "explanationEn": "According to clause 143: prohibited in towed bus, trolleybus, truck cargo area; and in cabin/cargo area of both vehicles when partial loading towing.",
+      "explanationRu": "Согласно пункту 143: запрещена перевозка людей в буксируемых автобусе, троллейбусе, кузове грузовика; а также в кабине и кузове обоих ТС при частичной погрузке.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat yengil avtomobillarda", "textUzc": "Фақат енгил автомобилларда", "textEn": "Only in passenger cars", "textRu": "Только в легковых" },
+        { "optionIndex": 1, "textUzl": "Shatakka olingan avtobus, trolleybus va yuk mashinasi yukxonasida", "textUzc": "Шатакка олинган автобус, троллейбус ва юк машинаси юкхонасида", "textEn": "In towed bus, trolleybus and truck cargo area", "textRu": "В буксируемых автобусе, троллейбусе и кузове грузовика" },
+        { "optionIndex": 2, "textUzl": "Faqat shatakka olgan transportda", "textUzc": "Фақат шатакка олган транспортда", "textEn": "Only in towing vehicle", "textRu": "Только в буксирующем ТС" },
+        { "optionIndex": 3, "textUzl": "Umuman taqiqlanmagan", "textUzc": "Умуман тақиқланмаган", "textEn": "Not prohibited at all", "textRu": "Вообще не запрещена" },
+        { "optionIndex": 4, "textUzl": "Faqat mototsikllarda", "textUzc": "Фақат мотоциклларда", "textEn": "Only on motorcycles", "textRu": "Только на мотоциклах" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Egiluvchan ulagich bilan shatakka olishda transportlar orasidagi masofa qancha bo‘lishi kerak?",
+      "textUzc": "Эгилувчан улагичи билан шатакка олишда транспортлар орасидаги масофа қанча бўлиши керак?",
+      "textEn": "What should be the distance between vehicles when towing with flexible hitch?",
+      "textRu": "Какое расстояние между ТС при буксировке гибкой сцепкой?",
+      "explanationUzl": "144-bandga ko‘ra: egiluvchan ulagich bilan 4–6 metr, qattiq ulagich bilan 4 metrdan ko‘p bo‘lmasligi kerak.",
+      "explanationUzc": "144-бандга кўра: эгилувчан улагичи билан 4–6 метр, қаттиқ улагичи билан 4 метрдан кўп бўлмаслиги керак.",
+      "explanationEn": "According to clause 144: flexible hitch — 4–6 m, rigid hitch — no more than 4 m.",
+      "explanationRu": "Согласно пункту 144: гибкая сцепка — 4–6 м, жёсткая — не более 4 м.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "1–2 metr", "textUzc": "1–2 метр", "textEn": "1–2 m", "textRu": "1–2 м" },
+        { "optionIndex": 1, "textUzl": "Egiluvchan bilan 4–6 m, qattiq bilan 4 m dan ko‘p emas", "textUzc": "Эгилувчан билан 4–6 м, қаттиқ билан 4 м дан кўп эмас", "textEn": "Flexible 4–6 m, rigid max 4 m", "textRu": "Гибкая 4–6 м, жёсткая не более 4 м" },
+        { "optionIndex": 2, "textUzl": "10 metr", "textUzc": "10 метр", "textEn": "10 m", "textRu": "10 м" },
+        { "optionIndex": 3, "textUzl": "Masofa cheklanmagan", "textUzc": "Масофа чекланмаган", "textEn": "No distance limit", "textRu": "Без ограничения расстояния" },
+        { "optionIndex": 4, "textUzl": "Faqat 3 metr", "textUzc": "Фақат 3 метр", "textEn": "Only 3 m", "textRu": "Только 3 м" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Shatakka olishda qaysi holatlarda taqiqlangan?",
+      "textUzc": "Шатакка олишда қайси ҳолатларда тақиқланган?",
+      "textEn": "In which cases is towing prohibited?",
+      "textRu": "В каких случаях запрещена буксировка?",
+      "explanationUzl": "145-bandga ko‘ra: rul boshqaruvi ishlamayotgan (qisman ortish bundan mustasno), ikki va undan ko‘p TС, umumiy uzunlik 20 m dan ortiq, vazn yarmi dan ortiq (qisman ortish/qattiq ulagich mumkin), ikki g‘ildirakli mototsikllar, sirpanchiq yo‘lda egiluvchan ulagich bilan.",
+      "explanationUzc": "145-бандга кўра: руль бошқаруви ишламаётган (қисман ортиш бундан мустасно), икки ва ундан кўп ТС, умумий узунлик 20 м дан ортиқ, вазн ярмидан ортиқ (қисман ортиш/қаттиқ улагичи мумкин), икки ғилдиракли мотоцикллар, сирпанчиқ йўлда эгилувчан улагичи билан.",
+      "explanationEn": "According to clause 145: steering failure (except partial loading), multiple vehicles, total length >20 m, weight >half (partial/rigid allowed), two-wheeled motorcycles, slippery road with flexible hitch.",
+      "explanationRu": "Согласно пункту 145: отказ рулевого управления (кроме частичной погрузки), более двух ТС, общая длина >20 м, масса >половины (частичная/жёсткая разрешены), двухколёсные мотоциклы, скользкая дорога с гибкой сцепкой.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qachon taqiqlanmaydi", "textUzc": "Ҳеч қачон тақиқланмайди", "textEn": "Never prohibited", "textRu": "Никогда не запрещена" },
+        { "optionIndex": 1, "textUzl": "Rul ishlamasa, ikki TС, uzunlik 20 m dan ortiq va boshqalarda", "textUzc": "Руль ишламаса, икки ТС, узунлик 20 м дан ортиқ ва бошқаларда", "textEn": "Steering failure, multiple vehicles, length >20 m etc.", "textRu": "Отказ руля, несколько ТС, длина >20 м и др." },
+        { "optionIndex": 2, "textUzl": "Faqat qattiq ulagichda taqiqlangan", "textUzc": "Фақат қаттиқ улагичида тақиқланган", "textEn": "Only with rigid hitch", "textRu": "Только жёсткой сцепкой" },
+        { "optionIndex": 3, "textUzl": "Faqat yengil avtomobillarda", "textUzc": "Фақат енгил автомобилларда", "textEn": "Only passenger cars", "textRu": "Только легковые" },
+        { "optionIndex": 4, "textUzl": "Faqat qorong‘i vaqtda", "textUzc": "Фақат қоронғи вақтда", "textEn": "Only at night", "textRu": "Только в тёмное время" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

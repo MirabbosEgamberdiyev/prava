@@ -1,0 +1,130 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_bicycles_animals",
+      "nameUzl": "Velosiped, moped va aravalar harakatlanishiga, shuningdek, hayvonlarni haydab o‘tishga doir qo‘shimcha talablar",
+      "nameUzc": "Велосипед, мопед ва арава ҳаракатланишига, шунингдек, ҳайвонларни ҳайдаб ўтишга доир қўшимча талаблар",
+      "nameEn": "Additional Requirements for Bicycles, Mopeds, Carts and Driving Animals",
+      "nameRu": "Дополнительные требования к движению велосипедов, мопедов, гужевого транспорта и прогону животных",
+      "descriptionUzl": "Yosh chegaralari, harakat joylari va tartibi, jihozlanish (chiroqlar, tormoz, nur qaytargichlar), taqiqlangan harakatlar (rul ushlamasdan, yo‘lovchi tashish, yuk tashish, chapga burilish va boshqalar), chorrahada yo‘l berish, ot-aravalar va hayvonlarni haydash qoidalari bo‘yicha savollar.",
+      "descriptionUzc": "Ёш чегаралари, ҳаракат жойлари ва тартиби, жиҳозланиш (чироқлар, тормоз, нур қайтаргичлар), тақиқланган ҳаракатлар (рул тутмасдан, йўловчи ташиш, юк ташиш, чапга бурилиш ва бошқалар), чорраҳада йўл бериш, от-арава ва ҳайвонларни ҳайдаш қоидалари бўйича саволлар.",
+      "descriptionEn": "Questions on age limits, movement rules and locations, equipment (lights, brakes, reflectors), prohibited actions (no hands, passenger carriage, cargo, left turns etc.), yielding at intersections, rules for carts and herding animals.",
+      "descriptionRu": "Вопросы по возрастным ограничениям, правилам и местам движения, оборудованию (свет, тормоза, отражатели), запрещённым действиям (без рук, перевозка пассажиров, грузов, повороты налево и т.д.), уступке на перекрёстках, правилам для гужевого транспорта и прогона животных.",
+      "iconUrl": null,
+      "displayOrder": 26,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Yo‘lda velosiped va aravani boshqarish, hayvonlarni haydab o‘tish necha yoshdan ruxsat etiladi?",
+      "textUzc": "Йўлда велосипед ва аравани бошқариш, ҳайвонларни ҳайдаб ўтиш неча ёшдан рухсат этилади?",
+      "textEn": "From what age is it allowed to ride bicycles/carts and drive animals on the road?",
+      "textRu": "С какого возраста разрешено ездить на велосипеде/управлять гужевым транспортом и прогонять животных по дороге?",
+      "explanationUzl": "165-bandga ko‘ra: velosiped, arava va hayvonlarni haydash 14 yoshdan, moped 16 yoshdan kichik bo‘lmagan shaxslarga ruxsat etiladi.",
+      "explanationUzc": "165-бандга кўра: велосипед, арава ва ҳайвонларни ҳайдаш 14 ёшдан, мопед 16 ёшдан кичик бўлмаган шахсларга рухсат этилади.",
+      "explanationEn": "According to clause 165: bicycles, carts and driving animals from 14 years, mopeds from 16 years.",
+      "explanationRu": "Согласно пункту 165: велосипеды, гужевой транспорт и прогон животных с 14 лет, мопеды с 16 лет.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "12 yoshdan", "textUzc": "12 ёшдан", "textEn": "From 12 years", "textRu": "С 12 лет" },
+        { "optionIndex": 1, "textUzl": "Velosiped va arava 14 yoshdan, moped 16 yoshdan", "textUzc": "Велосипед ва арава 14 ёшдан, мопед 16 ёшдан", "textEn": "Bicycles/carts from 14, mopeds from 16", "textRu": "Велосипеды/гужевой с 14, мопеды с 16" },
+        { "optionIndex": 2, "textUzl": "18 yoshdan", "textUzc": "18 ёшдан", "textEn": "From 18 years", "textRu": "С 18 лет" },
+        { "optionIndex": 3, "textUzl": "Faqat 21 yoshdan", "textUzc": "Фақат 21 ёшдан", "textEn": "Only from 21 years", "textRu": "Только с 21 года" },
+        { "optionIndex": 4, "textUzl": "Yosh chegarasi yo‘q", "textUzc": "Ёш чегараси йўқ", "textEn": "No age limit", "textRu": "Без возрастного ограничения" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Velosiped va mopedlar qayerda harakatlanishi kerak?",
+      "textUzc": "Велосипед ва мопедлар қаерда ҳаракатланиши керак?",
+      "textEn": "Where should bicycles and mopeds move?",
+      "textRu": "Где должны двигаться велосипеды и мопеды?",
+      "explanationUzl": "166-bandga ko‘ra: yo‘lning chetki o‘ng bo‘lagida imkoni boricha o‘ng tomonidan bir qator bo‘lib, piyodalarga xalaqit bermasa yo‘l yoqasidan ham ruxsat.",
+      "explanationUzc": "166-бандга кўра: йўлнинг четки ўнг боғида имкони борича ўнг томонидан бир қатор бўлиб, пиёдаларга халақит бермаса йўл ёқасидан ҳам рухсат.",
+      "explanationEn": "According to clause 166: extreme right lane as far right as possible in one row, or on shoulder if no interference to pedestrians.",
+      "explanationRu": "Согласно пункту 166: в крайней правой полосе как можно правее в один ряд, или по обочине, если не создают помех пешеходам.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat chap bo‘lakda", "textUzc": "Фақат чап боғда", "textEn": "Only left lane", "textRu": "Только левая полоса" },
+        { "optionIndex": 1, "textUzl": "Chetki o‘ng bo‘lakda yoki yo‘l yoqasida", "textUzc": "Четки ўнг боғда ёки йўл ёқасида", "textEn": "Extreme right lane or shoulder", "textRu": "Крайняя правая полоса или обочина" },
+        { "optionIndex": 2, "textUzl": "O‘rta bo‘lakda", "textUzc": "Ўрта боғда", "textEn": "Middle lane", "textRu": "Средняя полоса" },
+        { "optionIndex": 3, "textUzl": "Trotuar va piyodalar yo‘lida", "textUzc": "Тротуар ва пиёдалар йўлида", "textEn": "Sidewalk and pedestrian path", "textRu": "По тротуару и пешеходной дорожке" },
+        { "optionIndex": 4, "textUzl": "Har qanday joyda", "textUzc": "Ҳар қандай жойда", "textEn": "Anywhere", "textRu": "В любом месте" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Velosipedda qaysi jihozlar bo‘lishi zarur?",
+      "textUzc": "Велосипедда қайси жиҳозлар бўлиши зарур?",
+      "textEn": "What equipment is required on a bicycle?",
+      "textRu": "Какое оборудование обязательно на велосипеде?",
+      "explanationUzl": "167-bandga ko‘ra: tovushli ishora moslamasi, tormoz tizimi soz bo‘lishi, qorong‘i va yetarlicha ko‘rinmaydigan sharoitda old oq, orqa qizil, yon zarg‘aldoq/qizil nur qaytargichlar.",
+      "explanationUzc": "167-бандга кўра: товушли ишора мосламаси, тормоз тизими соз бўлиши, қоронғи ва етарлича кўринмайдиган шароитда олди оқ, орқа қизил, ён зарғалдоқ/қизил нур қайтаргичлар.",
+      "explanationEn": "According to clause 167: horn, functional brakes, in dark/poor visibility: white front, red rear, yellow/red side reflectors.",
+      "explanationRu": "Согласно пункту 167: звуковой сигнал, исправные тормоза, в тёмное время и недостаточной видимости: белый спереди, красный сзади, жёлтые/красные боковые отражатели.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat tormoz", "textUzc": "Фақат тормоз", "textEn": "Only brakes", "textRu": "Только тормоза" },
+        { "optionIndex": 1, "textUzl": "Tovushli signal, tormoz va nur qaytargichlar", "textUzc": "Товушли сигнал, тормоз ва нур қайтаргичлар", "textEn": "Horn, brakes and reflectors", "textRu": "Звуковой сигнал, тормоза и отражатели" },
+        { "optionIndex": 2, "textUzl": "Faqat chiroqlar", "textUzc": "Фақат чироқлар", "textEn": "Only lights", "textRu": "Только фонари" },
+        { "optionIndex": 3, "textUzl": "Hech qanday jihoz shart emas", "textUzc": "Ҳеч қандай жиҳоз шарт эмас", "textEn": "No equipment required", "textRu": "Никакого оборудования не нужно" },
+        { "optionIndex": 4, "textUzl": "Faqat motoshlem", "textUzc": "Фақат мотошлем", "textEn": "Only helmet", "textRu": "Только мотошлем" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Velosipedchilarga va moped haydovchilariga qaysi harakatlar taqiqlangan?",
+      "textUzc": "Велосипедчиларга ва мопед ҳайдовчиларига қайси ҳаракатлар тақиқланган?",
+      "textEn": "Which actions are prohibited for cyclists and moped drivers?",
+      "textRu": "Какие действия запрещены велосипедистам и водителям мопедов?",
+      "explanationUzl": "168-bandga ko‘ra: rulni ushlamasdan, yo‘lovchi tashish (7 yoshgacha bola bundan mustasno), katta yuk tashish, velosiped yo‘lkasi bo‘lsa qatnov qismida harakat, chapga burilish, motoshlemsiz harakat va boshqalar.",
+      "explanationUzc": "168-бандга кўра: рулни тутмасдан, йўловчи ташиш (7 ёшгача бола бундан мустасно), катта юк ташиш, велосипед йўлкаси бўлса қатнов қисмида ҳаракат, чапга бурилиш, мотошлемсиз ҳаракат ва бошқалар.",
+      "explanationEn": "According to clause 168: no hands, passenger (except child under 7), oversized cargo, roadway if bike path, left turn, no helmet (mopeds), etc.",
+      "explanationRu": "Согласно пункту 168: без рук, перевозка пассажиров (кроме ребёнка до 7), крупный груз, проезжая часть при наличии велодорожки, поворот налево, без мотошлема (мопеды) и т.д.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat tez harakatlanish", "textUzc": "Фақат тез ҳаракатланиш", "textEn": "Only fast movement", "textRu": "Только быстрое движение" },
+        { "optionIndex": 1, "textUzl": "Rul tutmasdan, yo‘lovchi tashish, chapga burilish va boshqalar", "textUzc": "Рул тутмасдан, йўловчи ташиш, чапга бурилиш ва бошқалар", "textEn": "No hands, passenger carriage, left turn etc.", "textRu": "Без рук, перевозка пассажиров, поворот налево и т.д." },
+        { "optionIndex": 2, "textUzl": "Faqat piyodalar bilan harakat", "textUzc": "Фақат пиёдалар билан ҳаракат", "textEn": "Only with pedestrians", "textRu": "Только с пешеходами" },
+        { "optionIndex": 3, "textUzl": "Umuman taqiq yo‘q", "textUzc": "Умуман тақиқ йўқ", "textEn": "No prohibitions", "textRu": "Запретов нет" },
+        { "optionIndex": 4, "textUzl": "Faqat kechasi harakat", "textUzc": "Фақат кечаси ҳаракат", "textEn": "Only at night", "textRu": "Только ночью" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Velosiped yo‘lkasi bilan yo‘l kesishmasida velosipedchi kimga yo‘l berishi kerak?",
+      "textUzc": "Велосипед йўлкаси билан йўл кесишмасида велосипедчи кимга йўл бериши керак?",
+      "textEn": "At intersection of bicycle path and road, to whom must cyclist yield?",
+      "textRu": "На пересечении велодорожки и дороги велосипедист кому должен уступить?",
+      "explanationUzl": "169-bandga ko‘ra: tartibga solinmagan velosiped yo‘lkasi bilan yo‘l kesishmasida yo‘lda harakatlanayotgan boshqa transport vositalariga yo‘l berish kerak.",
+      "explanationUzc": "169-бандга кўра: тартибга солинмаган велосипед йўлкаси билан йўл кесишмасида йўлда ҳаракатланаётган бошқа транспорт воситаларига йўл бериш керак.",
+      "explanationEn": "According to clause 169: at unregulated bicycle path-road intersection yield to other road vehicles.",
+      "explanationRu": "Согласно пункту 169: на нерегулируемом пересечении велодорожки с дорогой уступить другим ТС на проезжей части.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech kimga", "textUzc": "Ҳеч кимга", "textEn": "No one", "textRu": "Никому" },
+        { "optionIndex": 1, "textUzl": "Yo‘lda harakatlanayotgan transportga", "textUzc": "Йўлда ҳаракатланаётган транспортга", "textEn": "Vehicles on the road", "textRu": "ТС на проезжей части" },
+        { "optionIndex": 2, "textUzl": "Faqat piyodalarga", "textUzc": "Фақат пиёдаларга", "textEn": "Only pedestrians", "textRu": "Только пешеходам" },
+        { "optionIndex": 3, "textUzl": "Faqat mototsikllarga", "textUzc": "Фақат мотоциклларга", "textEn": "Only motorcycles", "textRu": "Только мотоциклам" },
+        { "optionIndex": 4, "textUzl": "O‘z yo‘nalishidagi velosipedchilarga", "textUzc": "Ўз йўналишидаги велосипедчиларга", "textEn": "Same direction cyclists", "textRu": "Велосипедистам своего направления" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

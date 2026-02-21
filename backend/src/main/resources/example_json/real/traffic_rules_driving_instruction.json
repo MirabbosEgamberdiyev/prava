@@ -1,0 +1,130 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_driving_instruction",
+      "nameUzl": "Transport vositalarini boshqarishni o‘rgatish",
+      "nameUzc": "Транспорт воситаларини бошқаришни ўргатиш",
+      "nameEn": "Teaching Vehicle Driving",
+      "nameRu": "Обучение управлению транспортными средствами",
+      "descriptionUzl": "Boshqarishni dastlabki o‘rgatish joylari, yo‘llarda o‘qitish shartlari, o‘rgatuvchining hujjatlari, yosh chegaralari, o‘quv transport vositasining jihozlanishi va o‘quv yo‘nalishlari kelishuvi bo‘yicha savollar.",
+      "descriptionUzc": "Бошқаришни дастлабки ўргатиш жойлари, йўлларда ўқитиш шартлари, ўргатувчининг ҳужжатлари, ёш чегаралари, ўқув транспорт воситасининг жиҳозланиши ва ўқув йўналишлари келишуви бўйича саволлар.",
+      "descriptionEn": "Questions on initial training locations, conditions for road training, instructor documents, age requirements, training vehicle equipment and agreed training routes.",
+      "descriptionRu": "Вопросы по местам первоначального обучения, условиям обучения на дорогах, документам инструктора, возрастным ограничениям, оборудованию учебного ТС и согласованным маршрутам обучения.",
+      "iconUrl": null,
+      "displayOrder": 23,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Transport vositalarini boshqarishni dastlabki o‘rgatish qayerda o‘tkazilishi kerak?",
+      "textUzc": "Транспорт воситаларини бошқаришни дастлабки ўргатиш қаерда ўтказилиши керак?",
+      "textEn": "Where should initial vehicle driving training be conducted?",
+      "textRu": "Где должно проводиться первоначальное обучение управлению транспортными средствами?",
+      "explanationUzl": "146-bandga ko‘ra: yopiq maydonchalarda yoki avtodromlarda o‘tkazilishi kerak.",
+      "explanationUzc": "146-бандга кўра: ёпиқ майдончаларда ёки автодромларда ўтказилиши керак.",
+      "explanationEn": "According to clause 146: on closed areas or autodromes.",
+      "explanationRu": "Согласно пункту 146: на закрытых площадках или автодромах.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Yo‘llarda", "textUzc": "Йўлларда", "textEn": "On roads", "textRu": "На дорогах" },
+        { "optionIndex": 1, "textUzl": "Yopiq maydonchalarda yoki avtodromlarda", "textUzc": "Ёпиқ майдончаларда ёки автодромларда", "textEn": "On closed areas or autodromes", "textRu": "На закрытых площадках или автодромах" },
+        { "optionIndex": 2, "textUzl": "Uyda", "textUzc": "Уйда", "textEn": "At home", "textRu": "Дома" },
+        { "optionIndex": 3, "textUzl": "Faqat shaharda", "textUzc": "Фақат шаҳарда", "textEn": "Only in city", "textRu": "Только в городе" },
+        { "optionIndex": 4, "textUzl": "Umuman o‘tkazilmaydi", "textUzc": "Умуман ўтказилмайди", "textEn": "Not conducted at all", "textRu": "Вообще не проводится" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Yo‘llarda transport vositalarini boshqarishni o‘rgatish qachon ruxsat etiladi?",
+      "textUzc": "Йўлларда транспорт воситаларини бошқаришни ўргатиш қачон рухсат этилади?",
+      "textEn": "When is road training of vehicle driving permitted?",
+      "textRu": "Когда разрешено обучение управлению ТС на дорогах?",
+      "explanationUzl": "147-bandga ko‘ra: amaliy boshqaruv o‘rgatuvchisi ishtirokida, dastlabki boshqaruv ko‘nikmalariga ega bo‘lgan o‘rganuvchiga ruxsat etiladi. O‘rganuvchi Qoidalarni bilishi va amal qilishi shart.",
+      "explanationUzc": "147-бандга кўра: амалий бошқарув ўргатувчиси иштирокида, дастлабки бошқарув кўникмаларига эга бўлган ўрганувчига рухсат этилади. Ўрганувчи Қоидаларни билиши ва амал қилиши шарт.",
+      "explanationEn": "According to clause 147: with practical instructor present, to trainee with initial skills. Trainee must know and follow the Rules.",
+      "explanationRu": "Согласно пункту 147: при присутствии инструктора практического вождения, обучаемому с начальными навыками. Обучаемый обязан знать и соблюдать Правила.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har doim", "textUzc": "Ҳар доим", "textEn": "Always", "textRu": "Всегда" },
+        { "optionIndex": 1, "textUzl": "O‘rgatuvchi ishtirokida va dastlabki ko‘nikmalar bilan", "textUzc": "Ўргатувчи иштирокида ва дастлабки кўникмалар билан", "textEn": "With instructor and initial skills", "textRu": "При инструкторе и с начальными навыками" },
+        { "optionIndex": 2, "textUzl": "Faqat kechasi", "textUzc": "Фақат кечаси", "textEn": "Only at night", "textRu": "Только ночью" },
+        { "optionIndex": 3, "textUzl": "Umuman taqiqlangan", "textUzc": "Умуман тақиқланган", "textEn": "Completely prohibited", "textRu": "Полностью запрещено" },
+        { "optionIndex": 4, "textUzl": "Faqat yolg‘iz o‘rganuvchiga", "textUzc": "Фақат ёлғиз ўрганувчига", "textEn": "Only to solo trainee", "textRu": "Только обучаемому в одиночку" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Boshqarishni o‘rgatayotgan shaxsning qanday hujjatlari bo‘lishi shart?",
+      "textUzc": "Бошқаришни ўргатаётган шахснинг қандай ҳужжатлари бўлиши шарт?",
+      "textEn": "What documents must the driving instructor have?",
+      "textRu": "Какие документы обязан иметь инструктор по вождению?",
+      "explanationUzl": "148-bandga ko‘ra: o‘rgatish huquqini beruvchi hujjat va tegishli toifadagi haydovchilik guvohnomasi bo‘lishi shart.",
+      "explanationUzc": "148-бандга кўра: ўргатиш ҳуқуқини берувчи ҳужжат ва тегишли тоифадаги ҳайдовчилик гувоҳномаси бўлиши шарт.",
+      "explanationEn": "According to clause 148: document granting right to teach driving and driving license of corresponding category.",
+      "explanationRu": "Согласно пункту 148: документ, дающий право на обучение вождению, и водительское удостоверение соответствующей категории.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat shaxsiy guvohnoma", "textUzc": "Фақат шахсий гувоҳнома", "textEn": "Only personal ID", "textRu": "Только личный документ" },
+        { "optionIndex": 1, "textUzl": "O‘rgatish huquqi va tegishli toifadagi haydovchilik guvohnomasi", "textUzc": "Ўргатиш ҳуқуқи ва тегишли тоифадаги ҳайдовчилик гувоҳномаси", "textEn": "Teaching right and corresponding category license", "textRu": "Право на обучение и удостоверение нужной категории" },
+        { "optionIndex": 2, "textUzl": "Hech qanday hujjat shart emas", "textUzc": "Ҳеч қандай ҳужжат шарт эмас", "textEn": "No documents required", "textRu": "Никакие документы не нужны" },
+        { "optionIndex": 3, "textUzl": "Faqat tibbiy guvohnoma", "textUzc": "Фақат тиббий гувоҳнома", "textEn": "Only medical certificate", "textRu": "Только медицинская справка" },
+        { "optionIndex": 4, "textUzl": "Faqat pasport", "textUzc": "Фақат паспорт", "textEn": "Only passport", "textRu": "Только паспорт" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "“B” va “C” toifalari uchun boshqarish huquqiga ega bo‘lish uchun o‘rganuvchi necha yoshda bo‘lishi kerak?",
+      "textUzc": "“B” ва “C” тоифалари учун бошқариш ҳуқуқига эга бўлиш учун ўрганувчи неча ёшда бўлиши керак?",
+      "textEn": "At what age must a trainee be to obtain driving rights for categories “B” and “C”?",
+      "textRu": "В каком возрасте обучаемый должен быть для получения права на управление категориями «B» и «C»?",
+      "explanationUzl": "149-bandga ko‘ra: “B” va “C” toifalari uchun — 18 yoshga to‘lgan bo‘lishi kerak.",
+      "explanationUzc": "149-бандга кўра: “B” ва “C” тоифалари учун — 18 ёшга тўлган бўлиши керак.",
+      "explanationEn": "According to clause 149: for categories “B” and “C” — must be 18 years old.",
+      "explanationRu": "Согласно пункту 149: для категорий «B» и «C» — должен достичь 18 лет.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "16 yoshda", "textUzc": "16 ёшда", "textEn": "16 years old", "textRu": "16 лет" },
+        { "optionIndex": 1, "textUzl": "18 yoshda", "textUzc": "18 ёшда", "textEn": "18 years old", "textRu": "18 лет" },
+        { "optionIndex": 2, "textUzl": "21 yoshda", "textUzc": "21 ёшда", "textEn": "21 years old", "textRu": "21 год" },
+        { "optionIndex": 3, "textUzl": "19 yoshda", "textUzc": "19 ёшда", "textEn": "19 years old", "textRu": "19 лет" },
+        { "optionIndex": 4, "textUzl": "Hech qanday yosh chegarasi yo‘q", "textUzc": "Ҳеч қандай ёш чегараси йўқ", "textEn": "No age limit", "textRu": "Нет возрастного ограничения" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Boshqarishni o‘rgatish uchun mo‘ljallangan transport vositasida qanday jihozlar bo‘lishi kerak?",
+      "textUzc": "Бошқаришни ўргатиш учун мўлжалланган транспорт воситасида қандай жиҳозлар бўлиши керак?",
+      "textEn": "What equipment must a training vehicle have?",
+      "textRu": "Какое оборудование должно быть на учебном транспортном средстве?",
+      "explanationUzl": "150-bandga ko‘ra: “Boshqarishni o‘rgatish transport vositasi” taniqlik belgisi, o‘rgatuvchi uchun qo‘shimcha ssepleniye va tormoz tepkilari, orqa ko‘zgu va GPS qurilmalari.",
+      "explanationUzc": "150-бандга кўра: “Бошқаришни ўргатиш транспорт воситаси” таниқлик белгиси, ўргатувчи учун қўшимча сцепление ва тормоз тепкилари, орқа кўзгу ва GPS қурилмалари.",
+      "explanationEn": "According to clause 150: “Training Vehicle” sign, additional clutch and brake pedals for instructor, rear-view mirror and GPS devices.",
+      "explanationRu": "Согласно пункту 150: знак «Учебное транспортное средство», дополнительные педали сцепления и тормоза для инструктора, зеркало заднего вида и GPS-устройства.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Hech qanday maxsus jihoz shart emas", "textUzc": "Ҳеч қандай махсус жиҳоз шарт эмас", "textEn": "No special equipment required", "textRu": "Никакого специального оборудования не нужно" },
+        { "optionIndex": 1, "textUzl": "“Boshqarishni o‘rgatish” belgisi, qo‘shimcha pedallar, orqa ko‘zgu va GPS", "textUzc": "“Бошқаришни ўргатиш” белгиси, қўшимча педаллар, орқа кўзгу ва GPS", "textEn": "“Training” sign, extra pedals, rear mirror and GPS", "textRu": "Знак «Учебное», доп. педали, зеркало и GPS" },
+        { "optionIndex": 2, "textUzl": "Faqat avariya ishorasi", "textUzc": "Фақат авария ишораси", "textEn": "Only hazard lights", "textRu": "Только аварийная сигнализация" },
+        { "optionIndex": 3, "textUzl": "Faqat orqa chiroqlar", "textUzc": "Фақат орқа чироқлар", "textEn": "Only rear lights", "textRu": "Только задние огни" },
+        { "optionIndex": 4, "textUzl": "Faqat tezlik cheklov belgisi", "textUzc": "Фақат тезлик чеклов белгиси", "textEn": "Only speed limit sign", "textRu": "Только знак ограничения скорости" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

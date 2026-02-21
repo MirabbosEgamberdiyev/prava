@@ -1,0 +1,130 @@
+{
+  "topics": [
+    {
+      "code": "traffic_rules_highways",
+      "nameUzl": "Avtomagistrallarda harakatlanish",
+      "nameUzc": "Автомагистралларда ҳаракатланиш",
+      "nameEn": "Movement on Highways",
+      "nameRu": "Движение по автомагистралям",
+      "descriptionUzl": "Avtomagistrallarda taqiqlangan harakat turlari (piyodalar, velosipedlar, sekin transport, yuk mashinalarining chap qatorida harakat), to‘xtash va to‘xtab turish joylari, majburiy to‘xtashda choralar bo‘yicha savollar.",
+      "descriptionUzc": "Автомагистралларда тақиқланган ҳаракат турлари (пиёдалар, велосипедлар, секин транспорт, юк машиналарининг чап қаторида ҳаракат), тўхташ ва тўхтаб туриш жойлари, мажбурий тўхташда чоралар бўйича саволлар.",
+      "descriptionEn": "Questions on prohibited movements on highways (pedestrians, bicycles, slow vehicles, trucks in left lane), permitted stopping/parking locations, measures during forced stop.",
+      "descriptionRu": "Вопросы по запрещённым видам движения на автомагистралях (пешеходы, велосипеды, тихоходные ТС, грузовики в левой полосе), местам остановки/стоянки, мерам при вынужденной остановке.",
+      "iconUrl": null,
+      "displayOrder": 18,
+      "isActive": true
+    }
+  ],
+  "questions": [
+    {
+      "textUzl": "Avtomagistrallarda qaysi transport vositalarining harakatlanishi taqiqlangan?",
+      "textUzc": "Автомагистралларда қайси транспорт воситаларининг ҳаракатланиши тақиқланган?",
+      "textEn": "Which vehicles are prohibited from moving on highways?",
+      "textRu": "Каким транспортным средствам запрещено движение по автомагистралям?",
+      "explanationUzl": "121-bandga ko‘ra: piyodalar, uy hayvonlari, ot-aravalar, velosipedlar, mopedlar, traktorlar, o‘ziyurar uskunalar, tezligi 40 km/soatdan kam bo‘lgan transport vositalari.",
+      "explanationUzc": "121-бандга кўра: пиёдалар, уй ҳайвонлари, от-арава, велосипедлар, мопедлар, тракторлар, ўзиюрар ускуналар, тезлиги 40 км/соатдан кам бўлган транспорт воситалари.",
+      "explanationEn": "According to clause 121: pedestrians, domestic animals, horse carts, bicycles, mopeds, tractors, self-propelled machinery, vehicles with max speed under 40 km/h.",
+      "explanationRu": "Согласно пункту 121: пешеходы, домашние животные, гужевой транспорт, велосипеды, мопеды, тракторы, самоходные машины, ТС с максимальной скоростью менее 40 км/ч.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Faqat yengil avtomobillar", "textUzc": "Фақат енгил автомобиллар", "textEn": "Only passenger cars", "textRu": "Только легковые автомобили" },
+        { "optionIndex": 1, "textUzl": "Piyodalar, velosipedlar, traktorlar va sekin transport", "textUzc": "Пиёдалар, велосипедлар, тракторлар ва секин транспорт", "textEn": "Pedestrians, bicycles, tractors and slow vehicles", "textRu": "Пешеходы, велосипеды, тракторы и тихоходные ТС" },
+        { "optionIndex": 2, "textUzl": "Faqat yuk mashinalari", "textUzc": "Фақат юк машиналари", "textEn": "Only trucks", "textRu": "Только грузовики" },
+        { "optionIndex": 3, "textUzl": "Barcha transport vositalari ruxsat", "textUzc": "Барча транспорт воситалари рухсат", "textEn": "All vehicles allowed", "textRu": "Все ТС разрешены" },
+        { "optionIndex": 4, "textUzl": "Faqat mototsikllar", "textUzc": "Фақат мотоцикллар", "textEn": "Only motorcycles", "textRu": "Только мотоциклы" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Avtomagistrallarda yuk avtomobillariga qaysi qator taqiqlangan?",
+      "textUzc": "Автомагистралларда юк автомобилларига қайси қатор тақиқланган?",
+      "textEn": "Which lane is prohibited for trucks on highways?",
+      "textRu": "В какой полосе запрещено движение грузовикам на автомагистралях?",
+      "explanationUzl": "121-bandga ko‘ra: yuk avtomobillariga yo‘lning chetki chap qatorida harakatlanish taqiqlangan.",
+      "explanationUzc": "121-бандга кўра: юк автомобилларига йўлнинг четки чап қаторида ҳаракатланиш тақиқланган.",
+      "explanationEn": "According to clause 121: trucks prohibited in the extreme left lane.",
+      "explanationRu": "Согласно пункту 121: грузовикам запрещено движение в крайней левой полосе.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "O‘ng qatorida", "textUzc": "Ўнг қаторида", "textEn": "Right lane", "textRu": "Правая полоса" },
+        { "optionIndex": 1, "textUzl": "Chetki chap qatorida", "textUzc": "Четки чап қаторида", "textEn": "Extreme left lane", "textRu": "Крайняя левая полоса" },
+        { "optionIndex": 2, "textUzl": "O‘rta qatorida", "textUzc": "Ўрта қаторида", "textEn": "Middle lane", "textRu": "Средняя полоса" },
+        { "optionIndex": 3, "textUzl": "Barcha qatorlarda ruxsat", "textUzc": "Барча қаторларда рухсат", "textEn": "All lanes allowed", "textRu": "Разрешено во всех полосах" },
+        { "optionIndex": 4, "textUzl": "Faqat o‘ngdan ikkinchi qatorida", "textUzc": "Фақат ўнгдан иккинчи қаторида", "textEn": "Only second from right", "textRu": "Только вторая справа" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Avtomagistrallarda to‘xtash qayerda ruxsat etiladi?",
+      "textUzc": "Автомагистралларда тўхташ қаерда рухсат этилади?",
+      "textEn": "Where is stopping permitted on highways?",
+      "textRu": "Где разрешена остановка на автомагистралях?",
+      "explanationUzl": "121-bandga ko‘ra: 5.15 yoki 6.11 yo‘l belgilari bilan belgilangan maxsus to‘xtab turish maydonchalaridan boshqa joylarda to‘xtash taqiqlangan.",
+      "explanationUzc": "121-бандга кўра: 5.15 ёки 6.11 йўл белгилари билан белгиланган махсус тўхтаб туриш майдончаларидан бошқа жойларда тўхташ тақиқланган.",
+      "explanationEn": "According to clause 121: stopping prohibited except in specially designated areas marked by signs 5.15 or 6.11.",
+      "explanationRu": "Согласно пункту 121: остановка запрещена, кроме специально обозначенных площадок со знаками 5.15 или 6.11.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Har qanday joyda", "textUzc": "Ҳар қандай жойда", "textEn": "Anywhere", "textRu": "В любом месте" },
+        { "optionIndex": 1, "textUzl": "Faqat maxsus belgilangan maydonchalarda", "textUzc": "Фақат махсус белгиланган майдончаларда", "textEn": "Only in specially designated areas", "textRu": "Только на специально обозначенных площадках" },
+        { "optionIndex": 2, "textUzl": "Faqat o‘ng yo‘l yoqasida", "textUzc": "Фақат ўнг йўл ёқасида", "textEn": "Only on right shoulder", "textRu": "Только на правой обочине" },
+        { "optionIndex": 3, "textUzl": "Chap qatorida", "textUzc": "Чап қаторида", "textEn": "In left lane", "textRu": "В левой полосе" },
+        { "optionIndex": 4, "textUzl": "Ajratuvchi bo‘lakda", "textUzc": "Ажратувчи бўлакда", "textEn": "On dividing strip", "textRu": "На разделительной полосе" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Avtomagistrallarda majburiy to‘xtash bo‘lsa, haydovchi nima qilishi kerak?",
+      "textUzc": "Автомагистралларда мажбурий тўхташ бўлса, ҳайдовчи нима қилиши керак?",
+      "textEn": "In case of forced stop on highway, what must the driver do?",
+      "textRu": "При вынужденной остановке на автомагистрали что должен сделать водитель?",
+      "explanationUzl": "122-bandga ko‘ra: transportni Qoidalarning 8-bobi talablariga muvofiq belgilashi va qatnov qismining chetini bildiruvchi chiziqdan o‘ngroqda joylashgan tasmaga olib chiqish choralarini ko‘rishi kerak.",
+      "explanationUzc": "122-бандга кўра: транспортни Қоидаларнинг 8-боби талабларига мувофиқ белгилаши ва қатнов қисмининг чегини билдирувчи чизиқдан ўнгроқда жойлашган тасмага олиб чиқиш чораларини кўриши керак.",
+      "explanationEn": "According to clause 122: mark the vehicle according to chapter 8 requirements and move it to the lane right of the edge line.",
+      "explanationRu": "Согласно пункту 122: обозначить ТС в соответствии с требованиями главы 8 и отвести его в полосу правее линии, обозначающей край проезжей части.",
+      "topicId": 1,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Joyida qoldirish", "textUzc": "Жойида қолдириш", "textEn": "Leave in place", "textRu": "Оставить на месте" },
+        { "optionIndex": 1, "textUzl": "8-bob talablariga muvofiq belgilash va chetga olib chiqish", "textUzc": "8-боб талабларига мувофиқ белгилаш ва четга олиб чиқиш", "textEn": "Mark per chapter 8 and move to edge", "textRu": "Обозначить по главе 8 и отвести к краю" },
+        { "optionIndex": 2, "textUzl": "Faqat avariya ishorasini yoqish", "textUzc": "Фақат авария ишорасини ёқиш", "textEn": "Only turn on hazards", "textRu": "Только включить аварийку" },
+        { "optionIndex": 3, "textUzl": "Tezlikni oshirib o‘tib ketish", "textUzc": "Тезликни ошириб ўтиб кетиш", "textEn": "Speed up and pass", "textRu": "Ускориться и проехать" },
+        { "optionIndex": 4, "textUzl": "Orqaga qaytish", "textUzc": "Орқага қайтиш", "textEn": "Reverse", "textRu": "Вернуться назад" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Avtomagistrallarda qayrilib olish mumkinmi?",
+      "textUzc": "Автомагистралларда қайрилиб олиш мумкинми?",
+      "textEn": "Is U-turn allowed on highways?",
+      "textRu": "Разрешён ли разворот на автомагистралях?",
+      "explanationUzl": "121-bandga ko‘ra: ajratuvchi bo‘lakning texnologik uzilish joylariga kirish va ularda qayrilib olish taqiqlangan.",
+      "explanationUzc": "121-бандга кўра: ажратувчи бўлакнинг технологик узилиш жойларига кириш ва уларда қайрилиб олиш тақиқланган.",
+      "explanationEn": "According to clause 121: prohibited to enter technological breaks in dividing strip and make U-turn there.",
+      "explanationRu": "Согласно пункту 121: запрещён въезд в технологические разрывы разделительной полосы и разворот в них.",
+      "topicId": 1,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ha, mumkin", "textUzc": "Ҳа, мумкин", "textEn": "Yes, allowed", "textRu": "Да, разрешён" },
+        { "optionIndex": 1, "textUzl": "Yo‘q, taqiqlangan", "textUzc": "Йўқ, тақиқланган", "textEn": "No, prohibited", "textRu": "Нет, запрещён" },
+        { "optionIndex": 2, "textUzl": "Faqat ajratuvchi bo‘lakda", "textUzc": "Фақат ажратувчи бўлакда", "textEn": "Only on dividing strip", "textRu": "Только на разделительной полосе" },
+        { "optionIndex": 3, "textUzl": "Faqat kechasi mumkin", "textUzc": "Фақат кечаси мумкин", "textEn": "Only at night", "textRu": "Только ночью" },
+        { "optionIndex": 4, "textUzl": "Faqat navbatchi ruxsati bilan", "textUzc": "Фақат навбатчи рухсати билан", "textEn": "Only with attendant permission", "textRu": "Только с разрешения дежурного" }
+      ],
+      "correctAnswerIndex": 1,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}

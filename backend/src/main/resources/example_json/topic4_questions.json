@@ -1,0 +1,99 @@
+{
+  "questions": [
+    {
+      "textUzl": "Yashil svetofor nimani bildiradi?",
+      "textUzc": "Яшил светофор нимани билдиради?",
+      "textEn": "What does a green traffic light mean?",
+      "textRu": "Что означает зеленый сигнал светофора?",
+      "explanationUzl": "Yashil signal harakatga ruxsat beradi.",
+      "explanationUzc": "Яшил сигнал ҳаракатга рухсат беради.",
+      "explanationEn": "Green light allows movement.",
+      "explanationRu": "Зеленый сигнал разрешает движение.",
+      "topicId": 4,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Harakatga ruxsat", "textUzc": "Ҳаракатга рухсат", "textEn": "Go", "textRu": "Разрешено" },
+        { "optionIndex": 1, "textUzl": "To‘xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Стоп" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qizil signal nimani bildiradi?",
+      "textUzc": "Қизил сигнал нимани билдиради?",
+      "textEn": "What does red light mean?",
+      "textRu": "Что означает красный сигнал?",
+      "explanationUzl": "Qizil signal harakatni taqiqlaydi.",
+      "explanationUzc": "Қизил сигнал ҳаракатни тақиқлайди.",
+      "explanationEn": "Red light prohibits movement.",
+      "explanationRu": "Красный сигнал запрещает движение.",
+      "topicId": 4,
+      "difficulty": "EASY",
+      "options": [
+        { "optionIndex": 0, "textUzl": "To‘xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Остановиться" },
+        { "optionIndex": 1, "textUzl": "Davom etish", "textUzc": "Давом этиш", "textEn": "Continue", "textRu": "Продолжить" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Sariq signal nimani anglatadi?",
+      "textUzc": "Сариқ сигнал нимани англатади?",
+      "textEn": "What does yellow light mean?",
+      "textRu": "Что означает желтый сигнал?",
+      "explanationUzl": "Signal almashinishidan ogohlantiradi.",
+      "explanationUzc": "Сигнал алмашишидан огоҳлантиради.",
+      "explanationEn": "Warns about signal change.",
+      "explanationRu": "Предупреждает о смене сигнала.",
+      "topicId": 4,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tayyorlanish", "textUzc": "Тайёрланиш", "textEn": "Prepare", "textRu": "Приготовиться" },
+        { "optionIndex": 1, "textUzl": "Tezlash", "textUzc": "Тезлаш", "textEn": "Accelerate", "textRu": "Ускориться" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "Qizil va sariq birga yonsa nimani bildiradi?",
+      "textUzc": "Қизил ва сариқ бирга ёнса нимани билдиради?",
+      "textEn": "What does red and yellow together mean?",
+      "textRu": "Что означает красный и желтый вместе?",
+      "explanationUzl": "Harakat boshlanishiga tayyorlanish.",
+      "explanationUzc": "Ҳаракат бошланишига тайёрланиш.",
+      "explanationEn": "Prepare to start moving.",
+      "explanationRu": "Подготовка к движению.",
+      "topicId": 4,
+      "difficulty": "MEDIUM",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Tayyorlanish", "textUzc": "Тайёрланиш", "textEn": "Prepare", "textRu": "Готовиться" },
+        { "optionIndex": 1, "textUzl": "To‘xtash", "textUzc": "Тўхташ", "textEn": "Stop", "textRu": "Стоп" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    },
+    {
+      "textUzl": "O‘chib-yonuvchi sariq signal nimani bildiradi?",
+      "textUzc": "Ўчиб-ёнадиган сариқ сигнал нимани билдиради?",
+      "textEn": "What does flashing yellow mean?",
+      "textRu": "Что означает мигающий желтый?",
+      "explanationUzl": "Ogohlantiruvchi signal.",
+      "explanationUzc": "Огоҳлантирувчи сигнал.",
+      "explanationEn": "Warning signal.",
+      "explanationRu": "Предупреждающий сигнал.",
+      "topicId": 4,
+      "difficulty": "HARD",
+      "options": [
+        { "optionIndex": 0, "textUzl": "Ogohlantirish", "textUzc": "Огоҳлантириш", "textEn": "Warning", "textRu": "Предупреждение" },
+        { "optionIndex": 1, "textUzl": "Majburiy to‘xtash", "textUzc": "Мажбурий тўхташ", "textEn": "Mandatory stop", "textRu": "Обязательная остановка" }
+      ],
+      "correctAnswerIndex": 0,
+      "imageUrl": null,
+      "isActive": true
+    }
+  ]
+}
