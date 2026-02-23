@@ -2,7 +2,6 @@ package uz.pravaimtihon.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uz.pravaimtihon.config.StorageProperties;
@@ -20,10 +19,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 /**
- * ✅ OPTIMIZED: Local Storage Service
- * - Dynamic URL building (no hardcoded localhost)
- * - Proper file validation by category
- * - Clean error handling
+ * ✅ FIXED: Local Storage Service
+ * - Relative URL qaytaradi (localhost hardcode yo'q)
+ * - Frontend VITE_API_URL env orqali to'liq URL yasaydi
  */
 @Slf4j
 @Service("localStorageService")
@@ -32,19 +30,12 @@ public class LocalStorageService implements FileStorageService {
 
     private final StorageProperties storageProperties;
 
-    @Value("${server.port:8080}")
-    private int serverPort;
-
-    @Value("${app.storage.local.base-url:#{null}}")
-    private String configuredBaseUrl;
-
     private Path uploadDir;
 
-    // Size limits by category
-    private static final long IMAGE_MAX_SIZE_MB = 10;
-    private static final long VIDEO_MAX_SIZE_MB = 500;
+    private static final long IMAGE_MAX_SIZE_MB    = 10;
+    private static final long VIDEO_MAX_SIZE_MB    = 500;
     private static final long DOCUMENT_MAX_SIZE_MB = 50;
-    private static final long DEFAULT_MAX_SIZE_MB = 100;
+    private static final long DEFAULT_MAX_SIZE_MB  = 100;
 
     @PostConstruct
     public void init() {
@@ -55,7 +46,6 @@ public class LocalStorageService implements FileStorageService {
             Files.createDirectories(uploadDir);
             log.info("✅ Local storage initialized: {}", uploadDir);
 
-            // Create standard folders
             createFolder("questions");
             createFolder("profiles");
             createFolder("documents");
@@ -71,34 +61,28 @@ public class LocalStorageService implements FileStorageService {
     @Override
     public FileUploadResponse uploadFile(MultipartFile file, String folder) {
         try {
-            // Detect file category and validate
             FileTypeUtil.FileCategory category = FileTypeUtil.detectFileCategory(file);
             validateFileByCategory(file, category);
 
-            // Generate unique filename
             String originalFilename = file.getOriginalFilename();
             String extension = FileTypeUtil.getFileExtension(originalFilename);
             String fileName = UUID.randomUUID().toString() + extension;
 
-            // Create folder path
             Path folderPath = uploadDir.resolve(folder).normalize();
             Files.createDirectories(folderPath);
 
-            // Save file
             Path targetPath = folderPath.resolve(fileName);
 
-            // Security check
             if (!targetPath.startsWith(uploadDir)) {
                 throw new FileStorageException("Invalid file path");
             }
 
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-            // Build dynamic file URL
-            String fileUrl = buildFileUrl(folder, fileName);
+            // ✅ RELATIVE URL — localhost hardcode yo'q
+            String fileUrl = buildRelativeUrl(folder, fileName);
 
-            log.info("✅ File uploaded to local storage: {} (Category: {}, Size: {})",
-                    fileName, category, FileTypeUtil.formatFileSize(file.getSize()));
+            log.info("✅ File uploaded: {} ({})", fileName, FileTypeUtil.formatFileSize(file.getSize()));
 
             return FileUploadResponse.builder()
                     .fileName(fileName)
@@ -106,7 +90,7 @@ public class LocalStorageService implements FileStorageService {
                     .fileType(file.getContentType())
                     .fileSize(file.getSize())
                     .storageType("LOCAL")
-                    .message("File uploaded successfully to local storage")
+                    .message("File uploaded successfully")
                     .build();
 
         } catch (IOException e) {
@@ -126,11 +110,11 @@ public class LocalStorageService implements FileStorageService {
             }
 
             Files.delete(filePath);
-            log.info("✅ File deleted from local storage: {}", fileUrl);
+            log.info("✅ File deleted: {}", fileUrl);
             return true;
 
         } catch (IOException e) {
-            log.error("❌ Failed to delete file from local storage", e);
+            log.error("❌ Failed to delete file: {}", e.getMessage());
             return false;
         }
     }
@@ -147,7 +131,7 @@ public class LocalStorageService implements FileStorageService {
             return Files.readAllBytes(filePath);
 
         } catch (IOException e) {
-            log.error("❌ Failed to read file from local storage", e);
+            log.error("❌ Failed to read file: {}", e.getMessage());
             throw new FileStorageException("Failed to read file: " + e.getMessage());
         }
     }
@@ -158,7 +142,6 @@ public class LocalStorageService implements FileStorageService {
             Path filePath = resolveFilePath(fileUrl);
             return Files.exists(filePath);
         } catch (Exception e) {
-            log.debug("File check failed: {}", fileUrl);
             return false;
         }
     }
@@ -168,101 +151,75 @@ public class LocalStorageService implements FileStorageService {
         return "LOCAL";
     }
 
-    // ==================== HELPER METHODS ====================
+    // ==================== PRIVATE HELPERS ====================
 
     /**
-     * ✅ Build dynamic file URL
+     * ✅ Relative URL — "/api/v1/files/questions/uuid.jpg"
+     * Frontend VITE_API_URL + bu path = to'liq URL
      */
-    private String buildFileUrl(String folder, String fileName) {
-        String baseUrl = getBaseUrl();
-        return String.format("%s/api/v1/files/%s/%s", baseUrl, folder, fileName);
+    private String buildRelativeUrl(String folder, String fileName) {
+        return String.format("/api/v1/files/%s/%s", folder, fileName);
     }
 
     /**
-     * ✅ Get dynamic base URL
-     */
-    private String getBaseUrl() {
-        // Priority: configured > auto-detect
-        if (configuredBaseUrl != null && !configuredBaseUrl.isBlank()) {
-            return configuredBaseUrl;
-        }
-
-        // Fallback to localhost with dynamic port
-        return "http://localhost:" + serverPort;
-    }
-
-    /**
-     * ✅ Resolve file path from URL or filename
+     * Har qanday formatdagi URL yoki path dan file system path ni oladi:
+     * - http://localhost:8080/api/v1/files/questions/uuid.jpg
+     * - /api/v1/files/questions/uuid.jpg
+     * - questions/uuid.jpg
      */
     private Path resolveFilePath(String fileUrl) {
         try {
-            // Extract folder and filename
             String relativePath;
 
             if (fileUrl.contains("/api/v1/files/")) {
-                // URL format: http://localhost:8080/api/v1/files/questions/uuid.jpg
                 relativePath = fileUrl.substring(fileUrl.indexOf("/api/v1/files/") + 14);
             } else if (fileUrl.startsWith("/")) {
-                // Relative path: /questions/uuid.jpg
                 relativePath = fileUrl.substring(1);
             } else {
-                // Direct path: questions/uuid.jpg
                 relativePath = fileUrl;
             }
 
             Path filePath = uploadDir.resolve(relativePath).normalize();
 
-            // Security check
             if (!filePath.startsWith(uploadDir)) {
-                throw new FileStorageException("Invalid file path: path traversal detected");
+                throw new FileStorageException("Path traversal detected: " + fileUrl);
             }
 
             return filePath;
 
+        } catch (FileStorageException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("❌ Failed to resolve file path: {}", fileUrl, e);
+            log.error("❌ Failed to resolve path: {}", fileUrl, e);
             throw new FileStorageException("Invalid file path: " + e.getMessage());
         }
     }
 
-    /**
-     * ✅ Validate file based on category
-     */
     private void validateFileByCategory(MultipartFile file, FileTypeUtil.FileCategory category) {
         if (file.isEmpty()) {
             throw new FileStorageException("Cannot upload empty file");
         }
 
-        // Determine max size based on category
         long maxSizeMB = switch (category) {
-            case IMAGE -> IMAGE_MAX_SIZE_MB;
-            case VIDEO -> VIDEO_MAX_SIZE_MB;
+            case IMAGE    -> IMAGE_MAX_SIZE_MB;
+            case VIDEO    -> VIDEO_MAX_SIZE_MB;
             case DOCUMENT -> DOCUMENT_MAX_SIZE_MB;
-            case OTHER -> DEFAULT_MAX_SIZE_MB;
+            case OTHER    -> DEFAULT_MAX_SIZE_MB;
         };
 
-        // Validate size
         long maxSizeBytes = maxSizeMB * 1024 * 1024;
         if (file.getSize() > maxSizeBytes) {
             throw new FileStorageException(
-                    String.format("File size exceeds maximum limit of %d MB for %s files",
+                    String.format("File size exceeds %d MB limit for %s files",
                             maxSizeMB, category.name().toLowerCase())
             );
         }
 
-        // Validate content type
-        String contentType = file.getContentType();
-        if (contentType == null) {
+        if (file.getContentType() == null) {
             throw new FileStorageException("Cannot determine file type");
         }
-
-        log.debug("✅ File validation passed: {} - {} - {}",
-                file.getOriginalFilename(), category, FileTypeUtil.formatFileSize(file.getSize()));
     }
 
-    /**
-     * ✅ Create folder if not exists
-     */
     private void createFolder(String folderName) {
         try {
             Path folderPath = uploadDir.resolve(folderName);
