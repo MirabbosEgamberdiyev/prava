@@ -118,7 +118,7 @@ public class QuestionService {
 
         validateQuestionRequest(request);
 
-        Question question = questionRepository.findById(id)
+        Question question = questionRepository.findByIdWithOptions(id)
                 .filter(q -> !q.getDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("error.question.not.found"));
 
@@ -152,14 +152,18 @@ public class QuestionService {
             topicService.incrementQuestionCount(newTopic.getId());
         }
 
-        questionRepository.save(question);
-
-        if (question.getOptions() != null) {
-            optionRepository.deleteAll(question.getOptions());
-            question.getOptions().clear();
+        // ✅ options yangilash — reference o'zgarmaydi
+        List<QuestionOption> currentOptions = question.getOptions();
+        if (currentOptions == null) {
+            currentOptions = new ArrayList<>();
+            question.setOptions(currentOptions);
         }
 
-        List<QuestionOption> newOptions = new ArrayList<>();
+        if (!currentOptions.isEmpty()) {
+            optionRepository.deleteAll(currentOptions);
+            currentOptions.clear();
+        }
+
         if (request.getOptions() != null) {
             for (QuestionOptionRequest optReq : request.getOptions()) {
                 QuestionOption option = QuestionOption.builder()
@@ -170,20 +174,17 @@ public class QuestionService {
                         .textEn(optReq.getTextEn())
                         .textRu(optReq.getTextRu())
                         .build();
-                newOptions.add(option);
+                currentOptions.add(option);
             }
+            optionRepository.saveAll(currentOptions);
         }
 
-        if (!newOptions.isEmpty()) {
-            optionRepository.saveAll(newOptions);
-        }
-        question.setOptions(newOptions);
+        questionRepository.save(question);
 
         log.info("Question updated: {}", id);
-
         return questionMapper.toResponse(question, language);
     }
-//
+
 //    @CacheEvict(value = {"questions", "questionsByTopic"}, allEntries = true)
 //    public void deleteQuestion(Long id) {
 //        log.info("Deleting question: {}", id);

@@ -12,6 +12,8 @@ import uz.pravaimtihon.enums.QuestionDifficulty;
 
 import jakarta.persistence.QueryHint;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
@@ -147,4 +149,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             "LEFT JOIN FETCH q.options " +
             "WHERE q.id IN :ids AND q.deleted = false AND q.isActive = true")
     List<Question> findByIdsWithOptions(@Param("ids") List<Long> ids);
-}
+
+    @Query("SELECT q FROM Question q LEFT JOIN FETCH q.options WHERE q.id = :id")
+    Optional<Question> findByIdWithOptions(@Param("id") Long id);}
