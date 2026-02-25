@@ -83,9 +83,10 @@ export default function Header({
           <Group gap={8} wrap="nowrap" style={{ flexShrink: 1, minWidth: 0 }}>
             <ColorMode />
             <LanguagePicker />
+
             {isAuthenticated ? (
               <Link to="/me" style={{ flexShrink: 0 }}>
-                <Avatar radius="md" size="sm" color="blue">
+                <Avatar radius="sm" size="md" color="blue">
                   {initials || "U"}
                 </Avatar>
               </Link>

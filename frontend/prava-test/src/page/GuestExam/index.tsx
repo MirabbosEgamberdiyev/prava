@@ -19,6 +19,7 @@ import {
   IconUserPlus,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import SEO from "../../components/common/SEO";
 import { QuizContent } from "../../components/quiz/QuizContent";
 import { QuizNav } from "../../components/quiz/QuizNav";
 import type { Question, AnswersMap } from "../../types";
@@ -189,6 +190,12 @@ const GuestExamPage = () => {
 
   return (
     <>
+      <SEO
+        title="Imtihonni sinab ko'ring - Bepul YHXBB testi"
+        description="Ro'yxatdan o'tmasdan haydovchilik guvohnomasi imtihonini bepul sinab ko'ring. Real imtihon formatida YHXBB savollarini yechib ko'ring."
+        keywords="prava test bepul, haydovchilik imtihoni sinash, YHXBB test online, prava sinov"
+        canonical="/try-exam"
+      />
       <QuizNav
         questions={questions}
         totalQuestions={questions.length}

@@ -8,10 +8,17 @@ import {
   CTA_Section,
 } from "../../features/Home";
 import classes from "../../features/Home/components/Home.module.css";
+import SEO from "../../components/common/SEO";
 
 const Home_Page = () => {
   return (
     <Box>
+      <SEO
+        title="Prava Online - Haydovchilik guvohnomasi imtihoniga tayyorlaning"
+        description="O'zbekistonda haydovchilik guvohnomasi imtihoniga online tayyorlanish platformasi. 1200+ savollar bazasi, real imtihon formati, 4 tilda: o'zbek, rus, ingliz."
+        keywords="prava online, haydovchilik guvohnomasi, imtihon, prava test, YHXBB, avtomaktab, prava uz, prava test online, водительские права, экзамен ПДД"
+        canonical="/"
+      />
       <Container size="xl">
         {/* Hero Section */}
         <Hero_Banner />

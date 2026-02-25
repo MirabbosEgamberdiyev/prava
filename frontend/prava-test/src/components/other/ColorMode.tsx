@@ -17,6 +17,7 @@ const ColorMode = () => {
           setColorScheme(computedColorScheme === "light" ? "dark" : "light")
         }
         variant="light"
+        radius={'sm'}
         size="lg"
         aria-label="Toggle color scheme"
       >

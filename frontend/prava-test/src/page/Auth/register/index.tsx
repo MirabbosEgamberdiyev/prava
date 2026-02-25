@@ -36,6 +36,7 @@ import {
 import { useTranslation } from "react-i18next";
 import GoogleLoginButton from "../../../components/auth/GoogleLoginButton";
 import TelegramLoginButton from "../../../components/auth/TelegramLoginButton";
+import SEO from "../../../components/common/SEO";
 
 function getPasswordStrength(password: string): number {
   let strength = 0;
@@ -232,6 +233,12 @@ const Register_Page = () => {
 
   return (
     <Container size="lg" my={{ base: 30, sm: 50 }}>
+      <SEO
+        title="Ro'yxatdan o'tish"
+        description="Prava Online platformasida ro'yxatdan o'ting va bepul haydovchilik guvohnomasi imtihoniga tayyorlanishni boshlang. 1200+ savol bazasiga kirish imkoniyati."
+        keywords="prava online ro'yxat, haydovchilik imtihoni, bepul tayyorlanish"
+        canonical="/auth/register"
+      />
       <Grid>
         <Grid.Col span={{ base: 12 }}>
           <Flex

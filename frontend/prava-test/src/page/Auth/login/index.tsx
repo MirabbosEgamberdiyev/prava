@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { IconLock, IconUser } from "@tabler/icons-react";
 import GoogleLoginButton from "../../../components/auth/GoogleLoginButton";
 import TelegramLoginButton from "../../../components/auth/TelegramLoginButton";
+import SEO from "../../../components/common/SEO";
 
 const Login_Page = () => {
   const { t, i18n } = useTranslation();
@@ -92,6 +93,11 @@ const Login_Page = () => {
 
   return (
     <Container size={480} my={{ base: 30, sm: 60 }}>
+      <SEO
+        title="Kirish"
+        description="Prava Online platformasiga kiring va haydovchilik guvohnomasi imtihoniga tayyorlanishni davom eting."
+        canonical="/auth/login"
+      />
       <Stack gap={4} align="center" mb="lg">
         <Title order={2} ta="center">
           {t("auth.welcome")}

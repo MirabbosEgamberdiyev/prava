@@ -31,6 +31,7 @@ import {
   IconUser,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import SEO from "../../../components/common/SEO";
 
 const ForgotPassword_Page = () => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -140,6 +141,12 @@ const ForgotPassword_Page = () => {
 
   return (
     <Container size={480} my={{ base: 30, sm: 60 }}>
+      <SEO
+        title="Parolni tiklash"
+        description="Parolingizni unutdingizmi? Email yoki telefon raqamingiz orqali parolni tiklang."
+        canonical="/auth/forgot-password"
+        noIndex={true}
+      />
       <Flex gap="sm" justify="space-between" align="center" mb="lg">
         <Title order={3}>{t("forgotPassword.title")}</Title>
         <Anchor component={Link} to="/auth/login">

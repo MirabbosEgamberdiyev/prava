@@ -29,6 +29,7 @@ export default function LanguagePicker() {
         <ActionIcon
           variant="light"
           size="lg"
+          radius={"sm"}
           aria-label="Change language"
         >
           <IconLanguage size={18} />
