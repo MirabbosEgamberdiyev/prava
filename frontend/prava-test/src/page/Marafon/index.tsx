@@ -17,6 +17,7 @@ import { IconEye, IconLock, IconPlayerPlay } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
+import SEO from "../../components/common/SEO";
 import { Marathon_ExamPage } from "../../features/Marathon";
 import type { ExamMode } from "../../components/quiz/ExamModeModal";
 import { useLanguage } from "../../hooks/useLanguage";
@@ -89,6 +90,12 @@ const Marafon_Page = () => {
 
   return (
     <Container size={500} py="xl">
+      <SEO
+        title="Marafon - Mashq rejimi"
+        description="Marafon rejimida ko'proq savollarni yeching. Mavzu va savol sonini tanlang."
+        canonical="/marafon"
+        noIndex={true}
+      />
       <Stack gap="lg">
         <div>
           <Title order={2}>{t("marathon.title")}</Title>

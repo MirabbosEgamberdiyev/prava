@@ -94,8 +94,9 @@ const Login_Page = () => {
   return (
     <Container size={480} my={{ base: 30, sm: 60 }}>
       <SEO
-        title="Kirish"
-        description="Prava Online platformasiga kiring va haydovchilik guvohnomasi imtihoniga tayyorlanishni davom eting."
+        title="Kirish - Prava Online platformasiga kirish"
+        description="Prava Online platformasiga kiring va haydovchilik guvohnomasi imtihoniga tayyorlanishni davom eting. Google yoki Telegram orqali tez kirish."
+        keywords="prava online kirish, login, haydovchilik guvohnomasi, вход prava online"
         canonical="/auth/login"
       />
       <Stack gap={4} align="center" mb="lg">

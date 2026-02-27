@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { ProfileInfoCard } from "../../features/me/components/ProfileInfoCard";
 import { ChangePasswordForm } from "../../features/me/components/ChangePasswordForm";
+import SEO from "../../components/common/SEO";
 
 interface DeviceInfo {
   currentDevices: number;
@@ -44,6 +45,12 @@ const Settings_Page = () => {
 
   return (
     <>
+      <SEO
+        title="Sozlamalar"
+        description="Profil sozlamalari, parol o'zgartirish va qurilmalarni boshqarish."
+        canonical="/settings"
+        noIndex={true}
+      />
       <Title order={2} mb="md">
         {t("settings.title")}
       </Title>

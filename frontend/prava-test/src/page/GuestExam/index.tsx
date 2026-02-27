@@ -191,10 +191,20 @@ const GuestExamPage = () => {
   return (
     <>
       <SEO
-        title="Imtihonni sinab ko'ring - Bepul YHXBB testi"
-        description="Ro'yxatdan o'tmasdan haydovchilik guvohnomasi imtihonini bepul sinab ko'ring. Real imtihon formatida YHXBB savollarini yechib ko'ring."
-        keywords="prava test bepul, haydovchilik imtihoni sinash, YHXBB test online, prava sinov"
+        title="Imtihonni sinab ko'ring - Bepul YHXBB testi online"
+        description="Ro'yxatdan o'tmasdan haydovchilik guvohnomasi imtihonini bepul sinab ko'ring. Real imtihon formatida YHXBB savollarini yechib ko'ring. O'zbekistonda haydovchilik guvohnomasi uchun online test."
+        keywords="prava test bepul, haydovchilik imtihoni sinash, YHXBB test online, prava sinov, bepul prava test, бесплатный тест ПДД, haydovchilik guvohnomasi test, avtomaktab test online"
         canonical="/try-exam"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Quiz",
+          name: "Haydovchilik guvohnomasi sinov imtihoni",
+          description: "YHXBB imtihonini bepul sinab ko'ring - real imtihon formati",
+          educationalLevel: "Beginner",
+          inLanguage: ["uz", "ru", "en"],
+          isAccessibleForFree: true,
+          provider: { "@type": "Organization", name: "Prava Online", url: "https://pravaonline.uz" },
+        }}
       />
       <QuizNav
         questions={questions}

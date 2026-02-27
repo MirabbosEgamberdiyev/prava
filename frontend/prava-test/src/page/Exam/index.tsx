@@ -13,6 +13,7 @@ import { useExam, EXAM_DEFAULTS } from "../../features/Exam";
 import type { ExamPageProps } from "../../features/Exam";
 import { QuizNav } from "../../components/quiz/QuizNav";
 import { QuizContent } from "../../components/quiz/QuizContent";
+import SEO from "../../components/common/SEO";
 
 const Exam_Page = ({
   questionCount = EXAM_DEFAULTS.QUESTION_COUNT,
@@ -83,6 +84,12 @@ const Exam_Page = ({
 
   return (
     <>
+      <SEO
+        title="Imtihon"
+        description="Haydovchilik guvohnomasi imtihonini topshiring. Real imtihon formati va vaqt chegarasi."
+        canonical="/exam"
+        noIndex={true}
+      />
       <QuizNav
         sessionId={examData.data.sessionId}
         questions={examData.data.questions}

@@ -9,7 +9,7 @@ const ProtectedRoute: React.FC = () => {
   if (!isAuthenticated) {
     // Agar foydalanuvchi tizimdan chiqsa, u turgan sahifa (location)
     // state-ga yozib olinadi va Login sahifasiga yuboriladi.
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   return <Outlet />;

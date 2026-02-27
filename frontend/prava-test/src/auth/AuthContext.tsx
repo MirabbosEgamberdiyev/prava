@@ -26,8 +26,46 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * JWT payload'dan exp vaqtini olish.
+ */
+function getTokenExpiry(token: string): number | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(
+      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
+    );
+    return payload.exp ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Auth holatini tekshirish:
+ * - Access token mavjud va eskirmaganmi
+ * - Access token eskirgan bo'lsa, refresh token bormi (API interceptor yangilaydi)
+ * - Hech biri yo'q → cookie'larni tozalash
+ */
 const checkAuthStatus = (): boolean => {
-  return !!Cookies.get(ACCESS_TOKEN_KEY);
+  const accessToken = Cookies.get(ACCESS_TOKEN_KEY);
+  if (!accessToken) return false;
+
+  const expiry = getTokenExpiry(accessToken);
+
+  // Token hali amal qilmoqda
+  if (expiry && expiry > Date.now()) return true;
+
+  // Access token eskirgan — refresh token bormi?
+  const refreshToken = Cookies.get(REFRESH_TOKEN_KEY);
+  if (refreshToken) return true; // API interceptor yangilaydi
+
+  // Hech qanday valid token yo'q — cookie'larni tozalash
+  Cookies.remove(ACCESS_TOKEN_KEY);
+  Cookies.remove(REFRESH_TOKEN_KEY);
+  Cookies.remove(USER_DATA_KEY);
+  return false;
 };
 
 const getInitialUser = () => {
@@ -50,12 +88,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   // Periodically check if cookies are still valid (e.g. expired mid-session)
   const syncAuthState = useCallback(() => {
-    const hasToken = !!Cookies.get(ACCESS_TOKEN_KEY);
-    if (isAuthenticated && !hasToken) {
-      // Cookie expired or was cleared externally
+    const isValid = checkAuthStatus();
+    if (isAuthenticated && !isValid) {
+      // Token expired or was cleared externally
       setIsAuthenticated(false);
       setUser(null);
-    } else if (!isAuthenticated && hasToken) {
+    } else if (!isAuthenticated && isValid) {
       // Token appeared (e.g. from another tab)
       setIsAuthenticated(true);
       setUser(getInitialUser());
@@ -74,7 +112,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     const onForceLogout = () => {
       setIsAuthenticated(false);
       setUser(null);
-      navigate("/auth/login", { replace: true });
+      navigate("/", { replace: true });
     };
     window.addEventListener("auth-logout", onForceLogout);
 

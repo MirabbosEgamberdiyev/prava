@@ -8,14 +8,15 @@ import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import { useInstallPrompt } from "./hooks/useInstallPrompt";
 import {
-  Box,
   Button,
-  CloseButton,
   Group,
+  Image,
+  Modal,
+  Stack,
   Text,
-  useComputedColorScheme,
+  ThemeIcon,
 } from "@mantine/core";
-import { IconDownload, IconExternalLink } from "@tabler/icons-react";
+import { IconDownload, IconShare, IconX } from "@tabler/icons-react";
 
 /**
  * Silent PWA auto-updater.
@@ -96,116 +97,113 @@ function ApiErrorListener() {
   return null;
 }
 
-/**
- * PWA banner — ilovani o'rnatish yoki ilovaga o'tish uchun
- * Faqat brauzerda ko'rinadi (standalone rejimda emas)
- * Update banners removed — updates happen silently via autoUpdate.
- */
-function PWABanner() {
-  const { t } = useTranslation();
-  const colorScheme = useComputedColorScheme("light");
-  const isDark = colorScheme === "dark";
-  const { isInstalled, isStandalone, isInstallable, isIOS, install, openApp } =
-    useInstallPrompt();
-  const [dismissed, setDismissed] = useState(false);
+const PWA_DISMISSED_KEY = "pwa_modal_dismissed";
 
-  // PWA ichida bo'lsa yoki yopilgan bo'lsa — ko'rsatmaymiz
+/**
+ * PWA modal — ilovani o'rnatish yoki ilovaga o'tish uchun
+ * Faqat brauzerda ko'rinadi (standalone rejimda emas)
+ * sessionStorage da dismiss holatini saqlaydi — refresh qilganda qayta chiqmaydi
+ */
+function PWAModal() {
+  const { t } = useTranslation();
+  const { isInstalled, isStandalone, isInstallable, isIOS, install } =
+    useInstallPrompt();
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return sessionStorage.getItem(PWA_DISMISSED_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    try {
+      sessionStorage.setItem(PWA_DISMISSED_KEY, "true");
+    } catch { /* ignore */ }
+  };
+
+  const handleInstall = async () => {
+    await install();
+    handleDismiss();
+  };
+
+  // PWA ichida bo'lsa, yopilgan bo'lsa, yoki hech narsa ko'rsatish kerak bo'lmasa
   if (isStandalone || dismissed) return null;
 
-  // Ilova o'rnatilgan — "Ilovaga o'tish"
-  if (isInstalled) {
-    return (
-      <Box
-        bg="blue"
-        py={8}
-        px="md"
-        style={{ position: "relative", zIndex: 1000 }}
-      >
-        <Group justify="center" gap="sm" wrap="nowrap">
-          <IconExternalLink size={18} color="white" />
-          <Text size="sm" c="white" fw={500}>
-            {t("pwa.openAppBanner")}
-          </Text>
-          <Button
-            size="compact-sm"
-            variant="white"
-            color="blue"
-            onClick={openApp}
-          >
-            {t("pwa.openApp")}
-          </Button>
-          <CloseButton
-            size="sm"
-            variant="transparent"
-            c="white"
-            onClick={() => setDismissed(true)}
-          />
-        </Group>
-      </Box>
-    );
-  }
+  // Ilova allaqachon o'rnatilgan — ko'rsatmaymiz (banner emas, modal ham emas)
+  if (isInstalled) return null;
 
-  const installBg = isDark ? "dark.6" : "dark.8";
+  // Faqat o'rnatish mumkin bo'lganda yoki iOS da modal ko'rsatamiz
+  const showModal = isInstallable || isIOS;
+  if (!showModal) return null;
 
-  // O'rnatish mumkin (Chrome/Edge/Android)
-  if (isInstallable) {
-    return (
-      <Box
-        bg={installBg}
-        py={8}
-        px="md"
-        style={{ position: "relative", zIndex: 1000 }}
-      >
-        <Group justify="center" gap="sm" wrap="nowrap">
-          <IconDownload size={18} color="white" />
-          <Text size="sm" c="white" fw={500}>
-            {t("pwa.installBanner")}
-          </Text>
+  return (
+    <Modal
+      opened
+      onClose={handleDismiss}
+      centered
+      radius="lg"
+      size="sm"
+      withCloseButton={false}
+      overlayProps={{ backgroundOpacity: 0.4, blur: 3 }}
+      padding="xl"
+    >
+      <Stack align="center" gap="md">
+        <Image
+          src="/logo.svg"
+          alt="Prava Online"
+          w={64}
+          h={64}
+          fit="contain"
+          fallbackSrc="/favicon.svg"
+        />
+        <Text size="lg" fw={700} ta="center">
+          Prava Online
+        </Text>
+        <Text size="sm" c="dimmed" ta="center">
+          {t("pwa.installBanner")}
+        </Text>
+
+        {isInstallable && (
           <Button
-            size="compact-sm"
-            variant="white"
-            color="dark"
-            onClick={install}
+            fullWidth
+            size="md"
+            radius="md"
+            leftSection={<IconDownload size={20} />}
+            onClick={handleInstall}
           >
             {t("pwa.installApp")}
           </Button>
-          <CloseButton
-            size="sm"
-            variant="transparent"
-            c="white"
-            onClick={() => setDismissed(true)}
-          />
-        </Group>
-      </Box>
-    );
-  }
+        )}
 
-  // iOS — manual ko'rsatma
-  if (isIOS) {
-    return (
-      <Box
-        bg={installBg}
-        py={8}
-        px="md"
-        style={{ position: "relative", zIndex: 1000 }}
-      >
-        <Group justify="center" gap="sm" wrap="nowrap">
-          <IconDownload size={18} color="white" />
-          <Text size="sm" c="white" fw={500} lineClamp={1}>
-            {t("pwa.iosInstallBanner")}
-          </Text>
-          <CloseButton
-            size="sm"
-            variant="transparent"
-            c="white"
-            onClick={() => setDismissed(true)}
-          />
-        </Group>
-      </Box>
-    );
-  }
+        {isIOS && (
+          <Stack gap="xs" w="100%">
+            <Group gap="xs" justify="center">
+              <ThemeIcon variant="light" size="sm" radius="xl">
+                <IconShare size={14} />
+              </ThemeIcon>
+              <Text size="sm" c="dimmed">
+                {t("pwa.iosInstallBanner")}
+              </Text>
+            </Group>
+          </Stack>
+        )}
 
-  return null;
+        <Button
+          fullWidth
+          size="md"
+          radius="md"
+          variant="light"
+          color="gray"
+          leftSection={<IconX size={18} />}
+          onClick={handleDismiss}
+        >
+          {t("common.close")}
+        </Button>
+      </Stack>
+    </Modal>
+  );
 }
 
 /**
@@ -219,7 +217,7 @@ function AppInner() {
       <AuthProvider>
         <PWAUpdater />
         <ApiErrorListener />
-        <PWABanner />
+        <PWAModal />
         <AppRoutes />
       </AuthProvider>
     </ErrorBoundary>

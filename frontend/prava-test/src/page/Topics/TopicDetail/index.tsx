@@ -22,6 +22,7 @@ import useSWR from "swr";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../../hooks/useLanguage";
 import { BreadcrumbNav } from "../../../components/common/BreadcrumbNav";
+import SEO from "../../../components/common/SEO";
 import { Package_Card } from "../../../features/Package/components/Package_Card";
 import { TicketCard } from "../../../features/Ticket/components/TicketCard";
 import type { Ticket } from "../../../types";
@@ -117,6 +118,12 @@ const TopicDetail_Page = () => {
 
   return (
     <Container size="xl" py="md">
+      <SEO
+        title={`${topicName} - Mavzu bo'yicha testlar`}
+        description={`${topicName} mavzusi bo'yicha haydovchilik guvohnomasi imtihon savollarini yeching.`}
+        canonical={`/topics/${topicCode}`}
+        noIndex={true}
+      />
       <BreadcrumbNav
         items={[
           { label: t("topics.title"), href: "/topics" },

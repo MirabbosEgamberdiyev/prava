@@ -3,12 +3,18 @@ import classes from "../../features/NotFound/css/NothingFoundBackground.module.c
 import { Illustration } from "../../features/NotFound";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import SEO from "../../components/common/SEO";
 
 const NotFound_Page = () => {
   const { t } = useTranslation();
 
   return (
     <div>
+      <SEO
+        title="404 - Sahifa topilmadi"
+        description="Siz qidirayotgan sahifa topilmadi. Bosh sahifaga qaytib, haydovchilik guvohnomasi imtihoniga tayyorlanishni davom eting."
+        noIndex={true}
+      />
       <Container className={classes.root}>
         <div className={classes.inner}>
           <Illustration className={classes.image} />
