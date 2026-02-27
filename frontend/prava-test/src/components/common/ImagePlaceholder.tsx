@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Box, Image, Text, useComputedColorScheme } from "@mantine/core";
 
 interface ImagePlaceholderProps {
@@ -9,7 +10,8 @@ interface ImagePlaceholderProps {
 
 /**
  * Savol rasmi yoki placeholder ko'rsatadi.
- * Rasm bo'lmasa — logo + "pravaonline.uz" yozuvi
+ * Rasm mavjud bo'lsa — box ichida rasm ko'rsatadi
+ * Rasm yo'q yoki yuklanmasa — logo + "pravaonline.uz" yozuvi
  * Dark/Light mode ni qo'llab-quvvatlaydi
  */
 export function ImagePlaceholder({
@@ -22,20 +24,15 @@ export function ImagePlaceholder({
     getInitialValueInEffect: true,
   });
   const isDark = colorScheme === "dark";
+  const [imageError, setImageError] = useState(false);
 
-  // Rasm mavjud bo'lsa — oddiy Image ko'rsatamiz
-  if (src) {
-    return (
-      <Image
-        radius={radius}
-        src={src}
-        style={{ cursor: onClick ? "pointer" : undefined, ...style }}
-        onClick={onClick}
-      />
-    );
-  }
+  // Savol o'zgarganda xatolik holatini tozalash
+  useEffect(() => {
+    setImageError(false);
+  }, [src]);
 
-  // Rasm yo'q — placeholder
+  const showImage = !!src && !imageError;
+
   return (
     <Box
       onClick={onClick}
@@ -56,22 +53,35 @@ export function ImagePlaceholder({
         ...style,
       }}
     >
-      <Image
-        src="/logo.svg"
-        alt="Prava Online"
-        w={64}
-        h={64}
-        fit="contain"
-        style={{ opacity: isDark ? 0.7 : 0.5 }}
-      />
-      <Text
-        size="lg"
-        fw={700}
-        c={isDark ? "dark.1" : "gray.5"}
-        style={{ letterSpacing: 1, userSelect: "none" }}
-      >
-        pravaonline.uz
-      </Text>
+      {showImage ? (
+        <Image
+          src={src}
+          alt=""
+          fit="contain"
+          h="100%"
+          w="100%"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <>
+          <Image
+            src="/logo.svg"
+            alt="Prava Online"
+            w={64}
+            h={64}
+            fit="contain"
+            style={{ opacity: isDark ? 0.7 : 0.5 }}
+          />
+          <Text
+            size="lg"
+            fw={700}
+            c={isDark ? "dark.1" : "gray.5"}
+            style={{ letterSpacing: 1, userSelect: "none" }}
+          >
+            pravaonline.uz
+          </Text>
+        </>
+      )}
     </Box>
   );
 }

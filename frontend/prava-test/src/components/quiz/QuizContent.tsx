@@ -627,7 +627,52 @@ export function QuizContent({
 
       {/* Question navigation - bottom */}
       <Container fluid mt="xl" pb="xl">
-        <Flex gap="md" justify="center" align="center" wrap="wrap">
+        {/* Savol raqamlari - tepada */}
+        <ScrollArea
+          type="auto"
+          offsetScrollbars
+          scrollbarSize={4}
+          style={{ maxWidth: "85vw", margin: "0 auto" }}
+        >
+          <Flex gap={3} justify="center" wrap="nowrap" py={4}>
+            {questions.map((question: Question, i: number) => {
+              const wasAnswered = selectedAnswers[i] !== undefined;
+              const wasCorrect =
+                wasAnswered &&
+                selectedAnswers[i] === question.correctOptionIndex;
+              const isActive = activeQuiz === i;
+
+              return (
+                <ActionIcon
+                  size="lg"
+                  key={question.id}
+                  variant={
+                    isActive ? "filled" : wasAnswered ? "filled" : "default"
+                  }
+                  color={
+                    isActive
+                      ? "blue"
+                      : wasAnswered
+                        ? isSecureMode
+                          ? "blue"
+                          : wasCorrect
+                            ? "green"
+                            : "red"
+                        : undefined
+                  }
+                  onClick={() => setActiveQuiz(i)}
+                  aria-label={`${t("exam.noQuestions")} ${i + 1}`}
+                  style={{ flexShrink: 0 }}
+                >
+                  {i + 1}
+                </ActionIcon>
+              );
+            })}
+          </Flex>
+        </ScrollArea>
+
+        {/* Avvalgi / Keyingi tugmalari - pastda */}
+        <Flex gap="md" justify="center" align="center" mt="md">
           <Button
             variant="filled"
             color="gray"
@@ -637,49 +682,6 @@ export function QuizContent({
           >
             {t("exam.prev")}
           </Button>
-
-          <ScrollArea
-            type="auto"
-            offsetScrollbars
-            scrollbarSize={4}
-            style={{ flex: 1, minWidth: 0, maxWidth: "65vw" }}
-          >
-            <Flex gap={3} justify="center" wrap="nowrap" py={4}>
-              {questions.map((question: Question, i: number) => {
-                const wasAnswered = selectedAnswers[i] !== undefined;
-                const wasCorrect =
-                  wasAnswered &&
-                  selectedAnswers[i] === question.correctOptionIndex;
-                const isActive = activeQuiz === i;
-
-                return (
-                  <ActionIcon
-                    size="sm"
-                    key={question.id}
-                    variant={
-                      isActive ? "filled" : wasAnswered ? "filled" : "default"
-                    }
-                    color={
-                      isActive
-                        ? "blue"
-                        : wasAnswered
-                          ? isSecureMode
-                            ? "blue"
-                            : wasCorrect
-                              ? "green"
-                              : "red"
-                          : undefined
-                    }
-                    onClick={() => setActiveQuiz(i)}
-                    aria-label={`${t("exam.noQuestions")} ${i + 1}`}
-                    style={{ flexShrink: 0 }}
-                  >
-                    {i + 1}
-                  </ActionIcon>
-                );
-              })}
-            </Flex>
-          </ScrollArea>
 
           {isLastQuestion ? (
             <Button
