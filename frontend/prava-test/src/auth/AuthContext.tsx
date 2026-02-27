@@ -80,9 +80,8 @@ const getInitialUser = () => {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-    checkAuthStatus()
-  );
+  const [isAuthenticated, setIsAuthenticated] =
+    useState<boolean>(checkAuthStatus());
   const [user, setUser] = useState<User | null>(getInitialUser());
   const navigate = useNavigate();
 

@@ -41,12 +41,12 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
       name: t("nav.dashboard"),
       url: "/me",
       icon: <IconLayoutGrid size={18} />,
-      sub: [
-        {
-          name: t("nav.mainPage"),
-          url: "/me",
-        },
-      ],
+      // sub: [
+      //   {
+      //     name: t("nav.mainPage"),
+      //     url: "/me",
+      //   },
+      // ],
     },
     {
       name: t("nav.examTypes"),
@@ -57,10 +57,10 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
           name: t("nav.topics"),
           url: "/topics",
         },
-        {
-          name: t("nav.packages"),
-          url: "/packages",
-        },
+        // {
+        //   name: t("nav.packages"),
+        //   url: "/packages",
+        // },
         {
           name: t("nav.ticket"),
           url: "/tickets",
@@ -103,7 +103,7 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
                 key={i}
                 label={item.name}
                 leftSection={
-                  <ActionIcon variant="light" size="sm" radius="md">
+                  <ActionIcon variant="light" size="md" radius="sm">
                     {item.icon}
                   </ActionIcon>
                 }
@@ -118,10 +118,10 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
                 active={!item.sub && location.pathname === item.url}
                 defaultOpened={true}
                 style={{
-                  borderRadius: "var(--mantine-radius-md)",
+                  borderRadius: "var(--mantine-radius-xs)",
                   fontWeight: 500,
                 }}
-                my={4}
+                my={2}
               >
                 {item.sub
                   ? item.sub.map((subItem, index) => (
@@ -135,7 +135,7 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
                           navigate(subItem.url);
                         }}
                         style={{
-                          borderRadius: "var(--mantine-radius-md)",
+                          borderRadius: "var(--mantine-radius-xs)",
                           fontWeight: 400,
                         }}
                       />

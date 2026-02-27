@@ -1,11 +1,11 @@
 import {
   ActionIcon,
   Anchor,
-  Box,
   Container,
   Divider,
   Group,
   Image,
+  Paper,
   SimpleGrid,
   Stack,
   Text,
@@ -53,22 +53,32 @@ const Footer = () => {
 
   const navLinks = [
     { label: t("nav.home"), to: "/" },
-    { label: t("footer.telegram"), to: "https://t.me/pravaonlineuz", external: true },
-    { label: t("footer.donate"), to: "https://tirikchilik.uz/pravaonline", external: true },
+    {
+      label: t("footer.telegram"),
+      to: "https://t.me/pravaonlineuz",
+      external: true,
+    },
+    {
+      label: t("footer.donate"),
+      to: "https://tirikchilik.uz/pravaonline",
+      external: true,
+    },
   ];
 
   return (
-    <Box
-      component="footer"
-      bg={isDark ? "dark.8" : "gray.0"}
-      style={{ borderTop: `1px solid var(--mantine-color-${isDark ? "dark-4" : "gray-3"})` }}
-    >
-      <Container size="lg" py="xl">
+    <Paper component="footer" bg={isDark ? "dark.8" : "gray.1"} mt={"lg"}>
+      <Container size="xl" py="xl">
         <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xl">
           {/* Brand */}
           <Stack gap="sm">
             <Group gap="xs">
-              <Image src="/logo.svg" alt="Prava Online" w={32} h={32} fallbackSrc="/favicon.svg" />
+              <Image
+                src="/logo.svg"
+                alt="Prava Online"
+                w={32}
+                h={32}
+                fallbackSrc="/favicon.svg"
+              />
               <Text fw={800} size="lg" c="blue">
                 PravaOnline
               </Text>
@@ -136,14 +146,24 @@ const Footer = () => {
             </Text>
             <Group gap={8}>
               <IconMail size={16} color="var(--mantine-color-dimmed)" />
-              <Anchor href="mailto:info@pravaonline.uz" size="sm" c={isDark ? "gray.4" : "gray.7"} underline="hover">
+              <Anchor
+                href="mailto:info@pravaonline.uz"
+                size="sm"
+                c={isDark ? "gray.4" : "gray.7"}
+                underline="hover"
+              >
                 info@pravaonline.uz
               </Anchor>
             </Group>
             <Group gap={8}>
               <IconPhone size={16} color="var(--mantine-color-dimmed)" />
-              <Anchor href="tel:+998901234567" size="sm" c={isDark ? "gray.4" : "gray.7"} underline="hover">
-                +998 90 123 45 67
+              <Anchor
+                href="tel:+998993912505"
+                size="sm"
+                c={isDark ? "gray.4" : "gray.7"}
+                underline="hover"
+              >
+                +998 99 391 25 05
               </Anchor>
             </Group>
             <Group gap={8}>
@@ -168,7 +188,7 @@ const Footer = () => {
           {t("footer.copyright", { year: new Date().getFullYear() })}
         </Text>
       </Container>
-    </Box>
+    </Paper>
   );
 };
 

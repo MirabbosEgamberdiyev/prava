@@ -9,6 +9,7 @@ const ExamResult_Page = () => {
         description="Imtihon natijalaringizni batafsil ko'ring va xatolaringizni tahlil qiling."
         noIndex={true}
       />
+
       <ExamResultPage />
     </>
   );

@@ -1,4 +1,15 @@
-import { Alert, Button, Center, Grid, Group, Pagination, Paper, Skeleton, Stack, Title } from "@mantine/core";
+import {
+  Alert,
+  Button,
+  Center,
+  Grid,
+  Group,
+  Pagination,
+  Paper,
+  Skeleton,
+  Stack,
+  Title,
+} from "@mantine/core";
 import { IconAlertCircle, IconTicket } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "../../../components/common/EmptyState";
@@ -41,7 +52,9 @@ export function TicketList() {
   });
 
   // Fetch ticket stats for all tickets
-  const { data: statsResponse } = useSWR<StatsResponse>("/api/v2/my-statistics");
+  const { data: statsResponse } = useSWR<StatsResponse>(
+    "/api/v2/my-statistics",
+  );
 
   // Memoize the stats map
   const ticketStatsMap = useMemo(() => {
@@ -98,7 +111,11 @@ export function TicketList() {
   if (error) {
     return (
       <Center h="50vh">
-        <Alert color="red" icon={<IconAlertCircle size={16} />} title={t("common.error")}>
+        <Alert
+          color="red"
+          icon={<IconAlertCircle size={16} />}
+          title={t("common.error")}
+        >
           {error}
           <Button size="xs" variant="light" mt="sm" onClick={() => mutate?.()}>
             {t("common.retry")}
@@ -128,7 +145,10 @@ export function TicketList() {
         <>
           <Grid gutter="md">
             {tickets.map((ticket) => (
-              <Grid.Col key={ticket.id} span={{ base: 12, sm: 6, md: 4, lg: 4, xl: 3 }}>
+              <Grid.Col
+                key={ticket.id}
+                span={{ base: 12, sm: 6, md: 4, lg: 4, xl: 3 }}
+              >
                 <TicketCard
                   ticket={ticket}
                   onClick={handleTicketClick}

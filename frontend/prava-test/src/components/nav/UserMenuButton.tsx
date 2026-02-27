@@ -4,14 +4,7 @@ import {
   IconSettings,
   IconUser,
 } from "@tabler/icons-react";
-import {
-  Group,
-  Avatar,
-  Text,
-  Menu,
-  UnstyledButton,
-  Box,
-} from "@mantine/core";
+import { Group, Avatar, Text, Menu, UnstyledButton, Box } from "@mantine/core";
 import { useAuth } from "../../auth/AuthContext";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
@@ -33,7 +26,9 @@ function UserMenuButton() {
 
   const fullName = user?.fullName || t("userMenu.user");
   const contact = user?.phoneNumber || user?.email || "";
-  const initials = `${user?.firstName?.charAt(0) || ""}${user?.lastName?.charAt(0) || ""}`.toUpperCase() || "U";
+  const initials =
+    `${user?.firstName?.charAt(0) || ""}${user?.lastName?.charAt(0) || ""}`.toUpperCase() ||
+    "U";
 
   return (
     <Menu shadow="md" width={200} withArrow position="bottom-end">
@@ -57,7 +52,7 @@ function UserMenuButton() {
           <Group gap={8} wrap="nowrap">
             <Avatar
               size={36}
-              radius="md"
+              radius="sm"
               color="blue"
               style={{ flexShrink: 0 }}
             >
@@ -73,30 +68,21 @@ function UserMenuButton() {
                 minWidth: 0,
               }}
             >
-              <Text
-                size="sm"
-                fw={600}
-                truncate="end"
-                lh={1.3}
-              >
+              <Text size="sm" fw={600} truncate="end" lh={1.3}>
                 {fullName}
               </Text>
               {contact && (
-                <Text
-                  size="xs"
-                  c="dimmed"
-                  truncate="end"
-                  lh={1.3}
-                >
+                <Text size="xs" c="dimmed" truncate="end" lh={1.3}>
                   {contact}
                 </Text>
               )}
             </Box>
-
-            <IconChevronDown
-              size={14}
-              style={{ flexShrink: 0, opacity: 0.6 }}
-            />
+            <Box visibleFrom="sm">
+              <IconChevronDown
+                size={14}
+                style={{ flexShrink: 0, opacity: 0.6 }}
+              />
+            </Box>
           </Group>
         </UnstyledButton>
       </Menu.Target>

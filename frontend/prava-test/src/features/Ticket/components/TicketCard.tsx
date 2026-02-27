@@ -9,7 +9,13 @@ import {
   Progress,
   Badge,
 } from "@mantine/core";
-import { IconClock, IconQuestionMark, IconCheck, IconTrophy, IconPercentage } from "@tabler/icons-react";
+import {
+  IconClock,
+  IconQuestionMark,
+  IconCheck,
+  IconTrophy,
+  IconPercentage,
+} from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../../hooks/useLanguage";
 import type { Ticket } from "../types";
@@ -62,9 +68,15 @@ export function TicketCard({ ticket, onClick, stats }: TicketCardProps) {
 
   const status = getTicketStatus(stats);
   const hasStats = stats && stats.totalExams > 0;
-  const avgScore = hasStats && Number.isFinite(stats.averageScore) ? clamp(Math.round(stats.averageScore)) : 0;
-  const scoreColor = avgScore >= 70 ? "green" : avgScore >= 50 ? "yellow" : "red";
-  const passRate = hasStats ? clamp(Math.round((stats.passedExams / stats.totalExams) * 100)) : 0;
+  const avgScore =
+    hasStats && Number.isFinite(stats.averageScore)
+      ? clamp(Math.round(stats.averageScore))
+      : 0;
+  const scoreColor =
+    avgScore >= 70 ? "green" : avgScore >= 50 ? "yellow" : "red";
+  const passRate = hasStats
+    ? clamp(Math.round((stats.passedExams / stats.totalExams) * 100))
+    : 0;
 
   return (
     <Card
@@ -79,7 +91,9 @@ export function TicketCard({ ticket, onClick, stats }: TicketCardProps) {
       }}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onClick?.(ticket); }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onClick?.(ticket);
+      }}
     >
       {/* Top section — flex: 1 to push button down */}
       <div style={{ flex: 1 }}>
@@ -97,9 +111,7 @@ export function TicketCard({ ticket, onClick, stats }: TicketCardProps) {
                     : t("ticket.notStarted")}
               </Badge>
             </Stack>
-            <div className={classes.badge}>
-              #{ticket.ticketNumber}
-            </div>
+            <div className={classes.badge}>#{ticket.ticketNumber}</div>
           </Flex>
 
           <Group gap="xs" wrap="wrap">
@@ -144,34 +156,34 @@ export function TicketCard({ ticket, onClick, stats }: TicketCardProps) {
             <Group justify="space-between" gap="xs">
               <Group gap={4}>
                 <IconPercentage size={14} color="var(--mantine-color-blue-5)" />
-                <Text size="xs" c="dimmed">{t("ticket.passRate")}</Text>
+                <Text size="xs" c="dimmed">
+                  {t("ticket.passRate")}
+                </Text>
               </Group>
-              <Text size="xs" fw={600} c={hasStats ? (passRate >= 50 ? "green" : "red") : "dimmed"}>
+              <Text
+                size="xs"
+                fw={600}
+                c={hasStats ? (passRate >= 50 ? "green" : "red") : "dimmed"}
+              >
                 {passRate}%
               </Text>
             </Group>
-            <Group justify="space-between" gap="xs">
-              <Text size="xs" c="dimmed">{t("ticket.avgScore")}</Text>
-              <Text size="xs" fw={600} c={hasStats ? scoreColor : "dimmed"}>
-                {avgScore}%
-              </Text>
-            </Group>
+
             {hasStats && stats.bestScore != null && (
               <Group justify="space-between" gap="xs">
-                <Text size="xs" c="dimmed">{t("ticket.bestScore")}</Text>
-                <Text size="xs" fw={600} c={clamp(Math.round(stats.bestScore)) >= 70 ? "green" : "red"}>
+                <Text size="xs" c="dimmed">
+                  {t("ticket.bestScore")}
+                </Text>
+                <Text
+                  size="xs"
+                  fw={600}
+                  c={clamp(Math.round(stats.bestScore)) >= 70 ? "green" : "red"}
+                >
                   {clamp(Math.round(stats.bestScore))}%
                 </Text>
               </Group>
             )}
-            {hasStats && stats.lastAttemptDate && (
-              <Group justify="space-between" gap="xs">
-                <Text size="xs" c="dimmed">{t("ticket.lastAttempt")}</Text>
-                <Text size="xs" c="dimmed">
-                  {new Date(stats.lastAttemptDate).toLocaleDateString()}
-                </Text>
-              </Group>
-            )}
+
             <Progress
               value={avgScore}
               color={hasStats ? scoreColor : "gray"}
@@ -183,7 +195,9 @@ export function TicketCard({ ticket, onClick, stats }: TicketCardProps) {
       </div>
 
       {/* Bottom section — pinned to bottom */}
-      <div style={{ marginTop: "auto", paddingTop: "var(--mantine-spacing-sm)" }}>
+      <div
+        style={{ marginTop: "auto", paddingTop: "var(--mantine-spacing-sm)" }}
+      >
         <Divider variant="dashed" mb="sm" />
         <Button
           onClick={() => onClick?.(ticket)}

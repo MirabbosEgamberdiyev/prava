@@ -628,12 +628,7 @@ export function QuizContent({
       {/* Question navigation - bottom */}
       <Container fluid mt="xl" pb="xl">
         {/* Savol raqamlari - tepada */}
-        <ScrollArea
-          type="auto"
-          offsetScrollbars
-          scrollbarSize={4}
-          style={{ maxWidth: "85vw", margin: "0 auto" }}
-        >
+        <ScrollArea type="auto" offsetScrollbars scrollbarSize={4} mx={"-md"}>
           <Flex gap={3} justify="center" wrap="nowrap" py={4}>
             {questions.map((question: Question, i: number) => {
               const wasAnswered = selectedAnswers[i] !== undefined;

@@ -82,12 +82,8 @@ export function ExamResultPage() {
   };
 
   return (
-    <Box
-      bg={computedColorScheme === "light" ? "gray.0" : "dark.8"}
-      mih="100vh"
-      py="xl"
-    >
-      <Container size="lg">
+    <Box bg={computedColorScheme === "light" ? "gray.0" : "dark.8"} mih="100vh">
+      <Container size="xl" p={0}>
         {/* Header: Score Ring + Pass/Fail */}
         <Paper p="xl" radius="md" withBorder shadow="sm" mb="xl">
           <Flex
@@ -203,21 +199,24 @@ export function ExamResultPage() {
         </Title>
 
         <Stack gap="md" mb="xl">
-          {(result.answerDetails ?? []).map((answer: AnswerDetail, index: number) => (
-            <AnswerReviewCard
-              key={answer.questionId}
-              answer={answer}
-              index={index}
-              localize={localize}
-              t={t}
-              computedColorScheme={computedColorScheme}
-            />
-          ))}
+          {(result.answerDetails ?? []).map(
+            (answer: AnswerDetail, index: number) => (
+              <AnswerReviewCard
+                key={answer.questionId}
+                answer={answer}
+                index={index}
+                localize={localize}
+                t={t}
+                computedColorScheme={computedColorScheme}
+              />
+            ),
+          )}
         </Stack>
 
         {/* Back Button */}
         <Flex justify="center" mb="xl">
           <Button
+            visibleFrom="sm"
             size="md"
             radius="md"
             leftSection={<IconArrowLeft size={18} />}
@@ -226,6 +225,20 @@ export function ExamResultPage() {
             {t("examResult.backToDashboard")}
           </Button>
         </Flex>
+        <Button
+          hiddenFrom="sm"
+          size="md"
+          leftSection={<IconArrowLeft size={18} />}
+          onClick={() => navigate("/me")}
+          style={{
+            position: "fixed",
+            bottom: 10,
+            left: 10,
+            right: 10,
+          }}
+        >
+          {t("examResult.backToDashboard")}
+        </Button>
       </Container>
     </Box>
   );
@@ -244,7 +257,10 @@ function AnswerReviewCard({
   t: (key: string) => string;
   computedColorScheme: string;
 }) {
-  const isNotAnswered = answer.selectedOptionIndex === null || answer.selectedOptionIndex === undefined || answer.selectedOptionIndex === -1;
+  const isNotAnswered =
+    answer.selectedOptionIndex === null ||
+    answer.selectedOptionIndex === undefined ||
+    answer.selectedOptionIndex === -1;
 
   return (
     <Paper p="md" radius="md" withBorder>
@@ -257,7 +273,11 @@ function AnswerReviewCard({
             {t("examResult.notAnswered")}
           </Badge>
         ) : answer.isCorrect ? (
-          <Badge color="green" variant="light" leftSection={<IconCheck size={14} />}>
+          <Badge
+            color="green"
+            variant="light"
+            leftSection={<IconCheck size={14} />}
+          >
             {t("examResult.correct")}
           </Badge>
         ) : (
@@ -317,9 +337,7 @@ function AnswerReviewCard({
           p="xs"
           mt="sm"
           radius="sm"
-          bg={
-            computedColorScheme === "light" ? "blue.0" : "dark.6"
-          }
+          bg={computedColorScheme === "light" ? "blue.0" : "dark.6"}
         >
           <Text size="sm" c="dimmed">
             <strong>{t("examResult.explanation")}:</strong>{" "}

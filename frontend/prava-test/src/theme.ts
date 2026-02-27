@@ -28,11 +28,5 @@ export const theme = createTheme({
       h4: { fontSize: "1.125rem", lineHeight: "1.45" },
     },
   },
-  defaultRadius: "md",
-  components: {
-    Button: { defaultProps: { radius: "md" } },
-    Card: { defaultProps: { radius: "md" } },
-    Paper: { defaultProps: { radius: "md" } },
-    Modal: { defaultProps: { radius: "md" } },
-  },
+  defaultRadius: "sm",
 });
