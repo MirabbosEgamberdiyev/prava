@@ -63,14 +63,19 @@ export function QuizNav({
   const navigate = useNavigate();
   const [opened, { open, close }] = useDisclosure(false);
   const [submitting, setSubmitting] = useState(false);
-  const colorScheme = useComputedColorScheme("light", { getInitialValueInEffect: true });
+  const colorScheme = useComputedColorScheme("light", {
+    getInitialValueInEffect: true,
+  });
   const isDark = colorScheme === "dark";
 
   const [timeLeft, setTimeLeft] = useState(durationMinutes * 60);
 
+  const isTimeUp = timeLeft <= 0;
+
   useEffect(() => {
-    if (timeLeft <= 0) {
+    if (isTimeUp) {
       onTimeUp?.();
+      open(); // Vaqt tugaganda modalni avtomatik ochish
       return;
     }
 
@@ -79,7 +84,7 @@ export function QuizNav({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, onTimeUp]);
+  }, [isTimeUp, onTimeUp]);
 
   const handleSubmit = async (navigateTo: string) => {
     // Double-submit prevention
@@ -200,10 +205,13 @@ export function QuizNav({
       {/* Finish Modal */}
       <Modal
         opened={opened}
-        onClose={close}
+        onClose={isTimeUp ? () => {} : close}
         title={t("exam.finishModal.title")}
         centered
         size="580px"
+        closeOnClickOutside={!isTimeUp}
+        closeOnEscape={!isTimeUp}
+        withCloseButton={!isTimeUp}
       >
         <Stack>
           {isSecureMode ? (
@@ -212,7 +220,9 @@ export function QuizNav({
                 p="md"
                 ta="center"
                 style={{
-                  backgroundColor: isDark ? "var(--mantine-color-blue-9)" : "var(--mantine-color-blue-0)",
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-blue-9)"
+                    : "var(--mantine-color-blue-0)",
                   border: `1px solid ${isDark ? "var(--mantine-color-blue-7)" : "var(--mantine-color-blue-3)"}`,
                 }}
               >
@@ -227,7 +237,9 @@ export function QuizNav({
                 p="md"
                 ta="center"
                 style={{
-                  backgroundColor: isDark ? "var(--mantine-color-yellow-9)" : "var(--mantine-color-yellow-0)",
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-yellow-9)"
+                    : "var(--mantine-color-yellow-0)",
                   border: `1px solid ${isDark ? "var(--mantine-color-yellow-7)" : "var(--mantine-color-yellow-3)"}`,
                 }}
               >
@@ -245,7 +257,9 @@ export function QuizNav({
                 p="md"
                 ta="center"
                 style={{
-                  backgroundColor: isDark ? "var(--mantine-color-green-9)" : "var(--mantine-color-green-0)",
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-green-9)"
+                    : "var(--mantine-color-green-0)",
                   border: `1px solid ${isDark ? "var(--mantine-color-green-7)" : "var(--mantine-color-green-3)"}`,
                 }}
               >
@@ -260,7 +274,9 @@ export function QuizNav({
                 p="md"
                 ta="center"
                 style={{
-                  backgroundColor: isDark ? "var(--mantine-color-red-9)" : "var(--mantine-color-red-0)",
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-red-9)"
+                    : "var(--mantine-color-red-0)",
                   border: `1px solid ${isDark ? "var(--mantine-color-red-7)" : "var(--mantine-color-red-3)"}`,
                 }}
               >
@@ -275,7 +291,9 @@ export function QuizNav({
                 p="md"
                 ta="center"
                 style={{
-                  backgroundColor: isDark ? "var(--mantine-color-yellow-9)" : "var(--mantine-color-yellow-0)",
+                  backgroundColor: isDark
+                    ? "var(--mantine-color-yellow-9)"
+                    : "var(--mantine-color-yellow-0)",
                   border: `1px solid ${isDark ? "var(--mantine-color-yellow-7)" : "var(--mantine-color-yellow-3)"}`,
                 }}
               >
@@ -304,6 +322,7 @@ export function QuizNav({
                 color="gray"
                 leftSection={<IconArrowLeft size={18} />}
                 fullWidth
+                disabled={isTimeUp}
                 onClick={async () => {
                   if (sessionId) {
                     try {
@@ -323,7 +342,7 @@ export function QuizNav({
               <Button
                 color="gray"
                 onClick={handleReset}
-                disabled={submitting}
+                disabled={submitting || isTimeUp}
                 leftSection={<IconRefresh size={18} />}
                 fullWidth
               >
@@ -335,7 +354,7 @@ export function QuizNav({
                 onClick={() => handleSubmit(backUrl)}
                 loading={submitting}
                 rightSection={<IconCheck size={18} />}
-                disabled={submitting || !allAnswered}
+                disabled={submitting || (!allAnswered && !isTimeUp)}
                 fullWidth
               >
                 {t("exam.finish")}
@@ -348,7 +367,7 @@ export function QuizNav({
                 onClick={() => handleSubmit(`/exam/result/${sessionId}`)}
                 loading={submitting}
                 rightSection={<IconChartBar size={18} />}
-                disabled={submitting || !allAnswered}
+                disabled={submitting || (!allAnswered && !isTimeUp)}
                 fullWidth
               >
                 {t("exam.viewResults")}
