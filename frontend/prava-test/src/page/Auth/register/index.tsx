@@ -453,7 +453,7 @@ const Register_Page = () => {
               w={120}
               h={120}
               fit="contain"
-              fallbackSrc="https://placehold.co/120x120?text=PO"
+              fallbackSrc="/favicon.svg"
             />
             <Text c="white" size="xl" fw={700} ta="center" mt="lg">
               PravaOnline

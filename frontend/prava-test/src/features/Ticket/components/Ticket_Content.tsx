@@ -10,9 +10,11 @@ import {
   Paper,
   Text,
   Modal,
+  ScrollArea,
   useComputedColorScheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { ImagePlaceholder } from "../../../components/common/ImagePlaceholder";
 import { useTranslation } from "react-i18next";
 import {
   IconCheck,
@@ -362,11 +364,8 @@ export function Ticket_Content({
 
           {/* Rasm - o'ngda */}
           <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 1, md: 2 }}>
-            <Image
-              radius="xs"
+            <ImagePlaceholder
               src={currentQuestion?.imageUrl}
-              style={{ cursor: "pointer" }}
-              fallbackSrc="https://placehold.co/600x400?text=Pravaonline"
               onClick={openImageModal}
             />
           </Grid.Col>
@@ -374,20 +373,21 @@ export function Ticket_Content({
       </Container>
 
       {/* Rasmni kattalashtirish modali */}
-      <Modal
-        opened={imageModalOpened}
-        onClose={closeImageModal}
-        size="xl"
-        centered
-        withCloseButton
-        padding={0}
-      >
-        <Image
-          src={currentQuestion?.imageUrl}
-          fit="contain"
-          fallbackSrc="https://placehold.co/600x400?text=Pravaonline"
-        />
-      </Modal>
+      {currentQuestion?.imageUrl && (
+        <Modal
+          opened={imageModalOpened}
+          onClose={closeImageModal}
+          size="xl"
+          centered
+          withCloseButton
+          padding={0}
+        >
+          <Image
+            src={currentQuestion.imageUrl}
+            fit="contain"
+          />
+        </Modal>
+      )}
 
       {/* Savol raqamlari - pastda */}
       <Container fluid mt="xl" pb="xl">
@@ -404,37 +404,45 @@ export function Ticket_Content({
           </Button>
 
           {/* Savol raqamlari */}
-          <Flex gap="2px" justify="center" wrap="wrap">
-            {questions.map((question: Question, i: number) => {
-              const wasAnswered = selectedAnswers[i] !== undefined;
-              const wasCorrect =
-                wasAnswered &&
-                selectedAnswers[i] === question.correctOptionIndex;
-              const isActive = activeQuiz === i;
+          <ScrollArea
+            type="auto"
+            offsetScrollbars
+            scrollbarSize={4}
+            style={{ flex: 1, minWidth: 0, maxWidth: "65vw" }}
+          >
+            <Flex gap={3} justify="center" wrap="nowrap" py={4}>
+              {questions.map((question: Question, i: number) => {
+                const wasAnswered = selectedAnswers[i] !== undefined;
+                const wasCorrect =
+                  wasAnswered &&
+                  selectedAnswers[i] === question.correctOptionIndex;
+                const isActive = activeQuiz === i;
 
-              return (
-                <ActionIcon
-                  size="lg"
-                  key={question.id}
-                  variant={
-                    isActive ? "filled" : wasAnswered ? "filled" : "default"
-                  }
-                  color={
-                    isActive
-                      ? "blue"
-                      : wasAnswered
-                        ? wasCorrect
-                          ? "green"
-                          : "red"
-                        : undefined
-                  }
-                  onClick={() => setActiveQuiz(i)}
-                >
-                  {i + 1}
-                </ActionIcon>
-              );
-            })}
-          </Flex>
+                return (
+                  <ActionIcon
+                    size="sm"
+                    key={question.id}
+                    variant={
+                      isActive ? "filled" : wasAnswered ? "filled" : "default"
+                    }
+                    color={
+                      isActive
+                        ? "blue"
+                        : wasAnswered
+                          ? wasCorrect
+                            ? "green"
+                            : "red"
+                          : undefined
+                    }
+                    onClick={() => setActiveQuiz(i)}
+                    style={{ flexShrink: 0 }}
+                  >
+                    {i + 1}
+                  </ActionIcon>
+                );
+              })}
+            </Flex>
+          </ScrollArea>
 
           {/* Keyingi yoki Yakunlash tugmasi */}
           {isLastQuestion ? (
