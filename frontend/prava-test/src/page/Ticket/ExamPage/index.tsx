@@ -1,19 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  Box,
-  Center,
-  Loader,
-  Text,
-  Title,
-  Button,
-  Group,
-} from "@mantine/core";
+import { Box, Center, Loader, Text, Title, Button, Group } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import api from "../../../api/api";
 import { QuizNav } from "../../../components/quiz/QuizNav";
 import { QuizContent } from "../../../components/quiz/QuizContent";
+import SEO from "../../../components/common/SEO";
 import type { TicketExamData, AnswersMap } from "../../../types";
 
 const TicketExamPage = () => {
@@ -141,8 +134,18 @@ const TicketExamPage = () => {
     );
   }
 
+  const ticketName = examData.data.ticketNumber
+    ? `${t("ticket.ticket")} ${examData.data.ticketNumber}`
+    : t("ticket.exam");
+
   return (
     <>
+      <SEO
+        title={`${ticketName} — Imtihon`}
+        description={`${ticketName} savollari — haydovchilik guvohnomasi imtihoniga tayyorgarlik. ${examData.data.totalQuestions} ta savol.`}
+        canonical={`/tickets/${id}`}
+        noIndex
+      />
       <QuizNav
         sessionId={examData.data.sessionId}
         questions={examData.data.questions}

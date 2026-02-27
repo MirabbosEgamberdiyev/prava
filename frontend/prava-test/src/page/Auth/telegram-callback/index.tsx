@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import api from "../../../api/api";
 import { IconBrandTelegram } from "@tabler/icons-react";
 import { ENV } from "../../../config/env";
+import SEO from "../../../components/common/SEO";
 
 const REDIRECT_DELAY = 5;
 
@@ -106,6 +107,13 @@ const TelegramCallback = () => {
   }, []);
 
   return (
+    <>
+    <SEO
+      title="Telegram orqali kirish"
+      description="Telegram orqali avtorizatsiya — Prava Online haydovchilik guvohnomasi imtihoniga tayyorgarlik platformasi."
+      canonical="/auth/telegram-callback"
+      noIndex
+    />
     <Container size={440} my={{ base: 40, sm: 80 }}>
       <Center>
         <Paper
@@ -160,6 +168,7 @@ const TelegramCallback = () => {
         </Paper>
       </Center>
     </Container>
+    </>
   );
 };
 

@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import api from "../../../api/api";
 import { QuizNav } from "../../../components/quiz/QuizNav";
 import { QuizContent } from "../../../components/quiz/QuizContent";
+import SEO from "../../../components/common/SEO";
 import type { PackageExamData, AnswersMap } from "../../../types";
 
 const PackageExamPage = () => {
@@ -142,6 +143,12 @@ const PackageExamPage = () => {
 
   return (
     <>
+      <SEO
+        title={`Imtihon — ${examData.data.totalQuestions} ta savol`}
+        description={`Haydovchilik guvohnomasi imtihoni — ${examData.data.totalQuestions} ta savol, ${examData.data.durationMinutes} daqiqa.`}
+        canonical={`/packages/${id}`}
+        noIndex
+      />
       <QuizNav
         sessionId={examData.data.sessionId}
         questions={examData.data.questions}
