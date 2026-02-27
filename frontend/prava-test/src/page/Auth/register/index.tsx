@@ -234,9 +234,9 @@ const Register_Page = () => {
   return (
     <Container size="lg" my={{ base: 30, sm: 50 }}>
       <SEO
-        title="Ro'yxatdan o'tish"
-        description="Prava Online platformasida ro'yxatdan o'ting va bepul haydovchilik guvohnomasi imtihoniga tayyorlanishni boshlang. 1200+ savol bazasiga kirish imkoniyati."
-        keywords="prava online ro'yxat, haydovchilik imtihoni, bepul tayyorlanish"
+        title="Ro'yxatdan o'tish - Bepul boshlang"
+        description="Prava Online platformasida bepul ro'yxatdan o'ting va haydovchilik guvohnomasi imtihoniga tayyorlanishni boshlang. 1200+ savol bazasi, real imtihon formati. Email yoki telefon orqali ro'yxatdan o'ting."
+        keywords="prava online ro'yxat, haydovchilik imtihoni, bepul tayyorlanish, prava online registratsiya, регистрация prava online, YHXBB ro'yxat"
         canonical="/auth/register"
       />
       <Grid>

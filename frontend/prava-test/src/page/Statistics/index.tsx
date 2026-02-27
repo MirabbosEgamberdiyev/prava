@@ -37,6 +37,7 @@ import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { useLanguage } from "../../hooks/useLanguage";
 import { EmptyState } from "../../components/common/EmptyState";
+import SEO from "../../components/common/SEO";
 import type { LocalizedText } from "../../types";
 
 type TimePeriod = "today" | "week" | "month" | "all";
@@ -247,6 +248,12 @@ const Statistics_Page = () => {
 
   return (
     <>
+      <SEO
+        title="Statistika - O'quv natijalari"
+        description="Imtihon natijalaringiz statistikasi. O'rtacha ball, aniqlik va boshqa ko'rsatkichlar."
+        canonical="/statistics"
+        noIndex={true}
+      />
       <Group justify="space-between" align="center" mb="lg">
         <Group gap="sm">
           <Title order={2}>{t("statistics.title")}</Title>

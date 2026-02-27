@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 const BASE_URL = "https://pravaonline.uz";
 const SITE_NAME = "Prava Online";
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
@@ -10,6 +12,27 @@ interface SEOProps {
   ogImage?: string;
   noIndex?: boolean;
   type?: "website" | "article";
+  jsonLd?: Record<string, unknown>;
+}
+
+function setMeta(attr: string, key: string, content: string) {
+  let el = document.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;
+  if (!el) {
+    el = document.createElement("meta");
+    el.setAttribute(attr, key);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("content", content);
+}
+
+function setLink(rel: string, href: string) {
+  let el = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null;
+  if (!el) {
+    el = document.createElement("link");
+    el.setAttribute("rel", rel);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("href", href);
 }
 
 const SEO = ({
@@ -20,38 +43,68 @@ const SEO = ({
   ogImage = DEFAULT_OG_IMAGE,
   noIndex = false,
   type = "website",
+  jsonLd,
 }: SEOProps) => {
   const fullTitle = title.includes(SITE_NAME)
     ? title
     : `${title} | ${SITE_NAME}`;
   const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : BASE_URL;
+  const robotsContent = noIndex
+    ? "noindex, nofollow"
+    : "index, follow, max-image-preview:large, max-snippet:-1";
 
-  return (
-    <>
-      <title>{fullTitle}</title>
-      <meta name="description" content={description} />
-      {keywords && <meta name="keywords" content={keywords} />}
-      <meta
-        name="robots"
-        content={noIndex ? "noindex, nofollow" : "index, follow"}
-      />
-      <link rel="canonical" href={canonicalUrl} />
+  useEffect(() => {
+    // Title
+    document.title = fullTitle;
 
-      {/* Open Graph */}
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
-      <meta property="og:image" content={ogImage} />
-      <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:type" content={type} />
-      <meta property="og:site_name" content={SITE_NAME} />
+    // Primary meta
+    setMeta("name", "description", description);
+    setMeta("name", "robots", robotsContent);
+    if (keywords) setMeta("name", "keywords", keywords);
 
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage} />
-    </>
-  );
+    // Canonical
+    setLink("canonical", canonicalUrl);
+
+    // Open Graph
+    setMeta("property", "og:title", fullTitle);
+    setMeta("property", "og:description", description);
+    setMeta("property", "og:image", ogImage);
+    setMeta("property", "og:url", canonicalUrl);
+    setMeta("property", "og:type", type);
+    setMeta("property", "og:site_name", SITE_NAME);
+    setMeta("property", "og:locale", "uz_UZ");
+
+    // Twitter
+    setMeta("name", "twitter:card", "summary_large_image");
+    setMeta("name", "twitter:title", fullTitle);
+    setMeta("name", "twitter:description", description);
+    setMeta("name", "twitter:image", ogImage);
+
+    // JSON-LD structured data
+    let scriptEl = document.querySelector(
+      'script[data-seo="page"]',
+    ) as HTMLScriptElement | null;
+    if (jsonLd) {
+      if (!scriptEl) {
+        scriptEl = document.createElement("script");
+        scriptEl.setAttribute("type", "application/ld+json");
+        scriptEl.setAttribute("data-seo", "page");
+        document.head.appendChild(scriptEl);
+      }
+      scriptEl.textContent = JSON.stringify(jsonLd);
+    } else if (scriptEl) {
+      scriptEl.remove();
+    }
+
+    return () => {
+      // Cleanup page-level JSON-LD on unmount
+      document
+        .querySelector('script[data-seo="page"]')
+        ?.remove();
+    };
+  }, [fullTitle, description, keywords, canonicalUrl, ogImage, type, robotsContent, jsonLd]);
+
+  return null;
 };
 
 export default SEO;

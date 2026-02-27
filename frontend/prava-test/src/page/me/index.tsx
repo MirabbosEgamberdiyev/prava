@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import { Exam_Card_List } from "../../features/me";
 import useSWR from "swr";
+import SEO from "../../components/common/SEO";
 
 const User_Page = () => {
   const { user } = useAuth();
@@ -31,6 +32,12 @@ const User_Page = () => {
 
   return (
     <>
+      <SEO
+        title="Shaxsiy kabinet"
+        description="Prava Online shaxsiy kabinetingiz. Imtihonlarni boshlang, natijalarni kuzating."
+        canonical="/me"
+        noIndex={true}
+      />
       {showBanner && (
         <Alert
           icon={<IconAlertCircle size={16} />}
