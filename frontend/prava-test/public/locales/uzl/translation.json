@@ -233,6 +233,7 @@
   },
   "exam": {
     "finish": "Yakunlash",
+    "viewResults": "Natijalarni ko'rish",
     "next": "Keyingi",
     "prev": "Avvalgi",
     "restart": "Qayta ishlash",

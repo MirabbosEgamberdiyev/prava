@@ -24,6 +24,7 @@ import {
   IconRefresh,
   IconArrowLeft,
   IconAlertTriangle,
+  IconChartBar,
 } from "@tabler/icons-react";
 import LanguagePicker from "../language/LanguagePicker";
 import ColorMode from "../other/ColorMode";
@@ -80,7 +81,7 @@ export function QuizNav({
     return () => clearInterval(timer);
   }, [timeLeft, onTimeUp]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (navigateTo: string) => {
     // Double-submit prevention
     if (submitting) return;
 
@@ -116,7 +117,7 @@ export function QuizNav({
         color: "green",
       });
 
-      navigate(`/exam/result/${sessionId}`, { replace: true });
+      navigate(navigateTo, { replace: true });
     } catch (error: unknown) {
       const errorMessage =
         (error as { response?: { data?: { message?: string } } })?.response
@@ -171,7 +172,7 @@ export function QuizNav({
         <Group>
           <Button
             rightSection={<IconX size={18} />}
-            variant="subtle"
+            variant="light"
             color="red"
             onClick={open}
             data-finish-button
@@ -298,7 +299,7 @@ export function QuizNav({
             </Alert>
           )}
           <Grid mt="sm">
-            <Grid.Col span={{ base: 6, md: 4 }}>
+            <Grid.Col span={{ base: 6 }}>
               <Button
                 color="gray"
                 leftSection={<IconArrowLeft size={18} />}
@@ -318,7 +319,7 @@ export function QuizNav({
                 {t("exam.exit")}
               </Button>
             </Grid.Col>
-            <Grid.Col span={{ base: 6, md: 4 }}>
+            <Grid.Col span={{ base: 6 }}>
               <Button
                 color="gray"
                 onClick={handleReset}
@@ -329,15 +330,28 @@ export function QuizNav({
                 {t("exam.restart")}
               </Button>
             </Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}>
+            <Grid.Col span={{ base: 6 }}>
               <Button
-                onClick={handleSubmit}
+                onClick={() => handleSubmit(backUrl)}
                 loading={submitting}
                 rightSection={<IconCheck size={18} />}
-                disabled={submitting}
+                disabled={submitting || !allAnswered}
                 fullWidth
               >
                 {t("exam.finish")}
+              </Button>
+            </Grid.Col>
+            <Grid.Col span={{ base: 6 }}>
+              <Button
+                variant="light"
+                color="blue"
+                onClick={() => handleSubmit(`/exam/result/${sessionId}`)}
+                loading={submitting}
+                rightSection={<IconChartBar size={18} />}
+                disabled={submitting || !allAnswered}
+                fullWidth
+              >
+                {t("exam.viewResults")}
               </Button>
             </Grid.Col>
           </Grid>

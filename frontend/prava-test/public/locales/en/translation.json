@@ -233,6 +233,7 @@
   },
   "exam": {
     "finish": "Finish",
+    "viewResults": "View Results",
     "next": "Next",
     "prev": "Previous",
     "restart": "Restart",
