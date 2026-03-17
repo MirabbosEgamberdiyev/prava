@@ -15,7 +15,6 @@ import {
   useComputedColorScheme,
 } from "@mantine/core";
 import { IconFlame, IconMedal } from "@tabler/icons-react";
-import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -28,9 +27,7 @@ export function LeaderboardPage() {
   });
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Math.max(0, Number(searchParams.get("page") ?? 0));
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(
-    searchParams.get("topic") ?? null,
-  );
+  const selectedTopic = searchParams.get("topic") ?? null;
 
   const { data: topicsResponse } = useSWR<TopicsResponse>(
     "/api/v1/admin/topics/with-questions",
@@ -64,7 +61,6 @@ export function LeaderboardPage() {
   };
 
   const handleTopicChange = (value: string | null) => {
-    setSelectedTopic(value || null);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.delete("page");

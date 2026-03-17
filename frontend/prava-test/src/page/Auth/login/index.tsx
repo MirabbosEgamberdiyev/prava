@@ -22,6 +22,7 @@ import { IconLock, IconUser } from "@tabler/icons-react";
 import GoogleLoginButton from "../../../components/auth/GoogleLoginButton";
 import TelegramLoginButton from "../../../components/auth/TelegramLoginButton";
 import SEO from "../../../components/common/SEO";
+import { getErrorMessage } from "../../../types/errors";
 
 const Login_Page = () => {
   const { t, i18n } = useTranslation();
@@ -78,12 +79,10 @@ const Login_Page = () => {
         });
       }
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
       notifications.show({
         color: "red",
         title: t("auth.errorTitle"),
-        message:
-          error?.response?.data?.message || t("auth.loginError"),
+        message: getErrorMessage(err, t("auth.loginError")),
         withBorder: true,
       });
     } finally {

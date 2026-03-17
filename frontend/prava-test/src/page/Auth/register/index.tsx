@@ -37,6 +37,7 @@ import { useTranslation } from "react-i18next";
 import GoogleLoginButton from "../../../components/auth/GoogleLoginButton";
 import TelegramLoginButton from "../../../components/auth/TelegramLoginButton";
 import SEO from "../../../components/common/SEO";
+import { getErrorMessage } from "../../../types/errors";
 
 function getPasswordStrength(password: string): number {
   let strength = 0;
@@ -138,10 +139,9 @@ const Register_Page = () => {
       await api.post("/api/v1/auth/register/init", payload);
       setStep(2);
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
       notifications.show({
         title: t("register.errorTitle"),
-        message: err?.response?.data?.message || t("register.errorMessage"),
+        message: getErrorMessage(error, t("register.errorMessage")),
         color: "red",
         withBorder: true,
       });
@@ -180,10 +180,9 @@ const Register_Page = () => {
         navigate("/me");
       }
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
       notifications.show({
         title: t("register.errorTitle"),
-        message: err?.response?.data?.message || t("register.codeError"),
+        message: getErrorMessage(error, t("register.codeError")),
         color: "red",
         withBorder: true,
       });
