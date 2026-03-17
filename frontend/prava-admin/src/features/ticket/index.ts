@@ -13,3 +13,5 @@ export { TicketPagination } from "./components/TicketPagination";
 export { TicketForm } from "./components/TicketForm";
 export { EditTicketForm } from "./components/EditTicketForm";
 export { openDeleteConfirmModal } from "./components/TicketDeleteModal";
+export { TicketQuestionsManager } from "./components/TicketQuestionsManager";
+export { QuestionPickerModal } from "./components/QuestionPickerModal";

@@ -27,6 +27,13 @@ public class ExamResponse {
     private Long sessionId;
 
     /**
+     * Bilet ma'lumotlari (ticket rejimida)
+     */
+    private Long ticketId;
+    private Integer ticketNumber;
+    private LocalizedText ticketName;
+
+    /**
      * Paket ma'lumotlari (marathon rejimida null)
      */
     private Long packageId;

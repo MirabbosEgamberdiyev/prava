@@ -58,8 +58,24 @@ export function useTicketDetail(id: number | null) {
     },
   );
 
+  // API name.uzl → nameUzl ga map qilish (EditTicketForm uchun)
+  const raw = data?.data || null;
+  const ticket = raw
+    ? {
+        ...raw,
+        nameUzl: raw.nameUzl || raw.name?.uzl || "",
+        nameUzc: raw.nameUzc || raw.name?.uzc || "",
+        nameEn: raw.nameEn || raw.name?.en || "",
+        nameRu: raw.nameRu || raw.name?.ru || "",
+        descriptionUzl: raw.descriptionUzl || raw.description?.uzl || "",
+        descriptionUzc: raw.descriptionUzc || raw.description?.uzc || "",
+        descriptionEn: raw.descriptionEn || raw.description?.en || "",
+        descriptionRu: raw.descriptionRu || raw.description?.ru || "",
+      }
+    : null;
+
   return {
-    ticket: data?.data || null,
+    ticket,
     isLoading,
     error,
     mutate,

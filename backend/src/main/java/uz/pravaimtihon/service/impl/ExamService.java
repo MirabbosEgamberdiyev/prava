@@ -62,14 +62,13 @@ public class ExamService {
         log.info("🚀 Starting exam for user: {}, package: {} [lang={}]",
                 userId, request.getPackageId(), language);
 
-        // ✅ Query 1: Check active session
-        Optional<ExamSession> activeSession = sessionRepository.findActiveSession(
-                userId, LocalDateTime.now()
-        );
-
-        if (activeSession.isPresent()) {
-            throw new BusinessException("error.exam.active.session.exists");
-        }
+        // ✅ Query 1: Faol sessiya bo'lsa abandon qilamiz (xato ko'rsatmaymiz)
+        sessionRepository.findActiveSession(userId, LocalDateTime.now())
+                .ifPresent(existing -> {
+                    existing.abandon();
+                    sessionRepository.save(existing);
+                    log.info("Yangi imtihon uchun faol sessiya abandon qilindi: sessionId={}", existing.getId());
+                });
 
         // ✅ Query 2: Get user
         User user = userRepository.findById(userId)
@@ -382,14 +381,13 @@ public class ExamService {
         log.info("🏃 Starting Marathon exam for user: {}, topic: {}, questions: {} [lang={}]",
                 userId, request.getTopicId(), request.getQuestionCount(), language);
 
-        // Check for active session
-        Optional<ExamSession> activeSession = sessionRepository.findActiveSession(
-                userId, LocalDateTime.now()
-        );
-
-        if (activeSession.isPresent()) {
-            throw new BusinessException("error.exam.active.session.exists");
-        }
+        // Faol sessiya bo'lsa abandon qilamiz (xato ko'rsatmaymiz)
+        sessionRepository.findActiveSession(userId, LocalDateTime.now())
+                .ifPresent(existing -> {
+                    existing.abandon();
+                    sessionRepository.save(existing);
+                    log.info("Yangi marafon uchun faol sessiya abandon qilindi: sessionId={}", existing.getId());
+                });
 
         // Get user
         User user = userRepository.findById(userId)

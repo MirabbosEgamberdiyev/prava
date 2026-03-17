@@ -41,7 +41,25 @@ export interface TicketListItem {
   questionCount: number;
   durationMinutes: number;
   passingScore: number;
-  questionIds: number[];
+  questionIds?: number[];
+  isActive?: boolean;
+}
+
+// Ticket detail ichidagi savol option
+export interface TicketOptionItem {
+  id?: number;
+  index: number;
+  text: TranslatedField | string;
+}
+
+// Ticket detail ichidagi savol
+export interface TicketQuestionItem {
+  id: number;
+  order: number;
+  text: TranslatedField;
+  imageUrl?: string;
+  options?: TicketOptionItem[];
+  correctOptionIndex?: number;
 }
 
 export interface TicketDetail extends TicketListItem {
@@ -53,6 +71,7 @@ export interface TicketDetail extends TicketListItem {
   descriptionUzc?: string;
   descriptionEn?: string;
   descriptionRu?: string;
+  questions?: TicketQuestionItem[];
 }
 
 export interface ApiError {

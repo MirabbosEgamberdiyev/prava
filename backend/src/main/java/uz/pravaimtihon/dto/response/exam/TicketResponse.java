@@ -76,6 +76,11 @@ public class TicketResponse {
     private Boolean isActive;
 
     /**
+     * Savol IDlari ro'yxati (admin uchun)
+     */
+    private List<Long> questionIds;
+
+    /**
      * Savollar (test boshlanganda)
      */
     private List<QuestionResponse> questions;

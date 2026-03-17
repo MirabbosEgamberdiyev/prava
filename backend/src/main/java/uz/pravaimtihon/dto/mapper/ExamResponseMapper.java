@@ -125,8 +125,11 @@ public class ExamResponseMapper {
     public List<QuestionResponse> toQuestionResponses(List<Question> questions, boolean visibleMode) {
         if (questions == null) return List.of();
         List<QuestionResponse> result = new java.util.ArrayList<>();
+        int order = 0;
         for (int i = 0; i < questions.size(); i++) {
-            result.add(toQuestionResponse(questions.get(i), i, visibleMode));
+            if (questions.get(i) == null) continue;
+            QuestionResponse resp = toQuestionResponse(questions.get(i), order++, visibleMode);
+            if (resp != null) result.add(resp);
         }
         return result;
     }

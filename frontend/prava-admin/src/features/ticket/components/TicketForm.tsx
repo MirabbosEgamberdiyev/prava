@@ -10,6 +10,8 @@ import {
   Grid,
   Tabs,
   Group,
+  Divider,
+  Text,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconDeviceFloppy, IconX } from "@tabler/icons-react";
@@ -17,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import type { TicketFormData } from "../types";
 import { useTopicOptions } from "../../topic/hooks/useTopics";
 import { usePackageOptions } from "../../package/hook";
+import { TicketQuestionsManager } from "./TicketQuestionsManager";
 
 interface TicketFormProps {
   initialValues?: Partial<TicketFormData>;
@@ -55,27 +58,32 @@ export function TicketForm({
       ...initialValues,
     },
     validate: {
-      nameUzl: (value) => (!value ? t("validation.nameUzlRequired") : null),
-      nameUzc: (value) => (!value ? t("validation.nameUzcRequired") : null),
-      nameEn: (value) => (!value ? t("validation.nameEnRequired") : null),
-      nameRu: (value) => (!value ? t("validation.nameRuRequired") : null),
-      ticketNumber: (value) => (value < 1 ? t("validation.ticketNumberRequired") : null),
-      questionCount: (value) => (value < 1 ? t("validation.minQuestions") : null),
-      durationMinutes: (value) => (value < 1 ? t("validation.minDuration") : null),
-      passingScore: (value) =>
+      nameUzl: (value: string) => (!value ? t("validation.nameUzlRequired") : null),
+      nameUzc: (value: string) => (!value ? t("validation.nameUzcRequired") : null),
+      nameEn: (value: string) => (!value ? t("validation.nameEnRequired") : null),
+      nameRu: (value: string) => (!value ? t("validation.nameRuRequired") : null),
+      ticketNumber: (value: number) => (value < 1 ? t("validation.ticketNumberRequired") : null),
+      durationMinutes: (value: number) => (value < 1 ? t("validation.minDuration") : null),
+      passingScore: (value: number) =>
         value < 0 || value > 100 ? t("validation.scoreRange") : null,
-      packageId: (value) => (value === 0 ? t("validation.packageIdRequired") : null),
-      topicId: (value) => (value === 0 ? t("validation.topicIdRequired") : null),
+      questionIds: (value: number[]) =>
+        value.length < 10 ? "Kamida 10 ta savol tanlash kerak" : null,
     },
   });
 
-  const handleSubmit = form.onSubmit(async (values) => {
-    await onSubmit(values);
+  const handleSubmit = form.onSubmit(async (values: TicketFormData) => {
+    await onSubmit({
+      ...values,
+      packageId: values.packageId === 0 ? (null as unknown as number) : values.packageId,
+      topicId: values.topicId === 0 ? (null as unknown as number) : values.topicId,
+      questionCount: values.questionIds.length,
+    });
   });
 
   return (
     <form onSubmit={handleSubmit}>
       <Stack gap="md">
+        {/* Nomlar */}
         <Tabs defaultValue="uzl">
           <Tabs.List>
             <Tabs.Tab value="uzl">{t("common.form.langUzl")}</Tabs.Tab>
@@ -153,6 +161,7 @@ export function TicketForm({
           </Tabs.Panel>
         </Tabs>
 
+        {/* Asosiy sozlamalar */}
         <Grid gutter="md">
           <Grid.Col span={{ base: 12, md: 4 }}>
             <NumberInput
@@ -169,34 +178,23 @@ export function TicketForm({
               placeholder={t("validation.selectTopic")}
               data={topicOptions}
               searchable
-              required
+              clearable
               disabled={topicsLoading}
               value={form.values.topicId === 0 ? null : form.values.topicId.toString()}
-              onChange={(val) => form.setFieldValue("topicId", val ? parseInt(val) : 0)}
-              error={form.errors.topicId}
+              onChange={(val: string | null) => form.setFieldValue("topicId", val ? parseInt(val) : 0)}
             />
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Select
               label={t("tickets.form.packageId")}
-              placeholder={t("validation.packageIdRequired")}
+              placeholder={t("tickets.form.packageOptional", { defaultValue: "Paket (ixtiyoriy)" })}
               data={packageOptions}
               searchable
-              required
+              clearable
               disabled={packagesLoading}
               value={form.values.packageId === 0 ? null : form.values.packageId.toString()}
-              onChange={(val) => form.setFieldValue("packageId", val ? parseInt(val) : 0)}
-              error={form.errors.packageId}
-            />
-          </Grid.Col>
-
-          <Grid.Col span={{ base: 12, md: 4 }}>
-            <NumberInput
-              label={t("tickets.form.questionCount")}
-              min={1}
-              required
-              {...form.getInputProps("questionCount")}
+              onChange={(val: string | null) => form.setFieldValue("packageId", val ? parseInt(val) : 0)}
             />
           </Grid.Col>
 
@@ -219,6 +217,21 @@ export function TicketForm({
             />
           </Grid.Col>
         </Grid>
+
+        <Divider />
+
+        {/* Savollar boshqaruvi */}
+        <Stack gap="xs">
+          {form.errors.questionIds && (
+            <Text size="xs" c="red">
+              {form.errors.questionIds}
+            </Text>
+          )}
+          <TicketQuestionsManager
+            topicId={form.values.topicId > 0 ? form.values.topicId : undefined}
+            onChange={(ids) => form.setFieldValue("questionIds", ids)}
+          />
+        </Stack>
 
         <Group justify="flex-end" mt="md">
           <Button

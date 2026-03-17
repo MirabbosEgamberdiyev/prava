@@ -18,6 +18,8 @@ import uz.pravaimtihon.exception.ResourceNotFoundException;
 import uz.pravaimtihon.repository.*;
 import uz.pravaimtihon.security.SecurityUtils;
 
+import org.springframework.data.domain.PageRequest;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Bilet (Ticket) Service - biletlar bilan ishlash.
@@ -321,19 +324,55 @@ public class TicketService {
             throw new BusinessException("error.ticket.not.active");
         }
 
-        if (!ticket.hasEnoughQuestions()) {
-            throw new BusinessException("error.ticket.insufficient.questions");
-        }
-
-        // Agar foydalanuvchida bu bilet uchun faol sessiya bo'lsa — abandon qilamiz
-        sessionRepository.findActiveSessionByUserIdAndTicketId(userId, ticket.getId(), LocalDateTime.now())
+        // Agar foydalanuvchida faol sessiya bo'lsa — abandon qilamiz (har qanday tur)
+        sessionRepository.findActiveSession(userId, LocalDateTime.now())
                 .ifPresent(existing -> {
                     existing.abandon();
                     sessionRepository.save(existing);
                     log.info("Mavjud faol sessiya abandon qilindi: sessionId={}", existing.getId());
                 });
 
-        List<Question> questions = ticket.getQuestions();
+        // Null savollarni filtrlash
+        List<Question> validQuestions = ticket.getQuestions().stream()
+                .filter(q -> q != null)
+                .collect(Collectors.toList());
+
+        int needed = ticket.getEffectiveQuestionCount();
+
+        // Yetarli savollar bo'lmasa, tasodifiy savollar bilan to'ldirish
+        if (validQuestions.size() < needed) {
+            log.warn("Bilet #{} da yetarli savollar yo'q (valid={}, needed={}), tasodifiy savollar qo'shilmoqda",
+                    ticket.getTicketNumber(), validQuestions.size(), needed);
+
+            Set<Long> usedIds = validQuestions.stream()
+                    .map(Question::getId)
+                    .collect(Collectors.toSet());
+
+            int missing = needed - validQuestions.size();
+            List<Question> randomQuestions;
+
+            if (ticket.getTopic() != null) {
+                randomQuestions = questionRepository.findRandomByTopicWithOptions(
+                        ticket.getTopic(), PageRequest.of(0, missing * 3));
+            } else {
+                randomQuestions = questionRepository.findRandomQuestionsWithOptions(
+                        PageRequest.of(0, missing * 3));
+            }
+
+            for (Question q : randomQuestions) {
+                if (q != null && !usedIds.contains(q.getId())) {
+                    validQuestions.add(q);
+                    usedIds.add(q.getId());
+                    if (validQuestions.size() >= needed) break;
+                }
+            }
+        }
+
+        if (validQuestions.isEmpty()) {
+            throw new BusinessException("error.ticket.insufficient.questions");
+        }
+
+        List<Question> questions = validQuestions.stream().limit(needed).collect(Collectors.toList());
 
         // Sessiya yaratish
         ExamSession session = createTicketSession(user, ticket, questions);
@@ -349,6 +388,9 @@ public class TicketService {
 
         return ExamResponse.builder()
                 .sessionId(session.getId())
+                .ticketId(ticket.getId())
+                .ticketNumber(ticket.getTicketNumber())
+                .ticketName(mapper.toLocalizedText(ticket.getNameUzl(), ticket.getNameUzc(), ticket.getNameEn(), ticket.getNameRu()))
                 .packageId(pkg != null ? pkg.getId() : null)
                 .packageName(pkg != null ? mapper.toPackageName(pkg) : null)
                 .topicId(topic != null ? topic.getId() : null)
@@ -380,12 +422,17 @@ public class TicketService {
 
         // ExamAnswer yaratish
         List<ExamAnswer> examAnswers = new ArrayList<>();
+        int order = 0;
         for (int i = 0; i < questions.size(); i++) {
             Question question = questions.get(i);
+            if (question == null) {
+                log.warn("Bilet savollar ro'yxatida null element topildi: ticketId={}, index={}", session.getTicket() != null ? session.getTicket().getId() : "?", i);
+                continue;
+            }
             ExamAnswer answer = ExamAnswer.builder()
                     .examSession(session)
                     .question(question)
-                    .questionOrder(i)
+                    .questionOrder(order++)
                     .correctOptionIndex(question.getCorrectAnswerIndex())
                     .build();
             examAnswers.add(answer);
@@ -467,7 +514,13 @@ public class TicketService {
                 .questionCount(ticket.getQuestionCount())
                 .durationMinutes(ticket.getDurationMinutes())
                 .passingScore(ticket.getPassingScore())
-                .isActive(ticket.getIsActive());
+                .isActive(ticket.getIsActive())
+                .questionIds(ticket.getQuestions() != null
+                        ? ticket.getQuestions().stream()
+                                .filter(q -> q != null)
+                                .map(Question::getId)
+                                .collect(Collectors.toList())
+                        : new ArrayList<>());
 
         if (includeQuestions && ticket.getQuestions() != null) {
             builder.questions(mapper.toQuestionResponses(ticket.getQuestions(), false));

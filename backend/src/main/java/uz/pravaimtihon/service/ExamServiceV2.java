@@ -98,6 +98,14 @@ public class ExamServiceV2 {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
 
+        // Faol sessiya bo'lsa abandon qilamiz (xato ko'rsatmaymiz)
+        sessionRepository.findActiveSession(userId, LocalDateTime.now())
+                .ifPresent(existing -> {
+                    existing.abandon();
+                    sessionRepository.save(existing);
+                    log.info("Yangi imtihon uchun faol sessiya abandon qilindi: sessionId={}", existing.getId());
+                });
+
         // Paketni savollar bilan olish
         ExamPackage examPackage = packageRepository.findByIdWithQuestionsAndOptions(request.getPackageId());
 
@@ -187,6 +195,14 @@ public class ExamServiceV2 {
         // Foydalanuvchini olish
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
+
+        // Faol sessiya bo'lsa abandon qilamiz (xato ko'rsatmaymiz)
+        sessionRepository.findActiveSession(userId, LocalDateTime.now())
+                .ifPresent(existing -> {
+                    existing.abandon();
+                    sessionRepository.save(existing);
+                    log.info("Yangi marafon uchun faol sessiya abandon qilindi: sessionId={}", existing.getId());
+                });
 
         // Mavzu bo'yicha savollarni olish (OPTIONS bilan birga - JOIN FETCH)
         List<Question> availableQuestions;

@@ -17,6 +17,7 @@ import {
   IconClock,
   IconClipboardList,
   IconTarget,
+  IconList,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import type { TicketListItem, TranslatedField } from "../types";
@@ -31,12 +32,14 @@ interface TicketCardProps {
   ticket: TicketListItem;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
+  onManageQuestions?: (id: number) => void;
 }
 
 export function TicketCard({
   ticket,
   onEdit,
   onDelete,
+  onManageQuestions,
 }: TicketCardProps) {
   const { t } = useTranslation();
 
@@ -66,6 +69,14 @@ export function TicketCard({
               >
                 {t("tickets.editAction")}
               </Menu.Item>
+              {onManageQuestions && (
+                <Menu.Item
+                  leftSection={<IconList style={{ width: rem(14) }} />}
+                  onClick={() => onManageQuestions(ticket.id)}
+                >
+                  Savollarni boshqarish
+                </Menu.Item>
+              )}
               <Menu.Divider />
               <Menu.Item
                 color="red"
@@ -99,7 +110,7 @@ export function TicketCard({
           <Group gap="xs">
             <IconClipboardList size={16} color="gray" />
             <Text size="sm" c="dimmed">
-              {t("tickets.questionsLabel")}: {ticket.questionIds?.length || 0} / {ticket.questionCount}
+              {t("tickets.questionsLabel")}: {ticket.questionCount}
             </Text>
           </Group>
           <Group gap="xs">

@@ -45,6 +45,10 @@ function Tickets_Page() {
     navigate(`/tickets/edit/${id}`);
   };
 
+  const handleManageQuestions = (id: number) => {
+    navigate(`/tickets/edit/${id}`);
+  };
+
   const handleDelete = (id: number) => {
     const ticket = tickets.find((t) => t.id === id);
     if (!ticket) return;
@@ -95,6 +99,7 @@ function Tickets_Page() {
             tickets={tickets}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onManageQuestions={handleManageQuestions}
             loading={isLoading}
           />
 

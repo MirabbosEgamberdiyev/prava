@@ -9,6 +9,7 @@ interface TicketGridProps {
   tickets: TicketListItem[];
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
+  onManageQuestions?: (id: number) => void;
   loading?: boolean;
 }
 
@@ -16,6 +17,7 @@ export function TicketGrid({
   tickets,
   onEdit,
   onDelete,
+  onManageQuestions,
   loading = false,
 }: TicketGridProps) {
   const { t } = useTranslation();
@@ -36,6 +38,7 @@ export function TicketGrid({
           ticket={ticket}
           onEdit={onEdit}
           onDelete={onDelete}
+          onManageQuestions={onManageQuestions}
         />
       ))}
     </SimpleGrid>
