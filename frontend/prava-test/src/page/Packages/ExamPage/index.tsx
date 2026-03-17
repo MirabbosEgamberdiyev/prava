@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Box,
@@ -8,14 +8,25 @@ import {
   Title,
   Button,
   Group,
+  Paper,
+  Stack,
+  Container,
+  ThemeIcon,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { IconAlertCircle, IconPlayerPlay } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { mutate } from "swr";
 import api from "../../../api/api";
 import { QuizNav } from "../../../components/quiz/QuizNav";
 import { QuizContent } from "../../../components/quiz/QuizContent";
 import SEO from "../../../components/common/SEO";
 import type { PackageExamData, AnswersMap } from "../../../types";
+
+interface ActiveExamInfo {
+  sessionId: number;
+  ticketId?: number;
+  packageId?: number;
+}
 
 const PackageExamPage = () => {
   const { t } = useTranslation();
@@ -31,11 +42,16 @@ const PackageExamPage = () => {
   );
   const [loading, setLoading] = useState(!examData);
   const [error, setError] = useState<string | null>(null);
+  const [activeConflict, setActiveConflict] = useState<ActiveExamInfo | null>(null);
   const [answers, setAnswers] = useState<AnswersMap>({});
+
+  const submittedRef = useRef(false);
+  const sessionIdRef = useRef<number | null>(null);
 
   const startExam = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setActiveConflict(null);
 
     const endpoint = isSecureMode
       ? "/api/v2/exams/start-secure"
@@ -48,28 +64,55 @@ const PackageExamPage = () => {
 
       if (response.data) {
         setExamData(response.data);
+        sessionIdRef.current = response.data.data.sessionId;
+        // Active exam cache ni yangilaymiz
+        mutate("/api/v2/exams/active", null, false);
       }
-    } catch (err: unknown) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message || t("notification.startError");
+    } catch {
+      // Active session bor-yo'qligini tekshirish
+      try {
+        const activeRes = await api.get<{ data: ActiveExamInfo | null }>("/api/v2/exams/active");
+        if (activeRes.data?.data?.sessionId) {
+          setActiveConflict(activeRes.data.data);
+          return;
+        }
+      } catch {
+        // Active tekshiruv ham xato — generic error
+      }
 
-      setError(errorMessage);
-      notifications.show({
-        title: t("common.error"),
-        message: errorMessage,
-        color: "red",
-      });
+      setError(t("notification.startError"));
     } finally {
       setLoading(false);
     }
-  }, [id, t]);
+  }, [id, isSecureMode, t]);
 
   useEffect(() => {
     if (!examData && id) {
       startExam();
     }
   }, [id, examData, startExam]);
+
+  // Browser back / URL o'zgartirish — sessiyani abandon qilamiz
+  useEffect(() => {
+    return () => {
+      if (!submittedRef.current && sessionIdRef.current) {
+        navigator.sendBeacon(`/api/v2/exams/${sessionIdRef.current}/abandon`);
+      }
+    };
+  }, []);
+
+  const handleAbandonAndRestart = async () => {
+    if (!activeConflict) return;
+    setLoading(true);
+    try {
+      await api.delete(`/api/v2/exams/${activeConflict.sessionId}/abandon`);
+      mutate("/api/v2/exams/active", { data: null }, false);
+    } catch {
+      // Abandon xatosi — baribir qayta urinib ko'ramiz
+    }
+    setActiveConflict(null);
+    await startExam();
+  };
 
   const handleAnswerSelect = (
     questionIndex: number,
@@ -91,6 +134,11 @@ const PackageExamPage = () => {
     finishButton?.click();
   };
 
+  const handleSubmitSuccess = () => {
+    submittedRef.current = true;
+  };
+
+  // Yuklash
   if (loading) {
     return (
       <Center h="100vh">
@@ -102,6 +150,62 @@ const PackageExamPage = () => {
     );
   }
 
+  // Tugallanmagan imtihon bor — conflict UI
+  if (activeConflict) {
+    return (
+      <Center h="100vh">
+        <Container size="xs">
+          <Paper p="xl" radius="md" withBorder shadow="md" ta="center">
+            <ThemeIcon size={64} radius="xl" color="orange" variant="light" mb="md" mx="auto">
+              <IconAlertCircle size={32} />
+            </ThemeIcon>
+            <Title order={3} mb="sm">
+              {t("me.stats.resumeExam")}
+            </Title>
+            <Text c="dimmed" mb="xl" size="sm">
+              {t("exam.activeSessionDesc", {
+                defaultValue: "Boshqa imtihon tugallanmagan. Uni yakunlab yoki bekor qilib, yangi imtihon boshlashingiz mumkin.",
+              })}
+            </Text>
+            <Stack gap="sm">
+              <Button
+                loading={loading}
+                leftSection={<IconPlayerPlay size={18} />}
+                onClick={handleAbandonAndRestart}
+              >
+                {t("exam.abandonAndRestart", { defaultValue: "Bekor qilib, yangi boshlash" })}
+              </Button>
+              {activeConflict.packageId && (
+                <Button
+                  variant="light"
+                  onClick={() => navigate(`/packages/${activeConflict.packageId}`)}
+                >
+                  {t("me.stats.continue")}
+                </Button>
+              )}
+              {activeConflict.ticketId && (
+                <Button
+                  variant="light"
+                  onClick={() => navigate(`/tickets/${activeConflict.ticketId}`)}
+                >
+                  {t("me.stats.continue")}
+                </Button>
+              )}
+              <Button
+                variant="subtle"
+                color="gray"
+                onClick={() => navigate("/packages")}
+              >
+                {t("common.back")}
+              </Button>
+            </Stack>
+          </Paper>
+        </Container>
+      </Center>
+    );
+  }
+
+  // Xato
   if (error) {
     return (
       <Center h="100vh">
@@ -158,6 +262,7 @@ const PackageExamPage = () => {
         onReset={handleReset}
         backUrl="/packages"
         isSecureMode={isSecureMode}
+        onSubmitSuccess={handleSubmitSuccess}
       />
       <QuizContent
         questions={examData.data.questions}

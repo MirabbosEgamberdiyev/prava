@@ -1,26 +1,45 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box, Center, Loader, Text, Title, Button, Group } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import {
+  Box,
+  Center,
+  Loader,
+  Text,
+  Title,
+  Button,
+  Group,
+  Paper,
+  Stack,
+  Container,
+  ThemeIcon,
+} from "@mantine/core";
+import { IconAlertCircle, IconPlayerPlay, IconRefresh } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { mutate } from "swr";
 import api from "../../../api/api";
 import { QuizNav, type QuizNavHandle } from "../../../components/quiz/QuizNav";
 import { QuizContent } from "../../../components/quiz/QuizContent";
 import SEO from "../../../components/common/SEO";
 import type { TicketExamData, AnswersMap } from "../../../types";
 
+interface ActiveExamInfo {
+  sessionId: number;
+  ticketId?: number;
+  packageId?: number;
+}
+
 const TicketExamPage = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Always use explanatory mode (visible + explanation)
   const isSecureMode = false;
   const showExplanation = true;
 
   const [examData, setExamData] = useState<TicketExamData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeConflict, setActiveConflict] = useState<ActiveExamInfo | null>(null);
   const [answers, setAnswers] = useState<AnswersMap>({});
 
   const hasFetched = useRef(false);
@@ -34,28 +53,32 @@ const TicketExamPage = () => {
 
     setLoading(true);
     setError(null);
+    setActiveConflict(null);
 
     try {
-      const endpoint = "/api/v2/tickets/start-visible";
-      const response = await api.post<TicketExamData>(endpoint, {
+      const response = await api.post<TicketExamData>("/api/v2/tickets/start-visible", {
         ticketId: Number(id),
       });
 
       if (response.data) {
         setExamData(response.data);
         sessionIdRef.current = response.data.data.sessionId;
+        // Active exam cache ni yangilaymiz — yangi session boshlandi
+        mutate("/api/v2/exams/active", null, false);
       }
-    } catch (err: unknown) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message || t("ticket.startError");
+    } catch {
+      // Active session bor-yo'qligini tekshirish
+      try {
+        const activeRes = await api.get<{ data: ActiveExamInfo | null }>("/api/v2/exams/active");
+        if (activeRes.data?.data?.sessionId) {
+          setActiveConflict(activeRes.data.data);
+          return; // Conflict UI ko'rsatamiz, generic error emas
+        }
+      } catch {
+        // Active tekshiruv ham xato — generic error ko'rsatamiz
+      }
 
-      setError(errorMessage);
-      notifications.show({
-        title: t("common.error"),
-        message: errorMessage,
-        color: "red",
-      });
+      setError(t("ticket.startError"));
     } finally {
       setLoading(false);
     }
@@ -66,17 +89,28 @@ const TicketExamPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Foydalanuvchi modal orqali emas, boshqa yo'l bilan chiqib ketsa
-  // (browser back, URL o'zgartirish) — sessiyani abandon qilamiz
+  // Browser back / URL o'zgartirish orqali chiqish — sessiyani abandon qilamiz
   useEffect(() => {
     return () => {
       if (!submittedRef.current && sessionIdRef.current) {
-        navigator.sendBeacon(
-          `/api/v2/exams/${sessionIdRef.current}/abandon`,
-        );
+        navigator.sendBeacon(`/api/v2/exams/${sessionIdRef.current}/abandon`);
       }
     };
   }, []);
+
+  const handleAbandonAndRestart = async () => {
+    if (!activeConflict) return;
+    setLoading(true);
+    try {
+      await api.delete(`/api/v2/exams/${activeConflict.sessionId}/abandon`);
+      mutate("/api/v2/exams/active", { data: null }, false);
+    } catch {
+      // Abandon xatosi — baribir qayta urinib ko'ramiz
+    }
+    hasFetched.current = false;
+    setActiveConflict(null);
+    await startTicketExam(true);
+  };
 
   const handleAnswerSelect = (
     questionIndex: number,
@@ -99,6 +133,7 @@ const TicketExamPage = () => {
     submittedRef.current = true;
   };
 
+  // Yuklash
   if (loading) {
     return (
       <Center h="100vh">
@@ -110,6 +145,59 @@ const TicketExamPage = () => {
     );
   }
 
+  // Tugallanmagan imtihon bor — conflict UI
+  if (activeConflict) {
+    const isSameTicket = activeConflict.ticketId === Number(id);
+
+    return (
+      <Center h="100vh">
+        <Container size="xs">
+          <Paper p="xl" radius="md" withBorder shadow="md" ta="center">
+            <ThemeIcon size={64} radius="xl" color="orange" variant="light" mb="md" mx="auto">
+              <IconAlertCircle size={32} />
+            </ThemeIcon>
+            <Title order={3} mb="sm">
+              {t("me.stats.resumeExam")}
+            </Title>
+            <Text c="dimmed" mb="xl" size="sm">
+              {isSameTicket
+                ? t("me.stats.resumeExamDesc")
+                : t("exam.activeSessionDesc", {
+                    defaultValue: "Boshqa imtihon tugallanmagan. Uni yakunlab yoki bekor qilib, yangi imtihon boshlashingiz mumkin.",
+                  })}
+            </Text>
+            <Stack gap="sm">
+              <Button
+                loading={loading}
+                leftSection={<IconPlayerPlay size={18} />}
+                onClick={handleAbandonAndRestart}
+              >
+                {t("exam.abandonAndRestart", { defaultValue: "Bekor qilib, yangi boshlash" })}
+              </Button>
+              {isSameTicket && activeConflict.ticketId && (
+                <Button
+                  variant="light"
+                  leftSection={<IconRefresh size={18} />}
+                  onClick={() => navigate(`/tickets/${activeConflict.ticketId}`)}
+                >
+                  {t("me.stats.continue")}
+                </Button>
+              )}
+              <Button
+                variant="subtle"
+                color="gray"
+                onClick={() => navigate("/tickets")}
+              >
+                {t("common.back")}
+              </Button>
+            </Stack>
+          </Paper>
+        </Container>
+      </Center>
+    );
+  }
+
+  // Xato
   if (error) {
     return (
       <Center h="100vh">

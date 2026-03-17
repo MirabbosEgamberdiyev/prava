@@ -165,9 +165,17 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
       if (status >= 500) {
-        // Logout endpoint 5xx qaytarsa toast ko'rsatmaymiz — client-side already handled
-        const isLogoutRequest = requestUrl.includes("/auth/logout");
-        if (!isLogoutRequest) {
+        // Bu endpointlar o'z error handling'iga ega — global notification kerak emas
+        const SELF_HANDLED_URLS = [
+          "/auth/logout",                    // client-side already handled
+          "/api/v2/exams/active",            // polling — spam bo'ladi
+          "/api/v2/tickets/start-visible",   // page o'zi error ko'rsatadi
+          "/api/v2/exams/start-visible",     // page o'zi error ko'rsatadi
+          "/api/v2/exams/start-secure",      // page o'zi error ko'rsatadi
+          "/api/v2/exams/submit",            // QuizNav o'zi notification ko'rsatadi
+        ];
+        const isSelfHandled = SELF_HANDLED_URLS.some((u) => requestUrl.includes(u));
+        if (!isSelfHandled) {
           window.dispatchEvent(
             new CustomEvent("api-error", {
               detail: { status, message: i18n.t("errors.serverError"), url: requestUrl },

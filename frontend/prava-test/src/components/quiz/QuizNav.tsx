@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { mutate } from "swr";
 import {
   Alert,
   Badge,
@@ -9,10 +10,8 @@ import {
   Modal,
   Text,
   Stack,
-  Paper,
   SimpleGrid,
-  Grid,
-  useComputedColorScheme,
+  ThemeIcon,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -25,6 +24,7 @@ import {
   IconArrowLeft,
   IconAlertTriangle,
   IconChartBar,
+  IconClock,
 } from "@tabler/icons-react";
 import LanguagePicker from "../language/LanguagePicker";
 import ColorMode from "../other/ColorMode";
@@ -74,19 +74,14 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
   const [submitting, setSubmitting] = useState(false);
 
   useImperativeHandle(ref, () => ({ openFinishModal: open }), [open]);
-  const colorScheme = useComputedColorScheme("light", {
-    getInitialValueInEffect: true,
-  });
-  const isDark = colorScheme === "dark";
 
   const [timeLeft, setTimeLeft] = useState(durationMinutes * 60);
-
   const isTimeUp = timeLeft <= 0;
 
   useEffect(() => {
     if (isTimeUp) {
       onTimeUp?.();
-      open(); // Vaqt tugaganda modalni avtomatik ochish
+      open();
       return;
     }
 
@@ -98,11 +93,10 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
   }, [isTimeUp, onTimeUp]);
 
   const handleSubmit = async (navigateTo: string) => {
-    // Double-submit prevention
     if (submitting) return;
 
     if (!sessionId) {
-      // Guest mode: no API call needed, just delegate to callbacks
+      // Guest mode: no API call needed
       close();
       if (navigateTo === backUrl) {
         onGuestFinish?.();
@@ -135,6 +129,8 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
         color: "green",
       });
 
+      // Active exam SWR cache ni tozalaymiz — /me da banner qayta chiqmasin
+      mutate("/api/v2/exams/active", { data: null }, false);
       onSubmitSuccess?.();
       navigate(navigateTo, { replace: true });
     } catch (error: unknown) {
@@ -220,104 +216,106 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
       <Modal
         opened={opened}
         onClose={isTimeUp ? () => {} : close}
-        title={t("exam.finishModal.title")}
+        title={
+          <Text fw={700} size="lg">
+            {t("exam.finishModal.title")}
+          </Text>
+        }
         centered
-        size="580px"
+        size="440px"
+        radius="lg"
         closeOnClickOutside={!isTimeUp}
         closeOnEscape={!isTimeUp}
         withCloseButton={!isTimeUp}
+        padding="xl"
       >
-        <Stack>
+        <Stack gap="lg">
+          {/* Stats */}
           {isSecureMode ? (
             <SimpleGrid cols={2} spacing="sm">
-              <Paper
-                p="md"
-                ta="center"
-                style={{
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-5)"
-                    : "var(--mantine-color-blue-0)",
-                  border: `1px solid ${isDark ? "var(--mantine-color-blue-5)" : "var(--mantine-color-blue-3)"}`,
-                }}
+              <Stack
+                align="center"
+                gap={6}
+                p="sm"
+                style={{ borderRadius: 12, border: "1px solid var(--mantine-color-blue-5)" }}
               >
-                <Text size="xl" fw={700} c={isDark ? "blue.3" : "blue.7"}>
+                <ThemeIcon size={44} radius="xl" color="blue" variant="light">
+                  <IconCheck size={22} />
+                </ThemeIcon>
+                <Text size="xl" fw={800} c="blue">
                   {answeredCount}
                 </Text>
-                <Text size="sm" c="dimmed">
+                <Text size="xs" c="dimmed" ta="center">
                   {t("exam.answered")}
                 </Text>
-              </Paper>
-              <Paper
-                p="md"
-                ta="center"
-                style={{
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-5)"
-                    : "var(--mantine-color-yellow-0)",
-                  border: `1px solid ${isDark ? "var(--mantine-color-yellow-5)" : "var(--mantine-color-yellow-3)"}`,
-                }}
+              </Stack>
+              <Stack
+                align="center"
+                gap={6}
+                p="sm"
+                style={{ borderRadius: 12, border: "1px solid var(--mantine-color-yellow-5)" }}
               >
-                <Text size="xl" fw={700} c={isDark ? "yellow.3" : "yellow.8"}>
+                <ThemeIcon size={44} radius="xl" color="yellow" variant="light">
+                  <IconClock size={22} />
+                </ThemeIcon>
+                <Text size="xl" fw={800} c="yellow.6">
                   {unansweredCount}
                 </Text>
-                <Text size="sm" c="dimmed">
+                <Text size="xs" c="dimmed" ta="center">
                   {t("exam.unanswered")}
                 </Text>
-              </Paper>
+              </Stack>
             </SimpleGrid>
           ) : (
             <SimpleGrid cols={3} spacing="sm">
-              <Paper
-                p="md"
-                ta="center"
-                style={{
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-5)"
-                    : "var(--mantine-color-green-0)",
-                  border: `1px solid ${isDark ? "var(--mantine-color-green-5)" : "var(--mantine-color-green-3)"}`,
-                }}
+              <Stack
+                align="center"
+                gap={6}
+                p="sm"
+                style={{ borderRadius: 12, border: "1px solid var(--mantine-color-green-5)" }}
               >
-                <Text size="xl" fw={700} c={isDark ? "green.3" : "green.7"}>
+                <ThemeIcon size={44} radius="xl" color="green" variant="light">
+                  <IconCheck size={22} />
+                </ThemeIcon>
+                <Text size="xl" fw={800} c="green">
                   {correctCount}
                 </Text>
-                <Text size="sm" c="dimmed">
+                <Text size="xs" c="dimmed" ta="center">
                   {t("exam.correct")}
                 </Text>
-              </Paper>
-              <Paper
-                p="md"
-                ta="center"
-                style={{
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-5)"
-                    : "var(--mantine-color-red-0)",
-                  border: `1px solid ${isDark ? "var(--mantine-color-red-5)" : "var(--mantine-color-red-3)"}`,
-                }}
+              </Stack>
+              <Stack
+                align="center"
+                gap={6}
+                p="sm"
+                style={{ borderRadius: 12, border: "1px solid var(--mantine-color-red-5)" }}
               >
-                <Text size="xl" fw={700} c={isDark ? "red.4" : "red.7"}>
+                <ThemeIcon size={44} radius="xl" color="red" variant="light">
+                  <IconX size={22} />
+                </ThemeIcon>
+                <Text size="xl" fw={800} c="red">
                   {incorrectCount}
                 </Text>
-                <Text size="sm" c="dimmed">
+                <Text size="xs" c="dimmed" ta="center">
                   {t("exam.incorrect")}
                 </Text>
-              </Paper>
-              <Paper
-                p="md"
-                ta="center"
-                style={{
-                  backgroundColor: isDark
-                    ? "var(--mantine-color-dark-5)"
-                    : "var(--mantine-color-yellow-0)",
-                  border: `1px solid ${isDark ? "var(--mantine-color-yellow-5)" : "var(--mantine-color-yellow-3)"}`,
-                }}
+              </Stack>
+              <Stack
+                align="center"
+                gap={6}
+                p="sm"
+                style={{ borderRadius: 12, border: "1px solid var(--mantine-color-default-border)" }}
               >
-                <Text size="xl" fw={700} c={isDark ? "yellow.3" : "yellow.8"}>
+                <ThemeIcon size={44} radius="xl" color="gray" variant="light">
+                  <IconClock size={22} />
+                </ThemeIcon>
+                <Text size="xl" fw={800} c="dimmed">
                   {unansweredCount}
                 </Text>
-                <Text size="sm" c="dimmed">
+                <Text size="xs" c="dimmed" ta="center">
                   {t("exam.unanswered")}
                 </Text>
-              </Paper>
+              </Stack>
             </SimpleGrid>
           )}
 
@@ -330,12 +328,46 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
               {t("exam.finishModal.warning", { count: unansweredCount })}
             </Alert>
           )}
-          <Grid mt="sm">
-            <Grid.Col span={{ base: 6 }}>
+
+          <Divider />
+
+          {/* Actions */}
+          <Stack gap="xs">
+            {/* Primary: Submit & view results */}
+            <Button
+              onClick={() => handleSubmit(backUrl)}
+              loading={submitting}
+              rightSection={<IconCheck size={18} />}
+              disabled={submitting}
+              fullWidth
+              size="md"
+              radius="md"
+            >
+              {t("exam.finish")}
+            </Button>
+
+            <Button
+              variant="light"
+              color="blue"
+              onClick={() => handleSubmit(`/exam/result/${sessionId}`)}
+              loading={submitting}
+              rightSection={<IconChartBar size={18} />}
+              disabled={submitting}
+              fullWidth
+              size="md"
+              radius="md"
+            >
+              {t("exam.viewResults")}
+            </Button>
+
+            {/* Secondary: Exit / Restart */}
+            <Flex gap="xs">
               <Button
                 color="gray"
-                leftSection={<IconArrowLeft size={18} />}
+                variant="light"
+                leftSection={<IconArrowLeft size={16} />}
                 fullWidth
+                radius="md"
                 disabled={isTimeUp}
                 onClick={async () => {
                   if (sessionId) {
@@ -351,43 +383,19 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
               >
                 {t("exam.exit")}
               </Button>
-            </Grid.Col>
-            <Grid.Col span={{ base: 6 }}>
               <Button
                 color="gray"
+                variant="light"
                 onClick={handleReset}
                 disabled={submitting || isTimeUp}
-                leftSection={<IconRefresh size={18} />}
+                leftSection={<IconRefresh size={16} />}
                 fullWidth
+                radius="md"
               >
                 {t("exam.restart")}
               </Button>
-            </Grid.Col>
-            <Grid.Col span={{ base: 6 }}>
-              <Button
-                onClick={() => handleSubmit(backUrl)}
-                loading={submitting}
-                rightSection={<IconCheck size={18} />}
-                disabled={submitting}
-                fullWidth
-              >
-                {t("exam.finish")}
-              </Button>
-            </Grid.Col>
-            <Grid.Col span={{ base: 6 }}>
-              <Button
-                variant="light"
-                color="blue"
-                onClick={() => handleSubmit(`/exam/result/${sessionId}`)}
-                loading={submitting}
-                rightSection={<IconChartBar size={18} />}
-                disabled={submitting}
-                fullWidth
-              >
-                {t("exam.viewResults")}
-              </Button>
-            </Grid.Col>
-          </Grid>
+            </Flex>
+          </Stack>
         </Stack>
       </Modal>
     </>

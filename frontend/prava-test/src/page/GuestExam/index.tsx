@@ -14,8 +14,8 @@ import {
   Alert,
   Modal,
   SimpleGrid,
-  Progress,
-  Group,
+  RingProgress,
+  Divider,
 } from "@mantine/core";
 import {
   IconAlertCircle,
@@ -23,6 +23,9 @@ import {
   IconUserPlus,
   IconChartBar,
   IconHome,
+  IconCheck,
+  IconX,
+  IconClock,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
@@ -105,10 +108,8 @@ const GuestExamPage = () => {
   };
 
   const handleReset = () => setAnswers({});
-
   const handleFinish = () => setGuestResultOpened(true);
 
-  // Compute stats from answers + questions
   const { correctCount, incorrectCount, unansweredCount } = useMemo(() => {
     const correct = questions.reduce((count, q, i) => {
       return count + (answers[i]?.optionIndex === q.correctOptionIndex ? 1 : 0);
@@ -123,6 +124,9 @@ const GuestExamPage = () => {
 
   const correctPercentage =
     questions.length > 0 ? (correctCount / questions.length) * 100 : 0;
+
+  const scoreColor =
+    correctPercentage >= 90 ? "green" : correctPercentage >= 60 ? "yellow" : "red";
 
   if (loading) {
     return (
@@ -256,79 +260,105 @@ const GuestExamPage = () => {
       <Modal
         opened={guestResultOpened}
         onClose={() => setGuestResultOpened(false)}
-        title={t("exam.finishModal.title")}
         centered
-        size="500px"
+        size="420px"
+        radius="lg"
+        withCloseButton={true}
+        padding="xl"
+        title={
+          <Text fw={700} size="lg">
+            {t("exam.finishModal.title")}
+          </Text>
+        }
       >
-        <Stack gap="md">
+        <Stack gap="lg">
+          {/* Score ring */}
+          <Stack align="center" gap="xs">
+            <RingProgress
+              size={120}
+              thickness={10}
+              roundCaps
+              sections={[{ value: correctPercentage, color: scoreColor }]}
+              label={
+                <Box ta="center">
+                  <Text size="xl" fw={900} lh={1} c={scoreColor}>
+                    {correctCount}
+                  </Text>
+                  <Text size="xs" c="dimmed" mt={2}>
+                    / {questions.length}
+                  </Text>
+                </Box>
+              }
+            />
+            <Text fw={600} size="md" c={scoreColor} ta="center">
+              {correctPercentage >= 90
+                ? t("exam.result.passed")
+                : t("exam.result.failed")}
+            </Text>
+          </Stack>
+
+          {/* Stats */}
           <SimpleGrid cols={3} spacing="sm">
-            <Paper
-              p="md"
-              ta="center"
-              style={{
-                backgroundColor: "var(--mantine-color-green-0)",
-                border: "1px solid var(--mantine-color-green-3)",
-              }}
+            <Stack
+              align="center"
+              gap={6}
+              p="sm"
+              style={{ borderRadius: 12, border: "1px solid var(--mantine-color-green-5)" }}
             >
-              <Text size="xl" fw={700} c="green">
+              <ThemeIcon size={44} radius="xl" color="green" variant="light">
+                <IconCheck size={22} />
+              </ThemeIcon>
+              <Text size="xl" fw={800} c="green">
                 {correctCount}
               </Text>
-              <Text size="sm" c="dimmed">
+              <Text size="xs" c="dimmed" ta="center">
                 {t("exam.correct")}
               </Text>
-            </Paper>
-            <Paper
-              p="md"
-              ta="center"
-              style={{
-                backgroundColor: "var(--mantine-color-red-0)",
-                border: "1px solid var(--mantine-color-red-3)",
-              }}
+            </Stack>
+
+            <Stack
+              align="center"
+              gap={6}
+              p="sm"
+              style={{ borderRadius: 12, border: "1px solid var(--mantine-color-red-5)" }}
             >
-              <Text size="xl" fw={700} c="red">
+              <ThemeIcon size={44} radius="xl" color="red" variant="light">
+                <IconX size={22} />
+              </ThemeIcon>
+              <Text size="xl" fw={800} c="red">
                 {incorrectCount}
               </Text>
-              <Text size="sm" c="dimmed">
+              <Text size="xs" c="dimmed" ta="center">
                 {t("exam.incorrect")}
               </Text>
-            </Paper>
-            <Paper
-              p="md"
-              ta="center"
-              style={{
-                backgroundColor: "var(--mantine-color-yellow-0)",
-                border: "1px solid var(--mantine-color-yellow-3)",
-              }}
+            </Stack>
+
+            <Stack
+              align="center"
+              gap={6}
+              p="sm"
+              style={{ borderRadius: 12, border: "1px solid var(--mantine-color-default-border)" }}
             >
-              <Text size="xl" fw={700} c="yellow.9">
+              <ThemeIcon size={44} radius="xl" color="gray" variant="light">
+                <IconClock size={22} />
+              </ThemeIcon>
+              <Text size="xl" fw={800} c="dimmed">
                 {unansweredCount}
               </Text>
-              <Text size="sm" c="dimmed">
+              <Text size="xs" c="dimmed" ta="center">
                 {t("exam.unanswered")}
               </Text>
-            </Paper>
+            </Stack>
           </SimpleGrid>
 
-          <Box>
-            <Group justify="space-between" mb="xs">
-              <Text size="sm" c="dimmed">
-                {t("exam.result.score")}
-              </Text>
-              <Text size="sm" fw={500}>
-                {correctCount} / {questions.length}
-              </Text>
-            </Group>
-            <Progress
-              value={correctPercentage}
-              color={correctPercentage >= 90 ? "green" : correctPercentage >= 60 ? "yellow" : "red"}
-              size="lg"
-              radius="xl"
-            />
-          </Box>
+          <Divider />
 
-          <Stack gap="sm" mt="sm">
+          {/* Actions */}
+          <Stack gap="xs">
             <Button
               fullWidth
+              size="md"
+              radius="md"
               leftSection={<IconChartBar size={18} />}
               onClick={() => setGuestResultOpened(false)}
             >
@@ -336,6 +366,8 @@ const GuestExamPage = () => {
             </Button>
             <Button
               fullWidth
+              size="md"
+              radius="md"
               variant="light"
               leftSection={<IconUserPlus size={18} />}
               onClick={() => navigate("/auth/register")}
@@ -344,9 +376,11 @@ const GuestExamPage = () => {
             </Button>
             <Button
               fullWidth
+              size="sm"
+              radius="md"
               variant="subtle"
               color="gray"
-              leftSection={<IconHome size={18} />}
+              leftSection={<IconHome size={16} />}
               onClick={() => navigate("/")}
             >
               {t("notFound.backHome")}
