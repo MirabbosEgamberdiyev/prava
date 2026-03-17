@@ -482,6 +482,18 @@ public class ExamControllerV2 {
      * Qachon ishlatiladi: Foydalanuvchi imtihonni tark etmoqchi bo'lganda.
      * Qanday natija qaytaradi: Muvaffaqiyat xabari.
      */
+    // navigator.sendBeacon faqat POST jo'natadi — browser tab yopilganda abandon uchun
+    @PostMapping("/{sessionId}/abandon")
+    public ResponseEntity<ApiResponse<Void>> abandonExamPost(
+            @PathVariable Long sessionId,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        examService.abandonExam(sessionId);
+        return ResponseEntity.ok(ApiResponse.success(
+                messageService.getMessage("success.exam.abandoned", language),
+                null
+        ));
+    }
+
     @DeleteMapping("/{sessionId}/abandon")
     @Operation(
             summary = "Imtihonni bekor qilish",

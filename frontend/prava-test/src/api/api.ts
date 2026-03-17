@@ -20,7 +20,7 @@ const refreshClient = axios.create({
 
 const api: AxiosInstance = axios.create({
   baseURL: ENV.API_BASE_URL,
-  timeout: 10000,
+  timeout: 15000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -165,12 +165,15 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
       if (status >= 500) {
-        // Dispatch a custom event for notification system to pick up
-        window.dispatchEvent(
-          new CustomEvent("api-error", {
-            detail: { status, message: i18n.t("errors.serverError"), url: requestUrl },
-          }),
-        );
+        // Logout endpoint 5xx qaytarsa toast ko'rsatmaymiz — client-side already handled
+        const isLogoutRequest = requestUrl.includes("/auth/logout");
+        if (!isLogoutRequest) {
+          window.dispatchEvent(
+            new CustomEvent("api-error", {
+              detail: { status, message: i18n.t("errors.serverError"), url: requestUrl },
+            }),
+          );
+        }
       }
     } else if (error.code === "ERR_NETWORK" || !error.response) {
       window.dispatchEvent(

@@ -292,7 +292,7 @@ export function QuizContent({
           backgroundColor:
             computedColorScheme === "light"
               ? "var(--mantine-color-blue-0)"
-              : "var(--mantine-color-blue-9)",
+              : "var(--mantine-color-dark-5)",
         };
       }
       return {
@@ -309,7 +309,7 @@ export function QuizContent({
         backgroundColor:
           computedColorScheme === "light"
             ? "var(--mantine-color-green-0)"
-            : "var(--mantine-color-green-9)",
+            : "var(--mantine-color-dark-5)",
       };
     }
 
@@ -320,7 +320,7 @@ export function QuizContent({
         backgroundColor:
           computedColorScheme === "light"
             ? "var(--mantine-color-red-0)"
-            : "var(--mantine-color-red-9)",
+            : "var(--mantine-color-dark-5)",
       };
     }
 
@@ -672,7 +672,7 @@ export function QuizContent({
       <Container fluid mt="xl" pb="xl">
         {/* Savol raqamlari - tepada */}
         <ScrollArea type="auto" offsetScrollbars scrollbarSize={4} mx={"-md"}>
-          <Flex gap={3} justify="center" wrap="nowrap" py={4}>
+          <Flex gap={4} justify="center" wrap="nowrap" py={6} px={4}>
             {questions.map((question: Question, i: number) => {
               const wasAnswered = selectedAnswers[i] !== undefined;
               const wasCorrect =
@@ -680,30 +680,52 @@ export function QuizContent({
                 selectedAnswers[i] === question.correctOptionIndex;
               const isActive = activeQuiz === i;
 
+              // Rang logikasi
+              let bg: string;
+              let color: string;
+              let border: string;
+
+              if (isActive) {
+                bg = "var(--mantine-color-blue-6)";
+                color = "#fff";
+                border = "var(--mantine-color-blue-6)";
+              } else if (wasAnswered) {
+                if (isSecureMode) {
+                  bg = "var(--mantine-color-blue-1)";
+                  color = "var(--mantine-color-blue-7)";
+                  border = "var(--mantine-color-blue-4)";
+                } else if (wasCorrect) {
+                  bg = "var(--mantine-color-green-1)";
+                  color = "var(--mantine-color-green-7)";
+                  border = "var(--mantine-color-green-4)";
+                } else {
+                  bg = "var(--mantine-color-red-1)";
+                  color = "var(--mantine-color-red-7)";
+                  border = "var(--mantine-color-red-4)";
+                }
+              } else {
+                bg = computedColorScheme === "dark"
+                  ? "var(--mantine-color-dark-5)"
+                  : "var(--mantine-color-gray-0)";
+                color = computedColorScheme === "dark"
+                  ? "var(--mantine-color-dark-0)"
+                  : "var(--mantine-color-dark-4)";
+                border = computedColorScheme === "dark"
+                  ? "var(--mantine-color-dark-3)"
+                  : "var(--mantine-color-gray-4)";
+              }
+
               return (
-                <ActionIcon
-                  size="lg"
+                <button
                   key={question.id}
-                  variant={
-                    isActive ? "filled" : wasAnswered ? "filled" : "default"
-                  }
-                  color={
-                    isActive
-                      ? "blue"
-                      : wasAnswered
-                        ? isSecureMode
-                          ? "blue"
-                          : wasCorrect
-                            ? "green"
-                            : "red"
-                        : undefined
-                  }
+                  className={classes.questionBtn}
+                  data-active={isActive}
                   onClick={() => setActiveQuiz(i)}
-                  aria-label={`${t("exam.noQuestions")} ${i + 1}`}
-                  style={{ flexShrink: 0 }}
+                  aria-label={`${t("exam.question")} ${i + 1}`}
+                  style={{ background: bg, color, borderColor: border }}
                 >
                   {i + 1}
-                </ActionIcon>
+                </button>
               );
             })}
           </Flex>

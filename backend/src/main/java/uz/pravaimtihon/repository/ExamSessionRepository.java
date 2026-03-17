@@ -107,6 +107,14 @@ public interface ExamSessionRepository extends JpaRepository<ExamSession, Long> 
     // Scheduled job uchun - eskirgan sessiyalarni topish
     List<ExamSession> findByStatusAndStartedAtBefore(ExamStatus status, LocalDateTime before);
 
+    @Query("SELECT es FROM ExamSession es " +
+            "WHERE es.user.id = :userId AND es.ticket.id = :ticketId " +
+            "AND es.status = 'IN_PROGRESS' AND es.expiresAt > :now")
+    Optional<ExamSession> findActiveSessionByUserIdAndTicketId(
+            @Param("userId") Long userId,
+            @Param("ticketId") Long ticketId,
+            @Param("now") LocalDateTime now);
+
     // ============================================
     // ✅ NEW: Package statistikasi uchun
     // ============================================

@@ -16,6 +16,7 @@ import {
 } from "@mantine/core";
 import { IconFlame, IconMedal } from "@tabler/icons-react";
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import type { LeaderboardResponse, TopicsResponse } from "../types";
@@ -25,8 +26,11 @@ export function LeaderboardPage() {
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
   });
-  const [page, setPage] = useState(0);
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Math.max(0, Number(searchParams.get("page") ?? 0));
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(
+    searchParams.get("topic") ?? null,
+  );
 
   const { data: topicsResponse } = useSWR<TopicsResponse>(
     "/api/v1/admin/topics/with-questions",
@@ -50,9 +54,24 @@ export function LeaderboardPage() {
     })),
   ];
 
+  const setPage = (p: number) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (p === 0) next.delete("page");
+      else next.set("page", String(p));
+      return next;
+    }, { replace: true });
+  };
+
   const handleTopicChange = (value: string | null) => {
     setSelectedTopic(value || null);
-    setPage(0);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("page");
+      if (value) next.set("topic", value);
+      else next.delete("topic");
+      return next;
+    }, { replace: true });
   };
 
   const getMedalColor = (rank: number) => {
@@ -219,6 +238,7 @@ export function LeaderboardPage() {
                 value={page + 1}
                 onChange={(p) => setPage(p - 1)}
                 total={leaderboard.totalPages}
+                withEdges
               />
             </Flex>
           )}

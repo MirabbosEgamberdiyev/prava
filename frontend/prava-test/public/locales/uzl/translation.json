@@ -234,6 +234,8 @@
   "exam": {
     "finish": "Yakunlash",
     "viewResults": "Natijalarni ko'rish",
+    "reviewAnswers": "Javoblarni ko'rish",
+    "question": "Savol",
     "next": "Keyingi",
     "prev": "Avvalgi",
     "restart": "Qayta ishlash",
@@ -342,6 +344,8 @@
     "passRate": "O'tish nisbati",
     "minutes": "daq",
     "loading": "Bilet yuklanmoqda...",
+    "exam": "Imtihon",
+    "examSuffix": "— Imtihon",
     "startError": "Bilet imtihonini boshlashda xatolik yuz berdi",
     "loadError": "Biletlarni yuklashda xatolik yuz berdi",
     "completed": "Yakunlangan",
@@ -547,6 +551,9 @@
     "registerPrompt": "Cheksiz imtihon uchun ro'yxatdan o'ting",
     "resultNotSaved": "Mehmon foydalanuvchilar uchun natijalar saqlanmaydi",
     "tryFree": "Bepul sinash",
-    "redirecting": "{{seconds}}s da yo'naltirilmoqda..."
+    "redirecting": "{{seconds}}s da yo'naltirilmoqda...",
+    "seoTitle": "Imtihonni sinab ko'ring - Bepul YHXBB testi online",
+    "seoDescription": "Ro'yxatdan o'tmasdan haydovchilik guvohnomasi imtihonini bepul sinab ko'ring. Real imtihon formatida YHXBB savollarini yechib ko'ring.",
+    "examSuffix": "— Imtihon"
   }
 }

@@ -234,6 +234,8 @@
   "exam": {
     "finish": "Finish",
     "viewResults": "View Results",
+    "reviewAnswers": "Review Answers",
+    "question": "Question",
     "next": "Next",
     "prev": "Previous",
     "restart": "Restart",
@@ -342,6 +344,8 @@
     "passRate": "Pass rate",
     "minutes": "min",
     "loading": "Loading ticket...",
+    "exam": "Exam",
+    "examSuffix": "— Exam",
     "startError": "Error starting ticket exam",
     "loadError": "Error loading tickets",
     "completed": "Completed",
@@ -547,6 +551,9 @@
     "registerPrompt": "Register to access unlimited exams",
     "resultNotSaved": "Results are not saved for guest users",
     "tryFree": "Try Free",
-    "redirecting": "Redirecting in {{seconds}}s..."
+    "redirecting": "Redirecting in {{seconds}}s...",
+    "seoTitle": "Try the Exam - Free Driving Test Online",
+    "seoDescription": "Try the driving license exam for free without registration. Practice with real exam questions.",
+    "examSuffix": "— Exam"
   }
 }

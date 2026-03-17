@@ -325,6 +325,14 @@ public class TicketService {
             throw new BusinessException("error.ticket.insufficient.questions");
         }
 
+        // Agar foydalanuvchida bu bilet uchun faol sessiya bo'lsa — abandon qilamiz
+        sessionRepository.findActiveSessionByUserIdAndTicketId(userId, ticket.getId(), LocalDateTime.now())
+                .ifPresent(existing -> {
+                    existing.abandon();
+                    sessionRepository.save(existing);
+                    log.info("Mavjud faol sessiya abandon qilindi: sessionId={}", existing.getId());
+                });
+
         List<Question> questions = ticket.getQuestions();
 
         // Sessiya yaratish

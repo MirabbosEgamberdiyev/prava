@@ -4,7 +4,7 @@ import { Box, Center, Loader, Text, Title, Button, Group } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import api from "../../../api/api";
-import { QuizNav } from "../../../components/quiz/QuizNav";
+import { QuizNav, type QuizNavHandle } from "../../../components/quiz/QuizNav";
 import { QuizContent } from "../../../components/quiz/QuizContent";
 import SEO from "../../../components/common/SEO";
 import type { TicketExamData, AnswersMap } from "../../../types";
@@ -24,6 +24,9 @@ const TicketExamPage = () => {
   const [answers, setAnswers] = useState<AnswersMap>({});
 
   const hasFetched = useRef(false);
+  const submittedRef = useRef(false);
+  const sessionIdRef = useRef<number | null>(null);
+  const quizNavRef = useRef<QuizNavHandle>(null);
 
   const startTicketExam = async (isRetry = false) => {
     if (hasFetched.current && !isRetry) return;
@@ -40,6 +43,7 @@ const TicketExamPage = () => {
 
       if (response.data) {
         setExamData(response.data);
+        sessionIdRef.current = response.data.data.sessionId;
       }
     } catch (err: unknown) {
       const errorMessage =
@@ -62,6 +66,18 @@ const TicketExamPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // Foydalanuvchi modal orqali emas, boshqa yo'l bilan chiqib ketsa
+  // (browser back, URL o'zgartirish) — sessiyani abandon qilamiz
+  useEffect(() => {
+    return () => {
+      if (!submittedRef.current && sessionIdRef.current) {
+        navigator.sendBeacon(
+          `/api/v2/exams/${sessionIdRef.current}/abandon`,
+        );
+      }
+    };
+  }, []);
+
   const handleAnswerSelect = (
     questionIndex: number,
     optionIndex: number,
@@ -76,10 +92,11 @@ const TicketExamPage = () => {
   const handleReset = () => setAnswers({});
 
   const handleFinish = () => {
-    const finishButton = document.querySelector(
-      "[data-finish-button]",
-    ) as HTMLButtonElement;
-    finishButton?.click();
+    quizNavRef.current?.openFinishModal();
+  };
+
+  const handleSubmitSuccess = () => {
+    submittedRef.current = true;
   };
 
   if (loading) {
@@ -137,16 +154,18 @@ const TicketExamPage = () => {
   const ticketName = examData.data.ticketNumber
     ? `${t("ticket.ticket")} ${examData.data.ticketNumber}`
     : t("ticket.exam");
+  const examSuffix = t("ticket.examSuffix");
 
   return (
     <>
       <SEO
-        title={`${ticketName} — Imtihon`}
+        title={`${ticketName} ${examSuffix}`}
         description={`${ticketName} savollari — haydovchilik guvohnomasi imtihoniga tayyorgarlik. ${examData.data.totalQuestions} ta savol.`}
         canonical={`/tickets/${id}`}
         noIndex
       />
       <QuizNav
+        ref={quizNavRef}
         sessionId={examData.data.sessionId}
         questions={examData.data.questions}
         totalQuestions={examData.data.totalQuestions}
@@ -155,6 +174,7 @@ const TicketExamPage = () => {
         onReset={handleReset}
         backUrl="/tickets"
         isSecureMode={isSecureMode}
+        onSubmitSuccess={handleSubmitSuccess}
       />
       <QuizContent
         questions={examData.data.questions}

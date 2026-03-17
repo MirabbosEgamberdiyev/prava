@@ -207,9 +207,9 @@ const GuestExamPage = () => {
   return (
     <>
       <SEO
-        title="Imtihonni sinab ko'ring - Bepul YHXBB testi online"
-        description="Ro'yxatdan o'tmasdan haydovchilik guvohnomasi imtihonini bepul sinab ko'ring. Real imtihon formatida YHXBB savollarini yechib ko'ring. O'zbekistonda haydovchilik guvohnomasi uchun online test."
-        keywords="prava test bepul, haydovchilik imtihoni sinash, YHXBB test online, prava sinov, bepul prava test, бесплатный тест ПДД, haydovchilik guvohnomasi test, avtomaktab test online"
+        title={t("guestExam.seoTitle")}
+        description={t("guestExam.seoDescription")}
+        keywords="prava test bepul, haydovchilik imtihoni sinash, YHXBB test online, prava sinov, бесплатный тест ПДД"
         canonical="/try-exam"
         jsonLd={{
           "@context": "https://schema.org",
@@ -230,7 +230,7 @@ const GuestExamPage = () => {
         onReset={handleReset}
         backUrl="/"
         isSecureMode={false}
-        onGuestFinish={() => navigate("/")}
+        onGuestFinish={() => setGuestResultOpened(true)}
         onGuestViewResults={() => setGuestResultOpened(true)}
       />
       <Alert
@@ -330,12 +330,9 @@ const GuestExamPage = () => {
             <Button
               fullWidth
               leftSection={<IconChartBar size={18} />}
-              onClick={() => {
-                setGuestResultOpened(false);
-                // Stay on page to review answers
-              }}
+              onClick={() => setGuestResultOpened(false)}
             >
-              {t("exam.viewResults")}
+              {t("exam.reviewAnswers")}
             </Button>
             <Button
               fullWidth

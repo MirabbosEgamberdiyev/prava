@@ -4,6 +4,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useRef,
   useCallback,
   type ReactNode,
 } from "react";
@@ -85,19 +86,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [user, setUser] = useState<User | null>(getInitialUser());
   const navigate = useNavigate();
 
-  // Periodically check if cookies are still valid (e.g. expired mid-session)
+  // Keep a ref in sync so syncAuthState never closes over stale state
+  const isAuthenticatedRef = useRef(isAuthenticated);
+  useEffect(() => {
+    isAuthenticatedRef.current = isAuthenticated;
+  }, [isAuthenticated]);
+
+  // Stable callback — no state in deps, reads current value via ref
   const syncAuthState = useCallback(() => {
     const isValid = checkAuthStatus();
-    if (isAuthenticated && !isValid) {
-      // Token expired or was cleared externally
+    if (isAuthenticatedRef.current && !isValid) {
       setIsAuthenticated(false);
       setUser(null);
-    } else if (!isAuthenticated && isValid) {
-      // Token appeared (e.g. from another tab)
+    } else if (!isAuthenticatedRef.current && isValid) {
       setIsAuthenticated(true);
       setUser(getInitialUser());
     }
-  }, [isAuthenticated]);
+  }, []);
 
   useEffect(() => {
     // Check every 30 seconds

@@ -15,7 +15,7 @@ import {
 import { IconClock, IconHistory } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import { useLanguage } from "../../../hooks/useLanguage";
 import { EmptyState } from "../../../components/common/EmptyState";
@@ -26,8 +26,11 @@ export function ExamHistoryPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { lang, localize } = useLanguage();
-  const [page, setPage] = useState(0);
-  const [filter, setFilter] = useState<HistoryFilterStatus>("ALL");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Math.max(0, Number(searchParams.get("page") ?? 0));
+  const [filter, setFilter] = useState<HistoryFilterStatus>(
+    (searchParams.get("filter") as HistoryFilterStatus) ?? "ALL",
+  );
 
   const apiStatus = getApiStatus(filter);
   const apiUrl =
@@ -56,9 +59,25 @@ export function ExamHistoryPage() {
     { label: t("history.abandoned"), value: "ABANDONED" },
   ];
 
+  const setPage = (p: number) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (p === 0) next.delete("page");
+      else next.set("page", String(p));
+      return next;
+    }, { replace: true });
+  };
+
   const handleFilterChange = (value: string) => {
-    setFilter(value as HistoryFilterStatus);
-    setPage(0);
+    const newFilter = value as HistoryFilterStatus;
+    setFilter(newFilter);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("page");
+      if (newFilter === "ALL") next.delete("filter");
+      else next.set("filter", newFilter);
+      return next;
+    }, { replace: true });
   };
 
   const formatDuration = (seconds: number) => {
@@ -224,6 +243,7 @@ export function ExamHistoryPage() {
                 value={page + 1}
                 onChange={(p) => setPage(p - 1)}
                 total={totalPages}
+                withEdges
               />
             </Flex>
           )}

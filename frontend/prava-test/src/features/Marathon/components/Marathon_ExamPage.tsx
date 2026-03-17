@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -12,7 +12,7 @@ import {
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import api from "../../../api/api";
-import { QuizNav } from "../../../components/quiz/QuizNav";
+import { QuizNav, type QuizNavHandle } from "../../../components/quiz/QuizNav";
 import { QuizContent } from "../../../components/quiz/QuizContent";
 import type { MarathonExamData, AnswersMap } from "../../../types";
 import type { ExamMode } from "../../../components/quiz/ExamModeModal";
@@ -40,8 +40,11 @@ const Marathon_ExamPage = ({
   const [answers, setAnswers] = useState<AnswersMap>({});
 
   const hasFetched = useRef(false);
+  const submittedRef = useRef(false);
+  const sessionIdRef = useRef<number | null>(null);
+  const quizNavRef = useRef<QuizNavHandle>(null);
 
-  const startMarathon = async (isRetry = false) => {
+  const startMarathon = useCallback(async (isRetry = false) => {
     if (hasFetched.current && !isRetry) return;
     hasFetched.current = true;
 
@@ -61,6 +64,7 @@ const Marathon_ExamPage = ({
 
       if (response.data) {
         setExamData(response.data);
+        sessionIdRef.current = response.data.data.sessionId;
       }
     } catch (err: unknown) {
       const errorMessage =
@@ -76,11 +80,20 @@ const Marathon_ExamPage = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [isSecureMode, questionCount, durationMinutes, topicId, t]);
 
   useEffect(() => {
     startMarathon();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startMarathon]);
+
+  useEffect(() => {
+    return () => {
+      if (!submittedRef.current && sessionIdRef.current) {
+        navigator.sendBeacon(
+          `/api/v2/exams/${sessionIdRef.current}/abandon`,
+        );
+      }
+    };
   }, []);
 
   const handleAnswerSelect = (
@@ -96,11 +109,12 @@ const Marathon_ExamPage = ({
 
   const handleReset = () => setAnswers({});
 
+  const handleSubmitSuccess = () => {
+    submittedRef.current = true;
+  };
+
   const handleFinish = () => {
-    const finishButton = document.querySelector(
-      "[data-finish-button]",
-    ) as HTMLButtonElement;
-    finishButton?.click();
+    quizNavRef.current?.openFinishModal();
   };
 
   if (loading) {
@@ -156,6 +170,7 @@ const Marathon_ExamPage = ({
   return (
     <>
       <QuizNav
+        ref={quizNavRef}
         sessionId={examData.data.sessionId}
         questions={examData.data.questions}
         totalQuestions={examData.data.totalQuestions}
@@ -164,6 +179,7 @@ const Marathon_ExamPage = ({
         onReset={handleReset}
         backUrl="/me"
         isSecureMode={isSecureMode}
+        onSubmitSuccess={handleSubmitSuccess}
       />
       <QuizContent
         questions={examData.data.questions}

@@ -6,3 +6,30 @@
   border-color: var(--mantine-color-blue-4) !important;
   transform: translateX(4px);
 }
+
+/* Savol navigatsiya tugmasi */
+.questionBtn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 6px;
+  border-radius: var(--mantine-radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.questionBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.questionBtn[data-active="true"] {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(34, 139, 230, 0.35);
+}

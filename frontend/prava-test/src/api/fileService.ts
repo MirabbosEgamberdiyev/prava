@@ -6,12 +6,18 @@ class FileService {
   async downloadByName(fileName: string, folder?: string) {
     const params = new URLSearchParams({ fileName });
     if (folder) params.append("folder", folder);
-    const res = await api.get(`${this.baseUrl}/download/by-name?${params}`, { responseType: "blob" });
+    const res = await api.get(`${this.baseUrl}/download/by-name?${params}`, {
+      responseType: "blob",
+      timeout: 60000,
+    });
     return res.data;
   }
 
   async downloadByUrl(fileUrl: string) {
-    const res = await api.get(`${this.baseUrl}/download/by-url?fileUrl=${encodeURIComponent(fileUrl)}`, { responseType: "blob" });
+    const res = await api.get(
+      `${this.baseUrl}/download/by-url?fileUrl=${encodeURIComponent(fileUrl)}`,
+      { responseType: "blob", timeout: 60000 },
+    );
     return res.data;
   }
 

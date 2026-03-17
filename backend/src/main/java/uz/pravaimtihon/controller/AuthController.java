@@ -608,11 +608,11 @@ public class AuthController {
             )
     })
     public ResponseEntity<ApiResponse<Void>> logout(
-            @RequestParam String refreshToken,
+            @Valid @RequestBody RefreshTokenRequest request,
             @Parameter(description = "Accept-Language", required = true)
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
-        authService.logout(refreshToken, language);
+        authService.logout(request.getRefreshToken(), language);
         return ResponseEntity.ok(ApiResponse.success(messageService.getMessage("success.auth.logout", language), null));
     }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import {
   SimpleGrid,
@@ -20,8 +21,11 @@ const PAGE_SIZE = 20;
 
 const Package_List = () => {
   const { t, i18n } = useTranslation();
-  const [page, setPage] = useState(0);
-  const [selectedTopicCode, setSelectedTopicCode] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Math.max(0, Number(searchParams.get("page") ?? 0));
+  const [selectedTopicCode, setSelectedTopicCode] = useState<string | null>(
+    searchParams.get("topic") ?? null,
+  );
 
   // API endpoint - til o'zgarganda qayta so'rov yuboriladi
   const url = selectedTopicCode
@@ -36,9 +40,24 @@ const Package_List = () => {
   // Jami sahifalar soni
   const totalPages = data?.data.totalPages ?? 0;
 
+  const setPage = (p: number) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (p === 0) next.delete("page");
+      else next.set("page", String(p));
+      return next;
+    }, { replace: true });
+  };
+
   const handleTopicChange = (value: string | null) => {
     setSelectedTopicCode(value);
-    setPage(0);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("page");
+      if (value) next.set("topic", value);
+      else next.delete("topic");
+      return next;
+    }, { replace: true });
   };
 
   // Birinchi yuklash - skeleton loader
@@ -108,6 +127,7 @@ const Package_List = () => {
             value={page + 1}
             onChange={(value) => setPage(value - 1)}
             size="md"
+            withEdges
           />
         </>
       )}

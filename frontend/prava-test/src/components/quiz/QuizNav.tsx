@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import {
   Alert,
   Badge,
@@ -31,6 +31,10 @@ import ColorMode from "../other/ColorMode";
 import api from "../../api/api";
 import type { AnswersMap } from "../../types";
 
+export interface QuizNavHandle {
+  openFinishModal: () => void;
+}
+
 interface QuizNavProps {
   sessionId?: number;
   questions?: Array<{
@@ -42,16 +46,15 @@ interface QuizNavProps {
   durationMinutes?: number;
   answers: AnswersMap;
   onReset?: () => void;
-  onOpenFinishModal?: () => void;
   backUrl?: string;
   onTimeUp?: () => void;
   isSecureMode?: boolean;
-  forceEnableSubmit?: boolean;
   onGuestFinish?: () => void;
   onGuestViewResults?: () => void;
+  onSubmitSuccess?: () => void;
 }
 
-export function QuizNav({
+export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav({
   sessionId,
   questions = [],
   totalQuestions = 0,
@@ -61,14 +64,16 @@ export function QuizNav({
   backUrl = "/packages",
   onTimeUp,
   isSecureMode = false,
-  forceEnableSubmit = false,
   onGuestFinish,
   onGuestViewResults,
-}: QuizNavProps) {
+  onSubmitSuccess,
+}: QuizNavProps, ref) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [opened, { open, close }] = useDisclosure(false);
   const [submitting, setSubmitting] = useState(false);
+
+  useImperativeHandle(ref, () => ({ openFinishModal: open }), [open]);
   const colorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
   });
@@ -130,6 +135,7 @@ export function QuizNav({
         color: "green",
       });
 
+      onSubmitSuccess?.();
       navigate(navigateTo, { replace: true });
     } catch (error: unknown) {
       const errorMessage =
@@ -229,12 +235,12 @@ export function QuizNav({
                 ta="center"
                 style={{
                   backgroundColor: isDark
-                    ? "var(--mantine-color-blue-9)"
+                    ? "var(--mantine-color-dark-5)"
                     : "var(--mantine-color-blue-0)",
-                  border: `1px solid ${isDark ? "var(--mantine-color-blue-7)" : "var(--mantine-color-blue-3)"}`,
+                  border: `1px solid ${isDark ? "var(--mantine-color-blue-5)" : "var(--mantine-color-blue-3)"}`,
                 }}
               >
-                <Text size="xl" fw={700} c="blue">
+                <Text size="xl" fw={700} c={isDark ? "blue.3" : "blue.7"}>
                   {answeredCount}
                 </Text>
                 <Text size="sm" c="dimmed">
@@ -246,15 +252,15 @@ export function QuizNav({
                 ta="center"
                 style={{
                   backgroundColor: isDark
-                    ? "var(--mantine-color-yellow-9)"
+                    ? "var(--mantine-color-dark-5)"
                     : "var(--mantine-color-yellow-0)",
-                  border: `1px solid ${isDark ? "var(--mantine-color-yellow-7)" : "var(--mantine-color-yellow-3)"}`,
+                  border: `1px solid ${isDark ? "var(--mantine-color-yellow-5)" : "var(--mantine-color-yellow-3)"}`,
                 }}
               >
-                <Text size="xl" fw={700} c={isDark ? "yellow.2" : "yellow.9"}>
+                <Text size="xl" fw={700} c={isDark ? "yellow.3" : "yellow.8"}>
                   {unansweredCount}
                 </Text>
-                <Text size="sm" c={isDark ? "yellow.3" : "dark.6"}>
+                <Text size="sm" c="dimmed">
                   {t("exam.unanswered")}
                 </Text>
               </Paper>
@@ -266,12 +272,12 @@ export function QuizNav({
                 ta="center"
                 style={{
                   backgroundColor: isDark
-                    ? "var(--mantine-color-green-9)"
+                    ? "var(--mantine-color-dark-5)"
                     : "var(--mantine-color-green-0)",
-                  border: `1px solid ${isDark ? "var(--mantine-color-green-7)" : "var(--mantine-color-green-3)"}`,
+                  border: `1px solid ${isDark ? "var(--mantine-color-green-5)" : "var(--mantine-color-green-3)"}`,
                 }}
               >
-                <Text size="xl" fw={700} c="green">
+                <Text size="xl" fw={700} c={isDark ? "green.3" : "green.7"}>
                   {correctCount}
                 </Text>
                 <Text size="sm" c="dimmed">
@@ -283,12 +289,12 @@ export function QuizNav({
                 ta="center"
                 style={{
                   backgroundColor: isDark
-                    ? "var(--mantine-color-red-9)"
+                    ? "var(--mantine-color-dark-5)"
                     : "var(--mantine-color-red-0)",
-                  border: `1px solid ${isDark ? "var(--mantine-color-red-7)" : "var(--mantine-color-red-3)"}`,
+                  border: `1px solid ${isDark ? "var(--mantine-color-red-5)" : "var(--mantine-color-red-3)"}`,
                 }}
               >
-                <Text size="xl" fw={700} c="red">
+                <Text size="xl" fw={700} c={isDark ? "red.4" : "red.7"}>
                   {incorrectCount}
                 </Text>
                 <Text size="sm" c="dimmed">
@@ -300,15 +306,15 @@ export function QuizNav({
                 ta="center"
                 style={{
                   backgroundColor: isDark
-                    ? "var(--mantine-color-yellow-9)"
+                    ? "var(--mantine-color-dark-5)"
                     : "var(--mantine-color-yellow-0)",
-                  border: `1px solid ${isDark ? "var(--mantine-color-yellow-7)" : "var(--mantine-color-yellow-3)"}`,
+                  border: `1px solid ${isDark ? "var(--mantine-color-yellow-5)" : "var(--mantine-color-yellow-3)"}`,
                 }}
               >
-                <Text size="xl" fw={700} c={isDark ? "yellow.2" : "yellow.9"}>
+                <Text size="xl" fw={700} c={isDark ? "yellow.3" : "yellow.8"}>
                   {unansweredCount}
                 </Text>
-                <Text size="sm" c={isDark ? "yellow.3" : "dark.6"}>
+                <Text size="sm" c="dimmed">
                   {t("exam.unanswered")}
                 </Text>
               </Paper>
@@ -362,7 +368,7 @@ export function QuizNav({
                 onClick={() => handleSubmit(backUrl)}
                 loading={submitting}
                 rightSection={<IconCheck size={18} />}
-                disabled={submitting || (!allAnswered && !isTimeUp && !forceEnableSubmit)}
+                disabled={submitting}
                 fullWidth
               >
                 {t("exam.finish")}
@@ -375,7 +381,7 @@ export function QuizNav({
                 onClick={() => handleSubmit(`/exam/result/${sessionId}`)}
                 loading={submitting}
                 rightSection={<IconChartBar size={18} />}
-                disabled={submitting || (!allAnswered && !isTimeUp && !forceEnableSubmit)}
+                disabled={submitting}
                 fullWidth
               >
                 {t("exam.viewResults")}
@@ -386,4 +392,4 @@ export function QuizNav({
       </Modal>
     </>
   );
-}
+});
