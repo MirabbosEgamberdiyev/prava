@@ -150,5 +150,5 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             "WHERE q.id IN :ids AND q.deleted = false AND q.isActive = true")
     List<Question> findByIdsWithOptions(@Param("ids") List<Long> ids);
 
-    @Query("SELECT q FROM Question q LEFT JOIN FETCH q.options WHERE q.id = :id")
+    @Query("SELECT q FROM Question q LEFT JOIN FETCH q.options WHERE q.id = :id AND q.deleted = false")
     Optional<Question> findByIdWithOptions(@Param("id") Long id);}

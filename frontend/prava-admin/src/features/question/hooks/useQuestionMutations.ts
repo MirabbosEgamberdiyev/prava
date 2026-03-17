@@ -10,16 +10,27 @@ export const useQuestionMutations = () => {
     const { mutate } = useSWRConfig();
 
     /**
-     * ✅ SWR cache ni to'g'ri invalidate qiladi
-     * useQuestions da key format: ["/api/v1/admin/questions?...", "uzl"]
-     * Bu funksiya array key larni ham string key larni ham topadi
+     * Savol o'zgarishi bilan bog'liq barcha SWR cachlarini tozalaydi:
+     * - Savollar ro'yxati
+     * - Mavzular (savol soni o'zgaradi)
+     * - Biletlar (o'chirilgan savollar chiqib ketsin)
+     * - To'plamlar (packages - o'chirilgan savollar chiqib ketsin)
+     * - Dashboard statistikasi (savol soni yangilansin)
      */
     const invalidateQuestionsCache = () => {
         mutate((key) => {
-            if (Array.isArray(key)) {
-                return typeof key[0] === "string" && key[0].includes("/api/v1/admin/questions");
-            }
-            return typeof key === "string" && key.includes("/api/v1/admin/questions");
+            const k = Array.isArray(key) ? key[0] : key;
+            if (typeof k !== "string") return false;
+            return (
+                k.includes("/api/v1/admin/questions") ||
+                k.includes("/api/v1/admin/topics") ||
+                k.includes("/api/v1/admin/tickets") ||
+                k.includes("/api/v1/admin/dashboard") ||
+                k.includes("/api/v1/admin/statistics") ||
+                k.includes("/api/v1/packages") ||
+                k.includes("/api/v2/tickets") ||
+                k.includes("/api/v2/topics")
+            );
         });
     };
 

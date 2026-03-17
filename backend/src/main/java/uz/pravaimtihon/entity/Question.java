@@ -2,6 +2,7 @@ package uz.pravaimtihon.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 import uz.pravaimtihon.enums.AcceptLanguage;
 import uz.pravaimtihon.enums.QuestionDifficulty;
 
@@ -13,6 +14,9 @@ import java.util.Set;
 /**
  * Question entity with complete multi-language support
  * Now uses Topic entity for proper topic management
+ *
+ * @SQLRestriction ensures soft-deleted questions are NEVER loaded through
+ * any Hibernate association (@ManyToMany in Ticket, ExamPackage, etc.)
  */
 @Entity
 @Table(name = "questions", indexes = {
@@ -21,6 +25,7 @@ import java.util.Set;
         @Index(name = "idx_question_deleted", columnList = "deleted"),
         @Index(name = "idx_question_active", columnList = "is_active")
 })
+@SQLRestriction("deleted = false")
 @Getter
 @Setter
 @NoArgsConstructor

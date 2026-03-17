@@ -28,6 +28,7 @@ import {
   IconChevronRight,
   IconTarget,
   IconTrophy,
+  IconChartBar,
 } from "@tabler/icons-react";
 import { useLanguage } from "../../hooks/useLanguage";
 import type { Question, Option, AnswersMap } from "../../types";
@@ -49,6 +50,9 @@ interface QuizContentProps {
   maxErrorPercentage?: number;
   isTimeUp?: boolean;
   isSecureMode?: boolean;
+  onFinishExam?: (navigateTo: string) => Promise<void>;
+  examSessionId?: number;
+  onErrorLimitReached?: () => void;
 }
 
 export function QuizContent({
@@ -62,6 +66,9 @@ export function QuizContent({
   maxErrorPercentage = 0.1,
   isTimeUp = false,
   isSecureMode = false,
+  onFinishExam,
+  examSessionId,
+  onErrorLimitReached,
 }: QuizContentProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -73,6 +80,7 @@ export function QuizContent({
   const [imageModalOpened, setImageModalOpened] = useState(false);
   const [explanationOpen, setExplanationOpen] = useState(false);
   const [resultModalOpened, setResultModalOpened] = useState(false);
+  const [submittingResult, setSubmittingResult] = useState(false);
 
   const [timeUpTriggered, setTimeUpTriggered] = useState(false);
   const [activeQuiz, setActiveQuiz] = useState(0);
@@ -223,6 +231,7 @@ export function QuizContent({
       const isCorrect = question && optionIndex === question.correctOptionIndex;
       const newIncorrectCount = incorrectCount + (isCorrect ? 0 : 1);
       if (newIncorrectCount > maxAllowedErrors) {
+        onErrorLimitReached?.();
         setTimeout(() => setResultModalOpened(true), 500);
         return;
       }
@@ -618,9 +627,43 @@ export function QuizContent({
               </Paper>
             </Group>
 
-            <Button fullWidth onClick={() => navigate("/me")}>
-              {t("exam.result.goHome")}
+            <Button
+              fullWidth
+              loading={submittingResult}
+              onClick={async () => {
+                if (onFinishExam) {
+                  setSubmittingResult(true);
+                  try {
+                    await onFinishExam("/me");
+                  } finally {
+                    setSubmittingResult(false);
+                  }
+                } else {
+                  navigate("/me");
+                }
+              }}
+            >
+              {t("exam.finish")}
             </Button>
+            {examSessionId && onFinishExam && (
+              <Button
+                fullWidth
+                variant="light"
+                color="blue"
+                loading={submittingResult}
+                leftSection={<IconChartBar size={18} />}
+                onClick={async () => {
+                  setSubmittingResult(true);
+                  try {
+                    await onFinishExam(`/exam/result/${examSessionId}`);
+                  } finally {
+                    setSubmittingResult(false);
+                  }
+                }}
+              >
+                {t("exam.viewResults")}
+              </Button>
+            )}
           </Stack>
         </Modal>
       )}

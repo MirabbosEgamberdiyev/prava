@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -12,11 +12,17 @@ import {
   ThemeIcon,
   Container,
   Alert,
+  Modal,
+  SimpleGrid,
+  Progress,
+  Group,
 } from "@mantine/core";
 import {
   IconAlertCircle,
   IconLock,
   IconUserPlus,
+  IconChartBar,
+  IconHome,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
@@ -25,13 +31,6 @@ import { QuizNav } from "../../components/quiz/QuizNav";
 import type { Question, AnswersMap } from "../../types";
 
 const GUEST_EXAM_KEY = "guestExamCount";
-
-interface GuestExamJson {
-  totalQuestions: number;
-  durationMinutes: number;
-  passingScore: number;
-  questions: Question[];
-}
 
 const GuestExamPage = () => {
   const { t } = useTranslation();
@@ -44,6 +43,7 @@ const GuestExamPage = () => {
   const [limitReached, setLimitReached] = useState(false);
   const [answers, setAnswers] = useState<AnswersMap>({});
   const [redirectCountdown, setRedirectCountdown] = useState(5);
+  const [guestResultOpened, setGuestResultOpened] = useState(false);
 
   const hasFetched = useRef(false);
 
@@ -58,11 +58,16 @@ const GuestExamPage = () => {
       return;
     }
 
-    fetch("/data/guest-exam.json")
-      .then((res) => res.json())
-      .then((data: GuestExamJson) => {
-        setQuestions(data.questions);
-        setDurationMinutes(data.durationMinutes);
+    fetch("/api/v1/public/guest-exam")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        const exam = data?.data;
+        if (!exam?.questions?.length) throw new Error("No questions");
+        setQuestions(exam.questions);
+        setDurationMinutes(exam.durationMinutes ?? 20);
         localStorage.setItem(GUEST_EXAM_KEY, String(count + 1));
       })
       .catch((err) => {
@@ -101,12 +106,23 @@ const GuestExamPage = () => {
 
   const handleReset = () => setAnswers({});
 
-  const handleFinish = () => {
-    const finishButton = document.querySelector(
-      "[data-finish-button]",
-    ) as HTMLButtonElement;
-    finishButton?.click();
-  };
+  const handleFinish = () => setGuestResultOpened(true);
+
+  // Compute stats from answers + questions
+  const { correctCount, incorrectCount, unansweredCount } = useMemo(() => {
+    const correct = questions.reduce((count, q, i) => {
+      return count + (answers[i]?.optionIndex === q.correctOptionIndex ? 1 : 0);
+    }, 0);
+    const answered = Object.keys(answers).length;
+    return {
+      correctCount: correct,
+      incorrectCount: answered - correct,
+      unansweredCount: questions.length - answered,
+    };
+  }, [questions, answers]);
+
+  const correctPercentage =
+    questions.length > 0 ? (correctCount / questions.length) * 100 : 0;
 
   if (loading) {
     return (
@@ -214,6 +230,8 @@ const GuestExamPage = () => {
         onReset={handleReset}
         backUrl="/"
         isSecureMode={false}
+        onGuestFinish={() => navigate("/")}
+        onGuestViewResults={() => setGuestResultOpened(true)}
       />
       <Alert
         icon={<IconAlertCircle size={16} />}
@@ -233,6 +251,112 @@ const GuestExamPage = () => {
         showExplanation={true}
         isSecureMode={false}
       />
+
+      {/* Guest Result Modal */}
+      <Modal
+        opened={guestResultOpened}
+        onClose={() => setGuestResultOpened(false)}
+        title={t("exam.finishModal.title")}
+        centered
+        size="500px"
+      >
+        <Stack gap="md">
+          <SimpleGrid cols={3} spacing="sm">
+            <Paper
+              p="md"
+              ta="center"
+              style={{
+                backgroundColor: "var(--mantine-color-green-0)",
+                border: "1px solid var(--mantine-color-green-3)",
+              }}
+            >
+              <Text size="xl" fw={700} c="green">
+                {correctCount}
+              </Text>
+              <Text size="sm" c="dimmed">
+                {t("exam.correct")}
+              </Text>
+            </Paper>
+            <Paper
+              p="md"
+              ta="center"
+              style={{
+                backgroundColor: "var(--mantine-color-red-0)",
+                border: "1px solid var(--mantine-color-red-3)",
+              }}
+            >
+              <Text size="xl" fw={700} c="red">
+                {incorrectCount}
+              </Text>
+              <Text size="sm" c="dimmed">
+                {t("exam.incorrect")}
+              </Text>
+            </Paper>
+            <Paper
+              p="md"
+              ta="center"
+              style={{
+                backgroundColor: "var(--mantine-color-yellow-0)",
+                border: "1px solid var(--mantine-color-yellow-3)",
+              }}
+            >
+              <Text size="xl" fw={700} c="yellow.9">
+                {unansweredCount}
+              </Text>
+              <Text size="sm" c="dimmed">
+                {t("exam.unanswered")}
+              </Text>
+            </Paper>
+          </SimpleGrid>
+
+          <Box>
+            <Group justify="space-between" mb="xs">
+              <Text size="sm" c="dimmed">
+                {t("exam.result.score")}
+              </Text>
+              <Text size="sm" fw={500}>
+                {correctCount} / {questions.length}
+              </Text>
+            </Group>
+            <Progress
+              value={correctPercentage}
+              color={correctPercentage >= 90 ? "green" : correctPercentage >= 60 ? "yellow" : "red"}
+              size="lg"
+              radius="xl"
+            />
+          </Box>
+
+          <Stack gap="sm" mt="sm">
+            <Button
+              fullWidth
+              leftSection={<IconChartBar size={18} />}
+              onClick={() => {
+                setGuestResultOpened(false);
+                // Stay on page to review answers
+              }}
+            >
+              {t("exam.viewResults")}
+            </Button>
+            <Button
+              fullWidth
+              variant="light"
+              leftSection={<IconUserPlus size={18} />}
+              onClick={() => navigate("/auth/register")}
+            >
+              {t("register.register")}
+            </Button>
+            <Button
+              fullWidth
+              variant="subtle"
+              color="gray"
+              leftSection={<IconHome size={18} />}
+              onClick={() => navigate("/")}
+            >
+              {t("notFound.backHome")}
+            </Button>
+          </Stack>
+        </Stack>
+      </Modal>
     </>
   );
 };

@@ -3,6 +3,7 @@ import { BrowserRouter, useLocation } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import AppRoutes from "./routes";
+import GoogleOneTap from "./components/auth/GoogleOneTap";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
@@ -218,6 +219,7 @@ function AppInner() {
         <PWAUpdater />
         <ApiErrorListener />
         <PWAModal />
+        <GoogleOneTap />
         <AppRoutes />
       </AuthProvider>
     </ErrorBoundary>

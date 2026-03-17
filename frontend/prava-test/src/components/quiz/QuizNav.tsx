@@ -46,6 +46,9 @@ interface QuizNavProps {
   backUrl?: string;
   onTimeUp?: () => void;
   isSecureMode?: boolean;
+  forceEnableSubmit?: boolean;
+  onGuestFinish?: () => void;
+  onGuestViewResults?: () => void;
 }
 
 export function QuizNav({
@@ -58,6 +61,9 @@ export function QuizNav({
   backUrl = "/packages",
   onTimeUp,
   isSecureMode = false,
+  forceEnableSubmit = false,
+  onGuestFinish,
+  onGuestViewResults,
 }: QuizNavProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -91,11 +97,13 @@ export function QuizNav({
     if (submitting) return;
 
     if (!sessionId) {
-      notifications.show({
-        title: t("common.error"),
-        message: t("notification.sessionNotFound"),
-        color: "red",
-      });
+      // Guest mode: no API call needed, just delegate to callbacks
+      close();
+      if (navigateTo === backUrl) {
+        onGuestFinish?.();
+      } else {
+        onGuestViewResults?.();
+      }
       return;
     }
 
@@ -354,7 +362,7 @@ export function QuizNav({
                 onClick={() => handleSubmit(backUrl)}
                 loading={submitting}
                 rightSection={<IconCheck size={18} />}
-                disabled={submitting || (!allAnswered && !isTimeUp)}
+                disabled={submitting || (!allAnswered && !isTimeUp && !forceEnableSubmit)}
                 fullWidth
               >
                 {t("exam.finish")}
@@ -367,7 +375,7 @@ export function QuizNav({
                 onClick={() => handleSubmit(`/exam/result/${sessionId}`)}
                 loading={submitting}
                 rightSection={<IconChartBar size={18} />}
-                disabled={submitting || (!allAnswered && !isTimeUp)}
+                disabled={submitting || (!allAnswered && !isTimeUp && !forceEnableSubmit)}
                 fullWidth
               >
                 {t("exam.viewResults")}

@@ -9,11 +9,13 @@ import {
   Group,
 } from "@mantine/core";
 import { useTranslation } from "react-i18next";
+import { notifications } from "@mantine/notifications";
 import { useExam, EXAM_DEFAULTS } from "../../features/Exam";
 import type { ExamPageProps } from "../../features/Exam";
 import { QuizNav } from "../../components/quiz/QuizNav";
 import { QuizContent } from "../../components/quiz/QuizContent";
 import SEO from "../../components/common/SEO";
+import api from "../../api/api";
 
 const Exam_Page = ({
   questionCount = EXAM_DEFAULTS.QUESTION_COUNT,
@@ -33,6 +35,37 @@ const Exam_Page = ({
   } = useExam({ questionCount, durationMinutes });
 
   const [isTimeUp, setIsTimeUp] = useState(false);
+  const [isErrorLimitReached, setIsErrorLimitReached] = useState(false);
+
+  const handleExamFinish = async (navigateTo: string) => {
+    if (!examData) return;
+    try {
+      const formattedAnswers = examData.data.questions.map((question, index) => ({
+        questionId: question.id,
+        selectedOptionIndex: answers[index]?.optionIndex ?? null,
+        timeSpentSeconds: answers[index]?.timeSpentSeconds ?? 0,
+      }));
+      await api.post("/api/v2/exams/submit", {
+        sessionId: examData.data.sessionId,
+        answers: formattedAnswers,
+      });
+      notifications.show({
+        title: t("common.success"),
+        message: t("notification.examFinished"),
+        color: "green",
+      });
+      navigate(navigateTo, { replace: true });
+    } catch (error: unknown) {
+      const errorMessage =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || t("notification.submitError");
+      notifications.show({
+        title: t("common.error"),
+        message: errorMessage,
+        color: "red",
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -99,15 +132,21 @@ const Exam_Page = ({
         onReset={handleReset}
         backUrl="/me"
         onTimeUp={() => setIsTimeUp(true)}
+        forceEnableSubmit={isErrorLimitReached}
       />
       <QuizContent
         questions={examData.data.questions}
         onAnswerSelect={handleAnswerSelect}
-        onFinish={() => {}}
+        onFinish={() => {
+          (document.querySelector("[data-finish-button]") as HTMLButtonElement)?.click();
+        }}
         selectedAnswers={answers}
         errorLimitMode
         maxErrorPercentage={0.1}
         isTimeUp={isTimeUp}
+        onFinishExam={handleExamFinish}
+        examSessionId={examData.data.sessionId}
+        onErrorLimitReached={() => setIsErrorLimitReached(true)}
       />
     </>
   );
