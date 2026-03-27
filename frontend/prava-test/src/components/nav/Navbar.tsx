@@ -1,6 +1,10 @@
 import { useAuth } from "@/auth/AuthContext";
 import { AppShell, Button, Flex, Group, NavLink } from "@mantine/core";
-import { IconBrandInstagram, IconBrandTelegram, IconChevronRight } from "@tabler/icons-react";
+import {
+  IconBrandInstagram,
+  IconBrandTelegram,
+  IconChevronRight,
+} from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
@@ -10,7 +14,7 @@ const Navbar = ({ close }: { close: () => void }) => {
   return (
     <AppShell.Navbar py="md" px="sm">
       <NavLink
-        href="https://instagram.com/pravaonline"
+        href="https://instagram.com/pravaonlineuz"
         label="INSTAGRAM"
         target="_blank"
         leftSection={<IconBrandInstagram size={18} />}
@@ -20,7 +24,7 @@ const Navbar = ({ close }: { close: () => void }) => {
         active
       />
       <NavLink
-        href="https://t.me/pravaonline"
+        href="https://t.me/pravaonlineuz"
         label="TELEGRAM"
         target="_blank"
         leftSection={<IconBrandTelegram size={18} />}
@@ -28,7 +32,7 @@ const Navbar = ({ close }: { close: () => void }) => {
           <IconChevronRight size={18} className="mantine-rotate-rtl" />
         }
         active
-        mt={'md'}
+        mt={"md"}
       />
       <Flex align={"flex-end"} h={"100%"}>
         {isAuthenticated ? (

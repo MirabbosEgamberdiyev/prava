@@ -145,17 +145,6 @@ const Footer = () => {
               {t("footer.contact")}
             </Text>
             <Group gap={8}>
-              <IconMail size={16} color="var(--mantine-color-dimmed)" />
-              <Anchor
-                href="mailto:info@pravaonline.uz"
-                size="sm"
-                c={isDark ? "gray.4" : "gray.7"}
-                underline="hover"
-              >
-                info@pravaonline.uz
-              </Anchor>
-            </Group>
-            <Group gap={8}>
               <IconPhone size={16} color="var(--mantine-color-dimmed)" />
               <Anchor
                 href="tel:+998993912505"
