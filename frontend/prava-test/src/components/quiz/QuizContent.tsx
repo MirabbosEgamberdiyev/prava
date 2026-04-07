@@ -672,7 +672,7 @@ export function QuizContent({
       <Container fluid mt="xl" pb="xl">
         {/* Savol raqamlari - tepada */}
         <ScrollArea type="auto" offsetScrollbars scrollbarSize={4} mx={"-md"}>
-          <Flex gap={4} justify="center" wrap="nowrap" py={6} px={4}>
+          <Flex gap={4} justify="center" wrap="wrap" py={6} px={4}>
             {questions.map((question: Question, i: number) => {
               const wasAnswered = selectedAnswers[i] !== undefined;
               const wasCorrect =
@@ -704,15 +704,18 @@ export function QuizContent({
                   border = "var(--mantine-color-red-4)";
                 }
               } else {
-                bg = computedColorScheme === "dark"
-                  ? "var(--mantine-color-dark-5)"
-                  : "var(--mantine-color-gray-0)";
-                color = computedColorScheme === "dark"
-                  ? "var(--mantine-color-dark-0)"
-                  : "var(--mantine-color-dark-4)";
-                border = computedColorScheme === "dark"
-                  ? "var(--mantine-color-dark-3)"
-                  : "var(--mantine-color-gray-4)";
+                bg =
+                  computedColorScheme === "dark"
+                    ? "var(--mantine-color-dark-5)"
+                    : "var(--mantine-color-gray-0)";
+                color =
+                  computedColorScheme === "dark"
+                    ? "var(--mantine-color-dark-0)"
+                    : "var(--mantine-color-dark-4)";
+                border =
+                  computedColorScheme === "dark"
+                    ? "var(--mantine-color-dark-3)"
+                    : "var(--mantine-color-gray-4)";
               }
 
               return (

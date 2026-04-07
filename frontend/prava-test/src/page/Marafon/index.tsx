@@ -105,7 +105,7 @@ const Marafon_Page = () => {
         </div>
 
         {/* Question Count */}
-        <Paper p="md" radius="md" withBorder shadow="sm">
+        <Paper p="md" pb={"xl"} radius="md" withBorder shadow="sm">
           <Text fw={600} mb="xs">
             {t("marathon.questionCount")}
           </Text>
@@ -221,7 +221,10 @@ const Marafon_Page = () => {
               <Badge variant="light">
                 {questionCount} {t("marathon.questions")}
               </Badge>
-              <Badge variant="light" color={questionCount > 30 ? "orange" : "blue"}>
+              <Badge
+                variant="light"
+                color={questionCount > 30 ? "orange" : "blue"}
+              >
                 ~{questionCount} {t("marathon.minutes")}
               </Badge>
               <Badge

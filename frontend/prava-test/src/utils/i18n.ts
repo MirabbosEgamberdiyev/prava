@@ -11,7 +11,7 @@ i18n
   .init({
     supportedLngs: ["uzl", "uzc", "ru", "en"],
     fallbackLng: "uzl",
-    debug: import.meta.env.DEV,
+    debug: false,
     interpolation: {
       escapeValue: false,
     },
