@@ -103,6 +103,7 @@ app:
 
   google:
     client-id: ${GOOGLE_CLIENT_ID:237372892439-4bju17u6k3cjoil26p148m21ilmecd9s.apps.googleusercontent.com}
+    android-client-id: ${GOOGLE_ANDROID_CLIENT_ID:237372892439-79qbbfmfu7j54ds45nae883b378en7jb.apps.googleusercontent.com}
 
   oauth:
     google:

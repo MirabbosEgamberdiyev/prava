@@ -5,13 +5,17 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import uz.pravaimtihon.dto.google.GoogleUserInfo;
 import uz.pravaimtihon.exception.BusinessException;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -19,17 +23,28 @@ import java.util.Map;
 public class GoogleOAuthService {
 
     private final GoogleIdTokenVerifier verifier;
+    private final RestTemplate restTemplate;
 
     @Value("${app.oauth.google.enabled:true}")
     private boolean enabled;
 
     public GoogleOAuthService(
-            @Value("${app.google.client-id}") String clientId
+            @Value("${app.google.client-id}") String clientId,
+            @Value("${app.google.android-client-id:}") String androidClientId,
+            RestTemplate restTemplate
     ) {
+        this.restTemplate = restTemplate;
+        List<String> audiences = new ArrayList<>();
+        audiences.add(clientId);
+        if (androidClientId != null && !androidClientId.isBlank()) {
+            audiences.add(androidClientId);
+            log.info("Google OAuth: Android client ID configured");
+        }
         this.verifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(),
                 GsonFactory.getDefaultInstance()
-        ).setAudience(Collections.singletonList(clientId)).build();
+        ).setAudience(audiences).build();
+        log.info("Google OAuth: verifier configured with {} audience(s)", audiences.size());
     }
 
     public GoogleUserInfo verifyToken(String idToken) {
@@ -38,12 +53,15 @@ public class GoogleOAuthService {
         }
 
         try {
+            log.debug("Verifying Google ID token");
             GoogleIdToken token = verifier.verify(idToken);
             if (token == null) {
+                log.warn("Google ID token verification failed: token is null (invalid signature or wrong audience)");
                 throw new BusinessException("error.google.token.invalid");
             }
 
             GoogleIdToken.Payload p = token.getPayload();
+            log.info("Google ID token verified successfully for email: {}", p.getEmail());
 
             return GoogleUserInfo.builder()
                     .id(p.getSubject())
@@ -55,7 +73,10 @@ public class GoogleOAuthService {
                     .picture((String) p.get("picture"))
                     .build();
 
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
+            log.error("Google ID token verification error: {}", e.getMessage());
             throw new BusinessException("error.google.token.invalid");
         }
     }
@@ -67,16 +88,25 @@ public class GoogleOAuthService {
         }
 
         try {
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<Map> response = restTemplate.getForEntity(
-                    "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + accessToken,
+            log.debug("Verifying Google access token via userinfo endpoint");
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + accessToken);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    "https://www.googleapis.com/oauth2/v3/userinfo",
+                    HttpMethod.GET,
+                    entity,
                     Map.class
             );
 
             Map<String, Object> body = response.getBody();
             if (body == null || body.containsKey("error")) {
+                log.warn("Google userinfo returned error or empty body");
                 throw new BusinessException("error.google.token.invalid");
             }
+
+            log.info("Google access token verified successfully for email: {}", body.get("email"));
 
             return GoogleUserInfo.builder()
                     .id((String) body.get("sub"))
