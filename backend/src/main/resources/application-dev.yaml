@@ -1,4 +1,8 @@
-# application-dev.yaml
+# application-dev.yaml — LOCAL DEVELOPMENT CONFIG
+server:
+  port: 8081          # production 8080 ni olmasin
+  address: 0.0.0.0    # barcha interfeyslarga bind (phone ham ulanishi uchun)
+
 app:
   verification:
     test-mode:
@@ -14,3 +18,8 @@ app:
     enabled: true                # ✅ Email enabled
     test-mode:
       log-only: false            # ✅ Send real emails (optional)
+
+logging:
+  level:
+    uz.pravaimtihon: DEBUG       # ✅ Batafsil log
+    org.springframework.security: DEBUG
