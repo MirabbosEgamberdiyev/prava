@@ -242,7 +242,10 @@ public class QuestionService {
 
     @Transactional(readOnly = true)
     public PageResponse<QuestionResponse> searchQuestions(String query, Pageable pageable, AcceptLanguage language) {
-        Page<Question> page = questionRepository.searchQuestions(query, pageable);
+        if (query == null || query.trim().isEmpty()) {
+            return getAllQuestions(pageable, language);
+        }
+        Page<Question> page = questionRepository.searchQuestions(query.trim(), pageable);
         return questionMapper.toPageResponse(page, language);
     }
 

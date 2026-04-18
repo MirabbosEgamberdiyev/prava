@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Badge,
   ActionIcon,
@@ -31,23 +31,24 @@ const TopicListCards = () => {
   const { t } = useTranslation();
   const [activePage, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const pageSize = 20;
 
-  // Ma'lumotlarni yuklash va yangilash (mutate)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const { topics, totalPages, isLoading, isError, mutate } = useTopics(
     activePage,
-    pageSize
+    pageSize,
+    debouncedSearch,
   );
 
-  const filteredTopics = useMemo(() => {
-    if (!searchTerm.trim()) return topics;
-    const lower = searchTerm.toLowerCase();
-    return topics.filter(
-      (topic: Topic) =>
-        (topic.nameUzl || topic.name || "").toLowerCase().includes(lower) ||
-        (topic.code || "").toLowerCase().includes(lower),
-    );
-  }, [topics, searchTerm]);
+  const filteredTopics = topics;
 
   // O'chirish logikasi
   const { confirmDelete } = useDeleteTopic(mutate);
@@ -74,14 +75,6 @@ const TopicListCards = () => {
     );
   }
 
-  if (topics.length === 0) {
-    return (
-      <Center h={200}>
-        <Text c="dimmed">{t("common.noData")}</Text>
-      </Center>
-    );
-  }
-
   return (
     <Stack gap="xl">
       <TextInput
@@ -91,6 +84,11 @@ const TopicListCards = () => {
         onChange={(e) => setSearchTerm(e.currentTarget.value)}
         mb="xs"
       />
+      {topics.length === 0 && (
+        <Center h={200}>
+          <Text c="dimmed">{t("common.noData")}</Text>
+        </Center>
+      )}
       <Grid gutter="md">
         {filteredTopics.map((topic: Topic) => (
           <Grid.Col

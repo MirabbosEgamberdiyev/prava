@@ -25,13 +25,18 @@ export const useQuestions = (
   const params = new URLSearchParams({
     page: backendPage.toString(),
     size: size.toString(),
-    sortBy: "createdAt",
-    direction: "DESC",
   });
-  if (searchQuery?.trim()) params.append("search", searchQuery.trim());
-  if (topicId) params.append("topicId", topicId.toString());
 
-  const fetchUrl = `/api/v1/admin/questions?${params.toString()}`;
+  let fetchUrl: string;
+  if (searchQuery?.trim()) {
+    params.append("query", searchQuery.trim());
+    fetchUrl = `/api/v1/admin/questions/search?${params.toString()}`;
+  } else {
+    params.append("sortBy", "createdAt");
+    params.append("direction", "DESC");
+    if (topicId) params.append("topicId", topicId.toString());
+    fetchUrl = `/api/v1/admin/questions?${params.toString()}`;
+  }
 
   const { data, error, isLoading, mutate } = useSWR<QuestionResponse>(
     [fetchUrl, i18n.language],

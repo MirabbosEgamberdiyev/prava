@@ -5,13 +5,16 @@ import api from "../../../services/api";
 import type { TopicResponse } from "../types";
 import { useTranslation } from "react-i18next";
 
-export const useTopics = (page: number, size = 12) => {
+export const useTopics = (page: number, size = 12, search?: string) => {
   const { i18n } = useTranslation();
 
-  // Backend 0-indexed sahifalashni ishlatsa (0, 1, 2...)
-  const fetchUrl = `/api/v1/admin/topics?page=${
-    page - 1
-  }&size=${size}&sortBy=displayOrder&direction=ASC`;
+  const backendPage = page - 1;
+  let fetchUrl: string;
+  if (search?.trim()) {
+    fetchUrl = `/api/v1/admin/topics/search?query=${encodeURIComponent(search.trim())}&page=${backendPage}&size=${size}`;
+  } else {
+    fetchUrl = `/api/v1/admin/topics?page=${backendPage}&size=${size}&sortBy=displayOrder&direction=ASC`;
+  }
 
   const { data, error, isLoading, mutate } = useSWR<TopicResponse>(
     [fetchUrl, i18n.language],
