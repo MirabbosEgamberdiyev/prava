@@ -7,6 +7,7 @@ import {
   Group,
   Badge,
   Divider,
+  Modal,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -15,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import api from "../../../api/api";
 import { ExamModeModal, type ExamMode } from "../../../components/quiz/ExamModeModal";
 import { TopicBadge } from "../../../components/common/TopicBadge";
+import PaymentButtons from "../../../payment/PaymentButtons";
 import type { Package } from "../types";
 import classes from "./PackageCard.module.css";
 
@@ -28,17 +30,10 @@ const Package_Card = ({ pkg }: Props) => {
   const { t } = useTranslation();
   const [modeModalOpened, { open: openModeModal, close: closeModeModal }] =
     useDisclosure(false);
+  const [payModalOpened, { open: openPayModal, close: closePayModal }] =
+    useDisclosure(false);
 
   const handleStartExam = async (mode: ExamMode = "visible") => {
-    if (!pkg.isFree) {
-      notifications.show({
-        title: t("package.attention"),
-        message: t("package.buyFirst"),
-        color: "yellow",
-      });
-      return;
-    }
-
     setLoading(true);
 
     const endpoint =
@@ -61,9 +56,19 @@ const Package_Card = ({ pkg }: Props) => {
         });
       }
     } catch (error: unknown) {
+      // 402 Payment Required → open payment modal
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 402) {
+        setLoading(false);
+        closeModeModal();
+        openPayModal();
+        return;
+      }
       const errorMessage =
-        (error as { response?: { data?: { message?: string } } })?.response
-          ?.data?.message || t("package.startError");
+        (error as { response?: { data?: { message?: string; error?: string } } })
+          ?.response?.data?.message ||
+        (error as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        t("package.startError");
       notifications.show({
         title: t("common.error"),
         message: errorMessage,
@@ -75,14 +80,9 @@ const Package_Card = ({ pkg }: Props) => {
   };
 
   const handleButtonClick = () => {
-    if (!pkg.isFree) {
-      notifications.show({
-        title: t("package.attention"),
-        message: t("package.buyFirst"),
-        color: "yellow",
-      });
-      return;
-    }
+    // Free va pullik — ikkalasi ham ExamModeModal ni ochadi.
+    // Agar pullik bo'lib foydalanuvchida ruxsat bo'lmasa, backend 402 qaytaradi
+    // va handleStartExam ichida to'lov modali ochiladi.
     openModeModal();
   };
 
@@ -156,6 +156,20 @@ const Package_Card = ({ pkg }: Props) => {
         onClose={closeModeModal}
         onSelect={(mode) => handleStartExam(mode)}
       />
+
+      <Modal
+        opened={payModalOpened}
+        onClose={closePayModal}
+        title={t("package.buy") || "Paketni sotib olish"}
+        centered
+        size="md"
+      >
+        <PaymentButtons
+          packageId={pkg.id}
+          packageName={pkg.name}
+          priceSum={Number(pkg.price ?? 0)}
+        />
+      </Modal>
     </Card>
   );
 };

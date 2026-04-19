@@ -47,6 +47,7 @@ public class ExamServiceV2 {
     private final TopicRepository topicRepository;
     private final ExamResponseMapper mapper;
     private final ExamProperties examProperties;
+    private final uz.pravaimtihon.payment.service.PaymentAccessService paymentAccessService;
 
     // Default passing score for marathon mode
     private static final int DEFAULT_PASSING_SCORE = 70;
@@ -115,6 +116,14 @@ public class ExamServiceV2 {
 
         if (!examPackage.hasEnoughQuestions()) {
             throw new BusinessException("error.package.insufficient.questions");
+        }
+
+        // Payment gate — pullik paket uchun faol ruxsat bo'lishi shart
+        boolean isFreePackage = examPackage.getIsFree() != null && examPackage.getIsFree();
+        if (!isFreePackage &&
+                !paymentAccessService.hasActiveAccess(userId, examPackage.getId())) {
+            throw uz.pravaimtihon.payment.exception.PaymentException
+                    .paymentRequired("Bu paket uchun to'lov talab qilinadi");
         }
 
         // Savollarni tanlash va aralashtirish

@@ -26,6 +26,7 @@ const Topics_Page = lazy(() => import("../page/Topics"));
 const TopicDetail_Page = lazy(() => import("../page/Topics/TopicDetail"));
 const GuestExam_Page = lazy(() => import("../page/GuestExam"));
 const NotFound_Page = lazy(() => import("../page/Notfound/404"));
+const PaymentSuccessPage = lazy(() => import("../payment/PaymentSuccessPage"));
 
 function LoadingFallback() {
   return (
@@ -90,6 +91,7 @@ function AppRoutes() {
           <Route path="/packages/:id" element={<PackageExamPage />} />
           <Route path="/marafon" element={<Marafon_Page />} />
           <Route path="/exam" element={<Exam_Page />} />
+          <Route path="/payment/success" element={<PaymentSuccessPage />} />
         </Route>
 
         {/* 404 Not Found */}

@@ -1,0 +1,32 @@
+# =============================================================
+#  Payment module — append this block to your application.yml
+#  (or include this file via  spring.config.import)
+#
+#  Values marked ${...} should be set via environment / .env
+# =============================================================
+app:
+  payment:
+    enabled: true
+    frontend-base-url: https://pravaonline.uz
+    access-days:              # blank = lifetime; e.g. 365 = 1 year
+    pending-timeout-minutes: 30
+    sweeper-delay-ms: 300000
+    sweeper-initial-delay-ms: 60000
+
+    click:
+      enabled: true
+      service-id:       ${CLICK_SERVICE_ID:}
+      merchant-id:      ${CLICK_MERCHANT_ID:}
+      merchant-user-id: ${CLICK_MERCHANT_USER_ID:}
+      secret-key:       ${CLICK_SECRET_KEY:}
+      checkout-url:     https://my.click.uz/services/pay
+      return-path:      /payment/success
+
+    payme:
+      enabled: true
+      merchant-id:       ${PAYME_MERCHANT_ID:}
+      cashbox-key:       ${PAYME_CASHBOX_KEY:}
+      test-cashbox-key:  ${PAYME_TEST_CASHBOX_KEY:}
+      checkout-base-url: https://checkout.paycom.uz
+      return-path:       /payment/success
+      timeout-seconds:   43200

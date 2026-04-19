@@ -47,6 +47,7 @@ public class ExamService {
     private final ExamProperties examProperties;
     private final uz.pravaimtihon.service.TelegramNotificationService telegramNotificationService;
     private final StatisticsService statisticsService;
+    private final uz.pravaimtihon.payment.service.PaymentAccessService paymentAccessService;
 
     /**
      * ✅ OPTIMIZED: Start exam with minimal queries
@@ -85,6 +86,14 @@ public class ExamService {
 
         if (!examPackage.hasEnoughQuestions()) {
             throw new BusinessException("error.package.insufficient.questions");
+        }
+
+        // ✅ Payment gate — paid packages require active access
+        boolean isFreePackage = examPackage.getIsFree() != null && examPackage.getIsFree();
+        if (!isFreePackage &&
+                !paymentAccessService.hasActiveAccess(userId, examPackage.getId())) {
+            throw uz.pravaimtihon.payment.exception.PaymentException
+                    .paymentRequired("Bu paket uchun to'lov talab qilinadi");
         }
 
         // ✅ Shuffle and select questions

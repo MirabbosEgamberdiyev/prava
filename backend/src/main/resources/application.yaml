@@ -198,6 +198,36 @@ app:
         max-size-mb: 100
         allowed: true
 
+  # =========================================================
+  # Payment module — Click & Payme
+  # Secrets via .env (can be empty in dev — payment will just not work locally)
+  # =========================================================
+  payment:
+    enabled: ${PAYMENT_ENABLED:true}
+    frontend-base-url: ${PAYMENT_FRONTEND_BASE_URL:http://localhost:5173}
+    access-days:                           # blank = lifetime
+    pending-timeout-minutes: 30
+    sweeper-delay-ms: 300000
+    sweeper-initial-delay-ms: 60000
+
+    click:
+      enabled: ${CLICK_ENABLED:true}
+      service-id:       ${CLICK_SERVICE_ID:}
+      merchant-id:      ${CLICK_MERCHANT_ID:}
+      merchant-user-id: ${CLICK_MERCHANT_USER_ID:}
+      secret-key:       ${CLICK_SECRET_KEY:}
+      checkout-url:     https://my.click.uz/services/pay
+      return-path:      /payment/success
+
+    payme:
+      enabled: ${PAYME_ENABLED:true}
+      merchant-id:       ${PAYME_MERCHANT_ID:}
+      cashbox-key:       ${PAYME_CASHBOX_KEY:}
+      test-cashbox-key:  ${PAYME_TEST_CASHBOX_KEY:}
+      checkout-base-url: https://checkout.paycom.uz
+      return-path:       /payment/success
+      timeout-seconds:   43200
+
   # Exam Business Rules (ALL values externalized - no magic numbers in code)
   exam:
     # Default values
