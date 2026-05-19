@@ -329,11 +329,15 @@ public class ProductionBackupService {
 
     // ─── Manifest ───────────────────────────────────────────────────────────
 
+    // ✅ After — consistent with writeEntityToZip, stream stays open
     private void writeManifestToZip(ZipOutputStream zos, BackupManifest manifest) throws IOException {
         ZipEntry entry = new ZipEntry("manifest.json");
         zos.putNextEntry(entry);
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(zos, manifest);
-        zos.closeEntry();
+        try (JsonGenerator gen = objectMapper.createGenerator(zos)) {
+            gen.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(gen, manifest);
+        }
+        zos.closeEntry(); // safe now — zos is still open
     }
 
     private BackupManifest initManifest(String jobId, String requestedBy) {
