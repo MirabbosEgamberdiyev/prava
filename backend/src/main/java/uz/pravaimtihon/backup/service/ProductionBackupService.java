@@ -16,6 +16,7 @@ import uz.pravaimtihon.backup.dto.BackupManifest.EntityInfo;
 import uz.pravaimtihon.config.StorageProperties;
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
@@ -24,6 +25,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.stream.Stream;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -276,7 +278,7 @@ public class ProductionBackupService {
     // ─── Media files ────────────────────────────────────────────────────────
 
     private void exportMediaFiles(ZipOutputStream zos, BackupManifest manifest,
-                                  BackupJobStatus job) throws IOException {
+                                  BackupJobStatus job) throws IOException, NoSuchAlgorithmException {
         if (!"local".equalsIgnoreCase(storageProperties.getType())) {
             log.info("[BACKUP] Storage type is '{}'; skipping file copy (URLs preserved in data).",
                     storageProperties.getType());
