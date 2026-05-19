@@ -14,6 +14,7 @@ import Packages_Page from "./page/Packages";
 import Tickets_Page from "./page/Tickets";
 
 // Lazy loaded sahifalar
+const Backup_Page = lazy(() => import("./page/Backup"));
 const Statistics_Page = lazy(() => import("./page/Statistics"));
 const Settings_Page = lazy(() => import("./page/Settings"));
 const SystemMonitor_Page = lazy(() => import("./page/SystemMonitor"));
@@ -93,6 +94,18 @@ function App() {
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
                       <Suspense fallback={LazyFallback}>
                         <Files_Page />
+                      </Suspense>
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Backup & Restore - faqat SUPER_ADMIN */}
+                <Route
+                  path="/backup"
+                  element={
+                    <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}>
+                        <Backup_Page />
                       </Suspense>
                     </RoleGuard>
                   }
