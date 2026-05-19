@@ -102,23 +102,42 @@ public class BackupController {
     }
 
     /**
-     * Backup holati yoki tayyor ZIP faylni yuklash.
-     * <ul>
-     *   <li>RUNNING / PENDING → JSON holat qaytadi</li>
-     *   <li>COMPLETED → ZIP fayl stream orqali yuklanadi</li>
-     *   <li>FAILED → xato xabari</li>
-     * </ul>
+     * Backup jarayonining JSON holati (har doim JSON qaytaradi).
+     * Frontend SWR polling ushbu endpoint'ni ishlatadi.
      */
     @GetMapping("/export/{jobId}")
     @Operation(
-            summary = "Backup holati / ZIP yuklash",
-            description = "Job COMPLETED bo'lsa ZIP fayl yuklanadi, aks holda JSON holat qaytadi."
+            summary = "Backup holati (JSON)",
+            description = "Har doim JSON holat qaytaradi. Fayl yuklab olish uchun /export/{jobId}/download ishlatilsin."
     )
-    public ResponseEntity<?> getExportResult(
-            @PathVariable String jobId) throws IOException {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getExportStatus(
+            @PathVariable String jobId) {
 
-        BackupJobStatus job = jobRegistry.find(jobId)
-                .orElse(null);
+        BackupJobStatus job = jobRegistry.find(jobId).orElse(null);
+
+        if (job == null || job.getType() != JobType.EXPORT) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (job.getState() == BackupJobStatus.JobState.FAILED) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Backup muvaffaqiyatsiz tugadi: " + job.getError()));
+        }
+
+        return ResponseEntity.ok(ApiResponse.success("Backup holati", buildStatusMap(job)));
+    }
+
+    /**
+     * Tayyor ZIP faylni yuklash (faqat COMPLETED job uchun).
+     */
+    @GetMapping("/export/{jobId}/download")
+    @Operation(
+            summary = "Backup ZIP yuklab olish",
+            description = "Job COMPLETED bo'lsa ZIP fayl stream qilinadi. RUNNING bo'lsa 202 Accepted."
+    )
+    public ResponseEntity<?> downloadExport(@PathVariable String jobId) throws IOException {
+
+        BackupJobStatus job = jobRegistry.find(jobId).orElse(null);
 
         if (job == null || job.getType() != JobType.EXPORT) {
             return ResponseEntity.notFound().build();
@@ -128,7 +147,8 @@ public class BackupController {
             case COMPLETED -> streamBackupFile(job);
             case FAILED    -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                   .body(ApiResponse.error("Backup muvaffaqiyatsiz tugadi: " + job.getError()));
-            default        -> ResponseEntity.ok(ApiResponse.success("Backup jarayoni", buildStatusMap(job)));
+            default        -> ResponseEntity.accepted()
+                                  .body(ApiResponse.success("Backup hali tayyor emas", buildStatusMap(job)));
         };
     }
 
@@ -265,7 +285,7 @@ public class BackupController {
         }
         if (job.getType() == JobType.EXPORT && job.getState() == BackupJobStatus.JobState.COMPLETED) {
             map.put("fileSizeKB", job.getFileSizeBytes() / 1024);
-            map.put("downloadUrl", "/api/v1/admin/backup/export/" + job.getJobId());
+            map.put("downloadUrl", "/api/v1/admin/backup/export/" + job.getJobId() + "/download");
             if (job.getManifest() != null) {
                 map.put("backupId", job.getManifest().getBackupId());
                 map.put("entities", job.getManifest().getEntities().entrySet().stream()

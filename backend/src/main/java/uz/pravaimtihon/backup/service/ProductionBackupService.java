@@ -260,7 +260,7 @@ public class ProductionBackupService {
         int offset = 0;
         while (true) {
             List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                    "SELECT * FROM " + table + " LIMIT ? OFFSET ?",
+                    "SELECT * FROM " + table + " ORDER BY 1, 2 LIMIT ? OFFSET ?",
                     PAGE_SIZE, offset);
             if (rows.isEmpty()) break;
 
@@ -301,13 +301,13 @@ public class ProductionBackupService {
                             ZipEntry entry  = new ZipEntry("files/" + relative);
                             zos.putNextEntry(entry);
 
-                            byte[] bytes = Files.readAllBytes(file);
-                            zos.write(bytes);
+                            // Stream orqali ko'chirish — xotiraga to'liq yuklanmaydi
+                            long fileSize = Files.copy(file, zos);
                             zos.closeEntry();
 
                             digest.update(relative.getBytes());
                             count[0]++;
-                            totalBytes[0] += bytes.length;
+                            totalBytes[0] += fileSize;
                         } catch (IOException e) {
                             log.warn("[BACKUP] Skipping file {}: {}", file, e.getMessage());
                         }

@@ -13,9 +13,9 @@ export function useBackupMutations() {
     return res.data.data.jobId as string;
   };
 
-  /** GET /export/{jobId} → ZIP blob sifatida yuklash */
+  /** GET /export/{jobId}/download → ZIP blob sifatida yuklash */
   const downloadBackup = async (jobId: string, filename: string) => {
-    const res = await api.get(`/api/v1/admin/backup/export/${jobId}`, {
+    const res = await api.get(`/api/v1/admin/backup/export/${jobId}/download`, {
       responseType: "blob",
     });
     const url = window.URL.createObjectURL(new Blob([res.data]));
