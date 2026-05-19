@@ -13,9 +13,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Database Backup Service - barcha ma'lumotlarni JSON formatda export qilish
- * Faqat SUPER_ADMIN foydalanishi mumkin
+ * @deprecated v1.0 legacy backup servisi. Endi ishlatilmaydi.
+ *             Yangi tizim: {@link uz.pravaimtihon.backup.service.ProductionBackupService}
+ *             va {@link uz.pravaimtihon.backup.service.ProductionRestoreService} ishlatilsin.
  */
+@Deprecated(since = "2.0", forRemoval = true)
 @Service
 @Slf4j
 @RequiredArgsConstructor

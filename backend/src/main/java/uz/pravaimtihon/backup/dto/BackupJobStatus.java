@@ -1,9 +1,12 @@
 package uz.pravaimtihon.backup.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * Async backup/restore jobining holatini kuzatuvchi DTO.
@@ -33,7 +36,9 @@ public class BackupJobStatus {
     private volatile BackupManifest manifest;
 
     // IMPORT uchun: restore natijalari
-    private volatile String       restoreSummary;
+    private volatile String                       restoreSummary;
+    /** Har bir jadval uchun tafsilotli import natijalari (inserted/skipped/failed). */
+    private volatile Map<String, TableImportResult> tableResults;
 
     public BackupJobStatus(String jobId, JobType type, String requestedBy) {
         this.jobId       = jobId;
@@ -62,5 +67,27 @@ public class BackupJobStatus {
         this.state       = JobState.FAILED;
         this.error       = errorMsg;
         this.completedAt = LocalDateTime.now();
+    }
+
+    // ─── Inner DTO ───────────────────────────────────────────────────────────
+
+    /**
+     * Bitta jadval uchun import natijasi.
+     * merge mode: inserted + skipped + failed = totalRows
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class TableImportResult {
+        private String tableName;
+        private int    totalRows;
+        private int    inserted;
+        /** ON CONFLICT DO NOTHING sababli o'tkazib yuborilgan qatorlar */
+        private int    skipped;
+        /** Xato sababli import qilinmagan qatorlar */
+        private int    failed;
+        /** Jadval xatosi bo'lsa error xabari, aks holda null */
+        private String error;
     }
 }
