@@ -22,13 +22,17 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.nio.file.*;
+import java.sql.*;
 import java.util.stream.Stream;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
+// Add these imports:
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 /**
  * Production-grade restore (import) servisi.
  *
@@ -190,7 +194,7 @@ public class ProductionRestoreService {
         if (!SUPPORTED_VERSION.equals(manifest.getVersion())) {
             throw new IllegalArgumentException(
                     "Unsupported backup version: " + manifest.getVersion() +
-                    ". Supported: " + SUPPORTED_VERSION);
+                            ". Supported: " + SUPPORTED_VERSION);
         }
 
         log.info("[RESTORE] Backup id={} createdAt={} by={}",
@@ -210,7 +214,7 @@ public class ProductionRestoreService {
             if (!actual.equals(info.getChecksum())) {
                 throw new IllegalArgumentException(
                         "Checksum mismatch for table '" + table + "': " +
-                        "expected=" + info.getChecksum() + " actual=" + actual);
+                                "expected=" + info.getChecksum() + " actual=" + actual);
             }
         }
 
@@ -219,56 +223,116 @@ public class ProductionRestoreService {
 
     // ─── Database restore ───────────────────────────────────────────────────
 
+    /**
+     * Restore strategiyasi:
+     *
+     * Har bir jadval o'z mustaqil transaksiyasida import qilinadi.
+     * Bu quyidagi muammolarni hal qiladi:
+     *
+     * 1. Bitta jadval xatosi butun restore'ni o'ldirmaydi.
+     * 2. FK xatosi yuz berganda PostgreSQL tranzaksiyani "aborted" holatga
+     *    keltiradi (SQL state 25P02). Agar barchasi bitta tx'da bo'lsa,
+     *    savepoint ham ishlamaydi — chunki connection allaqachon aborted.
+     *    Alohida tx'da esa har bir jadval uchun clean connection olinadi.
+     * 3. Savepoint fallback ham to'g'ri ishlaydi — clean connection ustida.
+     *
+     * FK muammolari uchun: TRUNCATE yoki MERGE rejimida FK constraint'lari
+     * SESSION darajasida defer qilinadi, so'ng import tugagach qayta yoqiladi.
+     * Bu import tartibidan qat'iy nazar barcha FK'larni o'tkazib yuboradi.
+     */
     private void restoreDatabase(BackupManifest manifest, Path dir,
                                  boolean force, BackupJobStatus job,
                                  StringBuilder summary) {
 
-        TransactionTemplate tx = new TransactionTemplate(txManager);
-        tx.setTimeout(-1); // Timeout yo'q – katta datasetlar uchun
-
-        tx.executeWithoutResult(status -> {
-            try {
-                if (force) {
+        // 1. FORCE rejimi: avval truncate (o'z alohida tx'ida)
+        if (force) {
+            TransactionTemplate truncateTx = new TransactionTemplate(txManager);
+            truncateTx.setTimeout(-1);
+            truncateTx.executeWithoutResult(status -> {
+                try {
                     job.updateProgress(25, "Truncating tables");
                     truncateAllTables();
                     log.info("[RESTORE] Tables truncated (force mode)");
+                } catch (Exception e) {
+                    status.setRollbackOnly();
+                    throw new RuntimeException("Truncate failed: " + e.getMessage(), e);
                 }
+            });
+        }
 
-                int totalRows = 0;
-                int entityCount = manifest.getEntities().size();
-                int i = 0;
+    jdbcTemplate.execute("SET session_replication_role = 'replica'");
 
-                for (Map.Entry<String, EntityInfo> entry : manifest.getEntities().entrySet()) {
-                    String table   = entry.getKey();
-                    EntityInfo info = entry.getValue();
-                    Path dataFile  = dir.resolve(info.getZipPath());
+        int totalRows = 0;
+        int entityCount = manifest.getEntities().size();
+        int i = 0;
+        List<String> failedTables = new ArrayList<>();
 
-                    int pct = 25 + (int) (i * 60.0 / entityCount);
-                    job.updateProgress(pct, "Inserting " + table);
+        try {
+            for (Map.Entry<String, EntityInfo> entry : manifest.getEntities().entrySet()) {
+                String table    = entry.getKey();
+                EntityInfo info = entry.getValue();
+                Path dataFile   = dir.resolve(info.getZipPath());
 
-                    List<Map<String, Object>> rows = readJsonArray(dataFile);
-                    if (!rows.isEmpty()) {
-                        if (info.isJoinTable()) {
-                            insertJoinTableBatch(table, rows, force);
-                        } else {
-                            insertEntityBatch(table, rows, force);
-                        }
+                int pct = 25 + (int) (i * 60.0 / entityCount);
+                job.updateProgress(pct, "Inserting " + table);
+
+                List<Map<String, Object>> rows = readJsonArray(dataFile);
+
+                if (!rows.isEmpty()) {
+                    // Har bir jadval o'z mustaqil transaksiyasida — clean connection
+                    final String tbl = table;
+                    final List<Map<String, Object>> tableRows = rows;
+                    final EntityInfo tableInfo = info;
+
+                    TransactionTemplate tableTx = new TransactionTemplate(txManager);
+                    tableTx.setTimeout(-1);
+                    try {
+                        tableTx.executeWithoutResult(status -> {
+                            try {
+                                if (tableInfo.isJoinTable()) {
+                                    insertJoinTableBatch(tbl, tableRows, force);
+                                } else {
+                                    insertEntityBatch(tbl, tableRows, force);
+                                }
+                            } catch (Exception e) {
+                                status.setRollbackOnly();
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    } catch (Exception tableEx) {
+                        // Jadval xatosi butun restore'ni to'xtatmaydi — davom etadi
+                        log.error("[RESTORE] Table {} failed, skipping: {}", table, tableEx.getMessage());
+                        failedTables.add(table);
+                        summary.append(table).append(": FAILED (").append(tableEx.getMessage()).append(")\n");
+                        i++;
+                        continue;
                     }
-
-                    summary.append(table).append(": ").append(rows.size()).append(" rows\n");
-                    totalRows += rows.size();
-                    i++;
-                    log.info("[RESTORE] Inserted table={} rows={}", table, rows.size());
                 }
 
-                log.info("[RESTORE] DB insert complete. Total rows={}", totalRows);
-            } catch (Exception e) {
-                status.setRollbackOnly();
-                throw new RuntimeException("DB restore failed: " + e.getMessage(), e);
+                summary.append(table).append(": ").append(rows.size()).append(" rows\n");
+                totalRows += rows.size();
+                i++;
+                log.info("[RESTORE] Inserted table={} rows={}", table, rows.size());
             }
-        });
+        } catch (Exception e) {
+            throw new RuntimeException("DB restore failed: " + e.getMessage(), e);
+        } finally {
+            // FK constraint'larni qayta yoqish — xato bo'lsa ham bajariladi
+            try {
+                jdbcTemplate.execute("SET session_replication_role = 'origin'");
+            } catch (Exception ex) {
+                log.warn("[RESTORE] Could not re-enable FK constraints: {}", ex.getMessage());
+            }
+        }
 
-        // Sequence'larni transaksiyadan tashqarida reset qilish
+        if (!failedTables.isEmpty()) {
+            log.warn("[RESTORE] Completed with {} failed tables: {}", failedTables.size(), failedTables);
+            summary.append("\nFAILED TABLES: ").append(failedTables).append("\n");
+        }
+
+        log.info("[RESTORE] DB insert complete. Total rows={}", totalRows);
+
+        // Sequence'larni reset qilish
         job.updateProgress(87, "Resetting sequences");
         resetSequences();
     }
@@ -289,26 +353,71 @@ public class ProductionRestoreService {
      * force=false: ON CONFLICT (id) DO NOTHING (mavjud ID'lar o'tkaziladi).
      * force=true:  ON CONFLICT (id) DO UPDATE – barcha ustunlar yangilanadi.
      */
-    private void insertEntityBatch(String table, List<Map<String, Object>> rows,
-                                   boolean force) {
+    private void insertEntityBatch(String table, List<Map<String, Object>> rows, boolean force) {
         if (rows.isEmpty()) return;
 
         List<String> columns = new ArrayList<>(rows.get(0).keySet());
         String colList       = String.join(", ", columns);
         String placeholders  = String.join(", ", Collections.nCopies(columns.size(), "?"));
-        String conflict      = force
-                ? buildUpsertClause(columns)
-                : "ON CONFLICT (id) DO NOTHING";
-
+        String conflict = force ? buildUpsertClause(columns) : "ON CONFLICT DO NOTHING";
         String sql = "INSERT INTO " + table + " (" + colList + ") VALUES (" + placeholders + ") " + conflict;
 
-        jdbcTemplate.batchUpdate(sql, rows, 500, (ps, row) -> {
-            for (int i = 0; i < columns.size(); i++) {
-                ps.setObject(i + 1, row.get(columns.get(i)));
-            }
-        });
-    }
+        try {
+            jdbcTemplate.batchUpdate(sql, rows, 500, (ps, row) -> {
+                for (int i = 0; i < columns.size(); i++) {
+                    ps.setObject(i + 1, convertValue(row.get(columns.get(i))));
+                }
+            });
+        } catch (Exception batchEx) {
+          log.warn("[RESTORE] Batch failed for table={}, retrying row-by-row with savepoints: {}",
+                    table, batchEx.getMessage());
 
+            int[] counts = {0, 0}; // [inserted, skipped]
+            jdbcTemplate.execute((Connection conn) -> {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    for (Map<String, Object> row : rows) {
+                        Savepoint sp = conn.setSavepoint();
+                        try {
+                            for (int i = 0; i < columns.size(); i++) {
+                                ps.setObject(i + 1, convertValue(row.get(columns.get(i))));
+                            }
+                            ps.executeUpdate();
+                            conn.releaseSavepoint(sp);
+                            counts[0]++;
+                        } catch (SQLException rowEx) {
+                            conn.rollback(sp); // faqat shu qatorni orqaga qaytaradi
+                            counts[1]++;
+                            log.debug("[RESTORE] Skipped row in table={}: {}", table, rowEx.getMessage());
+                        }
+                    }
+                }
+                return null;
+            });
+
+            log.warn("[RESTORE] table={} row-by-row complete: inserted={} skipped={}",
+                    table, counts[0], counts[1]);
+        }
+    }// ─── new helper method (add anywhere in the Helpers section) ─────────────────
+    /**
+     * Jackson schemarsiz Map'ga o'qiganda barcha timestamp qiymatlarini
+     * String deb deserialize qiladi. PostgreSQL "timestamp without time zone"
+     * ustuniga String jo'natib bo'lmaydi — Timestamp ga o'girish kerak.
+     */
+    private Object convertValue(Object value) {
+        if (!(value instanceof String s)) return value;
+
+        // "2026-02-20T15:24:57.288+00:00" — timezone offset bilan (ISO-8601)
+        try {
+            return Timestamp.from(OffsetDateTime.parse(s).toInstant());
+        } catch (DateTimeParseException ignored) {}
+
+        // "2026-02-20T15:24:57.288" — timezone offset siz
+        try {
+            return Timestamp.valueOf(LocalDateTime.parse(s));
+        } catch (DateTimeParseException ignored) {}
+
+        return value;
+    }
     /**
      * Join table (id ustuni yo'q) uchun batch insert.
      */
@@ -325,7 +434,7 @@ public class ProductionRestoreService {
 
         jdbcTemplate.batchUpdate(sql, rows, 500, (ps, row) -> {
             for (int i = 0; i < columns.size(); i++) {
-                ps.setObject(i + 1, row.get(columns.get(i)));
+                ps.setObject(i + 1, convertValue(row.get(columns.get(i)))); // ← add convertValue
             }
         });
     }
