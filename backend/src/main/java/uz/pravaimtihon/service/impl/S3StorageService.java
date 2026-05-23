@@ -34,7 +34,7 @@ public class S3StorageService implements FileStorageService {
 
     private static final long DEFAULT_MAX_SIZE_MB = 100; // 100MB default
     private static final long IMAGE_MAX_SIZE_MB = 10;
-    private static final long VIDEO_MAX_SIZE_MB = 500; // 500MB for videos
+    private static final long VIDEO_MAX_SIZE_MB = 500; // 1000MB for videos
 
     @PostConstruct
     public void init() {

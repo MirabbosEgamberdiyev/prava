@@ -60,8 +60,8 @@ import java.util.Map;
 @Tag(name = "Backup & Restore", description = "Production-grade backup/restore (SUPER_ADMIN only)")
 public class BackupController {
 
-    /** Maksimal import fayl hajmi: 500 MB */
-    private static final long MAX_IMPORT_SIZE_BYTES = 500L * 1024 * 1024;
+    /** Maksimal import fayl hajmi: 1000 MB */
+    private static final long MAX_IMPORT_SIZE_BYTES = 1000L * 1024 * 1024;
 
     private final ProductionBackupService  backupService;
     private final ProductionRestoreService restoreService;
@@ -159,7 +159,7 @@ public class BackupController {
                     """
     )
     public ResponseEntity<ApiResponse<Map<String, Object>>> startImport(
-            @Parameter(description = "Backup ZIP fayli (max 500MB)")
+            @Parameter(description = "Backup ZIP fayli (max 1000MB)")
             @RequestPart("file") MultipartFile file,
 
             @Parameter(description = "Mavjud ma'lumotlarni o'chirib to'liq restore (EHTIYOT!)")
@@ -193,7 +193,7 @@ public class BackupController {
 
         if (file.getSize() > MAX_IMPORT_SIZE_BYTES) {
             return ResponseEntity.badRequest().body(ApiResponse.error(
-                    "Fayl hajmi juda katta: " + (file.getSize() / 1024 / 1024) + "MB. Maksimal: 500MB"));
+                    "Fayl hajmi juda katta: " + (file.getSize() / 1024 / 1024) + "MB. Maksimal: 1000MB"));
         }
 
         // ImportOptions yaratish

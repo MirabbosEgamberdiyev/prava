@@ -88,8 +88,8 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 500MB
-      max-request-size: 500MB
+      max-file-size: 1000MB
+      max-request-size: 1000MB
       file-size-threshold: 2MB
 
 # Application Configuration
@@ -189,7 +189,7 @@ app:
         max-size-mb: 10
         allowed-types: image/jpeg,image/png,image/gif,image/webp,image/svg+xml
       video:
-        max-size-mb: 500
+        max-size-mb: 1000
         allowed-types: video/mp4,video/webm,video/ogg,video/avi,video/quicktime
       document:
         max-size-mb: 50

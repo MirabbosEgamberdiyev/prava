@@ -44,7 +44,7 @@ import java.util.zip.ZipOutputStream;
  * <h3>Xavfsizlik kafolatlari (production-safe):</h3>
  * <ul>
  *   <li>@Transactional(readOnly=true) – PostgreSQL MVCC snapshot, hech qanday table lock yo'q</li>
- *   <li>Paginated JDBC reads (500 row/page) – memory spike yo'q</li>
+ *   <li>Paginated JDBC reads (1000 row/page) – memory spike yo'q</li>
  *   <li>Streaming ZipOutputStream → temp file – HTTP response buffer to'lmaydi</li>
  *   <li>Dedicated "backup-executor" thread pool – web thread pool bloklanmaydi</li>
  *   <li>Optional AES-256-GCM encryption – backup fayli shifrlanishi mumkin</li>
@@ -87,7 +87,7 @@ public class ProductionBackupService {
     private final BackupJobRegistry         jobRegistry;
     private final PlatformTransactionManager txManager;
 
-    private static final int    PAGE_SIZE   = 500;
+    private static final int    PAGE_SIZE   = 1000;
     private static final String BACKUP_VER  = "2.0";
 
     // ─── Entity export descriptors ──────────────────────────────────────────

@@ -435,7 +435,7 @@ public class ProductionRestoreService {
         String sql = "INSERT INTO " + table + " (" + colList + ") VALUES (" + placeholders + ") " + conflict;
 
         try {
-            int[][] batchResults = jdbcTemplate.batchUpdate(sql, rows, 500, (ps, row) -> {
+            int[][] batchResults = jdbcTemplate.batchUpdate(sql, rows, 1000, (ps, row) -> {
                 for (int i = 0; i < columns.size(); i++) {
                     ps.setObject(i + 1, convertValue(row.get(columns.get(i))));
                 }
@@ -469,7 +469,7 @@ public class ProductionRestoreService {
         String sql = "INSERT INTO " + table + " (" + colList + ") VALUES (" + placeholders + ") ON CONFLICT DO NOTHING";
 
         try {
-            int[][] batchResults = jdbcTemplate.batchUpdate(sql, rows, 500, (ps, row) -> {
+            int[][] batchResults = jdbcTemplate.batchUpdate(sql, rows, 1000, (ps, row) -> {
                 for (int i = 0; i < columns.size(); i++) {
                     ps.setObject(i + 1, convertValue(row.get(columns.get(i))));
                 }
