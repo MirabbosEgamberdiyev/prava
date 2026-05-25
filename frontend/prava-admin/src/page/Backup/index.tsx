@@ -181,20 +181,20 @@ function JobProgress({ job, onDownload }: { job: BackupJob; onDownload: () => vo
       )}
 
 
-    {job.state === "COMPLETED" && job.type === "EXPORT" && (
-    <Group mt="sm" gap="xs" wrap="wrap">
-      <Button size="xs" leftSection={<IconDownload size={14} />} onClick={onDownload}>
-        {t("backup.job.downloadBtn", { size: fmtKB(job.fileSizeKB) })}
-      </Button>
-      {job.entities && (
-        <Text size="xs" c="dimmed">
-          {t("backup.job.rowCount", {
-            count: Object.values(job.entities).reduce((a, b) => a + b, 0),
-          } as any)}
-        </Text>
-      )}
-    </Group>
+{job.state === "COMPLETED" && job.type === "EXPORT" && (
+  <Group mt="sm" gap="xs" wrap="wrap">
+    <Button size="xs" leftSection={<IconDownload size={14} />} onClick={onDownload}>
+      {t("backup.job.downloadBtn", { size: fmtKB(job.fileSizeKB) })}
+    </Button>
+    {job.entities && (
+      <Text size="xs" c="dimmed">
+        {String(t("backup.job.rowCount", {
+          count: Object.values(job.entities).reduce((a, b) => a + b, 0),
+        }))}
+      </Text>
     )}
+  </Group>
+)}
 
 
       {job.state === "COMPLETED" && job.type === "IMPORT" && (
