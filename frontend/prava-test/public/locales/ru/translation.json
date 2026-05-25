@@ -556,5 +556,127 @@
     "seoTitle": "Попробуйте экзамен — Бесплатный тест ПДД онлайн",
     "seoDescription": "Попробуйте экзамен на водительские права бесплатно без регистрации. Реальный формат экзамена.",
     "examSuffix": "— Экзамен"
+  },
+  "admin": {
+    "activationCodes": {
+      "title": "Коды активации",
+      "subtitle": "Управление лицензиями рабочего стола — только SUPER_ADMIN",
+      "newCode": "Создать код",
+      "refresh": "Обновить",
+      "search": "Поиск: machine ID, имя, телефон, учебный центр...",
+      "tabs": {
+        "all": "Все",
+        "active": "Активные",
+        "expiring": "Истекают (3 дня)",
+        "expired": "Истекшие",
+        "deactivated": "Деактивированные"
+      },
+      "table": {
+        "client": "Клиент",
+        "phone": "Телефон",
+        "learningCenter": "Учебный центр",
+        "machineId": "Machine ID",
+        "validity": "Срок действия",
+        "status": "Статус",
+        "generatedBy": "Создал",
+        "actions": "Действия"
+      },
+      "status": {
+        "ACTIVE": "Активный",
+        "EXPIRING": "Истекает",
+        "EXPIRED": "Истёк",
+        "DEACTIVATED": "Деактивирован"
+      },
+      "days": {
+        "remaining": "Осталось {{count}} дн.",
+        "overdue": "Просрочен {{count}} дн."
+      },
+      "empty": "Коды не найдены",
+      "loadError": "Ошибка загрузки данных",
+      "actions": {
+        "view": "Просмотр",
+        "deactivate": "Деактивировать",
+        "reactivate": "Реактивировать",
+        "delete": "Удалить"
+      },
+      "deleteConfirm": "Удалить код для «{{name}}»?",
+      "notifications": {
+        "deactivated": "Код деактивирован",
+        "reactivated": "Код реактивирован",
+        "deleted": "Код удалён",
+        "error": "Неизвестная ошибка"
+      },
+      "stats": {
+        "totalAll": "Всего",
+        "totalActive": "Активных",
+        "totalExpiring": "Истекает",
+        "totalExpired": "Истекших",
+        "totalDeactivated": "Деактивировано"
+      },
+      "generate": {
+        "title": "Создать код активации",
+        "clientInfo": "Данные клиента",
+        "firstName": "Имя (необязательно)",
+        "firstNamePlaceholder": "Иван",
+        "lastName": "Фамилия (необязательно)",
+        "lastNamePlaceholder": "Иванов",
+        "phone": "Телефон (необязательно)",
+        "phonePlaceholder": "+998901234567",
+        "learningCenter": "Учебный центр (необязательно)",
+        "learningCenterPlaceholder": "Автошкола №1",
+        "licenseInfo": "Данные лицензии",
+        "machineId": "Machine ID",
+        "machineIdPlaceholder": "Скопируйте из приложения",
+        "machineIdDesc": "Идентификатор компьютера с установленным приложением",
+        "startDate": "Дата начала",
+        "endDate": "Дата окончания",
+        "selectDate": "Выберите дату",
+        "notes": "Заметки (необязательно)",
+        "notesPlaceholder": "Дополнительная информация...",
+        "cancel": "Отмена",
+        "submit": "Создать",
+        "successTitle": "Успешно",
+        "successMsg": "Код активации создан",
+        "copyCode": "Скопировать",
+        "copied": "Скопировано!",
+        "closeBtn": "Закрыть",
+        "resultNote": "Отправьте этот код клиенту. Код всегда можно найти в панели администратора.",
+        "resultTitle": "Код активации успешно создан!"
+      },
+      "detail": {
+        "title": "Детали кода активации",
+        "client": "Клиент",
+        "phone": "Телефон",
+        "learningCenter": "Учебный центр",
+        "machineId": "Machine ID",
+        "startDate": "Начало",
+        "endDate": "Окончание",
+        "status": "Статус",
+        "notes": "Заметки",
+        "generatedBy": "Создал",
+        "createdAt": "Дата создания",
+        "licenseKey": "ЛИЦЕНЗИОННЫЙ КЛЮЧ",
+        "daysLeft": "Осталось дней",
+        "close": "Закрыть"
+      },
+      "deactivate": {
+        "title": "Деактивация кода",
+        "message": "Код для «{{name}}» (Machine ID: {{machineId}}) будет деактивирован. Продолжить?",
+        "reason": "Причина (необязательно)",
+        "reasonPlaceholder": "Причина деактивации...",
+        "cancel": "Отмена",
+        "confirm": "Деактивировать"
+      },
+      "validation": {
+        "firstNameMax": "Не более 100 символов",
+        "lastNameMax": "Не более 100 символов",
+        "phoneInvalid": "Неверный формат телефона",
+        "machineIdRequired": "Machine ID обязателен",
+        "machineIdMin": "Минимум 4 символа",
+        "startDateRequired": "Укажите дату начала",
+        "endDateRequired": "Укажите дату окончания",
+        "endDateBeforeStart": "Дата окончания не может быть раньше даты начала"
+      }
+    }
   }
 }

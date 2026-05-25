@@ -6,6 +6,8 @@ export interface User {
   phoneNumber?: string;
   email?: string;
   preferredLanguage?: string;
+  /** Role as returned by the backend: "SUPER_ADMIN" | "ADMIN" | "USER" */
+  role?: string;
 }
 
 export interface AuthData {

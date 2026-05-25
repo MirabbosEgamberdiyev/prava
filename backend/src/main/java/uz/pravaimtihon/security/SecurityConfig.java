@@ -135,6 +135,7 @@ public class SecurityConfig {
                         // ============================================
                         // SUPER_ADMIN ONLY
                         // ============================================
+                        .requestMatchers("/api/v1/admin/activation-codes/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/v1/admin/users/admins/**").hasRole("SUPER_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/admin/users").hasRole("SUPER_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/admin/users/*/role").hasRole("SUPER_ADMIN")

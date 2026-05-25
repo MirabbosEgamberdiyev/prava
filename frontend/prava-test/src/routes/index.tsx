@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import { Center, Loader } from "@mantine/core";
 import ProtectedRoute from "../auth/ProtectedRoute";
+import AdminRoute from "../auth/AdminRoute";
 import App_Layout from "../layout/App_Layout";
 import User_Layout from "../layout/User_Layout";
 
@@ -27,6 +28,7 @@ const TopicDetail_Page = lazy(() => import("../page/Topics/TopicDetail"));
 const GuestExam_Page = lazy(() => import("../page/GuestExam"));
 const NotFound_Page = lazy(() => import("../page/Notfound/404"));
 const PaymentSuccessPage = lazy(() => import("../payment/PaymentSuccessPage"));
+const ActivationCodesPage = lazy(() => import("../page/Admin/ActivationCodes"));
 
 function LoadingFallback() {
   return (
@@ -92,6 +94,13 @@ function AppRoutes() {
           <Route path="/marafon" element={<Marafon_Page />} />
           <Route path="/exam" element={<Exam_Page />} />
           <Route path="/payment/success" element={<PaymentSuccessPage />} />
+        </Route>
+
+        {/* SUPER_ADMIN only routes */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin/activation-codes" element={<User_Layout />}>
+            <Route index element={<ActivationCodesPage />} />
+          </Route>
         </Route>
 
         {/* 404 Not Found */}

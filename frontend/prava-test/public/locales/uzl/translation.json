@@ -555,5 +555,127 @@
     "seoTitle": "Imtihonni sinab ko'ring - Bepul YHXBB testi online",
     "seoDescription": "Ro'yxatdan o'tmasdan haydovchilik guvohnomasi imtihonini bepul sinab ko'ring. Real imtihon formatida YHXBB savollarini yechib ko'ring.",
     "examSuffix": "— Imtihon"
+  },
+  "admin": {
+    "activationCodes": {
+      "title": "Activation Codes",
+      "subtitle": "Desktop litsenziya kodlarini boshqarish — faqat SUPER_ADMIN",
+      "newCode": "Yangi kod yaratish",
+      "refresh": "Yangilash",
+      "search": "Qidirish: machine ID, ism, telefon, o'quv markaz...",
+      "tabs": {
+        "all": "Barchasi",
+        "active": "Aktiv",
+        "expiring": "Tugayapti (3 kun)",
+        "expired": "Muddati o'tgan",
+        "deactivated": "Bekor qilingan"
+      },
+      "table": {
+        "client": "Mijoz",
+        "phone": "Telefon",
+        "learningCenter": "O'quv markaz",
+        "machineId": "Machine ID",
+        "validity": "Muddat",
+        "status": "Holat",
+        "generatedBy": "Yaratgan",
+        "actions": "Amallar"
+      },
+      "status": {
+        "ACTIVE": "Aktiv",
+        "EXPIRING": "Tugayapti",
+        "EXPIRED": "Muddati o'tgan",
+        "DEACTIVATED": "Bekor qilingan"
+      },
+      "days": {
+        "remaining": "{{count}} kun qoldi",
+        "overdue": "{{count}} kun o'tgan"
+      },
+      "empty": "Hech qanday kod topilmadi",
+      "loadError": "Ma'lumotlarni yuklashda xatolik",
+      "actions": {
+        "view": "Ko'rish",
+        "deactivate": "Bekor qilish",
+        "reactivate": "Qayta faollashtirish",
+        "delete": "O'chirish"
+      },
+      "deleteConfirm": "\"{{name}}\" uchun kodni o'chirishni tasdiqlaysizmi?",
+      "notifications": {
+        "deactivated": "Kod bekor qilindi",
+        "reactivated": "Kod qayta faollashtirildi",
+        "deleted": "Kod o'chirildi",
+        "error": "Noma'lum xatolik"
+      },
+      "stats": {
+        "totalAll": "Jami",
+        "totalActive": "Aktiv",
+        "totalExpiring": "Tugayapti",
+        "totalExpired": "Muddati o'tgan",
+        "totalDeactivated": "Bekor qilingan"
+      },
+      "generate": {
+        "title": "Yangi Activation Code Yaratish",
+        "clientInfo": "Mijoz ma'lumotlari",
+        "firstName": "Ism (ixtiyoriy)",
+        "firstNamePlaceholder": "Mirabbos",
+        "lastName": "Familiya (ixtiyoriy)",
+        "lastNamePlaceholder": "Egamberdiyev",
+        "phone": "Telefon raqam (ixtiyoriy)",
+        "phonePlaceholder": "+998901234567",
+        "learningCenter": "O'quv markaz (ixtiyoriy)",
+        "learningCenterPlaceholder": "Toshkent Avtomarkaz",
+        "licenseInfo": "Litsenziya ma'lumotlari",
+        "machineId": "Machine ID",
+        "machineIdPlaceholder": "Dasturdan nusxalangan identifikator",
+        "machineIdDesc": "Dastur o'rnatilgan kompyuterning identifikatori",
+        "startDate": "Boshlanish sanasi",
+        "endDate": "Tugash sanasi",
+        "selectDate": "Sanani tanlang",
+        "notes": "Izoh (ixtiyoriy)",
+        "notesPlaceholder": "Bu kod haqida qo'shimcha ma'lumot...",
+        "cancel": "Bekor qilish",
+        "submit": "Yaratish",
+        "successTitle": "Muvaffaqiyatli",
+        "successMsg": "Activation code yaratildi",
+        "copyCode": "Nusxalash",
+        "copied": "Nusxalandi!",
+        "closeBtn": "Yopish",
+        "resultNote": "Quyidagi kodni mijozga yuboring. Kodni keyinchalik ham admin paneldan ko'rish mumkin.",
+        "resultTitle": "Activation code muvaffaqiyatli yaratildi!"
+      },
+      "detail": {
+        "title": "Activation Code Tafsilotlari",
+        "client": "Mijoz",
+        "phone": "Telefon",
+        "learningCenter": "O'quv markaz",
+        "machineId": "Machine ID",
+        "startDate": "Boshlanish",
+        "endDate": "Tugash",
+        "status": "Holat",
+        "notes": "Izoh",
+        "generatedBy": "Yaratgan",
+        "createdAt": "Yaratilgan vaqt",
+        "licenseKey": "LICENSE KEY",
+        "daysLeft": "Qolgan kun",
+        "close": "Yopish"
+      },
+      "deactivate": {
+        "title": "Kodni bekor qilish",
+        "message": "«{{name}}» uchun «{{machineId}}» machine IDga berilgan kod bekor qilinadi. Davom etasizmi?",
+        "reason": "Sabab (ixtiyoriy)",
+        "reasonPlaceholder": "Bekor qilish sababi...",
+        "cancel": "Bekor",
+        "confirm": "Bekor qilish"
+      },
+      "validation": {
+        "firstNameMax": "100 ta belgidan oshmasin",
+        "lastNameMax": "100 ta belgidan oshmasin",
+        "phoneInvalid": "Noto'g'ri telefon raqam formati",
+        "machineIdRequired": "Machine ID kiritilishi shart",
+        "machineIdMin": "Kamida 4 ta belgi",
+        "startDateRequired": "Boshlanish sanasi kiritilishi shart",
+        "endDateRequired": "Tugash sanasi kiritilishi shart",
+        "endDateBeforeStart": "Tugash sanasi boshlanish sanasidan oldin bo'lishi mumkin emas"
+      }
+    }
   }
 }

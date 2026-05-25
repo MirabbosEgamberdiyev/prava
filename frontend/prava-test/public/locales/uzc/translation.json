@@ -555,5 +555,127 @@
     "seoTitle": "Имтиҳонни синаб кўринг - Бепул ЙҲХББ тести онлайн",
     "seoDescription": "Рўйхатдан ўтмасдан ҳайдовчилик гувоҳномаси имтиҳонини бепул синаб кўринг.",
     "examSuffix": "— Имтиҳон"
+  },
+  "admin": {
+    "activationCodes": {
+      "title": "Активация кодлари",
+      "subtitle": "Десктоп лицензия кодларини бошқариш — фақат SUPER_ADMIN",
+      "newCode": "Янги код яратиш",
+      "refresh": "Янгилаш",
+      "search": "Қидириш: machine ID, исм, телефон, ўқув марказ...",
+      "tabs": {
+        "all": "Барчаси",
+        "active": "Актив",
+        "expiring": "Тугаяпти (3 кун)",
+        "expired": "Муддати ўтган",
+        "deactivated": "Бекор қилинган"
+      },
+      "table": {
+        "client": "Мижоз",
+        "phone": "Телефон",
+        "learningCenter": "Ўқув марказ",
+        "machineId": "Machine ID",
+        "validity": "Муддат",
+        "status": "Ҳолат",
+        "generatedBy": "Яратган",
+        "actions": "Амаллар"
+      },
+      "status": {
+        "ACTIVE": "Актив",
+        "EXPIRING": "Тугаяпти",
+        "EXPIRED": "Муддати ўтган",
+        "DEACTIVATED": "Бекор қилинган"
+      },
+      "days": {
+        "remaining": "{{count}} кун қолди",
+        "overdue": "{{count}} кун ўтган"
+      },
+      "empty": "Ҳеч қандай код топилмади",
+      "loadError": "Маълумотларни юклашда хатолик",
+      "actions": {
+        "view": "Кўриш",
+        "deactivate": "Бекор қилиш",
+        "reactivate": "Қайта фаоллаштириш",
+        "delete": "Ўчириш"
+      },
+      "deleteConfirm": "«{{name}}» учун кодни ўчиришни тасдиқлайсизми?",
+      "notifications": {
+        "deactivated": "Код бекор қилинди",
+        "reactivated": "Код қайта фаоллаштирилди",
+        "deleted": "Код ўчирилди",
+        "error": "Номаълум хатолик"
+      },
+      "stats": {
+        "totalAll": "Жами",
+        "totalActive": "Актив",
+        "totalExpiring": "Тугаяпти",
+        "totalExpired": "Муддати ўтган",
+        "totalDeactivated": "Бекор қилинган"
+      },
+      "generate": {
+        "title": "Янги Activation Code Яратиш",
+        "clientInfo": "Мижоз маълумотлари",
+        "firstName": "Исм (ихтиёрий)",
+        "firstNamePlaceholder": "Мираббос",
+        "lastName": "Фамилия (ихтиёрий)",
+        "lastNamePlaceholder": "Эгамбердиев",
+        "phone": "Телефон рақам (ихтиёрий)",
+        "phonePlaceholder": "+998901234567",
+        "learningCenter": "Ўқув марказ (ихтиёрий)",
+        "learningCenterPlaceholder": "Тошкент Автомаркази",
+        "licenseInfo": "Лицензия маълумотлари",
+        "machineId": "Machine ID",
+        "machineIdPlaceholder": "Дастурдан нусхаланган идентификатор",
+        "machineIdDesc": "Дастур ўрнатилган компьютернинг идентификатори",
+        "startDate": "Бошланиш санаси",
+        "endDate": "Тугаш санаси",
+        "selectDate": "Санани танланг",
+        "notes": "Изоҳ (ихтиёрий)",
+        "notesPlaceholder": "Бу код ҳақида қўшимча маълумот...",
+        "cancel": "Бекор қилиш",
+        "submit": "Яратиш",
+        "successTitle": "Муваффақиятли",
+        "successMsg": "Activation code яратилди",
+        "copyCode": "Нусхалаш",
+        "copied": "Нусхаланди!",
+        "closeBtn": "Ёпиш",
+        "resultNote": "Қуйидаги кодни мижозга юборинг. Кодни кейинчалик ҳам admin панелдан кўриш мумкин.",
+        "resultTitle": "Activation code муваффақиятли яратилди!"
+      },
+      "detail": {
+        "title": "Activation Code Тафсилотлари",
+        "client": "Мижоз",
+        "phone": "Телефон",
+        "learningCenter": "Ўқув марказ",
+        "machineId": "Machine ID",
+        "startDate": "Бошланиш",
+        "endDate": "Тугаш",
+        "status": "Ҳолат",
+        "notes": "Изоҳ",
+        "generatedBy": "Яратган",
+        "createdAt": "Яратилган вақт",
+        "licenseKey": "LICENSE KEY",
+        "daysLeft": "Қолган кун",
+        "close": "Ёпиш"
+      },
+      "deactivate": {
+        "title": "Кодни бекор қилиш",
+        "message": "«{{name}}» учун «{{machineId}}» machine IDга берилган код бекор қилинади. Давом этасизми?",
+        "reason": "Сабаб (ихтиёрий)",
+        "reasonPlaceholder": "Бекор қилиш сабаби...",
+        "cancel": "Бекор",
+        "confirm": "Бекор қилиш"
+      },
+      "validation": {
+        "firstNameMax": "100 та белгидан ошмасин",
+        "lastNameMax": "100 та белгидан ошмасин",
+        "phoneInvalid": "Нотўғри телефон рақам формати",
+        "machineIdRequired": "Machine ID киритилиши шарт",
+        "machineIdMin": "Камида 4 та белги",
+        "startDateRequired": "Бошланиш санаси киритилиши шарт",
+        "endDateRequired": "Тугаш санаси киритилиши шарт",
+        "endDateBeforeStart": "Тугаш санаси бошланиш санасидан олдин бўлиши мумкин эмас"
+      }
+    }
   }
 }
