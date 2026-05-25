@@ -36,7 +36,7 @@ public class AsyncConfig implements AsyncConfigurer {
         executor.setQueueCapacity(10);
         executor.setThreadNamePrefix("backup-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(300); // backup tugashini kutish
+        executor.setAwaitTerminationSeconds(3600); // 1 soat — 1000 MB restore uchun yetarli
         executor.initialize();
         return executor;
     }

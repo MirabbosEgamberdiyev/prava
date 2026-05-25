@@ -69,7 +69,7 @@ export function useBackupMutations() {
       form,
       {
         headers: { "Content-Type": "multipart/form-data" },
-        timeout: 300_000, // 5 daqiqa
+        timeout: 1_800_000, // 30 daqiqa — 1000 MB fayl sekin tarmoqda ham yuklana olsin
       }
     );
     return res.data.data.jobId as string;

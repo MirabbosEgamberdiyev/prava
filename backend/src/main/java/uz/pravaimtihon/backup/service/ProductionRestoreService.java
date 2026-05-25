@@ -1,5 +1,7 @@
 package uz.pravaimtihon.backup.service;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +71,12 @@ public class ProductionRestoreService {
     private final PlatformTransactionManager txManager;
 
     private static final String SUPPORTED_VERSION = "2.0";
+
+    /**
+     * Streaming JSON parser uchun bir vaqtda xotirada saqlanadigan maksimal qatorlar soni.
+     * 10_000 qator × ~1 KB ≈ ~10 MB heap — 1000 MB fayl uchun xotira muammosi yo'q.
+     */
+    private static final int STREAM_BATCH_SIZE = 10_000;
 
     // TRUNCATE tartibi: foreign key'lar teskari tartibda tozalanadi
     private static final String[] TRUNCATE_ORDER = {
@@ -342,48 +350,27 @@ public class ProductionRestoreService {
                 int pct = 25 + (int) (i * 60.0 / entityCount);
                 job.updateProgress(pct, "Inserting " + table);
 
-                List<Map<String, Object>> rows = readJsonArray(dataFile);
-                final String     tbl       = table;
-                final List<Map<String, Object>> tableRows = rows;
-                final EntityInfo tableInfo = info;
-                final int[]      counters  = {0, 0, 0}; // [inserted, skipped, failed]
-
-                if (!rows.isEmpty()) {
-                    TransactionTemplate tableTx = new TransactionTemplate(txManager);
-                    tableTx.setTimeout(-1);
-                    try {
-                        tableTx.executeWithoutResult(status -> {
-                            try {
-                                int[] res;
-                                if (tableInfo.isJoinTable()) {
-                                    res = insertJoinTableBatch(tbl, tableRows);
-                                } else {
-                                    res = insertEntityBatch(tbl, tableRows, force);
-                                }
-                                counters[0] = res[0];
-                                counters[1] = res[1];
-                                counters[2] = res[2];
-                            } catch (Exception e) {
-                                status.setRollbackOnly();
-                                throw new RuntimeException(e);
-                            }
-                        });
-                        results.put(table, new TableImportResult(table, rows.size(),
-                                counters[0], counters[1], counters[2], null));
-                    } catch (Exception tableEx) {
-                        log.error("[RESTORE] Table {} failed: {}", table, tableEx.getMessage());
-                        failedTables.add(table);
-                        results.put(table, new TableImportResult(table, rows.size(),
-                                0, 0, rows.size(), tableEx.getMessage()));
-                    }
-                } else {
-                    results.put(table, new TableImportResult(table, 0, 0, 0, 0, null));
+                // ── Streaming insert: JSON faylni xotirada to'liq yuklamasdan qayta ishlash ──
+                // readJsonArray() o'rniga streamingInsert() ishlatiladi — 1000 MB faylda OOM yo'q.
+                final int[] counters = {0, 0, 0, 0}; // [totalRows, inserted, skipped, failed]
+                String errorMsg = null;
+                try {
+                    int[] res = streamingInsert(dataFile, table, info.isJoinTable(), force);
+                    counters[0] = res[0]; // totalRows
+                    counters[1] = res[1]; // inserted
+                    counters[2] = res[2]; // skipped
+                    counters[3] = res[3]; // failed
+                } catch (Exception tableEx) {
+                    log.error("[RESTORE] Table {} streaming failed: {}", table, tableEx.getMessage());
+                    failedTables.add(table);
+                    errorMsg = tableEx.getMessage();
                 }
-
-                totalRows += rows.size();
+                results.put(table, new TableImportResult(table, counters[0],
+                        counters[1], counters[2], counters[3], errorMsg));
+                totalRows += counters[0];
                 i++;
                 log.info("[RESTORE] Table={} total={} inserted={} skipped={} failed={}",
-                        table, rows.size(), counters[0], counters[1], counters[2]);
+                        table, counters[0], counters[1], counters[2], counters[3]);
             }
         } catch (Exception e) {
             throw new RuntimeException("DB restore failed: " + e.getMessage(), e);
@@ -669,8 +656,78 @@ public class ProductionRestoreService {
 
     // ─── Helpers ────────────────────────────────────────────────────────────
 
-    private List<Map<String, Object>> readJsonArray(Path file) throws IOException {
-        return objectMapper.readValue(file.toFile(), new TypeReference<>() {});
+    /**
+     * JSON faylni STREAMING holda o'qib, STREAM_BATCH_SIZE qatorlik batch'larda insert qiladi.
+     * <p>
+     * 1000 MB backup uchun kritik: barcha qatorlarni xotirada ushlab turmaydi.
+     * Har STREAM_BATCH_SIZE qator uchun alohida transaction ochiladi va yopiladi.
+     *
+     * @return int[4] = {totalRows, inserted, skipped, failed}
+     */
+    private int[] streamingInsert(Path dataFile, String table,
+                                  boolean joinTable, boolean force) throws IOException {
+        int[] totals = {0, 0, 0, 0}; // [totalRows, inserted, skipped, failed]
+        List<Map<String, Object>> batch = new ArrayList<>(STREAM_BATCH_SIZE);
+
+        try (JsonParser parser = objectMapper.createParser(dataFile.toFile())) {
+            if (parser.nextToken() != JsonToken.START_ARRAY) {
+                log.warn("[RESTORE] Expected JSON array in file: {}", dataFile.getFileName());
+                return totals;
+            }
+            while (parser.nextToken() != JsonToken.END_ARRAY) {
+                Map<String, Object> row = objectMapper.readValue(
+                        parser, new TypeReference<Map<String, Object>>() {});
+                batch.add(row);
+                totals[0]++;
+
+                if (batch.size() >= STREAM_BATCH_SIZE) {
+                    int[] r = insertBatchInTx(table, new ArrayList<>(batch), joinTable, force);
+                    totals[1] += r[0]; totals[2] += r[1]; totals[3] += r[2];
+                    batch.clear();
+                }
+            }
+            // Qolgan batch
+            if (!batch.isEmpty()) {
+                int[] r = insertBatchInTx(table, batch, joinTable, force);
+                totals[1] += r[0]; totals[2] += r[1]; totals[3] += r[2];
+            }
+        }
+
+        log.info("[RESTORE] Streamed table={} total={} inserted={} skipped={} failed={}",
+                table, totals[0], totals[1], totals[2], totals[3]);
+        return totals;
+    }
+
+    /**
+     * Bitta batch'ni transaction ichida insert qiladi.
+     * Xato bo'lsa rollback — faqat shu batch yo'qoladi, qolganlari saqlanadi.
+     *
+     * @return int[3] = {inserted, skipped, failed}
+     */
+    private int[] insertBatchInTx(String table, List<Map<String, Object>> rows,
+                                  boolean joinTable, boolean force) {
+        int[] result = {0, 0, 0}; // [inserted, skipped, failed]
+        TransactionTemplate tx = new TransactionTemplate(txManager);
+        tx.setTimeout(-1);
+        try {
+            tx.executeWithoutResult(status -> {
+                try {
+                    int[] r = joinTable
+                            ? insertJoinTableBatch(table, rows)
+                            : insertEntityBatch(table, rows, force);
+                    result[0] = r[0];
+                    result[1] = r[1];
+                    result[2] = r[2];
+                } catch (Exception e) {
+                    status.setRollbackOnly();
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (Exception e) {
+            log.warn("[RESTORE] Batch ({} rows) failed for table={}: {}", rows.size(), table, e.getMessage());
+            result[2] = rows.size(); // hammasi failed deb belgilanadi
+        }
+        return result;
     }
 
     private String computeSha256(Path file) throws Exception {

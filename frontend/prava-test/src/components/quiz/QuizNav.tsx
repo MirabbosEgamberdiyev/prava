@@ -52,6 +52,7 @@ interface QuizNavProps {
   onGuestFinish?: () => void;
   onGuestViewResults?: () => void;
   onSubmitSuccess?: () => void;
+  forceEnableSubmit?: boolean;
 }
 
 export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav({

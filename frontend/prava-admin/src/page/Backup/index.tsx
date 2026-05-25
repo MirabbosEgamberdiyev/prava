@@ -24,7 +24,7 @@ import {
   DEFAULT_IMPORT_OPTIONS, getAffectedTables, isClearEmpty,
 } from "../../features/backup/types";
 
-const MAX_IMPORT_SIZE_MB = 500;
+const MAX_IMPORT_SIZE_MB = 1000;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

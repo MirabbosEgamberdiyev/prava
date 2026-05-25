@@ -1,6 +1,7 @@
 import { Alert, Button, Card, Loader, Stack, Text, Title } from '@mantine/core';
 import { useEffect, useState } from 'react';
-import { paymentApi, PaymentStatusResponse } from './paymentApi';
+import { paymentApi } from './paymentApi';
+import type { PaymentStatusResponse } from './paymentApi';
 
 /**
  * Polls /payment/{id}/status until state is terminal (PERFORMED / CANCELLED / REFUNDED / FAILED).

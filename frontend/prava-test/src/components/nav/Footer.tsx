@@ -17,7 +17,6 @@ import {
   IconBrandInstagram,
   IconWorld,
   IconHeart,
-  IconMail,
   IconPhone,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
