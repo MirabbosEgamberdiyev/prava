@@ -9,6 +9,7 @@ import {
   Flex,
   Button,
   useComputedColorScheme,
+  Divider,
 } from "@mantine/core";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -17,20 +18,24 @@ import {
   IconCarambola,
   IconChartBar,
   IconHistory,
+  IconKey,
   IconLayoutGrid,
   IconListDetails,
   IconSettings,
   IconTrophy,
 } from "@tabler/icons-react";
+import { useAuth } from "../../auth/AuthContext";
 
 interface AppShellNavbarProps {
   toggle: () => void;
 }
 
 const User_Nav = ({ toggle }: AppShellNavbarProps) => {
-  const { t } = useTranslation();
+  const { t }    = useTranslation();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const isSuperAdmin = user?.role === "SUPER_ADMIN";
 
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
@@ -144,7 +149,37 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
               </NavLink>
             ))}
           </Box>
+
+          {/* SUPER_ADMIN section */}
+          {isSuperAdmin && (
+            <Box mt="xs">
+              <Divider
+                label={<Text size="xs" c="dimmed" fw={600}>SUPER ADMIN</Text>}
+                my="xs"
+              />
+              <NavLink
+                label={t("nav.activationCodes")}
+                leftSection={
+                  <ActionIcon variant="light" size="md" radius="sm" color="blue">
+                    <IconKey size={18} />
+                  </ActionIcon>
+                }
+                variant="light"
+                active={location.pathname === "/admin/activation-codes"}
+                onClick={() => {
+                  toggle();
+                  navigate("/admin/activation-codes");
+                }}
+                style={{
+                  borderRadius: "var(--mantine-radius-xs)",
+                  fontWeight: 500,
+                }}
+                my={2}
+              />
+            </Box>
+          )}
         </ScrollArea>
+
         <Paper
           bg={computedColorScheme === "light" ? "gray.0" : "dark.7"}
           p="md"

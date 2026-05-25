@@ -78,7 +78,8 @@
     "settings": "Настройки",
     "backup": "Бэкап & Восстановление",
     "systemMonitor": "Мониторинг системы",
-    "files": "Файлы"
+    "files": "Файлы",
+    "license": "Коды активации"
   },
   "common": {
     "save": "Сохранить",
@@ -98,6 +99,7 @@
     "loading": "Загрузка...",
     "noData": "Данные не найдены",
     "noDataFound": "Данные не найдены",
+    "superAdmin": "SUPER ADMIN",
     "minutes": "мин",
     "error": "Ошибка",
     "success": "Успешно",
@@ -621,6 +623,99 @@
     "deleteSuccess": "Файл удалён",
     "deleteError": "Ошибка удаления файла",
     "noFiles": "Файлов нет"
+  },
+  "license": {
+    "title": "Коды активации",
+    "subtitle": "Управление лицензионными токенами Prava-Desktop",
+    "stats": {
+      "total": "Всего",
+      "active": "Активные",
+      "expiring": "Истекают скоро",
+      "expired": "Истёкшие",
+      "deactivated": "Деактивированные"
+    },
+    "group": {
+      "active": "Активный",
+      "expiring": "Истекает",
+      "expired": "Истёк",
+      "deactivated": "Деактивирован"
+    },
+    "filter": {
+      "search": "Поиск по ID машины, клиенту, телефону...",
+      "group": "Фильтр по группе"
+    },
+    "table": {
+      "client": "Клиент",
+      "phone": "Телефон",
+      "machineId": "ID машины",
+      "startDate": "Начало",
+      "endDate": "Конец",
+      "status": "Статус",
+      "generatedBy": "Создал",
+      "learningCenter": "Учебный центр",
+      "notes": "Заметки",
+      "createdAt": "Создан",
+      "actions": "Действия",
+      "total": "Всего: {{count}} записей"
+    },
+    "generate": {
+      "btn": "Создать код",
+      "title": "Создать код активации",
+      "info": "Токен будет зашифрован AES-256-GCM и привязан к ID машины.",
+      "machineId": "ID машины",
+      "machineIdPlaceholder": "например, 3a4b5c6d7e8f...",
+      "startDate": "Дата начала",
+      "endDate": "Дата окончания",
+      "clientInfo": "Данные клиента (необязательно)",
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "phone": "Номер телефона",
+      "learningCenter": "Учебный центр",
+      "notes": "Заметки",
+      "optional": "Необязательно",
+      "submit": "Создать",
+      "successTitle": "Успешно создан!",
+      "successMsg": "Лицензионный токен создан. Скопируйте и отправьте клиенту."
+    },
+    "detail": {
+      "title": "Детали кода",
+      "licenseKey": "Лицензионный токен",
+      "copy": "Копировать",
+      "copied": "Скопировано!",
+      "daysLeft": "Осталось {{count}} дней"
+    },
+    "deactivate": {
+      "btn": "Деактивировать",
+      "title": "Деактивировать лицензию",
+      "confirm": "Вы уверены, что хотите деактивировать лицензию для {{client}}?",
+      "notesLabel": "Причина (необязательно)",
+      "notesPlaceholder": "Почему деактивируете?",
+      "submit": "Деактивировать"
+    },
+    "delete": {
+      "title": "Удалить код",
+      "confirm": "Удалить код для {{client}}? Удалять можно только истёкшие/деактивированные коды.",
+      "submit": "Удалить"
+    },
+    "notifications": {
+      "generateSuccess": "Код создан",
+      "generateSuccessMsg": "Лицензионный токен успешно создан.",
+      "generateError": "Ошибка создания кода",
+      "deactivateSuccess": "Деактивирован",
+      "deactivateSuccessMsg": "Лицензия успешно деактивирована.",
+      "deactivateError": "Ошибка деактивации",
+      "deleteSuccess": "Удалён",
+      "deleteSuccessMsg": "Код успешно удалён.",
+      "deleteError": "Ошибка удаления"
+    },
+    "validation": {
+      "machineIdRequired": "ID машины обязателен",
+      "machineIdMin": "ID машины должен быть не менее 4 символов",
+      "startDateRequired": "Дата начала обязательна",
+      "endDateRequired": "Дата окончания обязательна",
+      "endBeforeStart": "Дата окончания не может быть раньше даты начала",
+      "phoneFormat": "Неверный формат телефона"
+    }
   },
   "home": {
     "title": "Права Уз",

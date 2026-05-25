@@ -78,7 +78,8 @@
     "settings": "Settings",
     "backup": "Backup & Restore",
     "systemMonitor": "System Monitor",
-    "files": "Files"
+    "files": "Files",
+    "license": "Activation Codes"
   },
   "common": {
     "save": "Save",
@@ -114,6 +115,7 @@
     "errorLoading": "Error loading data",
     "serverError": "Server error occurred",
     "noDataFound": "No data found",
+    "superAdmin": "SUPER ADMIN",
     "minutes": "min",
     "form": {
       "langUzl": "Uzbek (Latin)",
@@ -621,6 +623,99 @@
     "deleteSuccess": "File deleted",
     "deleteError": "Error deleting file",
     "noFiles": "No files"
+  },
+  "license": {
+    "title": "Activation Codes",
+    "subtitle": "Manage Prava-Desktop license tokens",
+    "stats": {
+      "total": "Total",
+      "active": "Active",
+      "expiring": "Expiring Soon",
+      "expired": "Expired",
+      "deactivated": "Deactivated"
+    },
+    "group": {
+      "active": "Active",
+      "expiring": "Expiring",
+      "expired": "Expired",
+      "deactivated": "Deactivated"
+    },
+    "filter": {
+      "search": "Search by machine ID, client, phone...",
+      "group": "Filter by group"
+    },
+    "table": {
+      "client": "Client",
+      "phone": "Phone",
+      "machineId": "Machine ID",
+      "startDate": "Start",
+      "endDate": "End",
+      "status": "Status",
+      "generatedBy": "Created by",
+      "learningCenter": "Learning Center",
+      "notes": "Notes",
+      "createdAt": "Created at",
+      "actions": "Actions",
+      "total": "Total: {{count}} records"
+    },
+    "generate": {
+      "btn": "Generate Code",
+      "title": "Generate Activation Code",
+      "info": "The token will be encrypted with AES-256-GCM and tied to the machine ID.",
+      "machineId": "Machine ID",
+      "machineIdPlaceholder": "e.g. 3a4b5c6d7e8f...",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "clientInfo": "Client Information (optional)",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "phone": "Phone Number",
+      "learningCenter": "Learning Center",
+      "notes": "Notes",
+      "optional": "Optional",
+      "submit": "Generate",
+      "successTitle": "Successfully Generated!",
+      "successMsg": "The license token has been created. Copy and send it to the client."
+    },
+    "detail": {
+      "title": "Code Details",
+      "licenseKey": "License Token",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "daysLeft": "{{count}} days remaining"
+    },
+    "deactivate": {
+      "btn": "Deactivate",
+      "title": "Deactivate License",
+      "confirm": "Are you sure you want to deactivate the license for {{client}}?",
+      "notesLabel": "Reason (optional)",
+      "notesPlaceholder": "Why deactivate?",
+      "submit": "Deactivate"
+    },
+    "delete": {
+      "title": "Delete Code",
+      "confirm": "Delete code for {{client}}? Only expired/deactivated codes can be deleted.",
+      "submit": "Delete"
+    },
+    "notifications": {
+      "generateSuccess": "Code Generated",
+      "generateSuccessMsg": "License token successfully created.",
+      "generateError": "Failed to generate code",
+      "deactivateSuccess": "Deactivated",
+      "deactivateSuccessMsg": "License successfully deactivated.",
+      "deactivateError": "Failed to deactivate",
+      "deleteSuccess": "Deleted",
+      "deleteSuccessMsg": "Code successfully deleted.",
+      "deleteError": "Failed to delete"
+    },
+    "validation": {
+      "machineIdRequired": "Machine ID is required",
+      "machineIdMin": "Machine ID must be at least 4 characters",
+      "startDateRequired": "Start date is required",
+      "endDateRequired": "End date is required",
+      "endBeforeStart": "End date cannot be before start date",
+      "phoneFormat": "Invalid phone format"
+    }
   },
   "home": {
     "title": "Prava Uz",

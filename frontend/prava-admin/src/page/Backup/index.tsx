@@ -188,7 +188,7 @@ function JobProgress({ job, onDownload }: { job: BackupJob; onDownload: () => vo
           {job.entities && (
             <Text size="xs" c="dimmed">
               {t("backup.job.rowCount", {
-                count: Object.values(job.entities).reduce((a, b) => a + b, 0).toLocaleString(),
+                count: Object.values(job.entities).reduce((a, b) => a + b, 0),
               })}
             </Text>
           )}
@@ -231,7 +231,7 @@ function ImportOptionsPanel({ options, onChange }: ImportOptionsPanelProps) {
     const val = !allEnabled;
     onChange(Object.fromEntries(
       Object.keys(options).map(k => [k, val])
-    ) as ImportOptions);
+    ) as unknown as ImportOptions);
   };
 
   const enabled = Object.values(options).filter(Boolean).length;

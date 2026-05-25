@@ -78,7 +78,8 @@
     "settings": "Sozlamalar",
     "backup": "Backup & Restore",
     "systemMonitor": "Tizim Monitoring",
-    "files": "Fayllar"
+    "files": "Fayllar",
+    "license": "Aktivatsiya Kodlari"
   },
   "common": {
     "save": "Saqlash",
@@ -114,6 +115,7 @@
     "errorLoading": "Ma'lumotlarni yuklashda xatolik",
     "serverError": "Serverda xatolik yuz berdi",
     "noDataFound": "Ma'lumotlar topilmadi",
+    "superAdmin": "SUPER ADMIN",
     "minutes": "daqiqa",
     "form": {
       "langUzl": "O'zbek (Lotin)",
@@ -621,6 +623,99 @@
     "deleteSuccess": "Fayl o'chirildi",
     "deleteError": "Fayl o'chirishda xatolik",
     "noFiles": "Fayllar yo'q"
+  },
+  "license": {
+    "title": "Aktivatsiya Kodlari",
+    "subtitle": "Prava-Desktop litsenziya tokenlarini boshqarish",
+    "stats": {
+      "total": "Jami",
+      "active": "Faol",
+      "expiring": "Muddati tugayapti",
+      "expired": "Muddati o'tgan",
+      "deactivated": "Deaktivlangan"
+    },
+    "group": {
+      "active": "Faol",
+      "expiring": "Tugayapti",
+      "expired": "O'tgan",
+      "deactivated": "Deaktivlangan"
+    },
+    "filter": {
+      "search": "Mashina ID, mijoz, telefon bo'yicha qidirish...",
+      "group": "Guruh bo'yicha filtrlash"
+    },
+    "table": {
+      "client": "Mijoz",
+      "phone": "Telefon",
+      "machineId": "Mashina ID",
+      "startDate": "Boshlanish",
+      "endDate": "Tugash",
+      "status": "Holat",
+      "generatedBy": "Kim yaratdi",
+      "learningCenter": "O'quv markazi",
+      "notes": "Izohlar",
+      "createdAt": "Yaratilgan",
+      "actions": "Amallar",
+      "total": "Jami: {{count}} ta yozuv"
+    },
+    "generate": {
+      "btn": "Kod yaratish",
+      "title": "Aktivatsiya kodi yaratish",
+      "info": "Token AES-256-GCM bilan shifrlangan holda mashina ID ga bog'lanadi.",
+      "machineId": "Mashina ID",
+      "machineIdPlaceholder": "masalan, 3a4b5c6d7e8f...",
+      "startDate": "Boshlanish sanasi",
+      "endDate": "Tugash sanasi",
+      "clientInfo": "Mijoz ma'lumotlari (ixtiyoriy)",
+      "firstName": "Ismi",
+      "lastName": "Familiyasi",
+      "phone": "Telefon raqami",
+      "learningCenter": "O'quv markazi",
+      "notes": "Izohlar",
+      "optional": "Ixtiyoriy",
+      "submit": "Yaratish",
+      "successTitle": "Muvaffaqiyatli yaratildi!",
+      "successMsg": "Litsenziya tokeni yaratildi. Nusxa olib mijozga yuboring."
+    },
+    "detail": {
+      "title": "Kod tafsilotlari",
+      "licenseKey": "Litsenziya tokeni",
+      "copy": "Nusxa olish",
+      "copied": "Nusxa olindi!",
+      "daysLeft": "{{count}} kun qoldi"
+    },
+    "deactivate": {
+      "btn": "Deaktivlash",
+      "title": "Litsenziyani deaktivlash",
+      "confirm": "{{client}} uchun litsenziyani deaktivlashni xohlaysizmi?",
+      "notesLabel": "Sabab (ixtiyoriy)",
+      "notesPlaceholder": "Nima uchun deaktivlayapsiz?",
+      "submit": "Deaktivlash"
+    },
+    "delete": {
+      "title": "Kodni o'chirish",
+      "confirm": "{{client}} uchun kodni o'chirasizmi? Faqat muddati o'tgan/deaktivlangan kodlarni o'chirish mumkin.",
+      "submit": "O'chirish"
+    },
+    "notifications": {
+      "generateSuccess": "Kod yaratildi",
+      "generateSuccessMsg": "Litsenziya tokeni muvaffaqiyatli yaratildi.",
+      "generateError": "Kod yaratishda xatolik",
+      "deactivateSuccess": "Deaktivlandi",
+      "deactivateSuccessMsg": "Litsenziya muvaffaqiyatli deaktivlandi.",
+      "deactivateError": "Deaktivlashda xatolik",
+      "deleteSuccess": "O'chirildi",
+      "deleteSuccessMsg": "Kod muvaffaqiyatli o'chirildi.",
+      "deleteError": "O'chirishda xatolik"
+    },
+    "validation": {
+      "machineIdRequired": "Mashina ID majburiy",
+      "machineIdMin": "Mashina ID kamida 4 ta belgi bo'lishi kerak",
+      "startDateRequired": "Boshlanish sanasi majburiy",
+      "endDateRequired": "Tugash sanasi majburiy",
+      "endBeforeStart": "Tugash sanasi boshlanish sanasidan oldin bo'lishi mumkin emas",
+      "phoneFormat": "Telefon raqami formati noto'g'ri"
+    }
   },
   "home": {
     "title": "Prava Uz",

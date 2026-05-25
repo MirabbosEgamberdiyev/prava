@@ -4,6 +4,7 @@ import {
   IconDatabaseExport,
   IconFolder,
   IconHome,
+  IconKey,
   IconListDetails,
   IconServer,
   IconSettings,
@@ -82,6 +83,12 @@ const AdminNavUrlData: NavItem[] = [
     url: "/files",
     icon: <IconFiles size="16px" />,
     role: "ADMIN",
+  },
+  {
+    name: "nav.license",
+    url: "/license",
+    icon: <IconKey size="16px" />,
+    role: "SUPER_ADMIN",
   },
   {
     name: "nav.backup",

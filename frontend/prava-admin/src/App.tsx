@@ -14,6 +14,7 @@ import Packages_Page from "./page/Packages";
 import Tickets_Page from "./page/Tickets";
 
 // Lazy loaded sahifalar
+const License_Page = lazy(() => import("./page/License"));
 const Backup_Page = lazy(() => import("./page/Backup"));
 const Statistics_Page = lazy(() => import("./page/Statistics"));
 const Settings_Page = lazy(() => import("./page/Settings"));
@@ -94,6 +95,18 @@ function App() {
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
                       <Suspense fallback={LazyFallback}>
                         <Files_Page />
+                      </Suspense>
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Aktivatsiya kodlari - faqat SUPER_ADMIN */}
+                <Route
+                  path="/license"
+                  element={
+                    <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}>
+                        <License_Page />
                       </Suspense>
                     </RoleGuard>
                   }

@@ -78,7 +78,8 @@
     "settings": "Созламалар",
     "backup": "Бэкап & Тиклаш",
     "systemMonitor": "Тизим Мониторинг",
-    "files": "Файллар"
+    "files": "Файллар",
+    "license": "Активация Кодлари"
   },
   "common": {
     "save": "Сақлаш",
@@ -98,6 +99,7 @@
     "loading": "Юкланмоқда...",
     "noData": "Маълумотлар топилмади",
     "noDataFound": "Маълумотлар топилмади",
+    "superAdmin": "SUPER ADMIN",
     "minutes": "дақиқа",
     "error": "Хатолик",
     "success": "Муваффақиятли",
@@ -621,6 +623,99 @@
     "deleteSuccess": "Файл ўчирилди",
     "deleteError": "Файл ўчиришда хатолик",
     "noFiles": "Файллар йўқ"
+  },
+  "license": {
+    "title": "Активация Кодлари",
+    "subtitle": "Prava-Desktop лицензия токенларини бошқариш",
+    "stats": {
+      "total": "Жами",
+      "active": "Фаол",
+      "expiring": "Муддати тугаяпти",
+      "expired": "Муддати ўтган",
+      "deactivated": "Деактивланган"
+    },
+    "group": {
+      "active": "Фаол",
+      "expiring": "Тугаяпти",
+      "expired": "Ўтган",
+      "deactivated": "Деактивланган"
+    },
+    "filter": {
+      "search": "Машина ID, мижоз, телефон бўйича қидириш...",
+      "group": "Гуруҳ бўйича фильтрлаш"
+    },
+    "table": {
+      "client": "Мижоз",
+      "phone": "Телефон",
+      "machineId": "Машина ID",
+      "startDate": "Бошланиш",
+      "endDate": "Тугаш",
+      "status": "Ҳолат",
+      "generatedBy": "Ким яратди",
+      "learningCenter": "Ўқув маркази",
+      "notes": "Изоҳлар",
+      "createdAt": "Яратилган",
+      "actions": "Амаллар",
+      "total": "Жами: {{count}} та ёзув"
+    },
+    "generate": {
+      "btn": "Код яратиш",
+      "title": "Активация коди яратиш",
+      "info": "Токен AES-256-GCM билан шифрланган ҳолда машина ID га боғланади.",
+      "machineId": "Машина ID",
+      "machineIdPlaceholder": "масалан, 3a4b5c6d7e8f...",
+      "startDate": "Бошланиш санаси",
+      "endDate": "Тугаш санаси",
+      "clientInfo": "Мижоз маълумотлари (ихтиёрий)",
+      "firstName": "Исми",
+      "lastName": "Фамилияси",
+      "phone": "Телефон рақами",
+      "learningCenter": "Ўқув маркази",
+      "notes": "Изоҳлар",
+      "optional": "Ихтиёрий",
+      "submit": "Яратиш",
+      "successTitle": "Муваффақиятли яратилди!",
+      "successMsg": "Лицензия токени яратилди. Нусха олиб мижозга юборинг."
+    },
+    "detail": {
+      "title": "Код тафсилотлари",
+      "licenseKey": "Лицензия токени",
+      "copy": "Нусха олиш",
+      "copied": "Нусха олинди!",
+      "daysLeft": "{{count}} кун қолди"
+    },
+    "deactivate": {
+      "btn": "Деактивлаш",
+      "title": "Лицензияни деактивлаш",
+      "confirm": "{{client}} учун лицензияни деактивлашни хоҳлайсизми?",
+      "notesLabel": "Сабаб (ихтиёрий)",
+      "notesPlaceholder": "Нима учун деактивлаяпсиз?",
+      "submit": "Деактивлаш"
+    },
+    "delete": {
+      "title": "Кодни ўчириш",
+      "confirm": "{{client}} учун кодни ўчирасизми? Фақат муддати ўтган/деактивланган кодларни ўчириш мумкин.",
+      "submit": "Ўчириш"
+    },
+    "notifications": {
+      "generateSuccess": "Код яратилди",
+      "generateSuccessMsg": "Лицензия токени муваффақиятли яратилди.",
+      "generateError": "Код яратишда хатолик",
+      "deactivateSuccess": "Деактивланди",
+      "deactivateSuccessMsg": "Лицензия муваффақиятли деактивланди.",
+      "deactivateError": "Деактивлашда хатолик",
+      "deleteSuccess": "Ўчирилди",
+      "deleteSuccessMsg": "Код муваффақиятли ўчирилди.",
+      "deleteError": "Ўчиришда хатолик"
+    },
+    "validation": {
+      "machineIdRequired": "Машина ID мажбурий",
+      "machineIdMin": "Машина ID камида 4 та белги бўлиши керак",
+      "startDateRequired": "Бошланиш санаси мажбурий",
+      "endDateRequired": "Тугаш санаси мажбурий",
+      "endBeforeStart": "Тугаш санаси бошланиш санасидан олдин бўлиши мумкин эмас",
+      "phoneFormat": "Телефон рақами формати нотўғри"
+    }
   },
   "home": {
     "title": "Права Уз",
