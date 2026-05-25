@@ -229,7 +229,8 @@
     "statistics": "Statistics",
     "history": "History",
     "leaderboard": "Leaderboard",
-    "settings": "Settings"
+    "settings": "Settings",
+    "activationCodes": "Activation Codes"
   },
   "exam": {
     "finish": "Finish",

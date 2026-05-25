@@ -230,7 +230,8 @@
     "statistics": "Статистика",
     "history": "История",
     "leaderboard": "Рейтинг",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "activationCodes": "Коды активации"
   },
   "exam": {
     "finish": "Завершить",

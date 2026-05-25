@@ -35,6 +35,8 @@ import activationCodeService, {
   type ActivationCodeResponse,
 } from "../../../api/activationCodeService";
 
+const NS = "admin.activationCodes";
+
 interface Props {
   opened: boolean;
   onClose: () => void;
@@ -54,9 +56,8 @@ interface FormValues {
 
 const GenerateModal: React.FC<Props> = ({ opened, onClose, onSuccess }) => {
   const { t } = useTranslation();
-  const ns = "admin.activationCodes";
-  const g = `${ns}.generate`;
-  const v = `${ns}.validation`;
+  const g = `${NS}.generate`;
+  const v = `${NS}.validation`;
 
   const [loading, setLoading] = useState(false);
   const [generatedCode, setGeneratedCode] = useState<ActivationCodeResponse | null>(null);
@@ -73,8 +74,10 @@ const GenerateModal: React.FC<Props> = ({ opened, onClose, onSuccess }) => {
       notes: "",
     },
     validate: {
-      clientFirstName: (v) => (v && v.length > 100 ? t(`${ns}.validation.firstNameMax`) : null),
-      clientLastName:  (v) => (v && v.length > 100 ? t(`${ns}.validation.lastNameMax`)  : null),
+      clientFirstName: (val) =>
+        val && val.length > 100 ? t(`${v}.firstNameMax`) : null,
+      clientLastName: (val) =>
+        val && val.length > 100 ? t(`${v}.lastNameMax`) : null,
       clientPhone: (val) => {
         if (!val || !val.trim()) return null;
         return /^[+]?[0-9\s\-()]{7,20}$/.test(val.trim())
@@ -90,7 +93,8 @@ const GenerateModal: React.FC<Props> = ({ opened, onClose, onSuccess }) => {
       startDate: (val) => (!val ? t(`${v}.startDateRequired`) : null),
       endDate: (val, values) => {
         if (!val) return t(`${v}.endDateRequired`);
-        if (values.startDate && val < values.startDate) return t(`${v}.endDateBeforeStart`);
+        if (values.startDate && val < values.startDate)
+          return t(`${v}.endDateBeforeStart`);
         return null;
       },
     },
@@ -154,12 +158,12 @@ const GenerateModal: React.FC<Props> = ({ opened, onClose, onSuccess }) => {
       closeOnEscape={!loading}
     >
       {generatedCode ? (
-        <GeneratedResult code={generatedCode} onClose={handleClose} t={t} ns={ns} />
+        <GeneratedResult code={generatedCode} onClose={handleClose} />
       ) : (
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="md">
 
-            {/* ── Client info ───────────────────────── */}
+            {/* ── Client info ─────────────────────────── */}
             <Group gap="xs">
               <ThemeIcon size="xs" variant="light" color="gray" radius="xl">
                 <IconUser size={10} />
@@ -194,7 +198,7 @@ const GenerateModal: React.FC<Props> = ({ opened, onClose, onSuccess }) => {
 
             <Divider />
 
-            {/* ── License info ──────────────────────── */}
+            {/* ── License info ────────────────────────── */}
             <Group gap="xs">
               <ThemeIcon size="xs" variant="light" color="blue" radius="xl">
                 <IconDeviceLaptop size={10} />
@@ -260,10 +264,9 @@ const GenerateModal: React.FC<Props> = ({ opened, onClose, onSuccess }) => {
 const GeneratedResult: React.FC<{
   code: ActivationCodeResponse;
   onClose: () => void;
-  t: (key: string) => string;
-  ns: string;
-}> = ({ code, onClose, t, ns }) => {
-  const g = `${ns}.generate`;
+}> = ({ code, onClose }) => {
+  const { t } = useTranslation();
+  const g = `${NS}.generate`;
 
   return (
     <Stack gap="md">
@@ -279,8 +282,8 @@ const GeneratedResult: React.FC<{
       {/* License key box */}
       <Paper withBorder p="md" radius="md" bg="gray.0">
         <Stack gap="xs">
-          <Text size="xs" c="dimmed" fw={600} tt="uppercase" ls={1}>
-            {t(`${ns}.detail.licenseKey`)}
+          <Text size="xs" c="dimmed" fw={600} tt="uppercase" style={{ letterSpacing: 1 }}>
+            {t(`${NS}.detail.licenseKey`)}
           </Text>
           <Group gap="xs" align="flex-start" wrap="nowrap">
             <Box style={{ flex: 1, overflow: "hidden" }}>
@@ -295,7 +298,10 @@ const GeneratedResult: React.FC<{
             </Box>
             <CopyButton value={code.licenseKey} timeout={2000}>
               {({ copied, copy }) => (
-                <Tooltip label={copied ? t(`${g}.copied`) : t(`${g}.copyCode`)} withArrow>
+                <Tooltip
+                  label={copied ? t(`${g}.copied`) : t(`${g}.copyCode`)}
+                  withArrow
+                >
                   <ActionIcon
                     color={copied ? "teal" : "blue"}
                     variant="filled"
@@ -312,7 +318,7 @@ const GeneratedResult: React.FC<{
         </Stack>
       </Paper>
 
-      {/* Summary */}
+      {/* Summary badges */}
       <Group gap="sm" wrap="wrap">
         <Badge color="blue" variant="light" size="md">
           {code.machineId}
@@ -325,13 +331,13 @@ const GeneratedResult: React.FC<{
           variant="light"
           size="md"
         >
-          {code.daysUntilExpiry} {t(`${ns}.detail.daysLeft`).toLowerCase()}
+          {code.daysUntilExpiry} {t(`${NS}.detail.daysLeft`).toLowerCase()}
         </Badge>
       </Group>
 
       {code.clientFullName && code.clientFullName !== "—" && (
         <Group gap="xs">
-          <Text size="sm" c="dimmed">{t(`${ns}.detail.client`)}:</Text>
+          <Text size="sm" c="dimmed">{t(`${NS}.detail.client`)}:</Text>
           <Text size="sm" fw={500}>{code.clientFullName}</Text>
         </Group>
       )}
@@ -353,7 +359,10 @@ function formatDate(d: Date): string {
 
 function extractErrorMessage(err: unknown): string {
   if (err && typeof err === "object") {
-    const e = err as { response?: { data?: { message?: string } }; message?: string };
+    const e = err as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
     return e.response?.data?.message ?? e.message ?? "Unknown error";
   }
   return "Unknown error";

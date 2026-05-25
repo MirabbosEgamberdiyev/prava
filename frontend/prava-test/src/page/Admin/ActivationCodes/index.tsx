@@ -55,6 +55,10 @@ import activationCodeService, {
 } from "../../../api/activationCodeService";
 import GenerateModal from "./GenerateModal";
 
+// ── Shared constant ───────────────────────────────────────────────────────────
+
+const NS = "admin.activationCodes";
+
 // ── SWR fetchers ──────────────────────────────────────────────────────────────
 
 const fetchStats = () => activationCodeService.getStats();
@@ -73,11 +77,28 @@ const STATUS_COLOR: Record<string, string> = {
   DEACTIVATED: "dark",
 };
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function localDate(d?: string) {
+  if (!d) return "—";
+  return new Date(d + "T00:00:00").toLocaleDateString();
+}
+
+function extractErrorMessage(err: unknown): string {
+  if (err && typeof err === "object") {
+    const e = err as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
+    return e.response?.data?.message ?? e.message ?? "Unknown error";
+  }
+  return "Unknown error";
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 const ActivationCodesPage: React.FC = () => {
   const { t } = useTranslation();
-  const ns = "admin.activationCodes";
 
   const [activeTab, setActiveTab]       = useState<GroupTab>("ALL");
   const [page, setPage]                 = useState(1);
@@ -90,11 +111,11 @@ const ActivationCodesPage: React.FC = () => {
   // ── SWR keys ───────────────────────────────────────────────────────────
   const statsKey = "activation-codes-stats";
   const listKey  = JSON.stringify({
-    k: "activation-codes-list",
-    group: activeTab === "ALL" ? undefined : activeTab,
+    k:      "activation-codes-list",
+    group:  activeTab === "ALL" ? undefined : activeTab,
     search: search || undefined,
-    page: page - 1,
-    size: PAGE_SIZE,
+    page:   page - 1,
+    size:   PAGE_SIZE,
   });
 
   const { data: stats, isLoading: statsLoading } =
@@ -113,7 +134,7 @@ const ActivationCodesPage: React.FC = () => {
     useSWR<PageData<ActivationCodeResponse>>(
       listKey,
       () => fetchList(listParams),
-      { refreshInterval: 30_000, keepPreviousData: true }
+      { refreshInterval: 30_000, keepPreviousData: true },
     );
 
   const refreshAll = useCallback(() => {
@@ -126,17 +147,17 @@ const ActivationCodesPage: React.FC = () => {
     try {
       await activationCodeService.deactivate(code.id, reason);
       notifications.show({
-        message: t(`${ns}.notifications.deactivated`),
-        color: "orange",
-        icon: <IconCheck size={16} />,
+        message: t(`${NS}.notifications.deactivated`),
+        color:   "orange",
+        icon:    <IconCheck size={16} />,
       });
       setDeactivateTarget(null);
       refreshAll();
     } catch (err) {
       notifications.show({
         message: extractErrorMessage(err),
-        color: "red",
-        icon: <IconAlertCircle size={16} />,
+        color:   "red",
+        icon:    <IconAlertCircle size={16} />,
       });
     }
   };
@@ -145,68 +166,72 @@ const ActivationCodesPage: React.FC = () => {
     try {
       await activationCodeService.reactivate(code.id);
       notifications.show({
-        message: t(`${ns}.notifications.reactivated`),
-        color: "green",
-        icon: <IconCheck size={16} />,
+        message: t(`${NS}.notifications.reactivated`),
+        color:   "green",
+        icon:    <IconCheck size={16} />,
       });
       refreshAll();
     } catch (err) {
       notifications.show({
         message: extractErrorMessage(err),
-        color: "red",
-        icon: <IconAlertCircle size={16} />,
+        color:   "red",
+        icon:    <IconAlertCircle size={16} />,
       });
     }
   };
 
   const handleDelete = async (code: ActivationCodeResponse) => {
-    if (!window.confirm(t(`${ns}.deleteConfirm`, { name: code.clientFullName }))) return;
+    if (!window.confirm(t(`${NS}.deleteConfirm`, { name: code.clientFullName }))) return;
     try {
       await activationCodeService.delete(code.id);
       notifications.show({
-        message: t(`${ns}.notifications.deleted`),
-        color: "gray",
-        icon: <IconCheck size={16} />,
+        message: t(`${NS}.notifications.deleted`),
+        color:   "gray",
+        icon:    <IconCheck size={16} />,
       });
       refreshAll();
     } catch (err) {
       notifications.show({
         message: extractErrorMessage(err),
-        color: "red",
-        icon: <IconAlertCircle size={16} />,
+        color:   "red",
+        icon:    <IconAlertCircle size={16} />,
       });
     }
   };
 
   // ── Tab config ─────────────────────────────────────────────────────────
-  const TABS: { value: GroupTab; labelKey: string; color: string; statsKey: keyof ActivationCodeStats }[] = [
-    { value: "ALL",         labelKey: `${ns}.tabs.all`,         color: "gray",   statsKey: "totalAll" },
-    { value: "ACTIVE",      labelKey: `${ns}.tabs.active`,      color: "green",  statsKey: "totalActive" },
-    { value: "EXPIRING",    labelKey: `${ns}.tabs.expiring`,    color: "orange", statsKey: "totalExpiring" },
-    { value: "EXPIRED",     labelKey: `${ns}.tabs.expired`,     color: "red",    statsKey: "totalExpired" },
-    { value: "DEACTIVATED", labelKey: `${ns}.tabs.deactivated`, color: "dark",   statsKey: "totalDeactivated" },
+  const TABS: {
+    value: GroupTab;
+    labelKey: string;
+    color: string;
+    statsKey: keyof ActivationCodeStats;
+  }[] = [
+    { value: "ALL",         labelKey: `${NS}.tabs.all`,         color: "gray",   statsKey: "totalAll"         },
+    { value: "ACTIVE",      labelKey: `${NS}.tabs.active`,      color: "green",  statsKey: "totalActive"      },
+    { value: "EXPIRING",    labelKey: `${NS}.tabs.expiring`,    color: "orange", statsKey: "totalExpiring"    },
+    { value: "EXPIRED",     labelKey: `${NS}.tabs.expired`,     color: "red",    statsKey: "totalExpired"     },
+    { value: "DEACTIVATED", labelKey: `${NS}.tabs.deactivated`, color: "dark",   statsKey: "totalDeactivated" },
   ];
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
     <Container size="xl" py="xl">
 
-      {/* ── Header ─────────────────────────────────────── */}
+      {/* Header */}
       <Group justify="space-between" mb="xl" align="flex-start">
         <Stack gap={4}>
           <Group gap="xs">
             <ThemeIcon size="lg" variant="light" color="blue" radius="md">
               <IconKey size={18} />
             </ThemeIcon>
-            <Title order={2}>{t(`${ns}.title`)}</Title>
+            <Title order={2}>{t(`${NS}.title`)}</Title>
           </Group>
           <Text c="dimmed" size="sm" pl={44}>
-            {t(`${ns}.subtitle`)}
+            {t(`${NS}.subtitle`)}
           </Text>
         </Stack>
-
         <Group>
-          <Tooltip label={t(`${ns}.refresh`)}>
+          <Tooltip label={t(`${NS}.refresh`)}>
             <ActionIcon variant="light" onClick={refreshAll} size="lg" radius="md">
               <IconRefresh size={18} />
             </ActionIcon>
@@ -216,51 +241,21 @@ const ActivationCodesPage: React.FC = () => {
             onClick={() => setGenerateOpen(true)}
             radius="md"
           >
-            {t(`${ns}.newCode`)}
+            {t(`${NS}.newCode`)}
           </Button>
         </Group>
       </Group>
 
-      {/* ── Stats cards ────────────────────────────────── */}
+      {/* Stats cards */}
       <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} mb="xl" spacing="sm">
-        <StatsCard
-          label={t(`${ns}.stats.totalAll`)}
-          value={stats?.totalAll}
-          color="blue"
-          icon={<IconKey size={20} />}
-          loading={statsLoading}
-        />
-        <StatsCard
-          label={t(`${ns}.stats.totalActive`)}
-          value={stats?.totalActive}
-          color="green"
-          icon={<IconCircleCheck size={20} />}
-          loading={statsLoading}
-        />
-        <StatsCard
-          label={t(`${ns}.stats.totalExpiring`)}
-          value={stats?.totalExpiring}
-          color="orange"
-          icon={<IconClockHour4 size={20} />}
-          loading={statsLoading}
-        />
-        <StatsCard
-          label={t(`${ns}.stats.totalExpired`)}
-          value={stats?.totalExpired}
-          color="red"
-          icon={<IconCircleX size={20} />}
-          loading={statsLoading}
-        />
-        <StatsCard
-          label={t(`${ns}.stats.totalDeactivated`)}
-          value={stats?.totalDeactivated}
-          color="dark"
-          icon={<IconCircleMinus size={20} />}
-          loading={statsLoading}
-        />
+        <StatsCard label={t(`${NS}.stats.totalAll`)}         value={stats?.totalAll}         color="blue"   icon={<IconKey size={20} />}          loading={statsLoading} />
+        <StatsCard label={t(`${NS}.stats.totalActive`)}      value={stats?.totalActive}      color="green"  icon={<IconCircleCheck size={20} />}  loading={statsLoading} />
+        <StatsCard label={t(`${NS}.stats.totalExpiring`)}    value={stats?.totalExpiring}    color="orange" icon={<IconClockHour4 size={20} />}   loading={statsLoading} />
+        <StatsCard label={t(`${NS}.stats.totalExpired`)}     value={stats?.totalExpired}     color="red"    icon={<IconCircleX size={20} />}      loading={statsLoading} />
+        <StatsCard label={t(`${NS}.stats.totalDeactivated`)} value={stats?.totalDeactivated} color="dark"   icon={<IconCircleMinus size={20} />}  loading={statsLoading} />
       </SimpleGrid>
 
-      {/* ── Tabs ───────────────────────────────────────── */}
+      {/* Tabs */}
       <Paper withBorder radius="md" mb="md" p={0} style={{ overflow: "hidden" }}>
         <Tabs
           value={activeTab}
@@ -273,6 +268,7 @@ const ActivationCodesPage: React.FC = () => {
                 <Tabs.Tab
                   key={tab.value}
                   value={tab.value}
+                  px="md"
                   rightSection={
                     statsLoading ? (
                       <Skeleton w={24} h={18} radius="xl" />
@@ -286,7 +282,6 @@ const ActivationCodesPage: React.FC = () => {
                       </Badge>
                     ) : null
                   }
-                  px="md"
                 >
                   {t(tab.labelKey)}
                 </Tabs.Tab>
@@ -296,9 +291,9 @@ const ActivationCodesPage: React.FC = () => {
         </Tabs>
       </Paper>
 
-      {/* ── Search ─────────────────────────────────────── */}
+      {/* Search */}
       <TextInput
-        placeholder={t(`${ns}.search`)}
+        placeholder={t(`${NS}.search`)}
         leftSection={<IconSearch size={16} />}
         value={searchRaw}
         onChange={(e) => { setSearchRaw(e.currentTarget.value); setPage(1); }}
@@ -307,11 +302,11 @@ const ActivationCodesPage: React.FC = () => {
         radius="md"
       />
 
-      {/* ── Table ──────────────────────────────────────── */}
+      {/* Table */}
       <Paper withBorder radius="md" p={0} style={{ overflow: "hidden" }}>
         {listError ? (
           <Alert color="red" m="md" icon={<IconAlertCircle />} radius="md">
-            {t(`${ns}.loadError`)}: {extractErrorMessage(listError)}
+            {t(`${NS}.loadError`)}: {extractErrorMessage(listError)}
           </Alert>
         ) : listLoading && !listData ? (
           <TableSkeleton />
@@ -320,19 +315,19 @@ const ActivationCodesPage: React.FC = () => {
             <ThemeIcon size={56} variant="light" color="gray" radius="xl">
               <IconKey size={28} />
             </ThemeIcon>
-            <Text c="dimmed" size="sm">{t(`${ns}.empty`)}</Text>
+            <Text c="dimmed" size="sm">{t(`${NS}.empty`)}</Text>
           </Stack>
         ) : (
           <Table striped highlightOnHover verticalSpacing="sm">
             <Table.Thead bg="gray.0">
               <Table.Tr>
-                <Table.Th>{t(`${ns}.table.client`)}</Table.Th>
-                <Table.Th>{t(`${ns}.table.phone`)}</Table.Th>
-                <Table.Th>{t(`${ns}.table.learningCenter`)}</Table.Th>
-                <Table.Th>{t(`${ns}.table.machineId`)}</Table.Th>
-                <Table.Th>{t(`${ns}.table.validity`)}</Table.Th>
-                <Table.Th>{t(`${ns}.table.status`)}</Table.Th>
-                <Table.Th>{t(`${ns}.table.generatedBy`)}</Table.Th>
+                <Table.Th>{t(`${NS}.table.client`)}</Table.Th>
+                <Table.Th>{t(`${NS}.table.phone`)}</Table.Th>
+                <Table.Th>{t(`${NS}.table.learningCenter`)}</Table.Th>
+                <Table.Th>{t(`${NS}.table.machineId`)}</Table.Th>
+                <Table.Th>{t(`${NS}.table.validity`)}</Table.Th>
+                <Table.Th>{t(`${NS}.table.status`)}</Table.Th>
+                <Table.Th>{t(`${NS}.table.generatedBy`)}</Table.Th>
                 <Table.Th style={{ width: 56 }} />
               </Table.Tr>
             </Table.Thead>
@@ -341,8 +336,6 @@ const ActivationCodesPage: React.FC = () => {
                 <CodeRow
                   key={code.id}
                   code={code}
-                  t={t}
-                  ns={ns}
                   onView={() => setDetailCode(code)}
                   onDeactivate={() => setDeactivateTarget(code)}
                   onReactivate={() => handleReactivate(code)}
@@ -354,7 +347,7 @@ const ActivationCodesPage: React.FC = () => {
         )}
       </Paper>
 
-      {/* ── Pagination ─────────────────────────────────── */}
+      {/* Pagination */}
       {listData && listData.totalPages > 1 && (
         <Group justify="center" mt="md">
           <Pagination
@@ -367,29 +360,20 @@ const ActivationCodesPage: React.FC = () => {
         </Group>
       )}
 
-      {/* ── Modals ─────────────────────────────────────── */}
+      {/* Modals */}
       <GenerateModal
         opened={generateOpen}
         onClose={() => setGenerateOpen(false)}
         onSuccess={() => { setGenerateOpen(false); refreshAll(); }}
       />
-
       {detailCode && (
-        <DetailModal
-          code={detailCode}
-          onClose={() => setDetailCode(null)}
-          t={t}
-          ns={ns}
-        />
+        <DetailModal code={detailCode} onClose={() => setDetailCode(null)} />
       )}
-
       {deactivateTarget && (
         <DeactivateModal
           code={deactivateTarget}
           onClose={() => setDeactivateTarget(null)}
           onConfirm={(reason) => handleDeactivate(deactivateTarget, reason)}
-          t={t}
-          ns={ns}
         />
       )}
     </Container>
@@ -413,9 +397,7 @@ const StatsCard: React.FC<{
       {loading ? (
         <Skeleton w={36} h={28} radius="sm" />
       ) : (
-        <Text fw={700} size="xl" c={color}>
-          {value ?? 0}
-        </Text>
+        <Text fw={700} size="xl" c={color}>{value ?? 0}</Text>
       )}
     </Group>
     <Text size="xs" c="dimmed" fw={500}>{label}</Text>
@@ -426,22 +408,19 @@ const StatsCard: React.FC<{
 
 const CodeRow: React.FC<{
   code: ActivationCodeResponse;
-  t: (key: string, opts?: Record<string, unknown>) => string;
-  ns: string;
   onView: () => void;
   onDeactivate: () => void;
   onReactivate: () => void;
   onDelete: () => void;
-}> = ({ code, t, ns, onView, onDeactivate, onReactivate, onDelete }) => {
+}> = ({ code, onView, onDeactivate, onReactivate, onDelete }) => {
+  const { t } = useTranslation();
   const isExpired  = code.daysUntilExpiry < 0;
   const isExpiring = !isExpired && code.daysUntilExpiry < 4;
 
   return (
     <Table.Tr>
       <Table.Td>
-        <Text size="sm" fw={500}>
-          {code.clientFullName ?? "—"}
-        </Text>
+        <Text size="sm" fw={500}>{code.clientFullName ?? "—"}</Text>
       </Table.Td>
 
       <Table.Td>
@@ -463,12 +442,7 @@ const CodeRow: React.FC<{
           </Text>
           <CopyButton value={code.machineId} timeout={1500}>
             {({ copied, copy }) => (
-              <ActionIcon
-                size="xs"
-                variant="subtle"
-                color={copied ? "teal" : "gray"}
-                onClick={copy}
-              >
+              <ActionIcon size="xs" variant="subtle" color={copied ? "teal" : "gray"} onClick={copy}>
                 {copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
               </ActionIcon>
             )}
@@ -479,16 +453,12 @@ const CodeRow: React.FC<{
       <Table.Td>
         <Stack gap={2}>
           <Text size="xs" c="dimmed">
-            {formatDate(code.startDate)} → {formatDate(code.endDate)}
+            {localDate(code.startDate)} → {localDate(code.endDate)}
           </Text>
-          <Text
-            size="xs"
-            fw={500}
-            c={isExpired ? "red" : isExpiring ? "orange" : "teal"}
-          >
+          <Text size="xs" fw={500} c={isExpired ? "red" : isExpiring ? "orange" : "teal"}>
             {isExpired
-              ? t(`${ns}.days.overdue`, { count: Math.abs(code.daysUntilExpiry) })
-              : t(`${ns}.days.remaining`, { count: code.daysUntilExpiry })}
+              ? t(`${NS}.days.overdue`,    { count: Math.abs(code.daysUntilExpiry) })
+              : t(`${NS}.days.remaining`,  { count: code.daysUntilExpiry })}
           </Text>
         </Stack>
       </Table.Td>
@@ -500,7 +470,7 @@ const CodeRow: React.FC<{
           size="sm"
           radius="sm"
         >
-          {t(`${ns}.status.${code.displayGroup}`, { defaultValue: code.displayGroup })}
+          {t(`${NS}.status.${code.displayGroup}`, { defaultValue: code.displayGroup })}
         </Badge>
       </Table.Td>
 
@@ -517,34 +487,22 @@ const CodeRow: React.FC<{
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Item leftSection={<IconEye size={14} />} onClick={onView}>
-              {t(`${ns}.actions.view`)}
+              {t(`${NS}.actions.view`)}
             </Menu.Item>
             <Menu.Divider />
             {code.status === "ACTIVE" && (
-              <Menu.Item
-                leftSection={<IconBan size={14} />}
-                color="red"
-                onClick={onDeactivate}
-              >
-                {t(`${ns}.actions.deactivate`)}
+              <Menu.Item leftSection={<IconBan size={14} />} color="red" onClick={onDeactivate}>
+                {t(`${NS}.actions.deactivate`)}
               </Menu.Item>
             )}
             {code.status === "DEACTIVATED" && (
-              <Menu.Item
-                leftSection={<IconRefresh size={14} />}
-                color="green"
-                onClick={onReactivate}
-              >
-                {t(`${ns}.actions.reactivate`)}
+              <Menu.Item leftSection={<IconRefresh size={14} />} color="green" onClick={onReactivate}>
+                {t(`${NS}.actions.reactivate`)}
               </Menu.Item>
             )}
             {(code.status === "DEACTIVATED" || code.status === "EXPIRED") && (
-              <Menu.Item
-                leftSection={<IconTrash size={14} />}
-                color="red"
-                onClick={onDelete}
-              >
-                {t(`${ns}.actions.delete`)}
+              <Menu.Item leftSection={<IconTrash size={14} />} color="red" onClick={onDelete}>
+                {t(`${NS}.actions.delete`)}
               </Menu.Item>
             )}
           </Menu.Dropdown>
@@ -559,10 +517,9 @@ const CodeRow: React.FC<{
 const DetailModal: React.FC<{
   code: ActivationCodeResponse;
   onClose: () => void;
-  t: (key: string, opts?: Record<string, unknown>) => string;
-  ns: string;
-}> = ({ code, onClose, t, ns }) => {
-  const d = `${ns}.detail`;
+}> = ({ code, onClose }) => {
+  const { t } = useTranslation();
+  const d = `${NS}.detail`;
   const isExpired  = code.daysUntilExpiry < 0;
   const isExpiring = !isExpired && code.daysUntilExpiry < 4;
   const daysColor  = isExpired ? "red" : isExpiring ? "orange" : "green";
@@ -582,35 +539,28 @@ const DetailModal: React.FC<{
       size="lg"
     >
       <Stack gap="sm">
-        {/* Client section */}
-        <InfoRow label={t(`${d}.client`)}       value={code.clientFullName ?? "—"} />
-        {code.clientPhone    && <InfoRow label={t(`${d}.phone`)}          value={code.clientPhone} mono />}
-        {code.learningCenter && <InfoRow label={t(`${d}.learningCenter`)} value={code.learningCenter} />}
+        <InfoRow label={t(`${d}.client`)} value={code.clientFullName ?? "—"} />
+        {code.clientPhone    && <InfoRow label={t(`${d}.phone`)}          value={code.clientPhone}    mono />}
+        {code.learningCenter && <InfoRow label={t(`${d}.learningCenter`)} value={code.learningCenter}      />}
 
         <Divider />
 
-        {/* License section */}
-        <InfoRow label={t(`${d}.machineId`)}  value={code.machineId} mono />
-        <InfoRow label={t(`${d}.startDate`)}  value={formatDate(code.startDate)} />
-        <InfoRow label={t(`${d}.endDate`)}    value={formatDate(code.endDate)} />
+        <InfoRow label={t(`${d}.machineId`)} value={code.machineId} mono />
+        <InfoRow label={t(`${d}.startDate`)} value={localDate(code.startDate)} />
+        <InfoRow label={t(`${d}.endDate`)}   value={localDate(code.endDate)} />
         <InfoRow
           label={t(`${d}.daysLeft`)}
           value={
             <Text size="sm" fw={600} c={daysColor}>
-              {isExpired
-                ? `−${Math.abs(code.daysUntilExpiry)}`
-                : `+${code.daysUntilExpiry}`}
+              {isExpired ? `−${Math.abs(code.daysUntilExpiry)}` : `+${code.daysUntilExpiry}`}
             </Text>
           }
         />
         <InfoRow
           label={t(`${d}.status`)}
           value={
-            <Badge
-              color={STATUS_COLOR[code.displayGroup] ?? "gray"}
-              variant="light"
-            >
-              {t(`${ns}.status.${code.displayGroup}`, { defaultValue: code.displayGroup })}
+            <Badge color={STATUS_COLOR[code.displayGroup] ?? "gray"} variant="light">
+              {t(`${NS}.status.${code.displayGroup}`, { defaultValue: code.displayGroup })}
             </Badge>
           }
         />
@@ -626,7 +576,7 @@ const DetailModal: React.FC<{
 
         {/* License key */}
         <Paper withBorder p="md" radius="md" bg="gray.0" mt="xs">
-          <Text size="xs" c="dimmed" fw={600} tt="uppercase" ls={1} mb={8}>
+          <Text size="xs" c="dimmed" fw={600} tt="uppercase" style={{ letterSpacing: 1 }} mb={8}>
             {t(`${d}.licenseKey`)}
           </Text>
           <Group gap="xs" align="flex-start" wrap="nowrap">
@@ -639,8 +589,8 @@ const DetailModal: React.FC<{
               {({ copied, copy }) => (
                 <Tooltip
                   label={copied
-                    ? t("admin.activationCodes.generate.copied")
-                    : t("admin.activationCodes.generate.copyCode")}
+                    ? t(`${NS}.generate.copied`)
+                    : t(`${NS}.generate.copyCode`)}
                   withArrow
                 >
                   <ActionIcon
@@ -673,10 +623,9 @@ const DeactivateModal: React.FC<{
   code: ActivationCodeResponse;
   onClose: () => void;
   onConfirm: (reason: string) => Promise<void>;
-  t: (key: string, opts?: Record<string, unknown>) => string;
-  ns: string;
-}> = ({ code, onClose, onConfirm, t, ns }) => {
-  const d = `${ns}.deactivate`;
+}> = ({ code, onClose, onConfirm }) => {
+  const { t } = useTranslation();
+  const d = `${NS}.deactivate`;
   const [reason, setReason]   = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -706,7 +655,7 @@ const DeactivateModal: React.FC<{
       <Stack gap="sm">
         <Alert color="orange" radius="md" icon={<IconAlertCircle size={16} />}>
           {t(`${d}.message`, {
-            name: code.clientFullName ?? "—",
+            name:      code.clientFullName ?? "—",
             machineId: code.machineId,
           })}
         </Alert>
@@ -731,7 +680,7 @@ const DeactivateModal: React.FC<{
   );
 };
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
+// ── Table skeleton ────────────────────────────────────────────────────────────
 
 const TableSkeleton: React.FC = () => (
   <Stack p="md" gap="xs">
@@ -741,7 +690,7 @@ const TableSkeleton: React.FC = () => (
   </Stack>
 );
 
-// ── InfoRow helper ────────────────────────────────────────────────────────────
+// ── InfoRow ───────────────────────────────────────────────────────────────────
 
 const InfoRow: React.FC<{
   label: string;
@@ -759,20 +708,5 @@ const InfoRow: React.FC<{
     )}
   </Group>
 );
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatDate(d?: string) {
-  if (!d) return "—";
-  return new Date(d + "T00:00:00").toLocaleDateString();
-}
-
-function extractErrorMessage(err: unknown): string {
-  if (err && typeof err === "object") {
-    const e = err as { response?: { data?: { message?: string } }; message?: string };
-    return e.response?.data?.message ?? e.message ?? "Unknown error";
-  }
-  return "Unknown error";
-}
 
 export default ActivationCodesPage;
