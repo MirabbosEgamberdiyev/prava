@@ -180,20 +180,22 @@ function JobProgress({ job, onDownload }: { job: BackupJob; onDownload: () => vo
         </Alert>
       )}
 
-      {job.state === "COMPLETED" && job.type === "EXPORT" && (
-        <Group mt="sm" gap="xs" wrap="wrap">
-          <Button size="xs" leftSection={<IconDownload size={14} />} onClick={onDownload}>
-            {t("backup.job.downloadBtn", { size: fmtKB(job.fileSizeKB) })}
-          </Button>
-          {job.entities && (
-            <Text size="xs" c="dimmed">
-              {t("backup.job.rowCount", {
-                count: Object.values(job.entities).reduce((a, b) => a + b, 0),
-              })}
-            </Text>
-          )}
-        </Group>
+
+    {job.state === "COMPLETED" && job.type === "EXPORT" && (
+    <Group mt="sm" gap="xs" wrap="wrap">
+      <Button size="xs" leftSection={<IconDownload size={14} />} onClick={onDownload}>
+        {t("backup.job.downloadBtn", { size: fmtKB(job.fileSizeKB) })}
+      </Button>
+      {job.entities && (
+        <Text size="xs" c="dimmed">
+          {t("backup.job.rowCount", {
+            count: String(Object.values(job.entities).reduce((a, b) => a + b, 0)),
+          })}
+        </Text>
       )}
+    </Group>
+    )}
+
 
       {job.state === "COMPLETED" && job.type === "IMPORT" && (
         <>
@@ -227,13 +229,12 @@ function ImportOptionsPanel({ options, onChange }: ImportOptionsPanelProps) {
     onChange({ ...options, [key]: val });
 
   const allEnabled = Object.values(options).every(Boolean);
-  const toggleAll  = () => {
+  const toggleAll = () => {
     const val = !allEnabled;
     onChange(Object.fromEntries(
       Object.keys(options).map(k => [k, val])
     ) as unknown as ImportOptions);
   };
-
   const enabled = Object.values(options).filter(Boolean).length;
 
   return (
