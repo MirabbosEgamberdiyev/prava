@@ -69,7 +69,7 @@ public class ActivationCode extends BaseEntity {
      * byte-content will be identical (deterministic Ed25519).
      */
     // AES-256-GCM token: base64url(nonce[12] + ciphertext) ≈ 228 chars — use 300 for safety
-    @Column(name = "license_key", nullable = false, length = 300, unique = true)
+    @Column(name = "license_key", nullable = false, length = 1000, unique = true)
     private String licenseKey;
 
     // ── Status ─────────────────────────────────────────────────────────────

@@ -39,7 +39,7 @@ public class ActivationCodeController {
 
     // ── Generate ──────────────────────────────────────────────────────────
 
-    @PostMapping
+    @PostMapping("/generate")
     @Operation(summary = "Generate a new activation code")
     public ResponseEntity<ApiResponse<ActivationCodeResponse>> generate(
             @Valid @RequestBody ActivationCodeRequest request,
