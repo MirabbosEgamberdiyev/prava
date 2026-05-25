@@ -27,6 +27,7 @@ spring:
         use_sql_comments: false
         jdbc:
           batch_size: 25
+          time_zone: UTC
         order_inserts: true
         order_updates: true
     open-in-view: false
