@@ -189,8 +189,8 @@ function JobProgress({ job, onDownload }: { job: BackupJob; onDownload: () => vo
       {job.entities && (
         <Text size="xs" c="dimmed">
           {t("backup.job.rowCount", {
-            count: String(Object.values(job.entities).reduce((a, b) => a + b, 0)),
-          })}
+            count: Object.values(job.entities).reduce((a, b) => a + b, 0),
+          } as any)}
         </Text>
       )}
     </Group>
