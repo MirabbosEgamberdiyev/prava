@@ -79,6 +79,7 @@
     "backup": "Бэкап & Тиклаш",
     "systemMonitor": "Тизим Мониторинг",
     "files": "Файллар",
+    "learningCenters": "Ўқув Марказлари",
     "license": "Активация Кодлари"
   },
   "common": {
@@ -641,12 +642,14 @@
       "deactivated": "Деактивланган"
     },
     "filter": {
-      "search": "Машина ID, мижоз, телефон бўйича қидириш...",
-      "group": "Гуруҳ бўйича фильтрлаш"
+      "search": "Машина ID, компьютер номи, MAC бўйича қидириш...",
+      "group": "Гуруҳ бўйича фильтрлаш",
+      "learningCenter": "Ўқув маркази бўйича фильтрлаш",
+      "computer": "Компьютер бўйича фильтрлаш"
     },
     "table": {
-      "client": "Мижоз",
-      "phone": "Телефон",
+      "computer": "Компьютер",
+      "macAddress": "MAC манзил",
       "machineId": "Машина ID",
       "startDate": "Бошланиш",
       "endDate": "Тугаш",
@@ -661,21 +664,19 @@
     "generate": {
       "btn": "Код яратиш",
       "title": "Активация коди яратиш",
-      "info": "Токен AES-256-GCM билан шифрланган ҳолда машина ID га боғланади.",
-      "machineId": "Машина ID",
-      "machineIdPlaceholder": "масалан, 3a4b5c6d7e8f...",
+      "info": "Токен Ed25519 билан имзоланади ва компьютернинг машина ID га боғланади.",
+      "learningCenter": "Ўқув маркази (фильтр)",
+      "learningCenterPlaceholder": "Барча ўқув марказлари",
+      "computer": "Компьютер",
+      "computerPlaceholder": "Компьютерни танланг (мажбурий)",
+      "machineIdInfo": "Машина ID (компьютердан автоматик)",
       "startDate": "Бошланиш санаси",
       "endDate": "Тугаш санаси",
-      "clientInfo": "Мижоз маълумотлари (ихтиёрий)",
-      "firstName": "Исми",
-      "lastName": "Фамилияси",
-      "phone": "Телефон рақами",
-      "learningCenter": "Ўқув маркази",
       "notes": "Изоҳлар",
       "optional": "Ихтиёрий",
       "submit": "Яратиш",
       "successTitle": "Муваффақиятли яратилди!",
-      "successMsg": "Лицензия токени яратилди. Нусха олиб мижозга юборинг."
+      "successMsg": "Лицензия токени яратилди. Нусха олиб сақланг."
     },
     "detail": {
       "title": "Код тафсилотлари",
@@ -687,15 +688,21 @@
     "deactivate": {
       "btn": "Деактивлаш",
       "title": "Лицензияни деактивлаш",
-      "confirm": "{{client}} учун лицензияни деактивлашни хоҳлайсизми?",
+      "confirm": "{{computer}} учун лицензияни деактивлашни хоҳлайсизми?",
       "notesLabel": "Сабаб (ихтиёрий)",
       "notesPlaceholder": "Нима учун деактивлаяпсиз?",
       "submit": "Деактивлаш"
     },
     "delete": {
       "title": "Кодни ўчириш",
-      "confirm": "{{client}} учун кодни ўчирасизми? Фақат муддати ўтган/деактивланган кодларни ўчириш мумкин.",
+      "confirm": "{{computer}} учун кодни ўчирасизми? Фақат муддати ўтган/деактивланган кодларни ўчириш мумкин.",
       "submit": "Ўчириш"
+    },
+    "reactivate": {
+      "btn": "Қайта фаоллаштириш",
+      "title": "Лицензияни қайта фаоллаштириш",
+      "confirm": "{{computer}} учун лицензияни қайта фаоллаштирасизми?",
+      "submit": "Фаоллаштириш"
     },
     "notifications": {
       "generateSuccess": "Код яратилди",
@@ -704,17 +711,150 @@
       "deactivateSuccess": "Деактивланди",
       "deactivateSuccessMsg": "Лицензия муваффақиятли деактивланди.",
       "deactivateError": "Деактивлашда хатолик",
+      "reactivateSuccess": "Қайта фаоллашtirilди",
+      "reactivateSuccessMsg": "Лицензия муваффақиятли қайта фаоллашtirilди.",
+      "reactivateError": "Қайта фаоллашtirishda хатолик",
       "deleteSuccess": "Ўчирилди",
       "deleteSuccessMsg": "Код муваффақиятли ўчирилди.",
       "deleteError": "Ўчиришда хатолик"
     },
     "validation": {
-      "machineIdRequired": "Машина ID мажбурий",
-      "machineIdMin": "Машина ID камида 4 та белги бўлиши керак",
+      "computerRequired": "Компьютерни танланг",
       "startDateRequired": "Бошланиш санаси мажбурий",
       "endDateRequired": "Тугаш санаси мажбурий",
-      "endBeforeStart": "Тугаш санаси бошланиш санасидан олдин бўлиши мумкин эмас",
-      "phoneFormat": "Телефон рақами формати нотўғри"
+      "endBeforeStart": "Тугаш санаси бошланиш санасидан олдин бўлиши мумкин эмас"
+    }
+  },
+  "computer": {
+    "title": "Компьютерлар",
+    "subtitle": "Ўқув марказларида рўйхатдан ўтган компьютерлар",
+    "addBtn": "Компьютер қўшиш",
+    "stats": {
+      "total": "Жами",
+      "active": "Фаол",
+      "inactive": "Нофаол",
+      "totalCodes": "Жами кодлар",
+      "activeCodes": "Фаол кодлар"
+    },
+    "filter": {
+      "search": "Ном, машина ID, MAC бўйича қидириш...",
+      "status": "Ҳолат бўйича фильтрлаш"
+    },
+    "table": {
+      "name": "Компьютер",
+      "machineId": "Машина ID",
+      "macAddress": "MAC",
+      "learningCenter": "Ўқув маркази",
+      "codes": "Кодлар",
+      "status": "Ҳолат",
+      "actions": "Амаллар",
+      "total": "Жами: {{count}} та компьютер"
+    },
+    "form": {
+      "createTitle": "Компьютер қўшиш",
+      "editTitle": "Компьютерни таҳрирлаш",
+      "name": "Компьютер номи",
+      "namePlaceholder": "масалан, Компьютер 3",
+      "machineId": "Машина ID",
+      "machineIdPlaceholder": "Дастурдан олинган аппарат ID",
+      "macAddress": "MAC манзил",
+      "macAddressPlaceholder": "Ихтиёрий",
+      "deviceId": "Қурилма ID",
+      "deviceIdPlaceholder": "Ихтиёрий",
+      "learningCenter": "Ўқув маркази",
+      "notes": "Изоҳлар",
+      "optional": "Ихтиёрий",
+      "createBtn": "Қўшиш"
+    },
+    "status": {
+      "activateConfirm": "{{name}} ни фаоллаштирмоқчимисиз?",
+      "deactivateConfirm": "{{name}} ни нофаол қилмоқчимисиз?",
+      "activateBtn": "Фаоллаштириш",
+      "deactivateBtn": "Нофаол қилиш"
+    },
+    "delete": {
+      "title": "Компьютерни ўчириш",
+      "confirm": "{{name}} ни ўчирасизми? Аввал барча кодлар деактивланиши керак."
+    },
+    "notifications": {
+      "createSuccess": "Компьютер қўшилди",
+      "updateSuccess": "Компьютер янгиланди",
+      "statusChanged": "Ҳолат ўзгарди",
+      "statusError": "Ҳолатни ўзгартиришда хатолик",
+      "deleteSuccess": "Компьютер ўчирилди",
+      "deleteError": "Ўчиришда хатолик"
+    },
+    "validation": {
+      "nameRequired": "Компьютер номи мажбурий",
+      "machineIdRequired": "Машина ID мажбурий",
+      "machineIdMin": "Машина ID камида 4 та белги бўлиши керак",
+      "learningCenterRequired": "Ўқув марказини танланг"
+    }
+  },
+  "lc": {
+    "title": "Ўқув Марказлари",
+    "subtitle": "Ҳайдовчилик мактаблари ва уларнинг компьютерларини бошқариш",
+    "createBtn": "Марказ қўшиш",
+    "stats": {
+      "total": "Жами",
+      "active": "Фаол",
+      "inactive": "Нофаол",
+      "totalCodes": "Жами кодлар",
+      "activeCodes": "Фаол кодлар",
+      "computers": "Компьютерлар"
+    },
+    "filter": {
+      "search": "Ном, манзил, телефон бўйича қидириш...",
+      "status": "Ҳолат бўйича фильтрлаш"
+    },
+    "table": {
+      "name": "Номи",
+      "contact": "Контакт",
+      "codes": "Кодлар",
+      "computers": "Компьютерлар",
+      "status": "Ҳолат",
+      "createdAt": "Яратилган",
+      "actions": "Амаллар",
+      "total": "Жами: {{count}} та марказ",
+      "totalCodes": "Жами активация кодлари",
+      "activeShort": "фаол"
+    },
+    "form": {
+      "createTitle": "Ўқув маркази қўшиш",
+      "editTitle": "Ўқув марказини таҳрирлаш",
+      "info": "Ҳайдовчилик мактаби маълумотлари. Ном майдонидан ташқари барча майдонлар ихтиёрий.",
+      "name": "Номи",
+      "namePlaceholder": "масалан, ABC Ҳайдовчилик мактаби",
+      "address": "Манзил",
+      "phone": "Телефон",
+      "contactPerson": "Масъул шахс",
+      "email": "Email",
+      "notes": "Изоҳлар",
+      "optional": "Ихтиёрий",
+      "createBtn": "Яратиш"
+    },
+    "status": {
+      "title": "Ҳолатни ўзгартириш",
+      "activateConfirm": "{{name}} ни фаоллаштириш?",
+      "deactivateConfirm": "{{name}} ни фаолсизлантириш?",
+      "activateBtn": "Фаоллаштириш",
+      "deactivateBtn": "Фаолсизлантириш"
+    },
+    "delete": {
+      "title": "Ўқув марказини ўчириш",
+      "confirm": "{{name}} ни ўчирасизми? Фақат фаол кодларсиз нофаол марказларни ўчириш мумкин."
+    },
+    "notifications": {
+      "createSuccess": "Ўқув маркази яратилди",
+      "updateSuccess": "Ўқув маркази янгиланди",
+      "statusChanged": "Ҳолат ўзгартирилди",
+      "statusError": "Ҳолатни ўзгартиришда хатолик",
+      "deleteSuccess": "Ўқув маркази ўчирилди",
+      "deleteError": "Ўчиришда хатолик"
+    },
+    "validation": {
+      "nameRequired": "Ном мажбурий",
+      "emailInvalid": "Email формати нотўғри"
     }
   },
   "home": {

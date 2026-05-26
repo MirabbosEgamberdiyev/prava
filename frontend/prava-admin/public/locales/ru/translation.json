@@ -79,6 +79,7 @@
     "backup": "Бэкап & Восстановление",
     "systemMonitor": "Мониторинг системы",
     "files": "Файлы",
+    "learningCenters": "Учебные центры",
     "license": "Коды активации"
   },
   "common": {
@@ -641,12 +642,14 @@
       "deactivated": "Деактивирован"
     },
     "filter": {
-      "search": "Поиск по ID машины, клиенту, телефону...",
-      "group": "Фильтр по группе"
+      "search": "Поиск по ID машины, имени компьютера, MAC...",
+      "group": "Фильтр по группе",
+      "learningCenter": "Фильтр по учебному центру",
+      "computer": "Фильтр по компьютеру"
     },
     "table": {
-      "client": "Клиент",
-      "phone": "Телефон",
+      "computer": "Компьютер",
+      "macAddress": "MAC-адрес",
       "machineId": "ID машины",
       "startDate": "Начало",
       "endDate": "Конец",
@@ -661,21 +664,19 @@
     "generate": {
       "btn": "Создать код",
       "title": "Создать код активации",
-      "info": "Токен будет зашифрован AES-256-GCM и привязан к ID машины.",
-      "machineId": "ID машины",
-      "machineIdPlaceholder": "например, 3a4b5c6d7e8f...",
+      "info": "Токен подписывается Ed25519 и привязывается к ID машины компьютера.",
+      "learningCenter": "Учебный центр (фильтр)",
+      "learningCenterPlaceholder": "Все учебные центры",
+      "computer": "Компьютер",
+      "computerPlaceholder": "Выберите компьютер (обязательно)",
+      "machineIdInfo": "ID машины (из компьютера)",
       "startDate": "Дата начала",
       "endDate": "Дата окончания",
-      "clientInfo": "Данные клиента (необязательно)",
-      "firstName": "Имя",
-      "lastName": "Фамилия",
-      "phone": "Номер телефона",
-      "learningCenter": "Учебный центр",
       "notes": "Заметки",
       "optional": "Необязательно",
       "submit": "Создать",
       "successTitle": "Успешно создан!",
-      "successMsg": "Лицензионный токен создан. Скопируйте и отправьте клиенту."
+      "successMsg": "Лицензионный токен создан. Скопируйте и сохраните его."
     },
     "detail": {
       "title": "Детали кода",
@@ -687,15 +688,21 @@
     "deactivate": {
       "btn": "Деактивировать",
       "title": "Деактивировать лицензию",
-      "confirm": "Вы уверены, что хотите деактивировать лицензию для {{client}}?",
+      "confirm": "Вы уверены, что хотите деактивировать лицензию для {{computer}}?",
       "notesLabel": "Причина (необязательно)",
       "notesPlaceholder": "Почему деактивируете?",
       "submit": "Деактивировать"
     },
     "delete": {
       "title": "Удалить код",
-      "confirm": "Удалить код для {{client}}? Удалять можно только истёкшие/деактивированные коды.",
+      "confirm": "Удалить код для {{computer}}? Удалять можно только истёкшие/деактивированные коды.",
       "submit": "Удалить"
+    },
+    "reactivate": {
+      "btn": "Реактивировать",
+      "title": "Реактивировать лицензию",
+      "confirm": "Реактивировать лицензию для {{computer}}?",
+      "submit": "Реактивировать"
     },
     "notifications": {
       "generateSuccess": "Код создан",
@@ -704,17 +711,150 @@
       "deactivateSuccess": "Деактивирован",
       "deactivateSuccessMsg": "Лицензия успешно деактивирована.",
       "deactivateError": "Ошибка деактивации",
+      "reactivateSuccess": "Реактивирован",
+      "reactivateSuccessMsg": "Лицензия успешно реактивирована.",
+      "reactivateError": "Ошибка реактивации",
       "deleteSuccess": "Удалён",
       "deleteSuccessMsg": "Код успешно удалён.",
       "deleteError": "Ошибка удаления"
     },
     "validation": {
-      "machineIdRequired": "ID машины обязателен",
-      "machineIdMin": "ID машины должен быть не менее 4 символов",
+      "computerRequired": "Выберите компьютер",
       "startDateRequired": "Дата начала обязательна",
       "endDateRequired": "Дата окончания обязательна",
-      "endBeforeStart": "Дата окончания не может быть раньше даты начала",
-      "phoneFormat": "Неверный формат телефона"
+      "endBeforeStart": "Дата окончания не может быть раньше даты начала"
+    }
+  },
+  "computer": {
+    "title": "Компьютеры",
+    "subtitle": "Компьютеры, зарегистрированные в учебных центрах",
+    "addBtn": "Добавить компьютер",
+    "stats": {
+      "total": "Всего",
+      "active": "Активные",
+      "inactive": "Неактивные",
+      "totalCodes": "Все коды",
+      "activeCodes": "Активные коды"
+    },
+    "filter": {
+      "search": "Поиск по имени, ID машины, MAC...",
+      "status": "Фильтр по статусу"
+    },
+    "table": {
+      "name": "Компьютер",
+      "machineId": "ID машины",
+      "macAddress": "MAC",
+      "learningCenter": "Учебный центр",
+      "codes": "Коды",
+      "status": "Статус",
+      "actions": "Действия",
+      "total": "Всего: {{count}} компьютеров"
+    },
+    "form": {
+      "createTitle": "Добавить компьютер",
+      "editTitle": "Редактировать компьютер",
+      "name": "Название компьютера",
+      "namePlaceholder": "например, Компьютер 3",
+      "machineId": "ID машины",
+      "machineIdPlaceholder": "Аппаратный ID из десктоп-приложения",
+      "macAddress": "MAC-адрес",
+      "macAddressPlaceholder": "Необязательно",
+      "deviceId": "ID устройства",
+      "deviceIdPlaceholder": "Необязательно",
+      "learningCenter": "Учебный центр",
+      "notes": "Заметки",
+      "optional": "Необязательно",
+      "createBtn": "Добавить"
+    },
+    "status": {
+      "activateConfirm": "Активировать {{name}}?",
+      "deactivateConfirm": "Деактивировать {{name}}?",
+      "activateBtn": "Активировать",
+      "deactivateBtn": "Деактивировать"
+    },
+    "delete": {
+      "title": "Удалить компьютер",
+      "confirm": "Удалить {{name}}? Сначала все коды должны быть деактивированы."
+    },
+    "notifications": {
+      "createSuccess": "Компьютер добавлен",
+      "updateSuccess": "Компьютер обновлён",
+      "statusChanged": "Статус изменён",
+      "statusError": "Ошибка изменения статуса",
+      "deleteSuccess": "Компьютер удалён",
+      "deleteError": "Ошибка удаления"
+    },
+    "validation": {
+      "nameRequired": "Название компьютера обязательно",
+      "machineIdRequired": "ID машины обязателен",
+      "machineIdMin": "ID машины должен быть не менее 4 символов",
+      "learningCenterRequired": "Выберите учебный центр"
+    }
+  },
+  "lc": {
+    "title": "Учебные центры",
+    "subtitle": "Управление автошколами и их компьютерами",
+    "createBtn": "Добавить центр",
+    "stats": {
+      "total": "Всего",
+      "active": "Активные",
+      "inactive": "Неактивные",
+      "totalCodes": "Все коды",
+      "activeCodes": "Активные коды",
+      "computers": "Компьютеры"
+    },
+    "filter": {
+      "search": "Поиск по названию, адресу, телефону...",
+      "status": "Фильтр по статусу"
+    },
+    "table": {
+      "name": "Название",
+      "contact": "Контакт",
+      "codes": "Коды",
+      "computers": "Компьютеры",
+      "status": "Статус",
+      "createdAt": "Создан",
+      "actions": "Действия",
+      "total": "Всего: {{count}} центров",
+      "totalCodes": "Всего кодов активации",
+      "activeShort": "акт."
+    },
+    "form": {
+      "createTitle": "Добавить учебный центр",
+      "editTitle": "Редактировать учебный центр",
+      "info": "Информация об автошколе. Все поля кроме Названия необязательны.",
+      "name": "Название",
+      "namePlaceholder": "например, Автошкола ABC",
+      "address": "Адрес",
+      "phone": "Телефон",
+      "contactPerson": "Контактное лицо",
+      "email": "Email",
+      "notes": "Заметки",
+      "optional": "Необязательно",
+      "createBtn": "Создать"
+    },
+    "status": {
+      "title": "Изменить статус",
+      "activateConfirm": "Активировать {{name}}?",
+      "deactivateConfirm": "Деактивировать {{name}}?",
+      "activateBtn": "Активировать",
+      "deactivateBtn": "Деактивировать"
+    },
+    "delete": {
+      "title": "Удалить учебный центр",
+      "confirm": "Удалить {{name}}? Удалять можно только неактивные центры без активных кодов."
+    },
+    "notifications": {
+      "createSuccess": "Учебный центр создан",
+      "updateSuccess": "Учебный центр обновлён",
+      "statusChanged": "Статус изменён",
+      "statusError": "Ошибка изменения статуса",
+      "deleteSuccess": "Учебный центр удалён",
+      "deleteError": "Ошибка удаления"
+    },
+    "validation": {
+      "nameRequired": "Название обязательно",
+      "emailInvalid": "Неверный формат email"
     }
   },
   "home": {

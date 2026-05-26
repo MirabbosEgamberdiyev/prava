@@ -12,6 +12,10 @@ export function useLicenseMutations() {
     return await licenseService.deactivate(id, notes);
   };
 
+  const reactivate = async (id: number) => {
+    return await licenseService.reactivate(id);
+  };
+
   const deleteCode = async (id: number) => {
     await licenseService.deleteCode(id);
   };
@@ -23,5 +27,5 @@ export function useLicenseMutations() {
     notifications.show({ title: "Xato", message: msg, color: "red" });
   };
 
-  return { generate, deactivate, deleteCode, handleError };
+  return { generate, deactivate, reactivate, deleteCode, handleError };
 }

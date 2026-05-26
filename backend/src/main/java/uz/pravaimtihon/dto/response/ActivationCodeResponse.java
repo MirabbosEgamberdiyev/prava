@@ -8,11 +8,7 @@ import uz.pravaimtihon.entity.ActivationCodeStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Full detail DTO for a single activation code.
- * Includes the computed {@code displayGroup} field so the frontend
- * can render badge colours without re-computing dates.
- */
+/** Bitta aktivatsiya kodining to'liq ma'lumoti. */
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -20,34 +16,37 @@ public class ActivationCodeResponse {
 
     private Long id;
 
-    // Client info
-    private String clientFirstName;
-    private String clientLastName;
-    private String clientFullName;       // firstName + " " + lastName
-    private String clientPhone;
-    private String learningCenter;
+    // Kompyuter ma'lumotlari
+    private Long   computerId;
+    private String computerName;       // Computer.name
+    private String macAddress;         // Computer.macAddress
+    private String deviceId;           // Computer.deviceId
 
-    // License info
-    private String machineId;
+    // O'quv markazi (kompyuter orqali)
+    private Long   learningCenterId;
+    private String learningCenterName;
+
+    // Token parametrlari
+    private String    machineId;       // snapshot (generatsiya paytidagi)
     private LocalDate startDate;
     private LocalDate endDate;
-    private String licenseKey;
+    private String    licenseKey;
 
     // Status
     private ActivationCodeStatus status;
 
     /**
-     * Virtual display group — computed from status + endDate:
+     * Virtual display group (badge rangi uchun):
      * "ACTIVE" | "EXPIRING" | "EXPIRED" | "DEACTIVATED"
      */
     private String displayGroup;
 
-    /** Days remaining until expiry (negative if already expired). */
+    /** Muddatgacha qolgan kunlar (manfiy = o'tgan). */
     private long daysUntilExpiry;
 
     // Admin metadata
-    private String notes;
-    private String generatedBy;
+    private String        notes;
+    private String        generatedBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

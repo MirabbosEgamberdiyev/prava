@@ -39,15 +39,15 @@ public class ActivationCodeController {
 
     // ── Generate ──────────────────────────────────────────────────────────
 
-    @PostMapping("/generate")
+    @PostMapping
     @Operation(summary = "Generate a new activation code")
     public ResponseEntity<ApiResponse<ActivationCodeResponse>> generate(
             @Valid @RequestBody ActivationCodeRequest request,
             Authentication auth) {
 
         String operator = auth.getName();
-        log.info("SUPER_ADMIN '{}' generating activation code for machine='{}'",
-                operator, request.getMachineId());
+        log.info("SUPER_ADMIN '{}' generating activation code for computer id={}",
+                operator, request.getComputerId());
 
         ActivationCodeResponse response = service.generate(request, operator);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -68,6 +68,11 @@ public class ActivationCodeController {
             @Parameter(description = "Display group: ACTIVE | EXPIRING | EXPIRED | DEACTIVATED")
             @RequestParam(required = false) String group,
 
+            @Parameter(description = "Filter by computer ID")
+            @RequestParam(required = false) Long computerId,
+
+            @Parameter(description = "Filter by learning center ID")
+            @RequestParam(required = false) Long learningCenterId,
             @RequestParam(required = false) String generatedBy,
             @RequestParam(required = false) String startDateFrom,
             @RequestParam(required = false) String startDateTo,
@@ -82,6 +87,8 @@ public class ActivationCodeController {
         ActivationCodeFilterRequest filter = new ActivationCodeFilterRequest();
         filter.setSearch(search);
         filter.setGroup(group);
+        filter.setComputerId(computerId);
+        filter.setLearningCenterId(learningCenterId);
         filter.setGeneratedBy(generatedBy);
         filter.setPage(page);
         filter.setSize(Math.min(size, 100));

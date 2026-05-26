@@ -12,7 +12,7 @@ import uz.pravaimtihon.dto.response.PageResponse;
 public interface ActivationCodeService {
 
     /**
-     * Generates and persists a new AES-256-GCM activation token.
+     * Generates and persists a new Ed25519-signed activation token.
      *
      * @param request  validated generation parameters
      * @param operator username of the SUPER_ADMIN performing the action

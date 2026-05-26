@@ -79,6 +79,7 @@
     "backup": "Backup & Restore",
     "systemMonitor": "Tizim Monitoring",
     "files": "Fayllar",
+    "learningCenters": "O'quv Markazlari",
     "license": "Aktivatsiya Kodlari"
   },
   "common": {
@@ -641,12 +642,14 @@
       "deactivated": "Deaktivlangan"
     },
     "filter": {
-      "search": "Mashina ID, mijoz, telefon bo'yicha qidirish...",
-      "group": "Guruh bo'yicha filtrlash"
+      "search": "Mashina ID, kompyuter nomi, MAC bo'yicha qidirish...",
+      "group": "Guruh bo'yicha filtrlash",
+      "learningCenter": "O'quv markazi bo'yicha filtrlash",
+      "computer": "Kompyuter bo'yicha filtrlash"
     },
     "table": {
-      "client": "Mijoz",
-      "phone": "Telefon",
+      "computer": "Kompyuter",
+      "macAddress": "MAC manzil",
       "machineId": "Mashina ID",
       "startDate": "Boshlanish",
       "endDate": "Tugash",
@@ -661,21 +664,19 @@
     "generate": {
       "btn": "Kod yaratish",
       "title": "Aktivatsiya kodi yaratish",
-      "info": "Token AES-256-GCM bilan shifrlangan holda mashina ID ga bog'lanadi.",
-      "machineId": "Mashina ID",
-      "machineIdPlaceholder": "masalan, 3a4b5c6d7e8f...",
+      "info": "Token Ed25519 bilan imzolanadi va kompyuterning mashina ID ga bog'lanadi.",
+      "learningCenter": "O'quv markazi (filtrlash)",
+      "learningCenterPlaceholder": "Barcha o'quv markazlari",
+      "computer": "Kompyuter",
+      "computerPlaceholder": "Kompyuterni tanlang (majburiy)",
+      "machineIdInfo": "Mashina ID (kompyuterdan avtomatik)",
       "startDate": "Boshlanish sanasi",
       "endDate": "Tugash sanasi",
-      "clientInfo": "Mijoz ma'lumotlari (ixtiyoriy)",
-      "firstName": "Ismi",
-      "lastName": "Familiyasi",
-      "phone": "Telefon raqami",
-      "learningCenter": "O'quv markazi",
       "notes": "Izohlar",
       "optional": "Ixtiyoriy",
       "submit": "Yaratish",
       "successTitle": "Muvaffaqiyatli yaratildi!",
-      "successMsg": "Litsenziya tokeni yaratildi. Nusxa olib mijozga yuboring."
+      "successMsg": "Litsenziya tokeni yaratildi. Nusxa olib saqlang."
     },
     "detail": {
       "title": "Kod tafsilotlari",
@@ -687,15 +688,21 @@
     "deactivate": {
       "btn": "Deaktivlash",
       "title": "Litsenziyani deaktivlash",
-      "confirm": "{{client}} uchun litsenziyani deaktivlashni xohlaysizmi?",
+      "confirm": "{{computer}} uchun litsenziyani deaktivlashni xohlaysizmi?",
       "notesLabel": "Sabab (ixtiyoriy)",
       "notesPlaceholder": "Nima uchun deaktivlayapsiz?",
       "submit": "Deaktivlash"
     },
     "delete": {
       "title": "Kodni o'chirish",
-      "confirm": "{{client}} uchun kodni o'chirasizmi? Faqat muddati o'tgan/deaktivlangan kodlarni o'chirish mumkin.",
+      "confirm": "{{computer}} uchun kodni o'chirasizmi? Faqat muddati o'tgan/deaktivlangan kodlarni o'chirish mumkin.",
       "submit": "O'chirish"
+    },
+    "reactivate": {
+      "btn": "Qayta faollashtirish",
+      "title": "Litsenziyani qayta faollashtirish",
+      "confirm": "{{computer}} uchun litsenziyani qayta faollashtirasizmi?",
+      "submit": "Faollashtirish"
     },
     "notifications": {
       "generateSuccess": "Kod yaratildi",
@@ -704,17 +711,150 @@
       "deactivateSuccess": "Deaktivlandi",
       "deactivateSuccessMsg": "Litsenziya muvaffaqiyatli deaktivlandi.",
       "deactivateError": "Deaktivlashda xatolik",
+      "reactivateSuccess": "Qayta faollashtirildi",
+      "reactivateSuccessMsg": "Litsenziya muvaffaqiyatli qayta faollashtirildi.",
+      "reactivateError": "Qayta faollashtirishda xatolik",
       "deleteSuccess": "O'chirildi",
       "deleteSuccessMsg": "Kod muvaffaqiyatli o'chirildi.",
       "deleteError": "O'chirishda xatolik"
     },
     "validation": {
-      "machineIdRequired": "Mashina ID majburiy",
-      "machineIdMin": "Mashina ID kamida 4 ta belgi bo'lishi kerak",
+      "computerRequired": "Kompyuterni tanlang",
       "startDateRequired": "Boshlanish sanasi majburiy",
       "endDateRequired": "Tugash sanasi majburiy",
-      "endBeforeStart": "Tugash sanasi boshlanish sanasidan oldin bo'lishi mumkin emas",
-      "phoneFormat": "Telefon raqami formati noto'g'ri"
+      "endBeforeStart": "Tugash sanasi boshlanish sanasidan oldin bo'lishi mumkin emas"
+    }
+  },
+  "computer": {
+    "title": "Kompyuterlar",
+    "subtitle": "O'quv markazlarida ro'yxatdan o'tgan kompyuterlar",
+    "addBtn": "Kompyuter qo'shish",
+    "stats": {
+      "total": "Jami",
+      "active": "Faol",
+      "inactive": "Nofaol",
+      "totalCodes": "Jami kodlar",
+      "activeCodes": "Faol kodlar"
+    },
+    "filter": {
+      "search": "Nom, mashina ID, MAC bo'yicha qidirish...",
+      "status": "Holat bo'yicha filtrlash"
+    },
+    "table": {
+      "name": "Kompyuter",
+      "machineId": "Mashina ID",
+      "macAddress": "MAC",
+      "learningCenter": "O'quv markazi",
+      "codes": "Kodlar",
+      "status": "Holat",
+      "actions": "Amallar",
+      "total": "Jami: {{count}} ta kompyuter"
+    },
+    "form": {
+      "createTitle": "Kompyuter qo'shish",
+      "editTitle": "Kompyuterni tahrirlash",
+      "name": "Kompyuter nomi",
+      "namePlaceholder": "masalan, Kompyuter 3",
+      "machineId": "Mashina ID",
+      "machineIdPlaceholder": "Dasturdan olingan apparat ID",
+      "macAddress": "MAC manzil",
+      "macAddressPlaceholder": "Ixtiyoriy",
+      "deviceId": "Qurilma ID",
+      "deviceIdPlaceholder": "Ixtiyoriy",
+      "learningCenter": "O'quv markazi",
+      "notes": "Izohlar",
+      "optional": "Ixtiyoriy",
+      "createBtn": "Qo'shish"
+    },
+    "status": {
+      "activateConfirm": "{{name}} ni faollashtirmoqchimisiz?",
+      "deactivateConfirm": "{{name}} ni nofaol qilmoqchimisiz?",
+      "activateBtn": "Faollashtirish",
+      "deactivateBtn": "Nofaol qilish"
+    },
+    "delete": {
+      "title": "Kompyuterni o'chirish",
+      "confirm": "{{name}} ni o'chirasizmi? Avval barcha kodlar deaktivlanishi kerak."
+    },
+    "notifications": {
+      "createSuccess": "Kompyuter qo'shildi",
+      "updateSuccess": "Kompyuter yangilandi",
+      "statusChanged": "Holat o'zgardi",
+      "statusError": "Holatni o'zgartirishda xatolik",
+      "deleteSuccess": "Kompyuter o'chirildi",
+      "deleteError": "O'chirishda xatolik"
+    },
+    "validation": {
+      "nameRequired": "Kompyuter nomi majburiy",
+      "machineIdRequired": "Mashina ID majburiy",
+      "machineIdMin": "Mashina ID kamida 4 ta belgi bo'lishi kerak",
+      "learningCenterRequired": "O'quv markazini tanlang"
+    }
+  },
+  "lc": {
+    "title": "O'quv Markazlari",
+    "subtitle": "Haydovchilik maktablari va ularning kompyuterlarini boshqarish",
+    "createBtn": "Markaz qo'shish",
+    "stats": {
+      "total": "Jami",
+      "active": "Faol",
+      "inactive": "Nofaol",
+      "totalCodes": "Jami kodlar",
+      "activeCodes": "Faol kodlar",
+      "computers": "Kompyuterlar"
+    },
+    "filter": {
+      "search": "Nom, manzil, telefon bo'yicha qidirish...",
+      "status": "Holat bo'yicha filtrlash"
+    },
+    "table": {
+      "name": "Nomi",
+      "contact": "Kontakt",
+      "codes": "Kodlar",
+      "computers": "Kompyuterlar",
+      "status": "Holat",
+      "createdAt": "Yaratilgan",
+      "actions": "Amallar",
+      "total": "Jami: {{count}} ta markaz",
+      "totalCodes": "Jami aktivatsiya kodlari",
+      "activeShort": "faol"
+    },
+    "form": {
+      "createTitle": "O'quv markazi qo'shish",
+      "editTitle": "O'quv markazini tahrirlash",
+      "info": "Haydovchilik maktabi ma'lumotlari. Nom maydonidan tashqari barcha maydonlar ixtiyoriy.",
+      "name": "Nomi",
+      "namePlaceholder": "masalan, ABC Haydovchilik maktabi",
+      "address": "Manzil",
+      "phone": "Telefon",
+      "contactPerson": "Mas'ul shaxs",
+      "email": "Email",
+      "notes": "Izohlar",
+      "optional": "Ixtiyoriy",
+      "createBtn": "Yaratish"
+    },
+    "status": {
+      "title": "Holatni o'zgartirish",
+      "activateConfirm": "{{name}} ni faollashtirish?",
+      "deactivateConfirm": "{{name}} ni faolsizlantirish?",
+      "activateBtn": "Faollashtirish",
+      "deactivateBtn": "Faolsizlantirish"
+    },
+    "delete": {
+      "title": "O'quv markazini o'chirish",
+      "confirm": "{{name}} ni o'chirasizmi? Faqat faol kodlarsiz nofaol markazlarni o'chirish mumkin."
+    },
+    "notifications": {
+      "createSuccess": "O'quv markazi yaratildi",
+      "updateSuccess": "O'quv markazi yangilandi",
+      "statusChanged": "Holat o'zgartirildi",
+      "statusError": "Holatni o'zgartirishda xatolik",
+      "deleteSuccess": "O'quv markazi o'chirildi",
+      "deleteError": "O'chirishda xatolik"
+    },
+    "validation": {
+      "nameRequired": "Nom majburiy",
+      "emailInvalid": "Email formati noto'g'ri"
     }
   },
   "home": {

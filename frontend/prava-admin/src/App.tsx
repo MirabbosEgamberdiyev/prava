@@ -15,6 +15,7 @@ import Tickets_Page from "./page/Tickets";
 
 // Lazy loaded sahifalar
 const License_Page = lazy(() => import("./page/License"));
+const LearningCenters_Page = lazy(() => import("./page/LearningCenters"));
 const Backup_Page = lazy(() => import("./page/Backup"));
 const Statistics_Page = lazy(() => import("./page/Statistics"));
 const Settings_Page = lazy(() => import("./page/Settings"));
@@ -95,6 +96,18 @@ function App() {
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
                       <Suspense fallback={LazyFallback}>
                         <Files_Page />
+                      </Suspense>
+                    </RoleGuard>
+                  }
+                />
+
+                {/* O'quv markazlari - faqat SUPER_ADMIN */}
+                <Route
+                  path="/learning-centers"
+                  element={
+                    <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}>
+                        <LearningCenters_Page />
                       </Suspense>
                     </RoleGuard>
                   }

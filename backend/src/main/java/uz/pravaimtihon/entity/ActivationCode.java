@@ -6,26 +6,22 @@ import lombok.*;
 import java.time.LocalDate;
 
 /**
- * Represents a single Ed25519-signed desktop activation code.
+ * O'quv markazi kompyuteri uchun Ed25519-imzolangan aktivatsiya kodi.
  *
- * <p>Tokens are tied to a specific machine ID and a validity window.
- * Each record captures the client metadata at generation time so that
- * the admin can trace who received which license key.</p>
- *
- * <p>The {@code licenseKey} column stores the formatted token exactly
- * as produced by {@code Ed25519LicenseService} (base64url, dots every 8 chars,
- * 68 bytes = 2+2 day offsets + 64-byte signature).</p>
+ * <p>Token {@code Computer.machineId} asosida imzolanadi.
+ * {@code machineId} maydoni generatsiya paytidagi snapshot — kompyuter
+ * o'zgarsa ham tarixiy yozuv saqlanib qoladi.</p>
  */
 @Entity
 @Table(
-        name = "activation_codes",
-        indexes = {
-                @Index(name = "idx_ac_machine_id",   columnList = "machine_id"),
-                @Index(name = "idx_ac_status",        columnList = "status"),
-                @Index(name = "idx_ac_end_date",      columnList = "end_date"),
-                @Index(name = "idx_ac_client_phone",  columnList = "client_phone"),
-                @Index(name = "idx_ac_generated_by",  columnList = "created_by")
-        }
+    name = "activation_codes",
+    indexes = {
+        @Index(name = "idx_ac_machine_id",  columnList = "machine_id"),
+        @Index(name = "idx_ac_status",      columnList = "status"),
+        @Index(name = "idx_ac_end_date",    columnList = "end_date"),
+        @Index(name = "idx_ac_created_by",  columnList = "created_by"),
+        @Index(name = "idx_ac_computer",    columnList = "computer_id")
+    }
 )
 @Getter
 @Setter
@@ -34,24 +30,21 @@ import java.time.LocalDate;
 @Builder
 public class ActivationCode extends BaseEntity {
 
-    // ── Client metadata (all optional) ────────────────────────────────────
-    @Column(name = "client_first_name", nullable = true, length = 100)
-    private String clientFirstName;
+    // ── Kompyuter bog'lanishi ──────────────────────────────────────────────
 
-    @Column(name = "client_last_name", nullable = true, length = 100)
-    private String clientLastName;
-
-    @Column(name = "client_phone", nullable = true, length = 20)
-    private String clientPhone;
-
-    /** Optional: name of the driving school / learning centre. */
-    @Column(name = "learning_center", length = 200)
-    private String learningCenter;
-
-    // ── License parameters ─────────────────────────────────────────────────
     /**
-     * Target machine identifier (as entered by the admin or copied from the
-     * desktop app).  Stored in upper-case; signing also upper-cases it.
+     * Bu aktivatsiya kodi qaysi kompyuter uchun yaratilgan.
+     * nullable=true — eski ma'lumotlar buzilmasligi uchun.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "computer_id")
+    private Computer computer;
+
+    // ── Token parametrlari ────────────────────────────────────────────────
+
+    /**
+     * Generatsiya paytida olingan machineId snapshot.
+     * Ed25519 imzolashda ishlatiladi; kompyuter o'chirilsa ham qoladi.
      */
     @Column(name = "machine_id", nullable = false, length = 255)
     private String machineId;
@@ -63,23 +56,22 @@ public class ActivationCode extends BaseEntity {
     private LocalDate endDate;
 
     /**
-     * The final formatted token (base64url with dots).
-     * Unique per row — two identical machine+date combinations can still
-     * exist if a key is regenerated after deactivation, but the token
-     * byte-content will be identical (deterministic Ed25519).
+     * Tayyor formatdagi token (base64url, har 8 belgida nuqta).
+     * Ed25519: 68 bayt (4 + 64) → ~102 belgi.
      */
-    // Ed25519 token: base64url(data[4]+sig[64]) = 68 bytes → ~91 b64url + ~11 dots ≈ 102 chars
     @Column(name = "license_key", nullable = false, length = 1000, unique = true)
     private String licenseKey;
 
     // ── Status ─────────────────────────────────────────────────────────────
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     @Builder.Default
     private ActivationCodeStatus status = ActivationCodeStatus.ACTIVE;
 
-    // ── Audit extras ───────────────────────────────────────────────────────
-    /** Free-text field for admin notes (reason for deactivation, etc.). */
+    // ── Qo'shimcha ─────────────────────────────────────────────────────────
+
+    /** Admin izohi (deaktivatsiya sababi va h.k.). */
     @Column(name = "notes", length = 500)
     private String notes;
 }

@@ -79,6 +79,7 @@
     "backup": "Backup & Restore",
     "systemMonitor": "System Monitor",
     "files": "Files",
+    "learningCenters": "Learning Centers",
     "license": "Activation Codes"
   },
   "common": {
@@ -641,12 +642,14 @@
       "deactivated": "Deactivated"
     },
     "filter": {
-      "search": "Search by machine ID, client, phone...",
-      "group": "Filter by group"
+      "search": "Search by machine ID, computer name, MAC...",
+      "group": "Filter by group",
+      "learningCenter": "Filter by learning center",
+      "computer": "Filter by computer"
     },
     "table": {
-      "client": "Client",
-      "phone": "Phone",
+      "computer": "Computer",
+      "macAddress": "MAC Address",
       "machineId": "Machine ID",
       "startDate": "Start",
       "endDate": "End",
@@ -661,21 +664,19 @@
     "generate": {
       "btn": "Generate Code",
       "title": "Generate Activation Code",
-      "info": "The token will be encrypted with AES-256-GCM and tied to the machine ID.",
-      "machineId": "Machine ID",
-      "machineIdPlaceholder": "e.g. 3a4b5c6d7e8f...",
+      "info": "The token is signed with Ed25519 and tied to the computer's machine ID.",
+      "learningCenter": "Learning Center (filter)",
+      "learningCenterPlaceholder": "All learning centers",
+      "computer": "Computer",
+      "computerPlaceholder": "Select a computer (required)",
+      "machineIdInfo": "Machine ID (auto from computer)",
       "startDate": "Start Date",
       "endDate": "End Date",
-      "clientInfo": "Client Information (optional)",
-      "firstName": "First Name",
-      "lastName": "Last Name",
-      "phone": "Phone Number",
-      "learningCenter": "Learning Center",
       "notes": "Notes",
       "optional": "Optional",
       "submit": "Generate",
       "successTitle": "Successfully Generated!",
-      "successMsg": "The license token has been created. Copy and send it to the client."
+      "successMsg": "The license token has been created. Copy and save it."
     },
     "detail": {
       "title": "Code Details",
@@ -687,15 +688,21 @@
     "deactivate": {
       "btn": "Deactivate",
       "title": "Deactivate License",
-      "confirm": "Are you sure you want to deactivate the license for {{client}}?",
+      "confirm": "Are you sure you want to deactivate the license for {{computer}}?",
       "notesLabel": "Reason (optional)",
       "notesPlaceholder": "Why deactivate?",
       "submit": "Deactivate"
     },
     "delete": {
       "title": "Delete Code",
-      "confirm": "Delete code for {{client}}? Only expired/deactivated codes can be deleted.",
+      "confirm": "Delete code for {{computer}}? Only expired/deactivated codes can be deleted.",
       "submit": "Delete"
+    },
+    "reactivate": {
+      "btn": "Reactivate",
+      "title": "Reactivate License",
+      "confirm": "Reactivate the license for {{computer}}?",
+      "submit": "Reactivate"
     },
     "notifications": {
       "generateSuccess": "Code Generated",
@@ -704,17 +711,150 @@
       "deactivateSuccess": "Deactivated",
       "deactivateSuccessMsg": "License successfully deactivated.",
       "deactivateError": "Failed to deactivate",
+      "reactivateSuccess": "Reactivated",
+      "reactivateSuccessMsg": "License successfully reactivated.",
+      "reactivateError": "Failed to reactivate",
       "deleteSuccess": "Deleted",
       "deleteSuccessMsg": "Code successfully deleted.",
       "deleteError": "Failed to delete"
     },
     "validation": {
-      "machineIdRequired": "Machine ID is required",
-      "machineIdMin": "Machine ID must be at least 4 characters",
+      "computerRequired": "Please select a computer",
       "startDateRequired": "Start date is required",
       "endDateRequired": "End date is required",
-      "endBeforeStart": "End date cannot be before start date",
-      "phoneFormat": "Invalid phone format"
+      "endBeforeStart": "End date cannot be before start date"
+    }
+  },
+  "lc": {
+    "title": "Learning Centers",
+    "subtitle": "Manage driving schools and their computers",
+    "createBtn": "Add Center",
+    "stats": {
+      "total": "Total",
+      "active": "Active",
+      "inactive": "Inactive",
+      "totalCodes": "Total Codes",
+      "activeCodes": "Active Codes",
+      "computers": "Computers"
+    },
+    "filter": {
+      "search": "Search by name, address, phone...",
+      "status": "Filter by status"
+    },
+    "table": {
+      "name": "Name",
+      "contact": "Contact",
+      "codes": "Codes",
+      "computers": "Computers",
+      "status": "Status",
+      "createdAt": "Created at",
+      "actions": "Actions",
+      "total": "Total: {{count}} centers",
+      "totalCodes": "Total activation codes",
+      "activeShort": "active"
+    },
+    "form": {
+      "createTitle": "Add Learning Center",
+      "editTitle": "Edit Learning Center",
+      "info": "Driving school information. All fields except Name are optional.",
+      "name": "Name",
+      "namePlaceholder": "e.g. ABC Driving School",
+      "address": "Address",
+      "phone": "Phone",
+      "contactPerson": "Contact Person",
+      "email": "Email",
+      "notes": "Notes",
+      "optional": "Optional",
+      "createBtn": "Create"
+    },
+    "status": {
+      "title": "Change Status",
+      "activateConfirm": "Activate {{name}}?",
+      "deactivateConfirm": "Deactivate {{name}}?",
+      "activateBtn": "Activate",
+      "deactivateBtn": "Deactivate"
+    },
+    "delete": {
+      "title": "Delete Learning Center",
+      "confirm": "Delete {{name}}? Only inactive centers with no active codes can be deleted."
+    },
+    "notifications": {
+      "createSuccess": "Learning center created",
+      "updateSuccess": "Learning center updated",
+      "statusChanged": "Status changed",
+      "statusError": "Error changing status",
+      "deleteSuccess": "Learning center deleted",
+      "deleteError": "Failed to delete"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailInvalid": "Invalid email format"
+    }
+  },
+  "computer": {
+    "title": "Computers",
+    "subtitle": "Computers registered in learning centers",
+    "addBtn": "Add Computer",
+    "stats": {
+      "total": "Total",
+      "active": "Active",
+      "inactive": "Inactive",
+      "totalCodes": "Total Codes",
+      "activeCodes": "Active Codes"
+    },
+    "filter": {
+      "search": "Search by name, machine ID, MAC...",
+      "status": "Filter by status"
+    },
+    "table": {
+      "name": "Computer",
+      "machineId": "Machine ID",
+      "macAddress": "MAC",
+      "learningCenter": "Learning Center",
+      "codes": "Codes",
+      "status": "Status",
+      "actions": "Actions",
+      "total": "Total: {{count}} computers"
+    },
+    "form": {
+      "createTitle": "Add Computer",
+      "editTitle": "Edit Computer",
+      "name": "Computer Name",
+      "namePlaceholder": "e.g. Computer 3",
+      "machineId": "Machine ID",
+      "machineIdPlaceholder": "Hardware ID from the desktop app",
+      "macAddress": "MAC Address",
+      "macAddressPlaceholder": "Optional",
+      "deviceId": "Device ID",
+      "deviceIdPlaceholder": "Optional",
+      "learningCenter": "Learning Center",
+      "notes": "Notes",
+      "optional": "Optional",
+      "createBtn": "Add"
+    },
+    "status": {
+      "activateConfirm": "Activate {{name}}?",
+      "deactivateConfirm": "Deactivate {{name}}?",
+      "activateBtn": "Activate",
+      "deactivateBtn": "Deactivate"
+    },
+    "delete": {
+      "title": "Delete Computer",
+      "confirm": "Delete {{name}}? All associated codes must be deactivated first."
+    },
+    "notifications": {
+      "createSuccess": "Computer added",
+      "updateSuccess": "Computer updated",
+      "statusChanged": "Status changed",
+      "statusError": "Error changing status",
+      "deleteSuccess": "Computer deleted",
+      "deleteError": "Failed to delete"
+    },
+    "validation": {
+      "nameRequired": "Computer name is required",
+      "machineIdRequired": "Machine ID is required",
+      "machineIdMin": "Machine ID must be at least 4 characters",
+      "learningCenterRequired": "Learning center must be selected"
     }
   },
   "home": {

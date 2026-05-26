@@ -25,25 +25,22 @@ public interface ActivationCodeRepository extends JpaRepository<ActivationCode, 
     // ── Dynamic filtered listing ──────────────────────────────────────────
 
     /**
-     * Full-featured filtered query.
-     * <ul>
-     *   <li>search — case-insensitive LIKE across machineId, names, phone, learning centre</li>
-     *   <li>status — exact enum match (null = all)</li>
-     *   <li>createdBy — exact match (null = all)</li>
-     *   <li>startDateFrom/To — inclusive date range on startDate</li>
-     *   <li>endDateFrom/To   — inclusive date range on endDate</li>
-     * </ul>
-     * Deleted records are always excluded.
+     * To'liq filterli so'rov.
+     * Qidiruv: machineId, kompyuter nomi, MAC, o'quv markazi nomi.
+     * Filter: computerId, learningCenterId, status, generatedBy, sanalar.
      */
     @Query("""
             SELECT ac FROM ActivationCode ac
+            LEFT JOIN ac.computer comp
+            LEFT JOIN comp.learningCenter lc
             WHERE ac.deleted = false
+              AND (:compId IS NULL OR comp.id = :compId)
+              AND (:lcId   IS NULL OR lc.id   = :lcId)
               AND (:search IS NULL OR :search = '' OR (
-                    LOWER(ac.machineId)        LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientFirstName)  LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientLastName)   LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientPhone)      LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.learningCenter)   LIKE LOWER(CONCAT('%', :search, '%'))
+                    LOWER(ac.machineId)   LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(comp.name)      LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(comp.macAddress) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(lc.name)        LIKE LOWER(CONCAT('%', :search, '%'))
               ))
               AND (:status IS NULL OR ac.status = :status)
               AND (:generatedBy IS NULL OR :generatedBy = '' OR ac.createdBy = :generatedBy)
@@ -53,6 +50,8 @@ public interface ActivationCodeRepository extends JpaRepository<ActivationCode, 
               AND (:endDateTo     IS NULL OR ac.endDate   <= :endDateTo)
             """)
     Page<ActivationCode> findFiltered(
+            @Param("compId")        Long compId,
+            @Param("lcId")          Long lcId,
             @Param("search")        String search,
             @Param("status")        ActivationCodeStatus status,
             @Param("generatedBy")   String generatedBy,
@@ -63,89 +62,99 @@ public interface ActivationCodeRepository extends JpaRepository<ActivationCode, 
             Pageable pageable
     );
 
-    /**
-     * Group = ACTIVE: status=ACTIVE AND endDate >= today+3 (not expiring soon).
-     */
+    // ── Group queries ─────────────────────────────────────────────────────
+
     @Query("""
             SELECT ac FROM ActivationCode ac
+            LEFT JOIN ac.computer comp
+            LEFT JOIN comp.learningCenter lc
             WHERE ac.deleted = false
               AND ac.status = 'ACTIVE'
               AND ac.endDate >= :threshold
+              AND (:compId IS NULL OR comp.id = :compId)
+              AND (:lcId   IS NULL OR lc.id   = :lcId)
               AND (:search IS NULL OR :search = '' OR (
-                    LOWER(ac.machineId)       LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientFirstName) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientLastName)  LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientPhone)     LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.learningCenter)  LIKE LOWER(CONCAT('%', :search, '%'))
+                    LOWER(ac.machineId)   LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(comp.name)      LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(comp.macAddress) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(lc.name)        LIKE LOWER(CONCAT('%', :search, '%'))
               ))
             """)
     Page<ActivationCode> findActiveGroup(
             @Param("threshold") LocalDate threshold,
+            @Param("compId")    Long compId,
+            @Param("lcId")      Long lcId,
             @Param("search")    String search,
             Pageable pageable
     );
 
-    /**
-     * Group = EXPIRING: status=ACTIVE AND endDate in [today, today+3).
-     */
     @Query("""
             SELECT ac FROM ActivationCode ac
+            LEFT JOIN ac.computer comp
+            LEFT JOIN comp.learningCenter lc
             WHERE ac.deleted = false
               AND ac.status = 'ACTIVE'
               AND ac.endDate >= :today
               AND ac.endDate < :threshold
+              AND (:compId IS NULL OR comp.id = :compId)
+              AND (:lcId   IS NULL OR lc.id   = :lcId)
               AND (:search IS NULL OR :search = '' OR (
-                    LOWER(ac.machineId)       LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientFirstName) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientLastName)  LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientPhone)     LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.learningCenter)  LIKE LOWER(CONCAT('%', :search, '%'))
+                    LOWER(ac.machineId)   LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(comp.name)      LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(comp.macAddress) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(lc.name)        LIKE LOWER(CONCAT('%', :search, '%'))
               ))
             """)
     Page<ActivationCode> findExpiringGroup(
             @Param("today")     LocalDate today,
             @Param("threshold") LocalDate threshold,
+            @Param("compId")    Long compId,
+            @Param("lcId")      Long lcId,
             @Param("search")    String search,
             Pageable pageable
     );
 
-    /**
-     * Group = EXPIRED: status=EXPIRED OR (status=ACTIVE AND endDate < today).
-     */
     @Query("""
             SELECT ac FROM ActivationCode ac
+            LEFT JOIN ac.computer comp
+            LEFT JOIN comp.learningCenter lc
             WHERE ac.deleted = false
               AND (ac.status = 'EXPIRED' OR (ac.status = 'ACTIVE' AND ac.endDate < :today))
+              AND (:compId IS NULL OR comp.id = :compId)
+              AND (:lcId   IS NULL OR lc.id   = :lcId)
               AND (:search IS NULL OR :search = '' OR (
-                    LOWER(ac.machineId)       LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientFirstName) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientLastName)  LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientPhone)     LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.learningCenter)  LIKE LOWER(CONCAT('%', :search, '%'))
+                    LOWER(ac.machineId)   LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(comp.name)      LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(comp.macAddress) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(lc.name)        LIKE LOWER(CONCAT('%', :search, '%'))
               ))
             """)
     Page<ActivationCode> findExpiredGroup(
             @Param("today")  LocalDate today,
+            @Param("compId") Long compId,
+            @Param("lcId")   Long lcId,
             @Param("search") String search,
             Pageable pageable
     );
 
-    /**
-     * Group = DEACTIVATED.
-     */
     @Query("""
             SELECT ac FROM ActivationCode ac
+            LEFT JOIN ac.computer comp
+            LEFT JOIN comp.learningCenter lc
             WHERE ac.deleted = false
               AND ac.status = 'DEACTIVATED'
+              AND (:compId IS NULL OR comp.id = :compId)
+              AND (:lcId   IS NULL OR lc.id   = :lcId)
               AND (:search IS NULL OR :search = '' OR (
-                    LOWER(ac.machineId)       LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientFirstName) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientLastName)  LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.clientPhone)     LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(ac.learningCenter)  LIKE LOWER(CONCAT('%', :search, '%'))
+                    LOWER(ac.machineId)   LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(comp.name)      LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(comp.macAddress) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                    LOWER(lc.name)        LIKE LOWER(CONCAT('%', :search, '%'))
               ))
             """)
     Page<ActivationCode> findDeactivatedGroup(
+            @Param("compId") Long compId,
+            @Param("lcId")   Long lcId,
             @Param("search") String search,
             Pageable pageable
     );
@@ -182,12 +191,8 @@ public interface ActivationCodeRepository extends JpaRepository<ActivationCode, 
     @Query("SELECT COUNT(ac) FROM ActivationCode ac WHERE ac.deleted = false AND ac.status = 'DEACTIVATED'")
     long countDeactivated();
 
-    // ── Scheduled job helpers ─────────────────────────────────────────────
+    // ── Scheduled job ─────────────────────────────────────────────────────
 
-    /**
-     * Bulk-marks overdue ACTIVE codes as EXPIRED.
-     * Called by a nightly scheduled task.
-     */
     @Modifying
     @Query("""
             UPDATE ActivationCode ac

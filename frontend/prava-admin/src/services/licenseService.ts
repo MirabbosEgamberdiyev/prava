@@ -12,7 +12,7 @@ const BASE = "/api/v1/admin/activation-codes";
 class LicenseService {
   /** Yangi aktivatsiya kodi yaratish */
   async generate(req: ActivationCodeRequest): Promise<ActivationCodeResponse> {
-    const res = await api.post(`${BASE}/generate`, req);
+    const res = await api.post(BASE, req);
     return res.data.data as ActivationCodeResponse;
   }
 
@@ -22,11 +22,13 @@ class LicenseService {
       page: filter.page ?? 0,
       size: filter.size ?? 20,
     };
-    if (filter.search)  params.search  = filter.search;
-    if (filter.status)  params.status  = filter.status;
-    if (filter.group)   params.group   = filter.group;
-    if (filter.sort)    params.sort    = filter.sort;
-    if (filter.dir)     params.dir     = filter.dir;
+    if (filter.search)           params.search           = filter.search;
+    if (filter.status)           params.status           = filter.status;
+    if (filter.group)            params.group            = filter.group;
+    if (filter.computerId)       params.computerId       = filter.computerId;
+    if (filter.learningCenterId) params.learningCenterId = filter.learningCenterId;
+    if (filter.sort)             params.sortBy           = filter.sort;
+    if (filter.dir)              params.sortDir          = filter.dir;
 
     const res = await api.get(BASE, { params });
     return res.data.data as PageResponse<ActivationCodeResponse>;
@@ -46,7 +48,13 @@ class LicenseService {
 
   /** Deaktivatsiya */
   async deactivate(id: number, notes?: string): Promise<ActivationCodeResponse> {
-    const res = await api.patch(`${BASE}/${id}/deactivate`, { notes });
+    const res = await api.patch(`${BASE}/${id}/deactivate`, { reason: notes });
+    return res.data.data as ActivationCodeResponse;
+  }
+
+  /** Qayta faollashtirish (faqat DEACTIVATED, muddati o'tmagan) */
+  async reactivate(id: number): Promise<ActivationCodeResponse> {
+    const res = await api.patch(`${BASE}/${id}/reactivate`);
     return res.data.data as ActivationCodeResponse;
   }
 

@@ -1,5 +1,6 @@
 import {
   IconAlignBoxLeftTop,
+  IconBuilding,
   IconChartBar,
   IconDatabaseExport,
   IconFolder,
@@ -83,6 +84,12 @@ const AdminNavUrlData: NavItem[] = [
     url: "/files",
     icon: <IconFiles size="16px" />,
     role: "ADMIN",
+  },
+  {
+    name: "nav.learningCenters",
+    url: "/learning-centers",
+    icon: <IconBuilding size="16px" />,
+    role: "SUPER_ADMIN",
   },
   {
     name: "nav.license",

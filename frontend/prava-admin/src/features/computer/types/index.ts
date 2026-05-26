@@ -1,72 +1,47 @@
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
-export type ActivationCodeStatus = "ACTIVE" | "EXPIRED" | "DEACTIVATED";
-
-/** Virtual group — EXPIRING is computed, not persisted */
-export type ActivationCodeGroup = "ACTIVE" | "EXPIRING" | "EXPIRED" | "DEACTIVATED";
+export type ComputerStatus = "ACTIVE" | "INACTIVE";
 
 // ─── Request ──────────────────────────────────────────────────────────────────
 
-export interface ActivationCodeRequest {
-  computerId: number;     // required — which computer to generate for
-  startDate: string;      // "YYYY-MM-DD"
-  endDate: string;        // "YYYY-MM-DD"
+export interface ComputerRequest {
+  name: string;
+  machineId: string;
+  macAddress?: string;
+  deviceId?: string;
+  learningCenterId: number;
   notes?: string;
 }
 
 // ─── Response ─────────────────────────────────────────────────────────────────
 
-export interface ActivationCodeResponse {
+export interface ComputerResponse {
   id: number;
-
-  // Computer info
-  computerId?: number;
-  computerName?: string;
+  name: string;
+  machineId: string;
   macAddress?: string;
   deviceId?: string;
-
-  // Learning center (via computer)
-  learningCenterId?: number;
+  learningCenterId: number;
   learningCenterName?: string;
-
-  // Token fields
-  machineId: string;
-  startDate: string;
-  endDate: string;
-  licenseKey: string;
-
-  // Status
-  status: ActivationCodeStatus;
-  displayGroup: ActivationCodeGroup;
-  daysUntilExpiry?: number;
-
-  // Metadata
+  status: ComputerStatus;
   notes?: string;
-  generatedBy?: string;
-  createdAt: string;
+  totalCodes?: number;
+  activeCodes?: number;
+  createdAt?: string;
   updatedAt?: string;
-}
-
-export interface ActivationCodeStatsResponse {
-  total: number;
-  active: number;
-  expiring: number;
-  expired: number;
-  deactivated: number;
+  createdBy?: string;
 }
 
 // ─── Filter ───────────────────────────────────────────────────────────────────
 
-export interface ActivationCodeFilter {
+export interface ComputerFilter {
+  search?: string;
+  lcId?: number;
+  status?: ComputerStatus;
   page?: number;
   size?: number;
-  search?: string;
-  status?: ActivationCodeStatus;
-  group?: ActivationCodeGroup;
-  computerId?: number;
-  learningCenterId?: number;
-  sort?: string;
-  dir?: "asc" | "desc";
+  sortBy?: string;
+  sortDir?: "asc" | "desc";
 }
 
 // ─── Pagination ───────────────────────────────────────────────────────────────
@@ -75,7 +50,7 @@ export interface PageResponse<T> {
   content: T[];
   totalElements: number;
   totalPages: number;
-  number: number;   // current page (0-based)
+  number: number;
   size: number;
   first: boolean;
   last: boolean;

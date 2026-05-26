@@ -11,9 +11,9 @@ import lombok.Data;
 @Builder
 public class ActivationCodeStatsResponse {
 
-    private long totalAll;
-    private long totalActive;
-    private long totalExpiring;   // active but expires within 3 days
-    private long totalExpired;
-    private long totalDeactivated;
+    private long total;
+    private long active;
+    private long expiring;     // active but expires within 3 days
+    private long expired;
+    private long deactivated;
 }
