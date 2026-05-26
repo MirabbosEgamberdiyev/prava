@@ -48,13 +48,12 @@ public class ActivationCodeServiceImpl implements ActivationCodeService {
         String token = licenseService.generateToken(
                 req.getMachineId(), req.getStartDate(), req.getEndDate());
 
-        // AES-256-GCM uses a random 12-byte nonce, so every call produces a unique token.
-        // The existsByLicenseKey guard below is purely defensive (e.g. extreme nonce collision)
-        // and will almost never trigger in practice.
+        // Ed25519 is deterministic: same machineId + same dates → same token every time.
+        // If this exact token already exists (possibly from a previous generation), return it.
         if (repo.existsByLicenseKey(token)) {
             ActivationCode existing = repo.findByLicenseKey(token)
                     .orElseThrow(() -> new IllegalStateException("Concurrent insert race"));
-            log.warn("Duplicate token requested by {}; returning existing record id={}", operator, existing.getId());
+            log.warn("Token already exists for machine='{}', returning existing record id={}", req.getMachineId(), existing.getId());
             return toResponse(existing);
         }
 
