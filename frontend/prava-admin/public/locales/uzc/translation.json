@@ -711,9 +711,9 @@
       "deactivateSuccess": "Деактивланди",
       "deactivateSuccessMsg": "Лицензия муваффақиятли деактивланди.",
       "deactivateError": "Деактивлашда хатолик",
-      "reactivateSuccess": "Қайта фаоллашtirilди",
-      "reactivateSuccessMsg": "Лицензия муваффақиятли қайта фаоллашtirilди.",
-      "reactivateError": "Қайта фаоллашtirishda хатолик",
+      "reactivateSuccess": "Қайта фаоллаштирилди",
+      "reactivateSuccessMsg": "Лицензия муваффақиятли қайта фаоллаштирилди.",
+      "reactivateError": "Қайта фаоллаштиришда хатолик",
       "deleteSuccess": "Ўчирилди",
       "deleteSuccessMsg": "Код муваффақиятли ўчирилди.",
       "deleteError": "Ўчиришда хатолик"
