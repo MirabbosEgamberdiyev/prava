@@ -157,6 +157,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/admin/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
 
                         // ============================================
+                        // DESKTOP APP — USER + ADMIN + SUPER_ADMIN
+                        // ============================================
+                        .requestMatchers("/api/v1/app/**",
+                                "/api/v2/tickets/**", "/api/v2/my-statistics/**")
+                        .hasAnyRole("SUPER_ADMIN", "ADMIN", "USER")
+
+                        // ============================================
                         // USER + ADMIN + SUPER_ADMIN
                         // ============================================
                         .requestMatchers("/api/v1/user/**", "/api/v1/exam/**",
