@@ -75,9 +75,13 @@ export const STATUS_COLORS: Record<AppReleaseStatus, string> = {
 
 // ─── DTOs ─────────────────────────────────────────────────────────────────────
 
+/** Ilova ishlashi turi: ONLINE — server bilan, OFFLINE — internetsiz */
+export type AppCategory = "ONLINE" | "OFFLINE";
+
 export interface AppReleaseResponse {
   id:                   number;
   appName:              string;
+  appCategory?:         AppCategory;
   platform:             AppPlatform;
   appType:              AppType;
   version:              string;

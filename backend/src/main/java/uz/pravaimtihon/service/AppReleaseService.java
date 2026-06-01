@@ -55,36 +55,31 @@ public interface AppReleaseService {
     AppReleaseResponse uploadInstallerFile(Long id, MultipartFile file, String updatedBy);
 
     /**
-     * Yagona oddiy endpoint: fayl yuklanadi + platforma avtomatik aniqlanadi.
+     * Yagona oddiy endpoint: admin appName + version + description + file beradi.
+     * Platforma (Windows/Linux/macOS) fayl kengaytmasidan avtomatik aniqlanadi.
      *
-     * <p>Admin faqat: appName, version, description, file beradi.
-     * Tizim: platform, appType, checksum, fileSize, releaseDate, isLatest avtomatik hisoblaydi.</p>
-     */
-    /**
-     * @param file     Online ilovalar uchun null bo'lishi mumkin (platform=WEB avtomatik)
-     * @param webUrl   Online ilova URL si (file null bo'lsa ishlatiladi)
+     * @param appCategory "ONLINE" yoki "OFFLINE" — ilova internetga ulanadi yoki yo'q.
+     *                    null bo'lsa "OFFLINE" deb qabul qilinadi.
      */
     AppReleaseResponse quickUpload(
             String appName,
             String version,
             String description,
+            String appCategory,
             boolean isActive,
             MultipartFile file,
-            String webUrl,
             String createdBy);
 
     /**
      * Mavjud relizni yangilash (fayl ixtiyoriy).
-     *
-     * @param webUrl   Online ilova uchun yangi URL (ixtiyoriy)
      */
     AppReleaseResponse quickUpdate(
             Long id,
             String appName,
             String version,
             String description,
+            String appCategory,
             boolean isActive,
             MultipartFile file,
-            String webUrl,
             String updatedBy);
 }

@@ -362,38 +362,29 @@ public class AppReleaseServiceImpl implements AppReleaseService {
     @Override
     @Transactional
     public AppReleaseResponse quickUpload(String appName, String version, String description,
-                                          boolean isActive, MultipartFile file,
-                                          String webUrl, String createdBy) {
-        // Online ilova: fayl yo'q, webUrl beriladi
-        // Offline ilova: fayl yuklanadi
-        boolean isOnline = (file == null || file.isEmpty());
+                                          String appCategory, boolean isActive,
+                                          MultipartFile file, String createdBy) {
+        if (file == null || file.isEmpty())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fayl yuklanmagan");
 
-        AppPlatform platform;
-        AppType     appType;
-        String      downloadUrl = null;
-        Long        fileSize    = null;
-        String      checksum    = null;
+        String category = normalizeCategory(appCategory);
 
-        if (isOnline) {
-            // Online (WEB) — fayl yo'q, platform WEB
-            platform    = AppPlatform.WEB;
-            appType     = AppType.WEB_PWA;
-            downloadUrl = (webUrl != null && !webUrl.isBlank()) ? webUrl.trim() : null;
-        } else {
-            // Offline — fayldan platform aniqlanadi
-            String origName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "";
-            platform = detectPlatform(origName);
-            appType  = detectAppType(origName);
-            String[] uploaded = saveFileAndHash(file);
-            downloadUrl = uploaded[0];
-            fileSize    = file.getSize();
-            checksum    = uploaded[1];
-        }
+        // Platforma fayl kengaytmasidan avtomatik
+        String origName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "";
+        AppPlatform platform = detectPlatform(origName);
+        AppType     appType  = detectAppType(origName);
 
+        // Agar noma'lum kengaytma bo'lsa — WINDOWS .exe deb default qabul qilamiz
+        if (platform == AppPlatform.WEB) platform = AppPlatform.WINDOWS;
+        if (appType  == AppType.WEB_PWA) appType  = AppType.WINDOWS_EXE;
+
+        // Fayl saqlanadi + SHA-256
+        String[] uploaded = saveFileAndHash(file);
         int verCode = parseVersionCode(version);
 
         AppRelease entity = AppRelease.builder()
                 .appName(appName.trim())
+                .appCategory(category)
                 .platform(platform)
                 .appType(appType)
                 .appVersion(version.trim())
@@ -403,58 +394,65 @@ public class AppReleaseServiceImpl implements AppReleaseService {
                 .isForceUpdate(false)
                 .releaseNotesUzl(description != null ? description.trim() : null)
                 .releaseDate(java.time.LocalDate.now())
-                .downloadUrl(downloadUrl)
-                .fileSize(fileSize)
-                .checksum(checksum)
+                .downloadUrl(uploaded[0])
+                .fileSize(file.getSize())
+                .checksum(uploaded[1])
                 .downloadCount(0L)
                 .build();
 
         AppRelease saved = repo.save(entity);
 
-        // Agar bu platforma uchun birinchi active bo'lsa — latest qilamiz
+        // Bu platforma+kategoriya uchun birinchi active bo'lsa — latest qilamiz
         if (isActive && !repo.findByPlatformAndAppTypeAndIsLatestTrueAndDeletedFalse(
                 platform, appType).isPresent()) {
             saved.setIsLatest(true);
             saved = repo.save(saved);
         }
 
-        log.info("Quick upload: {} {} {} by {}", appName, version, platform, createdBy);
+        log.info("Quick upload: {} v{} [{}/{}] by {}", appName, version, category, platform, createdBy);
         return toResponse(saved);
     }
 
     @Override
     @Transactional
     public AppReleaseResponse quickUpdate(Long id, String appName, String version,
-                                          String description, boolean isActive,
-                                          MultipartFile file, String webUrl, String updatedBy) {
+                                          String description, String appCategory,
+                                          boolean isActive, MultipartFile file, String updatedBy) {
         AppRelease entity = findOrThrow(id);
 
-        if (appName != null && !appName.isBlank())   entity.setAppName(appName.trim());
-        if (version  != null && !version.isBlank())  {
+        if (appName != null && !appName.isBlank()) entity.setAppName(appName.trim());
+        if (version != null && !version.isBlank()) {
             entity.setAppVersion(version.trim());
             entity.setVersionCode(parseVersionCode(version.trim()));
         }
         if (description != null) entity.setReleaseNotesUzl(description.trim());
+        if (appCategory != null && !appCategory.isBlank())
+            entity.setAppCategory(normalizeCategory(appCategory));
         entity.setStatus(isActive ? AppReleaseStatus.ACTIVE : AppReleaseStatus.DRAFT);
 
-        // Online URL yangilaymiz
-        if (webUrl != null && !webUrl.isBlank() && entity.getPlatform() == AppPlatform.WEB) {
-            entity.setDownloadUrl(webUrl.trim());
-        }
-
-        // Fayl berilgan bo'lsa — yangilaymiz (offline)
+        // Fayl berilgan bo'lsa — yangilaymiz (platforma fayldan auto)
         if (file != null && !file.isEmpty()) {
             String origName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "";
-            entity.setPlatform(detectPlatform(origName));
-            entity.setAppType(detectAppType(origName));
+            AppPlatform p = detectPlatform(origName);
+            AppType     t = detectAppType(origName);
+            if (p == AppPlatform.WEB) p = AppPlatform.WINDOWS;
+            if (t == AppType.WEB_PWA) t = AppType.WINDOWS_EXE;
+            entity.setPlatform(p);
+            entity.setAppType(t);
             String[] uploaded = saveFileAndHash(file);
             entity.setDownloadUrl(uploaded[0]);
             entity.setFileSize(file.getSize());
             entity.setChecksum(uploaded[1]);
         }
 
-        AppRelease saved = repo.save(entity);
-        return toResponse(saved);
+        return toResponse(repo.save(entity));
+    }
+
+    /** "online" / "ONLINE" → "ONLINE"; null/bo'sh/boshqa → "OFFLINE" */
+    private static String normalizeCategory(String c) {
+        if (c == null) return "OFFLINE";
+        String u = c.trim().toUpperCase();
+        return "ONLINE".equals(u) ? "ONLINE" : "OFFLINE";
     }
 
     // ── Auto-detect helpers ───────────────────────────────────────────────────
@@ -537,6 +535,7 @@ public class AppReleaseServiceImpl implements AppReleaseService {
         return AppReleaseResponse.builder()
                 .id(r.getId())
                 .appName(r.getAppName())
+                .appCategory(r.getAppCategory() != null ? r.getAppCategory() : "OFFLINE")
                 .platform(r.getPlatform())
                 .appType(r.getAppType())
                 .version(r.getAppVersion())

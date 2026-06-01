@@ -20,6 +20,7 @@ public class AppReleaseResponse {
 
     private Long              id;
     private String            appName;
+    private String            appCategory;      // "ONLINE" | "OFFLINE"
     private AppPlatform       platform;
     private AppType           appType;
     private String            version;

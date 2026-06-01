@@ -4,6 +4,12 @@ import { initReactI18next } from "react-i18next";
 import Backend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
 
+/**
+ * Build-time version stamp — har deploy paytida o'zgaradi.
+ * Brauzer va nginx eski JSON ni cache qilmasligi uchun query param qo'shamiz.
+ */
+const BUILD_VERSION = String(__BUILD_TIME__ ?? Date.now());
+
 i18n
   .use(Backend)
   .use(LanguageDetector)
@@ -23,9 +29,8 @@ i18n
     },
     backend: {
       loadPath: "/locales/{{lng}}/translation.json",
-      ...(import.meta.env.DEV && {
-        queryStringParams: { v: Date.now() },
-      }),
+      // Har build da yangi version — cache bypass
+      queryStringParams: { v: BUILD_VERSION },
     },
   });
 

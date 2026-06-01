@@ -10,4 +10,8 @@ export default defineConfig({
       },
     }),
   ],
+  define: {
+    // Har build paytida yangi timestamp — i18n cache bypass uchun
+    __BUILD_TIME__: JSON.stringify(Date.now().toString()),
+  },
 })

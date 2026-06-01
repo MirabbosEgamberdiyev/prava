@@ -47,6 +47,17 @@ public class AppRelease extends BaseEntity {
     @Column(name = "app_name", nullable = false, length = 200)
     private String appName;
 
+    // ── Ilova kategoriyasi ────────────────────────────────────────────────
+
+    /**
+     * ONLINE  = internet kerak (Prava-desktop-online — server API ishlatadi).
+     * OFFLINE = internetsiz ishlaydi (Prava-desktop — lokal SQLite).
+     * Default: OFFLINE.
+     */
+    @Column(name = "app_category", nullable = false, length = 10)
+    @Builder.Default
+    private String appCategory = "OFFLINE";
+
     // ── Platforma va tur ─────────────────────────────────────────────────
 
     @Enumerated(EnumType.STRING)

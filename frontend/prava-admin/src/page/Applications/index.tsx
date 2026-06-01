@@ -7,15 +7,15 @@ import {
   Paper, SimpleGrid, ThemeIcon, Progress,
 } from "@mantine/core";
 import {
-  IconApps, IconCheck, IconCloudDownload, IconDeviceDesktop,
-  IconEdit, IconFileUpload, IconTerminal2, IconApple,
-  IconPlus, IconRefresh, IconTrash, IconWorld, IconX,
+  IconApps, IconCheck, IconCloudDownload, IconCloud,
+  IconCloudOff, IconEdit, IconFileUpload, IconTerminal2,
+  IconApple, IconPlus, IconRefresh, IconTrash, IconX,
   IconBrandWindows,
 } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import api from "../../services/api";
-import type { AppReleaseResponse } from "../../features/applications/types";
+import type { AppReleaseResponse, AppCategory } from "../../features/applications/types";
 import dayjs from "dayjs";
 
 // ─── API ─────────────────────────────────────────────────────────────────────
@@ -33,16 +33,16 @@ async function toggleStatus(id: number, active: boolean) {
   await api.patch(`${BASE}/${id}/status`, { status: active ? "ACTIVE" : "DRAFT" });
 }
 
-// ─── Platform meta ────────────────────────────────────────────────────────────
+// ─── Platforma metadata ──────────────────────────────────────────────────────
 const EXT_MAP: Record<string, { label: string; platform: string }> = {
-  ".exe":      { label: "Windows (.exe)",      platform: "WINDOWS" },
-  ".msi":      { label: "Windows (.msi)",      platform: "WINDOWS" },
-  ".deb":      { label: "Linux (.deb)",        platform: "LINUX"   },
-  ".rpm":      { label: "Linux (.rpm)",        platform: "LINUX"   },
-  ".appimage": { label: "Linux (.AppImage)",   platform: "LINUX"   },
-  ".tar.gz":   { label: "Linux (.tar.gz)",     platform: "LINUX"   },
-  ".dmg":      { label: "macOS (.dmg)",        platform: "MACOS"   },
-  ".pkg":      { label: "macOS (.pkg)",        platform: "MACOS"   },
+  ".exe":      { label: "Windows (.exe)",    platform: "WINDOWS" },
+  ".msi":      { label: "Windows (.msi)",    platform: "WINDOWS" },
+  ".deb":      { label: "Linux (.deb)",      platform: "LINUX"   },
+  ".rpm":      { label: "Linux (.rpm)",      platform: "LINUX"   },
+  ".appimage": { label: "Linux (.AppImage)", platform: "LINUX"   },
+  ".tar.gz":   { label: "Linux (.tar.gz)",   platform: "LINUX"   },
+  ".dmg":      { label: "macOS (.dmg)",      platform: "MACOS"   },
+  ".pkg":      { label: "macOS (.pkg)",      platform: "MACOS"   },
 };
 
 function detectFromFilename(name: string) {
@@ -52,20 +52,13 @@ function detectFromFilename(name: string) {
   return EXT_MAP[ext] ?? null;
 }
 
-const PLATFORM_COLORS: Record<string, string> = {
-  WINDOWS: "blue", LINUX: "orange", MACOS: "gray", WEB: "teal",
-};
-
+const PLATFORM_COLORS: Record<string, string> = { WINDOWS: "blue", LINUX: "orange", MACOS: "gray" };
 const PLATFORM_ICONS: Record<string, React.ReactNode> = {
   WINDOWS: <IconBrandWindows size={14} />,
   LINUX:   <IconTerminal2 size={14} />,
   MACOS:   <IconApple size={14} />,
-  WEB:     <IconWorld size={14} />,
 };
-
-const PLATFORM_LABEL: Record<string, string> = {
-  WINDOWS: "Windows", LINUX: "Linux", MACOS: "macOS", WEB: "Online",
-};
+const PLATFORM_LABEL: Record<string, string> = { WINDOWS: "Windows", LINUX: "Linux", MACOS: "macOS" };
 
 function fmtSize(bytes?: number | null): string {
   if (!bytes) return "—";
@@ -81,11 +74,9 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
 }) {
   const { t } = useTranslation();
 
-  // Ilova turi: "online" yoki "offline"
-  const [appType,  setAppType]  = useState<"online" | "offline">("offline");
+  const [category, setCategory] = useState<AppCategory>("OFFLINE");
   const [appName,  setAppName]  = useState("");
   const [version,  setVersion]  = useState("");
-  const [webUrl,   setWebUrl]   = useState("");
   const [desc,     setDesc]     = useState("");
   const [active,   setActive]   = useState(true);
   const [file,     setFile]     = useState<File | null>(null);
@@ -94,11 +85,9 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
 
   useEffect(() => {
     if (opened) {
-      const isOnline = editing?.platform === "WEB";
-      setAppType(isOnline ? "online" : "offline");
+      setCategory((editing?.appCategory as AppCategory) ?? "OFFLINE");
       setAppName(editing?.appName ?? "");
       setVersion(editing?.version ?? "");
-      setWebUrl(isOnline ? (editing?.downloadUrl ?? "") : "");
       setDesc(editing?.releaseNotesUzl ?? "");
       setActive(editing ? editing.status === "ACTIVE" : true);
       setFile(null);
@@ -109,19 +98,18 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
   const detected = file ? detectFromFilename(file.name) : null;
 
   const handleSave = async () => {
-    if (!appName.trim()) { notifications.show({ color: "red", message: `${t("apps.appName")} kiritilmagan` }); return; }
-    if (!version.trim()) { notifications.show({ color: "red", message: `${t("apps.version")} kiritilmagan` }); return; }
-    if (appType === "online" && !webUrl.trim()) { notifications.show({ color: "red", message: "Ilova URL si kiritilmagan" }); return; }
-    if (appType === "offline" && !editing && !file) { notifications.show({ color: "red", message: "Fayl yuklanmagan" }); return; }
+    if (!appName.trim()) { notifications.show({ color: "red", message: "Ilova nomini kiriting" }); return; }
+    if (!version.trim()) { notifications.show({ color: "red", message: "Versiyani kiriting" }); return; }
+    if (!editing && !file) { notifications.show({ color: "red", message: "Faylni tanlang" }); return; }
 
     setSaving(true);
     const form = new FormData();
-    form.append("appName",  appName.trim());
-    form.append("version",  version.trim());
-    form.append("isActive", String(active));
+    form.append("appName",     appName.trim());
+    form.append("version",     version.trim());
+    form.append("appCategory", category);
+    form.append("isActive",    String(active));
     if (desc.trim()) form.append("description", desc.trim());
-    if (appType === "online")  form.append("webUrl", webUrl.trim());
-    if (appType === "offline" && file) form.append("file", file);
+    if (file)        form.append("file", file);
 
     try {
       const endpoint = editing
@@ -154,101 +142,126 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
     >
       <Stack gap="md">
 
-        {/* Ilova turi */}
+        {/* Ilova kategoriyasi: Online / Offline */}
         <Box>
-          <Text size="sm" fw={500} mb={6}>{t("apps.appTypeLabel")}</Text>
+          <Text size="sm" fw={500} mb={6}>Ilova turi</Text>
           <SegmentedControl
             fullWidth
-            value={appType}
-            onChange={v => setAppType(v as "online" | "offline")}
+            value={category}
+            onChange={v => setCategory(v as AppCategory)}
             data={[
-              { value: "online",  label: <Group gap={6} justify="center"><IconWorld size={15}/><span>Online ilova</span></Group> },
-              { value: "offline", label: <Group gap={6} justify="center"><IconDeviceDesktop size={15}/><span>Offline ilova</span></Group> },
+              {
+                value: "OFFLINE",
+                label: (
+                  <Group gap={6} justify="center">
+                    <IconCloudOff size={15}/>
+                    <span>Offline</span>
+                  </Group>
+                ),
+              },
+              {
+                value: "ONLINE",
+                label: (
+                  <Group gap={6} justify="center">
+                    <IconCloud size={15}/>
+                    <span>Online</span>
+                  </Group>
+                ),
+              },
             ]}
-            disabled={!!editing}
           />
           <Text size="xs" c="dimmed" mt={4}>
-            {appType === "online"
-              ? "Web brauzerda ishlaydigan ilova — fayl yuklamasdan URL kiriting"
-              : "Windows, Linux yoki macOS uchun o'rnatuvchi fayl"}
+            {category === "ONLINE"
+              ? "🌐 Server bilan ishlaydi — internet kerak (ma'lumotlar baza serverda)"
+              : "💾 Internetsiz ishlaydi — barcha ma'lumotlar lokal kompyuterda"}
           </Text>
         </Box>
 
         {/* Nom + Versiya */}
         <Group grow>
-          <TextInput label={t("apps.appName")} placeholder="Prava Online" value={appName} onChange={e => setAppName(e.target.value)} required />
-          <TextInput label={t("apps.version")} placeholder="1.0.0" value={version} onChange={e => setVersion(e.target.value)} required />
+          <TextInput
+            label="Ilova nomi"
+            placeholder={category === "ONLINE" ? "Prava Online" : "Prava Offline"}
+            value={appName}
+            onChange={e => setAppName(e.target.value)}
+            required
+          />
+          <TextInput
+            label="Versiya"
+            placeholder="1.0.0"
+            value={version}
+            onChange={e => setVersion(e.target.value)}
+            required
+          />
         </Group>
 
-        {/* Online: URL */}
-        {appType === "online" && (
-          <TextInput
-            label="Ilova URL si"
-            placeholder="https://pravaonline.uz"
-            value={webUrl}
-            onChange={e => setWebUrl(e.target.value)}
-            leftSection={<IconWorld size={14} />}
-            required
-            description="Foydalanuvchilar shu URL ga yo'naltiriladi"
-          />
-        )}
-
-        {/* Offline: Fayl */}
-        {appType === "offline" && (
-          <Box>
-            <Text size="sm" fw={500} mb={6}>{t("apps.uploadFile")} {!editing && <span style={{color:"red"}}>*</span>}</Text>
-            <FileButton onChange={setFile} accept=".exe,.msi,.deb,.rpm,.AppImage,.dmg,.pkg,.tar.gz,.zip">
-              {(props) => (
-                <Paper
-                  {...props}
-                  withBorder radius="md" p="md"
-                  style={{
-                    cursor: "pointer", textAlign: "center",
-                    borderStyle: "dashed",
-                    borderColor: file ? "var(--mantine-color-green-5)" : "var(--mantine-color-dimmed)",
-                    background: file ? "var(--mantine-color-green-0)" : undefined,
-                    transition: "all .15s",
-                  }}
-                >
-                  {file ? (
-                    <Stack gap={4} align="center">
-                      <ThemeIcon color="green" variant="light" size="lg" radius="xl"><IconCheck size={20}/></ThemeIcon>
-                      <Text size="sm" fw={600}>{file.name}</Text>
-                      {detected && (
-                        <Group gap={4}>
-                          <Badge color={PLATFORM_COLORS[detected.platform]} size="sm">{detected.label}</Badge>
-                          <Text size="xs" c="dimmed">— {fmtSize(file.size)}</Text>
-                        </Group>
-                      )}
-                      <Text size="xs" c="dimmed">(qayta tanlash)</Text>
-                    </Stack>
-                  ) : (
-                    <Stack gap={4} align="center">
-                      <ThemeIcon variant="light" size="lg" radius="xl"><IconFileUpload size={20}/></ThemeIcon>
-                      <Text size="sm" fw={500}>Faylni tanlang yoki shu yerga tashlang</Text>
-                      <Text size="xs" c="dimmed">.exe · .msi · .deb · .rpm · .AppImage · .dmg · .pkg</Text>
-                      {editing?.downloadUrl && <Text size="xs" c="green">Hozirgi fayl saqlanadi</Text>}
-                    </Stack>
-                  )}
-                </Paper>
-              )}
-            </FileButton>
-          </Box>
-        )}
+        {/* Fayl yuklash */}
+        <Box>
+          <Text size="sm" fw={500} mb={6}>
+            Installer fayl {!editing && <span style={{color:"red"}}>*</span>}
+          </Text>
+          <FileButton
+            onChange={setFile}
+            accept=".exe,.msi,.deb,.rpm,.AppImage,.dmg,.pkg,.tar.gz,.zip"
+          >
+            {(props) => (
+              <Paper
+                {...props}
+                withBorder radius="md" p="md"
+                style={{
+                  cursor: "pointer", textAlign: "center", borderStyle: "dashed",
+                  borderColor: file ? "var(--mantine-color-green-5)" : "var(--mantine-color-dimmed)",
+                  background: file ? "var(--mantine-color-green-0)" : undefined,
+                  transition: "all .15s",
+                }}
+              >
+                {file ? (
+                  <Stack gap={4} align="center">
+                    <ThemeIcon color="green" variant="light" size="lg" radius="xl"><IconCheck size={20}/></ThemeIcon>
+                    <Text size="sm" fw={600}>{file.name}</Text>
+                    {detected && (
+                      <Group gap={4}>
+                        <Badge color={PLATFORM_COLORS[detected.platform]} size="sm" leftSection={PLATFORM_ICONS[detected.platform]}>
+                          {detected.label}
+                        </Badge>
+                        <Text size="xs" c="dimmed">— {fmtSize(file.size)}</Text>
+                      </Group>
+                    )}
+                    <Text size="xs" c="dimmed">(qayta tanlash)</Text>
+                  </Stack>
+                ) : (
+                  <Stack gap={4} align="center">
+                    <ThemeIcon variant="light" size="lg" radius="xl"><IconFileUpload size={20}/></ThemeIcon>
+                    <Text size="sm" fw={500}>Faylni tanlang yoki shu yerga tashlang</Text>
+                    <Text size="xs" c="dimmed">.exe · .msi · .deb · .rpm · .AppImage · .dmg · .pkg</Text>
+                    {editing?.downloadUrl && <Text size="xs" c="green">Hozirgi fayl saqlanadi</Text>}
+                  </Stack>
+                )}
+              </Paper>
+            )}
+          </FileButton>
+        </Box>
 
         {/* Tavsif */}
         <Textarea
-          label={`${t("apps.releaseNotes")} (ixtiyoriy)`}
+          label="Tavsif (ixtiyoriy)"
           placeholder="Bu versiyada nima yangi..."
           rows={2}
           value={desc}
           onChange={e => setDesc(e.target.value)}
         />
 
-        <Switch label={<Text size="sm">{t("common.active")}</Text>} checked={active} onChange={e => setActive(e.currentTarget.checked)} />
+        <Switch
+          label={<Text size="sm">Faollashtirish</Text>}
+          checked={active}
+          onChange={e => setActive(e.currentTarget.checked)}
+        />
 
         {saving && progress > 0 && (
-          <Box><Text size="xs" c="dimmed" mb={4}>Yuklanmoqda... {progress}%</Text><Progress value={progress} animated size="sm" /></Box>
+          <Box>
+            <Text size="xs" c="dimmed" mb={4}>Yuklanmoqda... {progress}%</Text>
+            <Progress value={progress} animated size="sm" />
+          </Box>
         )}
 
         <Divider />
@@ -266,26 +279,35 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Applications_Page() {
   const { t } = useTranslation();
-  const [items,   setItems]   = useState<AppReleaseResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search,  setSearch]  = useState("");
-  const [modal,   setModal]   = useState(false);
-  const [editing, setEditing] = useState<AppReleaseResponse | null>(null);
+  const [items,    setItems]    = useState<AppReleaseResponse[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [search,   setSearch]   = useState("");
+  const [catFilter, setCatFilter] = useState<"ALL" | AppCategory>("ALL");
+  const [modal,    setModal]    = useState(false);
+  const [editing,  setEditing]  = useState<AppReleaseResponse | null>(null);
 
   const load = () => {
     setLoading(true);
-    fetchList().then(setItems).catch(() => notifications.show({ color: "red", message: t("common.loadError") })).finally(() => setLoading(false));
+    fetchList()
+      .then(setItems)
+      .catch(() => notifications.show({ color: "red", message: t("common.loadError") }))
+      .finally(() => setLoading(false));
   };
 
   useEffect(load, []);
 
-  const filtered = items.filter(it =>
-    !search || it.appName?.toLowerCase().includes(search.toLowerCase()) || it.version?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = items.filter(it => {
+    const cat = (it.appCategory ?? "OFFLINE") as AppCategory;
+    if (catFilter !== "ALL" && cat !== catFilter) return false;
+    if (!search) return true;
+    return it.appName?.toLowerCase().includes(search.toLowerCase())
+      || it.version?.toLowerCase().includes(search.toLowerCase());
+  });
 
-  const online  = items.filter(r => r.platform === "WEB");
-  const offline = items.filter(r => r.platform !== "WEB");
-  const totalDl = items.reduce((s, r) => s + (r.downloadCount ?? 0), 0);
+  const onlineCount  = items.filter(r => r.appCategory === "ONLINE").length;
+  const offlineCount = items.length - onlineCount;
+  const totalDl      = items.reduce((s, r) => s + (r.downloadCount ?? 0), 0);
+  const activeCount  = items.filter(r => r.status === "ACTIVE").length;
 
   const handleDelete = (r: AppReleaseResponse) => {
     modals.openConfirmModal({
@@ -293,7 +315,10 @@ export default function Applications_Page() {
       children: <Text size="sm">{t("apps.deleteConfirm", { name: `${r.appName} v${r.version}` })}</Text>,
       labels: { confirm: t("common.delete"), cancel: t("common.cancel") },
       confirmProps: { color: "red" },
-      onConfirm: () => deleteRelease(r.id).then(() => { notifications.show({ color: "green", message: t("apps.deleteSuccess") }); load(); }).catch(() => {}),
+      onConfirm: () => deleteRelease(r.id).then(() => {
+        notifications.show({ color: "green", message: t("apps.deleteSuccess") });
+        load();
+      }).catch(() => {}),
     });
   };
 
@@ -305,22 +330,28 @@ export default function Applications_Page() {
     <Box>
       <Group justify="space-between" mb="md">
         <Group gap="sm">
-          <ThemeIcon size="lg" radius="md" variant="gradient" gradient={{ from: "blue", to: "cyan", deg: 45 }}><IconApps size={20}/></ThemeIcon>
+          <ThemeIcon size="lg" radius="md" variant="gradient" gradient={{ from: "blue", to: "cyan", deg: 45 }}>
+            <IconApps size={20}/>
+          </ThemeIcon>
           <Title order={3}>{t("nav.applications")}</Title>
         </Group>
         <Group>
-          <ActionIcon variant="default" onClick={load} title={t("common.refresh")}><IconRefresh size={16}/></ActionIcon>
-          <Button leftSection={<IconPlus size={16}/>} onClick={() => { setEditing(null); setModal(true); }}>{t("apps.addRelease")}</Button>
+          <ActionIcon variant="default" onClick={load} title={t("common.refresh")}>
+            <IconRefresh size={16}/>
+          </ActionIcon>
+          <Button leftSection={<IconPlus size={16}/>} onClick={() => { setEditing(null); setModal(true); }}>
+            {t("apps.addRelease")}
+          </Button>
         </Group>
       </Group>
 
       {/* Stats */}
       <SimpleGrid cols={{ base: 2, sm: 4 }} mb="md">
         {[
-          { label: "Online ilovalar",  value: online.length,  color: "teal",  icon: <IconWorld size={18}/> },
-          { label: "Offline ilovalar", value: offline.length, color: "blue",  icon: <IconDeviceDesktop size={18}/> },
-          { label: t("apps.activeReleases"), value: items.filter(r => r.status === "ACTIVE").length, color: "green", icon: <IconCheck size={18}/> },
-          { label: t("apps.totalDownloads"), value: totalDl, color: "orange", icon: <IconCloudDownload size={18}/> },
+          { label: "Online ilovalar",  value: onlineCount,  color: "teal",   icon: <IconCloud size={18}/> },
+          { label: "Offline ilovalar", value: offlineCount, color: "blue",   icon: <IconCloudOff size={18}/> },
+          { label: "Faol relizlar",    value: activeCount,  color: "green",  icon: <IconCheck size={18}/> },
+          { label: "Jami yuklab olishlar", value: totalDl,  color: "orange", icon: <IconCloudDownload size={18}/> },
         ].map(s => (
           <Paper key={s.label} withBorder radius="md" p="sm">
             <Group>
@@ -334,15 +365,27 @@ export default function Applications_Page() {
         ))}
       </SimpleGrid>
 
-      {/* Search */}
-      <TextInput
-        placeholder={t("apps.searchByName")}
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        mb="md"
-        leftSection={<IconApps size={14}/>}
-        rightSection={search ? <ActionIcon variant="subtle" onClick={() => setSearch("")}><IconX size={14}/></ActionIcon> : null}
-      />
+      {/* Filterlar */}
+      <Group mb="md" gap="sm" align="flex-end">
+        <Box style={{ flex: 1 }}>
+          <TextInput
+            placeholder={t("apps.searchByName")}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            leftSection={<IconApps size={14}/>}
+            rightSection={search ? <ActionIcon variant="subtle" onClick={() => setSearch("")}><IconX size={14}/></ActionIcon> : null}
+          />
+        </Box>
+        <SegmentedControl
+          value={catFilter}
+          onChange={v => setCatFilter(v as any)}
+          data={[
+            { value: "ALL",     label: "Barchasi" },
+            { value: "ONLINE",  label: (<Group gap={4} justify="center"><IconCloud size={13}/><span>Online</span></Group>) },
+            { value: "OFFLINE", label: (<Group gap={4} justify="center"><IconCloudOff size={13}/><span>Offline</span></Group>) },
+          ]}
+        />
+      </Group>
 
       {/* Table */}
       {loading ? (
@@ -352,7 +395,9 @@ export default function Applications_Page() {
           <Stack align="center" gap="xs">
             <IconApps size={48} color="var(--mantine-color-dimmed)"/>
             <Text c="dimmed">{t("apps.noReleases")}</Text>
-            <Button size="sm" onClick={() => { setEditing(null); setModal(true); }}>+ {t("apps.addFirst")}</Button>
+            <Button size="sm" onClick={() => { setEditing(null); setModal(true); }}>
+              + {t("apps.addFirst")}
+            </Button>
           </Stack>
         </Center>
       ) : (
@@ -360,59 +405,67 @@ export default function Applications_Page() {
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>{t("apps.appName")}</Table.Th>
+                <Table.Th>Ilova</Table.Th>
                 <Table.Th>Turi</Table.Th>
-                <Table.Th>{t("apps.platform")}</Table.Th>
-                <Table.Th>{t("apps.version")}</Table.Th>
-                <Table.Th>{t("apps.fileSize")}</Table.Th>
-                <Table.Th>{t("apps.downloadCount")}</Table.Th>
+                <Table.Th>Platforma</Table.Th>
+                <Table.Th>Versiya</Table.Th>
+                <Table.Th>Hajmi</Table.Th>
+                <Table.Th>Yuklab olingan</Table.Th>
                 <Table.Th>{t("common.status")}</Table.Th>
                 <Table.Th>{t("common.actions")}</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {filtered.map(r => (
-                <Table.Tr key={r.id}>
-                  <Table.Td>
-                    <Text size="sm" fw={600}>{r.appName}</Text>
-                    {r.releaseDate && <Text size="xs" c="dimmed">{dayjs(r.releaseDate).format("DD.MM.YYYY")}</Text>}
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge
-                      color={r.platform === "WEB" ? "teal" : "blue"}
-                      variant="light"
-                      leftSection={r.platform === "WEB" ? <IconWorld size={12}/> : <IconDeviceDesktop size={12}/>}
-                    >
-                      {r.platform === "WEB" ? "Online" : "Offline"}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge color={PLATFORM_COLORS[r.platform] ?? "gray"} leftSection={PLATFORM_ICONS[r.platform]} variant="light" size="sm">
-                      {PLATFORM_LABEL[r.platform] ?? r.platform}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td><Text size="sm" ff="monospace">v{r.version}</Text></Table.Td>
-                  <Table.Td>
-                    {r.platform === "WEB"
-                      ? <Text size="xs" c="dimmed" truncate maw={120}>{r.downloadUrl ?? "—"}</Text>
-                      : <Text size="sm" c="dimmed">{r.fileSizeFormatted ?? fmtSize(r.fileSize)}</Text>}
-                  </Table.Td>
-                  <Table.Td><Text size="sm">{(r.downloadCount ?? 0).toLocaleString()}</Text></Table.Td>
-                  <Table.Td>
-                    <Switch size="sm" checked={r.status === "ACTIVE"} onChange={() => handleToggle(r)} color="green" />
-                  </Table.Td>
-                  <Table.Td>
-                    <Group gap={4}>
-                      <Tooltip label={t("common.edit")}>
-                        <ActionIcon variant="light" onClick={() => { setEditing(r); setModal(true); }}><IconEdit size={15}/></ActionIcon>
-                      </Tooltip>
-                      <Tooltip label={t("common.delete")}>
-                        <ActionIcon variant="light" color="red" onClick={() => handleDelete(r)}><IconTrash size={15}/></ActionIcon>
-                      </Tooltip>
-                    </Group>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
+              {filtered.map(r => {
+                const cat = (r.appCategory ?? "OFFLINE") as AppCategory;
+                return (
+                  <Table.Tr key={r.id}>
+                    <Table.Td>
+                      <Text size="sm" fw={600}>{r.appName}</Text>
+                      {r.releaseDate && <Text size="xs" c="dimmed">{dayjs(r.releaseDate).format("DD.MM.YYYY")}</Text>}
+                    </Table.Td>
+                    <Table.Td>
+                      <Badge
+                        color={cat === "ONLINE" ? "teal" : "blue"}
+                        variant="light"
+                        leftSection={cat === "ONLINE" ? <IconCloud size={12}/> : <IconCloudOff size={12}/>}
+                      >
+                        {cat === "ONLINE" ? "Online" : "Offline"}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>
+                      <Badge
+                        color={PLATFORM_COLORS[r.platform] ?? "gray"}
+                        leftSection={PLATFORM_ICONS[r.platform]}
+                        variant="light"
+                        size="sm"
+                      >
+                        {PLATFORM_LABEL[r.platform] ?? r.platform}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td><Text size="sm" ff="monospace">v{r.version}</Text></Table.Td>
+                    <Table.Td><Text size="sm" c="dimmed">{r.fileSizeFormatted ?? fmtSize(r.fileSize)}</Text></Table.Td>
+                    <Table.Td><Text size="sm">{(r.downloadCount ?? 0).toLocaleString()}</Text></Table.Td>
+                    <Table.Td>
+                      <Switch size="sm" checked={r.status === "ACTIVE"} onChange={() => handleToggle(r)} color="green" />
+                    </Table.Td>
+                    <Table.Td>
+                      <Group gap={4}>
+                        <Tooltip label={t("common.edit")}>
+                          <ActionIcon variant="light" onClick={() => { setEditing(r); setModal(true); }}>
+                            <IconEdit size={15}/>
+                          </ActionIcon>
+                        </Tooltip>
+                        <Tooltip label={t("common.delete")}>
+                          <ActionIcon variant="light" color="red" onClick={() => handleDelete(r)}>
+                            <IconTrash size={15}/>
+                          </ActionIcon>
+                        </Tooltip>
+                      </Group>
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })}
             </Table.Tbody>
           </Table>
         </Paper>
