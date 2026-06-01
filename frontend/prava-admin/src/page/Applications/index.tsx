@@ -15,6 +15,7 @@ import {
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import api from "../../services/api";
+import { uploadChunked } from "../../services/applicationService";
 import type { AppReleaseResponse, AppCategory } from "../../features/applications/types";
 import dayjs from "dayjs";
 
@@ -103,32 +104,51 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
     if (!editing && !file) { notifications.show({ color: "red", message: "Faylni tanlang" }); return; }
 
     setSaving(true);
-    const form = new FormData();
-    form.append("appName",     appName.trim());
-    form.append("version",     version.trim());
-    form.append("appCategory", category);
-    form.append("isActive",    String(active));
-    if (desc.trim()) form.append("description", desc.trim());
-    if (file)        form.append("file", file);
 
     try {
-      const endpoint = editing
-        ? `${BASE}/${editing.id}/quick-update`
-        : `${BASE}/quick-upload`;
-      const method = editing ? "put" : "post";
+      // Agar yangi reliz yoki tahrirlashda fayl yangilangan bo'lsa — chunked upload
+      if (file) {
+        await uploadChunked({
+          file,
+          appName:     appName.trim(),
+          version:     version.trim(),
+          description: desc.trim() || undefined,
+          appCategory: category,
+          isActive:    active,
+          releaseId:   editing?.id,  // undefined → yangi, raqam → yangilash
+          onProgress:  setProgress,
+        });
+      } else if (editing) {
+        // Tahrirlash: fayl o'zgarmadi → faqat metadata yangilash (kichik POST)
+        const form = new FormData();
+        form.append("appName",     appName.trim());
+        form.append("version",     version.trim());
+        form.append("appCategory", category);
+        form.append("isActive",    String(active));
+        if (desc.trim()) form.append("description", desc.trim());
 
-      // KATTA fayllar uchun 30 daqiqa timeout (global 10s yetmaydi)
-      await api[method](endpoint, form, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 30 * 60 * 1000, // 30 daqiqa
-        onUploadProgress: (e) => { if (e.total) setProgress(Math.round(e.loaded / e.total * 100)); },
+        await api.put(`${BASE}/${editing.id}/quick-update`, form, {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 30_000,
+        });
+      } else {
+        notifications.show({ color: "red", message: "Faylni tanlang" });
+        setSaving(false);
+        return;
+      }
+
+      notifications.show({
+        color: "green",
+        message: editing ? t("apps.updateSuccess") : t("apps.createSuccess"),
       });
-
-      notifications.show({ color: "green", message: editing ? t("apps.updateSuccess") : t("apps.createSuccess") });
       onSaved();
       onClose();
     } catch (err: any) {
-      notifications.show({ color: "red", title: t("common.error"), message: err?.response?.data?.message ?? String(err) });
+      notifications.show({
+        color: "red",
+        title: t("common.error"),
+        message: err?.response?.data?.message ?? String(err),
+      });
     } finally {
       setSaving(false);
       setProgress(0);

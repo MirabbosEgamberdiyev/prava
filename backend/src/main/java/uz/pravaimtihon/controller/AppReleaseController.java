@@ -199,6 +199,87 @@ public class AppReleaseController {
         return ResponseEntity.ok(ApiResponse.success("Ilova yangilandi", resp));
     }
 
+    // ─── Chunked Upload (katta fayllar uchun: 100MB+) ──────────────────────
+
+    /** 1-qadam: upload session boshlash → uploadId qaytaradi */
+    @PostMapping("/chunk-init")
+    @Operation(summary = "Chunked upload boshlash")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> chunkInit(
+            @RequestBody java.util.Map<String, Object> body,
+            Authentication auth) {
+
+        String fileName = String.valueOf(body.getOrDefault("fileName", ""));
+        long   totalSize = Long.parseLong(String.valueOf(body.getOrDefault("totalSize", "0")));
+
+        String uploadId = service.initChunkUpload(fileName, totalSize, auth.getName());
+        return ResponseEntity.ok(ApiResponse.success(java.util.Map.of(
+                "uploadId",   uploadId,
+                "chunkSize",  5 * 1024 * 1024,   // tavsiya: 5MB
+                "fileName",   fileName,
+                "totalSize",  totalSize
+        )));
+    }
+
+    /** 2-qadam: bo'lakni yuborish */
+    @PostMapping(value = "/chunk-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Bitta chunkni yuborish")
+    public ResponseEntity<ApiResponse<Void>> chunkUpload(
+            @RequestParam("uploadId")   String uploadId,
+            @RequestParam("chunkIndex") int    chunkIndex,
+            @RequestParam("chunk")      MultipartFile chunk) {
+
+        service.uploadChunk(uploadId, chunkIndex, chunk);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    /** 3-qadam: yangi AppRelease yaratish (NEW) */
+    @PostMapping("/chunk-complete")
+    @Operation(summary = "Chunked upload yakunlash — yangi reliz")
+    public ResponseEntity<ApiResponse<AppReleaseResponse>> chunkComplete(
+            @RequestBody java.util.Map<String, Object> body,
+            Authentication auth) {
+
+        String uploadId    = String.valueOf(body.get("uploadId"));
+        String appName     = String.valueOf(body.get("appName"));
+        String version     = String.valueOf(body.get("version"));
+        String description = body.get("description") != null ? String.valueOf(body.get("description")) : null;
+        String appCategory = body.get("appCategory") != null ? String.valueOf(body.get("appCategory")) : "OFFLINE";
+        boolean isActive   = body.get("isActive") == null || Boolean.parseBoolean(String.valueOf(body.get("isActive")));
+
+        AppReleaseResponse resp = service.completeChunkUpload(
+                uploadId, appName, version, description, appCategory, isActive, auth.getName());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Ilova muvaffaqiyatli yuklandi", resp));
+    }
+
+    /** 3-qadam (UPDATE): mavjud relizni yangilash */
+    @PutMapping("/{id}/chunk-complete")
+    @Operation(summary = "Chunked upload yakunlash — mavjud relizni yangilash")
+    public ResponseEntity<ApiResponse<AppReleaseResponse>> chunkCompleteUpdate(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, Object> body,
+            Authentication auth) {
+
+        String uploadId    = String.valueOf(body.get("uploadId"));
+        String appName     = body.get("appName")     != null ? String.valueOf(body.get("appName"))     : null;
+        String version     = body.get("version")     != null ? String.valueOf(body.get("version"))     : null;
+        String description = body.get("description") != null ? String.valueOf(body.get("description")) : null;
+        String appCategory = body.get("appCategory") != null ? String.valueOf(body.get("appCategory")) : null;
+        boolean isActive   = body.get("isActive") == null || Boolean.parseBoolean(String.valueOf(body.get("isActive")));
+
+        AppReleaseResponse resp = service.completeChunkUpdate(
+                id, uploadId, appName, version, description, appCategory, isActive, auth.getName());
+        return ResponseEntity.ok(ApiResponse.success("Ilova yangilandi", resp));
+    }
+
+    /** Optional: upload bekor qilish */
+    @DeleteMapping("/chunk-cancel/{uploadId}")
+    @Operation(summary = "Chunked upload bekor qilish")
+    public ResponseEntity<ApiResponse<Void>> chunkCancel(@PathVariable String uploadId) {
+        service.cancelChunkUpload(uploadId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────
 
     private <E extends Enum<E>> E parseEnum(Class<E> type, String value) {

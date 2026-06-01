@@ -82,4 +82,55 @@ public interface AppReleaseService {
             boolean isActive,
             MultipartFile file,
             String updatedBy);
+
+    // ── Chunked upload (katta fayllar uchun: 100MB+) ─────────────────────
+
+    /**
+     * Chunked upload init: server'da yangi upload session ochadi va uploadId qaytaradi.
+     *
+     * @param fileName  Foydalanuvchi fayl nomi (kengaytma uchun)
+     * @param totalSize Umumiy hajm (validatsiya uchun)
+     * @return uploadId (UUID string)
+     */
+    String initChunkUpload(String fileName, long totalSize, String createdBy);
+
+    /**
+     * Bitta chunk'ni qabul qilib diskka append qiladi.
+     *
+     * @param uploadId   init'dan olingan UUID
+     * @param chunkIndex 0-dan boshlanadi (sequential)
+     * @param chunk      bo'lak (multipart)
+     */
+    void uploadChunk(String uploadId, int chunkIndex, MultipartFile chunk);
+
+    /**
+     * Chunked upload finalize: barcha chunk'lar yuklanganidan keyin
+     * AppRelease yaratadi va faylni installer/ ga ko'chiradi (SHA-256 hisoblash bilan).
+     */
+    AppReleaseResponse completeChunkUpload(
+            String uploadId,
+            String appName,
+            String version,
+            String description,
+            String appCategory,
+            boolean isActive,
+            String createdBy);
+
+    /**
+     * Mavjud release ni chunk upload bilan yangilash.
+     */
+    AppReleaseResponse completeChunkUpdate(
+            Long releaseId,
+            String uploadId,
+            String appName,
+            String version,
+            String description,
+            String appCategory,
+            boolean isActive,
+            String updatedBy);
+
+    /**
+     * Upload session ni bekor qilish va vaqtinchalik fayllarni o'chirish.
+     */
+    void cancelChunkUpload(String uploadId);
 }

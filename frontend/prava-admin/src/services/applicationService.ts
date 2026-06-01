@@ -55,10 +55,7 @@ export const setReleaseLatest = (id: number) =>
     .patch<{ data: AppReleaseResponse }>(`${BASE}/${id}/set-latest`)
     .then((r) => r.data.data);
 
-// ─── File Upload ──────────────────────────────────────────────────────────────
-// MUHIM: katta installer fayllar (1GB gacha) uchun timeout cheksiz.
-// Global timeout 10s — bu yerda alohida 30 daqiqa belgilanadi.
-
+// ─── File Upload (LEGACY: single-shot) ────────────────────────────────────────
 const UPLOAD_TIMEOUT_MS = 30 * 60 * 1000; // 30 daqiqa
 
 export const uploadInstallerFile = (
@@ -80,4 +77,114 @@ export const uploadInstallerFile = (
       },
     })
     .then((r) => r.data.data);
+};
+
+// ─── Chunked Upload (KATTA fayllar uchun: 100MB+) ─────────────────────────────
+// Tavsiya: ushbu funksiyadan foydalaning. Fayl 5MB bo'laklarga bo'linadi va
+// sequential yuboriladi. Bitta chunk uchun 60s timeout — tarmoq sekin bo'lsa ham
+// retry qilinadi. Progressi: 0-95% chunklar, 95-100% finalize.
+
+const CHUNK_SIZE        = 5 * 1024 * 1024;  // 5 MB
+const CHUNK_TIMEOUT_MS  = 60 * 1000;        // 1 daqiqa har chunk
+const MAX_CHUNK_RETRIES = 3;
+
+interface ChunkUploadParams {
+  file:         File;
+  appName:      string;
+  version:      string;
+  description?: string;
+  appCategory:  "ONLINE" | "OFFLINE";
+  isActive:     boolean;
+  onProgress?:  (pct: number) => void;
+  /** Tahrirlash uchun mavjud release id (yangi yaratish uchun undefined) */
+  releaseId?:   number;
+}
+
+/** Sleep yordamchi */
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+/** Bitta chunk yuborish (retry bilan) */
+async function uploadOneChunk(
+  uploadId: string,
+  chunkIndex: number,
+  chunk: Blob
+): Promise<void> {
+  let lastErr: any;
+  for (let attempt = 1; attempt <= MAX_CHUNK_RETRIES; attempt++) {
+    try {
+      const fd = new FormData();
+      fd.append("uploadId",   uploadId);
+      fd.append("chunkIndex", String(chunkIndex));
+      fd.append("chunk",      chunk, `chunk-${chunkIndex}`);
+      await api.post(`${BASE}/chunk-upload`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: CHUNK_TIMEOUT_MS,
+      });
+      return;
+    } catch (e) {
+      lastErr = e;
+      console.warn(`Chunk ${chunkIndex} attempt ${attempt} failed, retrying...`);
+      await sleep(1000 * attempt);
+    }
+  }
+  throw lastErr;
+}
+
+/**
+ * Katta faylni chunklab yuklash. Yangi reliz yoki mavjudni yangilash.
+ * Internet uzilsa har chunk uchun 3 marta retry qiladi.
+ */
+export const uploadChunked = async ({
+  file, appName, version, description, appCategory, isActive,
+  onProgress, releaseId,
+}: ChunkUploadParams): Promise<AppReleaseResponse> => {
+
+  // 1. INIT
+  const initResp = await api.post<{ data: { uploadId: string; chunkSize: number } }>(
+    `${BASE}/chunk-init`,
+    { fileName: file.name, totalSize: file.size },
+    { timeout: 30_000 }
+  );
+  const uploadId  = initResp.data.data.uploadId;
+  const chunkSize = initResp.data.data.chunkSize || CHUNK_SIZE;
+
+  // 2. CHUNKLARNI SEQUENTIAL YUBORISH
+  const totalChunks = Math.ceil(file.size / chunkSize);
+  try {
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * chunkSize;
+      const end   = Math.min(start + chunkSize, file.size);
+      const blob  = file.slice(start, end);
+      await uploadOneChunk(uploadId, i, blob);
+
+      if (onProgress) {
+        // 0 → 95% chunklar uchun
+        const pct = Math.round(((i + 1) / totalChunks) * 95);
+        onProgress(pct);
+      }
+    }
+
+    // 3. FINALIZE
+    if (onProgress) onProgress(96);
+    const endpoint = releaseId
+      ? `${BASE}/${releaseId}/chunk-complete`
+      : `${BASE}/chunk-complete`;
+    const method   = releaseId ? "put" : "post";
+
+    const resp = await api[method]<{ data: AppReleaseResponse }>(
+      endpoint,
+      { uploadId, appName, version, description, appCategory, isActive },
+      { timeout: 5 * 60 * 1000 } // 5 daqiqa — server'da SHA-256 va merge
+    );
+
+    if (onProgress) onProgress(100);
+    return resp.data.data;
+
+  } catch (err) {
+    // Xato bo'lsa session ni bekor qil (vaqtinchalik fayllarni o'chir)
+    try {
+      await api.delete(`${BASE}/chunk-cancel/${uploadId}`, { timeout: 5000 });
+    } catch { /* ignore */ }
+    throw err;
+  }
 };

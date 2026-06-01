@@ -581,4 +581,245 @@ public class AppReleaseServiceImpl implements AppReleaseService {
     private String blankToNull(String s) {
         return (s == null || s.isBlank()) ? null : s;
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Chunked Upload (katta fayllar uchun)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** Vaqtinchalik upload session: ext + chunklar soni + umumiy hajm */
+    private record UploadSession(String fileName, String ext, long totalSize, String createdBy) {}
+
+    /** uploadId → session */
+    private final java.util.concurrent.ConcurrentHashMap<String, UploadSession> uploadSessions
+            = new java.util.concurrent.ConcurrentHashMap<>();
+
+    @Override
+    @Transactional
+    public String initChunkUpload(String fileName, long totalSize, String createdBy) {
+        if (totalSize <= 0 || totalSize > MAX_INSTALLER_SIZE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Fayl hajmi noto'g'ri (max 1GB): " + formatBytes(totalSize));
+        }
+        String ext = extractExtension(fileName);
+        boolean allowed = ALLOWED_EXTENSIONS.contains(ext.toLowerCase())
+                || ".appimage".equalsIgnoreCase(ext);
+        if (!allowed) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Fayl turi qo'llab-quvvatlanmaydi: " + fileName);
+        }
+
+        String uploadId = UUID.randomUUID().toString();
+
+        try {
+            Path tempDir = Paths.get(uploadDir).toAbsolutePath().normalize()
+                    .resolve("installers").resolve(".tmp").resolve(uploadId);
+            Files.createDirectories(tempDir);
+
+            uploadSessions.put(uploadId, new UploadSession(fileName, ext, totalSize, createdBy));
+            log.info("Chunked upload boshlandi: {} ({}), by={}",
+                    uploadId, formatBytes(totalSize), createdBy);
+            return uploadId;
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Upload session yaratishda xato: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void uploadChunk(String uploadId, int chunkIndex, MultipartFile chunk) {
+        UploadSession session = uploadSessions.get(uploadId);
+        if (session == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Upload session topilmadi: " + uploadId);
+        }
+        if (chunk == null || chunk.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bo'sh chunk");
+        }
+        if (chunkIndex < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "chunkIndex < 0");
+        }
+
+        try {
+            Path tempDir = Paths.get(uploadDir).toAbsolutePath().normalize()
+                    .resolve("installers").resolve(".tmp").resolve(uploadId);
+            Files.createDirectories(tempDir);
+            Path chunkFile = tempDir.resolve(String.format("chunk-%06d", chunkIndex));
+
+            try (InputStream in = chunk.getInputStream()) {
+                Files.copy(in, chunkFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            log.error("Chunk yozishda xato: uploadId={}, chunk={}", uploadId, chunkIndex, e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Chunk saqlashda xato: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public AppReleaseResponse completeChunkUpload(String uploadId, String appName, String version,
+                                                  String description, String appCategory,
+                                                  boolean isActive, String createdBy) {
+        UploadSession session = uploadSessions.get(uploadId);
+        if (session == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Upload session topilmadi: " + uploadId);
+        }
+
+        // Chunklarni birlashtiramiz + SHA-256 hisoblaymiz
+        String[] uploaded = mergeChunks(uploadId, session.ext());
+
+        // Platforma fayldan auto-detect
+        AppPlatform platform = detectPlatform(session.fileName());
+        AppType     appType  = detectAppType(session.fileName());
+        if (platform == AppPlatform.WEB) platform = AppPlatform.WINDOWS;
+        if (appType  == AppType.WEB_PWA) appType  = AppType.WINDOWS_EXE;
+
+        String category = normalizeCategory(appCategory);
+        int verCode = parseVersionCode(version);
+
+        AppRelease entity = AppRelease.builder()
+                .appName(appName.trim())
+                .appCategory(category)
+                .platform(platform)
+                .appType(appType)
+                .appVersion(version.trim())
+                .versionCode(verCode)
+                .status(isActive ? AppReleaseStatus.ACTIVE : AppReleaseStatus.DRAFT)
+                .isLatest(false)
+                .isForceUpdate(false)
+                .releaseNotesUzl(description != null ? description.trim() : null)
+                .releaseDate(java.time.LocalDate.now())
+                .downloadUrl(uploaded[0])
+                .fileSize(session.totalSize())
+                .checksum(uploaded[1])
+                .downloadCount(0L)
+                .build();
+
+        AppRelease saved = repo.save(entity);
+
+        if (isActive && !repo.findByPlatformAndAppTypeAndIsLatestTrueAndDeletedFalse(platform, appType).isPresent()) {
+            saved.setIsLatest(true);
+            saved = repo.save(saved);
+        }
+
+        uploadSessions.remove(uploadId);
+        log.info("Chunked upload yakunlandi: {} v{} [{}/{}], size={}, by={}",
+                appName, version, category, platform, formatBytes(session.totalSize()), createdBy);
+        return toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public AppReleaseResponse completeChunkUpdate(Long releaseId, String uploadId, String appName,
+                                                  String version, String description,
+                                                  String appCategory, boolean isActive,
+                                                  String updatedBy) {
+        AppRelease entity = findOrThrow(releaseId);
+        UploadSession session = uploadSessions.get(uploadId);
+        if (session == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Upload session topilmadi: " + uploadId);
+        }
+
+        if (appName != null && !appName.isBlank()) entity.setAppName(appName.trim());
+        if (version != null && !version.isBlank()) {
+            entity.setAppVersion(version.trim());
+            entity.setVersionCode(parseVersionCode(version.trim()));
+        }
+        if (description != null) entity.setReleaseNotesUzl(description.trim());
+        if (appCategory != null && !appCategory.isBlank())
+            entity.setAppCategory(normalizeCategory(appCategory));
+        entity.setStatus(isActive ? AppReleaseStatus.ACTIVE : AppReleaseStatus.DRAFT);
+
+        // Chunklarni birlashtirish + SHA-256
+        String[] uploaded = mergeChunks(uploadId, session.ext());
+
+        AppPlatform platform = detectPlatform(session.fileName());
+        AppType     appType  = detectAppType(session.fileName());
+        if (platform == AppPlatform.WEB) platform = AppPlatform.WINDOWS;
+        if (appType  == AppType.WEB_PWA) appType  = AppType.WINDOWS_EXE;
+        entity.setPlatform(platform);
+        entity.setAppType(appType);
+        entity.setDownloadUrl(uploaded[0]);
+        entity.setFileSize(session.totalSize());
+        entity.setChecksum(uploaded[1]);
+
+        AppRelease saved = repo.save(entity);
+        uploadSessions.remove(uploadId);
+        return toResponse(saved);
+    }
+
+    @Override
+    public void cancelChunkUpload(String uploadId) {
+        uploadSessions.remove(uploadId);
+        try {
+            Path tempDir = Paths.get(uploadDir).toAbsolutePath().normalize()
+                    .resolve("installers").resolve(".tmp").resolve(uploadId);
+            if (Files.exists(tempDir)) {
+                Files.walk(tempDir)
+                        .sorted(java.util.Comparator.reverseOrder())
+                        .forEach(p -> { try { Files.delete(p); } catch (IOException ignored) {} });
+            }
+        } catch (IOException e) {
+            log.warn("Chunk vaqtinchalik fayllarni o'chirishda xato: {}", uploadId, e);
+        }
+    }
+
+    /** Barcha chunklarni final installer fayliga birlashtiradi va SHA-256 qaytaradi. */
+    private String[] mergeChunks(String uploadId, String ext) {
+        try {
+            Path installersDir = Paths.get(uploadDir).toAbsolutePath().normalize().resolve("installers");
+            Files.createDirectories(installersDir);
+
+            String finalName = UUID.randomUUID().toString() + ext;
+            Path target = installersDir.resolve(finalName);
+
+            Path tempDir = installersDir.resolve(".tmp").resolve(uploadId);
+            if (!Files.exists(tempDir)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chunk papkasi topilmadi");
+            }
+
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+            // chunk-000000, chunk-000001, ... tartibida birlashtirish
+            try (java.io.OutputStream out = Files.newOutputStream(target);
+                 java.security.DigestOutputStream dos = new java.security.DigestOutputStream(out, digest);
+                 java.util.stream.Stream<Path> chunks = Files.list(tempDir)) {
+
+                java.util.List<Path> sorted = chunks
+                        .filter(p -> p.getFileName().toString().startsWith("chunk-"))
+                        .sorted()
+                        .toList();
+
+                if (sorted.isEmpty()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hech qanday chunk yuborilmagan");
+                }
+
+                byte[] buffer = new byte[64 * 1024]; // 64KB buffer
+                for (Path chunk : sorted) {
+                    try (InputStream in = Files.newInputStream(chunk)) {
+                        int read;
+                        while ((read = in.read(buffer)) > 0) {
+                            dos.write(buffer, 0, read);
+                        }
+                    }
+                }
+            }
+
+            String sha256 = HexFormat.of().formatHex(digest.digest());
+
+            // Vaqtinchalik fayllarni o'chirish
+            try (java.util.stream.Stream<Path> all = Files.walk(tempDir)) {
+                all.sorted(java.util.Comparator.reverseOrder())
+                   .forEach(p -> { try { Files.delete(p); } catch (IOException ignored) {} });
+            }
+
+            return new String[]{ "/api/v1/files/installers/" + finalName, sha256 };
+
+        } catch (IOException | NoSuchAlgorithmException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Chunklarni birlashtirishda xato: " + e.getMessage());
+        }
+    }
 }

@@ -23,6 +23,10 @@ const api: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  // KATTA fayllar uchun cheksiz (default 10MB)
+  // Per-request timeout bilan birga ishlatiladi (uploadInstallerFile, quickUpload)
+  maxContentLength: Infinity,
+  maxBodyLength:    Infinity,
 });
 
 api.interceptors.request.use(
