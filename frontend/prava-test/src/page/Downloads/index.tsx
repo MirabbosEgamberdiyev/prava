@@ -3,7 +3,7 @@ import useSWR from "swr";
 import { useTranslation } from "react-i18next";
 import i18n from "i18next";
 import {
-  Box, Button, Card, Center, Divider, Group, Modal,
+  Box, Button, Card, Center, Container, Divider, Group, Modal,
   ScrollArea, SimpleGrid, Skeleton, Stack, Tabs, SegmentedControl,
   Text, ThemeIcon, Title, Badge, Code, CopyButton,
   Tooltip, ActionIcon, Alert, Paper,
@@ -232,6 +232,7 @@ export default function Downloads_Page() {
     <>
       <SEO title={t("downloads.pageTitle")} description={t("downloads.pageDesc")} />
 
+      <Container size="xl" py="md" px={{ base: "md", sm: "lg" }}>
       <Stack gap="lg">
         {/* Header */}
         <Group gap="sm">
@@ -335,6 +336,8 @@ export default function Downloads_Page() {
           </SimpleGrid>
         )}
       </Stack>
+
+      </Container>
 
       <DownloadDetailModal r={selected} onClose={() => setSelected(null)}/>
     </>

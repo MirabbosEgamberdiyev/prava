@@ -50,6 +50,11 @@ function AppRoutes() {
 
         <Route path="/try-exam" element={<GuestExam_Page />} />
 
+        {/* PUBLIC: Ilovalar yuklab olish — autentifikatsiya talab qilinmaydi */}
+        <Route path="/downloads" element={<App_Layout />}>
+          <Route index element={<Downloads_Page />} />
+        </Route>
+
         {/* Auth Routes */}
         <Route path="/auth" element={<App_Layout />}>
           <Route path="login" element={<Login_Page />} />
@@ -95,11 +100,6 @@ function AppRoutes() {
           <Route path="/marafon" element={<Marafon_Page />} />
           <Route path="/exam" element={<Exam_Page />} />
           <Route path="/payment/success" element={<PaymentSuccessPage />} />
-
-          {/* Ilovalar yuklab olish */}
-          <Route path="/downloads" element={<User_Layout />}>
-            <Route index element={<Downloads_Page />} />
-          </Route>
         </Route>
 
         {/* SUPER_ADMIN only routes */}
