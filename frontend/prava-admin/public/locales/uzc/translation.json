@@ -133,7 +133,7 @@
       "descEn": "Тавсиф (Инглизча)",
       "descRu": "Тавсиф (Русча)",
       "saveChanges": "Ўзгаришларни сақлаш",
-      "language": ""
+      "language": "Тил"
     },
     "loadError": "Маълумотларни юклашда хато",
     "clearFilters": "Филтрларни тозалаш",
@@ -1047,7 +1047,7 @@
     "deleteSuccess": "Релиз ўчирилди",
     "createSuccess": "Релиз яратилди",
     "updateSuccess": "Релиз янгиланди",
-    "statusChanged": "Ҳолат ўзгартирилди",
+    "statusChanged": "Ҳолат ўзгарди",
     "setLatestSuccess": "Энг сўнгги версия белгиланди",
     "noReleases": "Ҳали релизлар йўқ",
     "addFirst": "Биринчи релизни қўшинг",
@@ -1057,7 +1057,7 @@
     "totalDownloads": "Жами юклаб олишлар",
     "basicInfo": "Асосий маълумотлар",
     "fileInfo": "Файл маълумотлари",
-    "releaseNotes": "Янгиликлар (Release Notes)",
+    "releaseNotes": "Янгиликлар",
     "appName": "Илова номи",
     "platform": "Платформа",
     "appType": "Файл тури",
@@ -1069,7 +1069,7 @@
     "status_DRAFT": "Қоралама",
     "status_ACTIVE": "Фаол",
     "status_DEPRECATED": "Эскирган",
-    "status_YANKED": "Ечиб олинди",
+    "status_YANKED": "Йечиб олинди",
     "isLatest": "Энг сўнгги версия",
     "isLatestDesc": "Бу платформа учун энг янги релиз",
     "isForceUpdate": "Мажбурий янгилаш",
@@ -1082,21 +1082,15 @@
     "searchByName": "Илова номи бўйича қидириш",
     "activate": "Фаоллаштириш",
     "deprecate": "Эскирган деб белгилаш",
-    "yank": "Ечиб олиш",
+    "yank": "Йечиб олиш",
     "toDraft": "Қораламага қайтариш",
     "setLatest": "Энг сўнгги деб белгилаш",
     "uploadFile": "Installer файлни юклаш",
-    "uploadFileDesc": ".exe, .msi, .deb, .rpm, .AppImage, .dmg, .pkg (max 500 MB)",
+    "uploadFileDesc": ".exe, .msi, .deb, .rpm, .AppImage, .dmg, .pkg (макс 1000 МБ)",
     "uploadFilePlaceholder": "Файлни танланг...",
     "orManualUrl": "ёки URL қўлда киритинг",
     "uploading": "Юкланмоқда...",
     "uploadSuccess": "Файл муваффақиятли юкланди",
     "uploadWarning": "Файл юклашда муаммо"
-  },
-  "common": {
-    "loadError": "Маълумотларни юклашда хато",
-    "clearFilters": "Фильтрларни тозалаш",
-    "total": "Жами",
-    "page": "Саҳифа"
   }
 }
