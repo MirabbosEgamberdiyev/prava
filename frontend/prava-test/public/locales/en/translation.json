@@ -210,27 +210,7 @@
     }
   },
   "nav": {
-    "home": "Home",
-    "learn": "Learn",
-    "academy": "Academy",
-    "login_btn": "Log In",
-    "signup_btn": "Sign up",
-    "dashboard": "Dashboard",
-    "mainPage": "Main Page",
-    "examTypes": "Exam types",
-    "realExam": "Real Exam",
-    "competition": "Competition",
-    "topics": "Topics",
-    "packages": "Packages",
-    "marathon": "Marathon",
-    "support": "Support",
-    "donate": "Donate",
-    "ticket": "Tickets",
-    "statistics": "Statistics",
-    "history": "History",
-    "leaderboard": "Leaderboard",
-    "settings": "Settings",
-    "activationCodes": "Activation Codes"
+    "downloads": "Applications"
   },
   "exam": {
     "finish": "Finish",
@@ -454,7 +434,7 @@
     "instagram": "Instagram",
     "donate": "Support the project",
     "contact": "Contact",
-    "copyright": "\u00a9 {{year}} PravaOnline. All rights reserved."
+    "copyright": "© {{year}} PravaOnline. All rights reserved."
   },
   "pwa": {
     "updateTitle": "Update available",
@@ -714,8 +694,5 @@
       "macDrag": "On first launch, click 'Open'",
       "general": "Follow the installation instructions"
     }
-  },
-  "nav": {
-    "downloads": "Applications"
   }
 }

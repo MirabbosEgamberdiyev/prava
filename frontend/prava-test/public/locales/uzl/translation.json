@@ -210,27 +210,7 @@
     }
   },
   "nav": {
-    "home": "Bosh sahifa",
-    "learn": "O'rganish",
-    "academy": "Akademiya",
-    "login_btn": "Tizimga kirish",
-    "signup_btn": "Ro'yxatdan o'tish",
-    "dashboard": "Boshqaruv",
-    "mainPage": "Asosiy Sahifa",
-    "examTypes": "Imtihon turlari",
-    "realExam": "Real Imtihon",
-    "competition": "Musobaqa",
-    "topics": "Mavzular",
-    "packages": "Paketlar",
-    "marathon": "Marafon",
-    "support": "Qo'llab quvvatlash",
-    "donate": "Yordam berish",
-    "ticket": "Biletlar",
-    "statistics": "Statistika",
-    "history": "Tarix",
-    "leaderboard": "Reyting",
-    "settings": "Sozlamalar",
-    "activationCodes": "Activation Codes"
+    "downloads": "Ilovalar"
   },
   "exam": {
     "finish": "Yakunlash",
@@ -454,7 +434,7 @@
     "instagram": "Instagram",
     "donate": "Loyihani qo'llab-quvvatlash",
     "contact": "Aloqa",
-    "copyright": "\u00a9 {{year}} PravaOnline. Barcha huquqlar himoyalangan."
+    "copyright": "© {{year}} PravaOnline. Barcha huquqlar himoyalangan."
   },
   "pwa": {
     "updateTitle": "Yangilanish mavjud",
@@ -714,8 +694,5 @@
       "macDrag": "Birinchi ishga tushirishda 'Open' tugmasini bosing",
       "general": "O'rnatish ko'rsatmalarini bajaring"
     }
-  },
-  "nav": {
-    "downloads": "Ilovalar"
   }
 }

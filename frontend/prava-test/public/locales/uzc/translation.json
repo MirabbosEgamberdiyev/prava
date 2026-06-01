@@ -210,27 +210,7 @@
     }
   },
   "nav": {
-    "home": "Бош саҳифа",
-    "learn": "Ўрганиш",
-    "academy": "Академия",
-    "login_btn": "Тизимга кириш",
-    "signup_btn": "Рўйхатдан ўтиш",
-    "dashboard": "Бошқарув",
-    "mainPage": "Асосий Саҳифа",
-    "examTypes": "Имтиҳон турлари",
-    "realExam": "Реал Имтиҳон",
-    "competition": "Мусобақа",
-    "topics": "Мавзулар",
-    "packages": "Пакетлар",
-    "marathon": "Марафон",
-    "support": "Қўллаб қувватлаш",
-    "donate": "Ёрдам бериш",
-    "ticket": "Билетлар",
-    "statistics": "Статистика",
-    "history": "Тарих",
-    "leaderboard": "Рейтинг",
-    "settings": "Созламалар",
-    "activationCodes": "Активация кодлари"
+    "downloads": "Иловалар"
   },
   "exam": {
     "finish": "Якунлаш",
@@ -454,7 +434,7 @@
     "instagram": "Инстаграм",
     "donate": "Лойиҳани қўллаб-қувватлаш",
     "contact": "Алоқа",
-    "copyright": "\u00a9 {{year}} PravaOnline. Барча ҳуқуқлар ҳимояланган."
+    "copyright": "© {{year}} PravaOnline. Барча ҳуқуқлар ҳимояланган."
   },
   "pwa": {
     "updateTitle": "Янгиланиш мавжуд",
@@ -714,8 +694,5 @@
       "macDrag": "Биринчи ишга туширишда 'Open' тугмасини босинг",
       "general": "Ўрнатиш кўрсатмаларини бажаринг"
     }
-  },
-  "nav": {
-    "downloads": "Иловалар"
   }
 }

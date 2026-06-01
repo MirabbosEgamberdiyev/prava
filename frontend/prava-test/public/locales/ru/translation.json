@@ -130,7 +130,6 @@
   },
   "home": {
     "title": "Права Уз",
-
     "hero": {
       "title": "Готовьтесь к водительским правам",
       "highlight": "онлайн",
@@ -211,27 +210,7 @@
     }
   },
   "nav": {
-    "home": "Главная",
-    "learn": "Обучение",
-    "academy": "Академия",
-    "login_btn": "Войти",
-    "signup_btn": "Регистрация",
-    "dashboard": "Панель управления",
-    "mainPage": "Главная страница",
-    "examTypes": "Типы экзаменов",
-    "realExam": "Реальный экзамен",
-    "competition": "Соревнование",
-    "topics": "Темы",
-    "packages": "Пакеты",
-    "marathon": "Марафон",
-    "support": "Поддержка",
-    "donate": "Помочь",
-    "ticket": "Билеты",
-    "statistics": "Статистика",
-    "history": "История",
-    "leaderboard": "Рейтинг",
-    "settings": "Настройки",
-    "activationCodes": "Коды активации"
+    "downloads": "Приложения"
   },
   "exam": {
     "finish": "Завершить",
@@ -455,7 +434,7 @@
     "instagram": "Instagram",
     "donate": "Поддержать проект",
     "contact": "Контакты",
-    "copyright": "\u00a9 {{year}} PravaOnline. Все права защищены."
+    "copyright": "© {{year}} PravaOnline. Все права защищены."
   },
   "pwa": {
     "updateTitle": "Доступно обновление",
@@ -715,8 +694,5 @@
       "macDrag": "При первом запуске нажмите «Открыть»",
       "general": "Выполните инструкции по установке"
     }
-  },
-  "nav": {
-    "downloads": "Приложения"
   }
 }
