@@ -279,6 +279,13 @@ server:
       charset: UTF-8
       enabled: true
       force: true
+  # Tomcat sozlamalari — 1 GB installer yuklash uchun
+  tomcat:
+    connection-timeout: 900000        # 15 daqiqa (default 20s — katta fayl uchun yetmaydi)
+    keep-alive-timeout:  900000        # 15 daqiqa
+    max-connections:     10000
+    max-http-form-post-size: -1        # cheksiz (multipart limit application.yaml multipart bo'limidan)
+    max-swallow-size:    -1            # multipart parse vaqtida cheksiz
 
 # ✅ FIXED: Actuator Configuration
 management:

@@ -1,6 +1,7 @@
 import { useAuth } from "@/auth/AuthContext";
 import { AppShell, Button, Flex, Group, NavLink } from "@mantine/core";
 import {
+  IconApps,
   IconBrandInstagram,
   IconBrandTelegram,
   IconChevronRight,
@@ -13,6 +14,16 @@ const Navbar = ({ close }: { close: () => void }) => {
   const { isAuthenticated } = useAuth();
   return (
     <AppShell.Navbar py="md" px="sm">
+      {/* Public: Ilovalar yuklab olish */}
+      <NavLink
+        component={Link}
+        to="/downloads"
+        label={t("nav.downloads")}
+        leftSection={<IconApps size={18} />}
+        rightSection={<IconChevronRight size={18} className="mantine-rotate-rtl" />}
+        onClick={close}
+        mb="md"
+      />
       <NavLink
         href="https://instagram.com/pravaonlineuz"
         label="INSTAGRAM"

@@ -15,7 +15,7 @@ import LanguagePicker from "../language/LanguagePicker";
 import ColorMode from "../other/ColorMode";
 import { useAuth } from "../../auth/AuthContext";
 import { Link } from "react-router-dom";
-import { IconBrandInstagram, IconBrandTelegram } from "@tabler/icons-react";
+import { IconApps, IconBrandInstagram, IconBrandTelegram } from "@tabler/icons-react";
 
 export default function Header({
   opened,
@@ -49,8 +49,18 @@ export default function Header({
             </Link>
           </Flex>
 
-          {/* Center: Social links (desktop only) */}
+          {/* Center: Downloads link + Social links (desktop only) */}
           <Group h="100%" gap="xs" visibleFrom="sm" style={{ flexShrink: 0 }}>
+            <Link to="/downloads" style={{ textDecoration: "none" }}>
+              <Button
+                variant="subtle"
+                radius="md"
+                size="sm"
+                leftSection={<IconApps size={16} />}
+              >
+                {t("nav.downloads")}
+              </Button>
+            </Link>
             <Tooltip label="Instagram">
               <ActionIcon
                 component="a"

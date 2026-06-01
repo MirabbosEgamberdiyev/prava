@@ -117,8 +117,10 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
         : `${BASE}/quick-upload`;
       const method = editing ? "put" : "post";
 
+      // KATTA fayllar uchun 30 daqiqa timeout (global 10s yetmaydi)
       await api[method](endpoint, form, {
         headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30 * 60 * 1000, // 30 daqiqa
         onUploadProgress: (e) => { if (e.total) setProgress(Math.round(e.loaded / e.total * 100)); },
       });
 

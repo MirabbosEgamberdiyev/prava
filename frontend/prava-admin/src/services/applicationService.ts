@@ -56,6 +56,10 @@ export const setReleaseLatest = (id: number) =>
     .then((r) => r.data.data);
 
 // ─── File Upload ──────────────────────────────────────────────────────────────
+// MUHIM: katta installer fayllar (1GB gacha) uchun timeout cheksiz.
+// Global timeout 10s — bu yerda alohida 30 daqiqa belgilanadi.
+
+const UPLOAD_TIMEOUT_MS = 30 * 60 * 1000; // 30 daqiqa
 
 export const uploadInstallerFile = (
   id: number,
@@ -68,6 +72,7 @@ export const uploadInstallerFile = (
   return api
     .post<{ data: AppReleaseResponse }>(`${BASE}/${id}/upload`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: UPLOAD_TIMEOUT_MS,
       onUploadProgress: (evt) => {
         if (onProgress && evt.total) {
           onProgress(Math.round((evt.loaded / evt.total) * 100));
