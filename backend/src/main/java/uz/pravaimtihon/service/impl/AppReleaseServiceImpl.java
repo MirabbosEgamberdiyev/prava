@@ -356,6 +356,150 @@ public class AppReleaseServiceImpl implements AppReleaseService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // Quick Upload / Quick Update  (soddalashtirilgan admin uchun)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    @Override
+    @Transactional
+    public AppReleaseResponse quickUpload(String appName, String version, String description,
+                                          boolean isActive, MultipartFile file, String createdBy) {
+        if (file == null || file.isEmpty())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fayl yuklanmagan");
+
+        String origName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "";
+        AppPlatform  platform = detectPlatform(origName);
+        AppType      appType  = detectAppType(origName);
+        int          verCode  = parseVersionCode(version);
+
+        // Fayl serverga yuklash + SHA-256
+        String[] uploaded = saveFileAndHash(file);   // [fileUrl, sha256]
+
+        AppRelease entity = AppRelease.builder()
+                .appName(appName.trim())
+                .platform(platform)
+                .appType(appType)
+                .appVersion(version.trim())
+                .versionCode(verCode)
+                .status(isActive ? AppReleaseStatus.ACTIVE : AppReleaseStatus.DRAFT)
+                .isLatest(false)
+                .isForceUpdate(false)
+                .releaseNotesUzl(description != null ? description.trim() : null)
+                .releaseDate(java.time.LocalDate.now())
+                .downloadUrl(uploaded[0])
+                .fileSize(file.getSize())
+                .checksum(uploaded[1])
+                .downloadCount(0L)
+                .build();
+
+        AppRelease saved = repo.save(entity);
+
+        // Agar bu platforma uchun birinchi active bo'lsa — latest qilamiz
+        if (isActive && !repo.findByPlatformAndAppTypeAndIsLatestTrueAndDeletedFalse(
+                platform, appType).isPresent()) {
+            saved.setIsLatest(true);
+            saved = repo.save(saved);
+        }
+
+        log.info("Quick upload: {} {} {} by {}", appName, version, platform, createdBy);
+        return toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public AppReleaseResponse quickUpdate(Long id, String appName, String version,
+                                          String description, boolean isActive,
+                                          MultipartFile file, String updatedBy) {
+        AppRelease entity = findOrThrow(id);
+
+        if (appName != null && !appName.isBlank())   entity.setAppName(appName.trim());
+        if (version  != null && !version.isBlank())  {
+            entity.setAppVersion(version.trim());
+            entity.setVersionCode(parseVersionCode(version.trim()));
+        }
+        if (description != null) entity.setReleaseNotesUzl(description.trim());
+        entity.setStatus(isActive ? AppReleaseStatus.ACTIVE : AppReleaseStatus.DRAFT);
+
+        // Fayl berilgan bo'lsa — yangilaymiz
+        if (file != null && !file.isEmpty()) {
+            String origName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "";
+            entity.setPlatform(detectPlatform(origName));
+            entity.setAppType(detectAppType(origName));
+            String[] uploaded = saveFileAndHash(file);
+            entity.setDownloadUrl(uploaded[0]);
+            entity.setFileSize(file.getSize());
+            entity.setChecksum(uploaded[1]);
+        }
+
+        AppRelease saved = repo.save(entity);
+        return toResponse(saved);
+    }
+
+    // ── Auto-detect helpers ───────────────────────────────────────────────────
+
+    static AppPlatform detectPlatform(String filename) {
+        String f = filename.toLowerCase();
+        if (f.endsWith(".exe") || f.endsWith(".msi"))                         return AppPlatform.WINDOWS;
+        if (f.endsWith(".deb") || f.endsWith(".rpm") ||
+            f.endsWith(".appimage") || f.endsWith(".tar.gz"))                 return AppPlatform.LINUX;
+        if (f.endsWith(".dmg") || f.endsWith(".pkg") || f.endsWith(".app"))  return AppPlatform.MACOS;
+        return AppPlatform.WEB;
+    }
+
+    static AppType detectAppType(String filename) {
+        String f = filename.toLowerCase();
+        if (f.endsWith(".exe"))      return AppType.WINDOWS_EXE;
+        if (f.endsWith(".msi"))      return AppType.WINDOWS_MSI;
+        if (f.endsWith(".deb"))      return AppType.LINUX_DEB;
+        if (f.endsWith(".rpm"))      return AppType.LINUX_RPM;
+        if (f.endsWith(".appimage")) return AppType.LINUX_APPIMAGE;
+        if (f.endsWith(".tar.gz"))   return AppType.LINUX_TARBALL;
+        if (f.endsWith(".dmg"))      return AppType.MACOS_DMG;
+        if (f.endsWith(".pkg"))      return AppType.MACOS_APP;
+        return AppType.WEB_PWA;
+    }
+
+    /** "1.2.3" → 10203 */
+    static int parseVersionCode(String version) {
+        if (version == null || version.isBlank()) return 1000;
+        try {
+            String[] p = version.trim().replaceAll("[^0-9.]", "").split("\\.");
+            if (p.length >= 3) return Integer.parseInt(p[0]) * 10000 + Integer.parseInt(p[1]) * 100 + Integer.parseInt(p[2]);
+            if (p.length == 2) return Integer.parseInt(p[0]) * 10000 + Integer.parseInt(p[1]) * 100;
+            return Integer.parseInt(p[0]) * 10000;
+        } catch (Exception e) {
+            return 1000;
+        }
+    }
+
+    /**
+     * Faylni diskka saqlaydi va SHA-256 hisoblaydi.
+     * @return [fileUrl, sha256hex]
+     */
+    private String[] saveFileAndHash(MultipartFile file) {
+        if (file.getSize() > MAX_INSTALLER_SIZE)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Fayl juda katta: " + formatBytes(file.getSize()) + " (max 1 GB)");
+        try {
+            Path installersDir = Paths.get(uploadDir).toAbsolutePath().normalize().resolve("installers");
+            Files.createDirectories(installersDir);
+
+            String ext      = extractExtension(file.getOriginalFilename());
+            String fileName = UUID.randomUUID().toString() + ext;
+            Path   target   = installersDir.resolve(fileName);
+
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            try (InputStream in = new DigestInputStream(file.getInputStream(), digest)) {
+                Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+            String sha256 = HexFormat.of().formatHex(digest.digest());
+            return new String[]{ "/api/v1/files/installers/" + fileName, sha256 };
+
+        } catch (IOException | NoSuchAlgorithmException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fayl saqlashda xato: " + e.getMessage());
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // Helpers
     // ─────────────────────────────────────────────────────────────────────────
 

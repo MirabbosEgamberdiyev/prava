@@ -1,887 +1,435 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActionIcon, Badge, Box, Button, Card, Divider, Flex, FileInput,
-  Grid, Group, Modal, NumberInput, Progress, Select, Stack, Switch,
-  Table, Text, TextInput, Textarea, Title, Tooltip,
-  Paper, SimpleGrid, Loader, Center, Anchor, CopyButton,
-  Menu,
+  ActionIcon, Badge, Box, Button, Center, Divider, FileButton,
+  Group, Loader, Modal, Stack, Switch, Table, Text, TextInput,
+  Textarea, Title, Tooltip, Paper, SimpleGrid, ThemeIcon, Progress,
 } from "@mantine/core";
-import { DatePickerInput } from "@mantine/dates";
-import { useForm } from "@mantine/form";
-import { modals } from "@mantine/modals";
-import { notifications } from "@mantine/notifications";
 import {
-  IconApps, IconCheck, IconChevronLeft, IconChevronRight,
-  IconCloudDownload, IconCopy, IconDeviceDesktop, IconDots,
-  IconEdit, IconExternalLink, IconFilter, IconPackage,
-  IconPlayerPlay, IconPlus, IconRefresh, IconSearch,
-  IconStar, IconStarFilled, IconTrash, IconUpload, IconX,
+  IconApps, IconCheck, IconCloudDownload, IconDeviceDesktop,
+  IconEdit, IconFileUpload, IconTerminal2, IconApple,
+  IconPlus, IconRefresh, IconTrash, IconX,
+  IconBrandWindows,
 } from "@tabler/icons-react";
+import { notifications } from "@mantine/notifications";
+import { modals } from "@mantine/modals";
+import api from "../../services/api";
+import type { AppReleaseResponse } from "../../features/applications/types";
 import dayjs from "dayjs";
 
-import {
-  createRelease, deleteRelease, listReleases,
-  setReleaseLatest, setReleaseStatus, updateRelease, uploadInstallerFile,
-} from "../../services/applicationService";
-import type {
-  AppPlatform, AppReleaseFilter, AppReleaseRequest,
-  AppReleaseResponse, AppReleaseStatus, AppType, PageResponse,
-} from "../../features/applications/types";
-import {
-  APP_TYPE_LABELS, PLATFORM_LABELS, PLATFORM_TYPES, STATUS_COLORS,
-} from "../../features/applications/types";
+// ─── API helpers ──────────────────────────────────────────────────────────────
+const BASE = "/api/v1/admin/app-releases";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const PLATFORMS = Object.keys(PLATFORM_LABELS) as AppPlatform[];
-const ALL_STATUSES: AppReleaseStatus[] = ["DRAFT", "ACTIVE", "DEPRECATED", "YANKED"];
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function StatsCard({
-  icon, value, label, color,
-}: {
-  icon: React.ReactNode;
-  value: string | number;
-  label: string;
-  color: string;
-}) {
-  return (
-    <Card withBorder radius="md" p="md">
-      <Group gap="sm">
-        <Box
-          w={40} h={40}
-          style={{
-            borderRadius: 8,
-            background: `var(--mantine-color-${color}-light)`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}
-        >
-          <Box c={`${color}.6`}>{icon}</Box>
-        </Box>
-        <Box>
-          <Text fw={700} size="xl" lh={1}>{value}</Text>
-          <Text size="xs" c="dimmed" mt={2}>{label}</Text>
-        </Box>
-      </Group>
-    </Card>
+async function fetchList(): Promise<AppReleaseResponse[]> {
+  const r = await api.get<{ data: { content: AppReleaseResponse[] } | AppReleaseResponse[] }>(
+    BASE + "?page=0&size=200&sortBy=createdAt&sortDir=desc"
   );
+  const d = r.data.data;
+  return Array.isArray(d) ? d : (d as any).content ?? [];
 }
 
-// ─── Form modal ───────────────────────────────────────────────────────────────
-
-interface FormValues extends Omit<AppReleaseRequest, "releaseDate"> {
-  releaseDate: Date | null;
+async function deleteRelease(id: number) {
+  await api.delete(`${BASE}/${id}`);
 }
 
-function ReleaseFormModal({
+async function toggleStatus(id: number, active: boolean) {
+  await api.patch(`${BASE}/${id}/status`, { status: active ? "ACTIVE" : "DRAFT" });
+}
+
+// ─── Platform helpers ─────────────────────────────────────────────────────────
+const EXT_MAP: Record<string, { platform: string; label: string; icon: React.ReactNode }> = {
+  ".exe":      { platform: "WINDOWS", label: "Windows (.exe)", icon: <IconBrandWindows size={16} /> },
+  ".msi":      { platform: "WINDOWS", label: "Windows (.msi)", icon: <IconBrandWindows size={16} /> },
+  ".deb":      { platform: "LINUX",   label: "Linux (.deb)",   icon: <IconTerminal2 size={16} /> },
+  ".rpm":      { platform: "LINUX",   label: "Linux (.rpm)",   icon: <IconTerminal2 size={16} /> },
+  ".appimage": { platform: "LINUX",   label: "Linux (.AppImage)", icon: <IconTerminal2 size={16} /> },
+  ".tar.gz":   { platform: "LINUX",   label: "Linux (.tar.gz)", icon: <IconTerminal2 size={16} /> },
+  ".dmg":      { platform: "MACOS",   label: "macOS (.dmg)",   icon: <IconApple size={16} /> },
+  ".pkg":      { platform: "MACOS",   label: "macOS (.pkg)",   icon: <IconApple size={16} /> },
+};
+
+function detectFromFilename(name: string) {
+  const lower = name.toLowerCase();
+  if (lower.endsWith(".tar.gz")) return EXT_MAP[".tar.gz"];
+  const ext = lower.slice(lower.lastIndexOf("."));
+  return EXT_MAP[ext] ?? null;
+}
+
+const PLATFORM_COLORS: Record<string, string> = {
+  WINDOWS: "blue", LINUX: "orange", MACOS: "gray",
+};
+
+const PLATFORM_ICONS: Record<string, React.ReactNode> = {
+  WINDOWS: <IconBrandWindows size={14} />,
+  LINUX:   <IconTerminal2 size={14} />,
+  MACOS:   <IconApple size={14} />,
+  WEB:     <IconDeviceDesktop size={14} />,
+};
+
+function fmtSize(bytes?: number | null): string {
+  if (!bytes) return "";
+  if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(1) + " KB";
+  if (bytes < 1024 ** 3) return (bytes / 1024 ** 2).toFixed(1) + " MB";
+  return (bytes / 1024 ** 3).toFixed(2) + " GB";
+}
+
+// ─── Upload modal ─────────────────────────────────────────────────────────────
+function UploadModal({
   opened, onClose, editing, onSaved,
 }: {
-  opened:   boolean;
-  onClose:  () => void;
-  editing:  AppReleaseResponse | null;
-  onSaved:  () => void;
+  opened: boolean;
+  onClose: () => void;
+  editing: AppReleaseResponse | null;
+  onSaved: () => void;
 }) {
   const { t } = useTranslation();
-  const [saving, setSaving]           = useState(false);
-  const [uploadFile, setUploadFile]   = useState<File | null>(null);
-  const [uploadPct, setUploadPct]     = useState(0);
-  const [uploading, setUploading]     = useState(false);
-  const savedIdRef                    = useRef<number | null>(null);
+  const [appName,  setAppName]  = useState("");
+  const [version,  setVersion]  = useState("");
+  const [desc,     setDesc]     = useState("");
+  const [active,   setActive]   = useState(true);
+  const [file,     setFile]     = useState<File | null>(null);
+  const [saving,   setSaving]   = useState(false);
+  const [progress, setProgress] = useState(0);
 
-  const form = useForm<FormValues>({
-    initialValues: {
-      appName:             "",
-      platform:            "WINDOWS",
-      appType:             "WINDOWS_EXE",
-      version:             "",
-      versionCode:         1000,
-      status:              "DRAFT",
-      isLatest:            false,
-      isForceUpdate:       false,
-      minSupportedVersion: "",
-      releaseNotesUzl:     "",
-      releaseNotesUzc:     "",
-      releaseNotesRu:      "",
-      releaseNotesEn:      "",
-      releaseDate:         null,
-      downloadUrl:         "",
-      fileSize:            undefined,
-      checksum:            "",
-    },
-    validate: {
-      appName:     (v) => v.trim() ? null : t("validation.required"),
-      version:     (v) => /^\d+\.\d+\.\d+$/.test(v) ? null : t("apps.versionFormatError"),
-      versionCode: (v) => v > 0 ? null : t("validation.required"),
-      platform:    (v) => v ? null : t("validation.required"),
-      appType:     (v) => v ? null : t("validation.required"),
-    },
-  });
-
-  // Editing bo'lsa formni to'ldirish
   useEffect(() => {
-    if (editing) {
-      form.setValues({
-        appName:             editing.appName,
-        platform:            editing.platform,
-        appType:             editing.appType,
-        version:             editing.version,
-        versionCode:         editing.versionCode,
-        status:              editing.status,
-        isLatest:            editing.isLatest,
-        isForceUpdate:       editing.isForceUpdate,
-        minSupportedVersion: editing.minSupportedVersion ?? "",
-        releaseNotesUzl:     editing.releaseNotesUzl ?? "",
-        releaseNotesUzc:     editing.releaseNotesUzc ?? "",
-        releaseNotesRu:      editing.releaseNotesRu  ?? "",
-        releaseNotesEn:      editing.releaseNotesEn  ?? "",
-        releaseDate:         editing.releaseDate ? new Date(editing.releaseDate) : null,
-        downloadUrl:         editing.downloadUrl ?? "",
-        fileSize:            editing.fileSize,
-        checksum:            editing.checksum ?? "",
-      });
-    } else {
-      form.reset();
+    if (opened) {
+      setAppName(editing?.appName ?? "");
+      setVersion(editing?.version ?? "");
+      setDesc(editing?.releaseNotesUzl ?? "");
+      setActive(editing ? editing.status === "ACTIVE" : true);
+      setFile(null);
+      setProgress(0);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editing, opened]);
+  }, [opened, editing]);
 
-  // Platform o'zgarganda appType ni auto-select qilish
-  const handlePlatformChange = (val: string | null) => {
-    const p = val as AppPlatform;
-    form.setFieldValue("platform", p);
-    const types = PLATFORM_TYPES[p] ?? [];
-    if (types.length > 0) form.setFieldValue("appType", types[0]);
-  };
+  const detected = file ? detectFromFilename(file.name) : null;
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleSave = async () => {
+    if (!appName.trim()) { notifications.show({ color: "red", message: t("apps.appName") + " kiritilmagan" }); return; }
+    if (!version.trim()) { notifications.show({ color: "red", message: t("apps.version") + " kiritilmagan" }); return; }
+    if (!editing && !file) { notifications.show({ color: "red", message: "Fayl yuklanmagan" }); return; }
+
     setSaving(true);
+    const form = new FormData();
+    form.append("appName", appName.trim());
+    form.append("version",  version.trim());
+    if (desc.trim())    form.append("description", desc.trim());
+    form.append("isActive", String(active));
+    if (file) form.append("file", file);
+
     try {
-      const req: AppReleaseRequest = {
-        ...values,
-        releaseDate: values.releaseDate ? dayjs(values.releaseDate).format("YYYY-MM-DD") : undefined,
-        minSupportedVersion: values.minSupportedVersion?.trim() || undefined,
-        downloadUrl: values.downloadUrl?.trim() || undefined,
-        checksum:    values.checksum?.trim()    || undefined,
-      };
+      const endpoint = editing
+        ? `${BASE}/${editing.id}/quick-update`
+        : `${BASE}/quick-upload`;
+      const method   = editing ? "put" : "post";
 
-      let savedId: number;
-      if (editing) {
-        const resp = await updateRelease(editing.id, req);
-        savedId = resp.id;
-        notifications.show({ color: "green", message: t("apps.updateSuccess") });
-      } else {
-        const resp = await createRelease(req);
-        savedId = resp.id;
-        notifications.show({ color: "green", message: t("apps.createSuccess") });
-      }
-      savedIdRef.current = savedId;
+      await api[method](endpoint, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (e) => { if (e.total) setProgress(Math.round(e.loaded / e.total * 100)); },
+      });
 
-      // Fayl tanlangan bo'lsa — yuklash
-      if (uploadFile) {
-        setSaving(false);
-        setUploading(true);
-        setUploadPct(0);
-        try {
-          await uploadInstallerFile(savedId, uploadFile, setUploadPct);
-          notifications.show({ color: "teal", message: t("apps.uploadSuccess") });
-        } catch (uploadErr: any) {
-          notifications.show({
-            color: "orange",
-            title: t("apps.uploadWarning"),
-            message: uploadErr?.response?.data?.message ?? String(uploadErr),
-          });
-        } finally {
-          setUploading(false);
-          setUploadPct(0);
-        }
-      }
-
+      notifications.show({ color: "green", message: editing ? t("apps.updateSuccess") : t("apps.createSuccess") });
       onSaved();
       onClose();
-    } catch (e: any) {
-      notifications.show({
-        color: "red",
-        title: t("common.error"),
-        message: e?.response?.data?.message ?? String(e),
-      });
+    } catch (err: any) {
+      notifications.show({ color: "red", title: t("common.error"), message: err?.response?.data?.message ?? String(err) });
     } finally {
       setSaving(false);
+      setProgress(0);
     }
   };
-
-  const availableTypes = PLATFORM_TYPES[form.values.platform as AppPlatform] ?? [];
 
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      title={
-        <Group gap="xs">
-          <IconPackage size={18} />
-          <Text fw={600}>{editing ? t("apps.editRelease") : t("apps.addRelease")}</Text>
-        </Group>
-      }
-      size="xl"
-      scrollAreaComponent={Modal.NativeScrollArea}
+      title={<Group gap="xs"><IconApps size={18}/><Text fw={700}>{editing ? t("apps.editRelease") : t("apps.addRelease")}</Text></Group>}
+      size="md"
     >
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack gap="md">
+      <Stack gap="md">
+        <Group grow>
+          <TextInput
+            label={t("apps.appName")}
+            placeholder="Prava Online"
+            value={appName}
+            onChange={e => setAppName(e.target.value)}
+            required
+          />
+          <TextInput
+            label={t("apps.version")}
+            placeholder="1.0.0"
+            value={version}
+            onChange={e => setVersion(e.target.value)}
+            required
+          />
+        </Group>
 
-          {/* ── Asosiy ma'lumotlar ── */}
-          <Paper withBorder p="sm" radius="sm">
-            <Text size="sm" fw={600} c="dimmed" mb="sm">{t("apps.basicInfo")}</Text>
-            <Grid>
-              <Grid.Col span={12}>
-                <TextInput
-                  label={t("apps.appName")}
-                  placeholder="Prava Desktop Online"
-                  required
-                  {...form.getInputProps("appName")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <Select
-                  label={t("apps.platform")}
-                  required
-                  data={PLATFORMS.map((p) => ({
-                    value: p,
-                    label: `${PLATFORM_LABELS[p].emoji} ${PLATFORM_LABELS[p].label}`,
-                  }))}
-                  value={form.values.platform}
-                  onChange={handlePlatformChange}
-                  error={form.errors.platform}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <Select
-                  label={t("apps.appType")}
-                  required
-                  data={availableTypes.map((t) => ({
-                    value: t,
-                    label: APP_TYPE_LABELS[t],
-                  }))}
-                  {...form.getInputProps("appType")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 4 }}>
-                <TextInput
-                  label={t("apps.version")}
-                  placeholder="1.2.3"
-                  required
-                  {...form.getInputProps("version")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 4 }}>
-                <NumberInput
-                  label={t("apps.versionCode")}
-                  placeholder="10203"
-                  required
-                  min={1}
-                  {...form.getInputProps("versionCode")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 4 }}>
-                <Select
-                  label={t("apps.status")}
-                  data={ALL_STATUSES.map((s) => ({ value: s, label: t(`apps.status_${s}`) }))}
-                  {...form.getInputProps("status")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <DatePickerInput
-                  label={t("apps.releaseDate")}
-                  placeholder="2025-01-01"
-                  clearable
-                  valueFormat="YYYY-MM-DD"
-                  {...form.getInputProps("releaseDate")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <TextInput
-                  label={t("apps.minSupportedVersion")}
-                  placeholder="1.0.0"
-                  {...form.getInputProps("minSupportedVersion")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <Switch
-                  label={t("apps.isLatest")}
-                  description={t("apps.isLatestDesc")}
-                  checked={form.values.isLatest}
-                  onChange={(e) => form.setFieldValue("isLatest", e.currentTarget.checked)}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <Switch
-                  label={t("apps.isForceUpdate")}
-                  description={t("apps.isForceUpdateDesc")}
-                  color="red"
-                  checked={form.values.isForceUpdate}
-                  onChange={(e) => form.setFieldValue("isForceUpdate", e.currentTarget.checked)}
-                />
-              </Grid.Col>
-            </Grid>
-          </Paper>
-
-          {/* ── Fayl ── */}
-          <Paper withBorder p="sm" radius="sm">
-            <Text size="sm" fw={600} c="dimmed" mb="sm">{t("apps.fileInfo")}</Text>
-            <Grid>
-              {/* Fayl yuklash */}
-              <Grid.Col span={12}>
-                <FileInput
-                  label={t("apps.uploadFile")}
-                  description={t("apps.uploadFileDesc")}
-                  placeholder={t("apps.uploadFilePlaceholder")}
-                  leftSection={<IconUpload size={14} />}
-                  accept=".exe,.msi,.deb,.rpm,.AppImage,.dmg,.pkg,.tar.gz,.zip"
-                  clearable
-                  value={uploadFile}
-                  onChange={setUploadFile}
-                />
-                {uploadFile && (
-                  <Text size="xs" c="dimmed" mt={4}>
-                    {uploadFile.name} — {(uploadFile.size / 1024 / 1024).toFixed(1)} MB
-                  </Text>
+        {/* File upload area */}
+        <Box>
+          <Text size="sm" fw={500} mb={6}>{t("apps.uploadFile")} {!editing && <span style={{color:"red"}}>*</span>}</Text>
+          <FileButton
+            onChange={setFile}
+            accept=".exe,.msi,.deb,.rpm,.AppImage,.dmg,.pkg,.tar.gz,.zip"
+          >
+            {(props) => (
+              <Paper
+                {...props}
+                withBorder
+                radius="md"
+                p="md"
+                style={{
+                  cursor: "pointer",
+                  textAlign: "center",
+                  borderStyle: "dashed",
+                  borderColor: file ? "var(--mantine-color-green-5)" : "var(--mantine-color-dimmed)",
+                  background: file ? "var(--mantine-color-green-0)" : undefined,
+                  transition: "all .15s",
+                }}
+              >
+                {file ? (
+                  <Stack gap={4} align="center">
+                    <ThemeIcon color="green" variant="light" size="lg" radius="xl">
+                      <IconCheck size={20} />
+                    </ThemeIcon>
+                    <Text size="sm" fw={600}>{file.name}</Text>
+                    {detected && (
+                      <Group gap={4}>
+                        <Badge color={PLATFORM_COLORS[detected.platform]} leftSection={detected.icon} size="sm">
+                          {detected.label}
+                        </Badge>
+                        <Text size="xs" c="dimmed">— {fmtSize(file.size)}</Text>
+                      </Group>
+                    )}
+                    <Text size="xs" c="dimmed">(qayta tanlash uchun bosing)</Text>
+                  </Stack>
+                ) : (
+                  <Stack gap={4} align="center">
+                    <ThemeIcon variant="light" size="lg" radius="xl"><IconFileUpload size={20} /></ThemeIcon>
+                    <Text size="sm" fw={500}>Faylni tanlang yoki shu yerga tashlang</Text>
+                    <Text size="xs" c="dimmed">.exe · .msi · .deb · .rpm · .AppImage · .dmg · .pkg</Text>
+                    {editing?.downloadUrl && <Text size="xs" c="green">Hozirgi fayl saqlanadi (agar yangi berilmasa)</Text>}
+                  </Stack>
                 )}
-              </Grid.Col>
-
-              {/* Yoki URL qo'lda kiritish */}
-              <Grid.Col span={12}>
-                <Text size="xs" c="dimmed" ta="center">— {t("apps.orManualUrl")} —</Text>
-              </Grid.Col>
-              <Grid.Col span={12}>
-                <TextInput
-                  label={t("apps.downloadUrl")}
-                  placeholder="https://github.com/... yoki /api/v1/files/..."
-                  leftSection={<IconExternalLink size={14} />}
-                  disabled={!!uploadFile}
-                  {...form.getInputProps("downloadUrl")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <NumberInput
-                  label={t("apps.fileSize")}
-                  placeholder="Baytlarda (auto fayl yuklanganda)"
-                  min={0}
-                  disabled={!!uploadFile}
-                  {...form.getInputProps("fileSize")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <TextInput
-                  label="SHA-256 Checksum"
-                  placeholder="Auto-hisoblanadi yoki qo'lda kiriting"
-                  disabled={!!uploadFile}
-                  {...form.getInputProps("checksum")}
-                />
-              </Grid.Col>
-            </Grid>
-
-            {/* Upload progress */}
-            {uploading && (
-              <Box mt="sm">
-                <Text size="xs" c="dimmed" mb={4}>{t("apps.uploading")} {uploadPct}%</Text>
-                <Progress value={uploadPct} animated striped />
-              </Box>
+              </Paper>
             )}
-          </Paper>
+          </FileButton>
+        </Box>
 
-          {/* ── Release notes ── */}
-          <Paper withBorder p="sm" radius="sm">
-            <Text size="sm" fw={600} c="dimmed" mb="sm">{t("apps.releaseNotes")}</Text>
-            <Grid>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <Textarea
-                  label="O'zbekcha (lotin)"
-                  placeholder="Yangiliklar..."
-                  rows={3}
-                  {...form.getInputProps("releaseNotesUzl")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <Textarea
-                  label="O'zbekcha (kirill)"
-                  placeholder="Янгиликлар..."
-                  rows={3}
-                  {...form.getInputProps("releaseNotesUzc")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <Textarea
-                  label="Ruscha"
-                  placeholder="Что нового..."
-                  rows={3}
-                  {...form.getInputProps("releaseNotesRu")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <Textarea
-                  label="English"
-                  placeholder="What's new..."
-                  rows={3}
-                  {...form.getInputProps("releaseNotesEn")}
-                />
-              </Grid.Col>
-            </Grid>
-          </Paper>
+        <Textarea
+          label={`${t("apps.releaseNotes")} (ixtiyoriy)`}
+          placeholder="Bu versiyada nima yangi..."
+          rows={3}
+          value={desc}
+          onChange={e => setDesc(e.target.value)}
+        />
 
-          <Group justify="flex-end" mt="xs">
-            <Button variant="default" onClick={onClose} disabled={saving || uploading}>
-              {t("common.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              loading={saving || uploading}
-              leftSection={<IconCheck size={16} />}
-              disabled={saving || uploading}
-            >
-              {uploading
-                ? `${t("apps.uploading")} ${uploadPct}%`
-                : editing ? t("common.save") : t("apps.create")}
-            </Button>
-          </Group>
-        </Stack>
-      </form>
+        <Switch
+          label={<Text size="sm">{t("common.active")}</Text>}
+          checked={active}
+          onChange={e => setActive(e.currentTarget.checked)}
+        />
+
+        {saving && progress > 0 && (
+          <Box>
+            <Text size="xs" c="dimmed" mb={4}>Yuklanmoqda... {progress}%</Text>
+            <Progress value={progress} animated size="sm" />
+          </Box>
+        )}
+
+        <Divider />
+        <Group justify="flex-end">
+          <Button variant="default" onClick={onClose} disabled={saving}>{t("common.cancel")}</Button>
+          <Button onClick={handleSave} loading={saving} leftSection={<IconCheck size={15} />}>
+            {saving ? `${progress}%` : editing ? t("common.save") : t("apps.create")}
+          </Button>
+        </Group>
+      </Stack>
     </Modal>
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
-
+// ─── Main page ────────────────────────────────────────────────────────────────
 export default function Applications_Page() {
   const { t } = useTranslation();
+  const [items,   setItems]   = useState<AppReleaseResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search,  setSearch]  = useState("");
+  const [modal,   setModal]   = useState(false);
+  const [editing, setEditing] = useState<AppReleaseResponse | null>(null);
 
-  // ── State ────────────────────────────────────────────────────────────────
-  const [data, setData]           = useState<PageResponse<AppReleaseResponse> | null>(null);
-  const [loading, setLoading]     = useState(true);
-  const [formOpen, setFormOpen]   = useState(false);
-  const [editing, setEditing]     = useState<AppReleaseResponse | null>(null);
-
-  const [filter, setFilter] = useState<AppReleaseFilter>({
-    page: 0, size: 15, sortBy: "releaseDate", sortDir: "desc",
-  });
-
-  // Summary stats
-  const totalDownloads = data?.content.reduce((s, r) => s + (r.downloadCount ?? 0), 0) ?? 0;
-  const activeCount    = data?.content.filter((r) => r.status === "ACTIVE").length ?? 0;
-  const latestCount    = data?.content.filter((r) => r.isLatest).length ?? 0;
-
-  // ── Load ─────────────────────────────────────────────────────────────────
-  const load = useCallback(async () => {
+  const load = () => {
     setLoading(true);
-    try {
-      const res = await listReleases(filter);
-      setData(res);
-    } catch {
-      notifications.show({ color: "red", message: t("common.loadError") });
-    } finally {
-      setLoading(false);
-    }
-  }, [filter, t]);
+    fetchList()
+      .then(setItems)
+      .catch(() => notifications.show({ color: "red", message: t("common.loadError") }))
+      .finally(() => setLoading(false));
+  };
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(load, []);
 
-  // ── Actions ──────────────────────────────────────────────────────────────
-  const handleAdd    = () => { setEditing(null); setFormOpen(true); };
-  const handleEdit   = (r: AppReleaseResponse) => { setEditing(r);  setFormOpen(true); };
-  const handleSaved  = () => load();
+  const filtered = items.filter(it =>
+    !search || it.appName?.toLowerCase().includes(search.toLowerCase()) ||
+    it.version?.toLowerCase().includes(search.toLowerCase())
+  );
 
-  const handleDelete = (id: number, name: string) => {
+  const totalDl   = items.reduce((s, r) => s + (r.downloadCount ?? 0), 0);
+  const activeCount = items.filter(r => r.status === "ACTIVE").length;
+
+  const handleEdit = (r: AppReleaseResponse) => { setEditing(r); setModal(true); };
+
+  const handleDelete = (r: AppReleaseResponse) => {
     modals.openConfirmModal({
       title: t("apps.deleteTitle"),
-      children: <Text size="sm">{t("apps.deleteConfirm", { name })}</Text>,
+      children: <Text size="sm">{t("apps.deleteConfirm", { name: `${r.appName} v${r.version}` })}</Text>,
       labels: { confirm: t("common.delete"), cancel: t("common.cancel") },
       confirmProps: { color: "red" },
-      onConfirm: async () => {
-        try {
-          await deleteRelease(id);
-          notifications.show({ color: "green", message: t("apps.deleteSuccess") });
-          load();
-        } catch (e: any) {
-          notifications.show({ color: "red", message: e?.response?.data?.message ?? String(e) });
-        }
-      },
+      onConfirm: () =>
+        deleteRelease(r.id)
+          .then(() => { notifications.show({ color: "green", message: t("apps.deleteSuccess") }); load(); })
+          .catch(() => notifications.show({ color: "red", message: t("common.error") })),
     });
   };
 
-  const handleSetStatus = async (id: number, status: AppReleaseStatus) => {
-    try {
-      await setReleaseStatus(id, status);
-      notifications.show({ color: "green", message: t("apps.statusChanged") });
-      load();
-    } catch (e: any) {
-      notifications.show({ color: "red", message: e?.response?.data?.message ?? String(e) });
-    }
+  const handleToggle = (r: AppReleaseResponse) => {
+    const next = r.status !== "ACTIVE";
+    toggleStatus(r.id, next)
+      .then(load)
+      .catch(() => notifications.show({ color: "red", message: t("common.error") }));
   };
 
-  const handleSetLatest = async (id: number) => {
-    try {
-      await setReleaseLatest(id);
-      notifications.show({ color: "teal", message: t("apps.setLatestSuccess") });
-      load();
-    } catch (e: any) {
-      notifications.show({ color: "red", message: e?.response?.data?.message ?? String(e) });
-    }
-  };
-
-  // ── Pagination ────────────────────────────────────────────────────────────
-  const goPage = (p: number) => setFilter((f) => ({ ...f, page: p }));
-
-  // ─────────────────────────────────────────────────────────────────────────
   return (
-    <Stack gap="lg">
-
+    <Box>
       {/* Header */}
-      <Group justify="space-between">
-        <Group gap="xs">
-          <IconApps size={24} />
+      <Group justify="space-between" mb="md">
+        <Group gap="sm">
+          <ThemeIcon size="lg" radius="md" variant="gradient" gradient={{ from: "blue", to: "cyan", deg: 45 }}>
+            <IconApps size={20} />
+          </ThemeIcon>
           <Title order={3}>{t("nav.applications")}</Title>
-          {data && (
-            <Badge variant="light" size="lg">
-              {data.totalElements}
-            </Badge>
-          )}
         </Group>
         <Group>
-          <ActionIcon variant="subtle" onClick={load} loading={loading}>
-            <IconRefresh size={18} />
+          <ActionIcon variant="default" onClick={load} title={t("common.refresh")}>
+            <IconRefresh size={16} />
           </ActionIcon>
-          <Button leftSection={<IconPlus size={16} />} onClick={handleAdd}>
+          <Button leftSection={<IconPlus size={16} />} onClick={() => { setEditing(null); setModal(true); }}>
             {t("apps.addRelease")}
           </Button>
         </Group>
       </Group>
 
       {/* Stats */}
-      <SimpleGrid cols={{ base: 2, sm: 4 }}>
-        <StatsCard
-          icon={<IconApps size={20} />}
-          value={data?.totalElements ?? 0}
-          label={t("apps.totalReleases")}
-          color="blue"
-        />
-        <StatsCard
-          icon={<IconPlayerPlay size={20} />}
-          value={activeCount}
-          label={t("apps.activeReleases")}
-          color="green"
-        />
-        <StatsCard
-          icon={<IconStarFilled size={20} />}
-          value={latestCount}
-          label={t("apps.latestReleases")}
-          color="yellow"
-        />
-        <StatsCard
-          icon={<IconCloudDownload size={20} />}
-          value={totalDownloads.toLocaleString()}
-          label={t("apps.totalDownloads")}
-          color="teal"
-        />
+      <SimpleGrid cols={{ base: 2, sm: 3 }} mb="md">
+        {[
+          { label: t("apps.totalReleases"),   value: items.length,  color: "blue",  icon: <IconApps size={18}/> },
+          { label: t("apps.activeReleases"),  value: activeCount,   color: "green", icon: <IconCheck size={18}/> },
+          { label: t("apps.totalDownloads"),  value: totalDl,       color: "teal",  icon: <IconCloudDownload size={18}/> },
+        ].map(s => (
+          <Paper key={s.label} withBorder radius="md" p="sm">
+            <Group>
+              <ThemeIcon color={s.color} variant="light" size="md">{s.icon}</ThemeIcon>
+              <Box>
+                <Text size="xl" fw={700}>{s.value.toLocaleString()}</Text>
+                <Text size="xs" c="dimmed">{s.label}</Text>
+              </Box>
+            </Group>
+          </Paper>
+        ))}
       </SimpleGrid>
 
-      {/* Filters */}
-      <Card withBorder radius="md" p="sm">
-        <Grid align="flex-end" gutter="sm">
-          <Grid.Col span={{ base: 12, sm: 3 }}>
-            <TextInput
-              placeholder={t("apps.searchByName")}
-              leftSection={<IconSearch size={14} />}
-              value={filter.appName ?? ""}
-              onChange={(e) => setFilter((f) => ({ ...f, appName: e.target.value, page: 0 }))}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 6, sm: 2 }}>
-            <Select
-              placeholder={t("apps.platform")}
-              clearable
-              data={PLATFORMS.map((p) => ({
-                value: p, label: `${PLATFORM_LABELS[p].emoji} ${PLATFORM_LABELS[p].label}`,
-              }))}
-              value={filter.platform ?? null}
-              onChange={(v) => setFilter((f) => ({
-                ...f, platform: (v as AppPlatform) ?? undefined, page: 0,
-              }))}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 6, sm: 2 }}>
-            <Select
-              placeholder={t("apps.status")}
-              clearable
-              data={ALL_STATUSES.map((s) => ({ value: s, label: t(`apps.status_${s}`) }))}
-              value={filter.status ?? null}
-              onChange={(v) => setFilter((f) => ({
-                ...f, status: (v as AppReleaseStatus) ?? undefined, page: 0,
-              }))}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 2 }}>
-            <TextInput
-              placeholder={t("apps.versionSearch")}
-              leftSection={<IconFilter size={14} />}
-              value={filter.version ?? ""}
-              onChange={(e) => setFilter((f) => ({ ...f, version: e.target.value, page: 0 }))}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 3 }}>
-            <Button
-              variant="subtle"
-              leftSection={<IconX size={14} />}
-              onClick={() => setFilter({ page: 0, size: 15, sortBy: "releaseDate", sortDir: "desc" })}
-            >
-              {t("common.clearFilters")}
-            </Button>
-          </Grid.Col>
-        </Grid>
-      </Card>
+      {/* Search */}
+      <TextInput
+        placeholder={t("apps.searchByName")}
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        mb="md"
+        leftSection={<IconApps size={14} />}
+        rightSection={search ? <ActionIcon variant="subtle" onClick={() => setSearch("")}><IconX size={14}/></ActionIcon> : null}
+      />
 
       {/* Table */}
-      <Card withBorder radius="md" p={0}>
-        {loading ? (
-          <Center p="xl"><Loader /></Center>
-        ) : !data?.content.length ? (
-          <Center p="xl">
-            <Stack align="center" gap="xs">
-              <IconApps size={48} color="gray" />
-              <Text c="dimmed">{t("apps.noReleases")}</Text>
-              <Button size="sm" leftSection={<IconPlus size={14} />} onClick={handleAdd}>
-                {t("apps.addFirst")}
-              </Button>
-            </Stack>
-          </Center>
-        ) : (
-          <Table.ScrollContainer minWidth={800}>
-            <Table striped highlightOnHover withColumnBorders verticalSpacing="sm">
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>{t("apps.appName")}</Table.Th>
-                  <Table.Th>{t("apps.platform")}</Table.Th>
-                  <Table.Th>{t("apps.version")}</Table.Th>
-                  <Table.Th>{t("apps.status")}</Table.Th>
-                  <Table.Th>{t("apps.releaseDate")}</Table.Th>
-                  <Table.Th>{t("apps.fileSize")}</Table.Th>
-                  <Table.Th>{t("apps.downloadCount")}</Table.Th>
-                  <Table.Th w={80}>{t("common.actions")}</Table.Th>
+      {loading ? (
+        <Center py={60}><Loader /></Center>
+      ) : filtered.length === 0 ? (
+        <Center py={60}>
+          <Stack align="center" gap="xs">
+            <IconApps size={48} color="var(--mantine-color-dimmed)" />
+            <Text c="dimmed">{t("apps.noReleases")}</Text>
+            <Button size="sm" onClick={() => { setEditing(null); setModal(true); }}>
+              + {t("apps.addFirst")}
+            </Button>
+          </Stack>
+        </Center>
+      ) : (
+        <Paper withBorder radius="md">
+          <Table striped highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>{t("apps.appName")}</Table.Th>
+                <Table.Th>{t("apps.platform")}</Table.Th>
+                <Table.Th>{t("apps.version")}</Table.Th>
+                <Table.Th>{t("apps.fileSize")}</Table.Th>
+                <Table.Th>{t("apps.downloadCount")}</Table.Th>
+                <Table.Th>{t("common.status")}</Table.Th>
+                <Table.Th>{t("common.actions")}</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {filtered.map(r => (
+                <Table.Tr key={r.id}>
+                  <Table.Td>
+                    <Text size="sm" fw={600}>{r.appName}</Text>
+                    {r.releaseDate && <Text size="xs" c="dimmed">{dayjs(r.releaseDate).format("DD.MM.YYYY")}</Text>}
+                  </Table.Td>
+                  <Table.Td>
+                    <Badge color={PLATFORM_COLORS[r.platform] ?? "gray"} leftSection={PLATFORM_ICONS[r.platform]} variant="light">
+                      {r.platform}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm" ff="monospace">v{r.version}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm" c="dimmed">{r.fileSizeFormatted ?? fmtSize(r.fileSize)}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">{(r.downloadCount ?? 0).toLocaleString()}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Switch
+                      size="sm"
+                      checked={r.status === "ACTIVE"}
+                      onChange={() => handleToggle(r)}
+                      color="green"
+                    />
+                  </Table.Td>
+                  <Table.Td>
+                    <Group gap={4}>
+                      <Tooltip label={t("common.edit")}>
+                        <ActionIcon variant="light" onClick={() => handleEdit(r)}>
+                          <IconEdit size={15} />
+                        </ActionIcon>
+                      </Tooltip>
+                      <Tooltip label={t("common.delete")}>
+                        <ActionIcon variant="light" color="red" onClick={() => handleDelete(r)}>
+                          <IconTrash size={15} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Group>
+                  </Table.Td>
                 </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {data.content.map((r) => {
-                  const pl = PLATFORM_LABELS[r.platform];
-                  return (
-                    <Table.Tr key={r.id}>
-                      {/* App name + type + badges */}
-                      <Table.Td>
-                        <Stack gap={2}>
-                          <Group gap="xs">
-                            <Text fw={600} size="sm">{r.appName}</Text>
-                            {r.isLatest && (
-                              <Tooltip label={t("apps.isLatest")}>
-                                <Badge color="yellow" size="xs" leftSection={<IconStarFilled size={10} />}>
-                                  Latest
-                                </Badge>
-                              </Tooltip>
-                            )}
-                            {r.isForceUpdate && (
-                              <Badge color="red" size="xs">Force</Badge>
-                            )}
-                          </Group>
-                          <Text size="xs" c="dimmed">{APP_TYPE_LABELS[r.appType]}</Text>
-                        </Stack>
-                      </Table.Td>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Paper>
+      )}
 
-                      {/* Platform */}
-                      <Table.Td>
-                        <Badge color={pl.color} variant="light" leftSection={<span>{pl.emoji}</span>}>
-                          {pl.label}
-                        </Badge>
-                      </Table.Td>
-
-                      {/* Version */}
-                      <Table.Td>
-                        <Text size="sm" ff="monospace" fw={500}>v{r.version}</Text>
-                        <Text size="xs" c="dimmed">#{r.versionCode}</Text>
-                      </Table.Td>
-
-                      {/* Status */}
-                      <Table.Td>
-                        <Badge color={STATUS_COLORS[r.status]} variant="light">
-                          {t(`apps.status_${r.status}`)}
-                        </Badge>
-                      </Table.Td>
-
-                      {/* Release date */}
-                      <Table.Td>
-                        <Text size="sm">
-                          {r.releaseDate ? dayjs(r.releaseDate).format("DD.MM.YYYY") : "—"}
-                        </Text>
-                      </Table.Td>
-
-                      {/* File size */}
-                      <Table.Td>
-                        <Text size="sm">{r.fileSizeFormatted ?? "—"}</Text>
-                        {r.checksum && (
-                          <CopyButton value={r.checksum} timeout={2000}>
-                            {({ copied, copy }) => (
-                              <Tooltip label={copied ? "Nusxalandi!" : "SHA-256 nusxalash"}>
-                                <Anchor size="xs" c="dimmed" onClick={copy} style={{ cursor: "pointer" }}>
-                                  <Group gap={2}>
-                                    {copied ? <IconCheck size={10} /> : <IconCopy size={10} />}
-                                    {r.checksum!.slice(0, 8)}...
-                                  </Group>
-                                </Anchor>
-                              </Tooltip>
-                            )}
-                          </CopyButton>
-                        )}
-                      </Table.Td>
-
-                      {/* Downloads */}
-                      <Table.Td>
-                        <Group gap={4}>
-                          <IconCloudDownload size={14} />
-                          <Text size="sm">{r.downloadCount.toLocaleString()}</Text>
-                        </Group>
-                        {r.downloadUrl && (
-                          <Anchor
-                            size="xs" c="blue"
-                            href={r.downloadUrl} target="_blank"
-                          >
-                            <Group gap={2}>
-                              <IconExternalLink size={10} />
-                              Link
-                            </Group>
-                          </Anchor>
-                        )}
-                      </Table.Td>
-
-                      {/* Actions */}
-                      <Table.Td>
-                        <Menu shadow="md" width={220}>
-                          <Menu.Target>
-                            <ActionIcon variant="subtle">
-                              <IconDots size={16} />
-                            </ActionIcon>
-                          </Menu.Target>
-                          <Menu.Dropdown>
-                            <Menu.Item
-                              leftSection={<IconEdit size={14} />}
-                              onClick={() => handleEdit(r)}
-                            >
-                              {t("common.edit")}
-                            </Menu.Item>
-
-                            <Menu.Divider />
-
-                            {/* Status o'zgartirish */}
-                            {r.status !== "ACTIVE" && (
-                              <Menu.Item
-                                leftSection={<IconPlayerPlay size={14} />}
-                                color="green"
-                                onClick={() => handleSetStatus(r.id, "ACTIVE")}
-                              >
-                                {t("apps.activate")}
-                              </Menu.Item>
-                            )}
-                            {r.status !== "DEPRECATED" && r.status !== "DRAFT" && (
-                              <Menu.Item
-                                leftSection={<IconX size={14} />}
-                                color="yellow"
-                                onClick={() => handleSetStatus(r.id, "DEPRECATED")}
-                              >
-                                {t("apps.deprecate")}
-                              </Menu.Item>
-                            )}
-                            {r.status !== "YANKED" && (
-                              <Menu.Item
-                                leftSection={<IconX size={14} />}
-                                color="red"
-                                onClick={() => handleSetStatus(r.id, "YANKED")}
-                              >
-                                {t("apps.yank")}
-                              </Menu.Item>
-                            )}
-                            {r.status !== "DRAFT" && (
-                              <Menu.Item
-                                leftSection={<IconDeviceDesktop size={14} />}
-                                color="gray"
-                                onClick={() => handleSetStatus(r.id, "DRAFT")}
-                              >
-                                {t("apps.toDraft")}
-                              </Menu.Item>
-                            )}
-
-                            {/* Set latest */}
-                            {r.status === "ACTIVE" && !r.isLatest && (
-                              <>
-                                <Menu.Divider />
-                                <Menu.Item
-                                  leftSection={<IconStar size={14} />}
-                                  color="yellow"
-                                  onClick={() => handleSetLatest(r.id)}
-                                >
-                                  {t("apps.setLatest")}
-                                </Menu.Item>
-                              </>
-                            )}
-
-                            <Menu.Divider />
-                            <Menu.Item
-                              leftSection={<IconTrash size={14} />}
-                              color="red"
-                              onClick={() => handleDelete(r.id, `${r.appName} v${r.version}`)}
-                            >
-                              {t("common.delete")}
-                            </Menu.Item>
-                          </Menu.Dropdown>
-                        </Menu>
-                      </Table.Td>
-                    </Table.Tr>
-                  );
-                })}
-              </Table.Tbody>
-            </Table>
-          </Table.ScrollContainer>
-        )}
-
-        {/* Pagination */}
-        {data && data.totalPages > 1 && (
-          <>
-            <Divider />
-            <Group justify="space-between" px="md" py="sm">
-              <Text size="sm" c="dimmed">
-                {t("common.total")}: {data.totalElements} | {t("common.page")} {data.number + 1} / {data.totalPages}
-              </Text>
-              <Group gap="xs">
-                <ActionIcon
-                  variant="default"
-                  disabled={data.first}
-                  onClick={() => goPage(data.number - 1)}
-                >
-                  <IconChevronLeft size={16} />
-                </ActionIcon>
-                <ActionIcon
-                  variant="default"
-                  disabled={data.last}
-                  onClick={() => goPage(data.number + 1)}
-                >
-                  <IconChevronRight size={16} />
-                </ActionIcon>
-              </Group>
-            </Group>
-          </>
-        )}
-      </Card>
-
-      {/* Form Modal */}
-      <ReleaseFormModal
-        opened={formOpen}
-        onClose={() => setFormOpen(false)}
+      {/* Modal */}
+      <UploadModal
+        opened={modal}
+        onClose={() => setModal(false)}
         editing={editing}
-        onSaved={handleSaved}
+        onSaved={load}
       />
-    </Stack>
+    </Box>
   );
 }

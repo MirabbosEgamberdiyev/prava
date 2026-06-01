@@ -52,13 +52,31 @@ public interface AppReleaseService {
 
     // ── File upload ───────────────────────────────────────────────────────
 
-    /**
-     * Installer faylini serverga yuklaydi va SHA-256 hisoblab saqlaydi.
-     *
-     * @param id        AppRelease ID
-     * @param file      Multipart installer fayli (.exe, .msi, .deb, .rpm, .AppImage, .dmg, .pkg)
-     * @param updatedBy Kim yukladi
-     * @return Yangilangan AppReleaseResponse (downloadUrl, fileSize, checksum yangilangan)
-     */
     AppReleaseResponse uploadInstallerFile(Long id, MultipartFile file, String updatedBy);
+
+    /**
+     * Yagona oddiy endpoint: fayl yuklanadi + platforma avtomatik aniqlanadi.
+     *
+     * <p>Admin faqat: appName, version, description, file beradi.
+     * Tizim: platform, appType, checksum, fileSize, releaseDate, isLatest avtomatik hisoblaydi.</p>
+     */
+    AppReleaseResponse quickUpload(
+            String appName,
+            String version,
+            String description,
+            boolean isActive,
+            MultipartFile file,
+            String createdBy);
+
+    /**
+     * Mavjud relizni yangilash (fayl ixtiyoriy).
+     */
+    AppReleaseResponse quickUpdate(
+            Long id,
+            String appName,
+            String version,
+            String description,
+            boolean isActive,
+            MultipartFile file,
+            String updatedBy);
 }

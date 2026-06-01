@@ -158,6 +158,38 @@ public class AppReleaseController {
         return ResponseEntity.ok(ApiResponse.success("Fayl muvaffaqiyatli yuklandi", resp));
     }
 
+    // ── Quick Upload (soddalashtirilgan: faqat nom+versiya+fayl) ─────────────
+
+    @PostMapping(value = "/quick-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Sodda yuklash: platforma fayldan avtomatik aniqlanadi")
+    public ResponseEntity<ApiResponse<AppReleaseResponse>> quickUpload(
+            @RequestParam("appName")                    String        appName,
+            @RequestParam("version")                    String        version,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "isActive", defaultValue = "true") boolean isActive,
+            @RequestParam("file")                       MultipartFile file,
+            Authentication auth) {
+
+        AppReleaseResponse resp = service.quickUpload(appName, version, description, isActive, file, auth.getName());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Ilova muvaffaqiyatli qo'shildi", resp));
+    }
+
+    @PutMapping(value = "/{id}/quick-update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Sodda yangilash (fayl ixtiyoriy)")
+    public ResponseEntity<ApiResponse<AppReleaseResponse>> quickUpdate(
+            @PathVariable Long id,
+            @RequestParam(value = "appName",      required = false) String        appName,
+            @RequestParam(value = "version",      required = false) String        version,
+            @RequestParam(value = "description",  required = false) String        description,
+            @RequestParam(value = "isActive", defaultValue = "true") boolean      isActive,
+            @RequestParam(value = "file",         required = false) MultipartFile file,
+            Authentication auth) {
+
+        AppReleaseResponse resp = service.quickUpdate(id, appName, version, description, isActive, file, auth.getName());
+        return ResponseEntity.ok(ApiResponse.success("Ilova yangilandi", resp));
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────
 
     private <E extends Enum<E>> E parseEnum(Class<E> type, String value) {
