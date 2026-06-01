@@ -51,6 +51,7 @@ public class LocalStorageService implements FileStorageService {
             createFolder("documents");
             createFolder("videos");
             createFolder("general");
+            createFolder("installers");  // Desktop installer files (.exe, .msi, .deb, etc.)
 
         } catch (IOException e) {
             log.error("❌ Failed to create upload directory", e);

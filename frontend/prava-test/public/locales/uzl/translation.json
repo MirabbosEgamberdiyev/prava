@@ -678,5 +678,44 @@
         "endDateBeforeStart": "Tugash sanasi boshlanish sanasidan oldin bo'lishi mumkin emas"
       }
     }
+  },
+  "downloads": {
+    "pageTitle": "Ilovalarni yuklab olish",
+    "pageDesc": "Prava Online desktop ilovalarini Windows, Linux va macOS uchun yuklab oling",
+    "title": "Ilovalar",
+    "subtitle": "Desktop ilovalarni yuklab oling va qurilmangizga o'rnating",
+    "versions": "ta versiya",
+    "totalDownloads": "ta yuklab olish",
+    "noApps": "Hozircha ilovalar yo'q",
+    "noAppsSub": "Tez orada desktop ilovalar qo'shiladi",
+    "loadError": "Ilovalarni yuklashda xatolik yuz berdi",
+    "releaseDate": "Reliz sanasi",
+    "fileSize": "Hajmi",
+    "downloadCount": "Yuklab olingan",
+    "times": "marta",
+    "latestVersion": "Eng so'nggi versiya",
+    "download": "Yuklab olish",
+    "noFileYet": "Fayl hali yuklanmagan",
+    "releaseNotes": "Yangiliklar",
+    "checksum": "SHA-256 tekshirish kodi",
+    "copyHash": "Nusxalash",
+    "copied": "Nusxalandi!",
+    "installGuide": "O'rnatish bo'yicha yo'riqnoma",
+    "forceUpdate": "Majburiy yangilash",
+    "hints": {
+      "winAdmin": "Faylni o'ng tugma bilan bosib 'Administrator sifatida ishlatish'ni tanlang",
+      "winRun": "O'rnatuvchi ko'rsatmalariga rioya qiling va O'rnatish tugmasini bosing",
+      "winMsi": "MSI o'rnatuvchi — Windows Installer orqali ishlaydi",
+      "linuxDeb": "Terminal orqali: sudo dpkg -i fayl.deb",
+      "linuxRpm": "Terminal orqali: sudo rpm -i fayl.rpm",
+      "linuxAppImage": "chmod +x fayl.AppImage buyrug'ini bajaring, keyin ikki marta bosing",
+      "linuxGeneral": "Fayl ko'rsatmalariga rioya qiling",
+      "macOpen": "Faylni oching va ilovani Applications papkasiga torting",
+      "macDrag": "Birinchi ishga tushirishda 'Open' tugmasini bosing",
+      "general": "O'rnatish ko'rsatmalarini bajaring"
+    }
+  },
+  "nav": {
+    "downloads": "Ilovalar"
   }
 }

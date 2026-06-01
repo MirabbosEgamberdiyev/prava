@@ -102,6 +102,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/files/general/**")
                         .permitAll()
 
+                        // 2.5️⃣ Installer files - PUBLIC (anyone can download apps)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/files/installers/**")
+                        .permitAll()
+
                         // 3️⃣ Question image by ID - PROTECTED (before wildcard)
                         .requestMatchers(HttpMethod.GET, "/api/v1/files/questions/by-id/**")
                         .hasAnyRole("SUPER_ADMIN", "ADMIN", "USER")

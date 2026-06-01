@@ -1,5 +1,6 @@
 import {
   IconAlignBoxLeftTop,
+  IconApps,
   IconBuilding,
   IconChartBar,
   IconDatabaseExport,
@@ -68,6 +69,12 @@ const AdminNavUrlData: NavItem[] = [
       { name: "nav.ticketsView", url: "/tickets" },
       { name: "nav.ticketsAdd", url: "/tickets/add" },
     ],
+  },
+  {
+    name: "nav.applications",
+    url: "/applications",
+    icon: <IconApps size="16px" />,
+    role: "ADMIN",
   },
   {
     name: "nav.statistics",

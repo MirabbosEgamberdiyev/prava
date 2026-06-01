@@ -29,6 +29,7 @@ const GuestExam_Page = lazy(() => import("../page/GuestExam"));
 const NotFound_Page = lazy(() => import("../page/Notfound/404"));
 const PaymentSuccessPage = lazy(() => import("../payment/PaymentSuccessPage"));
 const ActivationCodesPage = lazy(() => import("../page/Admin/ActivationCodes"));
+const Downloads_Page      = lazy(() => import("../page/Downloads"));
 
 function LoadingFallback() {
   return (
@@ -94,6 +95,11 @@ function AppRoutes() {
           <Route path="/marafon" element={<Marafon_Page />} />
           <Route path="/exam" element={<Exam_Page />} />
           <Route path="/payment/success" element={<PaymentSuccessPage />} />
+
+          {/* Ilovalar yuklab olish */}
+          <Route path="/downloads" element={<User_Layout />}>
+            <Route index element={<Downloads_Page />} />
+          </Route>
         </Route>
 
         {/* SUPER_ADMIN only routes */}

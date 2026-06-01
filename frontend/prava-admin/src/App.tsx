@@ -14,6 +14,7 @@ import Packages_Page from "./page/Packages";
 import Tickets_Page from "./page/Tickets";
 
 // Lazy loaded sahifalar
+const Applications_Page = lazy(() => import("./page/Applications"));
 const License_Page = lazy(() => import("./page/License"));
 const LearningCenters_Page = lazy(() => import("./page/LearningCenters"));
 const Backup_Page = lazy(() => import("./page/Backup"));
@@ -67,6 +68,18 @@ function App() {
                 <Route
                   path="/tickets/edit/:id"
                   element={<Suspense fallback={LazyFallback}><Edit_Ticket_Page /></Suspense>}
+                />
+
+                {/* Ilovalar - ADMIN va SUPER_ADMIN */}
+                <Route
+                  path="/applications"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}>
+                        <Applications_Page />
+                      </Suspense>
+                    </RoleGuard>
+                  }
                 />
 
                 {/* Statistika */}

@@ -439,6 +439,15 @@ public class SecureFileController {
         return getPublicFile("general", filename, language);
     }
 
+    @GetMapping("/installers/{filename:.+}")
+    @Operation(summary = "Installer faylini yuklab olish (public) — download_count controller tomonidan oshiriladi")
+    public ResponseEntity<Resource> getInstallerFile(
+            @PathVariable String filename,
+            @Parameter(description = "uzl|uzc|en|ru")
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        return getPublicFile("installers", filename, language);
+    }
+
     // ============================================
     // UTILITY OPERATIONS
     // ============================================

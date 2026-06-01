@@ -678,5 +678,44 @@
         "endDateBeforeStart": "Тугаш санаси бошланиш санасидан олдин бўлиши мумкин эмас"
       }
     }
+  },
+  "downloads": {
+    "pageTitle": "Иловаларни юклаб олиш",
+    "pageDesc": "Prava Online desktop иловаларини Windows, Linux ва macOS учун юклаб олинг",
+    "title": "Иловалар",
+    "subtitle": "Desktop иловаларни юклаб олинг ва қурилмангизга ўрнатинг",
+    "versions": "та версия",
+    "totalDownloads": "та юклаб олиш",
+    "noApps": "Ҳозирча иловалар йўқ",
+    "noAppsSub": "Тез орада desktop иловалар қўшилади",
+    "loadError": "Иловаларни юклашда хатолик юз берди",
+    "releaseDate": "Релиз санаси",
+    "fileSize": "Ҳажми",
+    "downloadCount": "Юклаб олинган",
+    "times": "марта",
+    "latestVersion": "Энг сўнгги версия",
+    "download": "Юклаб олиш",
+    "noFileYet": "Файл ҳали юкланмаган",
+    "releaseNotes": "Янгиликлар",
+    "checksum": "SHA-256 текшириш коди",
+    "copyHash": "Нусхалаш",
+    "copied": "Нусхаланди!",
+    "installGuide": "Ўрнатиш бўйича йўриқнома",
+    "forceUpdate": "Мажбурий янгилаш",
+    "hints": {
+      "winAdmin": "Файлни ўнг тугма билан босиб 'Администратор сифатида ишлатиш'ни танланг",
+      "winRun": "Ўрнатувчи кўрсатмаларига риоя қилинг",
+      "winMsi": "MSI ўрнатувчи — Windows Installer орқали ишлайди",
+      "linuxDeb": "Терминал орқали: sudo dpkg -i fayl.deb",
+      "linuxRpm": "Терминал орқали: sudo rpm -i fayl.rpm",
+      "linuxAppImage": "chmod +x fayl.AppImage буйруғини бажаринг, кейин икки марта босинг",
+      "linuxGeneral": "Файл кўрсатмаларига риоя қилинг",
+      "macOpen": "Файлни очинг ва иловани Applications папкасига тортинг",
+      "macDrag": "Биринчи ишга туширишда 'Open' тугмасини босинг",
+      "general": "Ўрнатиш кўрсатмаларини бажаринг"
+    }
+  },
+  "nav": {
+    "downloads": "Иловалар"
   }
 }

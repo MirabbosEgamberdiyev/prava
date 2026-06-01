@@ -14,6 +14,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  IconApps,
   IconArrowRight,
   IconCarambola,
   IconChartBar,
@@ -95,6 +96,11 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
       name: t("nav.settings"),
       url: "/settings",
       icon: <IconSettings size={18} />,
+    },
+    {
+      name: t("nav.downloads"),
+      url: "/downloads",
+      icon: <IconApps size={18} />,
     },
   ];
 

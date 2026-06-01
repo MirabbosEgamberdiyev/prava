@@ -678,5 +678,44 @@
         "endDateBeforeStart": "End date cannot be before start date"
       }
     }
+  },
+  "downloads": {
+    "pageTitle": "Download Apps",
+    "pageDesc": "Download Prava Online desktop apps for Windows, Linux and macOS",
+    "title": "Applications",
+    "subtitle": "Download desktop apps and install on your device",
+    "versions": "versions",
+    "totalDownloads": "total downloads",
+    "noApps": "No apps available yet",
+    "noAppsSub": "Desktop applications will be added soon",
+    "loadError": "Failed to load applications",
+    "releaseDate": "Release date",
+    "fileSize": "Size",
+    "downloadCount": "Downloads",
+    "times": "times",
+    "latestVersion": "Latest version",
+    "download": "Download",
+    "noFileYet": "File not uploaded yet",
+    "releaseNotes": "What's New",
+    "checksum": "SHA-256 Checksum",
+    "copyHash": "Copy",
+    "copied": "Copied!",
+    "installGuide": "Installation Guide",
+    "forceUpdate": "Force update required",
+    "hints": {
+      "winAdmin": "Right-click the file and choose 'Run as Administrator'",
+      "winRun": "Follow the installer instructions and click Install",
+      "winMsi": "MSI package installs via Windows Installer",
+      "linuxDeb": "In terminal: sudo dpkg -i file.deb",
+      "linuxRpm": "In terminal: sudo rpm -i file.rpm",
+      "linuxAppImage": "Run chmod +x file.AppImage, then double-click to launch",
+      "linuxGeneral": "Follow the file instructions",
+      "macOpen": "Open the file and drag the app to Applications folder",
+      "macDrag": "On first launch, click 'Open'",
+      "general": "Follow the installation instructions"
+    }
+  },
+  "nav": {
+    "downloads": "Applications"
   }
 }
