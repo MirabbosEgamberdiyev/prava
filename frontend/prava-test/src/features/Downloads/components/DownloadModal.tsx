@@ -48,7 +48,6 @@ export default function DownloadModal({ release, onClose }: Props) {
         </Group>
       }
       size="md"
-      scrollAreaComponent={Modal.NativeScrollArea}
     >
       <Stack gap="md">
 

@@ -3,7 +3,7 @@ import useSWR from "swr";
 import { useTranslation } from "react-i18next";
 import i18n from "i18next";
 import {
-  Box, Center, Loader, Stack, Text, Title, Group,
+  Box, Center, Stack, Text, Title, Group,
   ThemeIcon, Alert, SimpleGrid, Skeleton, Badge,
 } from "@mantine/core";
 import {
