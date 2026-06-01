@@ -1091,6 +1091,7 @@
     "orManualUrl": "ёки URL қўлда киритинг",
     "uploading": "Юкланмоқда...",
     "uploadSuccess": "Файл муваффақиятли юкланди",
-    "uploadWarning": "Файл юклашда муаммо"
+    "uploadWarning": "Файл юклашда муаммо",
+    "appTypeLabel": "Илова тури"
   }
 }

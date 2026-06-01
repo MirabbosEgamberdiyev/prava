@@ -1091,6 +1091,7 @@
     "orManualUrl": "yoki URL qo'lda kiriting",
     "uploading": "Yuklanmoqda...",
     "uploadSuccess": "Fayl muvaffaqiyatli yuklandi",
-    "uploadWarning": "Fayl yuklashda muammo"
+    "uploadWarning": "Fayl yuklashda muammo",
+    "appTypeLabel": "Ilova turi"
   }
 }

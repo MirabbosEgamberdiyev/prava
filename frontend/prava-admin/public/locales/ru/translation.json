@@ -1091,6 +1091,7 @@
     "orManualUrl": "или введите URL вручную",
     "uploading": "Загрузка...",
     "uploadSuccess": "Файл успешно загружен",
-    "uploadWarning": "Проблема при загрузке"
+    "uploadWarning": "Проблема при загрузке",
+    "appTypeLabel": "Тип приложения"
   }
 }

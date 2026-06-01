@@ -362,17 +362,35 @@ public class AppReleaseServiceImpl implements AppReleaseService {
     @Override
     @Transactional
     public AppReleaseResponse quickUpload(String appName, String version, String description,
-                                          boolean isActive, MultipartFile file, String createdBy) {
-        if (file == null || file.isEmpty())
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fayl yuklanmagan");
+                                          boolean isActive, MultipartFile file,
+                                          String webUrl, String createdBy) {
+        // Online ilova: fayl yo'q, webUrl beriladi
+        // Offline ilova: fayl yuklanadi
+        boolean isOnline = (file == null || file.isEmpty());
 
-        String origName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "";
-        AppPlatform  platform = detectPlatform(origName);
-        AppType      appType  = detectAppType(origName);
-        int          verCode  = parseVersionCode(version);
+        AppPlatform platform;
+        AppType     appType;
+        String      downloadUrl = null;
+        Long        fileSize    = null;
+        String      checksum    = null;
 
-        // Fayl serverga yuklash + SHA-256
-        String[] uploaded = saveFileAndHash(file);   // [fileUrl, sha256]
+        if (isOnline) {
+            // Online (WEB) — fayl yo'q, platform WEB
+            platform    = AppPlatform.WEB;
+            appType     = AppType.WEB_PWA;
+            downloadUrl = (webUrl != null && !webUrl.isBlank()) ? webUrl.trim() : null;
+        } else {
+            // Offline — fayldan platform aniqlanadi
+            String origName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "";
+            platform = detectPlatform(origName);
+            appType  = detectAppType(origName);
+            String[] uploaded = saveFileAndHash(file);
+            downloadUrl = uploaded[0];
+            fileSize    = file.getSize();
+            checksum    = uploaded[1];
+        }
+
+        int verCode = parseVersionCode(version);
 
         AppRelease entity = AppRelease.builder()
                 .appName(appName.trim())
@@ -385,9 +403,9 @@ public class AppReleaseServiceImpl implements AppReleaseService {
                 .isForceUpdate(false)
                 .releaseNotesUzl(description != null ? description.trim() : null)
                 .releaseDate(java.time.LocalDate.now())
-                .downloadUrl(uploaded[0])
-                .fileSize(file.getSize())
-                .checksum(uploaded[1])
+                .downloadUrl(downloadUrl)
+                .fileSize(fileSize)
+                .checksum(checksum)
                 .downloadCount(0L)
                 .build();
 
@@ -408,7 +426,7 @@ public class AppReleaseServiceImpl implements AppReleaseService {
     @Transactional
     public AppReleaseResponse quickUpdate(Long id, String appName, String version,
                                           String description, boolean isActive,
-                                          MultipartFile file, String updatedBy) {
+                                          MultipartFile file, String webUrl, String updatedBy) {
         AppRelease entity = findOrThrow(id);
 
         if (appName != null && !appName.isBlank())   entity.setAppName(appName.trim());
@@ -419,7 +437,12 @@ public class AppReleaseServiceImpl implements AppReleaseService {
         if (description != null) entity.setReleaseNotesUzl(description.trim());
         entity.setStatus(isActive ? AppReleaseStatus.ACTIVE : AppReleaseStatus.DRAFT);
 
-        // Fayl berilgan bo'lsa — yangilaymiz
+        // Online URL yangilaymiz
+        if (webUrl != null && !webUrl.isBlank() && entity.getPlatform() == AppPlatform.WEB) {
+            entity.setDownloadUrl(webUrl.trim());
+        }
+
+        // Fayl berilgan bo'lsa — yangilaymiz (offline)
         if (file != null && !file.isEmpty()) {
             String origName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "";
             entity.setPlatform(detectPlatform(origName));

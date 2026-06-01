@@ -160,33 +160,43 @@ public class AppReleaseController {
 
     // ── Quick Upload (soddalashtirilgan: faqat nom+versiya+fayl) ─────────────
 
+    /**
+     * Sodda yuklash endpointi.
+     *
+     * <p><b>Online ilova</b> (WEB): faqat {@code webUrl} bering, {@code file} bo'sh qoldiring.</p>
+     * <p><b>Offline ilova</b> (Windows/Linux/macOS): faqat {@code file} bering, platforma avtomatik aniqlanadi.</p>
+     */
     @PostMapping(value = "/quick-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Sodda yuklash: platforma fayldan avtomatik aniqlanadi")
+    @Operation(summary = "Sodda yuklash: file→platforma auto, yoki webUrl→Online")
     public ResponseEntity<ApiResponse<AppReleaseResponse>> quickUpload(
-            @RequestParam("appName")                    String        appName,
-            @RequestParam("version")                    String        version,
-            @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "isActive", defaultValue = "true") boolean isActive,
-            @RequestParam("file")                       MultipartFile file,
+            @RequestParam("appName")                                 String        appName,
+            @RequestParam("version")                                 String        version,
+            @RequestParam(value = "description",  required = false) String        description,
+            @RequestParam(value = "isActive",     defaultValue = "true") boolean  isActive,
+            @RequestParam(value = "file",         required = false) MultipartFile file,
+            @RequestParam(value = "webUrl",       required = false) String        webUrl,
             Authentication auth) {
 
-        AppReleaseResponse resp = service.quickUpload(appName, version, description, isActive, file, auth.getName());
+        AppReleaseResponse resp = service.quickUpload(
+                appName, version, description, isActive, file, webUrl, auth.getName());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Ilova muvaffaqiyatli qo'shildi", resp));
     }
 
     @PutMapping(value = "/{id}/quick-update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Sodda yangilash (fayl ixtiyoriy)")
+    @Operation(summary = "Sodda yangilash (fayl va webUrl ixtiyoriy)")
     public ResponseEntity<ApiResponse<AppReleaseResponse>> quickUpdate(
             @PathVariable Long id,
             @RequestParam(value = "appName",      required = false) String        appName,
             @RequestParam(value = "version",      required = false) String        version,
             @RequestParam(value = "description",  required = false) String        description,
-            @RequestParam(value = "isActive", defaultValue = "true") boolean      isActive,
+            @RequestParam(value = "isActive",     defaultValue = "true") boolean  isActive,
             @RequestParam(value = "file",         required = false) MultipartFile file,
+            @RequestParam(value = "webUrl",       required = false) String        webUrl,
             Authentication auth) {
 
-        AppReleaseResponse resp = service.quickUpdate(id, appName, version, description, isActive, file, auth.getName());
+        AppReleaseResponse resp = service.quickUpdate(
+                id, appName, version, description, isActive, file, webUrl, auth.getName());
         return ResponseEntity.ok(ApiResponse.success("Ilova yangilandi", resp));
     }
 

@@ -60,16 +60,23 @@ public interface AppReleaseService {
      * <p>Admin faqat: appName, version, description, file beradi.
      * Tizim: platform, appType, checksum, fileSize, releaseDate, isLatest avtomatik hisoblaydi.</p>
      */
+    /**
+     * @param file     Online ilovalar uchun null bo'lishi mumkin (platform=WEB avtomatik)
+     * @param webUrl   Online ilova URL si (file null bo'lsa ishlatiladi)
+     */
     AppReleaseResponse quickUpload(
             String appName,
             String version,
             String description,
             boolean isActive,
             MultipartFile file,
+            String webUrl,
             String createdBy);
 
     /**
      * Mavjud relizni yangilash (fayl ixtiyoriy).
+     *
+     * @param webUrl   Online ilova uchun yangi URL (ixtiyoriy)
      */
     AppReleaseResponse quickUpdate(
             Long id,
@@ -78,5 +85,6 @@ public interface AppReleaseService {
             String description,
             boolean isActive,
             MultipartFile file,
+            String webUrl,
             String updatedBy);
 }

@@ -10,7 +10,8 @@ import {
 } from "@mantine/core";
 import {
   IconApple, IconApps, IconBrandWindows, IconCheck,
-  IconCopy, IconDownload, IconTerminal2, IconAlertCircle,
+  IconCopy, IconDownload, IconExternalLink, IconTerminal2,
+  IconAlertCircle, IconWorld,
 } from "@tabler/icons-react";
 import { getLatestReleases, getDownloadUrl } from "../../api/applicationService";
 import type { AppReleaseResponse } from "../../features/Downloads/types";
@@ -20,20 +21,22 @@ import dayjs from "dayjs";
 
 // ─── Platform meta ────────────────────────────────────────────────────────────
 const PLATFORMS = [
-  { key: "ALL",     label: "Barchasi",  icon: <IconApps size={16} /> },
-  { key: "WINDOWS", label: "Windows",   icon: <IconBrandWindows size={16} /> },
-  { key: "LINUX",   label: "Linux",     icon: <IconTerminal2 size={16} /> },
-  { key: "MACOS",   label: "macOS",     icon: <IconApple size={16} /> },
+  { key: "ALL",     label: "Barchasi",       icon: <IconApps size={16} /> },
+  { key: "WEB",     label: "Online",         icon: <IconWorld size={16} /> },
+  { key: "WINDOWS", label: "Windows",        icon: <IconBrandWindows size={16} /> },
+  { key: "LINUX",   label: "Linux",          icon: <IconTerminal2 size={16} /> },
+  { key: "MACOS",   label: "macOS",          icon: <IconApple size={16} /> },
 ];
 
 const PLATFORM_COLORS: Record<string, string> = {
-  WINDOWS: "blue", LINUX: "orange", MACOS: "gray",
+  WINDOWS: "blue", LINUX: "orange", MACOS: "gray", WEB: "teal",
 };
 
 const PLATFORM_ICONS: Record<string, React.ReactNode> = {
   WINDOWS: <IconBrandWindows size={20} />,
   LINUX:   <IconTerminal2 size={20} />,
   MACOS:   <IconApple size={20} />,
+  WEB:     <IconWorld size={20} />,
 };
 
 function fmtSize(bytes?: number | null): string {
@@ -127,17 +130,24 @@ function DownloadDetailModal({ r, onClose }: { r: AppReleaseResponse | null; onC
 
         <Divider />
 
-        <Button
-          fullWidth
-          size="md"
-          color={color}
-          leftSection={<IconDownload size={18} />}
-          component="a"
-          href={dlUrl}
-          disabled={!r.downloadUrl}
-        >
-          {t("downloads.download")} {r.fileSizeFormatted ?? fmtSize(r.fileSize) ? `(${r.fileSizeFormatted ?? fmtSize(r.fileSize)})` : ""}
-        </Button>
+        {r.platform === "WEB" ? (
+          <Button
+            fullWidth size="md" color="teal"
+            leftSection={<IconExternalLink size={18} />}
+            component="a" href={r.downloadUrl ?? "#"} target="_blank" rel="noopener"
+            disabled={!r.downloadUrl}
+          >
+            Ilovani ochish
+          </Button>
+        ) : (
+          <Button
+            fullWidth size="md" color={color}
+            leftSection={<IconDownload size={18} />}
+            component="a" href={dlUrl} disabled={!r.downloadUrl}
+          >
+            {t("downloads.download")} {r.fileSizeFormatted ? `(${r.fileSizeFormatted})` : fmtSize(r.fileSize) !== "—" ? `(${fmtSize(r.fileSize)})` : ""}
+          </Button>
+        )}
       </Stack>
     </Modal>
   );
@@ -168,18 +178,25 @@ function AppCard({ r, onOpen }: { r: AppReleaseResponse; onOpen: (r: AppReleaseR
         </Group>
       )}
 
-      <Button
-        mt="auto"
-        fullWidth
-        size="sm"
-        variant="light"
-        color={color}
-        leftSection={<IconDownload size={15} />}
-        onClick={() => onOpen(r)}
-        disabled={!r.downloadUrl}
-      >
-        {t("downloads.download")}
-      </Button>
+      {r.platform === "WEB" ? (
+        <Button
+          mt="auto" fullWidth size="sm" variant="filled" color="teal"
+          leftSection={<IconExternalLink size={15} />}
+          component="a" href={r.downloadUrl ?? "#"} target="_blank" rel="noopener"
+          disabled={!r.downloadUrl}
+        >
+          Ochish
+        </Button>
+      ) : (
+        <Button
+          mt="auto" fullWidth size="sm" variant="light" color={color}
+          leftSection={<IconDownload size={15} />}
+          onClick={() => onOpen(r)}
+          disabled={!r.downloadUrl}
+        >
+          {t("downloads.download")}
+        </Button>
+      )}
     </Card>
   );
 }

@@ -1091,6 +1091,7 @@
     "orManualUrl": "or enter URL manually",
     "uploading": "Uploading...",
     "uploadSuccess": "File uploaded successfully",
-    "uploadWarning": "Problem uploading file"
+    "uploadWarning": "Problem uploading file",
+    "appTypeLabel": "App type"
   }
 }
