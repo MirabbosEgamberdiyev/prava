@@ -210,6 +210,27 @@
     }
   },
   "nav": {
+    "home": "Bosh sahifa",
+    "learn": "O'rganish",
+    "academy": "Akademiya",
+    "login_btn": "Tizimga kirish",
+    "signup_btn": "Ro'yxatdan o'tish",
+    "dashboard": "Boshqaruv",
+    "mainPage": "Asosiy Sahifa",
+    "examTypes": "Imtihon turlari",
+    "realExam": "Real Imtihon",
+    "competition": "Musobaqa",
+    "topics": "Mavzular",
+    "packages": "Paketlar",
+    "marathon": "Marafon",
+    "support": "Qo'llab quvvatlash",
+    "donate": "Yordam berish",
+    "ticket": "Biletlar",
+    "statistics": "Statistika",
+    "history": "Tarix",
+    "leaderboard": "Reyting",
+    "settings": "Sozlamalar",
+    "activationCodes": "Activation Codes",
     "downloads": "Ilovalar"
   },
   "exam": {

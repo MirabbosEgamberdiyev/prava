@@ -19,7 +19,6 @@ import java.util.Optional;
 public interface AppReleaseRepository extends JpaRepository<AppRelease, Long> {
 
     // ── Unique checks ─────────────────────────────────────────────────────
-    // NB: method name "AppVersion" corresponds to entity field "appVersion"
 
     boolean existsByPlatformAndAppTypeAndAppVersionAndDeletedFalse(
             AppPlatform platform, AppType appType, String appVersion);
@@ -36,16 +35,45 @@ public interface AppReleaseRepository extends JpaRepository<AppRelease, Long> {
 
     // ── Filtered paginated list ───────────────────────────────────────────
 
+    /**
+     * Public default method — null/blank string'larni xavfsiz "%" markeriga aylantiradi.
+     *
+     * <p>Hibernate 6.x va PostgreSQL'da null parametr bilan {@code LOWER(CONCAT('%', :p, '%'))}
+     * "function lower(bytea) does not exist" xatosi beradi. Buni Java tomonidan
+     * "%search_term%" ko'rinishida tayyorlab yuborish bilan oldini olamiz.</p>
+     */
+    default Page<AppRelease> findFiltered(
+            AppPlatform platform,
+            AppType appType,
+            AppReleaseStatus status,
+            String appName,
+            String version,
+            Pageable pageable) {
+
+        String namePattern    = toLikePattern(appName);
+        String versionPattern = toLikePattern(version);
+
+        return findFilteredInternal(platform, appType, status, namePattern, versionPattern, pageable);
+    }
+
+    /** "abc" → "%abc%" (lowercased); null/bo'sh → "%" (har doim mos keladi). */
+    private static String toLikePattern(String s) {
+        if (s == null) return "%";
+        String trimmed = s.trim();
+        if (trimmed.isEmpty()) return "%";
+        return "%" + trimmed.toLowerCase() + "%";
+    }
+
     @Query("""
         SELECT r FROM AppRelease r
         WHERE r.deleted = false
-          AND (:platform  IS NULL OR r.platform    = :platform)
-          AND (:appType   IS NULL OR r.appType     = :appType)
-          AND (:status    IS NULL OR r.status      = :status)
-          AND (:appName   IS NULL OR LOWER(r.appName)   LIKE LOWER(CONCAT('%', :appName, '%')))
-          AND (:version   IS NULL OR LOWER(r.appVersion) LIKE LOWER(CONCAT('%', :version, '%')))
+          AND (:platform IS NULL OR r.platform = :platform)
+          AND (:appType  IS NULL OR r.appType  = :appType)
+          AND (:status   IS NULL OR r.status   = :status)
+          AND LOWER(r.appName)    LIKE :appName
+          AND LOWER(r.appVersion) LIKE :version
         """)
-    Page<AppRelease> findFiltered(
+    Page<AppRelease> findFilteredInternal(
             @Param("platform") AppPlatform platform,
             @Param("appType")  AppType appType,
             @Param("status")   AppReleaseStatus status,

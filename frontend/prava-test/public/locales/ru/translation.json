@@ -210,6 +210,27 @@
     }
   },
   "nav": {
+    "home": "Главная",
+    "learn": "Обучение",
+    "academy": "Академия",
+    "login_btn": "Войти",
+    "signup_btn": "Регистрация",
+    "dashboard": "Панель управления",
+    "mainPage": "Главная страница",
+    "examTypes": "Типы экзаменов",
+    "realExam": "Реальный экзамен",
+    "competition": "Соревнование",
+    "topics": "Темы",
+    "packages": "Пакеты",
+    "marathon": "Марафон",
+    "support": "Поддержка",
+    "donate": "Помочь",
+    "ticket": "Билеты",
+    "statistics": "Статистика",
+    "history": "История",
+    "leaderboard": "Рейтинг",
+    "settings": "Настройки",
+    "activationCodes": "Коды активации",
     "downloads": "Приложения"
   },
   "exam": {

@@ -210,6 +210,27 @@
     }
   },
   "nav": {
+    "home": "Home",
+    "learn": "Learn",
+    "academy": "Academy",
+    "login_btn": "Log In",
+    "signup_btn": "Sign up",
+    "dashboard": "Dashboard",
+    "mainPage": "Main Page",
+    "examTypes": "Exam types",
+    "realExam": "Real Exam",
+    "competition": "Competition",
+    "topics": "Topics",
+    "packages": "Packages",
+    "marathon": "Marathon",
+    "support": "Support",
+    "donate": "Donate",
+    "ticket": "Tickets",
+    "statistics": "Statistics",
+    "history": "History",
+    "leaderboard": "Leaderboard",
+    "settings": "Settings",
+    "activationCodes": "Activation Codes",
     "downloads": "Applications"
   },
   "exam": {
