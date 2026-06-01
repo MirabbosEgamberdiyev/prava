@@ -49,8 +49,8 @@ public class AppReleaseServiceImpl implements AppReleaseService {
             ".exe", ".msi", ".deb", ".rpm", ".appimage", ".tar.gz", ".dmg", ".pkg", ".zip"
     );
 
-    // Installer fayllari uchun maksimal hajm: 500 MB
-    private static final long MAX_INSTALLER_SIZE = 500L * 1024 * 1024;
+    // Installer fayllari uchun maksimal hajm: 1000 MB (1 GB)
+    private static final long MAX_INSTALLER_SIZE = 1000L * 1024 * 1024;
 
     // ─────────────────────────────────────────────────────────────────────────
     // CRUD
