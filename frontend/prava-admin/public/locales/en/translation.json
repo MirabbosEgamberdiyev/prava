@@ -80,7 +80,8 @@
     "systemMonitor": "System Monitor",
     "files": "Files",
     "learningCenters": "Learning Centers",
-    "license": "Activation Codes"
+    "license": "Activation Codes",
+    "applications": "Applications"
   },
   "common": {
     "save": "Save",
@@ -132,8 +133,12 @@
       "descEn": "Description (English)",
       "descRu": "Description (Russian)",
       "saveChanges": "Save changes",
-      "language": "Language"
-    }
+      "language": ""
+    },
+    "loadError": "Failed to load data",
+    "clearFilters": "Clear filters",
+    "total": "Total",
+    "page": "Page"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1031,9 +1036,6 @@
       "errorTitle": "Error",
       "cancel": "Cancel"
     }
-  },
-  "nav": {
-    "applications": "Applications"
   },
   "apps": {
     "title": "Applications",

@@ -80,7 +80,8 @@
     "systemMonitor": "Tizim Monitoring",
     "files": "Fayllar",
     "learningCenters": "O'quv Markazlari",
-    "license": "Aktivatsiya Kodlari"
+    "license": "Aktivatsiya Kodlari",
+    "applications": "Ilovalar"
   },
   "common": {
     "save": "Saqlash",
@@ -133,7 +134,11 @@
       "descRu": "Tavsif (Ruscha)",
       "saveChanges": "O'zgarishlarni saqlash",
       "language": "Til"
-    }
+    },
+    "loadError": "Ma'lumotlarni yuklashda xato",
+    "clearFilters": "Filtrlarni tozalash",
+    "total": "Jami",
+    "page": "Sahifa"
   },
   "dashboard": {
     "title": "Boshqaruv paneli",
@@ -1032,9 +1037,6 @@
       "cancel": "Bekor qilish"
     }
   },
-  "nav": {
-    "applications": "Ilovalar"
-  },
   "apps": {
     "title": "Ilovalar",
     "addRelease": "Yangi reliz",
@@ -1084,17 +1086,11 @@
     "toDraft": "Qoralamaga qaytarish",
     "setLatest": "Eng so'nggi deb belgilash",
     "uploadFile": "Installer faylni yuklash",
-    "uploadFileDesc": ".exe, .msi, .deb, .rpm, .AppImage, .dmg, .pkg (max 500 MB)",
+    "uploadFileDesc": ".exe, .msi, .deb, .rpm, .AppImage, .dmg, .pkg (max 1000 MB)",
     "uploadFilePlaceholder": "Faylni tanlang...",
     "orManualUrl": "yoki URL qo'lda kiriting",
     "uploading": "Yuklanmoqda...",
     "uploadSuccess": "Fayl muvaffaqiyatli yuklandi",
     "uploadWarning": "Fayl yuklashda muammo"
-  },
-  "common": {
-    "loadError": "Ma'lumotlarni yuklashda xato",
-    "clearFilters": "Filtrlarni tozalash",
-    "total": "Jami",
-    "page": "Sahifa"
   }
 }

@@ -80,7 +80,8 @@
     "systemMonitor": "Тизим Мониторинг",
     "files": "Файллар",
     "learningCenters": "Ўқув Марказлари",
-    "license": "Активация Кодлари"
+    "license": "Активация Кодлари",
+    "applications": "Иловалар"
   },
   "common": {
     "save": "Сақлаш",
@@ -132,8 +133,12 @@
       "descEn": "Тавсиф (Инглизча)",
       "descRu": "Тавсиф (Русча)",
       "saveChanges": "Ўзгаришларни сақлаш",
-      "language": "Тил"
-    }
+      "language": ""
+    },
+    "loadError": "Маълумотларни юклашда хато",
+    "clearFilters": "Филтрларни тозалаш",
+    "total": "Жами",
+    "page": "Саҳифа"
   },
   "dashboard": {
     "title": "Бошқарув панели",
@@ -1031,9 +1036,6 @@
       "errorTitle": "Хато",
       "cancel": "Бекор қилиш"
     }
-  },
-  "nav": {
-    "applications": "Иловалар"
   },
   "apps": {
     "title": "Иловалар",

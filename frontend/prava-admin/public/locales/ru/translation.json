@@ -80,7 +80,8 @@
     "systemMonitor": "Мониторинг системы",
     "files": "Файлы",
     "learningCenters": "Учебные центры",
-    "license": "Коды активации"
+    "license": "Коды активации",
+    "applications": "Приложения"
   },
   "common": {
     "save": "Сохранить",
@@ -132,8 +133,12 @@
       "descEn": "Описание (англ.)",
       "descRu": "Описание (русский)",
       "saveChanges": "Сохранить изменения",
-      "language": "Язык"
-    }
+      "language": ""
+    },
+    "loadError": "Ошибка загрузки данных",
+    "clearFilters": "Сбросить фильтры",
+    "total": "Всего",
+    "page": "Страница"
   },
   "dashboard": {
     "title": "Панель управления",
@@ -1031,9 +1036,6 @@
       "errorTitle": "Ошибка",
       "cancel": "Отмена"
     }
-  },
-  "nav": {
-    "applications": "Приложения"
   },
   "apps": {
     "title": "Приложения",
