@@ -8,7 +8,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,10 @@ import uz.pravaimtihon.service.impl.CachedFileService;
 import uz.pravaimtihon.service.impl.FileService;
 import uz.pravaimtihon.service.impl.FileStorageManager;
 
+import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -52,6 +58,9 @@ public class SecureFileController {
     private final ExamSessionRepository examSessionRepository;
     private final MessageService messageService;
     private final CachedFileService cachedFileService;
+
+    @Value("${app.storage.local.upload-dir:uploads}")
+    private String uploadDir;
 
     // ============================================
     // UPLOAD OPERATIONS (Admin Only)
@@ -439,13 +448,58 @@ public class SecureFileController {
         return getPublicFile("general", filename, language);
     }
 
+    /**
+     * Installer faylini to'g'ridan-to'g'ri STREAMING bilan yuboradi.
+     *
+     * <p>MUHIM: {@link #getPublicFile} ni ISHLATMAYDI — u butun faylni {@code byte[]}
+     * ga yuklaydi, 200-300 MB installer uchun {@code OutOfMemoryError} beradi.
+     * Bu metod {@link FileSystemResource} orqali chunklab yuboring.</p>
+     */
     @GetMapping("/installers/{filename:.+}")
-    @Operation(summary = "Installer faylini yuklab olish (public) — download_count controller tomonidan oshiriladi")
+    @Operation(summary = "Installer faylini streaming bilan yuklab olish (public, chunked)")
     public ResponseEntity<Resource> getInstallerFile(
-            @PathVariable String filename,
-            @Parameter(description = "uzl|uzc|en|ru")
-            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
-        return getPublicFile("installers", filename, language);
+            @PathVariable String filename) {
+
+        // Path traversal himoyasi
+        if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            Path filePath = Paths.get(uploadDir).toAbsolutePath().normalize()
+                    .resolve("installers")
+                    .resolve(filename)
+                    .normalize();
+
+            // Security: installers papkasidan chiqib ketmaslik
+            Path installersDir = Paths.get(uploadDir).toAbsolutePath().normalize()
+                    .resolve("installers");
+            if (!filePath.startsWith(installersDir)) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            FileSystemResource resource = new FileSystemResource(filePath.toFile());
+
+            // Content-Type: fayl kengaytmasidan aniqlash
+            String contentType = URLConnection.guessContentTypeFromName(filename);
+            if (contentType == null) contentType = "application/octet-stream";
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CACHE_CONTROL, "no-cache")
+                    .contentLength(Files.size(filePath))
+                    .body(resource);
+
+        } catch (Exception e) {
+            log.error("❌ Installer fayl yuborishda xato: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     // ============================================
