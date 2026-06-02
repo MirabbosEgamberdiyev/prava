@@ -15,6 +15,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { ImagePlaceholder } from "../../../components/common/ImagePlaceholder";
+import { getImageUrl } from "../../../utils/imageUtils";
 import { useTranslation } from "react-i18next";
 import {
   IconCheck,
@@ -365,7 +366,7 @@ export function Ticket_Content({
           {/* Rasm - o'ngda */}
           <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 1, md: 2 }}>
             <ImagePlaceholder
-              src={currentQuestion?.imageUrl}
+              src={getImageUrl(currentQuestion?.imageUrl)}
               onClick={openImageModal}
             />
           </Grid.Col>
@@ -383,7 +384,7 @@ export function Ticket_Content({
           padding={0}
         >
           <Image
-            src={currentQuestion.imageUrl}
+            src={getImageUrl(currentQuestion.imageUrl)}
             fit="contain"
           />
         </Modal>

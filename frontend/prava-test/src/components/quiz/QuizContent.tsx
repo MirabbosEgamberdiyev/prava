@@ -33,6 +33,7 @@ import {
 import { useLanguage } from "../../hooks/useLanguage";
 import type { Question, Option, AnswersMap } from "../../types";
 import { ImagePlaceholder } from "../common/ImagePlaceholder";
+import { getImageUrl } from "../../utils/imageUtils";
 import classes from "./QuizContent.module.css";
 
 interface QuizContentProps {
@@ -542,7 +543,7 @@ export function QuizContent({
           {/* Image - right side */}
           <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 1, md: 2 }}>
             <ImagePlaceholder
-              src={currentQuestion?.imageUrl}
+              src={getImageUrl(currentQuestion?.imageUrl)}
               onClick={() => setImageModalOpened(true)}
             />
           </Grid.Col>
@@ -559,7 +560,7 @@ export function QuizContent({
           withCloseButton
           padding={0}
         >
-          <Image src={currentQuestion.imageUrl} fit="contain" />
+          <Image src={getImageUrl(currentQuestion.imageUrl)} fit="contain" />
         </Modal>
       )}
 
