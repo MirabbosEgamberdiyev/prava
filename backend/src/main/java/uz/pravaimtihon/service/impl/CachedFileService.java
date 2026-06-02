@@ -1,7 +1,7 @@
 package uz.pravaimtihon.service.impl;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import uz.pravaimtihon.exception.FileStorageException;
@@ -11,14 +11,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-/**
- * ✅ Cached File Service - Reduces disk I/O
- * Images are cached in memory for faster access
- */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class CachedFileService {
+
+    private final Path uploadDir;
+
+    public CachedFileService(@Value("${app.storage.local.upload-dir:uploads}") String uploadDirStr) {
+        this.uploadDir = Paths.get(uploadDirStr).toAbsolutePath().normalize();
+    }
 
     /**
      * ✅ Get file with caching
@@ -28,7 +29,7 @@ public class CachedFileService {
     @Cacheable(value = "fileCache", key = "#folder + ':' + #filename")
     public byte[] getCachedFile(String folder, String filename) {
         try {
-            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path uploadDir = this.uploadDir;
             Path filePath = uploadDir.resolve(folder).resolve(filename).normalize();
 
             // Security check
@@ -58,7 +59,7 @@ public class CachedFileService {
     @Cacheable(value = "contentTypeCache", key = "#folder + ':' + #filename")
     public String getContentType(String folder, String filename) {
         try {
-            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path uploadDir = this.uploadDir;
             Path filePath = uploadDir.resolve(folder).resolve(filename).normalize();
 
             if (!Files.exists(filePath)) {
@@ -80,7 +81,7 @@ public class CachedFileService {
     @Cacheable(value = "fileExistsCache", key = "#folder + ':' + #filename")
     public boolean fileExists(String folder, String filename) {
         try {
-            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path uploadDir = this.uploadDir;
             Path filePath = uploadDir.resolve(folder).resolve(filename).normalize();
 
             return Files.exists(filePath);

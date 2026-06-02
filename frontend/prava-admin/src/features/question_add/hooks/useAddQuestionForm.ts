@@ -37,6 +37,7 @@ export const useAddQuestionForm = () => {
     if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("folder", "questions");
 
     try {
       const res = await api.post("/api/v1/files/upload", formData, {

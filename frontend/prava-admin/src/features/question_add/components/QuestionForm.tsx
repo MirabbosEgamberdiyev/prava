@@ -24,6 +24,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useAddQuestionForm } from "../hooks/useAddQuestionForm";
 import { useTopicSelect } from "../hooks/useTopicSelect";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export const QuestionForm = () => {
   const { t } = useTranslation();
@@ -168,7 +169,7 @@ export const QuestionForm = () => {
                 style={{ display: "inline-block", position: "relative" }}
               >
                 <Image
-                  src={form.values.imageUrl}
+                  src={getImageUrl(form.values.imageUrl)}
                   h={180}
                   w="auto"
                   fit="contain"

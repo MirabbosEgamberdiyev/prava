@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { useQuestions } from "../../question/hooks/useQuestions";
 import { useTopicOptions } from "../../topic/hooks/useTopics";
 import type { Question } from "../../question/types";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 interface QuestionPickerModalProps {
   opened: boolean;
@@ -133,7 +134,7 @@ export function QuestionPickerModal({
                     >
                       {q.imageUrl ? (
                         <img
-                          src={q.imageUrl}
+                          src={getImageUrl(q.imageUrl) || ""}
                           alt=""
                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />

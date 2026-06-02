@@ -398,14 +398,18 @@ public class SecureFileController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
-            // Check active exam
-            boolean hasActiveExam = examSessionRepository
-                    .findActiveSession(userId, LocalDateTime.now())
-                    .isPresent();
+            // Admin/SuperAdmin har doim ko'rishi mumkin
+            boolean isAdmin = SecurityUtils.hasRole("SUPER_ADMIN") || SecurityUtils.hasRole("ADMIN");
 
-            if (!hasActiveExam) {
-                log.warn("⚠️ User {} tried to access question image without active exam", userId);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            if (!isAdmin) {
+                boolean hasActiveExam = examSessionRepository
+                        .findActiveSession(userId, LocalDateTime.now())
+                        .isPresent();
+
+                if (!hasActiveExam) {
+                    log.warn("⚠️ User {} tried to access question image without active exam", userId);
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                }
             }
 
             // Use cached file service

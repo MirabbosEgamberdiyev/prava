@@ -33,6 +33,7 @@ import { useTranslation } from "react-i18next";
 import { useQuestionDetail } from "../../../features/question/hooks/useQuestionDetail";
 import { useTopicSelect } from "../../../features/question_add/hooks/useTopicSelect";
 import api from "../../../services/api";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 const Edit_Question_Page = () => {
   const { t } = useTranslation();
@@ -102,6 +103,7 @@ const Edit_Question_Page = () => {
     if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("folder", "questions");
     try {
       const res = await api.post("/api/v1/files/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -296,7 +298,7 @@ const Edit_Question_Page = () => {
               </Group>
               {form.values.imageUrl && (
                 <Paper withBorder mt="sm" p="xs" radius="md" style={{ display: "inline-block", position: "relative" }}>
-                  <Image src={form.values.imageUrl} h={180} w="auto" fit="contain" radius="md" />
+                  <Image src={getImageUrl(form.values.imageUrl)} h={180} w="auto" fit="contain" radius="md" />
                   <ActionIcon
                     variant="filled"
                     color="red"

@@ -24,6 +24,7 @@ import Cookies from "js-cookie";
 import { QuestionPickerModal } from "./QuestionPickerModal";
 import type { TicketQuestionItem, TranslatedField } from "../types";
 import type { Question } from "../../question/types";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 // Internal unified type
 interface ManagedQuestion {
@@ -200,7 +201,7 @@ export function TicketQuestionsManager({
                     }}
                   >
                     <img
-                      src={q.imageUrl}
+                      src={getImageUrl(q.imageUrl) || ""}
                       alt=""
                       style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     />

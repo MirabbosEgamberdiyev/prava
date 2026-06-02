@@ -38,4 +38,16 @@ public class SecurityUtils {
         }
         return userDetails.getRole().name().equals(role);
     }
+
+    public static boolean hasAnyRole(String... roles) {
+        CustomUserDetails userDetails = getCurrentUser();
+        if (userDetails == null) {
+            return false;
+        }
+        String currentRole = userDetails.getRole().name();
+        for (String role : roles) {
+            if (currentRole.equals(role)) return true;
+        }
+        return false;
+    }
 }
