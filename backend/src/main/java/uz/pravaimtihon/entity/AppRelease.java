@@ -17,12 +17,6 @@ import java.time.LocalDate;
 @Entity
 @Table(
     name = "app_releases",
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uq_app_release_platform_type_version",
-            columnNames = {"platform", "app_type", "release_version"}
-        )
-    },
     indexes = {
         @Index(name = "idx_ar_platform",     columnList = "platform"),
         @Index(name = "idx_ar_app_type",     columnList = "app_type"),

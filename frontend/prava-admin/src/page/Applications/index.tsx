@@ -99,9 +99,9 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
   const detected = file ? detectFromFilename(file.name) : null;
 
   const handleSave = async () => {
-    if (!appName.trim()) { notifications.show({ color: "red", message: "Ilova nomini kiriting" }); return; }
-    if (!version.trim()) { notifications.show({ color: "red", message: "Versiyani kiriting" }); return; }
-    if (!editing && !file) { notifications.show({ color: "red", message: "Faylni tanlang" }); return; }
+    if (!appName.trim()) { notifications.show({ color: "red", message: t("apps.enterAppName") }); return; }
+    if (!version.trim()) { notifications.show({ color: "red", message: t("apps.enterVersion") }); return; }
+    if (!editing && !file) { notifications.show({ color: "red", message: t("apps.selectFile") }); return; }
 
     setSaving(true);
 
@@ -132,7 +132,7 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
           timeout: 30_000,
         });
       } else {
-        notifications.show({ color: "red", message: "Faylni tanlang" });
+        notifications.show({ color: "red", message: t("apps.selectFile") });
         setSaving(false);
         return;
       }
@@ -166,7 +166,7 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
 
         {/* Ilova kategoriyasi: Online / Offline */}
         <Box>
-          <Text size="sm" fw={500} mb={6}>Ilova turi</Text>
+          <Text size="sm" fw={500} mb={6}>{t("apps.appTypeLabel")}</Text>
           <SegmentedControl
             fullWidth
             value={category}
@@ -177,7 +177,7 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
                 label: (
                   <Group gap={6} justify="center">
                     <IconCloudOff size={15}/>
-                    <span>Offline</span>
+                    <span>{t("apps.offline")}</span>
                   </Group>
                 ),
               },
@@ -186,7 +186,7 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
                 label: (
                   <Group gap={6} justify="center">
                     <IconCloud size={15}/>
-                    <span>Online</span>
+                    <span>{t("apps.online")}</span>
                   </Group>
                 ),
               },
@@ -194,22 +194,22 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
           />
           <Text size="xs" c="dimmed" mt={4}>
             {category === "ONLINE"
-              ? "🌐 Server bilan ishlaydi — internet kerak (ma'lumotlar baza serverda)"
-              : "💾 Internetsiz ishlaydi — barcha ma'lumotlar lokal kompyuterda"}
+              ? t("apps.onlineDesc")
+              : t("apps.offlineDesc")}
           </Text>
         </Box>
 
         {/* Nom + Versiya */}
         <Group grow>
           <TextInput
-            label="Ilova nomi"
-            placeholder={category === "ONLINE" ? "Prava Online" : "Prava Offline"}
+            label={t("apps.appName")}
+            placeholder={category === "ONLINE" ? t("apps.onlinePlaceholder") : t("apps.offlinePlaceholder")}
             value={appName}
             onChange={e => setAppName(e.target.value)}
             required
           />
           <TextInput
-            label="Versiya"
+            label={t("apps.version")}
             placeholder="1.0.0"
             value={version}
             onChange={e => setVersion(e.target.value)}
@@ -220,7 +220,7 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
         {/* Fayl yuklash */}
         <Box>
           <Text size="sm" fw={500} mb={6}>
-            Installer fayl {!editing && <span style={{color:"red"}}>*</span>}
+            {t("apps.installerFile")} {!editing && <span style={{color:"red"}}>*</span>}
           </Text>
           <FileButton
             onChange={setFile}
@@ -249,14 +249,14 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
                         <Text size="xs" c="dimmed">— {fmtSize(file.size)}</Text>
                       </Group>
                     )}
-                    <Text size="xs" c="dimmed">(qayta tanlash)</Text>
+                    <Text size="xs" c="dimmed">({t("apps.reselect")})</Text>
                   </Stack>
                 ) : (
                   <Stack gap={4} align="center">
                     <ThemeIcon variant="light" size="lg" radius="xl"><IconFileUpload size={20}/></ThemeIcon>
-                    <Text size="sm" fw={500}>Faylni tanlang yoki shu yerga tashlang</Text>
-                    <Text size="xs" c="dimmed">.exe · .msi · .deb · .rpm · .AppImage · .dmg · .pkg</Text>
-                    {editing?.downloadUrl && <Text size="xs" c="green">Hozirgi fayl saqlanadi</Text>}
+                    <Text size="sm" fw={500}>{t("apps.selectOrDrop")}</Text>
+                    <Text size="xs" c="dimmed">{t("apps.extensions")}</Text>
+                    {editing?.downloadUrl && <Text size="xs" c="green">{t("apps.currentFileKept")}</Text>}
                   </Stack>
                 )}
               </Paper>
@@ -266,22 +266,22 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
 
         {/* Tavsif */}
         <Textarea
-          label="Tavsif (ixtiyoriy)"
-          placeholder="Bu versiyada nima yangi..."
+          label={t("apps.releaseNotes")}
+          placeholder={t("apps.descPlaceholder")}
           rows={2}
           value={desc}
           onChange={e => setDesc(e.target.value)}
         />
 
         <Switch
-          label={<Text size="sm">Faollashtirish</Text>}
+          label={<Text size="sm">{t("apps.activateToggle")}</Text>}
           checked={active}
           onChange={e => setActive(e.currentTarget.checked)}
         />
 
         {saving && progress > 0 && (
           <Box>
-            <Text size="xs" c="dimmed" mb={4}>Yuklanmoqda... {progress}%</Text>
+            <Text size="xs" c="dimmed" mb={4}>{t("apps.uploadingProgress", { progress })}</Text>
             <Progress value={progress} animated size="sm" />
           </Box>
         )}
@@ -370,10 +370,10 @@ export default function Applications_Page() {
       {/* Stats */}
       <SimpleGrid cols={{ base: 2, sm: 4 }} mb="md">
         {[
-          { label: "Online ilovalar",  value: onlineCount,  color: "teal",   icon: <IconCloud size={18}/> },
-          { label: "Offline ilovalar", value: offlineCount, color: "blue",   icon: <IconCloudOff size={18}/> },
-          { label: "Faol relizlar",    value: activeCount,  color: "green",  icon: <IconCheck size={18}/> },
-          { label: "Jami yuklab olishlar", value: totalDl,  color: "orange", icon: <IconCloudDownload size={18}/> },
+          { label: t("apps.onlineApps"),          value: onlineCount,  color: "teal",   icon: <IconCloud size={18}/> },
+          { label: t("apps.offlineApps"),         value: offlineCount, color: "blue",   icon: <IconCloudOff size={18}/> },
+          { label: t("apps.activeReleasesLabel"), value: activeCount,  color: "green",  icon: <IconCheck size={18}/> },
+          { label: t("apps.totalDownloadsLabel"),  value: totalDl,  color: "orange", icon: <IconCloudDownload size={18}/> },
         ].map(s => (
           <Paper key={s.label} withBorder radius="md" p="sm">
             <Group>
@@ -402,9 +402,9 @@ export default function Applications_Page() {
           value={catFilter}
           onChange={v => setCatFilter(v as any)}
           data={[
-            { value: "ALL",     label: "Barchasi" },
-            { value: "ONLINE",  label: (<Group gap={4} justify="center"><IconCloud size={13}/><span>Online</span></Group>) },
-            { value: "OFFLINE", label: (<Group gap={4} justify="center"><IconCloudOff size={13}/><span>Offline</span></Group>) },
+            { value: "ALL",     label: t("apps.all") },
+            { value: "ONLINE",  label: (<Group gap={4} justify="center"><IconCloud size={13}/><span>{t("apps.online")}</span></Group>) },
+            { value: "OFFLINE", label: (<Group gap={4} justify="center"><IconCloudOff size={13}/><span>{t("apps.offline")}</span></Group>) },
           ]}
         />
       </Group>
@@ -427,12 +427,12 @@ export default function Applications_Page() {
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Ilova</Table.Th>
-                <Table.Th>Turi</Table.Th>
-                <Table.Th>Platforma</Table.Th>
-                <Table.Th>Versiya</Table.Th>
-                <Table.Th>Hajmi</Table.Th>
-                <Table.Th>Yuklab olingan</Table.Th>
+                <Table.Th>{t("apps.tableApp")}</Table.Th>
+                <Table.Th>{t("apps.tableType")}</Table.Th>
+                <Table.Th>{t("apps.tablePlatform")}</Table.Th>
+                <Table.Th>{t("apps.version")}</Table.Th>
+                <Table.Th>{t("apps.tableSize")}</Table.Th>
+                <Table.Th>{t("apps.tableDownloads")}</Table.Th>
                 <Table.Th>{t("common.status")}</Table.Th>
                 <Table.Th>{t("common.actions")}</Table.Th>
               </Table.Tr>
@@ -452,7 +452,7 @@ export default function Applications_Page() {
                         variant="light"
                         leftSection={cat === "ONLINE" ? <IconCloud size={12}/> : <IconCloudOff size={12}/>}
                       >
-                        {cat === "ONLINE" ? "Online" : "Offline"}
+                        {cat === "ONLINE" ? t("apps.online") : t("apps.offline")}
                       </Badge>
                     </Table.Td>
                     <Table.Td>

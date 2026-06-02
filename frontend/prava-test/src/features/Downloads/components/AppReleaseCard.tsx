@@ -1,5 +1,5 @@
 import {
-  Card, Group, Badge, Text, Button, Stack,
+  Card, Divider, Group, Badge, Text, Button, Stack,
   ThemeIcon, Tooltip,
 } from "@mantine/core";
 import {

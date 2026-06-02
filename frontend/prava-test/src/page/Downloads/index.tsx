@@ -22,8 +22,8 @@ import dayjs from "dayjs";
 // ─── Platform meta ────────────────────────────────────────────────────────────
 type PlatformKey = "ALL" | "WINDOWS" | "LINUX" | "MACOS";
 
-const PLATFORMS: { key: PlatformKey; label: string; icon: React.ReactNode }[] = [
-  { key: "ALL",     label: "Barchasi", icon: <IconApps size={16}/> },
+const PLATFORMS: { key: PlatformKey; labelKey?: string; label?: string; icon: React.ReactNode }[] = [
+  { key: "ALL",     labelKey: "downloads.all", icon: <IconApps size={16}/> },
   { key: "WINDOWS", label: "Windows",  icon: <IconBrandWindows size={16}/> },
   { key: "LINUX",   label: "Linux",    icon: <IconTerminal2 size={16}/> },
   { key: "MACOS",   label: "macOS",    icon: <IconApple size={16}/> },
@@ -76,10 +76,10 @@ function DownloadDetailModal({ r, onClose }: { r: AppReleaseResponse | null; onC
             variant="light"
             leftSection={cat === "ONLINE" ? <IconCloud size={12}/> : <IconCloudOff size={12}/>}
           >
-            {cat === "ONLINE" ? "Online ilova" : "Offline ilova"}
+            {cat === "ONLINE" ? t("downloads.onlineApp") : t("downloads.offlineApp")}
           </Badge>
           <Text size="xs" c="dimmed">
-            {cat === "ONLINE" ? "Internet kerak — server bilan ishlaydi" : "Internetsiz ishlaydi"}
+            {cat === "ONLINE" ? t("downloads.onlineDesc") : t("downloads.offlineDesc")}
           </Text>
         </Group>
 
@@ -173,7 +173,7 @@ function AppCard({ r, onOpen }: { r: AppReleaseResponse; onOpen: (r: AppReleaseR
               size="xs"
               leftSection={cat === "ONLINE" ? <IconCloud size={10}/> : <IconCloudOff size={10}/>}
             >
-              {cat === "ONLINE" ? "Online" : "Offline"}
+              {cat === "ONLINE" ? t("downloads.onlineApp") : t("downloads.offlineApp")}
             </Badge>
           </Group>
         </Box>
@@ -259,8 +259,8 @@ export default function Downloads_Page() {
                   <Group gap={8} justify="center">
                     <IconCloudOff size={16}/>
                     <Box>
-                      <Text size="sm" fw={600}>Offline ilova</Text>
-                      <Text size="xs" c="dimmed">Internetsiz ishlaydi · {offlineCount} ta</Text>
+                      <Text size="sm" fw={600}>{t("downloads.offlineApp")}</Text>
+                      <Text size="xs" c="dimmed">{t("downloads.offlineToggle", { count: offlineCount })}</Text>
                     </Box>
                   </Group>
                 ),
@@ -271,8 +271,8 @@ export default function Downloads_Page() {
                   <Group gap={8} justify="center">
                     <IconCloud size={16}/>
                     <Box>
-                      <Text size="sm" fw={600}>Online ilova</Text>
-                      <Text size="xs" c="dimmed">Server bilan · {onlineCount} ta</Text>
+                      <Text size="sm" fw={600}>{t("downloads.onlineApp")}</Text>
+                      <Text size="xs" c="dimmed">{t("downloads.onlineToggle", { count: onlineCount })}</Text>
                     </Box>
                   </Group>
                 ),
@@ -290,7 +290,7 @@ export default function Downloads_Page() {
                 : inCategory.filter(r => r.platform === p.key).length;
               return (
                 <Tabs.Tab key={p.key} value={p.key} leftSection={p.icon}>
-                  {p.label}
+                  {p.labelKey ? t(p.labelKey) : p.label}
                   {cnt > 0 && (
                     <Badge size="xs" ml={4} variant="light" circle>{cnt}</Badge>
                   )}
@@ -320,8 +320,8 @@ export default function Downloads_Page() {
               <Text fw={600}>{t("downloads.noApps")}</Text>
               <Text size="sm" c="dimmed">
                 {category === "ONLINE"
-                  ? "Hozircha Online ilovalar yo'q"
-                  : "Hozircha Offline ilovalar yo'q"}
+                  ? t("downloads.noOnlineApps")
+                  : t("downloads.noOfflineApps")}
               </Text>
             </Stack>
           </Center>

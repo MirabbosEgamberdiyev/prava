@@ -1,4 +1,5 @@
 import { Box, Group, Text, SimpleGrid, Paper, ThemeIcon } from "@mantine/core";
+import { useTranslation } from "react-i18next";
 import type { AppReleaseResponse, AppPlatform } from "../types";
 import { PLATFORM_META } from "../types";
 import AppReleaseCard from "./AppReleaseCard";
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function PlatformSection({ platform, releases, onDownload }: Props) {
+  const { t } = useTranslation();
   const pm = PLATFORM_META[platform];
 
   if (!releases || releases.length === 0) return null;
@@ -37,7 +39,7 @@ export default function PlatformSection({ platform, releases, onDownload }: Prop
           </ThemeIcon>
           <Box>
             <Text fw={700} size="lg">{pm.label}</Text>
-            <Text size="xs" c="dimmed">{releases.length} variant</Text>
+            <Text size="xs" c="dimmed">{releases.length} {t("downloads.variant")}</Text>
           </Box>
         </Group>
       </Paper>
