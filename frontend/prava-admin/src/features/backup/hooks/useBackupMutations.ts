@@ -20,22 +20,61 @@ export function useBackupMutations() {
   };
 
   /**
-   * GET /export/{jobId}/download → ZIP blob sifatida yuklash.
-   * Katta fayllar uchun timeout o'chirilgan (0 = cheksiz).
+   * GET /export/{jobId}/download → ZIP fayl sifatida yuklash.
+   *
+   * Axios + blob aralashganda xato javoblar yashirinib qoladi (JSON blob ichida tushib qoladi).
+   * Shuning uchun fetch() ishlatamiz va response status'ini aniq tekshiramiz.
+   * Katta fayllar uchun timeout yo'q.
    */
   const downloadBackup = async (jobId: string, filename: string): Promise<void> => {
-    const res = await api.get(`/api/v1/admin/backup/export/${jobId}/download`, {
-      responseType: "blob",
-      timeout: 0,
+    const token = sessionStorage.getItem("accessToken");
+    const baseURL = api.defaults.baseURL || "";
+    const url = `${baseURL}/api/v1/admin/backup/export/${jobId}/download`;
+
+    const res = await fetch(url, {
+      method: "GET",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: "include",
     });
-    const blobUrl = window.URL.createObjectURL(new Blob([res.data]));
+
+    if (!res.ok) {
+      // Xato javob — bo'sh ZIP tushirmasdan, tushunarli message bilan throw qilamiz
+      let message = `HTTP ${res.status}`;
+      const ct = res.headers.get("content-type") || "";
+      try {
+        if (ct.includes("application/json")) {
+          const json = await res.json();
+          message = json?.message || json?.error || message;
+        } else {
+          const text = await res.text();
+          if (text) message = text.slice(0, 200);
+        }
+      } catch { /* parse fail — message qoldi */ }
+
+      if (res.status === 404 || res.status === 410) {
+        throw new Error(
+          `Backup fayl serverda topilmadi (${res.status}). ` +
+          `Server qayta ishga tushgan yoki temp fayl 2 soatdan oshib o'chirilgan bo'lishi mumkin. ` +
+          `Yangi backup yarating.`
+        );
+      }
+      throw new Error(message);
+    }
+
+    // ⚡ Stream blob: katta fayllar uchun xotirani egallamaslik
+    const blob = await res.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = blobUrl;
     a.download = filename;
+    a.rel = "noopener";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    window.URL.revokeObjectURL(blobUrl);
+
+    // Brauzer downloadni boshlashga ulgursin, keyin URL'ni bo'shatamiz
+    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
   };
 
   /**
