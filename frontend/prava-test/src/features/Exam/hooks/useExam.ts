@@ -65,6 +65,21 @@ export function useExam(options: UseExamOptions = {}): UseExamReturn {
 
         if (response.data) {
           setExamData(response.data);
+
+          // ⚡ Performance: barcha savol rasmlarini fonda yuklab olish.
+          // Browser HTTP keshiga tushadi + Image.decode() pixel decoding fonda yakunlanadi.
+          // Natija: "Keyingi" bosilganda yangi rasm darhol ko'rinadi, loading yo'q.
+          const questions = response.data.data?.questions;
+          if (Array.isArray(questions)) {
+            questions.forEach((q) => {
+              if (!q?.imageUrl) return;
+              const img = new Image();
+              img.src = q.imageUrl;
+              if (typeof img.decode === "function") {
+                img.decode().catch(() => { /* ignore decode failures */ });
+              }
+            });
+          }
         }
       } catch (err: unknown) {
         const errorMessage =
