@@ -292,6 +292,25 @@ public class ProductionBackupService {
 
     // ─── Media files ────────────────────────────────────────────────────────
 
+    /**
+     * Backup'ga kiritilmaydigan papkalar (uploads/ ostidagi).
+     * <ul>
+     *   <li><b>installers</b> — desktop ilova o'rnatuvchilari (.exe/.msi/.dmg).
+     *       Bu fayllar har deploy'da qaytadan build qilinadi, backup'ga kiritilsa
+     *       arxiv hajmi keraksiz GB-larga oshib ketadi. Aktivatsiya kodlari
+     *       va license generator bunga bog'liq emas.</li>
+     * </ul>
+     */
+    private static final java.util.Set<String> MEDIA_SKIP_DIRS =
+            java.util.Set.of("installers");
+
+    private static boolean isUnderSkipDir(Path uploadsDir, Path file) {
+        Path rel = uploadsDir.relativize(file);
+        if (rel.getNameCount() == 0) return false;
+        String top = rel.getName(0).toString();
+        return MEDIA_SKIP_DIRS.contains(top);
+    }
+
     private void exportMediaFiles(ZipOutputStream zos, BackupManifest manifest,
                                   BackupJobStatus job) throws IOException, NoSuchAlgorithmException {
         if (!"local".equalsIgnoreCase(storageProperties.getType())) {
@@ -309,6 +328,9 @@ public class ProductionBackupService {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         int[] count          = {0};
         long[] totalBytes    = {0};
+        int[] skippedCount   = {0};
+
+        log.info("[BACKUP] Media export start (skip-dirs: {})", MEDIA_SKIP_DIRS);
 
         // Stream orqali fayllarni o'qib, ZIP'ga ko'chiramiz VA shu vaqtning o'zida
         // har faylning SHA-256'ini hisoblaymiz (tee stream). Bu yo'l bilan media
@@ -316,6 +338,13 @@ public class ProductionBackupService {
         // qayta hisoblanib, fayl buzilgan-buzilmaganligi aniqlanadi.
         try (Stream<Path> walk = Files.walk(uploadsDir)) {
             walk.filter(Files::isRegularFile)
+                    .filter(p -> {
+                        if (isUnderSkipDir(uploadsDir, p)) {
+                            skippedCount[0]++;
+                            return false;
+                        }
+                        return true;
+                    })
                     .sorted() // deterministik checksum uchun
                     .forEach(file -> {
                         try {
@@ -358,7 +387,8 @@ public class ProductionBackupService {
         info.setChecksum("sha256:" + HexFormat.of().formatHex(digest.digest()));
         manifest.setMedia(info);
 
-        log.info("[BACKUP] Media exported: count={} totalKB={}", count[0], totalBytes[0] / 1024);
+        log.info("[BACKUP] Media exported: count={} totalKB={} (skipped {} files in {})",
+                count[0], totalBytes[0] / 1024, skippedCount[0], MEDIA_SKIP_DIRS);
     }
 
     // ─── Manifest ───────────────────────────────────────────────────────────
