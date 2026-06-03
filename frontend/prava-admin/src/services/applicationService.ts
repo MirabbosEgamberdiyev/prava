@@ -92,7 +92,10 @@ interface ChunkUploadParams {
   file:         File;
   appName:      string;
   version:      string;
-  description?: string;
+  releaseNotesUzl?: string;
+  releaseNotesUzc?: string;
+  releaseNotesRu?:  string;
+  releaseNotesEn?:  string;
   appCategory:  "ONLINE" | "OFFLINE";
   isActive:     boolean;
   onProgress?:  (pct: number) => void;
@@ -135,8 +138,8 @@ async function uploadOneChunk(
  * Internet uzilsa har chunk uchun 3 marta retry qiladi.
  */
 export const uploadChunked = async ({
-  file, appName, version, description, appCategory, isActive,
-  onProgress, releaseId,
+  file, appName, version, releaseNotesUzl, releaseNotesUzc, releaseNotesRu, releaseNotesEn,
+  appCategory, isActive, onProgress, releaseId,
 }: ChunkUploadParams): Promise<AppReleaseResponse> => {
 
   // 1. INIT
@@ -173,7 +176,7 @@ export const uploadChunked = async ({
 
     const resp = await api[method]<{ data: AppReleaseResponse }>(
       endpoint,
-      { uploadId, appName, version, description, appCategory, isActive },
+      { uploadId, appName, version, releaseNotesUzl, releaseNotesUzc, releaseNotesRu, releaseNotesEn, appCategory, isActive },
       { timeout: 5 * 60 * 1000 } // 5 daqiqa — server'da SHA-256 va merge
     );
 

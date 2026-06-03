@@ -170,14 +170,18 @@ public class AppReleaseController {
     public ResponseEntity<ApiResponse<AppReleaseResponse>> quickUpload(
             @RequestParam("appName")                                 String        appName,
             @RequestParam("version")                                 String        version,
-            @RequestParam(value = "description",  required = false) String        description,
+            @RequestParam(value = "releaseNotesUzl", required = false) String      releaseNotesUzl,
+            @RequestParam(value = "releaseNotesUzc", required = false) String      releaseNotesUzc,
+            @RequestParam(value = "releaseNotesRu",  required = false) String      releaseNotesRu,
+            @RequestParam(value = "releaseNotesEn",  required = false) String      releaseNotesEn,
             @RequestParam(value = "appCategory",  defaultValue = "OFFLINE") String appCategory,
             @RequestParam(value = "isActive",     defaultValue = "true") boolean  isActive,
             @RequestParam("file")                                    MultipartFile file,
             Authentication auth) {
 
         AppReleaseResponse resp = service.quickUpload(
-                appName, version, description, appCategory, isActive, file, auth.getName());
+                appName, version, releaseNotesUzl, releaseNotesUzc, releaseNotesRu, releaseNotesEn,
+                appCategory, isActive, file, auth.getName());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Ilova muvaffaqiyatli qo'shildi", resp));
     }
@@ -186,16 +190,20 @@ public class AppReleaseController {
     @Operation(summary = "Sodda yangilash (fayl ixtiyoriy)")
     public ResponseEntity<ApiResponse<AppReleaseResponse>> quickUpdate(
             @PathVariable Long id,
-            @RequestParam(value = "appName",      required = false) String        appName,
-            @RequestParam(value = "version",      required = false) String        version,
-            @RequestParam(value = "description",  required = false) String        description,
-            @RequestParam(value = "appCategory",  required = false) String        appCategory,
-            @RequestParam(value = "isActive",     defaultValue = "true") boolean  isActive,
-            @RequestParam(value = "file",         required = false) MultipartFile file,
+            @RequestParam(value = "appName",         required = false) String        appName,
+            @RequestParam(value = "version",         required = false) String        version,
+            @RequestParam(value = "releaseNotesUzl", required = false) String        releaseNotesUzl,
+            @RequestParam(value = "releaseNotesUzc", required = false) String        releaseNotesUzc,
+            @RequestParam(value = "releaseNotesRu",  required = false) String        releaseNotesRu,
+            @RequestParam(value = "releaseNotesEn",  required = false) String        releaseNotesEn,
+            @RequestParam(value = "appCategory",     required = false) String        appCategory,
+            @RequestParam(value = "isActive",        defaultValue = "true") boolean  isActive,
+            @RequestParam(value = "file",            required = false) MultipartFile file,
             Authentication auth) {
 
         AppReleaseResponse resp = service.quickUpdate(
-                id, appName, version, description, appCategory, isActive, file, auth.getName());
+                id, appName, version, releaseNotesUzl, releaseNotesUzc, releaseNotesRu, releaseNotesEn,
+                appCategory, isActive, file, auth.getName());
         return ResponseEntity.ok(ApiResponse.success("Ilova yangilandi", resp));
     }
 
@@ -242,12 +250,16 @@ public class AppReleaseController {
         String uploadId    = String.valueOf(body.get("uploadId"));
         String appName     = String.valueOf(body.get("appName"));
         String version     = String.valueOf(body.get("version"));
-        String description = body.get("description") != null ? String.valueOf(body.get("description")) : null;
+        String releaseNotesUzl = body.get("releaseNotesUzl") != null ? String.valueOf(body.get("releaseNotesUzl")) : null;
+        String releaseNotesUzc = body.get("releaseNotesUzc") != null ? String.valueOf(body.get("releaseNotesUzc")) : null;
+        String releaseNotesRu  = body.get("releaseNotesRu")  != null ? String.valueOf(body.get("releaseNotesRu"))  : null;
+        String releaseNotesEn  = body.get("releaseNotesEn")  != null ? String.valueOf(body.get("releaseNotesEn"))  : null;
         String appCategory = body.get("appCategory") != null ? String.valueOf(body.get("appCategory")) : "OFFLINE";
         boolean isActive   = body.get("isActive") == null || Boolean.parseBoolean(String.valueOf(body.get("isActive")));
 
         AppReleaseResponse resp = service.completeChunkUpload(
-                uploadId, appName, version, description, appCategory, isActive, auth.getName());
+                uploadId, appName, version, releaseNotesUzl, releaseNotesUzc, releaseNotesRu, releaseNotesEn,
+                appCategory, isActive, auth.getName());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Ilova muvaffaqiyatli yuklandi", resp));
     }
@@ -263,12 +275,16 @@ public class AppReleaseController {
         String uploadId    = String.valueOf(body.get("uploadId"));
         String appName     = body.get("appName")     != null ? String.valueOf(body.get("appName"))     : null;
         String version     = body.get("version")     != null ? String.valueOf(body.get("version"))     : null;
-        String description = body.get("description") != null ? String.valueOf(body.get("description")) : null;
+        String releaseNotesUzl = body.get("releaseNotesUzl") != null ? String.valueOf(body.get("releaseNotesUzl")) : null;
+        String releaseNotesUzc = body.get("releaseNotesUzc") != null ? String.valueOf(body.get("releaseNotesUzc")) : null;
+        String releaseNotesRu  = body.get("releaseNotesRu")  != null ? String.valueOf(body.get("releaseNotesRu"))  : null;
+        String releaseNotesEn  = body.get("releaseNotesEn")  != null ? String.valueOf(body.get("releaseNotesEn"))  : null;
         String appCategory = body.get("appCategory") != null ? String.valueOf(body.get("appCategory")) : null;
         boolean isActive   = body.get("isActive") == null || Boolean.parseBoolean(String.valueOf(body.get("isActive")));
 
         AppReleaseResponse resp = service.completeChunkUpdate(
-                id, uploadId, appName, version, description, appCategory, isActive, auth.getName());
+                id, uploadId, appName, version, releaseNotesUzl, releaseNotesUzc, releaseNotesRu, releaseNotesEn,
+                appCategory, isActive, auth.getName());
         return ResponseEntity.ok(ApiResponse.success("Ilova yangilandi", resp));
     }
 

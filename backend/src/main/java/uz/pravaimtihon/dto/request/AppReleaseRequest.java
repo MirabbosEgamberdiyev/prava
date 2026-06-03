@@ -55,9 +55,16 @@ public class AppReleaseRequest {
 
     // ── Reliz ma'lumotlari ────────────────────────────────────────────────
 
+    @NotBlank(message = "O'zbekcha (lotin) yangiliklar majburiy")
     private String releaseNotesUzl;
+
+    @NotBlank(message = "Ўзбекча (кирилл) янгиликлар мажбурий")
     private String releaseNotesUzc;
+
+    @NotBlank(message = "Русский текст обязателен")
     private String releaseNotesRu;
+
+    @NotBlank(message = "English release notes are required")
     private String releaseNotesEn;
 
     private LocalDate releaseDate;

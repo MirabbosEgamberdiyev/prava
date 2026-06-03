@@ -78,7 +78,10 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
   const [category, setCategory] = useState<AppCategory>("OFFLINE");
   const [appName,  setAppName]  = useState("");
   const [version,  setVersion]  = useState("");
-  const [desc,     setDesc]     = useState("");
+  const [notesUzl, setNotesUzl] = useState("");
+  const [notesUzc, setNotesUzc] = useState("");
+  const [notesRu,  setNotesRu]  = useState("");
+  const [notesEn,  setNotesEn]  = useState("");
   const [active,   setActive]   = useState(true);
   const [file,     setFile]     = useState<File | null>(null);
   const [saving,   setSaving]   = useState(false);
@@ -89,7 +92,10 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
       setCategory((editing?.appCategory as AppCategory) ?? "OFFLINE");
       setAppName(editing?.appName ?? "");
       setVersion(editing?.version ?? "");
-      setDesc(editing?.releaseNotesUzl ?? "");
+      setNotesUzl(editing?.releaseNotesUzl ?? "");
+      setNotesUzc(editing?.releaseNotesUzc ?? "");
+      setNotesRu(editing?.releaseNotesRu ?? "");
+      setNotesEn(editing?.releaseNotesEn ?? "");
       setActive(editing ? editing.status === "ACTIVE" : true);
       setFile(null);
       setProgress(0);
@@ -101,6 +107,9 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
   const handleSave = async () => {
     if (!appName.trim()) { notifications.show({ color: "red", message: t("apps.enterAppName") }); return; }
     if (!version.trim()) { notifications.show({ color: "red", message: t("apps.enterVersion") }); return; }
+    if (!notesUzl.trim() || !notesUzc.trim() || !notesRu.trim() || !notesEn.trim()) {
+      notifications.show({ color: "red", message: t("apps.allLanguagesRequired") }); return;
+    }
     if (!editing && !file) { notifications.show({ color: "red", message: t("apps.selectFile") }); return; }
 
     setSaving(true);
@@ -112,20 +121,25 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
           file,
           appName:     appName.trim(),
           version:     version.trim(),
-          description: desc.trim() || undefined,
+          releaseNotesUzl: notesUzl.trim() || undefined,
+          releaseNotesUzc: notesUzc.trim() || undefined,
+          releaseNotesRu:  notesRu.trim()  || undefined,
+          releaseNotesEn:  notesEn.trim()  || undefined,
           appCategory: category,
           isActive:    active,
-          releaseId:   editing?.id,  // undefined → yangi, raqam → yangilash
+          releaseId:   editing?.id,
           onProgress:  setProgress,
         });
       } else if (editing) {
-        // Tahrirlash: fayl o'zgarmadi → faqat metadata yangilash (kichik POST)
         const form = new FormData();
         form.append("appName",     appName.trim());
         form.append("version",     version.trim());
         form.append("appCategory", category);
         form.append("isActive",    String(active));
-        if (desc.trim()) form.append("description", desc.trim());
+        if (notesUzl.trim()) form.append("releaseNotesUzl", notesUzl.trim());
+        if (notesUzc.trim()) form.append("releaseNotesUzc", notesUzc.trim());
+        if (notesRu.trim())  form.append("releaseNotesRu",  notesRu.trim());
+        if (notesEn.trim())  form.append("releaseNotesEn",  notesEn.trim());
 
         await api.put(`${BASE}/${editing.id}/quick-update`, form, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -264,14 +278,46 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
           </FileButton>
         </Box>
 
-        {/* Tavsif */}
-        <Textarea
-          label={t("apps.releaseNotes")}
-          placeholder={t("apps.descPlaceholder")}
-          rows={2}
-          value={desc}
-          onChange={e => setDesc(e.target.value)}
-        />
+        {/* Release notes — 4 ta tilda */}
+        <Box>
+          <Text size="sm" fw={500} mb={6}>
+            {t("apps.releaseNotes")} <span style={{color:"red"}}>*</span>
+          </Text>
+          <Stack gap="xs">
+            <Textarea
+              label="O'zbekcha (lotin)"
+              placeholder="Yangiliklar — o'zbek tilida (lotin)"
+              rows={2}
+              value={notesUzl}
+              onChange={e => setNotesUzl(e.target.value)}
+              required
+            />
+            <Textarea
+              label="Ўзбекча (кирилл)"
+              placeholder="Янгиликлар — ўзбек тилида (кирилл)"
+              rows={2}
+              value={notesUzc}
+              onChange={e => setNotesUzc(e.target.value)}
+              required
+            />
+            <Textarea
+              label="Русский"
+              placeholder="Что нового — на русском языке"
+              rows={2}
+              value={notesRu}
+              onChange={e => setNotesRu(e.target.value)}
+              required
+            />
+            <Textarea
+              label="English"
+              placeholder="Release notes — in English"
+              rows={2}
+              value={notesEn}
+              onChange={e => setNotesEn(e.target.value)}
+              required
+            />
+          </Stack>
+        </Box>
 
         <Switch
           label={<Text size="sm">{t("apps.activateToggle")}</Text>}

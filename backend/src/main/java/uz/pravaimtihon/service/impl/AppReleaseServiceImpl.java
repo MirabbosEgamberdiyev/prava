@@ -361,7 +361,9 @@ public class AppReleaseServiceImpl implements AppReleaseService {
 
     @Override
     @Transactional
-    public AppReleaseResponse quickUpload(String appName, String version, String description,
+    public AppReleaseResponse quickUpload(String appName, String version,
+                                          String releaseNotesUzl, String releaseNotesUzc,
+                                          String releaseNotesRu, String releaseNotesEn,
                                           String appCategory, boolean isActive,
                                           MultipartFile file, String createdBy) {
         if (file == null || file.isEmpty())
@@ -392,7 +394,10 @@ public class AppReleaseServiceImpl implements AppReleaseService {
                 .status(isActive ? AppReleaseStatus.ACTIVE : AppReleaseStatus.DRAFT)
                 .isLatest(false)
                 .isForceUpdate(false)
-                .releaseNotesUzl(description != null ? description.trim() : null)
+                .releaseNotesUzl(releaseNotesUzl != null ? releaseNotesUzl.trim() : null)
+                .releaseNotesUzc(releaseNotesUzc != null ? releaseNotesUzc.trim() : null)
+                .releaseNotesRu(releaseNotesRu != null ? releaseNotesRu.trim() : null)
+                .releaseNotesEn(releaseNotesEn != null ? releaseNotesEn.trim() : null)
                 .releaseDate(java.time.LocalDate.now())
                 .downloadUrl(uploaded[0])
                 .fileSize(file.getSize())
@@ -416,7 +421,9 @@ public class AppReleaseServiceImpl implements AppReleaseService {
     @Override
     @Transactional
     public AppReleaseResponse quickUpdate(Long id, String appName, String version,
-                                          String description, String appCategory,
+                                          String releaseNotesUzl, String releaseNotesUzc,
+                                          String releaseNotesRu, String releaseNotesEn,
+                                          String appCategory,
                                           boolean isActive, MultipartFile file, String updatedBy) {
         AppRelease entity = findOrThrow(id);
 
@@ -425,7 +432,10 @@ public class AppReleaseServiceImpl implements AppReleaseService {
             entity.setAppVersion(version.trim());
             entity.setVersionCode(parseVersionCode(version.trim()));
         }
-        if (description != null) entity.setReleaseNotesUzl(description.trim());
+        if (releaseNotesUzl != null) entity.setReleaseNotesUzl(releaseNotesUzl.trim());
+        if (releaseNotesUzc != null) entity.setReleaseNotesUzc(releaseNotesUzc.trim());
+        if (releaseNotesRu  != null) entity.setReleaseNotesRu(releaseNotesRu.trim());
+        if (releaseNotesEn  != null) entity.setReleaseNotesEn(releaseNotesEn.trim());
         if (appCategory != null && !appCategory.isBlank())
             entity.setAppCategory(normalizeCategory(appCategory));
         entity.setStatus(isActive ? AppReleaseStatus.ACTIVE : AppReleaseStatus.DRAFT);
@@ -658,7 +668,9 @@ public class AppReleaseServiceImpl implements AppReleaseService {
     @Override
     @Transactional
     public AppReleaseResponse completeChunkUpload(String uploadId, String appName, String version,
-                                                  String description, String appCategory,
+                                                  String releaseNotesUzl, String releaseNotesUzc,
+                                                  String releaseNotesRu, String releaseNotesEn,
+                                                  String appCategory,
                                                   boolean isActive, String createdBy) {
         UploadSession session = uploadSessions.get(uploadId);
         if (session == null) {
@@ -688,7 +700,10 @@ public class AppReleaseServiceImpl implements AppReleaseService {
                 .status(isActive ? AppReleaseStatus.ACTIVE : AppReleaseStatus.DRAFT)
                 .isLatest(false)
                 .isForceUpdate(false)
-                .releaseNotesUzl(description != null ? description.trim() : null)
+                .releaseNotesUzl(releaseNotesUzl != null ? releaseNotesUzl.trim() : null)
+                .releaseNotesUzc(releaseNotesUzc != null ? releaseNotesUzc.trim() : null)
+                .releaseNotesRu(releaseNotesRu != null ? releaseNotesRu.trim() : null)
+                .releaseNotesEn(releaseNotesEn != null ? releaseNotesEn.trim() : null)
                 .releaseDate(java.time.LocalDate.now())
                 .downloadUrl(uploaded[0])
                 .fileSize(session.totalSize())
@@ -712,7 +727,9 @@ public class AppReleaseServiceImpl implements AppReleaseService {
     @Override
     @Transactional
     public AppReleaseResponse completeChunkUpdate(Long releaseId, String uploadId, String appName,
-                                                  String version, String description,
+                                                  String version,
+                                                  String releaseNotesUzl, String releaseNotesUzc,
+                                                  String releaseNotesRu, String releaseNotesEn,
                                                   String appCategory, boolean isActive,
                                                   String updatedBy) {
         AppRelease entity = findOrThrow(releaseId);
@@ -727,7 +744,10 @@ public class AppReleaseServiceImpl implements AppReleaseService {
             entity.setAppVersion(version.trim());
             entity.setVersionCode(parseVersionCode(version.trim()));
         }
-        if (description != null) entity.setReleaseNotesUzl(description.trim());
+        if (releaseNotesUzl != null) entity.setReleaseNotesUzl(releaseNotesUzl.trim());
+        if (releaseNotesUzc != null) entity.setReleaseNotesUzc(releaseNotesUzc.trim());
+        if (releaseNotesRu  != null) entity.setReleaseNotesRu(releaseNotesRu.trim());
+        if (releaseNotesEn  != null) entity.setReleaseNotesEn(releaseNotesEn.trim());
         if (appCategory != null && !appCategory.isBlank())
             entity.setAppCategory(normalizeCategory(appCategory));
         entity.setStatus(isActive ? AppReleaseStatus.ACTIVE : AppReleaseStatus.DRAFT);
