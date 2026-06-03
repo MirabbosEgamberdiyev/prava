@@ -528,27 +528,43 @@ public class QuestionService {
                 .orElseThrow(() -> new ResourceNotFoundException("error.question.not.found"));
 
         String oldImageUrl = question.getImageUrl();
+        String newlyUploadedUrl = null; // rollback uchun
 
         // Handle image update if new file provided
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                // Upload new image
+                // 1) Upload new image (eski hali to'kilmagan)
                 FileUploadResponse uploadResponse = fileStorageManager.uploadFile(imageFile, "questions");
-                request.setImageUrl(uploadResponse.getFileUrl());
-                log.info("New question image uploaded: {}", uploadResponse.getFileUrl());
-
-                // Delete old image if exists and is different
-                if (oldImageUrl != null && !oldImageUrl.isEmpty() &&
-                        !oldImageUrl.equals(uploadResponse.getFileUrl())) {
-                    deleteImageSafely(oldImageUrl);
-                }
+                newlyUploadedUrl = uploadResponse.getFileUrl();
+                request.setImageUrl(newlyUploadedUrl);
+                log.info("New question image uploaded: {}", newlyUploadedUrl);
             } catch (Exception e) {
                 log.error("Failed to upload new question image", e);
                 throw new BusinessException("error.question.image.upload.failed");
             }
         }
 
-        return updateQuestion(id, request, language);
+        // 2) DB save (updateQuestion). Agar bu yerda exception bo'lsa,
+        //    yangidan yuklangan faylni rollback qilamiz (orfan qoldirmaslik uchun).
+        try {
+            QuestionResponse response = updateQuestion(id, request, language);
+
+            // 3) DB muvaffaqiyatli yangilandi — endi ESKI faylni xavfsiz tarzda o'chiramiz.
+            //    Tartib muhim: avval DB yangi URL'ni tutgan bo'lishi shart, keyin eski fayl ketadi.
+            if (newlyUploadedUrl != null && oldImageUrl != null
+                    && !oldImageUrl.isEmpty()
+                    && !oldImageUrl.equals(newlyUploadedUrl)) {
+                deleteImageSafely(oldImageUrl);
+            }
+            return response;
+        } catch (Exception dbEx) {
+            // DB save xato berdi — yangi yuklangan faylni o'chiramiz (rollback)
+            if (newlyUploadedUrl != null) {
+                log.warn("DB save failed for question {}, rolling back uploaded file {}", id, newlyUploadedUrl);
+                deleteImageSafely(newlyUploadedUrl);
+            }
+            throw dbEx;
+        }
     }
 
     /**
@@ -567,22 +583,37 @@ public class QuestionService {
         }
 
         String oldImageUrl = question.getImageUrl();
+        String newlyUploadedUrl = null;
 
         try {
-            // Upload new image
+            // 1) Yangi rasmni yuklash
             FileUploadResponse uploadResponse = fileStorageManager.uploadFile(imageFile, "questions");
-            question.setImageUrl(uploadResponse.getFileUrl());
-            questionRepository.save(question);
+            newlyUploadedUrl = uploadResponse.getFileUrl();
+            question.setImageUrl(newlyUploadedUrl);
 
-            log.info("Question image updated: {}", uploadResponse.getFileUrl());
+            // 2) DB save — agar yiqilsa, yangi yuklangan fayl orfan qolmasligi uchun
+            //    catch blokda uni o'chiramiz.
+            try {
+                questionRepository.save(question);
+            } catch (Exception dbEx) {
+                log.warn("DB save failed for question {}, rolling back uploaded file {}", id, newlyUploadedUrl);
+                deleteImageSafely(newlyUploadedUrl);
+                throw dbEx;
+            }
 
-            // Delete old image
-            if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
+            log.info("Question image updated: {}", newlyUploadedUrl);
+
+            // 3) DB muvaffaqiyatli — ESKI rasmni xavfsiz o'chiramiz
+            //    (oldImageUrl null/bo'sh emas va yangiga teng emas)
+            if (oldImageUrl != null && !oldImageUrl.isEmpty()
+                    && !oldImageUrl.equals(newlyUploadedUrl)) {
                 deleteImageSafely(oldImageUrl);
             }
 
             return questionMapper.toResponse(question, language);
 
+        } catch (BusinessException be) {
+            throw be;
         } catch (Exception e) {
             log.error("Failed to update question image", e);
             throw new BusinessException("error.question.image.upload.failed");

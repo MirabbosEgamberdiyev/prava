@@ -242,19 +242,34 @@ public class ProductionBackupService {
     }
 
     private void writeRegularTable(JsonGenerator gen, String table, int[] counter) throws Exception {
-        int offset = 0;
+        // ⚡ Keyset pagination (OFFSET o'rniga): katta jadvallar uchun ancha tezroq.
+        // OFFSET 50000 LIMIT 1000 — PostgreSQL har safar 50000 qatorni skanlaydi (O(n²)).
+        // WHERE id > lastId — har sahifa konstant vaqt (O(n)), index'dan to'g'ridan foydalanadi.
+        Long lastId = null;
         while (true) {
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                    "SELECT * FROM " + table + " ORDER BY id LIMIT ? OFFSET ?",
-                    PAGE_SIZE, offset);
+            List<Map<String, Object>> rows;
+            if (lastId == null) {
+                rows = jdbcTemplate.queryForList(
+                        "SELECT * FROM " + table + " ORDER BY id LIMIT ?", PAGE_SIZE);
+            } else {
+                rows = jdbcTemplate.queryForList(
+                        "SELECT * FROM " + table + " WHERE id > ? ORDER BY id LIMIT ?",
+                        lastId, PAGE_SIZE);
+            }
             if (rows.isEmpty()) break;
 
             for (Map<String, Object> row : rows) {
                 gen.writeObject(row);
             }
             counter[0] += rows.size();
+            Object lastIdObj = rows.get(rows.size() - 1).get("id");
+            if (lastIdObj instanceof Number) {
+                lastId = ((Number) lastIdObj).longValue();
+            } else {
+                // Fallback: id raqamli emas (UUID va h.k.) — OFFSET ga qaytamiz
+                break;
+            }
             if (rows.size() < PAGE_SIZE) break;
-            offset += PAGE_SIZE;
         }
     }
 
@@ -295,22 +310,41 @@ public class ProductionBackupService {
         int[] count          = {0};
         long[] totalBytes    = {0};
 
+        // Stream orqali fayllarni o'qib, ZIP'ga ko'chiramiz VA shu vaqtning o'zida
+        // har faylning SHA-256'ini hisoblaymiz (tee stream). Bu yo'l bilan media
+        // integriteti haqiqatan tekshiriladi — restore vaqtida ham aynan shu hash
+        // qayta hisoblanib, fayl buzilgan-buzilmaganligi aniqlanadi.
         try (Stream<Path> walk = Files.walk(uploadsDir)) {
             walk.filter(Files::isRegularFile)
+                    .sorted() // deterministik checksum uchun
                     .forEach(file -> {
                         try {
                             String relative = uploadsDir.relativize(file).toString().replace('\\', '/');
                             ZipEntry entry  = new ZipEntry("files/" + relative);
                             zos.putNextEntry(entry);
 
-                            // Stream orqali ko'chirish — xotiraga to'liq yuklanmaydi
-                            long fileSize = Files.copy(file, zos);
+                            // Per-file SHA-256 — fayl mazmunini xeshlash
+                            MessageDigest fileDigest = MessageDigest.getInstance("SHA-256");
+                            long fileSize = 0;
+                            try (java.io.InputStream in = Files.newInputStream(file)) {
+                                byte[] buf = new byte[65536];
+                                int n;
+                                while ((n = in.read(buf)) > 0) {
+                                    zos.write(buf, 0, n);
+                                    fileDigest.update(buf, 0, n);
+                                    digest.update(buf, 0, n); // global media digest
+                                    fileSize += n;
+                                }
+                            }
                             zos.closeEntry();
 
-                            digest.update(relative.getBytes());
+                            // Per-file checksum manifestga (restore tekshirish uchun)
+                            String fileChecksum = "sha256:" + HexFormat.of().formatHex(fileDigest.digest());
+                            manifest.addMediaFile(relative, fileSize, fileChecksum);
+
                             count[0]++;
                             totalBytes[0] += fileSize;
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             log.warn("[BACKUP] Skipping file {}: {}", file, e.getMessage());
                         }
                     });

@@ -81,7 +81,24 @@ public class BackupManifest {
     public static class MediaInfo {
         private int fileCount;
         private long totalBytes;
-        /** SHA-256 checksum barcha fayl nomlarining birlashtirmasi ustida. */
+        /** Global SHA-256 — barcha fayl mazmunlari ustida (per-file digest emas, yig'indi). */
         private String checksum;
+        /** Per-file: yo'l → integritet ma'lumotlari. Restore vaqtida har bir fayl tekshiriladi. */
+        private java.util.Map<String, MediaFileEntry> files = new java.util.LinkedHashMap<>();
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MediaFileEntry {
+        private long size;
+        /** sha256:HEX shaklida — restore vaqtida fayl mazmunini tekshirish uchun. */
+        private String checksum;
+    }
+
+    // ── Helper ───────────────────────────────────────────────────────────────
+    public void addMediaFile(String relativePath, long size, String checksum) {
+        if (this.media == null) this.media = new MediaInfo();
+        this.media.getFiles().put(relativePath, new MediaFileEntry(size, checksum));
     }
 }
