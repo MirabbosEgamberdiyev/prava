@@ -313,6 +313,15 @@ public class BackupController {
 
     // ─── Helpers ────────────────────────────────────────────────────────────
 
+    /**
+     * ⚡ Tezkor backup ZIP yuklash:
+     *  - FileSystemResource (Spring buffer'siz to'g'ridan-to'g'ri stream)
+     *  - Accept-Ranges: bytes → brauzer to'xtatib qayta davom etishi mumkin
+     *  - X-Accel-Buffering: no → nginx yo'lda buferlash o'rniga oqim uzatadi
+     *  - Content-Encoding: identity → nginx gzip qaytadan siqmaydi (ZIP allaqachon siqilgan)
+     *  - Cache-Control: no-store → maxfiy ma'lumot, proxy keshlamaydi
+     *  - Spring 6 / Tomcat zero-copy (sendfile) yoqilgan bo'lsa, kernel darajasida ko'chiradi.
+     */
     private ResponseEntity<Resource> streamBackupFile(BackupJobStatus job) throws IOException {
         Path tempFile = Path.of(job.getTempFilePath());
 
@@ -322,14 +331,20 @@ public class BackupController {
 
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
         String filename  = "prava-backup-" + timestamp + ".zip";
+        long size = job.getFileSizeBytes() > 0 ? job.getFileSizeBytes() : Files.size(tempFile);
 
         Resource resource = new FileSystemResource(tempFile);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment().filename(filename).build().toString())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .contentLength(job.getFileSizeBytes())
+                .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                .header(HttpHeaders.CACHE_CONTROL, "no-store, private")
+                .header(HttpHeaders.CONTENT_ENCODING, "identity") // nginx/cdn gzip o'tkazmasligi uchun
+                .header("X-Accel-Buffering", "no")               // nginx: proxy_buffering off
+                .header("X-Content-Type-Options", "nosniff")
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .contentLength(size)
                 .body(resource);
     }
 
