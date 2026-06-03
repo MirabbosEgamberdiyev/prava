@@ -13,6 +13,7 @@ import {
   IconTicket,
   IconUsers,
   IconFiles,
+  IconNotebook,
 } from "@tabler/icons-react";
 
 export interface NavItem {
@@ -96,6 +97,12 @@ const AdminNavUrlData: NavItem[] = [
     name: "nav.learningCenters",
     url: "/learning-centers",
     icon: <IconBuilding size="16px" />,
+    role: "SUPER_ADMIN",
+  },
+  {
+    name: "nav.agreements",
+    url: "/agreements",
+    icon: <IconNotebook size="16px" />,
     role: "SUPER_ADMIN",
   },
   {

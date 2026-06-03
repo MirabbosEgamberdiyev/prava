@@ -17,6 +17,7 @@ import Tickets_Page from "./page/Tickets";
 const Applications_Page = lazy(() => import("./page/Applications"));
 const License_Page = lazy(() => import("./page/License"));
 const LearningCenters_Page = lazy(() => import("./page/LearningCenters"));
+const Agreements_Page      = lazy(() => import("./page/Agreements"));
 const Backup_Page = lazy(() => import("./page/Backup"));
 const Statistics_Page = lazy(() => import("./page/Statistics"));
 const Settings_Page = lazy(() => import("./page/Settings"));
@@ -121,6 +122,18 @@ function App() {
                     <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
                       <Suspense fallback={LazyFallback}>
                         <LearningCenters_Page />
+                      </Suspense>
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Shartnoma eslatmalari - faqat SUPER_ADMIN */}
+                <Route
+                  path="/agreements"
+                  element={
+                    <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}>
+                        <Agreements_Page />
                       </Suspense>
                     </RoleGuard>
                   }
