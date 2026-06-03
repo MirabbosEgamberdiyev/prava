@@ -89,9 +89,13 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 1000MB
-      max-request-size: 1000MB
-      file-size-threshold: 2MB
+      # Backup ZIP — 1 GB dan ko'p bo'lishi mumkin (media + DB to'plami)
+      max-file-size: 10GB
+      max-request-size: 10GB
+      # 5 MB dan kichik fayllar xotirada, kattaroqlari diskka tushadi
+      file-size-threshold: 5MB
+      # Yarim yuklangan fayllar uchun tashlash kerak emas
+      resolve-lazily: false
 
 # Application Configuration
 app:
