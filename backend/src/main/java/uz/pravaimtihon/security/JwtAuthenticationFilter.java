@@ -61,14 +61,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // Check if Authorization header is present and valid
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.debug("No valid Authorization header found for: {}", requestPath);
-            filterChain.doFilter(request, response);
-            return;
+        // Tokenni headerdan yoki (download uchun) query paramdan olamiz.
+        // Brauzerda nativ <a href="..."> orqali katta fayllarni yuklashda
+        // header qo'shib bo'lmaydi — shuning uchun ?access_token=... ham qabul qilinadi.
+        // Bu fallback faqat GET so'rovlar uchun va URL'da log qilinishi mumkinligi sababli
+        // qisqa muddatli (15 daq) access tokenlar bilan ishlatiladi.
+        String jwt;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7);
+        } else {
+            String queryToken = request.getParameter("access_token");
+            if (queryToken != null && !queryToken.isBlank() && "GET".equalsIgnoreCase(request.getMethod())) {
+                jwt = queryToken;
+                log.debug("Using access_token from query param for: {}", requestPath);
+            } else {
+                log.debug("No valid Authorization header or query token for: {}", requestPath);
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
-
-        final String jwt = authHeader.substring(7);
         log.debug("JWT token found, length: {}", jwt.length());
 
         try {

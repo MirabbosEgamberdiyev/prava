@@ -22,60 +22,56 @@ export function useBackupMutations() {
   /**
    * GET /export/{jobId}/download → ZIP fayl sifatida yuklash.
    *
-   * Axios + blob aralashganda xato javoblar yashirinib qoladi (JSON blob ichida tushib qoladi).
-   * Shuning uchun fetch() ishlatamiz va response status'ini aniq tekshiramiz.
-   * Katta fayllar uchun timeout yo'q.
+   * ⚡ Brauzer nativ download: 1 GB+ fayllar uchun fetch+blob() RAMni portlatadi.
+   * Buning o'rniga `<a href="...?access_token=...">` orqali brauzerni o'zi yuklasin —
+   * disk'ga to'g'ridan-to'g'ri yozadi, progress brauzer download manager'ida ko'rinadi,
+   * uzilganda davom ettirish ham mumkin.
+   *
+   * Avval HEAD so'rovi bilan endpoint mavjud va ruxsat berilganligini tekshiramiz —
+   * shu yo'l bilan 404/410 xatosi brauzer fayl yo'q deb ko'rinmaydi.
    */
   const downloadBackup = async (jobId: string, filename: string): Promise<void> => {
     const token = sessionStorage.getItem("accessToken");
     const baseURL = api.defaults.baseURL || "";
     const url = `${baseURL}/api/v1/admin/backup/export/${jobId}/download`;
 
-    const res = await fetch(url, {
-      method: "GET",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      // credentials: "include" — kerak emas; biz cookie emas, Bearer ishlatamiz.
-      // "include" qo'yilganda CORS qattiq: server `Access-Control-Allow-Origin: *` qo'ya olmaydi.
-    });
-
-    if (!res.ok) {
-      // Xato javob — bo'sh ZIP tushirmasdan, tushunarli message bilan throw qilamiz
-      let message = `HTTP ${res.status}`;
-      const ct = res.headers.get("content-type") || "";
-      try {
-        if (ct.includes("application/json")) {
-          const json = await res.json();
-          message = json?.message || json?.error || message;
-        } else {
-          const text = await res.text();
-          if (text) message = text.slice(0, 200);
+    // 1) HEAD bilan oldindan tekshirish — file mavjudmi va token to'g'rimi
+    try {
+      const probe = await fetch(url, {
+        method: "HEAD",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!probe.ok) {
+        if (probe.status === 404 || probe.status === 410) {
+          throw new Error(
+            `Backup fayl serverda topilmadi (${probe.status}). ` +
+            `Server qayta ishga tushgan yoki temp fayl 2 soatdan oshib o'chirilgan bo'lishi mumkin. ` +
+            `Yangi backup yarating.`
+          );
         }
-      } catch { /* parse fail — message qoldi */ }
-
-      if (res.status === 404 || res.status === 410) {
-        throw new Error(
-          `Backup fayl serverda topilmadi (${res.status}). ` +
-          `Server qayta ishga tushgan yoki temp fayl 2 soatdan oshib o'chirilgan bo'lishi mumkin. ` +
-          `Yangi backup yarating.`
-        );
+        throw new Error(`HTTP ${probe.status}`);
       }
-      throw new Error(message);
+    } catch (e) {
+      // HEAD ba'zi konfiguratsiyalarda 405 berishi mumkin — bunday holatda davom etamiz
+      const msg = (e as Error)?.message || "";
+      if (msg.startsWith("Backup fayl")) throw e;
+      // boshqa xatolar — tinch o'tamiz, GET o'zi tekshiradi
     }
 
-    // ⚡ Stream blob: katta fayllar uchun xotirani egallamaslik
-    const blob = await res.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
+    // 2) Brauzer nativ download: <a href> + access_token query param
+    //    Backend JwtAuthenticationFilter GET so'rovlarda ?access_token=... ni qabul qiladi
+    const downloadUrl = token
+      ? `${url}?access_token=${encodeURIComponent(token)}&filename=${encodeURIComponent(filename)}`
+      : url;
 
     const a = document.createElement("a");
-    a.href = blobUrl;
+    a.href = downloadUrl;
     a.download = filename;
     a.rel = "noopener";
+    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-
-    // Brauzer downloadni boshlashga ulgursin, keyin URL'ni bo'shatamiz
-    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
   };
 
   /**
