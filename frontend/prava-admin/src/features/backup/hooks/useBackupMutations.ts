@@ -34,7 +34,8 @@ export function useBackupMutations() {
     const res = await fetch(url, {
       method: "GET",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
-      credentials: "include",
+      // credentials: "include" — kerak emas; biz cookie emas, Bearer ishlatamiz.
+      // "include" qo'yilganda CORS qattiq: server `Access-Control-Allow-Origin: *` qo'ya olmaydi.
     });
 
     if (!res.ok) {

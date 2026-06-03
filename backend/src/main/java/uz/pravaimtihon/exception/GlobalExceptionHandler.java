@@ -1,6 +1,7 @@
 package uz.pravaimtihon.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
@@ -207,18 +208,40 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Klient bog'lanishni o'zi uzgan (browser cancel, network disconnect).
+     * Bu xato emas — javob endi yuborib bo'lmaydi, JSON yozishga harakat
+     * qilsak HttpMessageNotWritableException paydo bo'ladi. Faqat sokin log.
+     */
+    @ExceptionHandler(org.apache.catalina.connector.ClientAbortException.class)
+    public void handleClientAbort(org.apache.catalina.connector.ClientAbortException ex,
+                                   HttpServletRequest request) {
+        log.debug("[CLIENT_ABORT] {} (client disconnected): {}",
+                request.getRequestURI(), ex.getMessage());
+        // Hech qanday response qaytarmaymiz — klient allaqachon ketgan.
+    }
+
+    /**
      * Umumiy xatolar
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleGeneralException(
             Exception ex,
-            HttpServletRequest request
+            HttpServletRequest request,
+            HttpServletResponse response
     ) {
+        // Agar javob allaqachon committed bo'lsa (masalan, fayl yarim yuborilgan),
+        // headerlarni qaytadan yoza olmaymiz. Jim ravishda chiqamiz.
+        if (response.isCommitted()) {
+            log.debug("[ALREADY_COMMITTED] {} after error: {}",
+                    request.getRequestURI(), ex.getMessage());
+            return null;
+        }
+
         log.error("Unexpected error occurred", ex);
 
         String message = getMessage("error.internal.server");
-        ApiResponse<?> response = ApiResponse.error(message, request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        ApiResponse<?> apiResponse = ApiResponse.error(message, request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponse);
     }
 
     // ============================================
