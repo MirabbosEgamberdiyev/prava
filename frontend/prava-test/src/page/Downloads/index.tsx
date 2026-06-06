@@ -11,13 +11,12 @@ import {
 import {
   IconApple, IconApps, IconBrandWindows, IconCheck,
   IconCloud, IconCloudOff, IconCopy, IconDownload,
-  IconTerminal2, IconAlertCircle, IconDeviceMobile,
-  IconShare, IconBrandChrome,
+  IconTerminal2, IconAlertCircle, IconBrandGooglePlay,
+  IconBrandAndroid, IconDeviceMobile, IconExternalLink,
 } from "@tabler/icons-react";
 import { getLatestReleases, getDownloadUrl } from "../../api/applicationService";
 import type { AppReleaseResponse, AppCategory } from "../../features/Downloads/types";
 import { getReleaseNotes } from "../../features/Downloads/types";
-import { useInstallPrompt } from "../../hooks/useInstallPrompt";
 import SEO from "../../components/common/SEO";
 import dayjs from "dayjs";
 
@@ -43,6 +42,11 @@ function fmtSize(bytes?: number | null): string {
   if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(1) + " KB";
   return (bytes / 1024 ** 2).toFixed(1) + " MB";
 }
+
+// ─── Mobile App Links ────────────────────────────────────────────────────────
+// TODO: haqiqiy Play Market va App Store linklari qo'yiladi
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=uz.prava.online";
+const APP_STORE_URL = "https://apps.apple.com/app/prava-online/id0000000000";
 
 // ─── Download Modal ───────────────────────────────────────────────────────────
 function DownloadDetailModal({ r, onClose }: { r: AppReleaseResponse | null; onClose: () => void }) {
@@ -71,7 +75,6 @@ function DownloadDetailModal({ r, onClose }: { r: AppReleaseResponse | null; onC
       size="sm"
     >
       <Stack gap="md">
-        {/* Online/Offline badge */}
         <Group gap="xs">
           <Badge
             color={cat === "ONLINE" ? "teal" : "blue"}
@@ -80,12 +83,8 @@ function DownloadDetailModal({ r, onClose }: { r: AppReleaseResponse | null; onC
           >
             {cat === "ONLINE" ? t("downloads.onlineApp") : t("downloads.offlineApp")}
           </Badge>
-          <Text size="xs" c="dimmed">
-            {cat === "ONLINE" ? t("downloads.onlineDesc") : t("downloads.offlineDesc")}
-          </Text>
         </Group>
 
-        {/* Meta */}
         <Group gap="xl">
           {r.releaseDate && (
             <Box>
@@ -105,7 +104,6 @@ function DownloadDetailModal({ r, onClose }: { r: AppReleaseResponse | null; onC
           </Box>
         </Group>
 
-        {/* Release notes */}
         {notes && (
           <>
             <Divider />
@@ -118,7 +116,6 @@ function DownloadDetailModal({ r, onClose }: { r: AppReleaseResponse | null; onC
           </>
         )}
 
-        {/* Checksum */}
         {r.checksum && (
           <>
             <Divider />
@@ -201,77 +198,99 @@ function AppCard({ r, onOpen }: { r: AppReleaseResponse; onOpen: (r: AppReleaseR
   );
 }
 
-// ─── PWA Install Card ────────────────────────────────────────────────────────
-function PWAInstallCard() {
+// ─── Mobile Store Cards ──────────────────────────────────────────────────────
+function MobileStoreCards() {
   const { t } = useTranslation();
-  const { isInstallable, isInstalled, isStandalone, isIOS, install, openApp } = useInstallPrompt();
-
-  // PWA ichida bo'lsa ko'rsatmaymiz
-  if (isStandalone) return null;
 
   return (
-    <Paper
-      withBorder radius="md" p="lg" mb="lg"
-      style={{
-        background: "linear-gradient(135deg, #228be6 0%, #1864ab 100%)",
-        border: "none",
-      }}
-    >
-      <Group gap="lg" wrap="nowrap" align="flex-start">
-        <ThemeIcon size={56} radius="xl" variant="white" color="blue">
-          <IconDeviceMobile size={28} />
-        </ThemeIcon>
-        <Box style={{ flex: 1 }}>
-          <Text size="lg" fw={700} c="white">
-            {t("downloads.pwaTitle", { defaultValue: "Web ilova (PWA)" })}
+    <SimpleGrid cols={{ base: 1, xs: 2, sm: 3 }} spacing="md" mb="lg">
+      {/* Android */}
+      <Paper
+        withBorder radius="md" p="lg"
+        style={{
+          background: "linear-gradient(135deg, #69db7c 0%, #2f9e44 100%)",
+          border: "none",
+        }}
+      >
+        <Stack align="center" gap="sm">
+          <ThemeIcon size={48} radius="xl" variant="white" color="green">
+            <IconBrandAndroid size={26} />
+          </ThemeIcon>
+          <Text fw={700} c="white" size="lg">Android</Text>
+          <Text size="xs" c="white" ta="center" style={{ opacity: 0.85 }}>
+            {t("downloads.androidDesc", { defaultValue: "Google Play Market orqali yuklab oling" })}
           </Text>
-          <Text size="sm" c="blue.1" mb="sm">
-            {t("downloads.pwaDesc", { defaultValue: "Brauzerdan to'g'ridan-to'g'ri o'rnating — do'kondan yuklab olish shart emas. Tez, yengil va har doim yangilangan." })}
-          </Text>
-          <Group gap="xs" mb="sm">
-            <Badge color="white" variant="filled" c="blue" size="sm">
-              {t("downloads.pwaFree", { defaultValue: "Bepul" })}
-            </Badge>
-            <Badge color="blue.3" variant="filled" size="sm">
-              {t("downloads.pwaOfflineSupport", { defaultValue: "Offline ishlaydi" })}
-            </Badge>
-            <Badge color="blue.3" variant="filled" size="sm">
-              {t("downloads.pwaAutoUpdate", { defaultValue: "Avtomatik yangilanadi" })}
-            </Badge>
-          </Group>
+          <Button
+            component="a"
+            href={PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="white" color="green" radius="xl" size="sm" fullWidth
+            leftSection={<IconBrandGooglePlay size={16} />}
+            rightSection={<IconExternalLink size={14} />}
+          >
+            Play Market
+          </Button>
+        </Stack>
+      </Paper>
 
-          {/* Install / Open / iOS instructions */}
-          {isInstalled ? (
-            <Button
-              variant="white" color="blue" radius="xl" size="sm"
-              leftSection={<IconBrandChrome size={16} />}
-              onClick={openApp}
-            >
-              {t("downloads.pwaOpen", { defaultValue: "Ilovani ochish" })}
-            </Button>
-          ) : isInstallable ? (
-            <Button
-              variant="white" color="blue" radius="xl" size="sm"
-              leftSection={<IconDownload size={16} />}
-              onClick={install}
-            >
-              {t("downloads.pwaInstall", { defaultValue: "O'rnatish" })}
-            </Button>
-          ) : isIOS ? (
-            <Group gap="xs">
-              <IconShare size={16} color="white" />
-              <Text size="xs" c="blue.1">
-                {t("downloads.pwaIOS", { defaultValue: "Safari → Share → \"Add to Home Screen\"" })}
-              </Text>
-            </Group>
-          ) : (
-            <Text size="xs" c="blue.2">
-              {t("downloads.pwaBrowserHint", { defaultValue: "Chrome yoki Edge brauzerida oching" })}
-            </Text>
-          )}
-        </Box>
-      </Group>
-    </Paper>
+      {/* iOS */}
+      <Paper
+        withBorder radius="md" p="lg"
+        style={{
+          background: "linear-gradient(135deg, #ced4da 0%, #495057 100%)",
+          border: "none",
+        }}
+      >
+        <Stack align="center" gap="sm">
+          <ThemeIcon size={48} radius="xl" variant="white" color="gray">
+            <IconApple size={26} />
+          </ThemeIcon>
+          <Text fw={700} c="white" size="lg">iOS</Text>
+          <Text size="xs" c="white" ta="center" style={{ opacity: 0.85 }}>
+            {t("downloads.iosDesc", { defaultValue: "App Store orqali yuklab oling" })}
+          </Text>
+          <Button
+            component="a"
+            href={APP_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="white" color="gray" radius="xl" size="sm" fullWidth
+            leftSection={<IconApple size={16} />}
+            rightSection={<IconExternalLink size={14} />}
+          >
+            App Store
+          </Button>
+        </Stack>
+      </Paper>
+
+      {/* Web */}
+      <Paper
+        withBorder radius="md" p="lg"
+        style={{
+          background: "linear-gradient(135deg, #4dabf7 0%, #1971c2 100%)",
+          border: "none",
+        }}
+      >
+        <Stack align="center" gap="sm">
+          <ThemeIcon size={48} radius="xl" variant="white" color="blue">
+            <IconDeviceMobile size={26} />
+          </ThemeIcon>
+          <Text fw={700} c="white" size="lg">Web</Text>
+          <Text size="xs" c="white" ta="center" style={{ opacity: 0.85 }}>
+            {t("downloads.webDesc", { defaultValue: "Brauzerda to'g'ridan-to'g'ri ishlating" })}
+          </Text>
+          <Button
+            component="a"
+            href="https://pravaonline.uz"
+            variant="white" color="blue" radius="xl" size="sm" fullWidth
+            leftSection={<IconExternalLink size={16} />}
+          >
+            pravaonline.uz
+          </Button>
+        </Stack>
+      </Paper>
+    </SimpleGrid>
   );
 }
 
@@ -290,7 +309,6 @@ export default function Downloads_Page() {
     { revalidateOnFocus: false, dedupingInterval: 60_000 }
   );
 
-  // Avval kategoriya, keyin platforma bo'yicha filter
   const inCategory = useMemo(
     () => (releases ?? []).filter(r => (r.appCategory ?? "OFFLINE") === category),
     [releases, category]
@@ -300,7 +318,6 @@ export default function Downloads_Page() {
     [inCategory, tab]
   );
 
-  // Har kategoriya uchun nechta ilova
   const onlineCount  = (releases ?? []).filter(r => r.appCategory === "ONLINE").length;
   const offlineCount = (releases ?? []).filter(r => (r.appCategory ?? "OFFLINE") === "OFFLINE").length;
 
@@ -321,8 +338,10 @@ export default function Downloads_Page() {
           </Box>
         </Group>
 
-        {/* PWA Install */}
-        <PWAInstallCard />
+        {/* Mobile Store Cards — Android, iOS, Web */}
+        <MobileStoreCards />
+
+        <Divider label={t("downloads.desktopApps", { defaultValue: "Desktop ilovalar" })} labelPosition="center" />
 
         {/* Online / Offline toggle */}
         <Paper withBorder radius="md" p="md">
