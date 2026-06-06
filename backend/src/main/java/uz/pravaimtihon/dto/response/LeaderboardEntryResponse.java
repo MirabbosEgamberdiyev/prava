@@ -12,8 +12,10 @@ public class LeaderboardEntryResponse {
     private Integer rank;
     private Long userId;
     private String userName;
+    private String fullName;
     private Double bestScore;
     private Double averageScore;
     private Integer totalExams;
     private Integer currentStreak;
+    private Boolean isCurrentUser;
 }

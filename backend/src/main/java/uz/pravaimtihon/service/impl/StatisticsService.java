@@ -120,19 +120,24 @@ public class StatisticsService {
      * ✅ Get leaderboard by topic with pagination
      */
     @Cacheable(value = "leaderboard", key = "#topic + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #language.code")
-    public PageResponse<LeaderboardEntryResponse> getLeaderboard(String topic, Pageable pageable, AcceptLanguage language) {
+    public PageResponse<LeaderboardEntryResponse> getLeaderboard(String topic, Pageable pageable, AcceptLanguage language, Long currentUserId) {
         Page<UserStatistics> page = statisticsRepository.findLeaderboardByTopicPaginated(topic, pageable);
 
         List<LeaderboardEntryResponse> entries = page.getContent().stream()
-                .map(stats -> LeaderboardEntryResponse.builder()
+                .map(stats -> {
+                    String name = stats.getUser().getFullName();
+                    return LeaderboardEntryResponse.builder()
                         .rank((int) (pageable.getPageNumber() * pageable.getPageSize() + page.getContent().indexOf(stats) + 1))
                         .userId(stats.getUser().getId())
-                        .userName(stats.getUser().getFullName())
+                        .userName(name)
+                        .fullName(name)
                         .bestScore(stats.getBestScore())
                         .averageScore(stats.getAverageScore())
                         .totalExams(stats.getTotalExams())
                         .currentStreak(stats.getCurrentStreak())
-                        .build())
+                        .isCurrentUser(currentUserId != null && currentUserId.equals(stats.getUser().getId()))
+                        .build();
+                })
                 .collect(Collectors.toList());
 
         return PageResponse.<LeaderboardEntryResponse>builder()
@@ -149,19 +154,24 @@ public class StatisticsService {
      * ✅ Get global leaderboard with pagination
      */
     @Cacheable(value = "leaderboard", key = "'global-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #language.code")
-    public PageResponse<LeaderboardEntryResponse> getGlobalLeaderboard(Pageable pageable, AcceptLanguage language) {
+    public PageResponse<LeaderboardEntryResponse> getGlobalLeaderboard(Pageable pageable, AcceptLanguage language, Long currentUserId) {
         Page<UserStatistics> page = statisticsRepository.findGlobalLeaderboardPaginated(pageable);
 
         List<LeaderboardEntryResponse> entries = page.getContent().stream()
-                .map(stats -> LeaderboardEntryResponse.builder()
+                .map(stats -> {
+                    String name = stats.getUser().getFullName();
+                    return LeaderboardEntryResponse.builder()
                         .rank((int) (pageable.getPageNumber() * pageable.getPageSize() + page.getContent().indexOf(stats) + 1))
                         .userId(stats.getUser().getId())
-                        .userName(stats.getUser().getFullName())
+                        .userName(name)
+                        .fullName(name)
                         .bestScore(stats.getBestScore())
                         .averageScore(stats.getAverageScore())
                         .totalExams(stats.getTotalExams())
                         .currentStreak(stats.getCurrentStreak())
-                        .build())
+                        .isCurrentUser(currentUserId != null && currentUserId.equals(stats.getUser().getId()))
+                        .build();
+                })
                 .collect(Collectors.toList());
 
         return PageResponse.<LeaderboardEntryResponse>builder()

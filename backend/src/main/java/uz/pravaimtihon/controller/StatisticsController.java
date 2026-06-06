@@ -122,12 +122,15 @@ public class StatisticsController {
             @Parameter(description = "Sort field") @RequestParam(defaultValue = "bestScore") String sortBy,
             @Parameter(description = "ASC|DESC") @RequestParam(defaultValue = "DESC") String direction,
             @Parameter(description = "uzl|uzc|en|ru")
-            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal
+            uz.pravaimtihon.security.CustomUserDetails principal) {
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Long currentUserId = principal != null ? principal.getId() : null;
 
-        PageResponse<LeaderboardEntryResponse> response = statisticsService.getLeaderboard(topic, pageable, language);
+        PageResponse<LeaderboardEntryResponse> response = statisticsService.getLeaderboard(topic, pageable, language, currentUserId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -139,12 +142,15 @@ public class StatisticsController {
             @Parameter(description = "Sort field") @RequestParam(defaultValue = "bestScore") String sortBy,
             @Parameter(description = "ASC|DESC") @RequestParam(defaultValue = "DESC") String direction,
             @Parameter(description = "uzl|uzc|en|ru")
-            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal
+            uz.pravaimtihon.security.CustomUserDetails principal) {
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Long currentUserId = principal != null ? principal.getId() : null;
 
-        PageResponse<LeaderboardEntryResponse> response = statisticsService.getGlobalLeaderboard(pageable, language);
+        PageResponse<LeaderboardEntryResponse> response = statisticsService.getGlobalLeaderboard(pageable, language, currentUserId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
