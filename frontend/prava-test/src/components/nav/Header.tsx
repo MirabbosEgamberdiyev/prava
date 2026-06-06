@@ -64,7 +64,7 @@ export default function Header({
             <Tooltip label="Instagram">
               <ActionIcon
                 component="a"
-                href="https://instagram.com/pravaonline"
+                href="https://instagram.com/pravaonlineuz"
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="subtle"
@@ -77,7 +77,7 @@ export default function Header({
             <Tooltip label="Telegram">
               <ActionIcon
                 component="a"
-                href="https://t.me/pravaonline"
+                href="https://t.me/pravaonlineuz"
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="subtle"

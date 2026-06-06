@@ -15,6 +15,8 @@ import {
 import {
   IconBrandTelegram,
   IconBrandInstagram,
+  IconBrandYoutube,
+  IconBrandTiktok,
   IconWorld,
   IconHeart,
   IconPhone,
@@ -41,6 +43,18 @@ const Footer = () => {
       href: "https://instagram.com/pravaonlineuz",
       icon: <IconBrandInstagram size={20} />,
       color: "grape",
+    },
+    {
+      label: "YouTube",
+      href: "https://youtube.com/@pravaonlineuz",
+      icon: <IconBrandYoutube size={20} />,
+      color: "red",
+    },
+    {
+      label: "TikTok",
+      href: "https://tiktok.com/@pravaonlineuz",
+      icon: <IconBrandTiktok size={20} />,
+      color: "dark",
     },
     {
       label: t("footer.website"),
