@@ -69,6 +69,7 @@ public class UserAppService {
                 );
     }
 
+    @Transactional(readOnly = true)
     public List<WrongAnswerResponse> getWrongAnswers(Long userId) {
         return wrongAnswerRepo.findByUserIdOrderByLastSeenDesc(userId).stream()
                 .map(wa -> {
@@ -118,6 +119,7 @@ public class UserAppService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<SavedQuestionResponse> getSavedQuestions(Long userId) {
         return savedQuestionRepo.findByUserIdOrderBySavedAtDesc(userId).stream()
                 .map(sq -> {
@@ -141,6 +143,7 @@ public class UserAppService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public boolean isQuestionSaved(Long userId, Long questionId) {
         return savedQuestionRepo.existsByUserIdAndQuestionId(userId, questionId);
     }
