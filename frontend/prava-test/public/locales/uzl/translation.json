@@ -227,6 +227,8 @@
     "donate": "Yordam berish",
     "ticket": "Biletlar",
     "statistics": "Statistika",
+    "wrongAnswers": "Xato javoblar",
+    "savedQuestions": "Saqlangan savollar",
     "history": "Tarix",
     "leaderboard": "Reyting",
     "settings": "Sozlamalar",
@@ -725,5 +727,17 @@
       "macDrag": "Birinchi ishga tushirishda 'Open' tugmasini bosing",
       "general": "O'rnatish ko'rsatmalarini bajaring"
     }
+  },
+  "wrongAnswers": {
+    "title": "Xato javoblar",
+    "emptyTitle": "Xato javoblar yo'q",
+    "emptySub": "Siz hali birorta savolda xato qilmadingiz. Ajoyib natija!",
+    "remove": "O'chirish"
+  },
+  "saved": {
+    "title": "Saqlangan savollar",
+    "emptyTitle": "Saqlangan savollar yo'q",
+    "emptySub": "Imtihon paytida muhim savollarni belgilang — ular shu yerda ko'rinadi.",
+    "remove": "Belgini olib tashlash"
   }
 }

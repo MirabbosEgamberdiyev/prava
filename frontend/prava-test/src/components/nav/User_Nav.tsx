@@ -14,8 +14,10 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  IconAlertTriangle,
   IconApps,
   IconArrowRight,
+  IconBookmark,
   IconCarambola,
   IconChartBar,
   IconHistory,
@@ -81,6 +83,16 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
       name: t("nav.statistics"),
       url: "/statistics",
       icon: <IconChartBar size={18} />,
+    },
+    {
+      name: t("nav.wrongAnswers"),
+      url: "/wrong-answers",
+      icon: <IconAlertTriangle size={18} />,
+    },
+    {
+      name: t("nav.savedQuestions"),
+      url: "/saved-questions",
+      icon: <IconBookmark size={18} />,
     },
     {
       name: t("nav.history"),

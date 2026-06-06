@@ -227,6 +227,8 @@
     "donate": "Donate",
     "ticket": "Tickets",
     "statistics": "Statistics",
+    "wrongAnswers": "Wrong Answers",
+    "savedQuestions": "Saved Questions",
     "history": "History",
     "leaderboard": "Leaderboard",
     "settings": "Settings",
@@ -725,5 +727,17 @@
       "macDrag": "On first launch, click 'Open'",
       "general": "Follow the installation instructions"
     }
+  },
+  "wrongAnswers": {
+    "title": "Wrong Answers",
+    "emptyTitle": "No wrong answers",
+    "emptySub": "You haven't made any mistakes yet. Great job!",
+    "remove": "Remove"
+  },
+  "saved": {
+    "title": "Saved Questions",
+    "emptyTitle": "No saved questions",
+    "emptySub": "Bookmark important questions during exams — they will appear here.",
+    "remove": "Remove bookmark"
   }
 }

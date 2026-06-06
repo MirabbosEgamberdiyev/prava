@@ -30,6 +30,8 @@ const NotFound_Page = lazy(() => import("../page/Notfound/404"));
 const PaymentSuccessPage = lazy(() => import("../payment/PaymentSuccessPage"));
 const ActivationCodesPage = lazy(() => import("../page/Admin/ActivationCodes"));
 const Downloads_Page      = lazy(() => import("../page/Downloads"));
+const WrongAnswers_Page   = lazy(() => import("../page/WrongAnswers"));
+const SavedQuestions_Page = lazy(() => import("../page/SavedQuestions"));
 
 function LoadingFallback() {
   return (
@@ -85,6 +87,12 @@ function AppRoutes() {
           </Route>
           <Route path="/settings" element={<User_Layout />}>
             <Route index element={<Settings_Page />} />
+          </Route>
+          <Route path="/wrong-answers" element={<User_Layout />}>
+            <Route index element={<WrongAnswers_Page />} />
+          </Route>
+          <Route path="/saved-questions" element={<User_Layout />}>
+            <Route index element={<SavedQuestions_Page />} />
           </Route>
           <Route path="/exam/result/:sessionId" element={<User_Layout />}>
             <Route index element={<ExamResult_Page />} />
