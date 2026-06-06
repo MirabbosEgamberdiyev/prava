@@ -297,7 +297,10 @@
     "errorOccurred": "Произошла ошибка",
     "back": "Вернуться",
     "retry": "Повторить",
-    "loading": "Загрузка..."
+    "loading": "Загрузка...",
+    "questions": "вопросов",
+    "refresh": "Обновить",
+    "loadError": "Ошибка загрузки данных"
   },
   "notification": {
     "examFinished": "Экзамен завершён!",

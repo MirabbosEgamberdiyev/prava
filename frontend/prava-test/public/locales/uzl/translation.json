@@ -297,7 +297,10 @@
     "errorOccurred": "Xatolik yuz berdi",
     "back": "Orqaga qaytish",
     "retry": "Qayta urinish",
-    "loading": "Yuklanmoqda..."
+    "loading": "Yuklanmoqda...",
+    "questions": "ta savol",
+    "refresh": "Yangilash",
+    "loadError": "Ma'lumotlarni yuklashda xatolik"
   },
   "notification": {
     "examFinished": "Imtihon yakunlandi!",

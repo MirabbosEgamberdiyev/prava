@@ -297,7 +297,10 @@
     "errorOccurred": "An error occurred",
     "back": "Go back",
     "retry": "Try again",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "questions": "questions",
+    "refresh": "Refresh",
+    "loadError": "Failed to load data"
   },
   "notification": {
     "examFinished": "Exam completed!",
