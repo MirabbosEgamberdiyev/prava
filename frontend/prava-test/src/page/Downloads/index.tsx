@@ -11,11 +11,13 @@ import {
 import {
   IconApple, IconApps, IconBrandWindows, IconCheck,
   IconCloud, IconCloudOff, IconCopy, IconDownload,
-  IconTerminal2, IconAlertCircle,
+  IconTerminal2, IconAlertCircle, IconDeviceMobile,
+  IconShare, IconBrandChrome,
 } from "@tabler/icons-react";
 import { getLatestReleases, getDownloadUrl } from "../../api/applicationService";
 import type { AppReleaseResponse, AppCategory } from "../../features/Downloads/types";
 import { getReleaseNotes } from "../../features/Downloads/types";
+import { useInstallPrompt } from "../../hooks/useInstallPrompt";
 import SEO from "../../components/common/SEO";
 import dayjs from "dayjs";
 
@@ -199,6 +201,80 @@ function AppCard({ r, onOpen }: { r: AppReleaseResponse; onOpen: (r: AppReleaseR
   );
 }
 
+// ─── PWA Install Card ────────────────────────────────────────────────────────
+function PWAInstallCard() {
+  const { t } = useTranslation();
+  const { isInstallable, isInstalled, isStandalone, isIOS, install, openApp } = useInstallPrompt();
+
+  // PWA ichida bo'lsa ko'rsatmaymiz
+  if (isStandalone) return null;
+
+  return (
+    <Paper
+      withBorder radius="md" p="lg" mb="lg"
+      style={{
+        background: "linear-gradient(135deg, #228be6 0%, #1864ab 100%)",
+        border: "none",
+      }}
+    >
+      <Group gap="lg" wrap="nowrap" align="flex-start">
+        <ThemeIcon size={56} radius="xl" variant="white" color="blue">
+          <IconDeviceMobile size={28} />
+        </ThemeIcon>
+        <Box style={{ flex: 1 }}>
+          <Text size="lg" fw={700} c="white">
+            {t("downloads.pwaTitle", { defaultValue: "Web ilova (PWA)" })}
+          </Text>
+          <Text size="sm" c="blue.1" mb="sm">
+            {t("downloads.pwaDesc", { defaultValue: "Brauzerdan to'g'ridan-to'g'ri o'rnating — do'kondan yuklab olish shart emas. Tez, yengil va har doim yangilangan." })}
+          </Text>
+          <Group gap="xs" mb="sm">
+            <Badge color="white" variant="filled" c="blue" size="sm">
+              {t("downloads.pwaFree", { defaultValue: "Bepul" })}
+            </Badge>
+            <Badge color="blue.3" variant="filled" size="sm">
+              {t("downloads.pwaOfflineSupport", { defaultValue: "Offline ishlaydi" })}
+            </Badge>
+            <Badge color="blue.3" variant="filled" size="sm">
+              {t("downloads.pwaAutoUpdate", { defaultValue: "Avtomatik yangilanadi" })}
+            </Badge>
+          </Group>
+
+          {/* Install / Open / iOS instructions */}
+          {isInstalled ? (
+            <Button
+              variant="white" color="blue" radius="xl" size="sm"
+              leftSection={<IconBrandChrome size={16} />}
+              onClick={openApp}
+            >
+              {t("downloads.pwaOpen", { defaultValue: "Ilovani ochish" })}
+            </Button>
+          ) : isInstallable ? (
+            <Button
+              variant="white" color="blue" radius="xl" size="sm"
+              leftSection={<IconDownload size={16} />}
+              onClick={install}
+            >
+              {t("downloads.pwaInstall", { defaultValue: "O'rnatish" })}
+            </Button>
+          ) : isIOS ? (
+            <Group gap="xs">
+              <IconShare size={16} color="white" />
+              <Text size="xs" c="blue.1">
+                {t("downloads.pwaIOS", { defaultValue: "Safari → Share → \"Add to Home Screen\"" })}
+              </Text>
+            </Group>
+          ) : (
+            <Text size="xs" c="blue.2">
+              {t("downloads.pwaBrowserHint", { defaultValue: "Chrome yoki Edge brauzerida oching" })}
+            </Text>
+          )}
+        </Box>
+      </Group>
+    </Paper>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Downloads_Page() {
   const { t } = useTranslation();
@@ -244,6 +320,9 @@ export default function Downloads_Page() {
             <Text size="sm" c="dimmed">{t("downloads.subtitle")}</Text>
           </Box>
         </Group>
+
+        {/* PWA Install */}
+        <PWAInstallCard />
 
         {/* Online / Offline toggle */}
         <Paper withBorder radius="md" p="md">
