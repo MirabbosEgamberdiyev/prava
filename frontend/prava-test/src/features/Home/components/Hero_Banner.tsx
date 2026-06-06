@@ -176,7 +176,7 @@ export function Hero_Banner() {
             </List>
 
             <Group mt={40} className={classes.heroButtons}>
-              <Link to="/me">
+              <Link to="/auth/register">
                 <Button
                   radius="xl"
                   size="lg"
