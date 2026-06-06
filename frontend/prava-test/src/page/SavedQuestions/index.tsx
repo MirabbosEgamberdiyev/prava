@@ -38,14 +38,18 @@ const SavedQuestions_Page = () => {
   const { localize } = useLanguage();
   const [expanded, setExpanded] = useState<number | null>(null);
 
-  const { data: rawResponse, error, isLoading, mutate } = useSWR<{ data: SavedQuestionItem[] | SavedQuestionItem }>(
-    "/api/v1/app/saved-questions",
-    { refreshInterval: 0 }
-  );
+  const { data: rawResponse, error, isLoading, mutate } = useSWR<{
+    success: boolean;
+    data: SavedQuestionItem[];
+  }>("/api/v1/app/saved-questions", { refreshInterval: 0 });
 
-  const entries: SavedQuestionItem[] = rawResponse?.data
-    ? (Array.isArray(rawResponse.data) ? rawResponse.data : [])
-    : [];
+  const entries: SavedQuestionItem[] = (() => {
+    if (!rawResponse) return [];
+    const d = rawResponse.data;
+    if (Array.isArray(d)) return d;
+    if (Array.isArray(rawResponse)) return rawResponse as unknown as SavedQuestionItem[];
+    return [];
+  })();
 
   const handleRemove = async (questionId: number) => {
     try {
@@ -88,7 +92,7 @@ const SavedQuestions_Page = () => {
 
       {error && !isLoading && (
         <Alert color="red" icon={<IconBookmark size={16} />} mb="md">
-          {t("common.loadError")}
+          {t("common.loadError", { defaultValue: "Ma'lumotlarni yuklashda xatolik" })}
           <Button size="xs" variant="light" ml="sm" onClick={() => mutate()}>
             {t("common.retry")}
           </Button>
@@ -116,7 +120,6 @@ const SavedQuestions_Page = () => {
 
             return (
               <Paper key={entry.questionId} withBorder radius="md" shadow="sm" p={0} style={{ overflow: "hidden" }}>
-                {/* Header */}
                 <Group
                   px="md" py="sm"
                   justify="space-between"
@@ -141,7 +144,7 @@ const SavedQuestions_Page = () => {
                     <Tooltip label={t("saved.remove")}>
                       <ActionIcon
                         variant="light" color="gray" size="sm"
-                        onClick={(e) => { e.stopPropagation(); handleRemove(entry.questionId); }}
+                        onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleRemove(entry.questionId); }}
                       >
                         <IconBookmarkOff size={14} />
                       </ActionIcon>
@@ -150,7 +153,6 @@ const SavedQuestions_Page = () => {
                   </Group>
                 </Group>
 
-                {/* Body */}
                 <Collapse in={isOpen}>
                   <Box px="md" pb="md">
                     {img && (

@@ -29,11 +29,14 @@ import {
   IconTarget,
   IconTrophy,
   IconChartBar,
+  IconBookmark,
+  IconBookmarkFilled,
 } from "@tabler/icons-react";
 import { useLanguage } from "../../hooks/useLanguage";
 import type { Question, Option, AnswersMap } from "../../types";
 import { ImagePlaceholder } from "../common/ImagePlaceholder";
 import { getImageUrl } from "../../utils/imageUtils";
+import api from "../../api/api";
 import classes from "./QuizContent.module.css";
 
 interface QuizContentProps {
@@ -82,9 +85,39 @@ export function QuizContent({
   const [explanationOpen, setExplanationOpen] = useState(false);
   const [resultModalOpened, setResultModalOpened] = useState(false);
   const [submittingResult, setSubmittingResult] = useState(false);
+  const [savedQuestionIds, setSavedQuestionIds] = useState<Set<number>>(new Set());
 
   const [timeUpTriggered, setTimeUpTriggered] = useState(false);
   const [activeQuiz, setActiveQuiz] = useState(0);
+
+  // Load saved question IDs on mount
+  useEffect(() => {
+    api.get("/api/v1/app/saved-questions")
+      .then((res) => {
+        const list = res.data?.data;
+        if (Array.isArray(list)) {
+          setSavedQuestionIds(new Set(list.map((q: { questionId: number }) => q.questionId)));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Toggle saved question
+  const handleToggleSaved = (questionId: number) => {
+    const newSet = new Set(savedQuestionIds);
+    if (newSet.has(questionId)) {
+      newSet.delete(questionId);
+    } else {
+      newSet.add(questionId);
+    }
+    setSavedQuestionIds(newSet);
+    api.post(`/api/v1/app/saved-questions/${questionId}`).catch(() => {});
+  };
+
+  // Send wrong answer to backend
+  const sendWrongAnswer = (questionId: number) => {
+    api.post(`/api/v1/app/wrong-answers/${questionId}`).catch(() => {});
+  };
 
   // Convert parent answers to simple index map
   const selectedAnswers: Record<number, number> = Object.entries(
@@ -225,6 +258,12 @@ export function QuizContent({
     );
     timeSpentPerQuestion.current[questionIndex] = timeSpent;
     onAnswerSelect(questionIndex, optionIndex, timeSpent);
+
+    // Send wrong answer to backend if incorrect
+    const currentQ = questions[questionIndex];
+    if (currentQ && optionIndex !== currentQ.correctOptionIndex) {
+      sendWrongAnswer(currentQ.id);
+    }
 
     // Error limit check
     if (errorLimitMode) {
@@ -426,11 +465,27 @@ export function QuizContent({
         </Box>
       )}
 
-      {/* Question text */}
+      {/* Question text + Bookmark */}
       <Box p="lg">
-        <Text ta="center" size="lg" fw={500}>
-          {localize(currentQuestion?.text)}
-        </Text>
+        <Flex justify="center" align="center" gap="sm">
+          <Text ta="center" size="lg" fw={500} style={{ flex: 1 }}>
+            {localize(currentQuestion?.text)}
+          </Text>
+          <Tooltip label={savedQuestionIds.has(currentQuestion?.id) ? t("saved.remove", { defaultValue: "Belgini olib tashlash" }) : t("exam.saveQuestion", { defaultValue: "Savolni saqlash" })}>
+            <ActionIcon
+              variant={savedQuestionIds.has(currentQuestion?.id) ? "filled" : "light"}
+              color="blue"
+              size="lg"
+              radius="xl"
+              onClick={() => currentQuestion && handleToggleSaved(currentQuestion.id)}
+            >
+              {savedQuestionIds.has(currentQuestion?.id)
+                ? <IconBookmarkFilled size={18} />
+                : <IconBookmark size={18} />
+              }
+            </ActionIcon>
+          </Tooltip>
+        </Flex>
       </Box>
 
       <Container fluid px="lg">

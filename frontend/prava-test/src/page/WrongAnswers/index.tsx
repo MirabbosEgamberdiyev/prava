@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   Title, Paper, Text, Group, Stack, Badge, Center, Loader,
   ActionIcon, Tooltip, Collapse, Image, Alert, Button,
-  ThemeIcon, Box, ScrollArea,
+  ThemeIcon, Box,
 } from "@mantine/core";
 import {
   IconAlertTriangle, IconTrash, IconCheck, IconX,
@@ -39,14 +39,21 @@ const WrongAnswers_Page = () => {
   const { localize } = useLanguage();
   const [expanded, setExpanded] = useState<number | null>(null);
 
-  const { data: rawResponse, error, isLoading, mutate } = useSWR<{ data: WrongAnswerItem[] | WrongAnswerItem }>(
-    "/api/v1/app/wrong-answers",
-    { refreshInterval: 0 }
-  );
+  const { data: rawResponse, error, isLoading, mutate } = useSWR<{
+    success: boolean;
+    data: WrongAnswerItem[];
+  }>("/api/v1/app/wrong-answers", { refreshInterval: 0 });
 
-  const entries: WrongAnswerItem[] = rawResponse?.data
-    ? (Array.isArray(rawResponse.data) ? rawResponse.data : [])
-    : [];
+  // Backend ApiResponse: { success, message, data: [...] }
+  const entries: WrongAnswerItem[] = (() => {
+    if (!rawResponse) return [];
+    // SWR fetcher returns res.data = { success, message, data: [...] }
+    const d = rawResponse.data;
+    if (Array.isArray(d)) return d;
+    // Fallback: rawResponse itself might be the array
+    if (Array.isArray(rawResponse)) return rawResponse as unknown as WrongAnswerItem[];
+    return [];
+  })();
 
   const handleRemove = async (questionId: number) => {
     try {
@@ -89,7 +96,7 @@ const WrongAnswers_Page = () => {
 
       {error && !isLoading && (
         <Alert color="red" icon={<IconAlertTriangle size={16} />} mb="md">
-          {t("common.loadError")}
+          {t("common.loadError", { defaultValue: "Ma'lumotlarni yuklashda xatolik" })}
           <Button size="xs" variant="light" ml="sm" onClick={() => mutate()}>
             {t("common.retry")}
           </Button>
@@ -117,7 +124,6 @@ const WrongAnswers_Page = () => {
 
             return (
               <Paper key={entry.questionId} withBorder radius="md" shadow="sm" p={0} style={{ overflow: "hidden" }}>
-                {/* Header */}
                 <Group
                   px="md" py="sm"
                   justify="space-between"
@@ -142,7 +148,7 @@ const WrongAnswers_Page = () => {
                     <Tooltip label={t("wrongAnswers.remove")}>
                       <ActionIcon
                         variant="light" color="red" size="sm"
-                        onClick={(e) => { e.stopPropagation(); handleRemove(entry.questionId); }}
+                        onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleRemove(entry.questionId); }}
                       >
                         <IconTrash size={14} />
                       </ActionIcon>
@@ -151,7 +157,6 @@ const WrongAnswers_Page = () => {
                   </Group>
                 </Group>
 
-                {/* Body */}
                 <Collapse in={isOpen}>
                   <Box px="md" pb="md">
                     {img && (
