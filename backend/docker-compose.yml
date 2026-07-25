@@ -61,6 +61,10 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-8485868847:AAGR9eBV1qibgJfXHpqZ04JlbyrjemaTrGA}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-pravaonlineuzbot}
       TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-https://pravaonline.uz/api/v1/telegram/webhook}
+
+      # Default admin bootstrap parollari (ixtiyoriy — kodda default bor)
+      APP_INIT_SUPER_ADMIN_PASSWORD: ${APP_INIT_SUPER_ADMIN_PASSWORD:-$$2026Super$$Admin2026$$}
+      APP_INIT_ADMIN_PASSWORD: ${APP_INIT_ADMIN_PASSWORD:-$$2026Admin$$Admin2026$$}
     volumes:
       - app_uploads:/app/uploads
       - app_logs:/app/logs

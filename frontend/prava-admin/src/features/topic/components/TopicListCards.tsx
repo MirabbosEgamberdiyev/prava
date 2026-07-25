@@ -151,7 +151,7 @@ const TopicListCards = () => {
                 justify="space-between"
                 mt="auto"
                 pt="md"
-                style={{ borderTop: "1px solid #f1f3f5" }}
+                style={{ borderTop: "1px solid var(--mantine-color-gray-1)" }}
               >
                 <Badge
                   variant="light"

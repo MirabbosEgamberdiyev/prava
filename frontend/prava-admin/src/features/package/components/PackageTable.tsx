@@ -101,7 +101,7 @@ export function PackageTable({
                       variant="light"
                       color="blue"
                       onClick={() => onEdit(pkg.id)}
-                    >
+                     aria-label={t("packages.editTooltip")}>
                       <IconEdit size={16} />
                     </ActionIcon>
                   </Tooltip>
@@ -128,7 +128,7 @@ export function PackageTable({
                         variant="light"
                         color="grape"
                         onClick={() => onRegenerate(pkg.id)}
-                      >
+                       aria-label={t("packages.regenerate")}>
                         <IconRefresh size={16} />
                       </ActionIcon>
                     </Tooltip>
@@ -139,7 +139,7 @@ export function PackageTable({
                       variant="light"
                       color="red"
                       onClick={() => onDelete(pkg.id)}
-                    >
+                     aria-label={t("packages.deleteTooltip")}>
                       <IconTrash size={16} />
                     </ActionIcon>
                   </Tooltip>

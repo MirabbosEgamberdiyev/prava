@@ -84,7 +84,7 @@ const SavedQuestions_Page = () => {
           </div>
         </Group>
         <Tooltip label={t("common.refresh")}>
-          <ActionIcon variant="light" size="lg" onClick={() => mutate()}>
+          <ActionIcon variant="light" size="lg" onClick={() => mutate()} aria-label={t("common.refresh")}>
             <IconRefresh size={18} />
           </ActionIcon>
         </Tooltip>
@@ -145,6 +145,7 @@ const SavedQuestions_Page = () => {
                       <ActionIcon
                         variant="light" color="gray" size="sm"
                         onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleRemove(entry.questionId); }}
+                        aria-label={t("saved.remove")}
                       >
                         <IconBookmarkOff size={14} />
                       </ActionIcon>

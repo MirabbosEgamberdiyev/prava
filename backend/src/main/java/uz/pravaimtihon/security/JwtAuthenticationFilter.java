@@ -64,21 +64,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Tokenni headerdan yoki (download uchun) query paramdan olamiz.
         // Brauzerda nativ <a href="..."> orqali katta fayllarni yuklashda
         // header qo'shib bo'lmaydi — shuning uchun ?access_token=... ham qabul qilinadi.
-        // Bu fallback faqat GET so'rovlar uchun va URL'da log qilinishi mumkinligi sababli
-        // qisqa muddatli (15 daq) access tokenlar bilan ishlatiladi.
+        // B6/A2: query-paramdagi token faqat maxsus, qisqa muddatli "download" turidagi
+        // token bo'lishi shart — asosiy (24 soatlik) access-token URL'da qabul qilinmaydi,
+        // shunday qilib brauzer tarixi/proxy logida uzoq muddat amal qiladigan token qolmaydi.
         String jwt;
+        boolean fromQueryParam = false;
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
         } else {
             String queryToken = request.getParameter("access_token");
             if (queryToken != null && !queryToken.isBlank() && "GET".equalsIgnoreCase(request.getMethod())) {
                 jwt = queryToken;
+                fromQueryParam = true;
                 log.debug("Using access_token from query param for: {}", requestPath);
             } else {
                 log.debug("No valid Authorization header or query token for: {}", requestPath);
                 filterChain.doFilter(request, response);
                 return;
             }
+        }
+
+        boolean isDownloadToken = jwtTokenProvider.isDownloadToken(jwt);
+        if (fromQueryParam != isDownloadToken) {
+            // Query-paramda faqat download-token, header'da faqat oddiy access-token qabul qilinadi.
+            log.warn("Rejected JWT: query-param usage requires a download-scoped token (path={})", requestPath);
+            filterChain.doFilter(request, response);
+            return;
         }
         log.debug("JWT token found, length: {}", jwt.length());
 

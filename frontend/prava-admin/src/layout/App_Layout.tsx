@@ -3,6 +3,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { Outlet } from "react-router-dom";
 import App_Header from "../components/nav/App_Header";
 import App_Nav from "../components/nav/App_Nav";
+import AppBreadcrumbs from "../components/nav/AppBreadcrumbs";
 
 const App_Layout = () => {
   const [opened, { toggle }] = useDisclosure();
@@ -27,6 +28,7 @@ const App_Layout = () => {
         <AppShell.Main
           bg={computedColorScheme === "light" ? "gray.1" : "dark.8"}
         >
+          <AppBreadcrumbs />
           <Outlet />
         </AppShell.Main>
       </AppShell>

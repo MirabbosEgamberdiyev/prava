@@ -26,10 +26,15 @@ function FAQStructuredData({ t }: { t: (key: string) => string }) {
     })),
   };
 
+  // U2: "<" belgilari escape qilinadi — aks holda tarjima matnida "</script>"
+  // ketma-ketligi bo'lib qolsa, brauzer HTML parseri script tegini muddatidan
+  // oldin yopib, keyingi kontentni skript sifatida talqin qilishi mumkin edi.
+  const json = JSON.stringify(faqData).replace(/</g, "\\u003c");
+
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(faqData) }}
+      dangerouslySetInnerHTML={{ __html: json }}
     />
   );
 }

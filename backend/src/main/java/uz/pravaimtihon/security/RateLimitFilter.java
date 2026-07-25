@@ -76,8 +76,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        // Rate-limit auth endpoints and telegram webhook
-        return !path.startsWith("/api/v1/auth/") && !path.startsWith("/api/v1/telegram/");
+        // B7: auth/telegram'dan tashqari — brute-force/DoS xavfi yuqori bo'lgan
+        // activation-code generatsiyasi, backup/restore va to'lov endpointlari ham
+        // rate-limit qatlamiga qo'shildi (avval faqat auth/telegram himoyalangan edi).
+        return !path.startsWith("/api/v1/auth/")
+                && !path.startsWith("/api/v1/telegram/")
+                && !path.startsWith("/api/v1/admin/activation-codes")
+                && !path.startsWith("/api/v1/admin/backup")
+                && !path.startsWith("/api/v1/payment");
     }
 
     private String getClientIp(HttpServletRequest request) {

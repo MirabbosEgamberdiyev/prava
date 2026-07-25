@@ -124,7 +124,7 @@ export function QuestionPickerModal({
                       h={40}
                       style={{
                         borderRadius: 4,
-                        backgroundColor: "#f1f3f5",
+                        backgroundColor: "var(--mantine-color-gray-1)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -139,7 +139,7 @@ export function QuestionPickerModal({
                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
                       ) : (
-                        <IconPhoto size={18} color="#868e96" />
+                        <IconPhoto size={18} color="var(--mantine-color-gray-6)" />
                       )}
                     </Box>
                     <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>

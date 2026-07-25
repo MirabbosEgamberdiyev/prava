@@ -104,6 +104,9 @@ app:
     secret: ${JWT_SECRET:MirabbosEgamberdiyevPravaOnlineSecretKey1234567890123456789012345678901}
     access-token-expiration: 86400000
     refresh-token-expiration: 2592000000
+    # B6/A2: faqat GET-download havolalarida (?access_token=) ishlatiladigan,
+    # asosiy access-tokendan ancha qisqa muddatli maxsus token
+    download-token-expiration: 300000
     issuer: prava-online
 
   google:

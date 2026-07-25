@@ -264,6 +264,7 @@ const Statistics_Page = () => {
             size="lg"
             onClick={() => mutate()}
             loading={isValidating}
+            aria-label={t("statistics.refreshing")}
           >
             <IconRefresh size={18} />
           </ActionIcon>

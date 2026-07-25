@@ -88,7 +88,7 @@ const WrongAnswers_Page = () => {
           </div>
         </Group>
         <Tooltip label={t("common.refresh")}>
-          <ActionIcon variant="light" size="lg" onClick={() => mutate()}>
+          <ActionIcon variant="light" size="lg" onClick={() => mutate()} aria-label={t("common.refresh")}>
             <IconRefresh size={18} />
           </ActionIcon>
         </Tooltip>
@@ -149,6 +149,7 @@ const WrongAnswers_Page = () => {
                       <ActionIcon
                         variant="light" color="red" size="sm"
                         onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleRemove(entry.questionId); }}
+                        aria-label={t("wrongAnswers.remove")}
                       >
                         <IconTrash size={14} />
                       </ActionIcon>

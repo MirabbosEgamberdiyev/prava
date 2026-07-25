@@ -21,6 +21,7 @@ import uz.pravaimtihon.backup.service.BackupJobRegistry;
 import uz.pravaimtihon.backup.service.ProductionBackupService;
 import uz.pravaimtihon.backup.service.ProductionRestoreService;
 import uz.pravaimtihon.dto.response.ApiResponse;
+import uz.pravaimtihon.security.JwtTokenProvider;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -66,6 +67,23 @@ public class BackupController {
     private final ProductionBackupService  backupService;
     private final ProductionRestoreService restoreService;
     private final BackupJobRegistry        jobRegistry;
+    private final JwtTokenProvider         jwtTokenProvider;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // DOWNLOAD TOKEN (B6/A2) — ZIP linkida asosiy access-token o'rniga
+    // ishlatiladigan qisqa muddatli, faqat shu maqsad uchun token
+    // ════════════════════════════════════════════════════════════════════════
+
+    @GetMapping("/download-token")
+    @Operation(
+            summary = "Backup ZIP yuklab olish uchun qisqa muddatli token",
+            description = "downloadExport havolasida ?access_token= sifatida ishlatiladi. Bir necha daqiqada eskiradi."
+    )
+    public ResponseEntity<ApiResponse<Map<String, String>>> getDownloadToken(
+            @AuthenticationPrincipal UserDetails user) {
+        String token = jwtTokenProvider.generateDownloadToken(user);
+        return ResponseEntity.ok(ApiResponse.success(Map.of("downloadToken", token)));
+    }
 
     // ════════════════════════════════════════════════════════════════════════
     // EXPORT

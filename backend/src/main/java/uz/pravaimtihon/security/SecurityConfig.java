@@ -137,6 +137,12 @@ public class SecurityConfig {
                         .hasAnyRole("SUPER_ADMIN", "ADMIN")
 
                         // ============================================
+                        // ACTUATOR — health/info ochiq, qolgani (metrics,
+                        // prometheus va h.k.) faqat ADMIN/SUPER_ADMIN
+                        // ============================================
+                        .requestMatchers("/actuator/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
+
+                        // ============================================
                         // SUPER_ADMIN ONLY
                         // ============================================
                         .requestMatchers("/api/v1/admin/activation-codes/**").hasRole("SUPER_ADMIN")
@@ -190,37 +196,23 @@ public class SecurityConfig {
         return http.build();
     }
 
-//     @Bean
-//     public CorsConfigurationSource corsConfigurationSource() {
-//         List<String> origins = Arrays.asList(allowedOrigins.split(","));
-//         log.info("Configuring CORS with allowed origins: {}", origins);
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        log.info("Configuring CORS with allowed origins: {}", origins);
 
-//         CorsConfiguration configuration = new CorsConfiguration();
-//         configuration.setAllowedOrigins(origins);
-//         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-//         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Accept-Language", "X-Requested-With"));
-//         configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Total-Count", "Content-Disposition", "X-Request-Id"));
-//         configuration.setAllowCredentials(true);
-//         configuration.setMaxAge(3600L);
-
-//         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//         source.registerCorsConfiguration("/**", configuration);
-//         return source;
-//     }
-
-        @Bean
-        public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
-        configuration.setAllowedMethods(List.of("*"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedOrigins(origins);
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Accept-Language", "X-Requested-With"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Total-Count", "Content-Disposition", "X-Request-Id"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-        }
+    }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

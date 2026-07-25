@@ -47,28 +47,111 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<App_Layout />}>
                 <Route index element={<Home_Page />} />
-                <Route path="/users" element={<Users_Page />} />
-                <Route path="/questions" element={<Question_Page />} />
-                <Route path="/questions/add" element={<Suspense fallback={LazyFallback}><Add_Question_Page /></Suspense>} />
+
+                {/* Foydalanuvchilar - ADMIN va SUPER_ADMIN (backend: /api/v1/admin/users) */}
+                <Route
+                  path="/users"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Users_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Savollar - ADMIN va SUPER_ADMIN (backend: /api/v1/admin/questions) */}
+                <Route
+                  path="/questions"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Question_Page />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/questions/add"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}><Add_Question_Page /></Suspense>
+                    </RoleGuard>
+                  }
+                />
                 <Route
                   path="/questions/edit/:id"
-                  element={<Suspense fallback={LazyFallback}><Edit_Question_Page /></Suspense>}
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}><Edit_Question_Page /></Suspense>
+                    </RoleGuard>
+                  }
                 />
-                <Route path="/topics" element={<Topic_Page />} />
-                <Route path="/topics/add" element={<Suspense fallback={LazyFallback}><Add_Topic_Page /></Suspense>} />
 
-                <Route path="/packages" element={<Packages_Page />} />
-                <Route path="/packages/add" element={<Suspense fallback={LazyFallback}><Add_Package_Page /></Suspense>} />
+                {/* Mavzular - ADMIN va SUPER_ADMIN (backend: /api/v1/admin/topics) */}
+                <Route
+                  path="/topics"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Topic_Page />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/topics/add"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}><Add_Topic_Page /></Suspense>
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Paketlar - ADMIN va SUPER_ADMIN (backend: /api/v1/packages/admin) */}
+                <Route
+                  path="/packages"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Packages_Page />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/packages/add"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}><Add_Package_Page /></Suspense>
+                    </RoleGuard>
+                  }
+                />
                 <Route
                   path="/packages/edit/:id"
-                  element={<Suspense fallback={LazyFallback}><Edit_Package_Page /></Suspense>}
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}><Edit_Package_Page /></Suspense>
+                    </RoleGuard>
+                  }
                 />
 
-                <Route path="/tickets" element={<Tickets_Page />} />
-                <Route path="/tickets/add" element={<Suspense fallback={LazyFallback}><Add_Ticket_Page /></Suspense>} />
+                {/* Biletlar - ADMIN va SUPER_ADMIN (backend: /api/v2/tickets create/update/delete) */}
+                <Route
+                  path="/tickets"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Tickets_Page />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/tickets/add"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}><Add_Ticket_Page /></Suspense>
+                    </RoleGuard>
+                  }
+                />
                 <Route
                   path="/tickets/edit/:id"
-                  element={<Suspense fallback={LazyFallback}><Edit_Ticket_Page /></Suspense>}
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Suspense fallback={LazyFallback}><Edit_Ticket_Page /></Suspense>
+                    </RoleGuard>
+                  }
                 />
 
                 {/* Ilovalar - ADMIN va SUPER_ADMIN */}

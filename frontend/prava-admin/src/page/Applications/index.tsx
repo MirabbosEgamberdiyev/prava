@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActionIcon, Badge, Box, Button, Center, Divider, FileButton,
-  Group, Loader, Modal, SegmentedControl, Stack, Switch,
+  Group, Loader, Modal, Pagination, SegmentedControl, Stack, Switch,
   Table, Text, TextInput, Textarea, Title, Tooltip,
   Paper, SimpleGrid, ThemeIcon, Progress,
 } from "@mantine/core";
@@ -345,12 +345,15 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
+const PAGE_SIZE = 20;
+
 export default function Applications_Page() {
   const { t } = useTranslation();
   const [items,    setItems]    = useState<AppReleaseResponse[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [search,   setSearch]   = useState("");
   const [catFilter, setCatFilter] = useState<"ALL" | AppCategory>("ALL");
+  const [page,     setPage]     = useState(1);
   const [modal,    setModal]    = useState(false);
   const [editing,  setEditing]  = useState<AppReleaseResponse | null>(null);
 
@@ -371,6 +374,12 @@ export default function Applications_Page() {
     return it.appName?.toLowerCase().includes(search.toLowerCase())
       || it.version?.toLowerCase().includes(search.toLowerCase());
   });
+
+  // A4: katta ro'yxatlarda butun jadvalni bir vaqtda render qilmaslik uchun
+  // sahifalash (search/filter o'zgarganda 1-sahifaga qaytamiz).
+  useEffect(() => { setPage(1); }, [search, catFilter]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const onlineCount  = items.filter(r => r.appCategory === "ONLINE").length;
   const offlineCount = items.length - onlineCount;
@@ -484,7 +493,7 @@ export default function Applications_Page() {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {filtered.map(r => {
+              {paged.map(r => {
                 const cat = (r.appCategory ?? "OFFLINE") as AppCategory;
                 return (
                   <Table.Tr key={r.id}>
@@ -520,12 +529,12 @@ export default function Applications_Page() {
                     <Table.Td>
                       <Group gap={4}>
                         <Tooltip label={t("common.edit")}>
-                          <ActionIcon variant="light" onClick={() => { setEditing(r); setModal(true); }}>
+                          <ActionIcon variant="light" onClick={() => { setEditing(r); setModal(true); }} aria-label={t("common.edit")}>
                             <IconEdit size={15}/>
                           </ActionIcon>
                         </Tooltip>
                         <Tooltip label={t("common.delete")}>
-                          <ActionIcon variant="light" color="red" onClick={() => handleDelete(r)}>
+                          <ActionIcon variant="light" color="red" onClick={() => handleDelete(r)} aria-label={t("common.delete")}>
                             <IconTrash size={15}/>
                           </ActionIcon>
                         </Tooltip>
@@ -536,6 +545,11 @@ export default function Applications_Page() {
               })}
             </Table.Tbody>
           </Table>
+          {totalPages > 1 && (
+            <Group justify="center" py="md">
+              <Pagination value={page} onChange={setPage} total={totalPages} />
+            </Group>
+          )}
         </Paper>
       )}
 

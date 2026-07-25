@@ -28,8 +28,17 @@ public class JwtTokenProvider {
     @Value("${app.jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
 
+    // B6/A2: katta fayl yuklab olish (masalan Backup ZIP) uchun — brauzer <a href>
+    // orqali Authorization header qo'shib bo'lmaydi, shuning uchun URL query-paramda
+    // yuboriladigan, alohida maqsadli, QISQA MUDDATLI (default 5 daq) token.
+    @Value("${app.jwt.download-token-expiration:300000}")
+    private long downloadTokenExpiration;
+
     @Value("${app.jwt.issuer}")
     private String issuer;
+
+    private static final String CLAIM_TOKEN_TYPE = "typ";
+    private static final String TOKEN_TYPE_DOWNLOAD = "download";
 
     /**
      * ✅ Access Token yaratish
@@ -42,6 +51,26 @@ public class JwtTokenProvider {
             extraClaims.put("language", customUserDetails.getLanguage().getCode());
         }
         return buildToken(extraClaims, userDetails, accessTokenExpiration);
+    }
+
+    /**
+     * B6/A2: Qisqa muddatli, faqat GET-download uchun ishlatiladigan token.
+     * Header o'rniga URL query-paramda yuborilishi mumkin (masalan Backup ZIP).
+     */
+    public String generateDownloadToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(CLAIM_TOKEN_TYPE, TOKEN_TYPE_DOWNLOAD);
+        return buildToken(claims, userDetails, downloadTokenExpiration);
+    }
+
+    /** Token "download" turidan ekanligini tekshiradi (asosiy access-token emas). */
+    public boolean isDownloadToken(String token) {
+        try {
+            String type = extractClaim(token, claims -> claims.get(CLAIM_TOKEN_TYPE, String.class));
+            return TOKEN_TYPE_DOWNLOAD.equals(type);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**

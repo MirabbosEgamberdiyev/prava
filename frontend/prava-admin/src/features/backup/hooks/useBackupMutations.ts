@@ -29,6 +29,10 @@ export function useBackupMutations() {
    *
    * Avval HEAD so'rovi bilan endpoint mavjud va ruxsat berilganligini tekshiramiz —
    * shu yo'l bilan 404/410 xatosi brauzer fayl yo'q deb ko'rinmaydi.
+   *
+   * A2/B6: URL query-paramda asosiy (uzoq muddatli) sessiya tokeni EMAS, balki shu
+   * yuklab olish uchun maxsus, bir necha daqiqada eskiruvchi token ishlatiladi —
+   * shunday qilib brauzer tarixi/serverda qoladigan URL orqali sessiya o'g'irlanmaydi.
    */
   const downloadBackup = async (jobId: string, filename: string): Promise<void> => {
     const token = sessionStorage.getItem("accessToken");
@@ -58,10 +62,15 @@ export function useBackupMutations() {
       // boshqa xatolar — tinch o'tamiz, GET o'zi tekshiradi
     }
 
-    // 2) Brauzer nativ download: <a href> + access_token query param
-    //    Backend JwtAuthenticationFilter GET so'rovlarda ?access_token=... ni qabul qiladi
-    const downloadUrl = token
-      ? `${url}?access_token=${encodeURIComponent(token)}&filename=${encodeURIComponent(filename)}`
+    // 2) Qisqa muddatli download-token olish (sessiya tokenini URL'ga chiqarmaslik uchun)
+    const { data } = await api.get("/api/v1/admin/backup/download-token");
+    const downloadToken = data?.data?.downloadToken as string | undefined;
+
+    // 3) Brauzer nativ download: <a href> + access_token query param
+    //    Backend JwtAuthenticationFilter GET so'rovlarda faqat "download" turidagi
+    //    qisqa muddatli tokenni ?access_token= orqali qabul qiladi.
+    const downloadUrl = downloadToken
+      ? `${url}?access_token=${encodeURIComponent(downloadToken)}&filename=${encodeURIComponent(filename)}`
       : url;
 
     const a = document.createElement("a");

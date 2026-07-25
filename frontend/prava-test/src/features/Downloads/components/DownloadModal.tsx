@@ -138,6 +138,7 @@ export default function DownloadModal({ release, onClose }: Props) {
                         variant={copied ? "filled" : "default"}
                         color={copied ? "green" : "gray"}
                         onClick={copy}
+                        aria-label={t("downloads.copyHash")}
                       >
                         {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
                       </ActionIcon>

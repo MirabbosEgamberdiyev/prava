@@ -14,6 +14,13 @@ spring:
       # ❌ 'create-drop' - to'xtaganda ham o'chiradi (HECH QACHON ishlatmang!)
       # ✅ 'validate' - faqat tekshiradi, o'zgartirmaydi (eng xavfsiz, lekin yangi field qo'shib bo'lmaydi)
       # ✅ 'update' - yangi qo'shadi, mavjudni saqlab qoladi (TAVSIYA ETILADI)
+      #
+      # ⚠️ AUDIT B5: Flyway (validate-on-migrate:true, pastda) HAM yoqiq — ya'ni schema
+      # ikki mexanizm orqali boshqarilmoqda (drift xavfi). Maqsad: 'validate'ga o'tish,
+      # lekin buni staging'da avval sinab ko'rmasdan qilib bo'lmaydi — agar hozirgi prod
+      # DB biror joyda entity'lardan farq qilsa, 'validate' keyingi deploy'ni CRASH qiladi.
+      # Qadam: staging DB'da spring.profiles.active=prod,SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      # bilan sinab ko'ring; xato chiqmasa, shu yerda ddl-auto:validate ga o'zgartiring.
       ddl-auto: update
     properties:
       hibernate:

@@ -116,12 +116,12 @@ const UserTable = ({
               <Table.Td ta="center">
                 <Group gap={4} justify="center" wrap="nowrap">
                   <Tooltip label={t("users.viewTooltip")}>
-                    <ActionIcon variant="light" color="blue" onClick={() => onView(u)}>
+                    <ActionIcon variant="light" color="blue" onClick={() => onView(u)} aria-label={t("users.viewTooltip")}>
                       <IconEye size={16} />
                     </ActionIcon>
                   </Tooltip>
                   <Tooltip label={t("users.editTooltip")}>
-                    <ActionIcon variant="light" color="orange" onClick={() => onEdit(u)}>
+                    <ActionIcon variant="light" color="orange" onClick={() => onEdit(u)} aria-label={t("users.editTooltip")}>
                       <IconEdit size={16} />
                     </ActionIcon>
                   </Tooltip>

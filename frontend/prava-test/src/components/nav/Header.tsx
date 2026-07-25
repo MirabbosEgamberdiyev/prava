@@ -41,6 +41,7 @@ export default function Header({
               onClick={toggle}
               hiddenFrom="sm"
               size="sm"
+              aria-label={opened ? "Close navigation" : "Open navigation"}
             />
             <Link to="/" style={{ textDecoration: "none" }}>
               <Text fw={600} size="xl" tt="uppercase" c="blue.6">
@@ -70,6 +71,7 @@ export default function Header({
                 variant="subtle"
                 radius="md"
                 size="lg"
+                aria-label="Instagram"
               >
                 <IconBrandInstagram size={20} />
               </ActionIcon>
@@ -83,6 +85,7 @@ export default function Header({
                 variant="subtle"
                 radius="md"
                 size="lg"
+                aria-label="Telegram"
               >
                 <IconBrandTelegram size={20} />
               </ActionIcon>

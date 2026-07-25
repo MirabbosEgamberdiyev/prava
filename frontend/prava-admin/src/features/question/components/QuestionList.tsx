@@ -148,7 +148,7 @@ export const QuestionList = ({ searchQuery, topicId }: QuestionListProps) => {
                           variant="light"
                           color="blue"
                           onClick={() => handleView(q)}
-                        >
+                         aria-label={t("questions.viewTooltip")}>
                           <IconEye size={16} />
                         </ActionIcon>
                       </Tooltip>
@@ -157,7 +157,7 @@ export const QuestionList = ({ searchQuery, topicId }: QuestionListProps) => {
                           variant="light"
                           color="orange"
                           onClick={() => handleEdit(q)}
-                        >
+                         aria-label={t("questions.editTooltip")}>
                           <IconEdit size={16} />
                         </ActionIcon>
                       </Tooltip>
@@ -166,7 +166,7 @@ export const QuestionList = ({ searchQuery, topicId }: QuestionListProps) => {
                           variant="light"
                           color="red"
                           onClick={() => handleDeleteClick(q)}
-                        >
+                         aria-label={t("questions.deleteTooltip")}>
                           <IconTrash size={16} />
                         </ActionIcon>
                       </Tooltip>

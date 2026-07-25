@@ -90,7 +90,7 @@ const Login_Page = () => {
         visibleFrom="md"
         w="45%"
         style={{
-          background: "linear-gradient(135deg, #228be6 0%, #1864ab 100%)",
+          background: "linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-blue-9) 100%)",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",

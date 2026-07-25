@@ -133,7 +133,7 @@ export const TopicForm = () => {
                     withBorder
                     p="xs"
                     radius="md"
-                    style={{ backgroundColor: "#f8f9fa" }}
+                    style={{ backgroundColor: "var(--mantine-color-gray-0)" }}
                   >
                     <Group gap="sm">
                       <Image

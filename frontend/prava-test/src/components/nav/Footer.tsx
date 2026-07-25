@@ -111,6 +111,7 @@ const Footer = () => {
                     color={link.color}
                     size="lg"
                     radius="xl"
+                    aria-label={link.label}
                   >
                     {link.icon}
                   </ActionIcon>

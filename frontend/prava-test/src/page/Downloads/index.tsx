@@ -3,7 +3,7 @@ import useSWR from "swr";
 import { useTranslation } from "react-i18next";
 import i18n from "i18next";
 import {
-  Accordion, Alert, Badge, Box, Button, Card, Center, Code,
+  Alert, Badge, Box, Button, Card, Center, Code,
   Container, CopyButton, Divider, Group, Modal, Paper, ScrollArea,
   SegmentedControl, SimpleGrid, Skeleton, Stack, Tabs, Text,
   ThemeIcon, Title, Tooltip, ActionIcon,
@@ -162,7 +162,7 @@ function DesktopSection({
         </SimpleGrid>
       )}
 
-      {error && !isLoading && (
+      {!!error && !isLoading && (
         <Alert icon={<IconAlertCircle size={16}/>} color="red">{t("dl.loadError")}</Alert>
       )}
 

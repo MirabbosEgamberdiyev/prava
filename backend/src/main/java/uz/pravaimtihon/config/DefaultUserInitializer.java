@@ -80,12 +80,9 @@ public class DefaultUserInitializer implements CommandLineRunner {
             log.info("✅ DEFAULT SUPER ADMIN CREATED");
 
         } else {
-            // MAVJUD BO'LSA - PAROLNI YANGILASH (Login ishlashi uchun zarur qism)
-            User user = existingUser.get();
-            user.setPasswordHash(passwordEncoder.encode(superAdminPassword));
-            user.setRole(Role.SUPER_ADMIN); // Rolini ham aniqlashtiramiz
-            userRepository.save(user);
-            log.info("ℹ️  SuperAdmin allaqachon mavjud - PAROL YANGILANDI ✅");
+            // MAVJUD BO'LSA — parolga TEGILMAYDI (admin uni keyinroq o'zgartirgan
+            // bo'lishi mumkin; har restartda reset qilish xavfsizlik teshigi edi).
+            log.info("ℹ️  SuperAdmin allaqachon mavjud - o'tkazib yuborildi (parol o'zgartirilmadi)");
         }
     }
 
@@ -117,12 +114,8 @@ public class DefaultUserInitializer implements CommandLineRunner {
             log.info("✅ DEFAULT ADMIN CREATED");
 
         } else {
-            // MAVJUD BO'LSA - PAROLNI YANGILASH
-            User user = existingUser.get();
-            user.setPasswordHash(passwordEncoder.encode(adminPassword));
-            user.setRole(Role.ADMIN);
-            userRepository.save(user);
-            log.info("ℹ️  Admin allaqachon mavjud - PAROL YANGILANDI ✅");
+            // MAVJUD BO'LSA — parolga TEGILMAYDI (izoh yuqorida, super-admin bilan bir xil sabab).
+            log.info("ℹ️  Admin allaqachon mavjud - o'tkazib yuborildi (parol o'zgartirilmadi)");
         }
     }
 }

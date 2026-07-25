@@ -32,9 +32,9 @@ export const listReleases = (filter: AppReleaseFilter = {}) => {
     sortBy:  filter.sortBy  ?? "releaseDate",
     sortDir: filter.sortDir ?? "desc",
   };
-  if (filter.platform && filter.platform !== "")  params.platform = filter.platform;
-  if (filter.appType  && filter.appType  !== "")  params.appType  = filter.appType;
-  if (filter.status   && filter.status   !== "")  params.status   = filter.status;
+  if (filter.platform) params.platform = filter.platform;
+  if (filter.appType)  params.appType  = filter.appType;
+  if (filter.status)   params.status   = filter.status;
   if (filter.appName  && filter.appName.trim())   params.appName  = filter.appName.trim();
   if (filter.version  && filter.version.trim())   params.version  = filter.version.trim();
 

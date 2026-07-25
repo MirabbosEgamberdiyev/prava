@@ -4,6 +4,7 @@ import {
   Table, Text, Textarea, Title, Tooltip, ActionIcon, Loader, Center,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import {
   IconPlus, IconEdit, IconTrash, IconNotebook, IconRefresh,
@@ -190,19 +191,29 @@ export default function Agreements_Page() {
     }
   };
 
-  const handleDelete = async (a: Agreement) => {
-    if (!confirm(`"${a.learningCenterName}" shartnomasini o'chirish?`)) return;
-    try {
-      await api.delete(`/api/v1/admin/learning-center-agreements/${a.id}`);
-      notifications.show({ title: "O'chirildi", message: "Shartnoma o'chirildi", color: "green" });
-      loadData();
-    } catch (e: any) {
-      notifications.show({
-        title: "Xato",
-        message: e?.response?.data?.message || "O'chirib bo'lmadi",
-        color: "red",
-      });
-    }
+  const handleDelete = (a: Agreement) => {
+    modals.openConfirmModal({
+      title: "Shartnomani o'chirish",
+      children: (
+        <Text size="sm">
+          {`"${a.learningCenterName}" shartnomasini o'chirmoqchimisiz? Bu amalni orqaga qaytarib bo'lmaydi.`}
+        </Text>
+      ),
+      labels: { confirm: "O'chirish", cancel: "Bekor qilish" },
+      confirmProps: { color: "red" },
+      onConfirm: async () => {
+        try {
+          await api.delete(`/api/v1/admin/learning-center-agreements/${a.id}`);
+          notifications.show({ title: "O'chirildi", message: "Shartnoma o'chirildi", color: "green" });
+          loadData();
+        } catch (e: unknown) {
+          const message =
+            (e as { response?: { data?: { message?: string } } })?.response?.data?.message
+            ?? "O'chirib bo'lmadi";
+          notifications.show({ title: "Xato", message, color: "red" });
+        }
+      },
+    });
   };
 
   return (

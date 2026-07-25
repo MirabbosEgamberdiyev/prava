@@ -67,12 +67,12 @@ export interface PlatformMeta {
 }
 
 export const PLATFORM_META: Record<AppPlatform, PlatformMeta> = {
-  WINDOWS:  { label: "Windows",  emoji: "🪟", color: "blue",   gradient: "linear-gradient(135deg,#4dabf7,#1971c2)" },
-  LINUX:    { label: "Linux",    emoji: "🐧", color: "orange", gradient: "linear-gradient(135deg,#ffa94d,#e67700)" },
-  MACOS:    { label: "macOS",    emoji: "🍎", color: "gray",   gradient: "linear-gradient(135deg,#ced4da,#495057)" },
-  WEB:      { label: "Web",      emoji: "🌐", color: "teal",   gradient: "linear-gradient(135deg,#38d9a9,#0c8599)" },
-  ANDROID:  { label: "Android",  emoji: "🤖", color: "green",  gradient: "linear-gradient(135deg,#8ce99a,#2f9e44)" },
-  IOS:      { label: "iOS",      emoji: "📱", color: "violet", gradient: "linear-gradient(135deg,#b197fc,#7950f2)" },
+  WINDOWS:  { label: "Windows",  emoji: "🪟", color: "blue",   gradient: "linear-gradient(135deg,var(--mantine-color-blue-4),var(--mantine-color-blue-8))" },
+  LINUX:    { label: "Linux",    emoji: "🐧", color: "orange", gradient: "linear-gradient(135deg,var(--mantine-color-orange-4),var(--mantine-color-orange-8))" },
+  MACOS:    { label: "macOS",    emoji: "🍎", color: "gray",   gradient: "linear-gradient(135deg,var(--mantine-color-gray-4),var(--mantine-color-gray-8))" },
+  WEB:      { label: "Web",      emoji: "🌐", color: "teal",   gradient: "linear-gradient(135deg,var(--mantine-color-teal-4),var(--mantine-color-teal-8))" },
+  ANDROID:  { label: "Android",  emoji: "🤖", color: "green",  gradient: "linear-gradient(135deg,var(--mantine-color-green-4),var(--mantine-color-green-8))" },
+  IOS:      { label: "iOS",      emoji: "📱", color: "violet", gradient: "linear-gradient(135deg,var(--mantine-color-violet-4),var(--mantine-color-violet-8))" },
 };
 
 export const APP_TYPE_LABELS: Record<AppType, string> = {
