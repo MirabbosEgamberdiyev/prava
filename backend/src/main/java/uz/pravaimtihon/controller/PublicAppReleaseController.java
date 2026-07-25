@@ -16,6 +16,8 @@ import uz.pravaimtihon.entity.AppPlatform;
 import uz.pravaimtihon.entity.AppType;
 import uz.pravaimtihon.service.AppReleaseService;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -109,12 +111,35 @@ public class PublicAppReleaseController {
         // Absolyut URL yasash
         String location = resolveAbsoluteUrl(release.getDownloadUrl(), request);
 
+        // Brauzer faylni tasodifiy UUID (diskdagi saqlash nomi) bilan emas,
+        // "AppName-version.ext" ko'rinishida saqlashi uchun ?name= qo'shiladi —
+        // SecureFileController.getInstallerFile() shu nomni Content-Disposition'da ishlatadi.
+        String displayName = buildDisplayFileName(release);
+        if (displayName != null) {
+            String separator = location.contains("?") ? "&" : "?";
+            location = location + separator + "name=" + URLEncoder.encode(displayName, StandardCharsets.UTF_8);
+        }
+
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, location)
                 .build();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────
+
+    /** "PravaOnline-1.0.0.msi" kabi foydalanuvchiga tushunarli fayl nomi quradi. */
+    private String buildDisplayFileName(AppReleaseResponse release) {
+        String url = release.getDownloadUrl();
+        if (url == null) return null;
+        int dot = url.lastIndexOf('.');
+        String ext = dot >= 0 ? url.substring(dot) : "";
+
+        String appName = release.getAppName() != null ? release.getAppName() : "app";
+        String cleanName = appName.replaceAll("[^a-zA-Z0-9]+", "-").replaceAll("(^-|-$)", "");
+        String version = release.getVersion() != null ? release.getVersion() : "";
+
+        return (version.isBlank() ? cleanName : cleanName + "-" + version) + ext;
+    }
 
     /**
      * Relative URL ni absolyut qiladi.

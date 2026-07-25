@@ -32,6 +32,8 @@ import uz.pravaimtihon.service.impl.FileService;
 import uz.pravaimtihon.service.impl.FileStorageManager;
 
 import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -462,7 +464,9 @@ public class SecureFileController {
     @GetMapping("/installers/{filename:.+}")
     @Operation(summary = "Installer faylini streaming bilan yuklab olish (public, chunked)")
     public ResponseEntity<Resource> getInstallerFile(
-            @PathVariable String filename) {
+            @PathVariable String filename,
+            @Parameter(description = "Foydalanuvchiga ko'rinadigan yuklab olish nomi (ixtiyoriy)")
+            @RequestParam(required = false) String name) {
 
         // Path traversal himoyasi
         if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
@@ -492,10 +496,14 @@ public class SecureFileController {
             String contentType = URLConnection.guessContentTypeFromName(filename);
             if (contentType == null) contentType = "application/octet-stream";
 
+            // Yuklab olishda ko'rsatiladigan nom: agar ?name= berilgan bo'lsa (masalan
+            // "PravaOnline-1.0.0.msi"), diskdagi UUID nomi o'rniga shu ishlatiladi —
+            // brauzer faylni tasodifiy UUID bilan emas, tushunarli nom bilan saqlaydi.
+            String downloadName = buildContentDisposition(filename, name);
+
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, downloadName)
                     .header(HttpHeaders.CACHE_CONTROL, "no-cache")
                     .contentLength(Files.size(filePath))
                     .body(resource);
@@ -504,6 +512,29 @@ public class SecureFileController {
             log.error("❌ Installer fayl yuborishda xato: {}", filename, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    /**
+     * Content-Disposition header qiymatini quradi.
+     * {@code displayName} berilgan bo'lsa (masalan "PravaOnline-1.0.0.msi") shu
+     * ishlatiladi, aks holda diskdagi (UUID) nomga qaytadi. ASCII fallback +
+     * RFC 5987 {@code filename*=UTF-8''...} — lotin/kirill nomlar uchun ham to'g'ri.
+     */
+    private String buildContentDisposition(String storedFilename, String displayName) {
+        String name = (displayName != null && !displayName.isBlank())
+                ? sanitizeDownloadName(displayName)
+                : storedFilename;
+
+        String asciiFallback = name.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String encoded = URLEncoder.encode(name, StandardCharsets.UTF_8).replace("+", "%20");
+
+        return "attachment; filename=\"" + asciiFallback + "\"; filename*=UTF-8''" + encoded;
+    }
+
+    /** Yo'l ajratkichlari va boshqaruv belgilarini olib tashlaydi (Content-Disposition uchun). */
+    private String sanitizeDownloadName(String raw) {
+        String cleaned = raw.replaceAll("[\\\\/\\r\\n\\t\"]", "-").trim();
+        return cleaned.isEmpty() ? "download" : cleaned;
     }
 
     // ============================================
