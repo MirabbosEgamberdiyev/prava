@@ -119,23 +119,61 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     // ✅ NEW: Methods with JOIN FETCH for options (Marathon mode)
     // ============================================
 
+    // ══════════════════════════════════════════════════════════════════════
+    // ⚠️ AUDIT — PERFORMANCE (kritik):
+    //
+    // Quyidagi `findRandomByTopicWithOptions` / `findRandomQuestionsWithOptions`
+    // metodlari `LEFT JOIN FETCH` (kolleksiya) va `Pageable` ni BIRGA ishlatadi.
+    // Hibernate bunday holatda LIMIT'ni SQL'ga qo'sha olmaydi va ogohlantirish
+    // beradi: "HHH90003004: firstResult/maxResults specified with collection
+    // fetch; applying in memory". Ya'ni u BUTUN savollar jadvalini (savol bankida
+    // minglab yozuv) barcha variantlari bilan JVM xotirasiga yuklab, sahifalashni
+    // Java tomonda bajaradi.
+    //
+    // Bu har bir `/api/v1/public/guest-exam` (AUTENTIFIKATSIYASIZ!) va har bir
+    // marafon boshlashda sodir bo'lardi — arzon OutOfMemory / DoS vektori.
+    //
+    // Yechim: ikki bosqichli o'qish —
+    //   1) `findRandomQuestionIds(...)` — kolleksiya fetch YO'Q, shuning uchun
+    //      LIMIT to'g'ridan-to'g'ri SQL'da bajariladi (DB tomonda random + limit);
+    //   2) `findByIdsWithOptions(ids)` — faqat tanlangan N ta savol uchun
+    //      variantlarni bitta so'rovda yuklaydi (N+1 ham yo'q).
+    // ══════════════════════════════════════════════════════════════════════
+
     /**
-     * Find questions by topic WITH options eagerly loaded.
-     * Use this for marathon mode to avoid LazyInitializationException.
-     * Note: Shuffling is done in Java (selectAndShuffleQuestions) to avoid
-     * PostgreSQL DISTINCT + ORDER BY RANDOM() incompatibility.
+     * Tasodifiy N ta faol savol ID'sini qaytaradi (DB tomonda LIMIT bilan).
+     * Kolleksiya fetch yo'q — sahifalash SQL darajasida ishlaydi.
      */
+    @Query("SELECT q.id FROM Question q " +
+            "WHERE q.deleted = false AND q.isActive = true " +
+            "ORDER BY FUNCTION('RANDOM')")
+    List<Long> findRandomQuestionIds(Pageable pageable);
+
+    /**
+     * Mavzu bo'yicha tasodifiy N ta faol savol ID'si (DB tomonda LIMIT bilan).
+     */
+    @Query("SELECT q.id FROM Question q " +
+            "WHERE q.deleted = false AND q.isActive = true AND q.topic = :topic " +
+            "ORDER BY FUNCTION('RANDOM')")
+    List<Long> findRandomQuestionIdsByTopic(@Param("topic") Topic topic, Pageable pageable);
+
+    /**
+     * @deprecated Kolleksiya fetch + Pageable = xotirada sahifalash.
+     *             O'rniga {@link #findRandomQuestionIdsByTopic} +
+     *             {@link #findByIdsWithOptions} ishlating.
+     */
+    @Deprecated
     @Query("SELECT DISTINCT q FROM Question q " +
             "LEFT JOIN FETCH q.options " +
             "WHERE q.deleted = false AND q.isActive = true AND q.topic = :topic")
     List<Question> findRandomByTopicWithOptions(@Param("topic") Topic topic, Pageable pageable);
 
     /**
-     * Find questions from all topics WITH options eagerly loaded.
-     * Use this for marathon mode to avoid LazyInitializationException.
-     * Note: Shuffling is done in Java (selectAndShuffleQuestions) to avoid
-     * PostgreSQL DISTINCT + ORDER BY RANDOM() incompatibility.
+     * @deprecated Kolleksiya fetch + Pageable = xotirada sahifalash
+     *             (butun jadval yuklanadi). O'rniga
+     *             {@link #findRandomQuestionIds} + {@link #findByIdsWithOptions}.
      */
+    @Deprecated
     @Query("SELECT DISTINCT q FROM Question q " +
             "LEFT JOIN FETCH q.options " +
             "WHERE q.deleted = false AND q.isActive = true")

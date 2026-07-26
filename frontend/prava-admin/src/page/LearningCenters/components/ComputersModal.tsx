@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Modal, Text, Stack, Group, Button, Divider, ScrollArea, Table, Skeleton,
-  Center, Code, Badge, Tooltip, ActionIcon,
+  Center, Code, Badge, Tooltip, ActionIcon, Pagination,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
@@ -10,7 +10,7 @@ import { notifications } from "@mantine/notifications";
 import { useSWRConfig } from "swr";
 import {
   IconDeviceDesktop, IconPlus, IconKey, IconEdit, IconToggleLeft,
-  IconToggleRight, IconTrash,
+  IconToggleRight, IconTrash, IconAlertTriangle,
 } from "@tabler/icons-react";
 import { useComputerList } from "../../../features/computer/hooks/useComputers";
 import computerService from "../../../services/computerService";
@@ -30,11 +30,32 @@ export function ComputersModal({
 
   const [compFormOpened, { open: openCompForm, close: closeCompForm }] = useDisclosure(false);
   const [editingComp, setEditingComp] = useState<ComputerResponse | null>(null);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 20;
 
-  const filter = lc ? { lcId: lc.id, size: 50 } : {};
-  const { page: data, isLoading, refresh } = useComputerList(filter);
+  /**
+   * Ilgari `lc` bo'lmaganda ham filtrsiz so'rov ketardi (butun tizimdagi
+   * kompyuterlar) — modal yopiq turganida ham har 30 soniyada. Endi markaz
+   * tanlanmagan bo'lsa so'rov umuman yuborilmaydi.
+   *
+   * Bundan tashqari `size: 50` qattiq belgilangan va sahifalash yo'q edi:
+   * 50 dan ortiq kompyuteri bor markazda qolganlari ko'rinmasdi, garchi
+   * yuqorida "Jami: N" to'g'ri raqamni yozib tursa ham.
+   */
+  const { page: data, isLoading, isError, refresh } = useComputerList(
+    lc ? { lcId: lc.id, page, size: PAGE_SIZE } : null,
+  );
 
-  const computers = data?.content ?? [];
+  const computers  = data?.content    ?? [];
+  const totalPages = data?.totalPages ?? 0;
+
+  // Markaz almashsa sahifani boshidan boshlaymiz
+  useEffect(() => { setPage(0); }, [lc?.id]);
+
+  // Oxirgi sahifadagi kompyuterlar o'chirilsa diapazondan chiqib ketmasin
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages - 1) setPage(totalPages - 1);
+  }, [totalPages, page]);
 
   const refreshComputers = () => {
     refresh();
@@ -149,6 +170,20 @@ export function ComputersModal({
                       ))}
                     </Table.Tr>
                   ))
+                ) : isError ? (
+                  <Table.Tr>
+                    <Table.Td colSpan={6}>
+                      <Center py="lg">
+                        <Stack align="center" gap="xs">
+                          <IconAlertTriangle size={28} color="var(--mantine-color-red-6)" />
+                          <Text c="red" size="sm">{t("common.errorLoading")}</Text>
+                          <Button size="xs" variant="light" onClick={() => refresh()}>
+                            {t("common.refresh")}
+                          </Button>
+                        </Stack>
+                      </Center>
+                    </Table.Td>
+                  </Table.Tr>
                 ) : computers.length === 0 ? (
                   <Table.Tr>
                     <Table.Td colSpan={6}>
@@ -176,7 +211,9 @@ export function ComputersModal({
                         <Group gap={4} wrap="nowrap">
                           <IconKey size={11} style={{ opacity: 0.4 }} />
                           <Text size="xs">{c.totalCodes ?? 0}</Text>
-                          <Text size="xs" c="dimmed">/ {c.activeCodes ?? 0} faol</Text>
+                          <Text size="xs" c="dimmed">
+                            / {c.activeCodes ?? 0} {t("lc.table.activeShort")}
+                          </Text>
                         </Group>
                       </Table.Td>
                       <Table.Td>
@@ -215,6 +252,17 @@ export function ComputersModal({
               </Table.Tbody>
             </Table>
           </ScrollArea>
+
+          {totalPages > 1 && (
+            <Group justify="center">
+              <Pagination
+                value={page + 1}
+                onChange={(p) => setPage(p - 1)}
+                total={totalPages}
+                size="sm"
+              />
+            </Group>
+          )}
         </Stack>
       </Modal>
 

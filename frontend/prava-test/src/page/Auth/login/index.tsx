@@ -34,11 +34,14 @@ const Login_Page = () => {
   // Redirect destination after login (from ProtectedRoute state or default /me)
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/me";
 
-  // Agar foydalanuvchi allaqachon tizimga kirgan bo'lsa — redirect
-  if (isAuthenticated) {
-    return <Navigate to={from} replace />;
-  }
-
+  /*
+   * HOOK TARTIBI BUZILISHI TUZATILDI.
+   * Avval `if (isAuthenticated) return <Navigate/>` shu `useForm()` dan OLDIN
+   * turardi. Login muvaffaqiyatli bo'lganda `isAuthenticated` true ga o'tadi
+   * va komponent qayta renderда `useForm` ni O'TKAZIB YUBORARDI — React
+   * "Rendered fewer hooks than expected" xatosi bilan yiqilishi mumkin edi.
+   * Endi barcha hooklar shartsiz chaqiriladi, redirect esa keyin.
+   */
   const form = useForm({
     initialValues: {
       identifier: "",
@@ -53,6 +56,11 @@ const Login_Page = () => {
         value.length < 6 ? t("validation.minChars", { count: 6 }) : null,
     },
   });
+
+  // Agar foydalanuvchi allaqachon tizimga kirgan bo'lsa — redirect
+  if (isAuthenticated) {
+    return <Navigate to={from} replace />;
+  }
 
   const handleSubmit = async (values: typeof form.values) => {
     setLoading(true);

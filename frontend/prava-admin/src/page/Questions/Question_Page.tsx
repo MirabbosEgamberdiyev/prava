@@ -16,7 +16,7 @@ const Question_Page = () => {
   return (
     <div>
       <Group justify="space-between" mb="md">
-        <Title order={2}>{t("questions.title")}</Title>
+        <Title order={1} fz="h3">{t("questions.title")}</Title>
         <Group>
           <TextInput
             placeholder={t("questions.searchPlaceholder")}

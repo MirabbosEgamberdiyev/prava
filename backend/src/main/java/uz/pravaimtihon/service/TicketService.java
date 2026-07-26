@@ -349,15 +349,23 @@ public class TicketService {
                     .collect(Collectors.toSet());
 
             int missing = needed - validQuestions.size();
-            List<Question> randomQuestions;
 
-            if (ticket.getTopic() != null) {
-                randomQuestions = questionRepository.findRandomByTopicWithOptions(
-                        ticket.getTopic(), PageRequest.of(0, missing * 3));
-            } else {
-                randomQuestions = questionRepository.findRandomQuestionsWithOptions(
-                        PageRequest.of(0, missing * 3));
-            }
+            // ⚠️ AUDIT — PERFORMANCE: avval `findRandomByTopicWithOptions` /
+            // `findRandomQuestionsWithOptions` ishlatilardi. Ular kolleksiya
+            // `JOIN FETCH` + `Pageable` bo'lgani uchun Hibernate LIMIT'ni
+            // SQL'ga qo'sha olmasdi va BUTUN savollar jadvalini xotiraga
+            // yuklab, sahifalashni Java'da bajarardi (HHH90003004).
+            // Endi: DB tomonda random + LIMIT bilan ID'lar, so'ng o'sha
+            // ID'lar uchun variantlar bitta so'rovda.
+            List<Long> randomIds = (ticket.getTopic() != null)
+                    ? questionRepository.findRandomQuestionIdsByTopic(
+                            ticket.getTopic(), PageRequest.of(0, missing * 3))
+                    : questionRepository.findRandomQuestionIds(
+                            PageRequest.of(0, missing * 3));
+
+            List<Question> randomQuestions = randomIds.isEmpty()
+                    ? List.of()
+                    : questionRepository.findByIdsWithOptions(randomIds);
 
             for (Question q : randomQuestions) {
                 if (q != null && !usedIds.contains(q.getId())) {

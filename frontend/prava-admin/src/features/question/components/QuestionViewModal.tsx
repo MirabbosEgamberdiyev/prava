@@ -94,7 +94,8 @@ export const QuestionViewModal = ({
                         <Text size="sm" c="dimmed" fw={500} mb={4}>
                             {t("questions.explanationLabel")}
                         </Text>
-                        <Paper p="sm" bg="gray.0" radius="md">
+                        {/* gray.0 dark rejimda oq fon + oq matn berardi */}
+                        <Paper p="sm" bg="var(--mantine-color-default-hover)" radius="md">
                             <Text size="sm">{viewQuestion.explanation}</Text>
                         </Paper>
                     </Box>
@@ -122,10 +123,12 @@ export const QuestionViewModal = ({
                                 key={opt.id}
                                 p="md"
                                 withBorder
+                                // Ilgari green.0/gray.0 — ikkalasi ham dark rejimda
+                                // oq/och fon berib, matnni o'qib bo'lmasdi.
                                 bg={
                                     viewQuestion.correctAnswerIndex === opt.optionIndex
-                                        ? "green.0"
-                                        : "gray.0"
+                                        ? "var(--mantine-color-green-light)"
+                                        : "var(--mantine-color-default-hover)"
                                 }
                                 style={{
                                     borderColor:

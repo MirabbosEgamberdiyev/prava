@@ -1,16 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Button,
-  Checkbox,
   Flex,
-  Group,
   Paper,
   PasswordInput,
   Text,
   TextInput,
   Title,
   Box,
-  Anchor,
   Stack,
   rem,
 } from "@mantine/core";
@@ -33,7 +30,6 @@ const Login_Page = () => {
     initialValues: {
       identifier: "",
       password: "",
-      rememberMe: false,
     },
     validate: {
       identifier: (value) =>
@@ -48,6 +44,7 @@ const Login_Page = () => {
   });
 
   const handleSubmit = async (values: typeof form.values) => {
+    if (loading) return; // tez-tez bosishdan himoya
     setLoading(true);
     try {
       const response = await api.post("/api/v1/auth/login", {
@@ -55,22 +52,31 @@ const Login_Page = () => {
         password: values.password,
       });
 
-      if (response.data.success) {
-        const userLang = response.data.data.user?.preferredLanguage;
-        if (userLang) {
-          i18n.changeLanguage(userLang);
-        }
-
-        login(response.data.data);
-        navigate("/");
-
+      // Ilgari `success === false` bo'lganda hech narsa qilinmasdi —
+      // tugma to'xtardi-yu, foydalanuvchi sababini bilmasdi (jim xatolik).
+      if (!response.data?.success || !response.data?.data?.accessToken) {
         notifications.show({
-          title: t("auth.not_title"),
-          message: t("auth.not_massage"),
-          color: "green",
-          withBorder: true,
+          color: "red",
+          title: t("auth.errorTitle"),
+          message: response.data?.message || t("auth.loginError"),
         });
+        return;
       }
+
+      const userLang = response.data.data.user?.preferredLanguage;
+      if (userLang) {
+        i18n.changeLanguage(String(userLang).toLowerCase());
+      }
+
+      login(response.data.data);
+      navigate("/", { replace: true });
+
+      notifications.show({
+        title: t("auth.not_title"),
+        message: t("auth.not_massage"),
+        color: "green",
+        withBorder: true,
+      });
     } catch (err: any) {
       notifications.show({
         color: "red",
@@ -153,17 +159,13 @@ const Login_Page = () => {
                   {...form.getInputProps("password")}
                 />
 
-                <Group justify="space-between">
-                  <Checkbox
-                    label={t("auth.rememberMe")}
-                    {...form.getInputProps("rememberMe", {
-                      type: "checkbox",
-                    })}
-                  />
-                  <Anchor size="sm" c="dimmed">
-                    {t("auth.forgotPassword")}
-                  </Anchor>
-                </Group>
+                {/*
+                  "Meni eslab qol" checkbox va "Parolni unutdingizmi?" havolasi
+                  olib tashlandi: ikkalasi ham hech qanday amal bajarmasdi
+                  (rememberMe qiymati hech qayerda ishlatilmasdi, Anchor'da
+                  href/onClick yo'q edi). Ishlaydigan UI bo'lmagunicha
+                  ko'rsatmaslik to'g'riroq.
+                */}
 
                 <Button
                   fullWidth

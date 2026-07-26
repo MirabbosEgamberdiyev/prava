@@ -73,7 +73,11 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException ex,
             HttpServletRequest request
     ) {
-        log.warn("Validation error: {}", ex.getMessage());
+        // AUDIT: `ex.getMessage()` rad etilgan qiymatlarni (jumladan parolni)
+        // o'z ichiga oladi — shuning uchun faqat maydon nomlari log qilinadi.
+        log.warn("Validation error on {}: fields={}", request.getRequestURI(),
+                ex.getBindingResult().getFieldErrors().stream()
+                        .map(FieldError::getField).toList());
 
         List<ApiResponse.ValidationError> errors = ex.getBindingResult()
                 .getFieldErrors()
@@ -93,7 +97,11 @@ public class GlobalExceptionHandler {
             ConstraintViolationException ex,
             HttpServletRequest request
     ) {
-        log.warn("Constraint violation: {}", ex.getMessage());
+        // AUDIT: xabar rad etilgan qiymatlarni oshkor qilmasligi uchun maydon
+        // nomlari bilan cheklandi.
+        log.warn("Constraint violation on {}: fields={}", request.getRequestURI(),
+                ex.getConstraintViolations().stream()
+                        .map(v -> v.getPropertyPath().toString()).toList());
 
         List<ApiResponse.ValidationError> errors = ex.getConstraintViolations()
                 .stream()
@@ -248,6 +256,30 @@ public class GlobalExceptionHandler {
     // Helper Methods
     // ============================================
 
+    /**
+     * ⚠️ AUDIT: `rejectedValue` foydalanuvchi yuborgan xom qiymatni javobga
+     * qaytaradi. Parol maydoni validatsiyadan o'tmasa (masalan juda qisqa),
+     * KIRITILGAN PAROL javob body'sida qaytib kelardi va shu bilan birga
+     * proxy/brauzer loglariga tushishi mumkin edi. Endi maxfiy maydonlar
+     * uchun qiymat maskalanadi.
+     */
+    private static final List<String> SENSITIVE_FIELDS = List.of(
+            "password", "newpassword", "currentpassword", "oldpassword",
+            "confirmpassword", "passwordhash", "token", "refreshtoken",
+            "accesstoken", "idtoken", "code", "secret", "apikey"
+    );
+
+    private static boolean isSensitiveField(String field) {
+        if (field == null) return false;
+        String normalized = field.toLowerCase();
+        return SENSITIVE_FIELDS.stream().anyMatch(normalized::contains);
+    }
+
+    private static Object maskIfSensitive(String field, Object rejectedValue) {
+        if (rejectedValue == null) return null;
+        return isSensitiveField(field) ? "***" : rejectedValue;
+    }
+
     private ApiResponse.ValidationError mapFieldError(FieldError error) {
         String message = error.getDefaultMessage();
 
@@ -258,7 +290,7 @@ public class GlobalExceptionHandler {
         return ApiResponse.ValidationError.builder()
                 .field(error.getField())
                 .message(message)
-                .rejectedValue(error.getRejectedValue())
+                .rejectedValue(maskIfSensitive(error.getField(), error.getRejectedValue()))
                 .build();
     }
 
@@ -273,7 +305,7 @@ public class GlobalExceptionHandler {
         return ApiResponse.ValidationError.builder()
                 .field(field)
                 .message(message)
-                .rejectedValue(violation.getInvalidValue())
+                .rejectedValue(maskIfSensitive(field, violation.getInvalidValue()))
                 .build();
     }
 

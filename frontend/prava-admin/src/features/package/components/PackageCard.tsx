@@ -126,7 +126,9 @@ export function PackageCard({
             </Badge>
           ) : (
             <Badge color="orange" variant="light">
-              {pkg.price.toLocaleString()} {t("packages.currency")}
+              {/* price null/undefined bo'lsa .toLocaleString() TypeError bilan
+                  butun ro'yxatni yiqitardi */}
+              {(pkg.price ?? 0).toLocaleString()} {t("packages.currency")}
             </Badge>
           )}
         </Group>

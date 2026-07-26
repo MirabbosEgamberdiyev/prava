@@ -22,7 +22,18 @@ export function DeactivateModal({
 
   if (!code) return null;
 
+  /**
+   * Ilgari `notes` faqat state'da qolib ketardi: bitta kod uchun izoh yozib,
+   * "Bekor qilish" bosilsa, keyingi ochilgan boshqa kodga o'sha izoh
+   * bog'lanib ketishi mumkin edi.
+   */
+  const handleClose = () => {
+    setNotes("");
+    onClose();
+  };
+
   const handleDeactivate = async () => {
+    if (loading) return;
     setLoading(true);
     try {
       await deactivate(code.id, notes.trim() || undefined);
@@ -32,7 +43,7 @@ export function DeactivateModal({
         message: t("license.notifications.deactivateSuccessMsg"),
         color:   "orange",
       });
-      onClose();
+      handleClose();
     } catch (e) {
       handleError(e, t("license.notifications.deactivateError"));
     } finally {
@@ -43,7 +54,7 @@ export function DeactivateModal({
   return (
     <Modal
       opened={!!code}
-      onClose={onClose}
+      onClose={handleClose}
       title={<Text fw={700} size="lg" c="orange">{t("license.deactivate.title")}</Text>}
       size="md"
       radius="md"
@@ -69,7 +80,9 @@ export function DeactivateModal({
         />
 
         <Group justify="flex-end">
-          <Button variant="default" onClick={onClose}>{t("common.cancel")}</Button>
+          <Button variant="default" onClick={handleClose} disabled={loading}>
+            {t("common.cancel")}
+          </Button>
           <Button color="orange" loading={loading} onClick={handleDeactivate} leftSection={<IconBan size={16} />}>
             {t("license.deactivate.submit")}
           </Button>

@@ -9,9 +9,41 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
+    <!--
+      Shriftlar: avval `src/index.css` ichida `@import url(fonts.googleapis.com)`
+      orqali yuklanardi. `@import` CSS parse qilingandan KEYIN ishga tushadi,
+      ya'ni zanjirli (chained) render-blocking so'rov hosil qilardi.
+      Bu yerda `media="print" + onload` naqshi bilan bloklamasdan yuklaymiz.
+      Faqat 400/500/600/700 og'irliklari — avval 100..900 to'liq variable
+      diapazon (normal + italic, 2 fayl) so'ralardi, ammo kodda italic
+      umuman ishlatilmaydi.
+    -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+      />
+    </noscript>
+
     <!-- API same-origin (nginx /api/* proxy) — preconnect kerakmas, HTML loadda allaqachon ulangan -->
-    <!-- Kritik rasmlar: HTML parse paytida yuklanadi -->
-    <link rel="preload" as="image" href="/logo.svg" type="image/svg+xml" />
+    <!--
+      PERF: `/logo.svg` preloadi OLIB TASHLANDI — u 532KB li SVG bo'lib,
+      har bir sahifa yuklanishida eng yuqori prioritet bilan kritik yo'lni
+      band qilardi (mobil internetda LCP ga jiddiy zarar). Logo faqat
+      Header/Footer/Hero da kerak va oddiy tartibda yuklanadi.
+    -->
     <link rel="preload" as="image" href="/question-default.svg" type="image/svg+xml" />
 
     <!-- Favicon -->

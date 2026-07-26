@@ -23,12 +23,8 @@ export function StatsCards() {
           ) : (
             <>
               <Text size="xs" c="dimmed" fw={500}>{label}</Text>
-              <Text
-                size="xl"
-                fw={700}
-                c={color}
-                style={{ fontSize: "1.6rem", lineHeight: 1.2, marginTop: 4 }}
-              >
+              {/* Tipografika theme.ts tokenidan — inline fontSize emas */}
+              <Text fz="h4" fw={700} c={color} mt={4} lh={1.2}>
                 {stats?.[key] ?? 0}
               </Text>
             </>

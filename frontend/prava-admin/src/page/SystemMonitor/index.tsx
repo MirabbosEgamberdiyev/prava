@@ -157,7 +157,7 @@ const SystemMonitor_Page = () => {
   return (
     <Stack gap="md">
       <Group justify="space-between">
-        <Title order={3}>
+        <Title order={1} fz="h3">
           <IconServer size={24} style={{ marginRight: 8, verticalAlign: "middle" }} />
           {t("system.title")}
         </Title>

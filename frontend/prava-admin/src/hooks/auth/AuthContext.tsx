@@ -21,6 +21,8 @@ interface AuthContextType {
   login: (authData: any) => void;
   register: (authData: any) => void;
   logout: () => void;
+  /** Profil tahrirlangandan keyin sessiyadagi user ma'lumotini yangilaydi */
+  updateUser: (patch: Record<string, unknown>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,6 +72,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const login = (authData: any) => saveAuthData(authData);
   const register = (authData: any) => saveAuthData(authData);
 
+  /**
+   * Sozlamalar sahifasida profil yangilangach chaqiriladi.
+   * Busiz header/avatar qayta login qilinmaguncha eski ism-familiyani
+   * ko'rsatib turardi (sessionStorage va context yangilanmasdi).
+   */
+  const updateUser = (patch: Record<string, unknown>) => {
+    setUser((prev: any) => {
+      const next = { ...(prev ?? {}), ...patch };
+      try {
+        sessionStorage.setItem(USER_DATA_KEY, JSON.stringify(next));
+      } catch {
+        // sessionStorage to'lgan bo'lishi mumkin — context baribir yangilanadi
+      }
+      return next;
+    });
+  };
+
   const logout = async () => {
     // Backend'ga logout so'rov yuborish
     const refreshToken = sessionStorage.getItem(REFRESH_TOKEN_KEY);
@@ -95,7 +114,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, loading, login, register, logout }}
+      value={{ isAuthenticated, user, loading, login, register, logout, updateUser }}
     >
       {children}
     </AuthContext.Provider>

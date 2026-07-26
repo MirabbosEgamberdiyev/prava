@@ -60,8 +60,10 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.mail.ru}
     port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME:mirabbosegamberdiyev7@mail.ru}
-    password: ${MAIL_PASSWORD:r2CePkKRjrebdGl5oR1s}
+    # SECURITY: hech qanday hardcoded default YO'Q — qiymatlar faqat .env dan keladi.
+    # (Avval bu yerda haqiqiy mail.ru paroli turardi va u git'ga tushgan edi.)
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     default-encoding: UTF-8
     properties:
       mail:
@@ -99,9 +101,13 @@ spring:
 
 # Application Configuration
 app:
-  # ✅ FIXED: JWT secret must be at least 256 bits (32 characters)
+  # SECURITY: JWT secret MAJBURIY env o'zgaruvchi — default YO'Q.
+  # Agar JWT_SECRET berilmasa ilova umuman ishga tushmaydi (fail-fast).
+  # Sabab: avvalgi hardcoded default git repo'da ochiq turardi — uni bilgan
+  # har kim SUPER_ADMIN tokenini o'zi imzolab, to'liq auth bypass qila olardi.
+  # Yaratish: openssl rand -base64 48
   jwt:
-    secret: ${JWT_SECRET:MirabbosEgamberdiyevPravaOnlineSecretKey1234567890123456789012345678901}
+    secret: ${JWT_SECRET}
     access-token-expiration: 86400000
     refresh-token-expiration: 2592000000
     # B6/A2: faqat GET-download havolalarida (?access_token=) ishlatiladigan,
@@ -110,9 +116,11 @@ app:
     issuer: prava-online
 
   google:
-    client-id: ${GOOGLE_CLIENT_ID:237372892439-4bju17u6k3cjoil26p148m21ilmecd9s.apps.googleusercontent.com}
-    android-client-id: ${GOOGLE_ANDROID_CLIENT_ID:237372892439-79qbbfmfu7j54ds45nae883b378en7jb.apps.googleusercontent.com}
-    ios-client-id: ${GOOGLE_IOS_CLIENT_ID:237372892439-7qjqf6cpjlk2bfi7o39donf5g8krk5k2.apps.googleusercontent.com}
+    # Client ID'lar maxfiy emas (frontend'da ham ko'rinadi), lekin konfiguratsiya
+    # bitta joyda (.env) turishi uchun default qoldirilmadi.
+    client-id: ${GOOGLE_CLIENT_ID:}
+    android-client-id: ${GOOGLE_ANDROID_CLIENT_ID:}
+    ios-client-id: ${GOOGLE_IOS_CLIENT_ID:}
 
   oauth:
     google:
@@ -124,7 +132,8 @@ app:
 
   # Telegram Bot Configuration (for Login Widget verification + Bot commands)
   telegram:
-    bot-token: ${TELEGRAM_BOT_TOKEN:8485868847:AAGR9eBV1qibgJfXHpqZ04JlbyrjemaTrGA}
+    # SECURITY: bot token = to'liq bot ustidan nazorat. Hardcoded default olib tashlandi.
+    bot-token: ${TELEGRAM_BOT_TOKEN:}
     bot-username: ${TELEGRAM_BOT_USERNAME:pravaonlineuzbot}
     webhook-url: ${TELEGRAM_WEBHOOK_URL:}
     base-url: ${TELEGRAM_BASE_URL:https://pravaonline.uz}
@@ -156,8 +165,9 @@ app:
     test-mode:
       log-only: true
     eskiz:
-      email: ${ESKIZ_EMAIL:egamberdiyevmirabbos7@gmail.com}
-      password: ${ESKIZ_PASSWORD:kIhEt04V7R95uQYlmwaWNFFDzdrbv1bSK0VxEnfa}
+      # SECURITY: Eskiz API kredensiallari faqat .env dan (avval git'da ochiq edi).
+      email: ${ESKIZ_EMAIL:}
+      password: ${ESKIZ_PASSWORD:}
 
   # Email Configuration
   email:
@@ -195,7 +205,10 @@ app:
     limits:
       image:
         max-size-mb: 10
-        allowed-types: image/jpeg,image/png,image/gif,image/webp,image/svg+xml
+        # SECURITY: image/svg+xml olib tashlandi — SVG ichida skript bo'lishi
+        # mumkin va fayllar public endpoint orqali inline uzatilgani uchun bu
+        # saqlanadigan XSS (stored XSS) ga olib kelardi.
+        allowed-types: image/jpeg,image/png,image/gif,image/webp
       video:
         max-size-mb: 1000
         allowed-types: video/mp4,video/webm,video/ogg,video/avi,video/quicktime

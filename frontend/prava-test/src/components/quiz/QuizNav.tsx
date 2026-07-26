@@ -1,4 +1,10 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { mutate } from "swr";
 import {
   Alert,
@@ -29,6 +35,7 @@ import {
 import LanguagePicker from "../language/LanguagePicker";
 import ColorMode from "../other/ColorMode";
 import api from "../../api/api";
+import { backupAnswers, clearBackup } from "../../hooks/useAutoSave";
 import type { AnswersMap } from "../../types";
 
 export interface QuizNavHandle {
@@ -52,7 +59,9 @@ interface QuizNavProps {
   onGuestFinish?: () => void;
   onGuestViewResults?: () => void;
   onSubmitSuccess?: () => void;
-  forceEnableSubmit?: boolean;
+  // `forceEnableSubmit` OLIB TASHLANDI: props interfeysida e'lon qilingan va
+  // Exam sahifasidan uzatilgan, ammo komponent ichida hech qachon
+  // destrukturizatsiya qilinmagan/ishlatilmagan edi — jim o'lik prop.
 }
 
 export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav({
@@ -73,25 +82,74 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
   const navigate = useNavigate();
   const [opened, { open, close }] = useDisclosure(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [abandoning, setAbandoning] = useState(false);
+  // Oxirgi urinishdagi manzil — "Qayta urinish" tugmasi uchun
+  const lastNavigateToRef = useRef<string>("");
 
   useImperativeHandle(ref, () => ({ openFinishModal: open }), [open]);
 
+  /**
+   * TAYMER — deadline asosida (avvalgi `prev - 1` dekrement emas).
+   *
+   * Avvalgi implementatsiyadagi ikki jiddiy nuqson:
+   *  1) `useEffect` dep-larida `onTimeUp` bor edi. Ota-komponentlar uni inline
+   *     arrow sifatida uzatadi (masalan `onTimeUp={() => setIsTimeUp(true)}`),
+   *     ya'ni har renderда yangi identity. Har javob tanlanganda effekt qayta
+   *     ishga tushib `setInterval` nolga qaytardi — taymer sekinlashardi va
+   *     foydalanuvchi imtihonda belgilangandan ko'proq vaqt olardi.
+   *  2) `setInterval` + dekrement fon tabda brauzer tomonidan sekinlashtiriladi
+   *     (throttling). Telefonda boshqa ilovaga o'tib qaytgan foydalanuvchi
+   *     yo'qotilgan vaqtni "sovg'a" qilib olardi.
+   *
+   * Endi qolgan vaqt har tickda `deadline - Date.now()` dan hisoblanadi, shuning
+   * uchun tick kechiksa ham ko'rsatkich to'g'ri qiymatga sakraydi.
+   */
+  const deadlineRef = useRef<number>(Date.now() + durationMinutes * 60 * 1000);
   const [timeLeft, setTimeLeft] = useState(durationMinutes * 60);
   const isTimeUp = timeLeft <= 0;
 
+  // Deadline faqat davomiylik o'zgarganda qayta hisoblanadi (masalan examData
+  // kechroq yuklansa), har renderда emas.
   useEffect(() => {
-    if (isTimeUp) {
-      onTimeUp?.();
-      open();
-      return;
-    }
+    deadlineRef.current = Date.now() + durationMinutes * 60 * 1000;
+    setTimeLeft(durationMinutes * 60);
+  }, [durationMinutes]);
 
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
+  // `onTimeUp` ni ref orqali ushlaymiz — dep bo'lmagani uchun taymer
+  // ota-komponent renderlaridan mustaqil ishlaydi.
+  const onTimeUpRef = useRef(onTimeUp);
+  onTimeUpRef.current = onTimeUp;
+  const timeUpFiredRef = useRef(false);
 
-    return () => clearInterval(timer);
-  }, [isTimeUp, onTimeUp]);
+  useEffect(() => {
+    const tick = () => {
+      const remaining = Math.max(
+        0,
+        Math.ceil((deadlineRef.current - Date.now()) / 1000),
+      );
+      setTimeLeft(remaining);
+      if (remaining <= 0 && !timeUpFiredRef.current) {
+        timeUpFiredRef.current = true;
+        onTimeUpRef.current?.();
+        open();
+      }
+    };
+
+    tick(); // darhol sinxronlash (tabga qaytganda kutmasdan)
+    const timer = setInterval(tick, 1000);
+
+    // Fon tabdan qaytganda darhol qayta hisoblash
+    const onVisible = () => {
+      if (document.visibilityState === "visible") tick();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [open]);
 
   const handleSubmit = async (navigateTo: string) => {
     if (submitting) return;
@@ -107,22 +165,32 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
       return;
     }
 
+    lastNavigateToRef.current = navigateTo;
     setSubmitting(true);
+    setSubmitError(null);
+
+    const formattedAnswers = questions.map((question, index) => {
+      const answer = answers[index];
+      return {
+        questionId: question.id,
+        selectedOptionIndex: answer?.optionIndex ?? null,
+        timeSpentSeconds: answer?.timeSpentSeconds ?? 0,
+      };
+    });
+
+    // Tarmoq uzilib qolsa ham javoblar yo'qolmasin: submit'dan OLDIN
+    // localStorage'ga zaxira nusxa yozamiz. Muvaffaqiyatli submitdan keyin
+    // o'chiriladi. Shu tufayli sahifa yangilansa/brauzer yopilsa ham javoblar
+    // tiklanadi (useAutoSave.restoreAnswers).
+    backupAnswers(sessionId, answers);
 
     try {
-      const formattedAnswers = questions.map((question, index) => {
-        const answer = answers[index];
-        return {
-          questionId: question.id,
-          selectedOptionIndex: answer?.optionIndex ?? null,
-          timeSpentSeconds: answer?.timeSpentSeconds ?? 0,
-        };
-      });
-
       await api.post("/api/v2/exams/submit", {
         sessionId,
         answers: formattedAnswers,
       });
+
+      clearBackup(sessionId);
 
       notifications.show({
         title: t("common.success"),
@@ -133,6 +201,8 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
       // Active exam SWR cache ni tozalaymiz — /me da banner qayta chiqmasin
       mutate("/api/v2/exams/active", { data: null }, false);
       onSubmitSuccess?.();
+      setSubmitting(false);
+      close();
       navigate(navigateTo, { replace: true });
     } catch (error: unknown) {
       const errorMessage =
@@ -144,11 +214,34 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
         message: errorMessage,
         color: "red",
       });
-    } finally {
+
+      // MUHIM: xatolikda modalni YOPMAYMIZ. Avval `finally { close() }` bor edi —
+      // internet uzilganda modal yopilib ketardi, foydalanuvchi imtihon
+      // topshirilgan deb o'ylardi va javoblari yo'qolardi. Endi modal ochiq
+      // qoladi va "Qayta urinish" tugmasi ko'rinadi.
+      setSubmitError(errorMessage);
       setSubmitting(false);
-      close();
     }
   };
+
+  /**
+   * Tasodifiy yopish/yangilashdan himoya.
+   * Avval hech qanday to'siq yo'q edi: Ctrl+R yoki tabni yopish imtihonni
+   * butunlay yo'qotardi. Endi brauzer tasdiqlash so'raydi (javoblar bo'lsa).
+   */
+  const answersCountRef = useRef(0);
+  answersCountRef.current = Object.keys(answers).length;
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (answersCountRef.current === 0) return;
+      e.preventDefault();
+      // Legacy brauzerlar uchun
+      e.returnValue = "";
+      return "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -179,6 +272,10 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
 
   const handleReset = () => {
     onReset?.();
+    // Javoblar tozalandi — zaxira ham tozalanishi kerak, aks holda
+    // sahifa yangilanganda o'chirilgan javoblar qayta tiklanardi.
+    clearBackup(sessionId);
+    setSubmitError(null);
     close();
   };
 
@@ -195,12 +292,24 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
           >
             {t("exam.finish")}
           </Button>
+          {/*
+            A11Y: avval `aria-label={t("exam.finish")}` edi — ekran o'quvchi
+            taymer o'rniga "Yakunlash" deb o'qirdi. Endi `role="timer"` va
+            qolgan vaqt to'g'ri e'lon qilinadi. Shuningdek vaqt tugayotgani
+            faqat RANG bilan emas, ogohlantirish ikonkasi bilan ham bildiriladi
+            (rang ko'rmaydigan foydalanuvchilar uchun).
+          */}
           <Badge
             variant="light"
             size="xl"
             radius="xs"
             color={getTimerColor()}
-            aria-label={t("exam.finish")}
+            role="timer"
+            aria-live={timeLeft <= 60 ? "assertive" : "off"}
+            aria-label={`${t("exam.timeLeft", { defaultValue: "Qolgan vaqt" })}: ${formatTime(timeLeft)}`}
+            leftSection={
+              timeLeft <= 300 ? <IconAlertTriangle size={14} /> : <IconClock size={14} />
+            }
           >
             {formatTime(timeLeft)}
           </Badge>
@@ -216,7 +325,7 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
       {/* Finish Modal */}
       <Modal
         opened={opened}
-        onClose={isTimeUp ? () => {} : close}
+        onClose={isTimeUp || submitting ? () => {} : close}
         title={
           <Text fw={700} size="lg">
             {t("exam.finishModal.title")}
@@ -225,9 +334,9 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
         centered
         size="440px"
         radius="lg"
-        closeOnClickOutside={!isTimeUp}
-        closeOnEscape={!isTimeUp}
-        withCloseButton={!isTimeUp}
+        closeOnClickOutside={!isTimeUp && !submitting}
+        closeOnEscape={!isTimeUp && !submitting}
+        withCloseButton={!isTimeUp && !submitting}
         padding="xl"
       >
         <Stack gap="lg">
@@ -320,7 +429,7 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
             </SimpleGrid>
           )}
 
-          {!allAnswered && (
+          {!allAnswered && !submitError && (
             <Alert
               color="yellow"
               variant="light"
@@ -330,16 +439,55 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
             </Alert>
           )}
 
+          {/*
+            Submit muvaffaqiyatsiz bo'lganda: modal ochiq qoladi, xato
+            ko'rsatiladi va javoblar localStorage'da zaxiralanganligi
+            aytiladi. Foydalanuvchi "imtihon topshirildi" deb adashmaydi.
+          */}
+          {submitError && (
+            <Alert
+              color="red"
+              variant="light"
+              icon={<IconAlertTriangle size={18} />}
+              title={t("notification.submitError")}
+            >
+              <Stack gap={6}>
+                <Text size="sm">{submitError}</Text>
+                <Text size="xs" c="dimmed">
+                  {t("exam.answersBackedUp", {
+                    defaultValue:
+                      "Javoblaringiz qurilmangizda saqlandi — qayta urinib ko'ring.",
+                  })}
+                </Text>
+              </Stack>
+            </Alert>
+          )}
+
           <Divider />
 
           {/* Actions */}
           <Stack gap="xs">
+            {submitError ? (
+              <Button
+                onClick={() => handleSubmit(lastNavigateToRef.current || backUrl)}
+                loading={submitting}
+                disabled={submitting}
+                leftSection={<IconRefresh size={18} />}
+                fullWidth
+                size="md"
+                radius="md"
+              >
+                {t("common.retry")}
+              </Button>
+            ) : null}
+
             {/* Primary: Submit & view results */}
             <Button
               onClick={() => handleSubmit(backUrl)}
               loading={submitting}
               rightSection={<IconCheck size={18} />}
               disabled={submitting}
+              variant={submitError ? "light" : "filled"}
               fullWidth
               size="md"
               radius="md"
@@ -369,15 +517,24 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
                 leftSection={<IconArrowLeft size={16} />}
                 fullWidth
                 radius="md"
-                disabled={isTimeUp}
+                // `submitting` qo'shildi: submit ketayotganda chiqib ketish
+                // sessiyani abandon qilib, topshirilayotgan imtihonni buzardi.
+                disabled={isTimeUp || submitting || abandoning}
+                loading={abandoning}
                 onClick={async () => {
+                  if (abandoning || submitting) return;
+                  setAbandoning(true);
                   if (sessionId) {
                     try {
                       await api.delete(`/api/v2/exams/${sessionId}/abandon`);
                     } catch {
                       // Ignore abandon errors
                     }
+                    // Foydalanuvchi ataylab chiqdi — zaxirani ham tozalaymiz,
+                    // aks holda keyingi sessiyada eski javoblar "tiklanardi".
+                    clearBackup(sessionId);
                   }
+                  setAbandoning(false);
                   close();
                   navigate(backUrl, { replace: true });
                 }}

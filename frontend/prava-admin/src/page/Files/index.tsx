@@ -24,6 +24,11 @@ import { useTranslation } from "react-i18next";
 import { modals } from "@mantine/modals";
 import fileService from "../../services/fileService";
 
+/** Backend xabari (bo'lsa) — `any` cast'siz. */
+function errMessage(e: unknown): string | undefined {
+  return (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+}
+
 const Files_Page = () => {
   const { t } = useTranslation();
 
@@ -41,28 +46,47 @@ const Files_Page = () => {
   const [checkLoading, setCheckLoading] = useState(false);
   const [checkResult, setCheckResult] = useState<boolean | null>(null);
 
-  // Download state
+  // Download state — "nom bo'yicha" va "URL bo'yicha" mustaqil amallar,
+  // shuning uchun yuklanish holati ham alohida (ilgari bitta `downloadLoading`
+  // ikkala tugmani ham bloklab, ikkalasida spinner ko'rsatardi).
   const [downloadFileName, setDownloadFileName] = useState("");
   const [downloadFolder, setDownloadFolder] = useState("");
   const [downloadFileUrl, setDownloadFileUrl] = useState("");
-  const [downloadLoading, setDownloadLoading] = useState(false);
+  const [downloadByNameLoading, setDownloadByNameLoading] = useState(false);
+  const [downloadByUrlLoading, setDownloadByUrlLoading] = useState(false);
 
-  // Delete state
+  // Delete state — yuqoridagi sabab bilan bu yerda ham alohida
   const [deleteFileName, setDeleteFileName] = useState("");
   const [deleteFolder, setDeleteFolder] = useState("");
   const [deleteFileUrl, setDeleteFileUrl] = useState("");
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteByNameLoading, setDeleteByNameLoading] = useState(false);
+  const [deleteByUrlLoading, setDeleteByUrlLoading] = useState(false);
 
   useEffect(() => {
+    // Komponent yopilgandan keyin setState chaqirilmasin
+    let cancelled = false;
     fileService
       .getStorageType()
-      .then((data) => setStorageType(data))
-      .catch(() => setStorageType("unknown"));
+      .then((data) => { if (!cancelled) setStorageType(data); })
+      .catch(() => { if (!cancelled) setStorageType("unknown"); });
+    return () => { cancelled = true; };
   }, []);
+
+  /** Blobni brauzerga yuklatish — barcha download amallari uchun umumiy. */
+  const saveBlob = (blob: Blob, fileName: string) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  };
 
   // Upload handler
   const handleUpload = async () => {
-    if (!uploadFile) return;
+    if (!uploadFile || uploadLoading) return;
     setUploadLoading(true);
     try {
       await fileService.upload(uploadFile, uploadFolder || undefined);
@@ -73,10 +97,10 @@ const Files_Page = () => {
       });
       setUploadFile(null);
       setUploadFolder("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       notifications.show({
         title: t("common.error"),
-        message: error.response?.data?.message || t("files.uploadError"),
+        message: errMessage(error) || t("files.uploadError"),
         color: "red",
       });
     } finally {
@@ -86,7 +110,7 @@ const Files_Page = () => {
 
   // Check exists handler
   const handleCheckExists = async () => {
-    if (!checkFileName) return;
+    if (!checkFileName || checkLoading) return;
     setCheckLoading(true);
     setCheckResult(null);
     try {
@@ -104,60 +128,46 @@ const Files_Page = () => {
 
   // Download by name handler
   const handleDownloadByName = async () => {
-    if (!downloadFileName) return;
-    setDownloadLoading(true);
+    if (!downloadFileName || downloadByNameLoading) return;
+    setDownloadByNameLoading(true);
     try {
       const blob = await fileService.downloadByName(
         downloadFileName,
         downloadFolder || undefined
       );
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = downloadFileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error: any) {
+      saveBlob(blob, downloadFileName);
+    } catch (error: unknown) {
       notifications.show({
         title: t("common.error"),
-        message: error.response?.data?.message || t("common.error"),
+        message: errMessage(error) || t("common.error"),
         color: "red",
       });
     } finally {
-      setDownloadLoading(false);
+      setDownloadByNameLoading(false);
     }
   };
 
   // Download by URL handler
   const handleDownloadByUrl = async () => {
-    if (!downloadFileUrl) return;
-    setDownloadLoading(true);
+    if (!downloadFileUrl || downloadByUrlLoading) return;
+    setDownloadByUrlLoading(true);
     try {
       const blob = await fileService.downloadByUrl(downloadFileUrl);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = downloadFileUrl.split("/").pop() || "download";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error: any) {
+      saveBlob(blob, downloadFileUrl.split("/").pop() || "download");
+    } catch (error: unknown) {
       notifications.show({
         title: t("common.error"),
-        message: error.response?.data?.message || t("common.error"),
+        message: errMessage(error) || t("common.error"),
         color: "red",
       });
     } finally {
-      setDownloadLoading(false);
+      setDownloadByUrlLoading(false);
     }
   };
 
   // Delete by name handler
   const handleDeleteByName = () => {
-    if (!deleteFileName) return;
+    if (!deleteFileName || deleteByNameLoading) return;
     modals.openConfirmModal({
       title: t("common.delete"),
       children: (
@@ -171,7 +181,7 @@ const Files_Page = () => {
       },
       confirmProps: { color: "red" },
       onConfirm: async () => {
-        setDeleteLoading(true);
+        setDeleteByNameLoading(true);
         try {
           await fileService.deleteByName(
             deleteFileName,
@@ -184,14 +194,14 @@ const Files_Page = () => {
           });
           setDeleteFileName("");
           setDeleteFolder("");
-        } catch (error: any) {
+        } catch (error: unknown) {
           notifications.show({
             title: t("common.error"),
-            message: error.response?.data?.message || t("files.deleteError"),
+            message: errMessage(error) || t("files.deleteError"),
             color: "red",
           });
         } finally {
-          setDeleteLoading(false);
+          setDeleteByNameLoading(false);
         }
       },
     });
@@ -199,12 +209,13 @@ const Files_Page = () => {
 
   // Delete by URL handler
   const handleDeleteByUrl = () => {
-    if (!deleteFileUrl) return;
+    if (!deleteFileUrl || deleteByUrlLoading) return;
     modals.openConfirmModal({
       title: t("common.delete"),
       children: (
+        /* Ilgari bu yerda ham "nom bo'yicha o'chirish" matni chiqardi */
         <Text size="sm">
-          {t("files.deleteByName")}: <strong>{deleteFileUrl}</strong>
+          {t("files.deleteByUrl")}: <strong>{deleteFileUrl}</strong>
         </Text>
       ),
       labels: {
@@ -213,7 +224,7 @@ const Files_Page = () => {
       },
       confirmProps: { color: "red" },
       onConfirm: async () => {
-        setDeleteLoading(true);
+        setDeleteByUrlLoading(true);
         try {
           await fileService.deleteByUrl(deleteFileUrl);
           notifications.show({
@@ -222,14 +233,14 @@ const Files_Page = () => {
             color: "green",
           });
           setDeleteFileUrl("");
-        } catch (error: any) {
+        } catch (error: unknown) {
           notifications.show({
             title: t("common.error"),
-            message: error.response?.data?.message || t("files.deleteError"),
+            message: errMessage(error) || t("files.deleteError"),
             color: "red",
           });
         } finally {
-          setDeleteLoading(false);
+          setDeleteByUrlLoading(false);
         }
       },
     });
@@ -238,7 +249,7 @@ const Files_Page = () => {
   return (
     <Stack gap="md">
       <Group justify="space-between">
-        <Title order={3}>{t("files.title")}</Title>
+        <Title order={1} fz="h3">{t("files.title")}</Title>
         <Badge variant="light" size="lg" leftSection={<IconFile size={14} />}>
           {t("files.storageType")}: {storageType || "..."}
         </Badge>
@@ -356,7 +367,7 @@ const Files_Page = () => {
               />
               <Button
                 leftSection={<IconDownload size={16} />}
-                loading={downloadLoading}
+                loading={downloadByNameLoading}
                 disabled={!downloadFileName}
                 onClick={handleDownloadByName}
               >
@@ -380,11 +391,11 @@ const Files_Page = () => {
               />
               <Button
                 leftSection={<IconDownload size={16} />}
-                loading={downloadLoading}
+                loading={downloadByUrlLoading}
                 disabled={!downloadFileUrl}
                 onClick={handleDownloadByUrl}
               >
-                {t("files.downloadByName")}
+                {t("files.downloadByUrl")}
               </Button>
             </Group>
           </Paper>
@@ -420,7 +431,7 @@ const Files_Page = () => {
               <Button
                 color="red"
                 leftSection={<IconTrash size={16} />}
-                loading={deleteLoading}
+                loading={deleteByNameLoading}
                 disabled={!deleteFileName}
                 onClick={handleDeleteByName}
               >
@@ -445,7 +456,7 @@ const Files_Page = () => {
               <Button
                 color="red"
                 leftSection={<IconTrash size={16} />}
-                loading={deleteLoading}
+                loading={deleteByUrlLoading}
                 disabled={!deleteFileUrl}
                 onClick={handleDeleteByUrl}
               >

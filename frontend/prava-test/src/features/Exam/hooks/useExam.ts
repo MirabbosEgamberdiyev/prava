@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import api from "../../../api/api";
+import { useAutoSave, restoreAnswers } from "../../../hooks/useAutoSave";
+import { getImageUrl } from "../../../utils/imageUtils";
 import { EXAM_API, EXAM_DEFAULTS } from "../constants";
 import type { ExamData, AnswersRecord, ExamStartRequest } from "../types";
 
@@ -66,6 +68,11 @@ export function useExam(options: UseExamOptions = {}): UseExamReturn {
         if (response.data) {
           setExamData(response.data);
 
+          // Uzilib qolgan sessiya javoblarini tiklash (sahifa yangilandi /
+          // brauzer qulab tushdi / internet uzildi).
+          const restored = restoreAnswers(response.data.data?.sessionId);
+          if (restored) setAnswers(restored);
+
           // ⚡ Performance: barcha savol rasmlarini fonda yuklab olish.
           // Browser HTTP keshiga tushadi + Image.decode() pixel decoding fonda yakunlanadi.
           // Natija: "Keyingi" bosilganda yangi rasm darhol ko'rinadi, loading yo'q.
@@ -73,8 +80,14 @@ export function useExam(options: UseExamOptions = {}): UseExamReturn {
           if (Array.isArray(questions)) {
             questions.forEach((q) => {
               if (!q?.imageUrl) return;
+              // BUG FIX: avval xom `q.imageUrl` ishlatilardi, QuizContent esa
+              // `getImageUrl()` orqali API_BASE_URL prefiksi bilan chizadi —
+              // API boshqa originda bo'lsa prefetch boshqa URL'ni yuklab,
+              // kesh mutlaqo behuda ketardi.
+              const src = getImageUrl(q.imageUrl);
+              if (!src) return;
               const img = new Image();
-              img.src = q.imageUrl;
+              img.src = src;
               if (typeof img.decode === "function") {
                 img.decode().catch(() => { /* ignore decode failures */ });
               }
@@ -105,6 +118,15 @@ export function useExam(options: UseExamOptions = {}): UseExamReturn {
     startExam();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Javoblarni avtomatik saqlash — tarmoq uzilsa yoki sahifa yangilansa
+  // imtihon jarayoni yo'qolmasligi uchun.
+  useAutoSave({
+    sessionId: examData?.data?.sessionId ?? null,
+    answers,
+    questions: examData?.data?.questions ?? [],
+    enabled: !!examData,
+  });
 
   // Javobni saqlash funksiyasi
   const handleAnswerSelect = useCallback(

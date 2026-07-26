@@ -32,7 +32,9 @@ import {
   IconBookmark,
   IconBookmarkFilled,
 } from "@tabler/icons-react";
+import { notifications } from "@mantine/notifications";
 import { useLanguage } from "../../hooks/useLanguage";
+import { useAuth } from "../../auth/AuthContext";
 import type { Question, Option, AnswersMap } from "../../types";
 import { ImagePlaceholder } from "../common/ImagePlaceholder";
 import { getImageUrl } from "../../utils/imageUtils";
@@ -90,8 +92,17 @@ export function QuizContent({
   const [timeUpTriggered, setTimeUpTriggered] = useState(false);
   const [activeQuiz, setActiveQuiz] = useState(0);
 
+  /*
+   * `isAuthenticated` gate — QuizContent mehmon uchun `/try-exam` sahifasida
+   * ham ishlatiladi. Avval bu so'rovlar shartsiz yuborilardi va 401 qaytarardi.
+   * (Root-cause api.ts interceptorida ham tuzatildi, bu esa ikkinchi qatlam:
+   * mehmonga hech qachon kerak bo'lmagan so'rovni umuman yubormaymiz.)
+   */
+  const { isAuthenticated } = useAuth();
+
   // Load saved question IDs on mount
   useEffect(() => {
+    if (!isAuthenticated) return;
     api.get("/api/v1/app/saved-questions")
       .then((res) => {
         const list = res.data?.data;
@@ -100,22 +111,44 @@ export function QuizContent({
         }
       })
       .catch(() => {});
-  }, []);
+  }, [isAuthenticated]);
 
   // Toggle saved question
   const handleToggleSaved = (questionId: number) => {
+    if (!isAuthenticated) return;
+
+    const wasSaved = savedQuestionIds.has(questionId);
     const newSet = new Set(savedQuestionIds);
-    if (newSet.has(questionId)) {
+    if (wasSaved) {
       newSet.delete(questionId);
     } else {
       newSet.add(questionId);
     }
     setSavedQuestionIds(newSet);
-    api.post(`/api/v1/app/saved-questions/${questionId}`).catch(() => {});
+
+    // Optimistik yangilanish ROLLBACK bilan. Avval `.catch(() => {})` edi —
+    // so'rov muvaffaqiyatsiz bo'lsa ham ikonka "saqlandi" holatida qolib,
+    // interfeys yolg'on ma'lumot ko'rsatardi.
+    api.post(`/api/v1/app/saved-questions/${questionId}`).catch(() => {
+      setSavedQuestionIds((prev) => {
+        const reverted = new Set(prev);
+        if (wasSaved) {
+          reverted.add(questionId);
+        } else {
+          reverted.delete(questionId);
+        }
+        return reverted;
+      });
+      notifications.show({
+        color: "red",
+        message: t("common.errorOccurred"),
+      });
+    });
   };
 
   // Send wrong answer to backend
   const sendWrongAnswer = (questionId: number) => {
+    if (!isAuthenticated) return;
     api.post(`/api/v1/app/wrong-answers/${questionId}`).catch(() => {});
   };
 
@@ -468,23 +501,44 @@ export function QuizContent({
       {/* Question text + Bookmark */}
       <Box p="lg">
         <Flex justify="center" align="center" gap="sm">
-          <Text ta="center" size="lg" fw={500} style={{ flex: 1 }}>
+          {/*
+            O'QILUVCHANLIK: savol matni `size="lg"` (18px) markazga tekislangan
+            va cheksiz kenglikda edi. Foydalanuvchi ketma-ket 20-50 ta savol
+            o'qiydi — keng ekranda satr 150+ belgiga cho'zilib, ko'z satrni
+            yo'qotardi. Endi: `maw` bilan optimal satr uzunligi (~70 belgi),
+            `lh` bilan havodorroq interval.
+            `aria-live` — savol almashganda ekran o'quvchi yangi matnni o'qiydi.
+          */}
+          <Text
+            ta="center"
+            size="lg"
+            fw={500}
+            lh={1.55}
+            maw="65ch"
+            mx="auto"
+            style={{ flex: 1 }}
+            aria-live="polite"
+          >
             {localize(currentQuestion?.text)}
           </Text>
-          <Tooltip label={savedQuestionIds.has(currentQuestion?.id) ? t("saved.remove", { defaultValue: "Belgini olib tashlash" }) : t("exam.saveQuestion", { defaultValue: "Savolni saqlash" })}>
-            <ActionIcon
-              variant={savedQuestionIds.has(currentQuestion?.id) ? "filled" : "light"}
-              color="blue"
-              size="lg"
-              radius="xl"
-              onClick={() => currentQuestion && handleToggleSaved(currentQuestion.id)}
-            >
-              {savedQuestionIds.has(currentQuestion?.id)
-                ? <IconBookmarkFilled size={18} />
-                : <IconBookmark size={18} />
-              }
-            </ActionIcon>
-          </Tooltip>
+          {isAuthenticated && (
+            <Tooltip label={savedQuestionIds.has(currentQuestion?.id) ? t("saved.remove", { defaultValue: "Belgini olib tashlash" }) : t("exam.saveQuestion", { defaultValue: "Savolni saqlash" })}>
+              <ActionIcon
+                variant={savedQuestionIds.has(currentQuestion?.id) ? "filled" : "light"}
+                color="blue"
+                size="lg"
+                radius="xl"
+                aria-pressed={savedQuestionIds.has(currentQuestion?.id)}
+                aria-label={t("exam.saveQuestion", { defaultValue: "Savolni saqlash" })}
+                onClick={() => currentQuestion && handleToggleSaved(currentQuestion.id)}
+              >
+                {savedQuestionIds.has(currentQuestion?.id)
+                  ? <IconBookmarkFilled size={18} />
+                  : <IconBookmark size={18} />
+                }
+              </ActionIcon>
+            </Tooltip>
+          )}
         </Flex>
       </Box>
 
@@ -499,6 +553,27 @@ export function QuizContent({
               const isThisCorrect =
                 option.index === currentQuestion.correctOptionIndex;
 
+              /*
+               * A11Y TUZATISHLARI:
+               *  1. Avval `aria-label={`${t("exam.prev")} F${index+1}`}` edi —
+               *     ekran o'quvchi variant matnini emas, "Oldingi F1" deb
+               *     o'qirdi (noto'g'ri kalit). Endi haqiqiy variant matni +
+               *     javob berilgan bo'lsa to'g'ri/noto'g'ri holati o'qiladi.
+               *  2. `role="button"` bor edi, lekin `tabIndex` va klaviatura
+               *     ishlov beruvchisi YO'Q edi — variantlarni Tab bilan
+               *     tanlab bo'lmasdi (WCAG 2.1.1 buzilishi).
+               *  3. `aria-disabled` javob berilgandan keyin holatni bildiradi.
+               */
+              const optionLabel = localize(option.text);
+              const stateLabel =
+                !isAnswered || isSecureMode
+                  ? ""
+                  : isThisCorrect
+                    ? `, ${t("exam.correct")}`
+                    : isThisSelected
+                      ? `, ${t("exam.incorrect")}`
+                      : "";
+
               return (
                 <Paper
                   withBorder
@@ -506,7 +581,9 @@ export function QuizContent({
                   mb="xs"
                   key={option.id}
                   role="button"
-                  aria-label={`${t("exam.prev")} F${option.index + 1}`}
+                  tabIndex={isAnswered ? -1 : 0}
+                  aria-disabled={isAnswered}
+                  aria-label={`F${option.index + 1}: ${optionLabel}${stateLabel}`}
                   className={classes.optionPaper}
                   data-clickable={!isAnswered}
                   style={{
@@ -515,6 +592,13 @@ export function QuizContent({
                     backgroundColor: style.backgroundColor,
                   }}
                   onClick={() => handleSelectAnswer(activeQuiz, option.index)}
+                  onKeyDown={(e) => {
+                    if (isAnswered) return;
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelectAnswer(activeQuiz, option.index);
+                    }
+                  }}
                 >
                   <Flex gap="sm" align="center">
                     <ActionIcon
@@ -774,16 +858,47 @@ export function QuizContent({
                     : "var(--mantine-color-gray-4)";
               }
 
+              /*
+               * RANG KO'RLIGI TUZATISHI (kritik).
+               * Avval savol raqami tugmasi to'g'ri/noto'g'ri holatini FAQAT
+               * yashil/qizil fon bilan bildirardi. Deuteranopiya/protanopiya
+               * (erkaklarning ~8%) da yashil va qizil deyarli bir xil
+               * ko'rinadi — foydalanuvchi qaysi savolda xato qilganini
+               * umuman ajrata olmasdi.
+               * Endi rangdan tashqari GLIF (✓ / ✕) qo'shildi + `aria-label`
+               * holatni so'z bilan aytadi.
+               */
+              let marker = "";
+              let stateText = t("exam.unanswered");
+              if (wasAnswered) {
+                if (isSecureMode) {
+                  marker = "•";
+                  stateText = t("exam.answered");
+                } else if (wasCorrect) {
+                  marker = "✓";
+                  stateText = t("exam.correct");
+                } else {
+                  marker = "✕";
+                  stateText = t("exam.incorrect");
+                }
+              }
+
               return (
                 <button
                   key={question.id}
                   className={classes.questionBtn}
                   data-active={isActive}
                   onClick={() => setActiveQuiz(i)}
-                  aria-label={`${t("exam.question")} ${i + 1}`}
+                  aria-label={`${t("exam.question")} ${i + 1}, ${stateText}`}
+                  aria-current={isActive ? "true" : undefined}
                   style={{ background: bg, color, borderColor: border }}
                 >
-                  {i + 1}
+                  <span>{i + 1}</span>
+                  {marker && (
+                    <span aria-hidden="true" className={classes.questionBtnMark}>
+                      {marker}
+                    </span>
+                  )}
                 </button>
               );
             })}

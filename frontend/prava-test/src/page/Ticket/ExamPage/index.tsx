@@ -20,6 +20,8 @@ import api from "../../../api/api";
 import { QuizNav, type QuizNavHandle } from "../../../components/quiz/QuizNav";
 import { QuizContent } from "../../../components/quiz/QuizContent";
 import SEO from "../../../components/common/SEO";
+import { useAutoSave, restoreAnswers } from "../../../hooks/useAutoSave";
+import { OfflineBanner } from "../../../components/common/OfflineBanner";
 import type { TicketExamData, AnswersMap } from "../../../types";
 
 interface ActiveExamInfo {
@@ -63,6 +65,10 @@ const TicketExamPage = () => {
       if (response.data) {
         setExamData(response.data);
         sessionIdRef.current = response.data.data.sessionId;
+        // Uzilib qolgan sessiyaning javoblarini tiklash (sahifa yangilandi,
+        // brauzer qulab tushdi yoki internet uzildi).
+        const restored = restoreAnswers(response.data.data.sessionId);
+        if (restored) setAnswers(restored);
         // Active exam cache ni yangilaymiz — yangi session boshlandi
         mutate("/api/v2/exams/active", null, false);
       }
@@ -89,14 +95,27 @@ const TicketExamPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Browser back / URL o'zgartirish orqali chiqish — sessiyani abandon qilamiz
-  useEffect(() => {
-    return () => {
-      if (!submittedRef.current && sessionIdRef.current) {
-        navigator.sendBeacon(`/api/v2/exams/${sessionIdRef.current}/abandon`);
-      }
-    };
-  }, []);
+  /*
+   * OLIB TASHLANDI — `navigator.sendBeacon(.../abandon)` unmount'da.
+   *
+   * Sabablari:
+   *  1. sendBeacon HAR DOIM POST yuboradi, endpoint esa DELETE — so'rov
+   *     hech qachon ishlamagan (jim muvaffaqiyatsizlik).
+   *  2. sendBeacon Authorization header biriktira olmaydi — 401 bo'lardi.
+   *  3. Agar u ISHLAGANDA edi, ancha yomonroq bo'lardi: foydalanuvchi
+   *     tasodifan orqaga bosgani yoki sahifani yangilagani uchun imtihoni
+   *     bekor qilinardi. Buning o'rniga sessiya faol qoladi va /me dagi
+   *     "davom ettirish" banneri hamda conflict UI orqali ataylab
+   *     boshqariladi (u yerda `api.delete` to'g'ri auth bilan chaqiriladi).
+   */
+
+  // Javoblarni avtomatik saqlash (localStorage + server).
+  useAutoSave({
+    sessionId: examData?.data.sessionId ?? null,
+    answers,
+    questions: examData?.data.questions ?? [],
+    enabled: !!examData && !submittedRef.current,
+  });
 
   const handleAbandonAndRestart = async () => {
     if (!activeConflict) return;
@@ -264,6 +283,7 @@ const TicketExamPage = () => {
         isSecureMode={isSecureMode}
         onSubmitSuccess={handleSubmitSuccess}
       />
+      <OfflineBanner />
       <QuizContent
         questions={examData.data.questions}
         onAnswerSelect={handleAnswerSelect}

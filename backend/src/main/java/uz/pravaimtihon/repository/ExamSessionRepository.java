@@ -16,6 +16,24 @@ public interface ExamSessionRepository extends JpaRepository<ExamSession, Long> 
 
     Optional<ExamSession> findByIdAndUserId(Long id, Long userId);
 
+    /**
+     * ⚠️ AUDIT — RACE CONDITION: imtihonni yakunlash (submit / auto-submit)
+     * hech qanday qulfsiz bajarilardi. Ikkita parallel so'rov (masalan
+     * foydalanuvchi "Topshirish" tugmasini ikki marta bosgani yoki
+     * beacon auto-submit bilan qo'lda submit bir vaqtda kelgani) ikkalasi ham
+     * sessiyani IN_PROGRESS holatida o'qib, ikkalasi ham natijani hisoblab,
+     * `updateUserStatisticsSafe(...)` ni IKKI MARTA chaqirardi — foydalanuvchi
+     * statistikasi va savol statistikasi ikki karra qo'shilardi.
+     *
+     * Bu variant qatorni PESSIMISTIC_WRITE bilan qulflaydi, shuning uchun
+     * ikkinchi so'rov birinchisi commit bo'lgunicha kutadi va keyin
+     * sessiyani allaqachon yakunlangan holatda ko'radi (idempotent yo'l).
+     */
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT es FROM ExamSession es WHERE es.id = :id AND es.user.id = :userId")
+    Optional<ExamSession> findByIdAndUserIdForUpdate(@Param("id") Long id,
+                                                     @Param("userId") Long userId);
+
     List<ExamSession> findByUserIdOrderByStartedAtDesc(Long userId);
 
     Page<ExamSession> findByUserIdOrderByStartedAtDesc(Long userId, Pageable pageable);

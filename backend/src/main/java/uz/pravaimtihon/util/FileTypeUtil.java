@@ -13,7 +13,15 @@ import java.util.List;
 public class FileTypeUtil {
 
     // Allowed file types
-    public static final String[] IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"};
+    //
+    // ⚠️ AUDIT — STORED XSS: "image/svg+xml" ro'yxatdan OLIB TASHLANDI.
+    // SVG — bu XML hujjat bo'lib, ichida <script> va event handler'lar
+    // bo'lishi mumkin. Yuklangan fayllar `/api/v1/files/profiles/**` va
+    // `/api/v1/files/general/**` orqali AUTENTIFIKATSIYASIZ, o'z content-type'i
+    // bilan va `Content-Disposition: attachment` SIZ uzatiladi — ya'ni brauzer
+    // uni sayt origin'ida BAJARADI. Bu esa pravaonline.uz domenida saqlanadigan
+    // XSS (admin sessiyasini o'g'irlash) demakdir.
+    public static final String[] IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"};
     public static final String[] VIDEO_TYPES = {"video/mp4", "video/webm", "video/ogg", "video/avi", "video/quicktime"};
     public static final String[] DOCUMENT_TYPES = {
             "application/pdf",
@@ -108,13 +116,39 @@ public class FileTypeUtil {
     }
 
     /**
-     * Get file extension from filename
+     * Fayl kengaytmasini XAVFSIZ ajratib oladi.
+     *
+     * ⚠️ AUDIT: avval bu metod `filename.substring(lastIndexOf("."))` ni
+     * to'g'ridan-to'g'ri qaytarardi. Kengaytma saqlanadigan fayl nomiga
+     * (`UUID + extension`) qo'shilgani uchun, `evil.jpg/../../../app/x.sh`
+     * ko'rinishidagi original nom kengaytma sifatida yo'l ajratkichlari va
+     * ".." segmentlarini olib kirardi — bu path traversal uchun material edi.
+     *
+     * Endi faqat harf/raqamdan iborat, uzunligi cheklangan kengaytma
+     * qabul qilinadi; boshqa hamma narsa tashlab yuboriladi.
      */
     public static String getFileExtension(String filename) {
-        if (filename == null || !filename.contains(".")) {
+        if (filename == null) {
             return "";
         }
-        return filename.substring(filename.lastIndexOf("."));
+        // Yo'l qismini olib tashlaymiz (brauzer/klient to'liq yo'l yuborishi mumkin)
+        String base = filename;
+        int slash = Math.max(base.lastIndexOf('/'), base.lastIndexOf('\\'));
+        if (slash >= 0) {
+            base = base.substring(slash + 1);
+        }
+
+        int dot = base.lastIndexOf('.');
+        if (dot < 0 || dot == base.length() - 1) {
+            return "";
+        }
+
+        String ext = base.substring(dot + 1);
+        // Faqat alfanumerik va maksimum 10 belgi — aks holda kengaytmasiz saqlaymiz.
+        if (!ext.matches("[A-Za-z0-9]{1,10}")) {
+            return "";
+        }
+        return "." + ext.toLowerCase();
     }
 
     /**

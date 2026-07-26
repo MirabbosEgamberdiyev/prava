@@ -21,6 +21,7 @@ import {
   IconSearch,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { getImageUrl } from "../../../utils/imageUtils";
 import { useTopics } from "../hooks/useTopics";
 import type { Topic } from "../types";
 import { useDeleteTopic } from "../hooks/useDeleteTopic";
@@ -98,7 +99,9 @@ const TopicListCards = () => {
             <Card shadow="sm" padding="sm" radius="md" withBorder h="100%">
               <Group justify="space-between" align="flex-start" mb="md">
                 <Image
-                  src={topic.iconUrl}
+                  // Backend nisbiy URL qaytaradi (/api/v1/files/...) — getImageUrl
+                  // busiz ikonlar 404 bo'lardi (boshqa sahifalarda ishlatilgan).
+                  src={getImageUrl(topic.iconUrl)}
                   w={50}
                   h={50}
                   fallbackSrc="https://placehold.co/50x50?text=Icon"
@@ -151,7 +154,8 @@ const TopicListCards = () => {
                 justify="space-between"
                 mt="auto"
                 pt="md"
-                style={{ borderTop: "1px solid var(--mantine-color-gray-1)" }}
+                // gray-1 dark rejimda deyarli ko'rinmasdi
+                style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}
               >
                 <Badge
                   variant="light"

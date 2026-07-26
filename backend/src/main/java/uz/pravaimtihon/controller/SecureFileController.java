@@ -423,6 +423,8 @@ public class SecureFileController {
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CACHE_CONTROL, "private, max-age=3600")
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .header("X-Content-Type-Options", "nosniff")
+                    .header("Content-Security-Policy", "default-src 'none'; sandbox")
                     .contentLength(fileData.length)
                     .body(resource);
 
@@ -582,9 +584,16 @@ public class SecureFileController {
             ByteArrayResource resource = new ByteArrayResource(fileData);
             String contentType = cachedFileService.getContentType(folder, filename);
 
+            // AUDIT: bu endpoint autentifikatsiyasiz ochiq va faylni sayt
+            // origin'ida uzatadi. Himoya qatlamlari:
+            //  - nosniff: brauzer content-type'ni "taxmin qilib" HTML/JS deb
+            //    talqin qilmasligi uchun;
+            //  - CSP sandbox: agar baribir HTML/SVG uzatilsa, skript bajarilmaydi.
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
+                    .header("X-Content-Type-Options", "nosniff")
+                    .header("Content-Security-Policy", "default-src 'none'; sandbox")
                     .contentLength(fileData.length)
                     .body(resource);
 

@@ -106,17 +106,17 @@ export function QuestionPickerModal({
                 <UnstyledButton
                   key={q.id}
                   onClick={() => handleSelect(q)}
-                  style={(theme) => ({
-                    padding: theme.spacing.sm,
-                    borderRadius: theme.radius.sm,
-                    border: `1px solid ${theme.colors.gray[3]}`,
-                    backgroundColor: theme.white,
+                  // Ilgari theme.white + gray[3] qattiq kodlangan edi — dark
+                  // rejimda oq karta chiqardi. Bundan tashqari inline style
+                  // ichidagi "&:hover" React'da umuman ishlamaydi (u CSS-in-JS
+                  // emas), ya'ni hover holati yo'q edi.
+                  style={{
+                    padding: "var(--mantine-spacing-sm)",
+                    borderRadius: "var(--mantine-radius-sm)",
+                    border: "1px solid var(--mantine-color-default-border)",
+                    backgroundColor: "var(--mantine-color-body)",
                     transition: "background-color 0.1s",
-                    "&:hover": {
-                      backgroundColor: theme.colors.blue[0],
-                      borderColor: theme.colors.blue[4],
-                    },
-                  })}
+                  }}
                 >
                   <Group gap="sm" wrap="nowrap" align="flex-start">
                     <Box

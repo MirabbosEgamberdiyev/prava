@@ -49,7 +49,10 @@ public class QuestionService {
     private final FileStorageManager fileStorageManager;
 
 
-    @CacheEvict(value = {"questions", "questionsByTopic", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+    // AUDIT: "activeQuestions" qo'shildi — u @Cacheable bilan to'ldirilardi,
+    // lekin evict ro'yxatida yo'q edi, ya'ni savol o'zgartirilgach eskirgan
+    // ro'yxat qaytarilaverardi.
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
     public QuestionResponse createQuestion(QuestionRequest request, AcceptLanguage language) {
         log.info("Creating question for topic ID: {}", request.getTopicId());
 
@@ -112,7 +115,10 @@ public class QuestionService {
         return questionMapper.toResponse(question, language);
     }
 
-    @CacheEvict(value = {"questions", "questionsByTopic", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+    // AUDIT: "activeQuestions" qo'shildi — u @Cacheable bilan to'ldirilardi,
+    // lekin evict ro'yxatida yo'q edi, ya'ni savol o'zgartirilgach eskirgan
+    // ro'yxat qaytarilaverardi.
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
     public QuestionResponse updateQuestion(Long id, QuestionRequest request, AcceptLanguage language) {
         log.info("Updating question: {}", id);
 
@@ -185,7 +191,10 @@ public class QuestionService {
         return questionMapper.toResponse(question, language);
     }
 
-//    @CacheEvict(value = {"questions", "questionsByTopic", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+//    // AUDIT: "activeQuestions" qo'shildi — u @Cacheable bilan to'ldirilardi,
+    // lekin evict ro'yxatida yo'q edi, ya'ni savol o'zgartirilgach eskirgan
+    // ro'yxat qaytarilaverardi.
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
 //    public void deleteQuestion(Long id) {
 //        log.info("Deleting question: {}", id);
 //
@@ -253,7 +262,10 @@ public class QuestionService {
      * ✅ FINAL FIX: Bulk import with proper i18n error messages
      * Muammo: Exception catch qilinganda locale context bilan ishlash
      */
-    @CacheEvict(value = {"questions", "questionsByTopic", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+    // AUDIT: "activeQuestions" qo'shildi — u @Cacheable bilan to'ldirilardi,
+    // lekin evict ro'yxatida yo'q edi, ya'ni savol o'zgartirilgach eskirgan
+    // ro'yxat qaytarilaverardi.
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
     public BulkQuestionResponse bulkImportQuestions(BulkQuestionRequest request, AcceptLanguage language) {
         List<QuestionResponse> successList = new ArrayList<>();
         List<String> errorList = new ArrayList<>();
@@ -380,7 +392,10 @@ public class QuestionService {
         return questionMapper.toResponseList(questions, language);
     }
 
-    @CacheEvict(value = {"questions", "questionsByTopic", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+    // AUDIT: "activeQuestions" qo'shildi — u @Cacheable bilan to'ldirilardi,
+    // lekin evict ro'yxatida yo'q edi, ya'ni savol o'zgartirilgach eskirgan
+    // ro'yxat qaytarilaverardi.
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
     public void toggleQuestionStatus(Long id) {
         Question question = questionRepository.findById(id)
                 .filter(q -> !q.getDeleted())
@@ -478,7 +493,10 @@ public class QuestionService {
     /**
      * Create question with optional image upload
      */
-    @CacheEvict(value = {"questions", "questionsByTopic", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+    // AUDIT: "activeQuestions" qo'shildi — u @Cacheable bilan to'ldirilardi,
+    // lekin evict ro'yxatida yo'q edi, ya'ni savol o'zgartirilgach eskirgan
+    // ro'yxat qaytarilaverardi.
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
     public QuestionResponse createQuestionWithImage(
             QuestionRequest request,
             MultipartFile imageFile,
@@ -512,7 +530,10 @@ public class QuestionService {
     /**
      * Update question with optional image replacement
      */
-    @CacheEvict(value = {"questions", "questionsByTopic", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+    // AUDIT: "activeQuestions" qo'shildi — u @Cacheable bilan to'ldirilardi,
+    // lekin evict ro'yxatida yo'q edi, ya'ni savol o'zgartirilgach eskirgan
+    // ro'yxat qaytarilaverardi.
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
     public QuestionResponse updateQuestionWithImage(
             Long id,
             QuestionRequest request,
@@ -570,7 +591,10 @@ public class QuestionService {
     /**
      * Update only question image
      */
-    @CacheEvict(value = {"questions", "questionsByTopic", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+    // AUDIT: "activeQuestions" qo'shildi — u @Cacheable bilan to'ldirilardi,
+    // lekin evict ro'yxatida yo'q edi, ya'ni savol o'zgartirilgach eskirgan
+    // ro'yxat qaytarilaverardi.
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
     public QuestionResponse updateQuestionImage(Long id, MultipartFile imageFile, AcceptLanguage language) {
         log.info("Updating image for question: {}", id);
 
@@ -623,7 +647,10 @@ public class QuestionService {
     /**
      * Delete question image
      */
-    @CacheEvict(value = {"questions", "questionsByTopic", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+    // AUDIT: "activeQuestions" qo'shildi — u @Cacheable bilan to'ldirilardi,
+    // lekin evict ro'yxatida yo'q edi, ya'ni savol o'zgartirilgach eskirgan
+    // ro'yxat qaytarilaverardi.
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
     public QuestionResponse deleteQuestionImage(Long id, AcceptLanguage language) {
         log.info("Deleting image for question: {}", id);
 
@@ -667,7 +694,10 @@ public class QuestionService {
     // Add image cleanup before deleting question
     // ============================================================
 
-    @CacheEvict(value = {"questions", "questionsByTopic", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+    // AUDIT: "activeQuestions" qo'shildi — u @Cacheable bilan to'ldirilardi,
+    // lekin evict ro'yxatida yo'q edi, ya'ni savol o'zgartirilgach eskirgan
+    // ro'yxat qaytarilaverardi.
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
     public void deleteQuestion(Long id) {
         log.info("Deleting question: {}", id);
 

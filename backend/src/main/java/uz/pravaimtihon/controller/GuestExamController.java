@@ -17,6 +17,7 @@ import uz.pravaimtihon.entity.Question;
 import uz.pravaimtihon.repository.QuestionRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,11 +52,23 @@ public class GuestExamController {
     public ResponseEntity<ApiResponse<ExamResponse>> getGuestExam() {
         log.debug("Guest exam so'rovi — bazadan tasodifiy savollar yuklanmoqda");
 
-        // OPTIONS bilan birga savollarni olish (LazyInitializationException oldini olish)
-        // count * 3 = 60 ta savoldan shuffle qilib 20 ta tanlaymiz
-        List<Question> available = questionRepository.findRandomQuestionsWithOptions(
-                PageRequest.of(0, GUEST_QUESTION_COUNT * 3)
+        // ⚠️ AUDIT — PERFORMANCE: avval bu yerda
+        // `findRandomQuestionsWithOptions(PageRequest...)` chaqirilardi.
+        // U `LEFT JOIN FETCH` + `Pageable` kombinatsiyasi bo'lgani uchun
+        // Hibernate LIMIT'ni SQL'ga qo'sha olmasdi va BUTUN savollar jadvalini
+        // (minglab savol + variantlari) xotiraga yuklab, sahifalashni Java'da
+        // bajarardi. Bu endpoint AUTENTIFIKATSIYASIZ ochiq — ya'ni har qanday
+        // kishi takroriy so'rov bilan serverni xotiradan mahrum qila olardi.
+        //
+        // Endi ikki bosqich: (1) DB tomonda random + LIMIT bilan faqat ID'lar,
+        // (2) o'sha ID'lar uchun variantlar bitta so'rovda.
+        List<Long> ids = questionRepository.findRandomQuestionIds(
+                PageRequest.of(0, GUEST_QUESTION_COUNT)
         );
+
+        List<Question> available = ids.isEmpty()
+                ? List.of()
+                : questionRepository.findByIdsWithOptions(ids);
 
         if (available.isEmpty()) {
             log.warn("Guest exam: bazada faol savollar topilmadi");
@@ -71,12 +84,13 @@ public class GuestExamController {
             ));
         }
 
-        // Java da shuffle — PostgreSQL RANDOM() + DISTINCT + LIMIT muammosidan qochish
-        Collections.shuffle(available);
-
-        List<Question> selected = available.size() > GUEST_QUESTION_COUNT
-                ? available.subList(0, GUEST_QUESTION_COUNT)
-                : available;
+        // ID'lar allaqachon DB tomonda tasodifiy tanlangan; bu yerdagi shuffle
+        // faqat `IN (:ids)` natijasining tartibini aralashtirish uchun.
+        List<Question> selected = new ArrayList<>(available);
+        Collections.shuffle(selected);
+        if (selected.size() > GUEST_QUESTION_COUNT) {
+            selected = selected.subList(0, GUEST_QUESTION_COUNT);
+        }
 
         // Visible mode = true: to'g'ri javoblar va tushuntirishlar qaytariladi
         List<QuestionResponse> questions = mapper.toQuestionResponses(selected, true);

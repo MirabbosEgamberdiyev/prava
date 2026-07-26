@@ -42,6 +42,10 @@ interface UserTableProps {
   onDelete: (user: User) => void;
   onChangeRole: (user: User) => void;
   onToggleStatus: (user: User) => void;
+  /** 1-dan boshlanadigan joriy sahifa — tartib raqamini to'g'ri hisoblash uchun */
+  page?: number;
+  /** Sahifadagi yozuvlar soni */
+  pageSize?: number;
 }
 
 const UserTable = ({
@@ -51,6 +55,8 @@ const UserTable = ({
   onDelete,
   onChangeRole,
   onToggleStatus,
+  page = 1,
+  pageSize = 20,
 }: UserTableProps) => {
   const { user: currentUser } = useAuth();
   const { t } = useTranslation();
@@ -74,7 +80,8 @@ const UserTable = ({
         <Table.Tbody>
           {users.map((u, idx) => (
             <Table.Tr key={u.id}>
-              <Table.Td>{idx + 1}</Table.Td>
+              {/* Sahifa offseti hisobga olinadi: 2-sahifa 21 dan boshlanadi */}
+              <Table.Td>{(page - 1) * pageSize + idx + 1}</Table.Td>
               <Table.Td>
                 <Group gap="sm" wrap="nowrap">
                   <Avatar src={u.profileImageUrl} size={32} radius="xl" color="blue">

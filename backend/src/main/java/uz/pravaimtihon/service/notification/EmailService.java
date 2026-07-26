@@ -9,7 +9,6 @@ import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import uz.pravaimtihon.enums.AcceptLanguage;
 import uz.pravaimtihon.exception.BusinessException;
@@ -47,7 +46,21 @@ public class EmailService {
     /**
      * ✅ ENHANCED: Send verification email with test mode support
      */
-    @Async
+    /**
+     * ⚠️ AUDIT — RELIABILITY SIGNAL: bu metod avval `@Async` edi.
+     *
+     * Natijada u darhol qaytardi va ichkarida otilgan `BusinessException`
+     * chaqiruvchiga (VerificationService) YETIB BORMASDI — u yerdagi
+     * try/catch bloki hech qachon ishlamasdi. SMTP ishlamay qolganda ham
+     * foydalanuvchiga "kod yuborildi" deb javob qaytarilaverardi va u
+     * kelmaydigan kodni kutib o'tirardi (ro'yxatdan o'tish / parol tiklash
+     * jimgina buziladi, monitoringda ham ko'rinmaydi).
+     *
+     * SMS yuborish allaqachon sinxron edi — endi email ham shunday, ya'ni
+     * xatolik haqiqatda yuqoriga qaytariladi. Bu ro'yxatdan o'tish so'roviga
+     * SMTP kutish vaqtini qo'shadi; agar bu muammo bo'lsa, to'g'ri yechim —
+     * navbat (outbox) + qayta urinish, "jim yutish" emas.
+     */
     public void sendVerificationEmail(String to, String code, AcceptLanguage language) {
         String subject = messageService.getMessage(
                 "email.verification.subject",
@@ -59,12 +72,20 @@ public class EmailService {
                 maskEmail(to), testModeLogOnly, emailEnabled);
 
         // ✅ Test Mode: Log only
+        //
+        // ⚠️ AUDIT: avval bu blok TO'LIQ email manzilini va TASDIQLASH KODINI
+        // ochiq matnda log'ga yozardi. `app.email.enabled` default qiymati
+        // `false` bo'lgani uchun bu yo'l kutilganidan ancha ko'p ishga tushardi,
+        // va loglar SUPER_ADMIN uchun API orqali o'qiladi
+        // (/api/v1/admin/system/logs) hamda logrotate bilan diskda saqlanadi —
+        // ya'ni parol tiklash kodlari log fayllarida qolib ketardi.
+        // Endi kod hech qachon log'ga tushmaydi, manzil maskalanadi.
         if (!emailEnabled || testModeLogOnly) {
-            log.info("🧪 [TEST MODE] Email would be sent:");
-            log.info("   To: {}", to);
-            log.info("   Subject: {}", subject);
-            log.info("   Code: {}", code);
-            log.info("   Language: {}", language);
+            log.info("🧪 [TEST MODE] Email yuborilmadi (log-only): to={}, subject={}, lang={}",
+                    maskEmail(to), subject, language);
+            log.debug("🧪 [TEST MODE] Kod log'ga yozilmaydi — test kodini olish uchun " +
+                    "app.verification.test-mode.enabled=true dan foydalaning " +
+                    "(u kodni API javobida qaytaradi).");
             return;
         }
 

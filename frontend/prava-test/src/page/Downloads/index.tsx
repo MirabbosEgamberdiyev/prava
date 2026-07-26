@@ -13,8 +13,9 @@ import {
   IconCloudOff, IconCopy, IconDownload, IconTerminal2,
   IconAlertCircle, IconBrandGooglePlay, IconBrandAndroid,
   IconDeviceMobile, IconExternalLink, IconDeviceDesktop,
-  IconWorld,
+  IconWorld, IconDeviceMobileMessage, IconCircleCheck,
 } from "@tabler/icons-react";
+import { useInstallPrompt } from "../../hooks/useInstallPrompt";
 import { getLatestReleases, getDownloadUrl } from "../../api/applicationService";
 import type { AppReleaseResponse, AppCategory } from "../../features/Downloads/types";
 import { getReleaseNotes } from "../../features/Downloads/types";
@@ -184,6 +185,70 @@ function DesktopSection({
   );
 }
 
+// ─── PWA Install ─────────────────────────────────────────────────────────────
+/**
+ * PWA "Bosh ekranga o'rnatish" bloki.
+ * `useInstallPrompt` hooki bor edi, lekin hech qayerda ishlatilmagan —
+ * ya'ni brauzerdan ilova o'rnatish imkoniyati foydalanuvchiga umuman
+ * ko'rsatilmagan. Tarjimalar (`pwa.*`) 4 tilda allaqachon mavjud edi.
+ */
+function InstallPwaBlock() {
+  const { t } = useTranslation();
+  const { isInstallable, isInstalled, isStandalone, isIOS, install } =
+    useInstallPrompt();
+  const [installing, setInstalling] = useState(false);
+
+  // Ilova ichida ochilgan bo'lsa — hech narsa ko'rsatmaymiz
+  if (isStandalone) return null;
+
+  const handleInstall = async () => {
+    if (installing) return;
+    setInstalling(true);
+    try {
+      await install();
+    } finally {
+      setInstalling(false);
+    }
+  };
+
+  if (isInstalled) {
+    return (
+      <Group gap={6} justify="center" mt="xs">
+        <IconCircleCheck size={16} color="var(--mantine-color-teal-6)" />
+        <Text size="xs" c="dimmed">{t("pwa.installed")}</Text>
+      </Group>
+    );
+  }
+
+  if (isInstallable) {
+    return (
+      <Button
+        fullWidth
+        mt="xs"
+        radius="md"
+        size="md"
+        variant="light"
+        color="blue"
+        loading={installing}
+        leftSection={<IconDeviceMobileMessage size={16} />}
+        onClick={handleInstall}
+      >
+        {t("pwa.installApp")}
+      </Button>
+    );
+  }
+
+  if (isIOS) {
+    return (
+      <Text size="xs" c="dimmed" ta="center" mt="xs">
+        {t("pwa.iosInstallBanner")}
+      </Text>
+    );
+  }
+
+  return null;
+}
+
 // ─── Mobile Section ──────────────────────────────────────────────────────────
 function MobileSection() {
   const { t } = useTranslation();
@@ -255,6 +320,7 @@ function MobileSection() {
               leftSection={s.storeIcon} rightSection={<IconExternalLink size={14}/>}>
               {s.storeName}
             </Button>
+            {s.platform === "Web" && <InstallPwaBlock />}
           </Box>
         </Paper>
       ))}

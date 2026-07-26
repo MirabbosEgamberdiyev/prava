@@ -198,7 +198,25 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        // AUDIT: origin'lar trim qilinadi va bo'shlari tashlanadi — .env da
+        // "a, b" ko'rinishida (bo'sh joy bilan) yozilsa, avval origin mos
+        // kelmay CORS jimgina buzilardi.
+        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+
+        // AUDIT: `allowCredentials(true)` bilan wildcard "*" ISHLATIB BO'LMAYDI
+        // (Spring runtime'da xato beradi, brauzer ham rad etadi). Konfiguratsiya
+        // xatosi natijasida "*" kirib qolsa — fail-fast qilamiz, chunki bu
+        // holatda har qanday sayt foydalanuvchi sessiyasi bilan so'rov yubora olardi.
+        if (origins.isEmpty() || origins.contains("*")) {
+            throw new IllegalStateException(
+                    "app.security.allowed-origins noto'g'ri: bo'sh yoki '*'. " +
+                    "allowCredentials=true bilan wildcard origin taqiqlanadi — " +
+                    "aniq domenlar ro'yxatini ko'rsating (ALLOWED_ORIGINS).");
+        }
+
         log.info("Configuring CORS with allowed origins: {}", origins);
 
         CorsConfiguration configuration = new CorsConfiguration();

@@ -53,7 +53,7 @@ function Add_Package_Page() {
         </Breadcrumbs>
 
         <Paper p="md" withBorder>
-          <Title order={2} mb="md">
+          <Title order={1} fz="h3" mb="md">
             {t("packages.addNew")}
           </Title>
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Stack, Title, Group, Badge, Button, Text, ThemeIcon,
@@ -12,7 +12,7 @@ import { notifications } from "@mantine/notifications";
 import {
   IconBuilding, IconPlus, IconRefresh, IconSearch,
   IconEdit, IconTrash, IconToggleLeft, IconToggleRight,
-  IconDeviceDesktop, IconKey,
+  IconDeviceDesktop, IconKey, IconAlertTriangle,
 } from "@tabler/icons-react";
 import { useSWRConfig } from "swr";
 import { useLearningCenterList } from "../../features/learningCenter/hooks/useLearningCenters";
@@ -61,7 +61,7 @@ const LearningCenters_Page = () => {
     status: status ?? undefined,
   };
 
-  const { page: data, isLoading } = useLearningCenterList(filter);
+  const { page: data, isLoading, isError, refresh } = useLearningCenterList(filter);
 
   // LC form modal
   const [formOpened, { open: openForm, close: closeForm }] = useDisclosure(false);
@@ -73,7 +73,22 @@ const LearningCenters_Page = () => {
   const centers    = data?.content    ?? [];
   const totalPages = data?.totalPages ?? 0;
 
-  const refreshList = () => mutate(["learning-center-list", JSON.stringify(filter)]);
+  /**
+   * Oxirgi sahifadagi yozuvlar o'chirilsa (yoki filtr natijani qisqartirsa)
+   * `page` diapazondan chiqib qolar va admin bo'sh jadvalga qarab turardi.
+   */
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages - 1) setPage(totalPages - 1);
+  }, [totalPages, page]);
+
+  /**
+   * Ro'yxat + yig'ma ko'rsatkichlar. Ilgari faqat ro'yxat yangilanardi va
+   * markaz qo'shilgach/o'chirilgach StatsCards eski raqamlarda qolib ketardi.
+   */
+  const refreshList = () => {
+    refresh();
+    mutate("learning-center-stats");
+  };
 
   const handleCreate = () => { setEditing(null); openForm(); };
   const handleEdit   = (lc: LearningCenterResponse) => { setEditing(lc); openForm(); };
@@ -147,7 +162,7 @@ const LearningCenters_Page = () => {
             <IconBuilding size={20} />
           </ThemeIcon>
           <div>
-            <Title order={3}>{t("lc.title")}</Title>
+            <Title order={1} fz="h3">{t("lc.title")}</Title>
             <Text size="xs" c="dimmed">{t("lc.subtitle")}</Text>
           </div>
         </Group>
@@ -163,7 +178,7 @@ const LearningCenters_Page = () => {
       </Group>
 
       {/* Stats */}
-      {!isLoading && <StatsCards centers={centers} />}
+      <StatsCards />
 
       {/* Filters */}
       <Group gap="sm" wrap="wrap">
@@ -203,6 +218,22 @@ const LearningCenters_Page = () => {
             <Table.Tbody>
               {isLoading ? (
                 <TableSkeleton />
+              ) : isError ? (
+                /* Ilgari xatolik "ma'lumot topilmadi" deb ko'rsatilardi —
+                   admin tarmoq uzilganini bo'sh ro'yxatdan ajrata olmasdi. */
+                <Table.Tr>
+                  <Table.Td colSpan={8}>
+                    <Center py="xl">
+                      <Stack align="center" gap="xs">
+                        <IconAlertTriangle size={32} color="var(--mantine-color-red-6)" />
+                        <Text c="red" size="sm">{t("common.errorLoading")}</Text>
+                        <Button size="xs" variant="light" onClick={refreshList}>
+                          {t("common.refresh")}
+                        </Button>
+                      </Stack>
+                    </Center>
+                  </Table.Td>
+                </Table.Tr>
               ) : centers.length === 0 ? (
                 <Table.Tr>
                   <Table.Td colSpan={8}>

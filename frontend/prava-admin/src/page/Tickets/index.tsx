@@ -8,12 +8,12 @@ import {
   Button,
   Group,
   Stack,
+  Box,
   LoadingOverlay,
   Text,
 } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { notifications } from "@mantine/notifications";
 import Cookies from "js-cookie";
 
 import { useTickets, useDeleteTicket } from "../../features/ticket/hook";
@@ -57,12 +57,9 @@ function Tickets_Page() {
       try {
         await deleteTicket(id);
         mutate();
-      } catch (error: any) {
-        notifications.show({
-          title: t("common.error"),
-          message: error?.response?.data?.message || t("tickets.deleteError"),
-          color: "red",
-        });
+      } catch {
+        // Xato notification useDeleteTicket ichida ko'rsatiladi —
+        // takrorlash ikkita bir xil toast berardi.
       }
     });
   };
@@ -71,7 +68,7 @@ function Tickets_Page() {
 
   if (isLoading) {
     return (
-      <Paper p="md" withBorder>
+      <Paper p="md" withBorder pos="relative" mih={200}>
         <LoadingOverlay visible />
         <Text c="dimmed" ta="center" py="xl">
           {t("common.loading")}
@@ -85,15 +82,16 @@ function Tickets_Page() {
       <Stack gap="md">
         <Paper p="md" withBorder>
           <Group justify="space-between">
-            <Title order={2}>{t("tickets.title")}</Title>
+            <Title order={1} fz="h3">{t("tickets.title")}</Title>
             <Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
               {t("tickets.addNew")}
             </Button>
           </Group>
         </Paper>
 
-        <>
-          <LoadingOverlay visible={isActionLoading} />
+        {/* pos="relative" bo'lmasa LoadingOverlay butun sahifani qoplaydi */}
+        <Box pos="relative" mih={200}>
+          <LoadingOverlay visible={isActionLoading} zIndex={100} />
 
           <TicketGrid
             tickets={tickets}
@@ -116,7 +114,7 @@ function Tickets_Page() {
               }}
             />
           )}
-        </>
+        </Box>
       </Stack>
     </>
   );

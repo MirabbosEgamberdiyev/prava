@@ -27,10 +27,15 @@ public class DefaultUserInitializer implements CommandLineRunner {
     @Value("${app.init.default-users.enabled:true}")
     private boolean defaultUsersEnabled;
 
-    @Value("${app.init.super-admin-password:$2026Super$Admin2026$}")
+    // SECURITY (audit): avval bu yerda hardcoded parollar turardi
+    // ("$2026Super$Admin2026$" / "$2026Admin$Admin2026$"). Ular git repo'da
+    // ochiq edi, ya'ni superadmin@pravaonline.uz akkauntining paroli
+    // ommaga ma'lum bo'lgan — to'g'ridan-to'g'ri SUPER_ADMIN kirish yo'li.
+    // Endi default YO'Q: parol berilmasa, default admin UMUMAN yaratilmaydi.
+    @Value("${app.init.super-admin-password:}")
     private String superAdminPassword;
 
-    @Value("${app.init.admin-password:$2026Admin$Admin2026$}")
+    @Value("${app.init.admin-password:}")
     private String adminPassword;
 
     @Override
@@ -62,6 +67,11 @@ public class DefaultUserInitializer implements CommandLineRunner {
         }
 
         if (existingUser.isEmpty()) {
+            if (isBlank(superAdminPassword)) {
+                log.warn("⚠️  SUPER_ADMIN yaratilmadi: APP_INIT_SUPER_ADMIN_PASSWORD o'rnatilmagan. " +
+                        "Xavfsizlik uchun ma'lum/default parolli admin yaratilmaydi.");
+                return;
+            }
             // YANGI YARATISH (Sizning eski kodingiz)
             User superAdmin = User.builder()
                     .firstName("Super")
@@ -96,6 +106,11 @@ public class DefaultUserInitializer implements CommandLineRunner {
         }
 
         if (existingUser.isEmpty()) {
+            if (isBlank(adminPassword)) {
+                log.warn("⚠️  ADMIN yaratilmadi: APP_INIT_ADMIN_PASSWORD o'rnatilmagan. " +
+                        "Xavfsizlik uchun ma'lum/default parolli admin yaratilmaydi.");
+                return;
+            }
             // YANGI YARATISH (Sizning eski kodingiz)
             User admin = User.builder()
                     .firstName("Default")
@@ -117,5 +132,9 @@ public class DefaultUserInitializer implements CommandLineRunner {
             // MAVJUD BO'LSA — parolga TEGILMAYDI (izoh yuqorida, super-admin bilan bir xil sabab).
             log.info("ℹ️  Admin allaqachon mavjud - o'tkazib yuborildi (parol o'zgartirilmadi)");
         }
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 }

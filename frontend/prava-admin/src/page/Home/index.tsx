@@ -16,6 +16,7 @@ import {
   RingProgress,
   SimpleGrid,
   Skeleton,
+  Button,
 } from "@mantine/core";
 import {
   IconUsers,
@@ -30,8 +31,9 @@ import {
   IconCircleCheck,
   IconCircleX,
   IconTarget,
+  IconAlertTriangle,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDashboardStats, useTopicStats, useRecentExams } from "../../features/dashboard";
 import { formatDate } from "../../utils/formatDate";
 import { useTranslation } from "react-i18next";
@@ -87,12 +89,39 @@ const DashboardSkeleton = () => (
 
 const Home_Page = () => {
   const { t } = useTranslation();
-  const { stats, isLoading: statsLoading } = useDashboardStats();
-  const { topics, isLoading: topicsLoading } = useTopicStats();
+  const { stats, isLoading: statsLoading, isError: statsError, refresh: refreshStats } =
+    useDashboardStats();
+  const { topics, isLoading: topicsLoading, isError: topicsError } = useTopicStats();
   const [examPage, setExamPage] = useState(0);
-  const { exams, totalPages, isLoading: examsLoading } = useRecentExams(examPage, 8);
+  const {
+    exams,
+    totalPages,
+    isLoading: examsLoading,
+    isError: examsError,
+  } = useRecentExams(examPage, 8);
+
+  // Oxirgi sahifadagi imtihonlar yo'qolsa `examPage` diapazondan chiqib ketmasin
+  useEffect(() => {
+    if (totalPages > 0 && examPage > totalPages - 1) setExamPage(totalPages - 1);
+  }, [totalPages, examPage]);
 
   if (statsLoading) return <DashboardSkeleton />;
+
+  // Ilgari faqat `!stats` tekshirilardi va tarmoq xatosi ham "ma'lumot yo'q"
+  // bo'lib ko'rinardi — admin nima bo'lganini bilmasdi va qayta urinolmasdi.
+  if (statsError) {
+    return (
+      <Center h={400}>
+        <Stack align="center" gap="sm">
+          <IconAlertTriangle size={40} color="var(--mantine-color-red-6)" />
+          <Text c="red">{t("common.errorLoading")}</Text>
+          <Button variant="light" onClick={() => refreshStats()}>
+            {t("common.refresh")}
+          </Button>
+        </Stack>
+      </Center>
+    );
+  }
 
   if (!stats) {
     return (
@@ -104,7 +133,7 @@ const Home_Page = () => {
 
   return (
     <Stack gap="md">
-      <Title order={3}>{t("dashboard.title")}</Title>
+      <Title order={1} fz="h3">{t("dashboard.title")}</Title>
 
       {/* Row 1: Asosiy statistikalar */}
       <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
@@ -182,6 +211,10 @@ const Home_Page = () => {
             {examsLoading ? (
               <Center h={200}>
                 <Loader size="sm" />
+              </Center>
+            ) : examsError ? (
+              <Center h={200}>
+                <Text c="red" size="sm">{t("common.errorLoading")}</Text>
               </Center>
             ) : exams.length === 0 ? (
               <Center h={200}>
@@ -360,6 +393,10 @@ const Home_Page = () => {
         {topicsLoading ? (
           <Center h={100}>
             <Loader size="sm" />
+          </Center>
+        ) : topicsError ? (
+          <Center h={100}>
+            <Text c="red" size="sm">{t("common.errorLoading")}</Text>
           </Center>
         ) : topics.length === 0 ? (
           <Center h={100}>

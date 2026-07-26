@@ -4,11 +4,14 @@ services:
     image: postgres:16-alpine
     container_name: prava-postgres
     environment:
-      POSTGRES_DB: prava_online_db
-      POSTGRES_USER: prava_user
-      POSTGRES_PASSWORD: prava_password
+      POSTGRES_DB: ${DB_NAME:-prava_online_db}
+      POSTGRES_USER: ${DB_USERNAME:-prava_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-prava_password}
+    # SECURITY: avval "5432:5432" edi — Postgres BUTUN internetga ochilgan edi
+    # (git'dagi ma'lum parol bilan). Endi faqat localhost'ga bind qilinadi;
+    # app konteyneri baribir `prava-network` orqali ulanadi, port publish shart emas.
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -37,13 +40,15 @@ services:
       - "8080:8080"
     environment:
       # Database connection
-      DB_URL: jdbc:postgresql://postgres:5432/prava_online_db
-      DB_USERNAME: prava_user
-      DB_PASSWORD: prava_password
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-prava_online_db}
+      DB_USERNAME: ${DB_USERNAME:-prava_user}
+      DB_PASSWORD: ${DB_PASSWORD:-prava_password}
       SPRING_PROFILES_ACTIVE: prod
 
-      # ✅ CRITICAL: JWT Secret MUST be 32+ characters (256 bits minimum)
-      JWT_SECRET: ${JWT_SECRET:-PravaOnlineProductionSecretKey2024MustBe32CharsOrMoreForSecurity!}
+      # SECURITY: JWT_SECRET default'i OLIB TASHLANDI. `${JWT_SECRET:?...}` —
+      # agar .env da berilmasa `docker compose up` xato bilan to'xtaydi.
+      # Avvalgi hardcoded default git'da ochiq edi → to'liq auth bypass imkoni.
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET .env faylda majburiy (openssl rand -base64 48)}
 
       # CORS — production domains
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://pravaonline.uz,https://www.pravaonline.uz,https://admin.pravaonline.uz}
@@ -57,14 +62,16 @@ services:
       ESKIZ_EMAIL: ${ESKIZ_EMAIL:-}
       ESKIZ_PASSWORD: ${ESKIZ_PASSWORD:-}
 
-      # Telegram Bot
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-8485868847:AAGR9eBV1qibgJfXHpqZ04JlbyrjemaTrGA}
+      # Telegram Bot — token faqat .env dan (hardcoded default olib tashlandi)
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-pravaonlineuzbot}
       TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-https://pravaonline.uz/api/v1/telegram/webhook}
 
-      # Default admin bootstrap parollari (ixtiyoriy — kodda default bor)
-      APP_INIT_SUPER_ADMIN_PASSWORD: ${APP_INIT_SUPER_ADMIN_PASSWORD:-$$2026Super$$Admin2026$$}
-      APP_INIT_ADMIN_PASSWORD: ${APP_INIT_ADMIN_PASSWORD:-$$2026Admin$$Admin2026$$}
+      # Default admin bootstrap parollari — kodda endi default YO'Q.
+      # Agar bular bo'sh bo'lsa, DefaultUserInitializer default adminlarni
+      # umuman yaratmaydi (ma'lum parolli admin akkaunt paydo bo'lmasligi uchun).
+      APP_INIT_SUPER_ADMIN_PASSWORD: ${APP_INIT_SUPER_ADMIN_PASSWORD:-}
+      APP_INIT_ADMIN_PASSWORD: ${APP_INIT_ADMIN_PASSWORD:-}
     volumes:
       - app_uploads:/app/uploads
       - app_logs:/app/logs

@@ -36,10 +36,21 @@ createRoot(document.getElementById("root")!).render(
         <ModalsProvider>
           <SWRConfig
             value={{
-              refreshInterval: 30000,
               fetcher: (url: string) => api.get(url).then((res) => res.data),
+              // Global `refreshInterval: 30000` olib tashlandi: u har bir SWR
+              // kalitiga (savollar, foydalanuvchilar, paketlar, biletlar,
+              // mavzular...) meros bo'lib o'tardi va admin panel ochiq turgan
+              // sahifada har 30 soniyada barcha ro'yxatlarni qayta so'rardi.
+              // Haqiqatan polling kerak bo'lgan joylar (license, computers,
+              // learning centers, backup job) o'z hooklarida refreshInterval ni
+              // aniq belgilaydi.
+              refreshInterval: 0,
               revalidateOnFocus: true,
               dedupingInterval: 5000,
+              // Sahifalash/filtrlashda ro'yxat "bo'sh → to'la" bo'lib
+              // sakramasligi uchun eski ma'lumot ko'rsatib turiladi
+              keepPreviousData: true,
+              errorRetryCount: 2,
             }}
           >
             <Notifications />

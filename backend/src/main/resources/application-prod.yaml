@@ -1,8 +1,14 @@
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/prava_online_db
-    username: prava_user
-    password: prava_password
+    # SECURITY / AUDIT: DB kredensiallari endi env orqali override qilinadi.
+    # ⚠️ DIQQAT: `prava_password` default'i faqat mavjud deploy'ni buzmaslik uchun
+    #    vaqtincha qoldirildi — u git'da ochiq turgan, ya'ni KOMPROMETATSIYA
+    #    QILINGAN parol hisoblanadi. Serverdagi .env ga DB_PASSWORD qo'shib,
+    #    parolni almashtirgandan keyin bu default'ni butunlay olib tashlang
+    #    (`password: ${DB_PASSWORD}`), shunda fail-fast bo'ladi.
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/prava_online_db}
+    username: ${DB_USERNAME:prava_user}
+    password: ${DB_PASSWORD:prava_password}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -42,11 +48,25 @@ logging:
 
 server:
   port: 8080
+  # SECURITY: application.yaml'da `include-message: always` va
+  # `include-binding-errors: always` turibdi — bu production'da Spring'ning ichki
+  # xato matnlarini (SQL/entity/class nomlari) klientga oshkor qiladi.
+  # Prod profilida hammasi o'chiriladi; foydalanuvchiga tushunarli xabarlar
+  # GlobalExceptionHandler orqali i18n bilan qaytariladi.
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+    whitelabel:
+      enabled: false
 
 app:
-  # ✅ PRODUCTION JWT SECRET - Bu production serverda .env faylda bo'lishi kerak
+  # SECURITY: JWT secret — default YO'Q, majburiy env (fail-fast).
+  # Avvalgi default git'da ochiq turardi: uni bilgan har kim ixtiyoriy
+  # foydalanuvchi (jumladan SUPER_ADMIN) nomidan token imzolay olardi.
   jwt:
-    secret: ${JWT_SECRET:PravaOnlineProductionSecretKey2024MustBe32CharsOrMoreForSecurity!}
+    secret: ${JWT_SECRET}
 
   verification:
     test-mode:
@@ -114,6 +134,17 @@ app:
       checkout-base-url: https://checkout.paycom.uz
       return-path:       /payment/success
       timeout-seconds:   43200
+
+# SECURITY: Swagger/OpenAPI production'da O'CHIRILADI.
+# SecurityConfig'da `/swagger-ui/**`, `/v3/api-docs/**`, `/api-docs/**`
+# permitAll qilingan — ya'ni prod'da butun API sxemasi (barcha admin
+# endpointlar, parametrlar, DTO'lar) autentifikatsiyasiz ochiq edi.
+# Bu hujumchi uchun tayyor xarita. Dev/staging'da baribir yoqiq qoladi.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 
 management:
   endpoints:

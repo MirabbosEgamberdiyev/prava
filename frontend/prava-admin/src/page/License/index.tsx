@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Stack, Title, Group, Badge, Button, Text, ThemeIcon,
@@ -12,7 +12,7 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import {
   IconKey, IconPlus, IconRefresh, IconSearch, IconCopy,
-  IconCheck, IconBan, IconTrash,
+  IconCheck, IconBan, IconTrash, IconAlertTriangle,
   IconEye, IconBuilding, IconDeviceDesktop, IconPlayerPlay,
 } from "@tabler/icons-react";
 import { useLicenseStats, useLicenseList } from "../../features/license/hooks/useLicense";
@@ -72,7 +72,7 @@ const License_Page = () => {
     learningCenterId: lcId    ?? undefined,
   };
 
-  const { page: data, isLoading } = useLicenseList(filter);
+  const { page: data, isLoading, isError } = useLicenseList(filter);
   const { refresh: refreshStats } = useLicenseStats();
 
   // Modals
@@ -158,6 +158,14 @@ const License_Page = () => {
   const codes      = data?.content    ?? [];
   const totalPages = data?.totalPages ?? 0;
 
+  /**
+   * Oxirgi sahifadagi kodlar o'chirilganda `page` diapazondan chiqib qolar va
+   * jadval bo'sh ko'rinardi.
+   */
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages - 1) setPage(totalPages - 1);
+  }, [totalPages, page]);
+
   return (
     <Stack gap="md">
       {/* Header */}
@@ -167,7 +175,7 @@ const License_Page = () => {
             <IconKey size={20} />
           </ThemeIcon>
           <div>
-            <Title order={3}>{t("license.title")}</Title>
+            <Title order={1} fz="h3">{t("license.title")}</Title>
             <Text size="xs" c="dimmed">{t("license.subtitle")}</Text>
           </div>
         </Group>
@@ -248,6 +256,21 @@ const License_Page = () => {
             <Table.Tbody>
               {isLoading ? (
                 <TableSkeleton />
+              ) : isError ? (
+                /* Ilgari xatolik ham "ma'lumot topilmadi" bo'lib ko'rinardi */
+                <Table.Tr>
+                  <Table.Td colSpan={9}>
+                    <Center py="xl">
+                      <Stack align="center" gap="xs">
+                        <IconAlertTriangle size={32} color="var(--mantine-color-red-6)" />
+                        <Text c="red" size="sm">{t("common.errorLoading")}</Text>
+                        <Button size="xs" variant="light" onClick={handleRefreshAll}>
+                          {t("common.refresh")}
+                        </Button>
+                      </Stack>
+                    </Center>
+                  </Table.Td>
+                </Table.Tr>
               ) : codes.length === 0 ? (
                 <Table.Tr>
                   <Table.Td colSpan={9}>

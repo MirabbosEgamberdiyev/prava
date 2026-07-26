@@ -40,7 +40,8 @@ export function ImportOptionsPanel({ options, onChange }: ImportOptionsPanelProp
       </Button>
 
       <Collapse in={open}>
-        <Card withBorder radius="sm" p="sm" mt="xs" bg="gray.0">
+        {/* gray.0 dark rejimda oq panel hosil qilardi */}
+        <Card withBorder radius="sm" p="sm" mt="xs" bg="var(--mantine-color-default-hover)">
           <Group justify="flex-end" mb="sm">
             <Button size="xs" variant="light" onClick={toggleAll}>
               {allEnabled ? t("backup.importOptions.disableAll") : t("backup.importOptions.enableAll")}

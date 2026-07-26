@@ -70,11 +70,21 @@ public class LocalStorageService implements FileStorageService {
             String fileName = UUID.randomUUID().toString() + extension;
 
             Path folderPath = uploadDir.resolve(folder).normalize();
+            if (!folderPath.startsWith(uploadDir)) {
+                throw new FileStorageException("Invalid folder path");
+            }
             Files.createDirectories(folderPath);
 
-            Path targetPath = folderPath.resolve(fileName);
+            // ⚠️ AUDIT — PATH TRAVERSAL: avval `targetPath` NORMALIZE
+            // QILINMASDAN `startsWith(uploadDir)` bilan tekshirilardi.
+            // `Path.startsWith` leksik ishlaydi va ".." segmentlarini hisobga
+            // olmaydi, shuning uchun kengaytmasi "…/../../x" bo'lgan fayl nomi
+            // tekshiruvdan o'tib ketib, `Files.copy` uni yuklash papkasidan
+            // TASHQARIGA yozardi (masalan ilova katalogiga). Endi avval
+            // normalize qilinadi, keyin tekshiriladi.
+            Path targetPath = folderPath.resolve(fileName).normalize();
 
-            if (!targetPath.startsWith(uploadDir)) {
+            if (!targetPath.startsWith(folderPath)) {
                 throw new FileStorageException("Invalid file path");
             }
 

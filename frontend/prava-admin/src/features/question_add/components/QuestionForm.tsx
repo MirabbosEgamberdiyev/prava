@@ -29,8 +29,15 @@ import { getImageUrl } from "../../../utils/imageUtils";
 export const QuestionForm = () => {
   const { t } = useTranslation();
   // uploadFile funksiyasini hookdan qabul qilamiz
-  const { form, addOption, removeOption, handleSubmit, uploadFile } =
-    useAddQuestionForm();
+  const {
+    form,
+    addOption,
+    removeOption,
+    handleSubmit,
+    uploadFile,
+    submitting,
+    uploading,
+  } = useAddQuestionForm();
   const { topicOptions, isLoading: isTopicsLoading } = useTopicSelect();
 
   return (
@@ -151,6 +158,7 @@ export const QuestionForm = () => {
                   <Button
                     {...props}
                     variant="light"
+                    loading={uploading}
                     leftSection={<IconUpload size={16} />}
                   >
                     {t("questions.uploadImage")}
@@ -302,6 +310,7 @@ export const QuestionForm = () => {
                 type="submit"
                 size="md"
                 px="xl"
+                loading={submitting}
                 leftSection={<IconDeviceFloppy size={20} />}
               >
                 {t("questions.saveQuestion")}

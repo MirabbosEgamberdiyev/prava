@@ -1,14 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="robots" content="noindex, nofollow" />
     <meta property="og:title" content="PravaOnline Admin" />
     <meta property="og:description" content="PravaOnline Admin Panel" />
     <meta property="og:image" content="/og-image.svg" />
     <meta property="og:type" content="website" />
+
+    <!-- Shrift: render-blocking @import o'rniga preconnect + display=swap (FOIT yo'q) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+    />
+
     <title>PravaOnline Admin</title>
+
+    <!--
+      Mantine ColorSchemeScript: JS bundle yuklanguncha data-mantine-color-scheme
+      atributini o'rnatadi. Busiz defaultColorScheme="dark" bo'lsa ham sahifa
+      avval oq bo'lib "chaqnaydi" (FOUC).
+    -->
+    <script data-mantine-script>
+      try {
+        var _colorScheme = window.localStorage.getItem("mantine-color-scheme-value");
+        var colorScheme =
+          _colorScheme === "light" || _colorScheme === "dark" || _colorScheme === "auto"
+            ? _colorScheme
+            : "dark";
+        var computedColorScheme =
+          colorScheme !== "auto"
+            ? colorScheme
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        document.documentElement.setAttribute("data-mantine-color-scheme", computedColorScheme);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

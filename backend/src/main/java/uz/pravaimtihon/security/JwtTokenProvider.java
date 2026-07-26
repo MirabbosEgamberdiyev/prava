@@ -41,6 +41,17 @@ public class JwtTokenProvider {
     private static final String TOKEN_TYPE_DOWNLOAD = "download";
 
     /**
+     * Fail-fast: kalit muammosi birinchi login paytida emas, ilova ishga
+     * tushishida darrov aniqlanadi.
+     */
+    @jakarta.annotation.PostConstruct
+    void validateConfiguration() {
+        getSignInKey();
+        log.info("JWT konfiguratsiyasi tekshirildi (issuer={}, access-token TTL={} ms)",
+                issuer, accessTokenExpiration);
+    }
+
+    /**
      * ✅ Access Token yaratish
      */
     public String generateAccessToken(UserDetails userDetails) {
@@ -73,16 +84,13 @@ public class JwtTokenProvider {
         }
     }
 
-    /**
-     * ✅ Refresh Token yaratish
-     */
-    public String generateRefreshToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        if (userDetails instanceof CustomUserDetails customUserDetails) {
-            claims.put("userId", customUserDetails.getId());
-        }
-        return buildToken(claims, userDetails, refreshTokenExpiration);
-    }
+    // AUDIT: `generateRefreshToken(...)` OLIB TASHLANDI.
+    // U hech qayerda ishlatilmasdi (haqiqiy refresh token AuthService'da
+    // UUID sifatida yaratilib, DB'da rotate/revoke qilinadi), lekin xavfli
+    // "token confusion" tuzog'i edi: u access-token bilan bir xil kalit va
+    // bir xil `subject` bilan imzolangan JWT qaytarardi, ya'ni 30 KUNLIK
+    // refresh tokenni oddiy `Authorization: Bearer` sifatida ishlatish
+    // mumkin bo'lardi va DB'dagi revoke mexanizmi butunlay chetlab o'tilardi.
 
     /**
      * ✅ Tokenni qurish (0.12.3 standardi bo'yicha)
@@ -151,12 +159,68 @@ public class JwtTokenProvider {
     }
 
     /**
-     * ✅ SecretKey generatsiyasi
+     * ✅ SecretKey generatsiyasi.
+     * Kalit bir marta hisoblanadi va startup'da qat'iy tekshiriladi.
      */
     private SecretKey getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        SecretKey key = cachedKey;
+        if (key == null) {
+            synchronized (this) {
+                key = cachedKey;
+                if (key == null) {
+                    key = buildAndValidateKey();
+                    cachedKey = key;
+                }
+            }
+        }
+        return key;
+    }
+
+    private volatile SecretKey cachedKey;
+
+    /**
+     * AUDIT: avval har bir token operatsiyasida kalit qayta decode qilinardi va
+     * HECH QANDAY kuch tekshiruvi yo'q edi. Endi:
+     *  - kalit kamida 256 bit (32 bayt) bo'lishi shart (HS256 talabi);
+     *  - git'ga tushib ketgan ma'lum default kalitlar TAQIQLANADI —
+     *    ular bilan ishga tushirishga urinish darrov xato beradi.
+     */
+    private SecretKey buildAndValidateKey() {
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new IllegalStateException(
+                    "app.jwt.secret (JWT_SECRET) o'rnatilmagan. " +
+                    "Yarating: openssl rand -base64 48");
+        }
+        for (String leaked : LEAKED_SECRETS) {
+            if (leaked.equals(secretKey.trim())) {
+                throw new IllegalStateException(
+                        "JWT_SECRET sifatida git repo'da ochiq turgan (komprometatsiya " +
+                        "qilingan) default kalit ishlatilmoqda. Uni ALMASHTIRING: " +
+                        "openssl rand -base64 48");
+            }
+        }
+
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64.decode(secretKey);
+        } catch (Exception e) {
+            // Base64 bo'lmasa — xom baytlar sifatida qabul qilamiz (orqaga moslik).
+            keyBytes = secretKey.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        }
+
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException(
+                    "app.jwt.secret juda qisqa: " + (keyBytes.length * 8) + " bit. " +
+                    "HS256 uchun kamida 256 bit (32 bayt) kerak.");
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
+    /** Git tarixida ochiq qolgan, endi ishlatish taqiqlangan default kalitlar. */
+    private static final String[] LEAKED_SECRETS = {
+            "MirabbosEgamberdiyevPravaOnlineSecretKey1234567890123456789012345678901",
+            "PravaOnlineProductionSecretKey2024MustBe32CharsOrMoreForSecurity!"
+    };
 
     public long getAccessTokenExpiration() {
         return accessTokenExpiration;

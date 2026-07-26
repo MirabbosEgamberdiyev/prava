@@ -56,8 +56,19 @@ export function TableResultsCard({ results }: { results: Record<string, TableImp
           <Table.Tbody>
             {visible.map((r) => {
               const isSkipped = r.error === "skipped by ImportOptions";
+              // red.0/gray.0 dark rejimda deyarli oq qator berardi —
+              // -light variantlar ikkala rang sxemasida ham to'g'ri ishlaydi.
               return (
-                <Table.Tr key={r.tableName} bg={r.failed > 0 ? "red.0" : isSkipped ? "gray.0" : undefined}>
+                <Table.Tr
+                  key={r.tableName}
+                  bg={
+                    r.failed > 0
+                      ? "var(--mantine-color-red-light)"
+                      : isSkipped
+                        ? "var(--mantine-color-default-hover)"
+                        : undefined
+                  }
+                >
                   <Table.Td>
                     <Group gap={4}>
                       <IconTable size={12} style={{ opacity: 0.5 }} />

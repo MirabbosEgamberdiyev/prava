@@ -1,6 +1,7 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import { Center, Loader } from "@mantine/core";
+import { nprogress } from "@mantine/nprogress";
 import ProtectedRoute from "../auth/ProtectedRoute";
 import AdminRoute from "../auth/AdminRoute";
 import App_Layout from "../layout/App_Layout";
@@ -33,7 +34,23 @@ const Downloads_Page      = lazy(() => import("../page/Downloads"));
 const WrongAnswers_Page   = lazy(() => import("../page/WrongAnswers"));
 const SavedQuestions_Page = lazy(() => import("../page/SavedQuestions"));
 
+/**
+ * `@mantine/nprogress` package.json da bor edi, lekin kodda HECH QAYERDA
+ * ishlatilmagan (o'lik bog'liqlik). Endi u haqiqiy holatga ulandi:
+ * Suspense fallback aynan lazy route chunki yuklanayotgan paytda mount
+ * bo'ladi, shuning uchun progress bar aniq shu oraliqni ko'rsatadi.
+ *
+ * Foyda: sekin 3G/4G da yangi sahifaga o'tish "osilib qolgandek" tuyulmaydi —
+ * foydalanuvchi darhol vizual javob oladi (native-web feel).
+ */
 function LoadingFallback() {
+  useEffect(() => {
+    nprogress.start();
+    return () => {
+      nprogress.complete();
+    };
+  }, []);
+
   return (
     <Center h="100vh">
       <Loader size="lg" />

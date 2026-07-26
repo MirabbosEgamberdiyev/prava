@@ -54,6 +54,32 @@ public class PaymeService {
     /*  Entry point                                                       */
     /* ------------------------------------------------------------------ */
 
+    /**
+     * ⚠️ AUDIT — KRITIK (to'lov yaxlitligi):
+     *
+     * Quyidagi `createTransaction` / `performTransaction` / `cancelTransaction`
+     * metodlari `protected` va `@Transactional` bilan belgilangan, LEKIN ular
+     * shu klassning o'zidan (`this.…`) chaqiriladi. Spring AOP proxy'si
+     * self-invocation'da UMUMAN ishlamaydi — natijada:
+     *
+     *   1) Hech qanday tranzaksiya ochilmasdi. `open-in-view: false` bo'lgani
+     *      uchun repository qaytargan `Payment` entity DETACHED holatda edi,
+     *      ya'ni `p.setState(PERFORMED)`, `setPaidAt(...)`, `setPaymeStateCode(...)`
+     *      kabi o'zgarishlar dirty-checking orqali HECH QACHON saqlanmasdi.
+     *      Payme "PerformTransaction" yuborganda foydalanuvchiga paketga ruxsat
+     *      berilardi (accessService — alohida bean, o'z tranzaksiyasi bor),
+     *      lekin to'lov yozuvi CREATED holatida qolib ketardi va keyinchalik
+     *      PaymentSweeper uni bekor qilib yuborishi mumkin edi.
+     *   2) `findByProviderTxForUpdate` (PESSIMISTIC_WRITE) qulfi darhol bo'shab
+     *      ketardi — parallel PerformTransaction so'rovlarida ikki marta
+     *      grant qilish (double-spend) xavfi bor edi.
+     *
+     * Yechim: tranzaksiya chegarasi proxy o'tadigan yagona kirish nuqtasiga —
+     * `handle()` ga ko'chirildi. Ichki metodlar shu tranzaksiyaga qo'shiladi
+     * (PROPAGATION_REQUIRED), shuning uchun qulflar butun so'rov davomida
+     * ushlab turiladi va o'zgarishlar commit bo'ladi.
+     */
+    @Transactional
     public JsonRpcResponse handle(String authHeader, JsonRpcRequest req) {
         if (!props.isEnabled() || !props.getPayme().isEnabled())
             return JsonRpcResponse.err(req == null ? null : req.getId(), unauthorized("Payme disabled"));
@@ -82,6 +108,10 @@ public class PaymeService {
             };
         } catch (Exception e) {
             log.error("[payme] unhandled error on method={}", req.getMethod(), e);
+            // MUHIM: bu catch istisnoni "yutadi", shuning uchun Spring o'zi
+            // rollback qila olmaydi. Yarim bajarilgan to'lov o'zgarishlari
+            // commit bo'lib qolmasligi uchun rollback'ni qo'lda belgilaymiz.
+            markRollbackOnly();
             return JsonRpcResponse.err(req.getId(), JsonRpcError.of(
                     PaymeErrorCode.INTERNAL_ERROR,
                     "Internal error", "Ichki xato", "Внутренняя ошибка",
@@ -459,6 +489,19 @@ public class PaymeService {
         String prod  = props.getPayme().getCashboxKey();
         String test  = props.getPayme().getTestCashboxKey();
         return constantEq(given, prod) || constantEq(given, test);
+    }
+
+    /** Faol tranzaksiyani rollback-only deb belgilaydi (istisno yutilgan holatda). */
+    private static void markRollbackOnly() {
+        try {
+            if (org.springframework.transaction.support.TransactionSynchronizationManager
+                    .isActualTransactionActive()) {
+                org.springframework.transaction.interceptor.TransactionAspectSupport
+                        .currentTransactionStatus().setRollbackOnly();
+            }
+        } catch (IllegalStateException ignored) {
+            // Tranzaksiya konteksti yo'q — e'tiborsiz qoldiramiz.
+        }
     }
 
     private static boolean constantEq(String a, String b) {

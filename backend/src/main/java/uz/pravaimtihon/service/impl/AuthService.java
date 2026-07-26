@@ -34,6 +34,7 @@ import uz.pravaimtihon.service.TelegramTokenStore;
 import uz.pravaimtihon.service.VerificationService;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -173,7 +174,11 @@ public class AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request, AcceptLanguage language) {
 
-        log.info("Login attempt for identifier={} [lang={}]", request.getIdentifier(), language);
+        // AUDIT: avval to'liq telefon raqami/email log'ga yozilardi (PII).
+        // Loglar SUPER_ADMIN uchun API orqali ham o'qiladi
+        // (/api/v1/admin/system/logs), shuning uchun maskalanadi.
+        log.info("Login attempt for identifier={} [lang={}]",
+                maskIdentifierValue(request.getIdentifier()), language);
 
         // 1️⃣ USER TOPISH (login fail bo‘lishi mumkin)
         User user = userRepository.findByIdentifier(request.getIdentifier())
@@ -203,7 +208,7 @@ public class AuthService {
             userRepository.save(user);
 
             log.warn("Authentication failed for userId={}, identifier={}",
-                    user.getId(), request.getIdentifier());
+                    user.getId(), maskIdentifierValue(request.getIdentifier()));
 
             throw new UnauthorizedException("error.auth.invalid.credentials");
         }
@@ -299,31 +304,52 @@ public class AuthService {
      * ✅ Forgot password with language
      */
     public VerificationSentResponse forgotPassword(ForgotPasswordRequest request, AcceptLanguage language) {
-        log.info("Forgot password request for: {} [lang={}]", request.getIdentifier(), language);
+        log.info("Forgot password request for: {} [lang={}]",
+                maskIdentifierValue(request.getIdentifier()), language);
 
-        User user = userRepository.findByIdentifier(request.getIdentifier())
-                .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
+        // ⚠️ AUDIT — USER ENUMERATION: avval foydalanuvchi topilmasa 404
+        // "error.user.not.found" qaytarilardi. Bu endpoint autentifikatsiyasiz
+        // ochiq, ya'ni istalgan kishi telefon/email ro'yxatini aylanib chiqib,
+        // qaysi biri tizimda BOR ekanini aniq bilib olardi.
+        // Endi javob har doim bir xil: mavjud bo'lsa kod yuboriladi, bo'lmasa
+        // ham xuddi shunday "yuborildi" javobi qaytadi.
+        Optional<User> maybeUser = userRepository.findByIdentifier(request.getIdentifier());
 
-        String recipient = request.getVerificationType().name().equals("SMS")
-                ? user.getPhoneNumber()
-                : user.getEmail();
+        if (maybeUser.isPresent()) {
+            User user = maybeUser.get();
+            String recipient = request.getVerificationType().name().equals("SMS")
+                    ? user.getPhoneNumber()
+                    : user.getEmail();
 
-        if (recipient == null) {
-            throw new BusinessException("error.verification.method.unavailable");
+            if (recipient != null) {
+                return verificationService.sendVerificationCode(
+                        recipient,
+                        request.getVerificationType(),
+                        language
+                );
+            }
+            log.info("Forgot password: tanlangan kanal uchun manzil yo'q, userId={}", user.getId());
+        } else {
+            log.info("Forgot password: bunday foydalanuvchi yo'q — neytral javob qaytarildi");
         }
 
-        return verificationService.sendVerificationCode(
-                recipient,
-                request.getVerificationType(),
-                language
-        );
+        // Neytral (enumeration'ga qarshi) javob — haqiqiy holatni oshkor qilmaydi.
+        return VerificationSentResponse.builder()
+                .recipient(request.getIdentifier())
+                .maskedRecipient(maskIdentifierValue(request.getIdentifier()))
+                .expiresInMinutes(10)
+                .retryAfterSeconds(60)
+                .message(messageService.getMessage("success.verification.sent"))
+                .testMode(false)
+                .build();
     }
 
     /**
      * ✅ UPDATED: Reset password with language
      */
     public void resetPassword(ResetPasswordRequest request, AcceptLanguage language) {
-        log.info("Resetting password for: {} [lang={}]", request.getRecipient(), language);
+        log.info("Resetting password for: {} [lang={}]",
+                maskIdentifierValue(request.getRecipient()), language);
 
         boolean verified = verificationService.verifyCode(
                 request.getRecipient(),
@@ -622,6 +648,19 @@ public class AuthService {
         if (password == null || password.length() < 6) {
             throw new ValidationException("validation.user.password.size");
         }
+    }
+
+    /** Telefon/email qiymatini log va neytral javoblar uchun maskalaydi. */
+    private String maskIdentifierValue(String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            return "***";
+        }
+        if (identifier.contains("@")) {
+            String[] parts = identifier.split("@", 2);
+            String local = parts[0];
+            return local.substring(0, Math.min(2, local.length())) + "***@" + parts[1];
+        }
+        return identifier.substring(0, Math.min(6, identifier.length())) + "***";
     }
 
     private String maskIdentifier(RegisterRequest request) {

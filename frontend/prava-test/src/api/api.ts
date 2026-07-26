@@ -198,6 +198,24 @@ api.interceptors.response.use(
     // 401 bo'lsa va retry qilinmagan bo'lsa
     if (error.response?.status === 401 && !originalRequest._retry) {
       const refreshToken = Cookies.get(REFRESH_TOKEN_KEY);
+      const hadAuthHeader = Boolean(originalRequest.headers?.Authorization);
+
+      /*
+       * KRITIK TUZATISH — mehmon (guest) foydalanuvchini uydan haydash muammosi.
+       *
+       * Avval: token BUTUNLAY yo'q holatda ham (mehmon), 401 qaytgan har qanday
+       * so'rov `auth-logout` eventini yuborardi. AuthContext esa uni ushlab
+       * `navigate("/")` qilardi. Natijada `/try-exam` (bepul sinov imtihoni)
+       * sahifasida QuizContent'ning `/api/v1/app/saved-questions` so'rovi 401
+       * qaytishi bilan MEHMON bosh sahifaga uloqtirilardi — asosiy jalb qilish
+       * kanali buzilgan edi.
+       *
+       * Endi: agar so'rovda Authorization header bo'lmagan bo'lsa, bu "sessiya
+       * tugadi" emas, oddiy "ruxsat yo'q" holati — logout yuborilmaydi.
+       */
+      if (!hadAuthHeader) {
+        return Promise.reject(error);
+      }
 
       // Refresh token yo'q bo'lsa - to'g'ridan-to'g'ri logout
       if (!refreshToken) {

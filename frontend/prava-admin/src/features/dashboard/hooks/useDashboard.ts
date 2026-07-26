@@ -6,19 +6,22 @@ import type { DashboardStats, TopicStats, RecentExam } from "../types";
 export const useDashboardStats = () => {
   const { i18n } = useTranslation();
 
-  const { data, error, isLoading } = useSWR<{ success: boolean; data: DashboardStats }>(
+  const { data, error, isLoading, mutate } = useSWR<{ success: boolean; data: DashboardStats }>(
     ["/api/v1/admin/dashboard/stats", i18n.language],
     async ([url]) => {
       const res = await api.get(url as string);
       return res.data;
     },
-    { revalidateOnFocus: false }
+    // Global refreshInterval main.tsx'da 0 ga o'tkazildi; dashboard raqamlari
+    // "jonli" bo'lishi kerak, shuning uchun bu yerda aniq belgilanadi.
+    { revalidateOnFocus: false, refreshInterval: 60_000 }
   );
 
   return {
     stats: data?.data || null,
     isLoading,
     isError: !!error,
+    refresh: mutate,
   };
 };
 

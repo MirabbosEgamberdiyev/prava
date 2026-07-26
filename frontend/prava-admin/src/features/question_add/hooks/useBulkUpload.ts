@@ -40,7 +40,13 @@ export const useBulkUpload = () => {
     } catch (err: any) {
       notifications.show({
         title: t("common.error"),
-        message: err.message || t("questions.jsonSyntaxError"),
+        // Ilgari faqat err.message ishlatilardi: axios xatosida bu
+        // "Request failed with status code 400" bo'lib, backend tushuntirishi
+        // (masalan "topicId 42 topilmadi") yo'qolardi.
+        message:
+          err?.response?.data?.message ||
+          err?.message ||
+          t("questions.jsonSyntaxError"),
         color: "red",
       });
     } finally {

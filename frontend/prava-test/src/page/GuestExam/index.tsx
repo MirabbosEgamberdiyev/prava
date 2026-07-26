@@ -31,6 +31,7 @@ import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 import { QuizContent } from "../../components/quiz/QuizContent";
 import { QuizNav } from "../../components/quiz/QuizNav";
+import api from "../../api/api";
 import type { Question, AnswersMap } from "../../types";
 
 const GUEST_EXAM_KEY = "guestExamCount";
@@ -61,20 +62,27 @@ const GuestExamPage = () => {
       return;
     }
 
-    fetch("/api/v1/public/guest-exam")
+    /*
+     * BUG FIX: avval xom `fetch("/api/v1/public/guest-exam")` ishlatilardi va
+     * `ENV.API_BASE_URL` ni butunlay chetlab o'tardi. API boshqa originda
+     * joylashtirilsa (masalan staging yoki alohida API domeni), bepul sinov
+     * imtihoni — asosiy jalb qilish sahifasi — ishlamay qolardi.
+     * Endi umumiy `api` instansi ishlatiladi (baseURL + Accept-Language +
+     * yagona xato ishlov berish).
+     */
+    api
+      .get("/api/v1/public/guest-exam")
       .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        const exam = data?.data;
+        const exam = res.data?.data;
         if (!exam?.questions?.length) throw new Error("No questions");
         setQuestions(exam.questions);
         setDurationMinutes(exam.durationMinutes ?? 20);
+        // Limit hisoblagichi FAQAT imtihon muvaffaqiyatli yuklangandan keyin
+        // oshiriladi (avval ham shunday edi) — tarmoq xatosi foydalanuvchining
+        // yagona bepul urinishini yeb qo'ymasin.
         localStorage.setItem(GUEST_EXAM_KEY, String(count + 1));
       })
-      .catch((err) => {
-        console.error("Guest exam load failed:", err);
+      .catch(() => {
         setError(t("exam.loadError"));
       })
       .finally(() => setLoading(false));

@@ -1,3 +1,4 @@
+import type { KeyboardEvent, ReactNode } from "react";
 import {
   Modal,
   SimpleGrid,
@@ -18,11 +19,79 @@ interface ExamModeModalProps {
   onSelect: (mode: ExamMode) => void;
 }
 
+/**
+ * A11Y TUZATISH: avval bu kartalar oddiy `Paper onClick` edi — ya'ni ular
+ * fokus olmasdi, Tab bilan yetib bo'lmasdi, Enter/Space ishlamasdi va
+ * screen reader ularni "tugma" deb e'lon qilmasdi. Imtihon boshlash —
+ * ilovaning asosiy oqimi, shuning uchun u faqat sichqoncha bilan
+ * ishlaydigan bo'lib qolgan edi.
+ */
+function ModeCard({
+  color,
+  icon,
+  title,
+  description,
+  computedColorScheme,
+  onSelect,
+}: {
+  color: "green" | "red";
+  icon: ReactNode;
+  title: string;
+  description: string;
+  computedColorScheme: string;
+  onSelect: () => void;
+}) {
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+      event.preventDefault();
+      onSelect();
+    }
+  };
+
+  return (
+    <Paper
+      role="button"
+      tabIndex={0}
+      aria-label={`${title} — ${description}`}
+      p="lg"
+      radius="md"
+      withBorder
+      ta="center"
+      style={{
+        cursor: "pointer",
+        borderColor: `var(--mantine-color-${color}-5)`,
+        backgroundColor:
+          computedColorScheme === "light"
+            ? `var(--mantine-color-${color}-0)`
+            : `var(--mantine-color-${color}-9)`,
+        transition: "transform 0.15s ease",
+      }}
+      onClick={onSelect}
+      onKeyDown={handleKeyDown}
+    >
+      <Stack align="center" gap="sm">
+        <ThemeIcon size="xl" radius="xl" color={color} variant="light">
+          {icon}
+        </ThemeIcon>
+        <Text fw={600}>{title}</Text>
+        <Text size="xs" c="dimmed">
+          {description}
+        </Text>
+      </Stack>
+    </Paper>
+  );
+}
+
 export function ExamModeModal({ opened, onClose, onSelect }: ExamModeModalProps) {
   const { t } = useTranslation();
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
   });
+
+  const handleSelect = (mode: ExamMode) => {
+    onSelect(mode);
+    onClose();
+  };
 
   return (
     <Modal
@@ -32,66 +101,23 @@ export function ExamModeModal({ opened, onClose, onSelect }: ExamModeModalProps)
       centered
       size="md"
     >
-      <SimpleGrid cols={2} spacing="md">
-        <Paper
-          p="lg"
-          radius="md"
-          withBorder
-          ta="center"
-          style={{
-            cursor: "pointer",
-            borderColor: "var(--mantine-color-green-5)",
-            backgroundColor:
-              computedColorScheme === "light"
-                ? "var(--mantine-color-green-0)"
-                : "var(--mantine-color-green-9)",
-            transition: "transform 0.15s ease",
-          }}
-          onClick={() => {
-            onSelect("visible");
-            onClose();
-          }}
-        >
-          <Stack align="center" gap="sm">
-            <ThemeIcon size="xl" radius="xl" color="green" variant="light">
-              <IconEye size={28} />
-            </ThemeIcon>
-            <Text fw={600}>{t("examMode.practice")}</Text>
-            <Text size="xs" c="dimmed">
-              {t("examMode.practiceDesc")}
-            </Text>
-          </Stack>
-        </Paper>
-
-        <Paper
-          p="lg"
-          radius="md"
-          withBorder
-          ta="center"
-          style={{
-            cursor: "pointer",
-            borderColor: "var(--mantine-color-red-5)",
-            backgroundColor:
-              computedColorScheme === "light"
-                ? "var(--mantine-color-red-0)"
-                : "var(--mantine-color-red-9)",
-            transition: "transform 0.15s ease",
-          }}
-          onClick={() => {
-            onSelect("secure");
-            onClose();
-          }}
-        >
-          <Stack align="center" gap="sm">
-            <ThemeIcon size="xl" radius="xl" color="red" variant="light">
-              <IconLock size={28} />
-            </ThemeIcon>
-            <Text fw={600}>{t("examMode.realExam")}</Text>
-            <Text size="xs" c="dimmed">
-              {t("examMode.realExamDesc")}
-            </Text>
-          </Stack>
-        </Paper>
+      <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="md">
+        <ModeCard
+          color="green"
+          icon={<IconEye size={28} />}
+          title={t("examMode.practice")}
+          description={t("examMode.practiceDesc")}
+          computedColorScheme={computedColorScheme}
+          onSelect={() => handleSelect("visible")}
+        />
+        <ModeCard
+          color="red"
+          icon={<IconLock size={28} />}
+          title={t("examMode.realExam")}
+          description={t("examMode.realExamDesc")}
+          computedColorScheme={computedColorScheme}
+          onSelect={() => handleSelect("secure")}
+        />
       </SimpleGrid>
     </Modal>
   );

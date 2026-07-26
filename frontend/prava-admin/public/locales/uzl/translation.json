@@ -565,7 +565,9 @@
     "globalDeviceLimit": "Qurilma limiti",
     "setGlobalLimit": "Global limitni saqlash",
     "globalLimitSuccess": "Global qurilma limiti yangilandi",
-    "globalLimitError": "Global limitni yangilashda xatolik"
+    "globalLimitError": "Global limitni yangilashda xatolik",
+    "globalLimitConfirmTitle": "Global limitni o'zgartirish",
+    "globalLimitConfirm": "Qurilma limiti barcha foydalanuvchilar uchun {{count}} taga o'zgartiriladi. Davom etasizmi?"
   },
   "system": {
     "title": "Tizim Monitoring",
@@ -861,6 +863,68 @@
     "validation": {
       "nameRequired": "Nom majburiy",
       "emailInvalid": "Email formati noto'g'ri"
+    }
+  },
+  "agreements": {
+    "title": "Shartnoma eslatmalari",
+    "subtitle": "O'quv markazlari bilan tuzilgan shartnomalarni shu yerda qayd qilib boring. Bo'lim faqat ma'lumot uchun — aktivatsiya kodlari yoki litsenziyalarga ta'sir qilmaydi.",
+    "newBtn": "Yangi shartnoma",
+    "empty": "Hozircha shartnomalar yo'q. Boshlash uchun “Yangi shartnoma” tugmasini bosing.",
+    "currency": "so'm",
+    "daysRemaining": "{{count}} kun qoldi",
+    "table": {
+      "center": "O'quv markaz",
+      "computers": "Kompyuter",
+      "startDate": "Boshlanish",
+      "endDate": "Tugash",
+      "status": "Holat",
+      "amount": "Summa",
+      "note": "Izoh",
+      "actions": "Amallar"
+    },
+    "status": {
+      "active": "Faol",
+      "planned": "Rejada",
+      "expired": "Tugagan",
+      "cancelled": "Bekor qilingan"
+    },
+    "form": {
+      "createTitle": "Yangi shartnoma",
+      "editTitle": "Shartnomani tahrirlash",
+      "center": "O'quv markaz",
+      "centerPlaceholder": "Markazni tanlang",
+      "centerNotFound": "Markaz topilmadi",
+      "computerCount": "Kompyuterlar soni",
+      "computerCountPlaceholder": "Masalan, 50",
+      "amount": "Shartnoma summasi (so'm)",
+      "amountPlaceholder": "Bo'sh qoldirish mumkin",
+      "startDate": "Boshlanish sanasi",
+      "startDatePlaceholder": "Bugun",
+      "endDate": "Tugash sanasi",
+      "endDatePlaceholder": "Sanani tanlang",
+      "status": "Holat",
+      "note": "Izoh",
+      "notePlaceholder": "Masalan: Toshkent avtomaktabi, 2-bosqich, oldindan to'lov...",
+      "submitCreate": "Yaratish"
+    },
+    "validation": {
+      "requiredTitle": "To'ldirilmagan maydonlar",
+      "requiredMsg": "O'quv markaz, kompyuterlar soni va tugash sanasi majburiy"
+    },
+    "delete": {
+      "title": "Shartnomani o'chirish",
+      "confirm": "“{{name}}” shartnomasini o'chirmoqchimisiz? Bu amalni orqaga qaytarib bo'lmaydi."
+    },
+    "notifications": {
+      "createSuccess": "Shartnoma yaratildi",
+      "createSuccessMsg": "Yangi shartnoma qo'shildi",
+      "updateSuccess": "Saqlandi",
+      "updateSuccessMsg": "Shartnoma yangilandi",
+      "saveError": "Shartnomani saqlab bo'lmadi",
+      "deleteSuccess": "O'chirildi",
+      "deleteSuccessMsg": "Shartnoma o'chirildi",
+      "deleteError": "Shartnomani o'chirib bo'lmadi",
+      "loadError": "Shartnomalar ro'yxatini yuklab bo'lmadi"
     }
   },
   "home": {

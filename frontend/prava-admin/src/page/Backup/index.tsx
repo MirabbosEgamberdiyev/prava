@@ -20,7 +20,7 @@ const Backup_Page = () => {
           <ThemeIcon size="lg" radius="md" variant="light" color="blue">
             <IconDatabaseExport size={20} />
           </ThemeIcon>
-          <Title order={3}>{t("backup.title")}</Title>
+          <Title order={1} fz="h3">{t("backup.title")}</Title>
         </Group>
         <Badge color="red" variant="light" size="lg">{t("backup.superAdmin")}</Badge>
       </Group>

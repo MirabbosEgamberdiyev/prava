@@ -17,14 +17,20 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconDeviceFloppy, IconLock, IconUser, IconDevices } from "@tabler/icons-react";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/auth/AuthContext";
 import api from "../../services/api";
 
+/** Backend xabari (bo'lsa) — `any` cast'siz. */
+function errMessage(e: unknown): string | undefined {
+  return (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+}
+
 const Settings_Page = () => {
-  const { t } = useTranslation();
-  const { user } = useAuth();
+  const { t, i18n } = useTranslation();
+  const { user, updateUser } = useAuth();
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
   const [profileLoading, setProfileLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -38,6 +44,19 @@ const Settings_Page = () => {
       phoneNumber: user?.phoneNumber || "",
       email: user?.email || "",
       preferredLanguage: user?.preferredLanguage || "UZL",
+    },
+    // Ilgari validate umuman yo'q edi: bo'sh ism yoki "abc" kabi email ham
+    // serverga ketardi va faqat 400 xatosi qaytgach bilinardi.
+    validate: {
+      firstName: (v) => (!v?.trim() ? t("validation.nameRequired") : null),
+      email: (v) =>
+        !v?.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+          ? null
+          : t("validation.emailFormat"),
+      phoneNumber: (v) =>
+        !v?.trim() || /^\+?[0-9\s()-]{7,20}$/.test(v.trim())
+          ? null
+          : t("validation.phoneFormat"),
     },
   });
 
@@ -56,24 +75,40 @@ const Settings_Page = () => {
   });
 
   const handleProfileSubmit = async (values: typeof profileForm.values) => {
+    if (!user?.id || profileLoading) return;
     setProfileLoading(true);
     try {
-      await api.put(`/api/v1/admin/users/${user?.id}`, {
+      await api.put(`/api/v1/admin/users/${user.id}`, {
         firstName: values.firstName,
         lastName: values.lastName,
         phoneNumber: values.phoneNumber || undefined,
         email: values.email || undefined,
         preferredLanguage: values.preferredLanguage,
       });
+
+      // Sessiyadagi user'ni ham yangilaymiz — aks holda header/avatar
+      // qayta login qilinmaguncha eski ma'lumotni ko'rsatib turadi.
+      updateUser({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        fullName: `${values.firstName} ${values.lastName}`.trim(),
+        phoneNumber: values.phoneNumber || null,
+        email: values.email || null,
+        preferredLanguage: values.preferredLanguage,
+      });
+
+      // Tanlangan til darhol qo'llansin (backend "UZL", i18n "uzl" kutadi)
+      i18n.changeLanguage(String(values.preferredLanguage).toLowerCase());
+
       notifications.show({
-        title: t("settings.profileSuccess"),
+        title: t("common.success"),
         message: t("settings.profileSuccess"),
         color: "green",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       notifications.show({
         title: t("common.error"),
-        message: error.response?.data?.message || t("settings.profileError"),
+        message: errMessage(error) || t("settings.profileError"),
         color: "red",
       });
     } finally {
@@ -82,6 +117,7 @@ const Settings_Page = () => {
   };
 
   const handlePasswordSubmit = async (values: typeof passwordForm.values) => {
+    if (passwordLoading) return; // takroriy yuborishdan himoya
     setPasswordLoading(true);
     try {
       await api.post("/api/v1/auth/change-password", {
@@ -94,10 +130,10 @@ const Settings_Page = () => {
         color: "green",
       });
       passwordForm.reset();
-    } catch (error: any) {
+    } catch (error: unknown) {
       notifications.show({
         title: t("common.error"),
-        message: error.response?.data?.message || t("settings.passwordError"),
+        message: errMessage(error) || t("settings.passwordError"),
         color: "red",
       });
     } finally {
@@ -105,29 +141,49 @@ const Settings_Page = () => {
     }
   };
 
-  const handleSetGlobalDeviceLimit = async () => {
-    setGlobalDeviceLoading(true);
-    try {
-      await api.post(`/api/v2/admin/statistics/device-limit/global?maxDevices=${globalDeviceLimit}`);
-      notifications.show({
-        title: t("common.success"),
-        message: t("settings.globalLimitSuccess"),
-        color: "green",
-      });
-    } catch {
-      notifications.show({
-        title: t("common.error"),
-        message: t("settings.globalLimitError"),
-        color: "red",
-      });
-    } finally {
-      setGlobalDeviceLoading(false);
-    }
+  /**
+   * Bu amal BARCHA foydalanuvchilarning qurilma limitini bir zumda qayta
+   * yozadi — ilgari hech qanday tasdiqsiz, bitta bosishda bajarilardi.
+   */
+  const handleSetGlobalDeviceLimit = () => {
+    if (globalDeviceLoading) return; // takroriy yuborishdan himoya
+
+    modals.openConfirmModal({
+      title: t("settings.globalLimitConfirmTitle"),
+      children: (
+        <Text size="sm">
+          {t("settings.globalLimitConfirm", { count: globalDeviceLimit })}
+        </Text>
+      ),
+      labels: { confirm: t("common.confirm"), cancel: t("common.cancel") },
+      confirmProps: { color: "orange" },
+      onConfirm: async () => {
+        setGlobalDeviceLoading(true);
+        try {
+          await api.post(
+            `/api/v2/admin/statistics/device-limit/global?maxDevices=${globalDeviceLimit}`
+          );
+          notifications.show({
+            title: t("common.success"),
+            message: t("settings.globalLimitSuccess"),
+            color: "green",
+          });
+        } catch {
+          notifications.show({
+            title: t("common.error"),
+            message: t("settings.globalLimitError"),
+            color: "red",
+          });
+        } finally {
+          setGlobalDeviceLoading(false);
+        }
+      },
+    });
   };
 
   return (
     <Stack gap="md">
-      <Title order={3}>{t("settings.title")}</Title>
+      <Title order={1} fz="h3">{t("settings.title")}</Title>
 
       <Grid>
         {/* Profil ma'lumotlari */}

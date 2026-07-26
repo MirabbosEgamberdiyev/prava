@@ -6,6 +6,7 @@ import {
   Container,
   Flex,
   Grid,
+  Group,
   Loader,
   Paper,
   RingProgress,
@@ -32,7 +33,12 @@ export function ExamResultPage() {
     getInitialValueInEffect: true,
   });
 
-  const { data: resultResponse, isLoading } = useSWR<ExamResultResponse>(
+  const {
+    data: resultResponse,
+    isLoading,
+    error,
+    mutate,
+  } = useSWR<ExamResultResponse>(
     sessionId ? `/api/v2/exams/${sessionId}/result` : null,
   );
 
@@ -44,6 +50,37 @@ export function ExamResultPage() {
         <Stack align="center">
           <Loader size="lg" />
           <Text c="dimmed">{t("common.loading")}</Text>
+        </Stack>
+      </Center>
+    );
+  }
+
+  /*
+   * BUG FIX: avval tarmoq/server xatosi ham "natija topilmadi" deb
+   * ko'rsatilardi va qayta urinish tugmasi yo'q edi — foydalanuvchi
+   * endigina yakunlagan imtihoni natijasini butunlay yo'qotgandek his
+   * qilardi. Endi xato alohida holat va uni qayta yuklash mumkin.
+   */
+  if (error) {
+    return (
+      <Center h="80vh">
+        <Stack align="center">
+          <Title order={3} c="red">
+            {t("common.errorOccurred")}
+          </Title>
+          <Text c="dimmed" size="sm">
+            {t("common.loadError")}
+          </Text>
+          <Group>
+            <Button
+              variant="outline"
+              leftSection={<IconArrowLeft size={18} />}
+              onClick={() => navigate("/me")}
+            >
+              {t("examResult.backToDashboard")}
+            </Button>
+            <Button onClick={() => mutate()}>{t("common.retry")}</Button>
+          </Group>
         </Stack>
       </Center>
     );
@@ -83,7 +120,12 @@ export function ExamResultPage() {
 
   return (
     <Box bg={computedColorScheme === "light" ? "gray.0" : "dark.8"} mih="100vh">
-      <Container size="xl" p={0}>
+      {/*
+        Mobil ko'rinishda pastdagi "Orqaga" tugmasi `position: fixed` —
+        avval kontent tagida qo'shimcha joy yo'q edi va tugma oxirgi
+        javob kartasini yopib qo'yardi.
+      */}
+      <Container size="xl" p={0} pb={{ base: 70, sm: 0 }}>
         {/* Header: Score Ring + Pass/Fail */}
         <Paper p="xl" radius="md" withBorder shadow="sm" mb="xl">
           <Flex

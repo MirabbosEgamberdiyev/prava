@@ -1,33 +1,42 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /**
- * Hook to monitor online/offline status.
- * Returns { isOnline, wasOffline } for showing reconnection notifications.
+ * Online/offline holatini kuzatadi.
+ * `wasOffline` — aloqa yangi tiklangandan keyin 5 soniya davomida `true`.
  */
 export function useConnectionMonitor() {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
   const [wasOffline, setWasOffline] = useState(false);
-
-  const handleOnline = useCallback(() => {
-    setIsOnline(true);
-    if (!navigator.onLine) return;
-    setWasOffline(true);
-    // Reset wasOffline after 5 seconds
-    setTimeout(() => setWasOffline(false), 5000);
-  }, []);
-
-  const handleOffline = useCallback(() => {
-    setIsOnline(false);
-  }, []);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      setWasOffline(true);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setWasOffline(false), 5000);
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      setWasOffline(false);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
+
+    // Mount paytida holat o'zgargan bo'lishi mumkin (event o'tkazib yuborilgan)
+    setIsOnline(navigator.onLine);
+
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      // BUG FIX: avval `setTimeout` tozalanmasdi — unmount'dan keyin
+      // setState chaqirilardi (leak).
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [handleOnline, handleOffline]);
+  }, []);
 
   return { isOnline, wasOffline };
 }

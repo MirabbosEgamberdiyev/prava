@@ -204,15 +204,18 @@ export function GenerateModal({
               error={form.errors.computerId}
             />
 
-            {/* Show machineId of selected computer as readonly info */}
+            {/* Show machineId of selected computer as readonly info.
+                Ilgari fon `theme.colors.gray[0]` edi — u rang sxemasiga
+                bog'lanmagan, shuning uchun qorong'i rejimda (ilovaning
+                standart rejimi) oq quti ustida oq matn chiqardi. */}
             {selectedComputer && (
               <Box
                 p="xs"
-                style={(theme) => ({
-                  borderRadius: theme.radius.sm,
-                  background: theme.colors.gray[0],
-                  border: `1px solid ${theme.colors.gray[3]}`,
-                })}
+                style={{
+                  borderRadius: "var(--mantine-radius-sm)",
+                  background: "var(--mantine-color-default)",
+                  border: "1px solid var(--mantine-color-default-border)",
+                }}
               >
                 <Text size="xs" c="dimmed" mb={2}>{t("license.generate.machineIdInfo")}</Text>
                 <Code fz="xs">{selectedComputer.machineId}</Code>

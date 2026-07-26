@@ -410,7 +410,7 @@ export default function Applications_Page() {
           <ThemeIcon size="lg" radius="md" variant="gradient" gradient={{ from: "blue", to: "cyan", deg: 45 }}>
             <IconApps size={20}/>
           </ThemeIcon>
-          <Title order={3}>{t("nav.applications")}</Title>
+          <Title order={1} fz="h3">{t("nav.applications")}</Title>
         </Group>
         <Group>
           <ActionIcon variant="default" onClick={load} title={t("common.refresh")}>

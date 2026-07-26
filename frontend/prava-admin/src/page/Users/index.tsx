@@ -28,6 +28,8 @@ import {
 import type { User } from "../../features/users";
 import { useAuth } from "../../hooks/auth/AuthContext";
 
+const PAGE_SIZE = 20;
+
 const Users_Page = () => {
   const { t } = useTranslation();
   const { user: currentUser } = useAuth();
@@ -45,7 +47,7 @@ const Users_Page = () => {
 
   const { users, pagination, isLoading, isError } = useUsers(
     page,
-    20,
+    PAGE_SIZE,
     search || undefined,
     roleFilter || undefined,
     isActive
@@ -130,7 +132,7 @@ const Users_Page = () => {
   return (
     <Stack gap="md">
       <Group justify="space-between">
-        <Title order={3}>{t("users.title")}</Title>
+        <Title order={1} fz="h3">{t("users.title")}</Title>
         {isSuperAdmin && (
           <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>
             {t("users.newUser")}
@@ -197,6 +199,8 @@ const Users_Page = () => {
         <>
           <UserTable
             users={users}
+            page={page}
+            pageSize={PAGE_SIZE}
             onView={handleView}
             onEdit={handleEdit}
             onDelete={handleDeleteClick}

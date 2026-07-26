@@ -14,6 +14,8 @@ import { useTranslation } from "react-i18next";
 import api from "../../../api/api";
 import { QuizNav, type QuizNavHandle } from "../../../components/quiz/QuizNav";
 import { QuizContent } from "../../../components/quiz/QuizContent";
+import { useAutoSave, restoreAnswers } from "../../../hooks/useAutoSave";
+import { OfflineBanner } from "../../../components/common/OfflineBanner";
 import type { MarathonExamData, AnswersMap } from "../../../types";
 import type { ExamMode } from "../../../components/quiz/ExamModeModal";
 
@@ -65,6 +67,9 @@ const Marathon_ExamPage = ({
       if (response.data) {
         setExamData(response.data);
         sessionIdRef.current = response.data.data.sessionId;
+        // Uzilib qolgan sessiya javoblarini tiklash
+        const restored = restoreAnswers(response.data.data.sessionId);
+        if (restored) setAnswers(restored);
       }
     } catch (err: unknown) {
       const errorMessage =
@@ -86,15 +91,20 @@ const Marathon_ExamPage = ({
     startMarathon();
   }, [startMarathon]);
 
-  useEffect(() => {
-    return () => {
-      if (!submittedRef.current && sessionIdRef.current) {
-        navigator.sendBeacon(
-          `/api/v2/exams/${sessionIdRef.current}/abandon`,
-        );
-      }
-    };
-  }, []);
+  /*
+   * OLIB TASHLANDI — unmount'dagi `navigator.sendBeacon(.../abandon)`.
+   * sendBeacon doim POST yuboradi (endpoint DELETE) va Authorization header
+   * qo'sha olmaydi — hech qachon ishlamagan. Ishlaganda ham tasodifiy
+   * "orqaga" bosish imtihonni bekor qilardi.
+   */
+
+  // Javoblarni avtomatik saqlash (localStorage + server).
+  useAutoSave({
+    sessionId: examData?.data.sessionId ?? null,
+    answers,
+    questions: examData?.data.questions ?? [],
+    enabled: !!examData && !submittedRef.current,
+  });
 
   const handleAnswerSelect = (
     questionIndex: number,
@@ -181,6 +191,7 @@ const Marathon_ExamPage = ({
         isSecureMode={isSecureMode}
         onSubmitSuccess={handleSubmitSuccess}
       />
+      <OfflineBanner />
       <QuizContent
         questions={examData.data.questions}
         onAnswerSelect={handleAnswerSelect}

@@ -1,19 +1,23 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { lazy, Suspense } from "react";
-import { Center, Loader } from "@mantine/core";
+import { lazy } from "react";
 import App_Layout from "./layout/App_Layout";
-import Home_Page from "./page/Home";
 import { AuthProvider } from "./hooks/auth/AuthContext";
 import Login_Page from "./page/Auth/login";
 import ProtectedRoute from "./hooks/auth/ProtectedRoute";
 import RoleGuard from "./hooks/auth/RoleGuard";
-import Users_Page from "./page/Users";
-import Question_Page from "./page/Questions/Question_Page";
-import Topic_Page from "./page/Topics";
-import Packages_Page from "./page/Packages";
-import Tickets_Page from "./page/Tickets";
 
-// Lazy loaded sahifalar
+// Lazy loaded sahifalar.
+// Ilgari Home/Users/Questions/Topics/Packages/Tickets statik import qilingan edi
+// va entry chunk ichiga tushardi — login sahifasini ochgan foydalanuvchi ham
+// butun admin panelni yuklab olardi. Endi hammasi route bo'yicha bo'linadi;
+// Suspense fallback App_Layout ichida markazlashtirilgan.
+const Home_Page = lazy(() => import("./page/Home"));
+const Users_Page = lazy(() => import("./page/Users"));
+const Question_Page = lazy(() => import("./page/Questions/Question_Page"));
+const Topic_Page = lazy(() => import("./page/Topics"));
+const Packages_Page = lazy(() => import("./page/Packages"));
+const Tickets_Page = lazy(() => import("./page/Tickets"));
+
 const Applications_Page = lazy(() => import("./page/Applications"));
 const License_Page = lazy(() => import("./page/License"));
 const LearningCenters_Page = lazy(() => import("./page/LearningCenters"));
@@ -30,12 +34,6 @@ const Add_Package_Page = lazy(() => import("./page/Packages/Add_Package_Page/Add
 const Edit_Package_Page = lazy(() => import("./page/Packages/Edit_Package_Page/Edit_Package_Page"));
 const Add_Ticket_Page = lazy(() => import("./page/Tickets/Add_Ticket_Page/Add_Ticket_Page"));
 const Edit_Ticket_Page = lazy(() => import("./page/Tickets/Edit_Ticket_Page/Edit_Ticket_Page"));
-
-const LazyFallback = (
-  <Center h={400}>
-    <Loader type="bars" />
-  </Center>
-);
 
 function App() {
   return (
@@ -71,7 +69,7 @@ function App() {
                   path="/questions/add"
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}><Add_Question_Page /></Suspense>
+                      <Add_Question_Page />
                     </RoleGuard>
                   }
                 />
@@ -79,7 +77,7 @@ function App() {
                   path="/questions/edit/:id"
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}><Edit_Question_Page /></Suspense>
+                      <Edit_Question_Page />
                     </RoleGuard>
                   }
                 />
@@ -97,7 +95,7 @@ function App() {
                   path="/topics/add"
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}><Add_Topic_Page /></Suspense>
+                      <Add_Topic_Page />
                     </RoleGuard>
                   }
                 />
@@ -115,7 +113,7 @@ function App() {
                   path="/packages/add"
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}><Add_Package_Page /></Suspense>
+                      <Add_Package_Page />
                     </RoleGuard>
                   }
                 />
@@ -123,7 +121,7 @@ function App() {
                   path="/packages/edit/:id"
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}><Edit_Package_Page /></Suspense>
+                      <Edit_Package_Page />
                     </RoleGuard>
                   }
                 />
@@ -141,7 +139,7 @@ function App() {
                   path="/tickets/add"
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}><Add_Ticket_Page /></Suspense>
+                      <Add_Ticket_Page />
                     </RoleGuard>
                   }
                 />
@@ -149,7 +147,7 @@ function App() {
                   path="/tickets/edit/:id"
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}><Edit_Ticket_Page /></Suspense>
+                      <Edit_Ticket_Page />
                     </RoleGuard>
                   }
                 />
@@ -159,9 +157,9 @@ function App() {
                   path="/applications"
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}>
+                      
                         <Applications_Page />
-                      </Suspense>
+                      
                     </RoleGuard>
                   }
                 />
@@ -170,9 +168,9 @@ function App() {
                 <Route
                   path="/statistics"
                   element={
-                    <Suspense fallback={LazyFallback}>
+                    
                       <Statistics_Page />
-                    </Suspense>
+                    
                   }
                 />
 
@@ -180,9 +178,9 @@ function App() {
                 <Route
                   path="/settings"
                   element={
-                    <Suspense fallback={LazyFallback}>
+                    
                       <Settings_Page />
-                    </Suspense>
+                    
                   }
                 />
 
@@ -191,9 +189,9 @@ function App() {
                   path="/files"
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}>
+                      
                         <Files_Page />
-                      </Suspense>
+                      
                     </RoleGuard>
                   }
                 />
@@ -203,9 +201,9 @@ function App() {
                   path="/learning-centers"
                   element={
                     <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}>
+                      
                         <LearningCenters_Page />
-                      </Suspense>
+                      
                     </RoleGuard>
                   }
                 />
@@ -215,9 +213,9 @@ function App() {
                   path="/agreements"
                   element={
                     <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}>
+                      
                         <Agreements_Page />
-                      </Suspense>
+                      
                     </RoleGuard>
                   }
                 />
@@ -227,9 +225,9 @@ function App() {
                   path="/license"
                   element={
                     <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}>
+                      
                         <License_Page />
-                      </Suspense>
+                      
                     </RoleGuard>
                   }
                 />
@@ -239,9 +237,9 @@ function App() {
                   path="/backup"
                   element={
                     <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}>
+                      
                         <Backup_Page />
-                      </Suspense>
+                      
                     </RoleGuard>
                   }
                 />
@@ -251,9 +249,9 @@ function App() {
                   path="/system"
                   element={
                     <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
-                      <Suspense fallback={LazyFallback}>
+                      
                         <SystemMonitor_Page />
-                      </Suspense>
+                      
                     </RoleGuard>
                   }
                 />

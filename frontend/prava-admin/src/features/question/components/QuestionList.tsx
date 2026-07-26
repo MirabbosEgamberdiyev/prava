@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
@@ -56,12 +56,26 @@ export const QuestionList = ({ searchQuery, topicId }: QuestionListProps) => {
     null,
   );
 
+  // Filtr o'zgarganda sahifani 1 ga qaytarish. Busiz 5-sahifada turib qidiruv
+  // kiritilsa, natijasi 1 sahifadan iborat bo'lsa ham "Ma'lumot topilmadi"
+  // ko'rinardi (chegaradan tashqari sahifa so'ralardi).
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, topicId]);
+
   const { questions, pagination, isLoading, isError, mutate } = useQuestions(
     activePage,
     20,
     searchQuery,
     topicId,
   );
+
+  // Ma'lumot o'chirilib sahifalar soni kamaysa — oxirgi mavjud sahifaga tushamiz
+  useEffect(() => {
+    if (pagination.totalPages > 0 && activePage > pagination.totalPages) {
+      setPage(pagination.totalPages);
+    }
+  }, [pagination.totalPages, activePage]);
 
   const handleView = (question: Question) => {
     setSelectedQuestionId(question.id);
@@ -118,7 +132,8 @@ export const QuestionList = ({ searchQuery, topicId }: QuestionListProps) => {
                     h={160}
                     fallbackSrc="https://placehold.co/400x300?text=No+image"
                     fit="contain"
-                    bg="gray.0"
+                    // gray.0 dark rejimda oq quti hosil qilardi
+                    bg="var(--mantine-color-default-hover)"
                   />
                 </Grid.Col>
               )}
@@ -257,14 +272,17 @@ export const QuestionList = ({ searchQuery, topicId }: QuestionListProps) => {
       </Stack>
 
       {pagination.totalPages > 1 && (
-        <Pagination
-          total={pagination.totalPages}
-          value={activePage}
-          onChange={setPage}
-          withEdges
-          siblings={8}
-          mt="lg"
-        />
+        // siblings={8} ~19 ta tugma chizardi va telefonda gorizontal scroll
+        // hosil qilardi. siblings={1} + withEdges yetarli va responsive.
+        <Center mt="lg">
+          <Pagination
+            total={pagination.totalPages}
+            value={activePage}
+            onChange={setPage}
+            withEdges
+            siblings={1}
+          />
+        </Center>
       )}
 
       <QuestionViewModal

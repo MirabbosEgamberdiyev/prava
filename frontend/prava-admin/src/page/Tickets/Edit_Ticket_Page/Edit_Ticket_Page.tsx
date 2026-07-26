@@ -71,7 +71,7 @@ function Edit_Ticket_Page() {
       </Breadcrumbs>
 
       <Paper p="md" withBorder>
-        <Title order={2} mb="md">
+        <Title order={1} fz="h3" mb="md">
           {t("tickets.editTicket")}
         </Title>
 

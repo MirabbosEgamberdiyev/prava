@@ -29,6 +29,7 @@ import {
   IconArrowLeft,
 } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
+import { modals } from "@mantine/modals";
 import { useTranslation } from "react-i18next";
 import { useQuestionDetail } from "../../../features/question/hooks/useQuestionDetail";
 import { useTopicSelect } from "../../../features/question_add/hooks/useTopicSelect";
@@ -43,6 +44,7 @@ const Edit_Question_Page = () => {
   const { question, isLoading } = useQuestionDetail(questionId);
   const { topicOptions, isLoading: isTopicsLoading } = useTopicSelect();
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const form = useForm({
     initialValues: {
@@ -101,9 +103,17 @@ const Edit_Question_Page = () => {
 
   const uploadFile = async (file: File | null) => {
     if (!file) return;
+    if (
+      !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
+      file.size > 5 * 1024 * 1024
+    ) {
+      notifications.show({ title: t("common.error"), message: t("questions.imageUploadError"), color: "red" });
+      return;
+    }
     const formData = new FormData();
     formData.append("file", file);
     formData.append("folder", "questions");
+    setUploading(true);
     try {
       const res = await api.post("/api/v1/files/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -115,23 +125,47 @@ const Edit_Question_Page = () => {
       }
     } catch {
       notifications.show({ title: t("common.error"), message: t("questions.imageUploadError"), color: "red" });
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleSubmit = async (values: typeof form.values) => {
-    if (!questionId) return;
-    setSubmitting(true);
-    try {
-      const options = values.options
-        .filter((opt) => opt.textUzl?.trim())
-        .map((opt, idx) => ({
+    if (!questionId || submitting) return;
+
+    // MUHIM: bo'sh variantlar olib tashlanganda indekslar siljiydi —
+    // correctAnswerIndex ni yangi indeksga qayta xaritalash shart, aks holda
+    // noto'g'ri variant "to'g'ri javob" bo'lib saqlanadi.
+    const keptOriginalIndexes: number[] = [];
+    const options = values.options
+      .map((opt, originalIdx) => ({ opt, originalIdx }))
+      .filter(({ opt }) => opt.textUzl?.trim())
+      .map(({ opt, originalIdx }, idx) => {
+        keptOriginalIndexes.push(originalIdx);
+        return {
           optionIndex: idx,
           textUzl: opt.textUzl || null,
           textUzc: opt.textUzc || null,
           textEn: opt.textEn || null,
           textRu: opt.textRu || null,
-        }));
+        };
+      });
 
+    const remappedCorrectIndex = keptOriginalIndexes.indexOf(
+      values.correctAnswerIndex,
+    );
+
+    if (options.length < 2 || remappedCorrectIndex < 0) {
+      notifications.show({
+        title: t("common.error"),
+        message: t("validation.textRequired"),
+        color: "red",
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
       const payload = {
         textUzl: values.textUzl || null,
         textUzc: values.textUzc || null,
@@ -143,8 +177,8 @@ const Edit_Question_Page = () => {
         explanationRu: values.explanationRu || null,
         topicId: values.topicId || null,
         difficulty: values.difficulty || null,
-        options: options.length > 0 ? options : null,
-        correctAnswerIndex: options.length > 0 ? values.correctAnswerIndex : null,
+        options,
+        correctAnswerIndex: remappedCorrectIndex,
         imageUrl: values.imageUrl && values.imageUrl.trim() !== "" ? values.imageUrl : null,
         isActive: values.isActive,
       };
@@ -190,15 +224,25 @@ const Edit_Question_Page = () => {
     }
   };
 
-  const handleDeleteImage = async () => {
+  // Serverdagi faylni o'chiradi — qaytarib bo'lmaydi, shuning uchun tasdiq so'raladi.
+  const handleDeleteImage = () => {
     if (!questionId) return;
-    try {
-      await api.delete(`/api/v1/admin/questions/${questionId}/image`);
-      form.setFieldValue("imageUrl", "");
-      notifications.show({ title: t("common.success"), message: t("questions.imageDeleted"), color: "green" });
-    } catch {
-      notifications.show({ title: t("common.error"), message: t("questions.imageDeleteError"), color: "red" });
-    }
+    modals.openConfirmModal({
+      title: t("questions.imageDeleted"),
+      centered: true,
+      children: <Text size="sm">{t("common.irreversibleAction")}</Text>,
+      labels: { confirm: t("common.delete"), cancel: t("common.cancel") },
+      confirmProps: { color: "red" },
+      onConfirm: async () => {
+        try {
+          await api.delete(`/api/v1/admin/questions/${questionId}/image`);
+          form.setFieldValue("imageUrl", "");
+          notifications.show({ title: t("common.success"), message: t("questions.imageDeleted"), color: "green" });
+        } catch {
+          notifications.show({ title: t("common.error"), message: t("questions.imageDeleteError"), color: "red" });
+        }
+      },
+    });
   };
 
   if (isLoading) {
@@ -223,7 +267,7 @@ const Edit_Question_Page = () => {
         <ActionIcon variant="light" onClick={() => navigate("/questions")}>
           <IconArrowLeft size={18} />
         </ActionIcon>
-        <Title order={3}>{t("questions.editTitle", { id: questionId })}</Title>
+        <Title order={1} fz="h3">{t("questions.editTitle", { id: questionId })}</Title>
       </Group>
 
       <Paper p="lg" radius="md" withBorder>
@@ -290,7 +334,7 @@ const Edit_Question_Page = () => {
                 />
                 <FileButton onChange={uploadFile} accept="image/png,image/jpeg,image/webp">
                   {(props) => (
-                    <Button {...props} variant="light" leftSection={<IconUpload size={16} />}>
+                    <Button {...props} variant="light" loading={uploading} leftSection={<IconUpload size={16} />}>
                       {t("questions.uploadImage")}
                     </Button>
                   )}

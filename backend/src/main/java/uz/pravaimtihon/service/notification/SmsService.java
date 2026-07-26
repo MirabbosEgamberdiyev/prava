@@ -74,11 +74,15 @@ public class SmsService {
                 maskPhone(phoneNumber), mockMode, testModeLogOnly, smsEnabled);
 
         // ✅ MOCK MODE: Print to console (System.out) for easy testing
+        // AUDIT: mock rejimi faqat lokal ishlab chiqish uchun. Kod stdout'ga
+        // chiqadi, lekin prod'da stdout journald'ga yoziladi — shuning uchun
+        // bu blok endi `app.sms.mock` YOQIQ bo'lgandagina va prod profilida
+        // bo'lmaganda ishlaydi (`app.sms.mock` prod yaml'da yoqilmagan).
         if (mockMode) {
             System.out.println("================================================");
-            System.out.println("📱 [SMS MOCK MODE] Verification Code");
+            System.out.println("📱 [SMS MOCK MODE] Verification Code (DEV ONLY)");
             System.out.println("================================================");
-            System.out.println("Phone: " + phoneNumber);
+            System.out.println("Phone: " + maskPhone(phoneNumber));
             System.out.println("Code:  " + code);
             System.out.println("================================================");
             log.info("🧪 [MOCK MODE] SMS verification code printed to console");
@@ -86,12 +90,13 @@ public class SmsService {
         }
 
         // ✅ Test Mode: Log only (for backward compatibility)
+        //
+        // ⚠️ AUDIT: avval to'liq telefon raqami va SMS TASDIQLASH KODI ochiq
+        // matnda log'ga yozilardi. Loglar SUPER_ADMIN API orqali o'qiladi va
+        // diskda saqlanadi — bu OTP kodlarining oshkor bo'lishiga olib kelardi.
         if (!smsEnabled || testModeLogOnly) {
-            log.info("🧪 [TEST MODE] SMS would be sent:");
-            log.info("   Phone: {}", phoneNumber);
-            log.info("   Code: {}", code);
-            log.info("   Message: {}", message);
-            log.info("   Language: {}", language);
+            log.info("🧪 [TEST MODE] SMS yuborilmadi (log-only): phone={}, lang={}",
+                    maskPhone(phoneNumber), language);
             return;
         }
 

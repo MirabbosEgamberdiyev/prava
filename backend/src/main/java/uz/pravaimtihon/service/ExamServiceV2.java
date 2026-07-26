@@ -217,21 +217,32 @@ public class ExamServiceV2 {
         List<Question> availableQuestions;
         Topic topic = null;
 
+        // ⚠️ AUDIT — PERFORMANCE: avval `findRandomByTopicWithOptions` /
+        // `findRandomQuestionsWithOptions` ishlatilardi. Ular `LEFT JOIN FETCH`
+        // (kolleksiya) + `Pageable` bo'lgani uchun Hibernate LIMIT'ni SQL'ga
+        // qo'sha olmasdi va BUTUN savollar jadvalini xotiraga yuklab,
+        // sahifalashni Java'da bajarardi (HHH90003004). Har bir marafon
+        // boshlanishida minglab savol + variantlar JVM'ga tortilardi.
+        //
+        // Endi: DB tomonda random + LIMIT bilan faqat ID'lar olinadi, keyin
+        // o'sha ID'lar uchun variantlar bitta so'rovda yuklanadi.
+        int fetchSize = request.getQuestionCount() * 2;
+        List<Long> candidateIds;
+
         if (request.getTopicId() != null) {
             topic = topicRepository.findById(request.getTopicId())
                     .orElseThrow(() -> new ResourceNotFoundException("error.topic.not.found"));
 
-            // ✅ FIXED: OPTIONS bilan birga yuklash - LazyInitializationException oldini olish
-            availableQuestions = questionRepository.findRandomByTopicWithOptions(
-                    topic,
-                    PageRequest.of(0, request.getQuestionCount() * 2)
-            );
+            candidateIds = questionRepository.findRandomQuestionIdsByTopic(
+                    topic, PageRequest.of(0, fetchSize));
         } else {
-            // ✅ FIXED: OPTIONS bilan birga yuklash - LazyInitializationException oldini olish
-            availableQuestions = questionRepository.findRandomQuestionsWithOptions(
-                    PageRequest.of(0, request.getQuestionCount() * 2)
-            );
+            candidateIds = questionRepository.findRandomQuestionIds(
+                    PageRequest.of(0, fetchSize));
         }
+
+        availableQuestions = candidateIds.isEmpty()
+                ? new ArrayList<>()
+                : new ArrayList<>(questionRepository.findByIdsWithOptions(candidateIds));
 
         if (availableQuestions.size() < request.getQuestionCount()) {
             throw new BusinessException("error.marathon.insufficient.questions");
@@ -300,12 +311,17 @@ public class ExamServiceV2 {
         log.info("Javoblar topshirilmoqda: user={}, sessionId={}, answers={}",
                 userId, request.getSessionId(), request.getAnswers().size());
 
-        ExamSession session = sessionRepository.findByIdAndUserId(request.getSessionId(), userId)
+        // AUDIT: qulf bilan o'qiymiz — parallel submit'lar ketma-ket bajariladi,
+        // shuning uchun statistika ikki marta qo'shilmaydi (quyidagi izohga qarang).
+        ExamSession session = sessionRepository.findByIdAndUserIdForUpdate(request.getSessionId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException("error.exam.session.not.found"));
 
-        if (session.getStatus() == ExamStatus.COMPLETED) {
-            // Idempotent: allaqachon tugatilgan — mavjud natijani qaytarish
-            log.info("Double-submit aniqlandi: sessionId={}, allaqachon COMPLETED", session.getId());
+        // AUDIT: avval faqat COMPLETED idempotent hisoblanardi. EXPIRED sessiya
+        // esa quyidagi mantiqdan yana o'tib ketib, `finish()`/statistika qayta
+        // hisoblanardi. Endi ikkala YAKUNIY holat ham idempotent qaytariladi.
+        if (session.getStatus() == ExamStatus.COMPLETED || session.getStatus() == ExamStatus.EXPIRED) {
+            log.info("Double-submit aniqlandi: sessionId={}, status={} (idempotent javob)",
+                    session.getId(), session.getStatus());
             List<ExamAnswer> existingAnswers = answerRepository
                     .findByExamSessionIdOrderByQuestionOrder(session.getId());
             return buildResultResponse(session, existingAnswers);
@@ -519,7 +535,9 @@ public class ExamServiceV2 {
 
         log.info("Auto-submit: sessionId={}, answers={}", sessionId, answers != null ? answers.size() : 0);
 
-        Optional<ExamSession> sessionOpt = sessionRepository.findByIdAndUserId(sessionId, userId);
+        // AUDIT: qulf bilan — auto-submit (beacon) va qo'lda submit ko'pincha
+        // bir vaqtda keladi; qulfsiz ikkalasi ham statistikani yangilardi.
+        Optional<ExamSession> sessionOpt = sessionRepository.findByIdAndUserIdForUpdate(sessionId, userId);
         if (sessionOpt.isEmpty()) {
             log.warn("Auto-submit: sessiya topilmadi - sessionId={}", sessionId);
             return null;

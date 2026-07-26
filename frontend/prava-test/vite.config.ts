@@ -17,7 +17,17 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'logo.svg', 'icons/*.png', 'icons/*.svg'],
+      /*
+       * PERF: avval `['favicon.svg', 'logo.svg', 'icons/*.png', 'icons/*.svg']`
+       * edi. `includeAssets` fayllarni precache'ga MAJBURAN qo'shadi va
+       * `globIgnores` ga bo'ysunmaydi, shuning uchun 880KB ortiqcha SVG
+       * (logo.svg 532KB + favicon.svg 116KB + 2×icon-*.svg 116KB) har bir
+       * yangi foydalanuvchida service worker o'rnatilishida yuklab olinardi.
+       * Faqat PWA manifestida haqiqatan ishlatiladigan PNG ikonkalar qoldi;
+       * SVG'lar runtime `image-cache` (CacheFirst) orqali kerak bo'lganda
+       * keshlanadi.
+       */
+      includeAssets: ['icons/icon-192x192.png', 'icons/icon-512x512.png', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'Prava Online - Haydovchilik guvohnomasi imtihoniga tayyorlaning',
         short_name: 'Prava Online',
@@ -48,7 +58,27 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        /*
+         * PERF: `globPatterns` bu ulkan SVG'larni ham precache qilardi —
+         * logo.svg (532KB), favicon.svg (116KB), icons/*.svg (2×116KB).
+         * Ular service worker o'rnatilishi bilan MAJBURIY yuklanardi, ya'ni
+         * telefon internetida birinchi tashrifda ortiqcha trafik.
+         * Endi ular runtime `image-cache` (CacheFirst) orqali kerak
+         * bo'lgandagina yuklanadi.
+         * (og-image.svg va dfault.svg kodda umuman ishlatilmagani uchun
+         *  butunlay o'chirildi — endi ro'yxatda ham kerak emas.)
+         */
+        globIgnores: [
+          '**/node_modules/**/*',
+          'logo.svg',
+          'favicon.svg',
+          'icons/*.svg',
+        ],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        // Eski deploylardan qolgan precache'larni tozalaydi
+        cleanupOutdatedCaches: true,
         navigateFallback: '/index.html',
+        // API so'rovlari SPA fallback'ga tushmasligi kerak
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {

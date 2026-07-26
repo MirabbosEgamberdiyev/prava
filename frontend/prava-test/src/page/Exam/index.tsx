@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Box,
   Center,
@@ -12,9 +12,11 @@ import { useTranslation } from "react-i18next";
 import { notifications } from "@mantine/notifications";
 import { useExam, EXAM_DEFAULTS } from "../../features/Exam";
 import type { ExamPageProps } from "../../features/Exam";
-import { QuizNav } from "../../components/quiz/QuizNav";
+import { QuizNav, type QuizNavHandle } from "../../components/quiz/QuizNav";
 import { QuizContent } from "../../components/quiz/QuizContent";
 import SEO from "../../components/common/SEO";
+import { OfflineBanner } from "../../components/common/OfflineBanner";
+import { backupAnswers, clearBackup } from "../../hooks/useAutoSave";
 import api from "../../api/api";
 
 const Exam_Page = ({
@@ -35,10 +37,23 @@ const Exam_Page = ({
   } = useExam({ questionCount, durationMinutes });
 
   const [isTimeUp, setIsTimeUp] = useState(false);
-  const [isErrorLimitReached, setIsErrorLimitReached] = useState(false);
+  // `isErrorLimitReached` faqat o'lik `forceEnableSubmit` propiga uzatilardi.
+  // Xato limiti holati QuizContent ichidagi bloklovchi natija modali orqali
+  // boshqariladi, shuning uchun bu yerda holat saqlash shart emas.
+  const quizNavRef = useRef<QuizNavHandle>(null);
+  // Ikki marta yuborishdan himoya: avval hech qanday to'siq yo'q edi va
+  // "Yakunlash" ni ikki marta bosish ikkita submit so'rovini yuborardi.
+  const submittingRef = useRef(false);
 
   const handleExamFinish = async (navigateTo: string) => {
     if (!examData) return;
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+
+    const sessionId = examData.data.sessionId;
+    // Tarmoq uzilsa javoblar yo'qolmasin — submitdan oldin zaxiralaymiz.
+    backupAnswers(sessionId, answers);
+
     try {
       const formattedAnswers = examData.data.questions.map((question, index) => ({
         questionId: question.id,
@@ -46,9 +61,10 @@ const Exam_Page = ({
         timeSpentSeconds: answers[index]?.timeSpentSeconds ?? 0,
       }));
       await api.post("/api/v2/exams/submit", {
-        sessionId: examData.data.sessionId,
+        sessionId,
         answers: formattedAnswers,
       });
+      clearBackup(sessionId);
       notifications.show({
         title: t("common.success"),
         message: t("notification.examFinished"),
@@ -64,6 +80,8 @@ const Exam_Page = ({
         message: errorMessage,
         color: "red",
       });
+      // Xatolikda qulfni ochamiz — foydalanuvchi qayta urinishi kerak.
+      submittingRef.current = false;
     }
   };
 
@@ -124,6 +142,7 @@ const Exam_Page = ({
         noIndex={true}
       />
       <QuizNav
+        ref={quizNavRef}
         sessionId={examData.data.sessionId}
         questions={examData.data.questions}
         totalQuestions={examData.data.totalQuestions}
@@ -132,13 +151,16 @@ const Exam_Page = ({
         onReset={handleReset}
         backUrl="/me"
         onTimeUp={() => setIsTimeUp(true)}
-        forceEnableSubmit={isErrorLimitReached}
       />
+      <OfflineBanner />
       <QuizContent
         questions={examData.data.questions}
         onAnswerSelect={handleAnswerSelect}
         onFinish={() => {
-          (document.querySelector("[data-finish-button]") as HTMLButtonElement)?.click();
+          // Avval `document.querySelector("[data-finish-button]").click()`
+          // ishlatilardi — DOM'ga bog'liq mo'rt hack edi. QuizNav allaqachon
+          // `QuizNavHandle` imperativ API'sini taqdim etadi.
+          quizNavRef.current?.openFinishModal();
         }}
         selectedAnswers={answers}
         errorLimitMode
@@ -146,7 +168,6 @@ const Exam_Page = ({
         isTimeUp={isTimeUp}
         onFinishExam={handleExamFinish}
         examSessionId={examData.data.sessionId}
-        onErrorLimitReached={() => setIsErrorLimitReached(true)}
       />
     </>
   );

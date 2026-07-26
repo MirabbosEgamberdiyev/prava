@@ -169,7 +169,7 @@ const Statistics_Page = () => {
   return (
     <Stack gap="md">
       <Group justify="space-between">
-        <Title order={3}>
+        <Title order={1} fz="h3">
           <IconChartBar size={24} style={{ marginRight: 8, verticalAlign: "middle" }} />
           {t("statistics.title")}
         </Title>

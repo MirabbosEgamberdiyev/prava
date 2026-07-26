@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import {
@@ -11,6 +10,7 @@ import {
   Paper,
   Stack,
   Group,
+  Button,
 } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import { Package_Card } from "./Package_Card";
@@ -22,17 +22,22 @@ const PAGE_SIZE = 20;
 const Package_List = () => {
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const page = Math.max(0, Number(searchParams.get("page") ?? 0));
-  const [selectedTopicCode, setSelectedTopicCode] = useState<string | null>(
-    searchParams.get("topic") ?? null,
-  );
+  const rawPage = Number(searchParams.get("page") ?? 0);
+  const page = Number.isFinite(rawPage) ? Math.max(0, Math.trunc(rawPage)) : 0;
+  /*
+   * BUG FIX: mavzu filtri `useState` da nusxalanardi va faqat mount paytida
+   * URL dan o'qilardi. Brauzerning "orqaga/oldinga" tugmasi URL ni
+   * o'zgartirganda state eski qiymatda qolib, ro'yxat bilan filtr
+   * ko'rsatkichi bir-biriga mos kelmay qolardi. Endi yagona manba — URL.
+   */
+  const selectedTopicCode = searchParams.get("topic");
 
   // API endpoint - til o'zgarganda qayta so'rov yuboriladi
   const url = selectedTopicCode
     ? `/api/v1/packages/topic/${selectedTopicCode}?page=${page}&size=${PAGE_SIZE}&sortBy=orderIndex&direction=ASC&lang=${i18n.language}`
     : `/api/v1/packages?page=${page}&size=${PAGE_SIZE}&sortBy=orderIndex&direction=ASC&lang=${i18n.language}`;
 
-  const { data, isLoading, error } = useSWR<PackageResponse>(url);
+  const { data, isLoading, error, mutate } = useSWR<PackageResponse>(url);
 
   // Paketlar ro'yxati
   const packages = data?.data.content ?? [];
@@ -50,7 +55,6 @@ const Package_List = () => {
   };
 
   const handleTopicChange = (value: string | null) => {
-    setSelectedTopicCode(value);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.delete("page");
@@ -87,13 +91,21 @@ const Package_List = () => {
     );
   }
 
-  // Xatolik
+  /*
+   * Xatolik: avval faqat qizil sarlavha chiqardi — na qayta urinish,
+   * na filtrga qaytish imkoni bor edi (foydalanuvchi uchun boshi berk ko'cha).
+   */
   if (error) {
     return (
-      <Center>
-        <Title order={4} c="red">
-          {t("common.errorOccurred")}...
-        </Title>
+      <Center h={240}>
+        <Stack align="center" gap="sm">
+          <Title order={4} c="red">
+            {t("common.errorOccurred")}
+          </Title>
+          <Button variant="light" onClick={() => mutate()}>
+            {t("common.retry")}
+          </Button>
+        </Stack>
       </Center>
     );
   }
@@ -121,14 +133,19 @@ const Package_List = () => {
             ))}
           </SimpleGrid>
 
-          <Pagination
-            mt={"lg"}
-            total={totalPages}
-            value={page + 1}
-            onChange={(value) => setPage(value - 1)}
-            size="md"
-            withEdges
-          />
+          {/* Bitta sahifa bo'lsa paginatsiya keraksiz shovqin */}
+          {totalPages > 1 && (
+            <Group justify="center">
+              <Pagination
+                mt="lg"
+                total={totalPages}
+                value={page + 1}
+                onChange={(value) => setPage(value - 1)}
+                size="md"
+                withEdges
+              />
+            </Group>
+          )}
         </>
       )}
     </>

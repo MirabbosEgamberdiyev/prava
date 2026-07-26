@@ -14,21 +14,26 @@ const User_Page = () => {
   const navigate = useNavigate();
   const [dismissedSessionId, setDismissedSessionId] = useState<number | null>(null);
 
+  /*
+   * `shouldRetryOnError: false` bo'lganda SWR `onErrorRetry` ni umuman
+   * chaqirmaydi — ya'ni pastdagi qayta urinish logikasi o'lik kod edi.
+   * Olib tashlandi. Polling intervali 10s dan 30s ga oshirildi:
+   * bu banner faqat "tugallanmagan imtihon bor" holatini ko'rsatadi,
+   * uni har 10 soniyada so'rash ortiqcha trafik (ayniqsa mobil internetda).
+   */
   const { data: activeExamResponse } = useSWR<{
     data: { sessionId: number; packageId?: number; ticketId?: number } | null;
   }>("/api/v2/exams/active", {
-    refreshInterval: 10_000,
+    refreshInterval: 30_000,
     shouldRetryOnError: false,
-    onErrorRetry: (error, _key, _config, revalidate, { retryCount }) => {
-      // Don't retry on 4xx or 5xx errors
-      if (error?.response?.status >= 400) return;
-      if (retryCount >= 3) return;
-      setTimeout(() => revalidate({ retryCount }), 5000);
-    },
   });
 
   const activeExam = activeExamResponse?.data ?? null;
-  const showBanner = activeExam?.sessionId && activeExam.sessionId !== dismissedSessionId;
+  // `&&` natijasi number bo'lib qolmasligi uchun — aks holda JSX ichida
+  // sessionId 0 bo'lsa ekranga "0" chiqib qolishi mumkin edi.
+  const showBanner = Boolean(
+    activeExam?.sessionId && activeExam.sessionId !== dismissedSessionId,
+  );
 
   return (
     <>
@@ -38,14 +43,14 @@ const User_Page = () => {
         canonical="/me"
         noIndex={true}
       />
-      {showBanner && (
+      {showBanner && activeExam && (
         <Alert
           icon={<IconAlertCircle size={16} />}
           title={t("me.stats.resumeExam")}
           color="blue"
           mb="md"
           withCloseButton
-          onClose={() => setDismissedSessionId(activeExam!.sessionId)}
+          onClose={() => setDismissedSessionId(activeExam.sessionId)}
         >
           <Group justify="space-between" align="center">
             <Text size="sm">{t("me.stats.resumeExamDesc")}</Text>

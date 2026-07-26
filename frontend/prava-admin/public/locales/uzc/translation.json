@@ -565,7 +565,9 @@
     "globalDeviceLimit": "Қурилма лимити",
     "setGlobalLimit": "Глобал лимитни сақлаш",
     "globalLimitSuccess": "Глобал қурилма лимити янгиланди",
-    "globalLimitError": "Глобал лимитни янгилашда хатолик"
+    "globalLimitError": "Глобал лимитни янгилашда хатолик",
+    "globalLimitConfirmTitle": "Глобал лимитни ўзгартириш",
+    "globalLimitConfirm": "Қурилма лимити барча фойдаланувчилар учун {{count}} тага ўзгартирилади. Давом этасизми?"
   },
   "system": {
     "title": "Тизим Мониторинг",
@@ -861,6 +863,68 @@
     "validation": {
       "nameRequired": "Ном мажбурий",
       "emailInvalid": "Email формати нотўғри"
+    }
+  },
+  "agreements": {
+    "title": "Шартнома эслатмалари",
+    "subtitle": "Ўқув марказлари билан тузилган шартномаларни шу ерда қайд қилиб боринг. Бўлим фақат маълумот учун — активация кодлари ёки лицензияларга таъсир қилмайди.",
+    "newBtn": "Янги шартнома",
+    "empty": "Ҳозирча шартномалар йўқ. Бошлаш учун «Янги шартнома» тугмасини босинг.",
+    "currency": "сўм",
+    "daysRemaining": "{{count}} кун қолди",
+    "table": {
+      "center": "Ўқув марказ",
+      "computers": "Компьютер",
+      "startDate": "Бошланиш",
+      "endDate": "Тугаш",
+      "status": "Ҳолат",
+      "amount": "Сумма",
+      "note": "Изоҳ",
+      "actions": "Амаллар"
+    },
+    "status": {
+      "active": "Фаол",
+      "planned": "Режада",
+      "expired": "Тугаган",
+      "cancelled": "Бекор қилинган"
+    },
+    "form": {
+      "createTitle": "Янги шартнома",
+      "editTitle": "Шартномани таҳрирлаш",
+      "center": "Ўқув марказ",
+      "centerPlaceholder": "Марказни танланг",
+      "centerNotFound": "Марказ топилмади",
+      "computerCount": "Компьютерлар сони",
+      "computerCountPlaceholder": "Масалан, 50",
+      "amount": "Шартнома суммаси (сўм)",
+      "amountPlaceholder": "Бўш қолдириш мумкин",
+      "startDate": "Бошланиш санаси",
+      "startDatePlaceholder": "Бугун",
+      "endDate": "Тугаш санаси",
+      "endDatePlaceholder": "Санани танланг",
+      "status": "Ҳолат",
+      "note": "Изоҳ",
+      "notePlaceholder": "Масалан: Тошкент автомактаби, 2-босқич, олдиндан тўлов...",
+      "submitCreate": "Яратиш"
+    },
+    "validation": {
+      "requiredTitle": "Тўлдирилмаган майдонлар",
+      "requiredMsg": "Ўқув марказ, компьютерлар сони ва тугаш санаси мажбурий"
+    },
+    "delete": {
+      "title": "Шартномани ўчириш",
+      "confirm": "«{{name}}» шартномасини ўчирмоқчимисиз? Бу амални орқага қайтариб бўлмайди."
+    },
+    "notifications": {
+      "createSuccess": "Шартнома яратилди",
+      "createSuccessMsg": "Янги шартнома қўшилди",
+      "updateSuccess": "Сақланди",
+      "updateSuccessMsg": "Шартнома янгиланди",
+      "saveError": "Шартномани сақлаб бўлмади",
+      "deleteSuccess": "Ўчирилди",
+      "deleteSuccessMsg": "Шартнома ўчирилди",
+      "deleteError": "Шартномани ўчириб бўлмади",
+      "loadError": "Шартномалар рўйхатини юклаб бўлмади"
     }
   },
   "home": {

@@ -6,7 +6,8 @@ import { useAuth } from "../../hooks/auth/AuthContext";
 import { useTranslation } from "react-i18next";
 
 interface AppShellNavbarProps {
-  toggle: () => void;
+  /** Navigatsiyadan keyin mobil navbarni yopish */
+  close: () => void;
 }
 
 const ROLE_HIERARCHY: Record<string, number> = {
@@ -15,7 +16,7 @@ const ROLE_HIERARCHY: Record<string, number> = {
   SUPER_ADMIN: 3,
 };
 
-const App_Nav = ({ toggle }: AppShellNavbarProps) => {
+const App_Nav = ({ close }: AppShellNavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -47,7 +48,7 @@ const App_Nav = ({ toggle }: AppShellNavbarProps) => {
               variant="light"
               onClick={() => {
                 if (!filteredSub || filteredSub.length === 0) {
-                  toggle();
+                  close();
                   navigate(item.url);
                 }
               }}
@@ -65,7 +66,7 @@ const App_Nav = ({ toggle }: AppShellNavbarProps) => {
                   variant="light"
                   active={location.pathname === sub.url}
                   onClick={() => {
-                    toggle();
+                    close();
                     navigate(sub.url);
                   }}
                   style={{ borderRadius: "4px", fontWeight: "400" }}

@@ -8,11 +8,11 @@ import {
   Button,
   Group,
   Stack,
+  Box,
   LoadingOverlay,
 } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { notifications } from "@mantine/notifications";
 
 import {
   usePackages,
@@ -74,12 +74,9 @@ function Packages_Page() {
       try {
         await deletePackage(id);
         mutate();
-      } catch (error: any) {
-        notifications.show({
-          title: t("common.error"),
-          message: error?.response?.data?.message || t("packages.deleteError"),
-          color: "red",
-        });
+      } catch {
+        // Xato notification useDeletePackage ichida ko'rsatiladi —
+        // bu yerda takrorlash ikkita bir xil toast chiqarardi.
       }
     });
   };
@@ -92,12 +89,8 @@ function Packages_Page() {
       try {
         await toggleStatus(id);
         mutate();
-      } catch (error: any) {
-        notifications.show({
-          title: t("common.error"),
-          message: error?.response?.data?.message || t("packages.statusChangeError"),
-          color: "red",
-        });
+      } catch {
+        // notification useTogglePackageStatus ichida
       }
     });
   };
@@ -110,12 +103,8 @@ function Packages_Page() {
       try {
         await regenerate(id);
         mutate();
-      } catch (error: any) {
-        notifications.show({
-          title: t("common.error"),
-          message: error?.response?.data?.message || t("packages.regenerateError"),
-          color: "red",
-        });
+      } catch {
+        // notification useRegenerateQuestions ichida
       }
     });
   };
@@ -132,12 +121,8 @@ function Packages_Page() {
     try {
       await attachQuestions(selectedPackageId, questionCount, questionIds);
       mutate();
-    } catch (error: any) {
-      notifications.show({
-        title: t("common.error"),
-        message: error?.response?.data?.message || t("packages.attachError"),
-        color: "red",
-      });
+    } catch {
+      // notification useAttachQuestions ichida
     }
   };
 
@@ -161,7 +146,7 @@ function Packages_Page() {
       <Stack gap="md">
         <Paper p="md" withBorder>
           <Group justify="space-between" mb="md">
-            <Title order={2}>{t("packages.title")}</Title>
+            <Title order={1} fz="h3">{t("packages.title")}</Title>
             <Button leftSection={<IconPlus size={16} />} onClick={handleCreate}>
               {t("packages.addNew")}
             </Button>
@@ -174,8 +159,17 @@ function Packages_Page() {
           />
         </Paper>
 
-        <>
-          <LoadingOverlay visible={isLoading || isActionLoading} />
+        {/*
+          LoadingOverlay position:absolute — pozitsiyalangan ota element
+          bo'lmasa u butun sahifa bo'ylab yopishib qolardi. Box pos="relative"
+          uni faqat ro'yxat ustiga cheklaydi.
+        */}
+        <Box pos="relative" mih={200}>
+          <LoadingOverlay
+            visible={isLoading || isActionLoading}
+            zIndex={100}
+            overlayProps={{ blur: 1 }}
+          />
 
           <PackageGrid
             packages={packages}
@@ -200,7 +194,7 @@ function Packages_Page() {
               }}
             />
           )}
-        </>
+        </Box>
       </Stack>
 
       {/* Attach Questions Modal */}

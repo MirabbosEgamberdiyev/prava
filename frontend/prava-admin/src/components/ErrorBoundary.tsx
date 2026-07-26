@@ -20,6 +20,11 @@ class ErrorBoundary extends React.Component<
     return { hasError: true, error };
   }
 
+  // Ilgari xatolik hech qayerga yozilmasdi — prodda nima yiqilgani noma'lum edi
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error("[ErrorBoundary]", error, info.componentStack);
+  }
+
   handleReset = () => {
     this.setState({ hasError: false, error: null });
     window.location.href = "/";
@@ -35,7 +40,9 @@ class ErrorBoundary extends React.Component<
             <Text c="dimmed" ta="center">
               Sahifani qayta yuklang / Please try refreshing the page.
             </Text>
-            {this.state.error && (
+            {/* Texnik xato matni faqat dev'da: prodda u ichki modul/yo'l
+                nomlarini foydalanuvchiga ochib berardi */}
+            {import.meta.env.DEV && this.state.error && (
               <Text size="xs" c="red" ta="center" style={{ wordBreak: "break-all" }}>
                 {this.state.error.message}
               </Text>

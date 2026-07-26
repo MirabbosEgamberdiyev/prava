@@ -565,7 +565,9 @@
     "globalDeviceLimit": "Device limit",
     "setGlobalLimit": "Set global limit",
     "globalLimitSuccess": "Global device limit updated",
-    "globalLimitError": "Error updating global device limit"
+    "globalLimitError": "Error updating global device limit",
+    "globalLimitConfirmTitle": "Change global limit",
+    "globalLimitConfirm": "The device limit will be changed to {{count}} for every user. Continue?"
   },
   "system": {
     "title": "System Monitor",
@@ -795,6 +797,68 @@
     "validation": {
       "nameRequired": "Name is required",
       "emailInvalid": "Invalid email format"
+    }
+  },
+  "agreements": {
+    "title": "Contract reminders",
+    "subtitle": "Keep a record of the contracts signed with learning centers here. This section is informational only — it does not affect activation codes or licenses.",
+    "newBtn": "New contract",
+    "empty": "No contracts yet. Click “New contract” to add the first one.",
+    "currency": "UZS",
+    "daysRemaining": "{{count}} days left",
+    "table": {
+      "center": "Learning center",
+      "computers": "Computers",
+      "startDate": "Start",
+      "endDate": "End",
+      "status": "Status",
+      "amount": "Amount",
+      "note": "Note",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "planned": "Planned",
+      "expired": "Expired",
+      "cancelled": "Cancelled"
+    },
+    "form": {
+      "createTitle": "New contract",
+      "editTitle": "Edit contract",
+      "center": "Learning center",
+      "centerPlaceholder": "Select a center",
+      "centerNotFound": "No centers found",
+      "computerCount": "Number of computers",
+      "computerCountPlaceholder": "e.g. 50",
+      "amount": "Contract amount (UZS)",
+      "amountPlaceholder": "Can be left empty",
+      "startDate": "Start date",
+      "startDatePlaceholder": "Today",
+      "endDate": "End date",
+      "endDatePlaceholder": "Pick a date",
+      "status": "Status",
+      "note": "Note",
+      "notePlaceholder": "e.g. Tashkent driving school, phase 2, paid in advance...",
+      "submitCreate": "Create"
+    },
+    "validation": {
+      "requiredTitle": "Required fields are missing",
+      "requiredMsg": "Learning center, number of computers and end date are required"
+    },
+    "delete": {
+      "title": "Delete contract",
+      "confirm": "Delete the contract with “{{name}}”? This action cannot be undone."
+    },
+    "notifications": {
+      "createSuccess": "Contract created",
+      "createSuccessMsg": "The new contract has been added",
+      "updateSuccess": "Saved",
+      "updateSuccessMsg": "The contract has been updated",
+      "saveError": "Could not save the contract",
+      "deleteSuccess": "Deleted",
+      "deleteSuccessMsg": "The contract has been deleted",
+      "deleteError": "Could not delete the contract",
+      "loadError": "Could not load the contract list"
     }
   },
   "computer": {

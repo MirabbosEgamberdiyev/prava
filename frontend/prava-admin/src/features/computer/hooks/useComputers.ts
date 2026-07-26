@@ -4,11 +4,12 @@ import type { ComputerFilter, ComputerResponse, PageResponse } from "../types";
 
 // ─── Paginated list ───────────────────────────────────────────────────────────
 
-export function useComputerList(filter: ComputerFilter) {
-  const key = ["computer-list", JSON.stringify(filter)];
+/** `filter` null bo'lsa so'rov yuborilmaydi (masalan markaz hali tanlanmagan). */
+export function useComputerList(filter: ComputerFilter | null) {
+  const key = filter ? ["computer-list", JSON.stringify(filter)] : null;
   const { data, error, isLoading, mutate } = useSWR<PageResponse<ComputerResponse>>(
     key,
-    () => computerService.list(filter),
+    () => computerService.list(filter!),
     { refreshInterval: 30_000, keepPreviousData: true },
   );
   return { page: data, isLoading, isError: !!error, refresh: mutate };

@@ -1,4 +1,5 @@
 import { notifications } from "@mantine/notifications";
+import i18n from "../../../utils/i18n";
 import api from "../../../services/api";
 import type {
   ClearOptions,
@@ -9,13 +10,28 @@ import type {
 
 export function useBackupMutations() {
 
-  /** POST /export → jobId qaytaradi */
+  /**
+   * POST /export → jobId qaytaradi.
+   *
+   * XAVFSIZLIK: shifrlash paroli ilgari URL query-paramda ketardi
+   * (`?encrypt=true&password=...`). Query string nginx access.log'ga,
+   * brauzer tarixiga va proxy loglariga tushadi — ya'ni backup paroli
+   * ochiq matnda diskda qolardi.
+   *
+   * Endi u `application/x-www-form-urlencoded` body sifatida yuboriladi.
+   * Servlet spetsifikatsiyasi bo'yicha Spring `@RequestParam` POST body'dagi
+   * form maydonlarini ham o'qiydi, shuning uchun backend imzosi
+   * (BackupController#startExport) o'zgarishsiz ishlaydi. CSRF o'chirilgan
+   * (SecurityConfig:57), demak form-encoded POST muammo tug'dirmaydi.
+   */
   const startExport = async (req: StartExportRequest): Promise<string> => {
-    const params = new URLSearchParams();
-    params.set("encrypt", String(req.encrypt));
-    if (req.encrypt && req.password) params.set("password", req.password);
+    const body = new URLSearchParams();
+    body.set("encrypt", String(req.encrypt));
+    if (req.encrypt && req.password) body.set("password", req.password);
 
-    const res = await api.post(`/api/v1/admin/backup/export?${params.toString()}`);
+    const res = await api.post("/api/v1/admin/backup/export", body, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
     return res.data.data.jobId as string;
   };
 
@@ -92,9 +108,13 @@ export function useBackupMutations() {
     const form = new FormData();
     form.append("file", req.file);
 
+    // XAVFSIZLIK: parol query-paramda emas, multipart body'da ketadi —
+    // aks holda u nginx access.log va brauzer tarixida ochiq qolardi.
+    // Spring `@RequestParam` multipart form maydonini ham o'qiydi.
+    if (req.password) form.append("password", req.password);
+
     const params = new URLSearchParams();
     params.set("forceReplace", String(req.forceReplace));
-    if (req.password) params.set("password", req.password);
 
     // Selective import options
     const { options: o } = req;
@@ -130,7 +150,8 @@ export function useBackupMutations() {
     const msg =
       (err as { response?: { data?: { message?: string } } })
         ?.response?.data?.message ?? fallback;
-    notifications.show({ title: "Xato", message: msg, color: "red" });
+    // Sarlavha ilgari qattiq kodlangan "Xato" edi — endi i18n orqali
+    notifications.show({ title: i18n.t("common.error"), message: msg, color: "red" });
   };
 
   return { startExport, downloadBackup, startImport, clearData, handleError };

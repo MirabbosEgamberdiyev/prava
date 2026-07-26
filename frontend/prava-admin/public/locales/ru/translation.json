@@ -565,7 +565,9 @@
     "globalDeviceLimit": "Лимит устройств",
     "setGlobalLimit": "Установить глобальный лимит",
     "globalLimitSuccess": "Глобальный лимит устройств обновлён",
-    "globalLimitError": "Ошибка обновления глобального лимита"
+    "globalLimitError": "Ошибка обновления глобального лимита",
+    "globalLimitConfirmTitle": "Изменение глобального лимита",
+    "globalLimitConfirm": "Лимит устройств будет изменён на {{count}} для всех пользователей. Продолжить?"
   },
   "system": {
     "title": "Мониторинг системы",
@@ -861,6 +863,68 @@
     "validation": {
       "nameRequired": "Название обязательно",
       "emailInvalid": "Неверный формат email"
+    }
+  },
+  "agreements": {
+    "title": "Напоминания о договорах",
+    "subtitle": "Ведите здесь учёт договоров, заключённых с учебными центрами. Раздел носит справочный характер — он не влияет на коды активации и лицензии.",
+    "newBtn": "Новый договор",
+    "empty": "Договоров пока нет. Нажмите «Новый договор», чтобы добавить первый.",
+    "currency": "сум",
+    "daysRemaining": "Осталось {{count}} дн.",
+    "table": {
+      "center": "Учебный центр",
+      "computers": "Компьютеры",
+      "startDate": "Начало",
+      "endDate": "Окончание",
+      "status": "Статус",
+      "amount": "Сумма",
+      "note": "Примечание",
+      "actions": "Действия"
+    },
+    "status": {
+      "active": "Активен",
+      "planned": "Запланирован",
+      "expired": "Истёк",
+      "cancelled": "Отменён"
+    },
+    "form": {
+      "createTitle": "Новый договор",
+      "editTitle": "Редактирование договора",
+      "center": "Учебный центр",
+      "centerPlaceholder": "Выберите центр",
+      "centerNotFound": "Центры не найдены",
+      "computerCount": "Количество компьютеров",
+      "computerCountPlaceholder": "Например, 50",
+      "amount": "Сумма договора (сум)",
+      "amountPlaceholder": "Можно оставить пустым",
+      "startDate": "Дата начала",
+      "startDatePlaceholder": "Сегодня",
+      "endDate": "Дата окончания",
+      "endDatePlaceholder": "Выберите дату",
+      "status": "Статус",
+      "note": "Примечание",
+      "notePlaceholder": "Например: Ташкентская автошкола, 2-й этап, предоплата...",
+      "submitCreate": "Создать"
+    },
+    "validation": {
+      "requiredTitle": "Заполнены не все поля",
+      "requiredMsg": "Учебный центр, количество компьютеров и дата окончания обязательны"
+    },
+    "delete": {
+      "title": "Удаление договора",
+      "confirm": "Удалить договор «{{name}}»? Это действие нельзя отменить."
+    },
+    "notifications": {
+      "createSuccess": "Договор создан",
+      "createSuccessMsg": "Новый договор добавлен",
+      "updateSuccess": "Сохранено",
+      "updateSuccessMsg": "Договор обновлён",
+      "saveError": "Не удалось сохранить договор",
+      "deleteSuccess": "Удалено",
+      "deleteSuccessMsg": "Договор удалён",
+      "deleteError": "Не удалось удалить договор",
+      "loadError": "Не удалось загрузить список договоров"
     }
   },
   "home": {

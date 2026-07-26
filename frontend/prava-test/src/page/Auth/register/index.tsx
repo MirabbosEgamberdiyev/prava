@@ -66,11 +66,13 @@ const Register_Page = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  // Agar foydalanuvchi allaqachon tizimga kirgan bo'lsa — /me ga redirect
-  if (isAuthenticated) {
-    return <Navigate to="/me" replace />;
-  }
-
+  /*
+   * HOOK TARTIBI BUZILISHI TUZATILDI — `if (isAuthenticated) return <Navigate/>`
+   * avval `useForm()` dan OLDIN turardi. Ro'yxatdan o'tish yakunlanganda
+   * `isAuthenticated` true bo'lib, keyingi renderда `useForm` o'tkazib
+   * yuborilardi → React "Rendered fewer hooks than expected" bilan yiqilishi
+   * mumkin edi. Redirect endi barcha hooklardan KEYIN.
+   */
   const form = useForm({
     initialValues: {
       firstName: "",
@@ -122,6 +124,11 @@ const Register_Page = () => {
         value.length < 8 ? t("validation.minChars", { count: 8 }) : null,
     },
   });
+
+  // Agar foydalanuvchi allaqachon tizimga kirgan bo'lsa — /me ga redirect
+  if (isAuthenticated) {
+    return <Navigate to="/me" replace />;
+  }
 
   // Step 1: Init registration — send form data + get OTP
   const handleInit = async (values: typeof form.values) => {

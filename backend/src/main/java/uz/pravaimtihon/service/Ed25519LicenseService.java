@@ -1,6 +1,7 @@
 package uz.pravaimtihon.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -33,9 +34,28 @@ import java.util.Base64;
 @Slf4j
 public class Ed25519LicenseService {
 
-    // ── Private key seed (HTML generator bilan aynan bir xil — 32 bayt) ──────
-    // ⚠️  Bu kalitni hech kimga bermang!
-    private static final byte[] PRIVATE_KEY_SEED = {
+    // ══════════════════════════════════════════════════════════════════════════
+    // ⚠️ AUDIT — KRITIK: bu yerda litsenziya IMZOLASH PRIVATE KEY'i to'g'ridan-
+    // to'g'ri kodda (git repo'da) yozilgan edi. Repo'ga kirish huquqi bo'lgan
+    // (yoki jar'ni dekompilyatsiya qilgan) har kim CHEKSIZ, ixtiyoriy machine-id
+    // uchun amal qiluvchi desktop litsenziya tokenlarini o'zi generatsiya qila
+    // oladi — ya'ni butun aktivatsiya/monetizatsiya modeli chetlab o'tiladi.
+    //
+    // Endi seed `app.license.ed25519.seed` (env: LICENSE_ED25519_SEED, base64
+    // yoki hex, 32 bayt) orqali beriladi.
+    //
+    // TO'LIQ REMEDIATSIYA (bu kod o'zi qila olmaydi — operator qadami):
+    //   1) Yangi Ed25519 kalit juftini generatsiya qiling.
+    //   2) Desktop ilova (activation.rs) ichidagi PUBLIC key'ni yangilang va
+    //      yangi build tarqating.
+    //   3) LICENSE_ED25519_SEED ni serverdagi .env ga qo'ying.
+    //   4) Eski seed'ni KOMPROMETATSIYA QILINGAN deb hisoblang.
+    // Kalit almashtirilgunicha eski (leaked) seed fallback sifatida ishlaydi,
+    // aks holda barcha mavjud litsenziyalar bir zumda buzilardi.
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /** Legacy (git'ga tushib ketgan, komprometatsiya qilingan) seed — faqat fallback. */
+    private static final byte[] LEGACY_LEAKED_SEED = {
         (byte)0x07, (byte)0x92, (byte)0xb6, (byte)0xf7,
         (byte)0x25, (byte)0xd9, (byte)0x44, (byte)0x33,
         (byte)0xf0, (byte)0x82, (byte)0x92, (byte)0x66,
@@ -55,9 +75,51 @@ public class Ed25519LicenseService {
     /** Precomputed Ed25519 private key (application startup'da bir marta quriladi). */
     private final PrivateKey privateKey;
 
-    public Ed25519LicenseService() {
-        this.privateKey = buildPrivateKey(PRIVATE_KEY_SEED);
+    public Ed25519LicenseService(
+            @Value("${app.license.ed25519.seed:}") String configuredSeed) {
+
+        byte[] seed;
+        if (configuredSeed != null && !configuredSeed.isBlank()) {
+            seed = decodeSeed(configuredSeed.trim());
+            log.info("Ed25519LicenseService: imzolash kaliti konfiguratsiyadan olindi (env)");
+        } else {
+            seed = LEGACY_LEAKED_SEED;
+            log.error("═══════════════════════════════════════════════════════════════");
+            log.error("XAVFSIZLIK OGOHLANTIRISHI: LICENSE_ED25519_SEED o'rnatilmagan!");
+            log.error("Litsenziya imzolash uchun kodga yozilgan (git'da OCHIQ bo'lgan)");
+            log.error("eski kalit ishlatilmoqda — uni bilgan har kim soxta desktop");
+            log.error("litsenziya generatsiya qila oladi. Kalitni almashtiring va");
+            log.error("LICENSE_ED25519_SEED ni .env ga qo'shing.");
+            log.error("═══════════════════════════════════════════════════════════════");
+        }
+
+        this.privateKey = buildPrivateKey(seed);
         log.info("Ed25519LicenseService initialized (algorithm: Ed25519, epoch: {})", EPOCH);
+    }
+
+    /** Seed'ni base64 (standart yoki url-safe) yoki hex ko'rinishidan 32 baytga aylantiradi. */
+    private static byte[] decodeSeed(String raw) {
+        byte[] decoded;
+        try {
+            if (raw.length() == 64 && raw.matches("(?i)[0-9a-f]+")) {
+                decoded = new byte[32];
+                for (int i = 0; i < 32; i++) {
+                    decoded[i] = (byte) Integer.parseInt(raw.substring(i * 2, i * 2 + 2), 16);
+                }
+            } else if (raw.indexOf('-') >= 0 || raw.indexOf('_') >= 0) {
+                decoded = Base64.getUrlDecoder().decode(raw);
+            } else {
+                decoded = Base64.getDecoder().decode(raw);
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException(
+                    "app.license.ed25519.seed noto'g'ri formatda (base64 yoki 64 belgili hex kutilgan)", e);
+        }
+        if (decoded.length != 32) {
+            throw new IllegalStateException(
+                    "app.license.ed25519.seed aynan 32 bayt bo'lishi kerak, keldi: " + decoded.length);
+        }
+        return decoded;
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
