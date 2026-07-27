@@ -88,6 +88,15 @@ public class CloudinaryStorageService implements FileStorageService {
             String fileUrl = (String) uploadResult.get("secure_url");
             String fileName = (String) uploadResult.get("public_id");
 
+            // PERF: images were served at original upload resolution/format —
+            // no WebP/AVIF, no resizing. Cloudinary supports rewriting this
+            // into the delivery URL with no re-upload needed. Only valid for
+            // "image" resource type — applying image transform flags to a
+            // video/raw (PDF) delivery URL would break it.
+            if ("image".equals(resourceType)) {
+                fileUrl = buildOptimizedUrl(fileUrl);
+            }
+
             log.info("✅ File uploaded to Cloudinary: {} (Category: {}, Size: {})",
                     fileUrl, category, FileTypeUtil.formatFileSize(file.getSize()));
 
@@ -271,6 +280,21 @@ public class CloudinaryStorageService implements FileStorageService {
     }
 
     /**
+     * Rewrite a Cloudinary delivery URL to auto-negotiate format (WebP/AVIF
+     * where the browser supports it, falling back to JPEG), auto-tune
+     * perceptual quality, and cap width at 1000px (question images never
+     * need to be served at original phone-camera resolution).
+     * Cloudinary applies these as on-the-fly derived images cached at the
+     * CDN edge — no re-upload or storage migration required.
+     */
+    private String buildOptimizedUrl(String secureUrl) {
+        if (secureUrl == null || !secureUrl.contains("/upload/")) {
+            return secureUrl;
+        }
+        return secureUrl.replaceFirst("/upload/", "/upload/f_auto,q_auto,w_1000,c_limit/");
+    }
+
+    /**
      * Extract public_id from Cloudinary URL
      */
     private String extractPublicId(String fileUrl) {
@@ -281,6 +305,17 @@ public class CloudinaryStorageService implements FileStorageService {
 
         if (fileUrl.contains("/upload/")) {
             String afterUpload = fileUrl.substring(fileUrl.indexOf("/upload/") + 8);
+
+            // Remove an optional leading transformation segment injected by
+            // buildOptimizedUrl(), e.g. "f_auto,q_auto,w_1000,c_limit/".
+            // Transformation segments always contain an underscore param
+            // (e.g. "f_auto") and are never a version ("v123...") or a real
+            // folder/uuid path segment, so this check can't misfire on
+            // pre-existing (untransformed) URLs.
+            String[] segments = afterUpload.split("/", 2);
+            if (segments.length == 2 && segments[0].contains("_") && !segments[0].matches("v\\d+")) {
+                afterUpload = segments[1];
+            }
 
             // Remove version prefix (v1234567890/)
             if (afterUpload.matches("v\\d+/.*")) {

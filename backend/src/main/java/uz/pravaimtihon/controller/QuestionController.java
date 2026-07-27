@@ -161,6 +161,7 @@ public class QuestionController {
     @Operation(summary = "Get questions by topic", description = "Multi-language: UZL, UZC, EN, RU")
     public ResponseEntity<ApiResponse<PageResponse<QuestionResponse>>> getQuestionsByTopic(
             @PathVariable Long topicId,
+            @Parameter(description = "Optional search text — filters within this topic") @RequestParam(required = false) String query,
             @Parameter(description = "Page number") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size,
             @Parameter(description = "Sort field") @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -170,7 +171,7 @@ public class QuestionController {
         Sort.Direction sortDirection = direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
-        PageResponse<QuestionResponse> response = questionService.getQuestionsByTopicId(topicId, pageable, language);
+        PageResponse<QuestionResponse> response = questionService.getQuestionsByTopicId(topicId, query, pageable, language);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

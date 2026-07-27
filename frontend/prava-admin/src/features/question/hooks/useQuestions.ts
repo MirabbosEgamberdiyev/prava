@@ -97,18 +97,43 @@ export const useQuestionsByTopic = (
   };
 };
 
+function toOption(question: Question) {
+  return {
+    value: question.id.toString(),
+    label: `${(question.text || "").substring(0, 80)}${(question.text || "").length > 80 ? "..." : ""} (${question.topic?.name || ""})`,
+  };
+}
+
 /**
- * Select component uchun question options
- * @param topicId - Agar topicId bo'lsa, faqat shu topic savollari
- * @returns options array for Select/MultiSelect
+ * Select/MultiSelect component uchun question options — server-side search.
+ *
+ * PERF FIX: avval `size=1000` bilan butun topic savollari bir yo'la
+ * yuklanardi (dropdown to'ldirish uchun). Katta topic'larda bu keraksiz
+ * og'ir so'rov edi. Endi backend `?query=...&size=20` orqali qidiruv
+ * qiladi — foydalanuvchi yozgan sayin server tomonda filtrlanadi.
+ *
+ * @param topicId - Faqat shu topic savollari
+ * @param search - Qidiruv matni (chaqiruvchi tomondan debounce qilingan bo'lishi kerak)
+ * @param selectedIds - Hozir tanlangan savol ID'lari — qidiruv natijasida
+ *   ko'rinmay qolsa ham, MultiSelect'da chip sifatida to'g'ri label bilan
+ *   ko'rsatilishi uchun alohida yuklanadi va natijaga qo'shiladi.
  */
-export function useQuestionOptions(topicId?: number) {
+export function useQuestionOptions(
+  topicId?: number,
+  search?: string,
+  selectedIds?: number[],
+) {
   const { i18n } = useTranslation();
 
-  // Topic bo'yicha filter qilish
-  const fetchUrl = topicId
-    ? `/api/v1/admin/questions?topicId=${topicId}&page=0&size=1000&sortBy=createdAt&direction=DESC`
-    : `/api/v1/admin/questions?page=0&size=1000&sortBy=createdAt&direction=DESC`;
+  const trimmedSearch = search?.trim() || "";
+  const params = new URLSearchParams({
+    page: "0",
+    size: "20",
+    sortBy: "createdAt",
+    direction: "DESC",
+  });
+  if (trimmedSearch) params.set("query", trimmedSearch);
+  const fetchUrl = `/api/v1/admin/questions/topic/${topicId}?${params.toString()}`;
 
   const { data, error, isLoading } = useSWR<QuestionResponse>(
     topicId ? [fetchUrl, i18n.language] : null,
@@ -118,14 +143,34 @@ export function useQuestionOptions(topicId?: number) {
     },
   );
 
-  const questions: Question[] = data?.data?.content || [];
+  const searchResults: Question[] = data?.data?.content || [];
 
-  const options = questions
+  // Hozir tanlangan (lekin joriy qidiruv natijasida bo'lmasligi mumkin
+  // bo'lgan) savollarni alohida yuklaymiz, shunday qilib ular har doim
+  // options ro'yxatida — va demak chip label sifatida — mavjud bo'ladi.
+  const missingSelectedIds = (selectedIds || []).filter(
+    (id) => !searchResults.some((q) => q.id === id),
+  );
+
+  const { data: selectedQuestions } = useSWR<Question[]>(
+    missingSelectedIds.length > 0
+      ? ["question-options-selected", missingSelectedIds.join(","), i18n.language]
+      : null,
+    async () => {
+      const responses = await Promise.all(
+        missingSelectedIds.map((id) =>
+          api.get(`/api/v1/admin/questions/${id}`).then((res) => res.data?.data as Question),
+        ),
+      );
+      return responses.filter(Boolean);
+    },
+  );
+
+  const merged = [...searchResults, ...(selectedQuestions || [])];
+
+  const options = merged
     .filter((q) => q.isActive) // Faqat faol savollar
-    .map((question) => ({
-      value: question.id.toString(),
-      label: `${(question.text || "").substring(0, 80)}${(question.text || "").length > 80 ? "..." : ""} (${question.topic?.name || ""})`,
-    }));
+    .map(toOption);
 
   return {
     options,

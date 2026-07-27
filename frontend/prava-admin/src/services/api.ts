@@ -7,9 +7,54 @@ import Cookies from "js-cookie";
 
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
+const USER_DATA_KEY = "userData";
 
 // Refresh uchun alohida instance (interceptor loop'dan qochish)
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+
+/**
+ * TOKEN STORAGE FIX: avval sessionStorage ishlatilardi — prava-test esa
+ * secure/sameSite cookie'larni ishlatadi. Ikkala ilova bir xil backend bilan
+ * ishlaydi, shuning uchun bir xil yondashuv qo'llanildi (arxitektura
+ * nomuvofiqligini bartaraf etish). `expires` kunlarda: access — 1 kun,
+ * refresh — 30 kun (prava-test bilan bir xil).
+ */
+function cookieOpts(expiresInDays: number) {
+  const isSecure = window.location.protocol === "https:";
+  return {
+    expires: expiresInDays,
+    secure: isSecure,
+    sameSite: (isSecure ? "strict" : "lax") as "strict" | "lax",
+  };
+}
+
+export function getAccessToken(): string | undefined {
+  return Cookies.get(ACCESS_TOKEN_KEY);
+}
+
+export function getRefreshToken(): string | undefined {
+  return Cookies.get(REFRESH_TOKEN_KEY);
+}
+
+export function saveTokens(
+  accessToken: string,
+  refreshToken?: string,
+  userData?: unknown,
+): void {
+  Cookies.set(ACCESS_TOKEN_KEY, accessToken, cookieOpts(1));
+  if (refreshToken) {
+    Cookies.set(REFRESH_TOKEN_KEY, refreshToken, cookieOpts(30));
+  }
+  if (userData !== undefined) {
+    Cookies.set(USER_DATA_KEY, JSON.stringify(userData), cookieOpts(1));
+  }
+}
+
+export function clearTokens(): void {
+  Cookies.remove(ACCESS_TOKEN_KEY);
+  Cookies.remove(REFRESH_TOKEN_KEY);
+  Cookies.remove(USER_DATA_KEY);
+}
 
 const refreshClient = axios.create({
   baseURL: API_BASE_URL,
@@ -31,8 +76,9 @@ const api: AxiosInstance = axios.create({
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // 1. Tokenni olish
-    const token = sessionStorage.getItem(ACCESS_TOKEN_KEY);
+    // 1. Tokenni olish (SECURITY/CONSISTENCY FIX: sessionStorage emas, cookie —
+    // prava-test bilan bir xil yondashuv, quyida saveTokens/clearTokens'ga qarang)
+    const token = Cookies.get(ACCESS_TOKEN_KEY);
 
     // 2. Tilni cookiedan olish (i18next odatda 'i18next' yoki 'i18nextLng' deb saqlaydi)
     const language = Cookies.get("i18next") || "uzl";
@@ -95,14 +141,15 @@ api.interceptors.response.use(
 
     // 401 bo'lsa va retry qilinmagan bo'lsa
     if (error.response?.status === 401 && !originalRequest._retry) {
-      const refreshToken = sessionStorage.getItem(REFRESH_TOKEN_KEY);
+      const refreshToken = getRefreshToken();
 
       // Refresh token yo'q bo'lsa — to'g'ridan-to'g'ri logout
       if (!refreshToken) {
-        sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-        sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-        sessionStorage.removeItem("userData");
-        window.location.href = "/auth/login";
+        clearTokens();
+        // NO-RELOAD FIX: avval `window.location.href = "/auth/login"` edi —
+        // butun SPA'ni qayta yuklardi. Endi faqat hodisa yuboriladi;
+        // AuthContext uni eshitib `navigate()` bilan yumshoq o'tkazadi.
+        window.dispatchEvent(new CustomEvent("auth-logout"));
         return Promise.reject(error);
       }
 
@@ -134,11 +181,7 @@ api.interceptors.response.use(
           response.data.data?.refreshToken || response.data.refreshToken;
 
         if (newAccessToken) {
-          sessionStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
-
-          if (newRefreshToken) {
-            sessionStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
-          }
+          saveTokens(newAccessToken, newRefreshToken);
 
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -151,10 +194,10 @@ api.interceptors.response.use(
         throw new Error("No access token in refresh response");
       } catch (refreshError) {
         processQueue(refreshError, null);
-        sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-        sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-        sessionStorage.removeItem("userData");
-        window.location.href = "/auth/login";
+        clearTokens();
+        // NO-RELOAD FIX: see comment above — soft logout via event, not a
+        // full page navigation.
+        window.dispatchEvent(new CustomEvent("auth-logout"));
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

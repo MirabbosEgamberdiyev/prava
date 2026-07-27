@@ -46,6 +46,17 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             "LOWER(q.textRu) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Question> searchQuestions(@Param("search") String search, Pageable pageable);
 
+    // PERF: backs the admin question-picker's search-as-you-type (was:
+    // fetching up to 1000 questions per topic client-side to build a
+    // dropdown). Scopes the same text search to a single topic so only a
+    // small, relevant page is ever transferred.
+    @Query("SELECT q FROM Question q WHERE q.topic.id = :topicId AND q.deleted = false AND q.isActive = true AND " +
+            "(LOWER(q.textUzl) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(q.textUzc) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(q.textEn) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(q.textRu) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Question> searchQuestionsByTopicId(@Param("topicId") Long topicId, @Param("search") String search, Pageable pageable);
+
     @Query("SELECT COUNT(q) > 0 FROM Question q WHERE q.textUzl = :textUzl AND q.topic = :topic AND q.deleted = false")
     boolean existsByTextUzlAndTopicAndDeletedFalse(@Param("textUzl") String textUzl, @Param("topic") Topic topic);
 

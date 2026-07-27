@@ -18,6 +18,7 @@ import {
 import { useForm } from "@mantine/form";
 import { IconDeviceFloppy, IconX } from "@tabler/icons-react";
 import { useState } from "react";
+import { useDebouncedValue } from "@mantine/hooks";
 import { useTranslation } from "react-i18next";
 import type { PackageFormData, PackageDetail } from "../types";
 import { useQuestionOptions } from "../../question/hooks/useQuestions";
@@ -80,9 +81,12 @@ export function EditPackageForm({
     },
   });
 
-  // Topic bo'yicha savollarni yuklash
+  // Topic bo'yicha savollarni server-side qidiruv bilan yuklash
+  // (PERF FIX: avval topic'dagi 1000 tagacha savol bir yo'la yuklanardi)
+  const [questionSearch, setQuestionSearch] = useState("");
+  const [debouncedQuestionSearch] = useDebouncedValue(questionSearch, 300);
   const { options: topicQuestions, isLoading: loadingTopicQuestions } =
-    useQuestionOptions(selectedTopicId);
+    useQuestionOptions(selectedTopicId, debouncedQuestionSearch, form.values.questionIds);
 
   const handleTopicChange = (value: string | null) => {
     if (!value) {
@@ -294,6 +298,8 @@ export function EditPackageForm({
                 }
                 data={availableQuestions}
                 searchable
+                searchValue={questionSearch}
+                onSearchChange={setQuestionSearch}
                 rightSection={
                   loadingTopicQuestions ? <Loader size="xs" /> : null
                 }

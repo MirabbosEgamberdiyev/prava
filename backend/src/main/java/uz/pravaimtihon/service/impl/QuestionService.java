@@ -245,7 +245,14 @@ public class QuestionService {
     @Transactional(readOnly = true)
     @Cacheable(value = "questionsByTopic", key = "#topicId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #language.code")
     public PageResponse<QuestionResponse> getQuestionsByTopicId(Long topicId, Pageable pageable, AcceptLanguage language) {
-        Page<Question> page = questionRepository.findByTopicIdAndDeletedFalseAndIsActiveTrue(topicId, pageable);
+        return getQuestionsByTopicId(topicId, null, pageable, language);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<QuestionResponse> getQuestionsByTopicId(Long topicId, String query, Pageable pageable, AcceptLanguage language) {
+        Page<Question> page = (query != null && !query.trim().isEmpty())
+                ? questionRepository.searchQuestionsByTopicId(topicId, query.trim(), pageable)
+                : questionRepository.findByTopicIdAndDeletedFalseAndIsActiveTrue(topicId, pageable);
         return questionMapper.toPageResponse(page, language);
     }
 

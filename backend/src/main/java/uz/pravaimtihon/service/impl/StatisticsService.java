@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * ✅ Statistics Service - 100% Complete with Pagination & Multi-language
@@ -123,11 +124,15 @@ public class StatisticsService {
     public PageResponse<LeaderboardEntryResponse> getLeaderboard(String topic, Pageable pageable, AcceptLanguage language, Long currentUserId) {
         Page<UserStatistics> page = statisticsRepository.findLeaderboardByTopicPaginated(topic, pageable);
 
-        List<LeaderboardEntryResponse> entries = page.getContent().stream()
-                .map(stats -> {
+        List<UserStatistics> content = page.getContent();
+        // PERF: was `page.getContent().indexOf(stats)` inside the map — O(n^2)
+        // over the page. IntStream.range gives each row its index directly, O(n).
+        List<LeaderboardEntryResponse> entries = IntStream.range(0, content.size())
+                .mapToObj(i -> {
+                    UserStatistics stats = content.get(i);
                     String name = stats.getUser().getFullName();
                     return LeaderboardEntryResponse.builder()
-                        .rank((int) (pageable.getPageNumber() * pageable.getPageSize() + page.getContent().indexOf(stats) + 1))
+                        .rank(pageable.getPageNumber() * pageable.getPageSize() + i + 1)
                         .userId(stats.getUser().getId())
                         .userName(name)
                         .fullName(name)
@@ -157,11 +162,13 @@ public class StatisticsService {
     public PageResponse<LeaderboardEntryResponse> getGlobalLeaderboard(Pageable pageable, AcceptLanguage language, Long currentUserId) {
         Page<UserStatistics> page = statisticsRepository.findGlobalLeaderboardPaginated(pageable);
 
-        List<LeaderboardEntryResponse> entries = page.getContent().stream()
-                .map(stats -> {
+        List<UserStatistics> content = page.getContent();
+        List<LeaderboardEntryResponse> entries = IntStream.range(0, content.size())
+                .mapToObj(i -> {
+                    UserStatistics stats = content.get(i);
                     String name = stats.getUser().getFullName();
                     return LeaderboardEntryResponse.builder()
-                        .rank((int) (pageable.getPageNumber() * pageable.getPageSize() + page.getContent().indexOf(stats) + 1))
+                        .rank(pageable.getPageNumber() * pageable.getPageSize() + i + 1)
                         .userId(stats.getUser().getId())
                         .userName(name)
                         .fullName(name)

@@ -5,13 +5,14 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useCallback,
   type ReactNode,
 } from "react";
-import api from "../../services/api";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import api, { getAccessToken, getRefreshToken, saveTokens, clearTokens } from "../../services/api";
 
 // O'zgaruvchi nomlari o'z holicha qoldi
-const ACCESS_TOKEN_KEY = "accessToken";
-const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_DATA_KEY = "userData";
 
 interface AuthContextType {
@@ -33,37 +34,67 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Sahifa yangilanganda Session Storage'dan ma'lumotlarni tiklash
+  const logout = useCallback(async () => {
+    // Backend'ga logout so'rov yuborish
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
+      try {
+        await api.post("/api/v1/auth/logout", { refreshToken });
+      } catch {
+        // Logout API xatoligi bo'lsa ham, local ma'lumotlarni tozalaymiz
+      }
+    }
+
+    clearTokens();
+
+    setIsAuthenticated(false);
+    setUser(null);
+
+    // NO-RELOAD FIX: avval `window.location.href = "/auth/login"` edi — butun
+    // SPA qayta yuklanardi. Endi router orqali yumshoq o'tish (prava-test
+    // bilan bir xil yondashuv).
+    navigate("/auth/login", { replace: true });
+  }, [navigate]);
+
+  // Sahifa yangilanganda cookie'dan ma'lumotlarni tiklash
+  // (TOKEN STORAGE FIX: avval sessionStorage edi)
   useEffect(() => {
-    const token = sessionStorage.getItem(ACCESS_TOKEN_KEY);
-    const savedUser = sessionStorage.getItem(USER_DATA_KEY);
+    const token = getAccessToken();
+    const savedUser = Cookies.get(USER_DATA_KEY);
 
     if (token && savedUser) {
       try {
         setIsAuthenticated(true);
         setUser(JSON.parse(savedUser));
       } catch (e) {
-        console.error("Session ma'lumotlarini o'qishda xatolik:", e);
+        console.error("Sessiya ma'lumotlarini o'qishda xatolik:", e);
         logout(); // Agar ma'lumot buzilgan bo'lsa, hammasini tozalaymiz
       }
     }
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Boshqa joyda (api.ts interceptori) yuborilgan majburiy logout hodisasini
+  // tinglaydi — masalan refresh token muddati tugaganda. Bu yerda navigate()
+  // chaqirish uchun context AuthProvider ichida joylashgan bo'lishi kerak.
+  useEffect(() => {
+    const onForceLogout = () => {
+      clearTokens();
+      setIsAuthenticated(false);
+      setUser(null);
+      navigate("/auth/login", { replace: true });
+    };
+    window.addEventListener("auth-logout", onForceLogout);
+    return () => window.removeEventListener("auth-logout", onForceLogout);
+  }, [navigate]);
 
   const saveAuthData = (authData: any) => {
     const { accessToken, refreshToken, user: userData } = authData;
 
-    // Session Storage'ga ma'lumotlarni yozish
-    if (accessToken) {
-      sessionStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-    }
-    if (refreshToken) {
-      sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-    }
-    if (userData) {
-      sessionStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
-    }
+    saveTokens(accessToken, refreshToken, userData);
 
     setIsAuthenticated(true);
     setUser(userData);
@@ -75,41 +106,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   /**
    * Sozlamalar sahifasida profil yangilangach chaqiriladi.
    * Busiz header/avatar qayta login qilinmaguncha eski ism-familiyani
-   * ko'rsatib turardi (sessionStorage va context yangilanmasdi).
+   * ko'rsatib turardi (cookie va context yangilanmasdi).
    */
   const updateUser = (patch: Record<string, unknown>) => {
     setUser((prev: any) => {
       const next = { ...(prev ?? {}), ...patch };
       try {
-        sessionStorage.setItem(USER_DATA_KEY, JSON.stringify(next));
+        Cookies.set(USER_DATA_KEY, JSON.stringify(next), {
+          expires: 1,
+          secure: window.location.protocol === "https:",
+          sameSite: window.location.protocol === "https:" ? "strict" : "lax",
+        });
       } catch {
-        // sessionStorage to'lgan bo'lishi mumkin — context baribir yangilanadi
+        // cookie yozib bo'lmasa ham — context baribir yangilanadi
       }
       return next;
     });
-  };
-
-  const logout = async () => {
-    // Backend'ga logout so'rov yuborish
-    const refreshToken = sessionStorage.getItem(REFRESH_TOKEN_KEY);
-    if (refreshToken) {
-      try {
-        await api.post("/api/v1/auth/logout", { refreshToken });
-      } catch {
-        // Logout API xatoligi bo'lsa ham, local ma'lumotlarni tozalaymiz
-      }
-    }
-
-    // Session Storage'ni tozalash
-    sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-    sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-    sessionStorage.removeItem(USER_DATA_KEY);
-
-    setIsAuthenticated(false);
-    setUser(null);
-
-    // Login sahifaga redirect
-    window.location.href = "/auth/login";
   };
 
   return (

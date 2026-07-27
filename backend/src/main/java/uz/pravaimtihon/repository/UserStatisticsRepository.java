@@ -25,13 +25,21 @@ public interface UserStatisticsRepository extends JpaRepository<UserStatistics, 
             "ORDER BY us.totalExams DESC, us.bestScore DESC")
     List<UserStatistics> findGlobalLeaderboard(Pageable pageable);
 
-    @Query("SELECT us FROM UserStatistics us " +
+    // ⚠️ FIX — N+1: `us.user` is FetchType.LAZY. Without a fetch join here,
+    // `stats.getUser().getFullName()` in StatisticsService triggers one extra
+    // SELECT per row (20 rows/page = 21 queries total). `LEFT JOIN FETCH`
+    // batches the User rows into the same query. An explicit `countQuery` is
+    // required because Hibernate cannot safely derive a COUNT query from a
+    // JOIN FETCH + Pageable combination.
+    @Query(value = "SELECT us FROM UserStatistics us LEFT JOIN FETCH us.user " +
             "WHERE us.topic = :topic " +
-            "ORDER BY us.bestScore DESC, us.averageScore DESC")
+            "ORDER BY us.bestScore DESC, us.averageScore DESC",
+            countQuery = "SELECT COUNT(us) FROM UserStatistics us WHERE us.topic = :topic")
     Page<UserStatistics> findLeaderboardByTopicPaginated(@Param("topic") String topic, Pageable pageable);
 
-    @Query("SELECT us FROM UserStatistics us " +
-            "ORDER BY us.bestScore DESC, us.averageScore DESC, us.totalExams DESC")
+    @Query(value = "SELECT us FROM UserStatistics us LEFT JOIN FETCH us.user " +
+            "ORDER BY us.bestScore DESC, us.averageScore DESC, us.totalExams DESC",
+            countQuery = "SELECT COUNT(us) FROM UserStatistics us")
     Page<UserStatistics> findGlobalLeaderboardPaginated(Pageable pageable);
 
 }

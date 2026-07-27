@@ -1,6 +1,6 @@
 import { notifications } from "@mantine/notifications";
 import i18n from "../../../utils/i18n";
-import api from "../../../services/api";
+import api, { getAccessToken } from "../../../services/api";
 import type {
   ClearOptions,
   ClearResult,
@@ -51,7 +51,7 @@ export function useBackupMutations() {
    * shunday qilib brauzer tarixi/serverda qoladigan URL orqali sessiya o'g'irlanmaydi.
    */
   const downloadBackup = async (jobId: string, filename: string): Promise<void> => {
-    const token = sessionStorage.getItem("accessToken");
+    const token = getAccessToken();
     const baseURL = api.defaults.baseURL || "";
     const url = `${baseURL}/api/v1/admin/backup/export/${jobId}/download`;
 
