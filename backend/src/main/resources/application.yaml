@@ -145,7 +145,7 @@ app:
 
   # Multi-Channel Contact / Partnership Inquiries
   contact:
-    admin-email: ${ADMIN_NOTIFICATION_EMAIL:info@pravaonline.uz}
+    admin-email: ${ADMIN_NOTIFICATION_EMAIL:mirabbosegamberdiyev3@gmail.com,info@pravaonline.uz}
     from-email: ${MAIL_FROM:${MAIL_USERNAME:info@pravaonline.uz}}
 
   # Security

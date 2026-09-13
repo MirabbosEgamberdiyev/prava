@@ -59,12 +59,14 @@ services:
       MAIL_PORT: ${MAIL_PORT:-}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      ADMIN_NOTIFICATION_EMAIL: ${ADMIN_NOTIFICATION_EMAIL:-}
       ESKIZ_EMAIL: ${ESKIZ_EMAIL:-}
       ESKIZ_PASSWORD: ${ESKIZ_PASSWORD:-}
 
       # Telegram Bot — token faqat .env dan (hardcoded default olib tashlandi)
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-pravaonlineuzbot}
+      TELEGRAM_ADMIN_CHAT_ID: ${TELEGRAM_ADMIN_CHAT_ID:-}
       TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-https://pravaonline.uz/api/v1/telegram/webhook}
 
       # Default admin bootstrap parollari — kodda endi default YO'Q.

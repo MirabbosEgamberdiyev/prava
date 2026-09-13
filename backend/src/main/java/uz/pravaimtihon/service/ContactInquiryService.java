@@ -21,6 +21,7 @@ import uz.pravaimtihon.repository.ContactInquiryRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ public class ContactInquiryService {
     private final JavaMailSender mailSender;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${app.contact.admin-email:${ADMIN_NOTIFICATION_EMAIL:info@pravaonline.uz}}")
+    @Value("${app.contact.admin-email:${ADMIN_NOTIFICATION_EMAIL:mirabbosegamberdiyev3@gmail.com,info@pravaonline.uz}}")
     private String adminEmail;
 
     @Value("${app.contact.from-email:${MAIL_FROM:${spring.mail.username:info@pravaonline.uz}}}")
@@ -46,6 +47,12 @@ public class ContactInquiryService {
 
     @Value("${app.email.enabled:true}")
     private boolean emailEnabled;
+
+    @Value("${app.telegram.bot-token:}")
+    private String botToken;
+
+    @Value("${app.telegram.admin-chat-id:}")
+    private String adminChatId;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -108,7 +115,17 @@ public class ContactInquiryService {
 
         List<String> deliveryErrors = new ArrayList<>();
 
-        // 2. Email Delivery to admin inbox
+        // 2. Telegram Delivery (Instant & reliable)
+        boolean telegramSent = false;
+        try {
+            telegramSent = deliverTelegramNotification(ticketId, request, telegramUser, comment, safeIp, formattedDate);
+        } catch (Exception e) {
+            String errorMsg = "Telegram delivery failed: " + e.getMessage();
+            log.error("[TELEGRAM CHANNEL ERROR] requestId={}: {}", ticketId, errorMsg);
+            deliveryErrors.add(errorMsg);
+        }
+
+        // 3. Email Delivery (HTML template to admin inbox)
         boolean emailSent = false;
         try {
             emailSent = deliverHtmlEmail(ticketId, request, telegramUser, comment, safeIp, formattedDate);
@@ -118,12 +135,12 @@ public class ContactInquiryService {
             deliveryErrors.add(errorMsg);
         }
 
-        // 3. Delivery Status Evaluation
-        InquiryDeliveryStatus status = emailSent ? InquiryDeliveryStatus.FULL_DELIVERY : InquiryDeliveryStatus.CHANNELS_FAILED;
+        // 4. Delivery Status Evaluation
+        InquiryDeliveryStatus status = (emailSent || telegramSent) ? InquiryDeliveryStatus.FULL_DELIVERY : InquiryDeliveryStatus.CHANNELS_FAILED;
 
         // Update database audit record
         try {
-            inquiry.setTelegramDelivered(false);
+            inquiry.setTelegramDelivered(telegramSent);
             inquiry.setEmailDelivered(emailSent);
             inquiry.setDeliveryStatus(status);
             if (!deliveryErrors.isEmpty()) {
@@ -134,20 +151,86 @@ public class ContactInquiryService {
             log.error("[AUDIT DB ERROR] Failed to update delivery status: {}", e.getMessage());
         }
 
-        log.info("[AUDIT LOG - INQUIRY PROCESSED] requestId={} | status={} | emailSent={}",
-                ticketId, status, emailSent);
+        log.info("[AUDIT LOG - INQUIRY PROCESSED] requestId={} | status={} | emailSent={} | telegramSent={}",
+                ticketId, status, emailSent, telegramSent);
 
         String userFeedback = "Mutaxassisimiz murojaatingizni qabul qildi. Tez orada siz bilan bog‘lanamiz.";
 
         return ContactInquiryResponse.builder()
                 .ticketId(ticketId)
-                .delivered(true)
-                .telegramSent(false)
+                .delivered(emailSent || telegramSent)
+                .telegramSent(telegramSent)
                 .emailSent(emailSent)
                 .deliveryStatus(status)
                 .message(userFeedback)
                 .createdAt(now)
                 .build();
+    }
+
+    private boolean deliverTelegramNotification(String ticketId, ContactInquiryRequest request,
+                                               String telegramUser, String comment,
+                                               String clientIp, String formattedDate) {
+        if (botToken == null || botToken.isBlank() || adminChatId == null || adminChatId.isBlank()) {
+            log.info("[TELEGRAM CHANNEL SKIPPED] bot-token or admin-chat-id not configured.");
+            return false;
+        }
+
+        String orgType = (request.getOrganizationType() != null && !request.getOrganizationType().isBlank())
+                ? request.getOrganizationType().trim() : "Ko‘rsatilmagan";
+        String region = (request.getRegion() != null && !request.getRegion().isBlank())
+                ? request.getRegion().trim() : "Ko‘rsatilmagan";
+        String computers = (request.getComputerCount() != null && !request.getComputerCount().isBlank())
+                ? request.getComputerCount().trim() + " ta" : "Ko‘rsatilmagan";
+
+        String text = String.format("""
+                🏢 <b>YANGI HAMKORLIK SO‘ROVI</b>
+
+                🎫 <b>Murojaat raqami:</b> #%s
+                📅 <b>Vaqt:</b> %s
+
+                🏛 <b>Tashkilot:</b> %s
+                👤 <b>Mas'ul shaxs:</b> %s
+                📞 <b>Telefon:</b> <code>%s</code>
+                💬 <b>Telegram:</b> %s
+                📍 <b>Hudud:</b> %s
+                🏷 <b>Tashkilot turi:</b> %s
+                💻 <b>Kompyuterlar:</b> %s
+
+                📝 <b>Izoh:</b>
+                <i>%s</i>
+
+                🌐 <b>IP:</b> <code>%s</code>
+                """,
+                ticketId, formattedDate,
+                escapeHtml(request.getOrganization()),
+                escapeHtml(request.getFullName()),
+                escapeHtml(request.getPhone()),
+                telegramUser,
+                escapeHtml(region),
+                escapeHtml(orgType),
+                escapeHtml(computers),
+                escapeHtml(comment),
+                clientIp
+        );
+
+        try {
+            String url = "https://api.telegram.org/bot" + botToken.trim() + "/sendMessage";
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("chat_id", adminChatId.trim());
+            payload.put("text", text.trim());
+            payload.put("parse_mode", "HTML");
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+
+            restTemplate.postForObject(url, entity, String.class);
+            log.info("✅ [TELEGRAM SENT] requestId={} notification delivered to chat {}", ticketId, adminChatId);
+            return true;
+        } catch (Exception e) {
+            log.error("❌ [TELEGRAM FAILED] Failed to send telegram notification: {}", e.getMessage());
+            return false;
+        }
     }
 
     private boolean deliverHtmlEmail(String ticketId, ContactInquiryRequest request,
@@ -167,12 +250,23 @@ public class ContactInquiryService {
 
             String sender = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail.trim() : "info@pravaonline.uz";
             helper.setFrom(fromName + " <" + sender + ">");
-            helper.setTo(adminEmail.trim());
+
+            String[] recipients = Arrays.stream(adminEmail.split(","))
+                    .map(String::trim)
+                    .filter(e -> !e.isBlank())
+                    .toArray(String[]::new);
+
+            if (recipients.length == 0) {
+                log.warn("[EMAIL CHANNEL SKIPPED] No valid recipients in adminEmail: {}", adminEmail);
+                return false;
+            }
+
+            helper.setTo(recipients);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            log.info("✅ [EMAIL SENT] requestId={} successfully sent to {}", ticketId, adminEmail);
+            log.info("✅ [EMAIL SENT] requestId={} successfully sent to {}", ticketId, Arrays.toString(recipients));
             return true;
         } catch (Exception e) {
             log.error("❌ [EMAIL FAILED] Failed to send email to {}: {}", adminEmail, e.getMessage());
