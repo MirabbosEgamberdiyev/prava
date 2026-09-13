@@ -28,22 +28,22 @@ public class DefaultUserInitializer implements CommandLineRunner {
     @Value("${app.init.default-users.enabled:true}")
     private boolean defaultUsersEnabled;
 
-    @Value("${app.init.super-admin-password:SuperAdmin2026!}")
+    @Value("${app.init.super-admin-password:SuperAdmin2026}")
     private String superAdminPassword;
 
-    @Value("${app.init.admin-password:Admin2026!}")
+    @Value("${app.init.admin-password:Admin2026}")
     private String adminPassword;
 
-    @Value("${app.init.content-manager-password:Content2026!}")
+    @Value("${app.init.content-manager-password:Content2026}")
     private String contentManagerPassword;
 
-    @Value("${app.init.support-password:Support2026!}")
+    @Value("${app.init.support-password:Support2026}")
     private String supportPassword;
 
-    @Value("${app.init.analyst-password:Analyst2026!}")
+    @Value("${app.init.analyst-password:Analyst2026}")
     private String analystPassword;
 
-    @Value("${app.init.user-password:User2026!}")
+    @Value("${app.init.user-password:User2026}")
     private String userPassword;
 
     @Override
@@ -74,19 +74,20 @@ public class DefaultUserInitializer implements CommandLineRunner {
             log.warn("⚠️ Could not ensure contact_inquiries columns: {}", e.getMessage());
         }
 
-        initUser("superadmin@pravaonline.uz", "998901234567", "Super", "Admin", superAdminPassword, Role.SUPER_ADMIN);
-        initUser("admin@pravaonline.uz", "998901234568", "System", "Admin", adminPassword, Role.ADMIN);
-        initUser("content@pravaonline.uz", "998901234569", "Content", "Manager", contentManagerPassword, Role.CONTENT_MANAGER);
-        initUser("support@pravaonline.uz", "998901234570", "Support", "Specialist", supportPassword, Role.SUPPORT);
-        initUser("analyst@pravaonline.uz", "998901234571", "System", "Analyst", analystPassword, Role.ANALYST);
-        initUser("user@pravaonline.uz", "998901234572", "Standard", "Student", userPassword, Role.USER);
+        initUser("superadmin@pravaonline.uz", "998901234567", "Super", "Admin", superAdminPassword, Role.SUPER_ADMIN, "SuperAdmin2026");
+        initUser("admin@pravaonline.uz", "998901234568", "System", "Admin", adminPassword, Role.ADMIN, "Admin2026");
+        initUser("content@pravaonline.uz", "998901234569", "Content", "Manager", contentManagerPassword, Role.CONTENT_MANAGER, "Content2026");
+        initUser("support@pravaonline.uz", "998901234570", "Support", "Specialist", supportPassword, Role.SUPPORT, "Support2026");
+        initUser("analyst@pravaonline.uz", "998901234571", "System", "Analyst", analystPassword, Role.ANALYST, "Analyst2026");
+        initUser("user@pravaonline.uz", "998901234572", "Standard", "Student", userPassword, Role.USER, "User2026");
 
         log.info("=".repeat(80));
         log.info("✅ DEFAULT USERS INITIALIZATION COMPLETED (ALL ROLES READY)");
         log.info("=".repeat(80));
     }
 
-    private void initUser(String email, String phone, String firstName, String lastName, String rawPassword, Role role) {
+    private void initUser(String email, String phone, String firstName, String lastName, String rawPassword, Role role, String defaultPassword) {
+        String effectivePassword = (rawPassword != null && !rawPassword.trim().isEmpty()) ? rawPassword.trim() : defaultPassword;
         Optional<User> existingUser = userRepository.findByIdentifier(email);
         if (existingUser.isEmpty()) {
             existingUser = userRepository.findByIdentifier(phone);
@@ -98,7 +99,7 @@ public class DefaultUserInitializer implements CommandLineRunner {
                     .lastName(lastName)
                     .email(email)
                     .phoneNumber(phone)
-                    .passwordHash(passwordEncoder.encode(rawPassword))
+                    .passwordHash(passwordEncoder.encode(effectivePassword))
                     .role(role)
                     .preferredLanguage(AcceptLanguage.UZL)
                     .isActive(true)
@@ -107,14 +108,14 @@ public class DefaultUserInitializer implements CommandLineRunner {
                     .build();
 
             userRepository.save(user);
-            log.info("✅ DEFAULT USER CREATED: {} [{}] with password [{}]", email, role, rawPassword);
+            log.info("✅ DEFAULT USER CREATED: {} [{}] with password [{}]", email, role, effectivePassword);
         } else {
             User user = existingUser.get();
             user.setRole(role);
             user.setIsActive(true);
-            user.setPasswordHash(passwordEncoder.encode(rawPassword));
+            user.setPasswordHash(passwordEncoder.encode(effectivePassword));
             userRepository.save(user);
-            log.info("ℹ️  DEFAULT USER UPDATED: {} [{}] with password [{}]", email, role, rawPassword);
+            log.info("ℹ️  DEFAULT USER UPDATED: {} [{}] with password [{}]", email, role, effectivePassword);
         }
     }
 }
