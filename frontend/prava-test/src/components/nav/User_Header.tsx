@@ -36,7 +36,7 @@ const User_Header = ({
           <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
             <Link to="/" style={{ textDecoration: "none" }}>
-              <Text fw={800} size="xl" tt="uppercase" c="blue" truncate="end">
+              <Text fw={800} fz={{ base: "md", sm: "xl" }} tt="uppercase" c="blue" truncate="end">
                 PravaOnline
               </Text>
             </Link>

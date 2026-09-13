@@ -748,11 +748,18 @@
 
 .previewNavTabs {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   padding: 12px 20px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.previewNavTabs::-webkit-scrollbar {
+  display: none;
 }
 
 .previewTabBtn {
@@ -769,6 +776,7 @@
   color: var(--text-muted);
   transition: all 0.2s ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .previewTabBtn:hover {
@@ -812,6 +820,7 @@
   cursor: pointer;
   transition: all 0.15s ease;
   font-weight: 500;
+  min-width: 0;
 }
 
 .mockExamOption:hover {
@@ -823,6 +832,27 @@
   border-color: var(--success) !important;
   background: rgba(47, 158, 68, 0.12) !important;
   color: var(--success);
+}
+
+@media (max-width: 600px) {
+  .previewNavTabs {
+    padding: 10px 14px;
+    gap: 6px;
+  }
+  .previewTabBtn {
+    padding: 7px 12px;
+    font-size: 0.8125rem;
+  }
+  .previewBody {
+    padding: 16px 12px;
+  }
+  .mockExamContainer {
+    padding: 16px 14px;
+  }
+  .mockExamOption {
+    padding: 12px 14px;
+    gap: 10px;
+  }
 }
 
 /* ── 4. LEARNING FLOW (4 Steps) ── */

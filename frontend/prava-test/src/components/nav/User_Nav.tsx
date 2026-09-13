@@ -117,7 +117,13 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
   ];
 
   return (
-    <AppShell.Navbar p="sm" pt="xs">
+    <AppShell.Navbar
+      p="sm"
+      pt="xs"
+      style={{
+        paddingBottom: "calc(var(--mantine-spacing-sm) + var(--sab, 0px))",
+      }}
+    >
       <Flex direction="column" justify="space-between" h="100%">
         <ScrollArea>
           <Box>

@@ -466,6 +466,11 @@ export default function User_Page() {
                   style={{ "--accent": m.color } as React.CSSProperties}
                   type="button"
                 >
+                  {m.featured && (
+                    <span className="home-menu-badge">
+                      {t("home.featuredBadge", "Tavsiya etiladi")}
+                    </span>
+                  )}
                   <span className="home-menu-num">{i + 1}</span>
                   <div
                     className="home-menu-icon"

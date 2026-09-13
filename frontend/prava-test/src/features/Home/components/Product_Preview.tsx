@@ -147,12 +147,23 @@ export function Product_Preview() {
                           opt.id
                         )}
                       </ThemeIcon>
-                      <Text size="sm" style={{ flex: 1 }}>
+                      <Text size="sm" style={{ flex: 1, minWidth: 0, wordBreak: "break-word" }}>
                         {opt.text}
                       </Text>
                       {isSelected && isCorrect && (
-                        <Badge size="xs" color="green" variant="light">
-                          To'g'ri javob
+                        <Badge
+                          size="xs"
+                          color="green"
+                          variant="light"
+                          style={{
+                            flexShrink: 0,
+                            whiteSpace: "nowrap",
+                            minWidth: "max-content",
+                            padding: "0 8px",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {t("home.preview.correctBadge", "TO'G'RI ✓")}
                         </Badge>
                       )}
                     </div>
