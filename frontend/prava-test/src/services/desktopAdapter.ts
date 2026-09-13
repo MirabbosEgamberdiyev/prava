@@ -142,16 +142,58 @@ export function fromStoredQuestion(sq: StoredQuestion): OfflineQuestion {
   };
 }
 
+// ── ACTIVE SESSION TRACKING ───────────────────────────────────────────────────
+let activeExamSessionId: number | null = null;
+let activeTicketSessionId: number | null = null;
+let activeMarathonSessionId: number | null = null;
+
+export function getActiveExamSessionId(): number | null {
+  return activeExamSessionId;
+}
+
+export function getActiveTicketSessionId(): number | null {
+  return activeTicketSessionId;
+}
+
+export function getActiveMarathonSessionId(): number | null {
+  return activeMarathonSessionId;
+}
+
+export async function submitExamSession(
+  sessionId: number,
+  answers: { questionId: number; selectedOptionIndex?: number | null; timeSpentSeconds?: number }[]
+): Promise<boolean> {
+  if (!sessionId || !answers || answers.length === 0) return false;
+  try {
+    await api.post("/api/v2/exams/submit", {
+      sessionId,
+      answers: answers.map((a) => ({
+        questionId: a.questionId,
+        selectedOptionIndex: a.selectedOptionIndex != null ? a.selectedOptionIndex : null,
+        timeSpentSeconds: a.timeSpentSeconds || 0,
+      })),
+    });
+    window.dispatchEvent(new Event("prava-storage-changed"));
+    return true;
+  } catch (err) {
+    console.warn("Failed to submit exam session to backend:", err);
+    return false;
+  }
+}
+
 // ── DATA FETCHING APIS ────────────────────────────────────────────────────────
 
 export async function getExamQuestions(count = 20): Promise<OfflineQuestion[]> {
   try {
     const res = await api.post<{
-      data: { questions: any[] };
+      data: { sessionId?: number; questions: any[] };
     }>("/api/v2/exams/marathon/start-visible", {
       questionCount: count,
       durationMinutes: count,
     });
+    if (res.data?.data?.sessionId) {
+      activeExamSessionId = res.data.data.sessionId;
+    }
     if (res.data?.data?.questions && res.data.data.questions.length > 0) {
       return res.data.data.questions.map(normalizeQuestion);
     }
@@ -159,11 +201,14 @@ export async function getExamQuestions(count = 20): Promise<OfflineQuestion[]> {
     // fallback to start-visible
     try {
       const res2 = await api.post<{
-        data: { questions: any[] };
+        data: { sessionId?: number; questions: any[] };
       }>("/api/v2/exams/start-visible", {
         questionCount: count,
         durationMinutes: count,
       });
+      if (res2.data?.data?.sessionId) {
+        activeExamSessionId = res2.data.data.sessionId;
+      }
       if (res2.data?.data?.questions && res2.data.data.questions.length > 0) {
         return res2.data.data.questions.map(normalizeQuestion);
       }
@@ -174,20 +219,24 @@ export async function getExamQuestions(count = 20): Promise<OfflineQuestion[]> {
   return [];
 }
 
-export async function getMarathonQuestions(topicId?: number): Promise<OfflineQuestion[]> {
+export async function getMarathonQuestions(topicId?: number, count = 100): Promise<OfflineQuestion[]> {
+  const actualCount = count && count > 0 ? count : 1190;
   try {
     const res = await api.post<{
-      data: { questions: any[] };
+      data: { sessionId?: number; questions: any[] };
     }>("/api/v2/exams/marathon/start-visible", {
-      questionCount: 100,
-      durationMinutes: 100,
+      questionCount: actualCount,
+      durationMinutes: actualCount,
       topicId,
     });
+    if (res.data?.data?.sessionId) {
+      activeMarathonSessionId = res.data.data.sessionId;
+    }
     if (res.data?.data?.questions) {
       return res.data.data.questions.map(normalizeQuestion);
     }
-  } catch {
-    // fallback
+  } catch (err: any) {
+    console.warn("getMarathonQuestions error:", err?.response?.data || err?.message || err);
   }
   return [];
 }
@@ -240,8 +289,11 @@ export async function getTickets(): Promise<OfflineTicket[]> {
 export async function getQuestionsByTicket(ticketId: number): Promise<OfflineQuestion[]> {
   try {
     const res = await api.post<{
-      data: { questions: any[] };
+      data: { sessionId?: number; questions: any[] };
     }>("/api/v2/tickets/start-visible", { ticketId });
+    if (res.data?.data?.sessionId) {
+      activeTicketSessionId = res.data.data.sessionId;
+    }
     if (res.data?.data?.questions) {
       return res.data.data.questions.map(normalizeQuestion);
     }
@@ -320,9 +372,17 @@ export async function getFullStats(_userId?: number): Promise<FullStats> {
     let readiness: "ready" | "average" | "not_ready" | "untouched" = "untouched";
     if (timesDone === 0) {
       readiness = "untouched";
-    } else if (fastPerfect >= 1 || (serverTk?.bestScore != null && serverTk.bestScore >= 95)) {
+    } else if (
+      midGood >= 1 ||
+      fastPerfect >= 1 ||
+      (lastScore != null && lastScore >= 90) ||
+      (serverTk?.bestScore != null && serverTk.bestScore >= 90)
+    ) {
       readiness = "ready";
-    } else if (midGood >= 1 || (serverTk?.averageScore != null && serverTk.averageScore >= 80)) {
+    } else if (
+      (lastScore != null && lastScore >= 70) ||
+      (serverTk?.averageScore != null && serverTk.averageScore >= 70)
+    ) {
       readiness = "average";
     } else {
       readiness = "not_ready";

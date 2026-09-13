@@ -281,12 +281,13 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
 
   return (
     <>
-      <Flex p="sm" py="xs" justify="space-between" align="center">
-        <Group>
+      <Flex p={{ base: "xs", sm: "sm" }} py="xs" justify="space-between" align="center" wrap="wrap" gap="xs">
+        <Group gap="xs" wrap="nowrap">
           <Button
-            rightSection={<IconX size={18} />}
+            rightSection={<IconX size={16} />}
             variant="light"
             color="red"
+            size="sm"
             onClick={open}
             data-finish-button
           >
@@ -301,7 +302,7 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
           */}
           <Badge
             variant="light"
-            size="xl"
+            size="lg"
             radius="xs"
             color={getTimerColor()}
             role="timer"
@@ -315,7 +316,7 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
           </Badge>
         </Group>
 
-        <Group>
+        <Group gap="xs" wrap="nowrap">
           <ColorMode />
           <LanguagePicker />
         </Group>
@@ -332,12 +333,12 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
           </Text>
         }
         centered
-        size="440px"
+        size="md"
         radius="lg"
         closeOnClickOutside={!isTimeUp && !submitting}
         closeOnEscape={!isTimeUp && !submitting}
         withCloseButton={!isTimeUp && !submitting}
-        padding="xl"
+        padding="md"
       >
         <Stack gap="lg">
           {/* Stats */}

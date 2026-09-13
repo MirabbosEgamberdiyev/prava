@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/app")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('USER')")
+@PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
 @Tag(name = "Desktop App API", description = "Prava-Desktop-Online uchun API endpoints")
 public class UserAppController {
 

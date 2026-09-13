@@ -11,6 +11,8 @@ import {
   localizeQ,
   localizeOpt,
   parseOptions,
+  getActiveExamSessionId,
+  submitExamSession,
 } from "../../services/desktopAdapter";
 import SecureImage from "../../components/common/SecureImage";
 import ImageZoomModal from "../../components/common/ImageZoomModal";
@@ -125,8 +127,17 @@ export default function Exam_Page() {
         durationSeconds: duration,
         examType: "exam",
       }).catch(() => {});
+
+      const activeSessionId = getActiveExamSessionId();
+      if (activeSessionId && questions.length > 0) {
+        const answersPayload = questions.map((q, idx) => ({
+          questionId: q.id,
+          selectedOptionIndex: curAnswers[idx]?.selected ?? null,
+        }));
+        submitExamSession(activeSessionId, answersPayload).catch(() => {});
+      }
     },
-    [questions.length, questionCount, userId]
+    [questions, questionCount, userId]
   );
 
   useEffect(() => {

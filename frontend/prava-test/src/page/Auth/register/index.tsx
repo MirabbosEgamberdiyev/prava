@@ -547,15 +547,24 @@ const Register_Page = () => {
                 )}
               </Stack>
 
-              <Center mt="lg" mb="sm">
+              <Center mt="lg" mb="sm" style={{ maxWidth: "100%", overflowX: "hidden" }}>
                 <PinInput
                   length={6}
-                  size="md"
+                  size="sm"
+                  gap={6}
                   value={code}
                   onChange={setCode}
                   type="number"
                   autoFocus
                   placeholder="○"
+                  styles={{
+                    input: {
+                      width: "clamp(28px, 9vw, 44px)",
+                      height: "clamp(34px, 10vw, 48px)",
+                      fontSize: "clamp(13px, 3.5vw, 18px)",
+                      padding: 0,
+                    },
+                  }}
                 />
               </Center>
 

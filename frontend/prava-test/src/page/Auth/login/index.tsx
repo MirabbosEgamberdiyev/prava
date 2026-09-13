@@ -276,7 +276,7 @@ const Login_Page = () => {
                 my={2}
               />
 
-              <SimpleGrid cols={2} spacing="xs">
+              <SimpleGrid cols={{ base: 1, 360: 2 }} spacing="xs">
                 <GoogleLoginButton mode="login" compact />
                 <TelegramLoginButton mode="login" compact />
               </SimpleGrid>

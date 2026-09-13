@@ -90,6 +90,12 @@
   --mantine-color-default: #ffffff;
   --mantine-color-default-border: #dee2e6;
   --mantine-color-default-hover: #f1f3f5;
+
+  /* Safe Area Inset Support (iPhone Notch, Dynamic Island) */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
 }
 
 /* ============ DARK MODE ============ */
@@ -537,6 +543,7 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   transition:
     background 0.2s,
@@ -545,11 +552,13 @@ body {
 
 body:has(.app) {
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
 .app {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -601,8 +610,8 @@ body:has(.app) {
   background: var(--card-bg);
   color: var(--text);
   border-radius: 16px;
-  padding: 44px 40px;
-  width: 420px;
+  padding: clamp(24px, 5vw, 44px) clamp(16px, 5vw, 40px);
+  width: min(100%, 420px);
   box-shadow: var(--shadow-lg);
 }
 
@@ -867,7 +876,9 @@ body:has(.app) {
 
 /* Profile card */
 .usp-card {
-  width: 200px;
+  width: min(100%, 200px);
+  flex: 1 1 150px;
+  max-width: 220px;
   background: var(--card-bg);
   border: 1.5px solid var(--border);
   border-radius: 16px;
@@ -1024,7 +1035,7 @@ body:has(.app) {
   background: var(--card-bg);
   border-radius: var(--radius-lg);
   padding: 18px;
-  width: 310px;
+  width: min(100%, 310px);
   box-shadow: var(--shadow-lg);
 }
 
@@ -1406,6 +1417,8 @@ body:has(.app) {
   background: var(--card-bg);
   border-bottom: 1px solid var(--border);
   padding: 10px 24px;
+  padding-left: max(16px, var(--sal));
+  padding-right: max(16px, var(--sar));
   position: sticky;
   top: 0;
   z-index: 100;
@@ -1432,6 +1445,7 @@ body:has(.app) {
   font-weight: 900;
   color: var(--primary);
   letter-spacing: 0.4px;
+  white-space: nowrap;
 }
 
 .home-header-right {
@@ -1470,8 +1484,46 @@ body:has(.app) {
 }
 
 @media (max-width: 640px) {
+  .home-screen {
+    scrollbar-gutter: auto;
+  }
+  .home-header {
+    padding: 8px clamp(8px, 2.5vw, 16px);
+  }
   .hide-on-mobile {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-header-inner {
+    gap: 8px;
+  }
+  .home-header-right {
+    gap: 6px;
+  }
+  .user-switcher-name {
+    display: none !important;
+  }
+  .user-switcher {
+    padding: 0 6px 0 4px !important;
+    gap: 4px !important;
+  }
+  .home-header-right .navbar-divider {
+    display: none !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .home-header-brand .brand-accent {
+    display: none;
+  }
+  .home-header-brand {
+    font-size: 13px;
+  }
+  .home-header-logo img {
+    height: 28px;
+    width: 28px;
   }
 }
 
@@ -1490,6 +1542,20 @@ body:has(.app) {
   flex-direction: column;
   align-items: center;
   gap: 24px;
+}
+
+@media (max-width: 640px) {
+  .home-content {
+    padding: 16px 12px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-content {
+    padding: 14px 8px;
+    gap: 12px;
+  }
 }
 
 .home-inner {
@@ -1587,6 +1653,25 @@ body:has(.app) {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+}
+
+@media (max-width: 640px) {
+  .home-menu-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .home-menu-card.featured {
+    grid-column: span 1 !important;
+  }
+  .home-menu-card {
+    min-height: auto !important;
+    padding: 18px 16px 16px !important;
+  }
+  .home-menu-num {
+    font-size: 65px !important;
+    right: 12px !important;
+    bottom: 8px !important;
+  }
 }
 
 .home-menu-card {
@@ -2539,6 +2624,21 @@ body:has(.app) {
   align-items: center;
   justify-content: center;
 }
+
+@media (max-width: 640px) {
+  .review-card-body {
+    flex-direction: column-reverse;
+  }
+  .review-card-img-wrap {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 10px 14px 0;
+  }
+  .review-card-options {
+    padding: 10px 12px 14px;
+  }
+}
 .review-card-img-wrap .zoomable-wrap {
   width: 100%;
   border-radius: 8px;
@@ -2667,7 +2767,7 @@ body:has(.app) {
   border: 1px solid var(--border);
   border-radius: 20px;
   overflow: hidden;
-  width: 260px;
+  width: min(280px, calc(100vw - 32px));
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   position: relative;
 }
@@ -3289,6 +3389,7 @@ body:has(.app) {
 /* ============ TOPICS SCREEN ============ */
 .topics-screen {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -3364,6 +3465,34 @@ body:has(.app) {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 14px;
   align-content: start;
+}
+
+@media (max-width: 600px) {
+  .topics-header {
+    height: auto;
+    min-height: 52px;
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .topics-search-wrap {
+    width: 100%;
+    margin-left: 0;
+    order: 10;
+  }
+  .topics-search-input {
+    width: 100%;
+  }
+  .topics-grid {
+    padding: 12px 10px;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  }
+  .tc-grid {
+    padding: 12px 10px;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  }
 }
 
 /* Topic card */
@@ -5098,6 +5227,7 @@ body:has(.app) {
   color: #ffffff !important;
   font-weight: 600;
   font-size: 14px;
+  min-height: 44px;
   padding: 10px 20px;
   border-radius: 8px;
   border: 1px solid transparent;
@@ -5120,6 +5250,7 @@ body:has(.app) {
   color: var(--text) !important;
   font-weight: 600;
   font-size: 14px;
+  min-height: 44px;
   padding: 10px 20px;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -5131,6 +5262,14 @@ body:has(.app) {
 .saas-btn-secondary:hover {
   background: var(--surface-muted);
   border-color: var(--primary);
+}
+
+@media (max-width: 480px) {
+  .saas-btn-primary,
+  .saas-btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .enterprise-contact-card {

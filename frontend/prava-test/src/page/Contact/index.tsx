@@ -618,7 +618,7 @@ export default function Contact_Page() {
                       >
                         +998 99 391 25 05
                       </Button>
-                      <Group grow gap="xs">
+                      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
                         <Button
                           component="a"
                           href="https://t.me/pravaonlineuz"
@@ -643,7 +643,7 @@ export default function Contact_Page() {
                         >
                           {t("contact.btnEmail", "Email yozish")}
                         </Button>
-                      </Group>
+                      </SimpleGrid>
                       <Button
                         variant="subtle"
                         color="gray"

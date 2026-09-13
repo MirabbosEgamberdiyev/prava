@@ -18,6 +18,7 @@ import {
   Tooltip,
   ActionIcon,
   Table,
+  Paper,
 } from "@mantine/core";
 import {
   IconApple,
@@ -434,28 +435,81 @@ export default function Downloads_Page() {
             {t("dl.sysReqSub", "Dasturning barqaror va uzluksiz ishlashi uchun zarur bo'lgan parametrlar")}
           </Text>
 
-          <Table striped highlightOnHover withTableBorder={false} style={{ fontSize: 13 }}>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>{t("dl.tblPlatform", "Platforma")}</Table.Th>
-                <Table.Th>{t("dl.tblOs", "Operatsion tizim")}</Table.Th>
-                <Table.Th>{t("dl.tblRam", "Tezkor xotira (RAM)")}</Table.Th>
-                <Table.Th>{t("dl.tblDisk", "Diskdagi joy")}</Table.Th>
-                <Table.Th>{t("dl.tblExtra", "Qo'shimcha")}</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {systemRequirements.map((row) => (
-                <Table.Tr key={row.platform}>
-                  <Table.Td fw={600}>{row.platform}</Table.Td>
-                  <Table.Td>{row.minOs}</Table.Td>
-                  <Table.Td>{row.ram}</Table.Td>
-                  <Table.Td>{row.disk}</Table.Td>
-                  <Table.Td c="dimmed">{row.extra}</Table.Td>
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
+          {/* Desktop/Tablet Table View */}
+          <Box visibleFrom="sm">
+            <Table.ScrollContainer minWidth={580}>
+              <Table striped highlightOnHover withTableBorder={false} style={{ fontSize: 13 }}>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>{t("dl.tblPlatform", "Platforma")}</Table.Th>
+                    <Table.Th>{t("dl.tblOs", "Operatsion tizim")}</Table.Th>
+                    <Table.Th>{t("dl.tblRam", "Tezkor xotira (RAM)")}</Table.Th>
+                    <Table.Th>{t("dl.tblDisk", "Diskdagi joy")}</Table.Th>
+                    <Table.Th>{t("dl.tblExtra", "Qo'shimcha")}</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {systemRequirements.map((row) => (
+                    <Table.Tr key={row.platform}>
+                      <Table.Td fw={600}>{row.platform}</Table.Td>
+                      <Table.Td>{row.minOs}</Table.Td>
+                      <Table.Td>{row.ram}</Table.Td>
+                      <Table.Td>{row.disk}</Table.Td>
+                      <Table.Td c="dimmed">{row.extra}</Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            </Table.ScrollContainer>
+          </Box>
+
+          {/* Mobile Responsive Cards View */}
+          <Stack gap="xs" hiddenFrom="sm">
+            {systemRequirements.map((row) => (
+              <Paper
+                key={row.platform}
+                withBorder
+                p="sm"
+                radius="md"
+                style={{ backgroundColor: "var(--surface)" }}
+              >
+                <Group justify="space-between" mb={6}>
+                  <Text fw={700} size="sm">
+                    {row.platform}
+                  </Text>
+                  <Badge size="xs" variant="light" color="blue">
+                    {row.ram}
+                  </Badge>
+                </Group>
+                <Stack gap={4}>
+                  <Group justify="space-between">
+                    <Text size="xs" c="dimmed">
+                      {t("dl.tblOs", "OS")}:
+                    </Text>
+                    <Text size="xs" fw={500} ta="right" maw="60%">
+                      {row.minOs}
+                    </Text>
+                  </Group>
+                  <Group justify="space-between">
+                    <Text size="xs" c="dimmed">
+                      {t("dl.tblDisk", "Disk")}:
+                    </Text>
+                    <Text size="xs" fw={500}>
+                      {row.disk}
+                    </Text>
+                  </Group>
+                  <Group justify="space-between">
+                    <Text size="xs" c="dimmed">
+                      {t("dl.tblExtra", "Qo'shimcha")}:
+                    </Text>
+                    <Text size="xs" c="dimmed" ta="right" maw="60%">
+                      {row.extra}
+                    </Text>
+                  </Group>
+                </Stack>
+              </Paper>
+            ))}
+          </Stack>
         </div>
       </div>
 

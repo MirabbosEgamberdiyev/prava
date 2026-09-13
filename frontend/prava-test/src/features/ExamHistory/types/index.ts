@@ -16,20 +16,28 @@ export function getApiStatus(filter: HistoryFilterStatus): string | null {
 export interface ExamHistoryItem {
   sessionId: number;
   status: string;
-  score: number;
+  score?: number;
   percentage: number;
-  passed: boolean;
-  passingScore: number;
+  isPassed?: boolean;
+  passed?: boolean;
+  passingScore?: number;
   totalQuestions: number;
-  correctAnswers: number;
-  incorrectAnswers: number;
-  totalTimeSpentSeconds: number;
+  correctCount?: number;
+  correctAnswers?: number;
+  incorrectCount?: number;
+  incorrectAnswers?: number;
+  unansweredCount?: number;
+  durationSeconds?: number;
+  totalTimeSpentSeconds?: number;
   startedAt: string;
-  completedAt: string | null;
+  finishedAt?: string | null;
+  completedAt?: string | null;
   packageName?: LocalizedText;
   ticketName?: LocalizedText;
   ticketNumber?: number;
+  isMarathonMode?: boolean;
   isMarathon?: boolean;
+  isTicketMode?: boolean;
 }
 
 export interface ExamHistoryResponse {

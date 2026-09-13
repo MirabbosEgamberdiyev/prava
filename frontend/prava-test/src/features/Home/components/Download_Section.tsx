@@ -52,7 +52,7 @@ export const Download_Section = React.memo(() => {
                 </Button>
               </Link>
 
-              <Group grow>
+              <SimpleGrid cols={{ base: 1, 360: 2 }} spacing="xs">
                 <Link to="/downloads" style={{ textDecoration: "none" }}>
                   <Button
                     fullWidth
@@ -76,7 +76,7 @@ export const Download_Section = React.memo(() => {
                     App Store
                   </Button>
                 </Link>
-              </Group>
+              </SimpleGrid>
             </Stack>
           </div>
 

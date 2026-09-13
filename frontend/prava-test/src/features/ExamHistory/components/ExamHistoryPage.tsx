@@ -46,8 +46,8 @@ export function ExamHistoryPage() {
   // Client-side filter for COMPLETED (passed only) and FAILED (not passed)
   const filteredContent = useMemo(() => {
     if (!history?.content || !Array.isArray(history.content)) return [];
-    if (filter === "COMPLETED") return history.content.filter((item) => item && item.passed);
-    if (filter === "FAILED") return history.content.filter((item) => item && !item.passed);
+    if (filter === "COMPLETED") return history.content.filter((item) => item && (item.isPassed ?? item.passed));
+    if (filter === "FAILED") return history.content.filter((item) => item && !(item.isPassed ?? item.passed));
     return history.content.filter(Boolean);
   }, [history?.content, filter]);
 
@@ -102,22 +102,22 @@ export function ExamHistoryPage() {
     if (item.status === "IN_PROGRESS") return "blue";
     if (item.status === "ABANDONED") return "gray";
     if (item.status === "EXPIRED") return "orange";
-    return item.passed ? "green" : "red";
+    return (item.isPassed ?? item.passed) ? "green" : "red";
   };
 
   const getStatusLabel = (item: ExamHistoryItem) => {
     if (item.status === "IN_PROGRESS") return t("history.inProgress");
     if (item.status === "ABANDONED") return t("history.abandoned");
     if (item.status === "EXPIRED") return t("history.expired");
-    return item.passed ? t("history.passedLabel") : t("history.failedLabel");
+    return (item.isPassed ?? item.passed) ? t("history.passedLabel") : t("history.failedLabel");
   };
 
   const getExamName = (item: ExamHistoryItem) => {
     if (item.packageName) return localize(item.packageName);
     if (item.ticketName)
       return `${localize(item.ticketName)} #${item.ticketNumber}`;
-    if (item.isMarathon) return t("marathon.title");
-    return t("history.exam");
+    if (item.isMarathonMode || item.isMarathon) return t("marathon.title", "Marafon");
+    return t("history.exam", "Imtihon");
   };
 
   const totalPages = history?.totalPages ?? 0;
@@ -203,11 +203,11 @@ export function ExamHistoryPage() {
                     <Text size="xs" c="dimmed">
                       {formatDate(item.startedAt)}
                     </Text>
-                    {item.totalTimeSpentSeconds > 0 && (
+                    {((item.durationSeconds ?? item.totalTimeSpentSeconds ?? 0) > 0) && (
                       <Flex align="center" gap={4}>
                         <IconClock size={12} color="gray" />
                         <Text size="xs" c="dimmed">
-                          {formatDuration(item.totalTimeSpentSeconds)}
+                          {formatDuration(item.durationSeconds ?? item.totalTimeSpentSeconds ?? 0)}
                         </Text>
                       </Flex>
                     )}
@@ -228,7 +228,7 @@ export function ExamHistoryPage() {
                       color={getStatusColor(item)}
                     />
                     <Text size="xs" c="dimmed" ta="right">
-                      {item.correctAnswers}/{item.totalQuestions} (
+                      {item.correctCount ?? item.correctAnswers ?? 0}/{item.totalQuestions} (
                       {item.percentage.toFixed(0)}%)
                     </Text>
                   </Stack>

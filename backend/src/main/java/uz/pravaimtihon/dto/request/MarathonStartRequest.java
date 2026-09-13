@@ -26,8 +26,8 @@ public class MarathonStartRequest {
 
     @NotNull(message = "validation.marathon.questionCount.required")
     @Min(value = 5, message = "validation.marathon.questionCount.min")
-    @Max(value = 100, message = "validation.marathon.questionCount.max")
-    @Schema(description = "Savollar soni (5-100)", example = "20", required = true)
+    @Max(value = 1500, message = "validation.marathon.questionCount.max")
+    @Schema(description = "Savollar soni (5-1500)", example = "20", required = true)
     private Integer questionCount;
 
     @Schema(description = "Davomiylik (daqiqa) - default: savollar soni", example = "30")

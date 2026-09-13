@@ -8,6 +8,7 @@ import SEO from "../../components/common/SEO";
 import { getFullStats } from "../../services/desktopAdapter";
 import type { FullStats, AppScreen } from "../../types/desktop";
 import { QRCodeSVG } from "../../components/common/QRCodeSVG";
+import WeakTopicsWidget from "../../features/Home/components/WeakTopicsWidget";
 import { Menu } from "@mantine/core";
 import {
   IconBook2,
@@ -330,13 +331,16 @@ export default function User_Page() {
                 const ticketTotal = stats?.ticket_total ?? 60;
                 const qReady = stats?.question_readiness.ready ?? 0;
                 const qAverage = stats?.question_readiness.average ?? 0;
+                const qWeak = stats?.question_readiness.weak ?? 0;
                 const qTotal = stats?.question_readiness.total ?? 1190;
+                const qPracticed = qReady + qAverage + qWeak;
 
                 const ticketReadyPct =
                   ticketTotal > 0 ? Math.round((ticketReady / ticketTotal) * 100) : 0;
                 const ticketAvgPct =
                   ticketTotal > 0 ? Math.round((ticketAverage / ticketTotal) * 100) : 0;
-                const qPracticedPct = Math.round(((qReady + qAverage) / qTotal) * 100);
+                const qPracticedPct =
+                  qTotal > 0 ? Math.round((qPracticed / qTotal) * 100) : 0;
                 const overallPct =
                   ticketTotal > 0
                     ? Math.round((ticketReadyPct + qPracticedPct) / 2)
@@ -349,7 +353,7 @@ export default function User_Page() {
                     accentColor: "#0c8599",
                     value: `${ticketReady}/${ticketTotal}`,
                     pct: ticketReadyPct,
-                    label: t("home.ticketsReady", "Biletlar tayyor"),
+                    label: t("home.ticketsReady", "Tayyor biletlar"),
                     bars: [
                       { pct: ticketReadyPct, color: "#0c8599" },
                       { pct: ticketAvgPct, color: "#e67700" },
@@ -363,17 +367,15 @@ export default function User_Page() {
                     icon: <IconQuestionMark size={22} color="#fff" />,
                     gradient: "linear-gradient(135deg,#9775fa,#7950f2)",
                     accentColor: "#7950f2",
-                    value: `${qReady + qAverage}/${qTotal}`,
+                    value: `${qPracticed}/${qTotal}`,
                     pct: qPracticedPct,
-                    label: t("home.questionsReady", "Savollar tayyor"),
+                    label: t("home.questionsPracticed", "Ishlangan savollar"),
                     bars: [
                       { pct: Math.round((qReady / qTotal) * 100), color: "#7950f2" },
                       { pct: Math.round((qAverage / qTotal) * 100), color: "#e67700" },
+                      { pct: Math.round((qWeak / qTotal) * 100), color: "#ff6b6b" },
                       {
-                        pct: Math.max(
-                          0,
-                          100 - Math.round(((qReady + qAverage) / qTotal) * 100)
-                        ),
+                        pct: Math.max(0, 100 - qPracticedPct),
                         color: "var(--border)",
                       },
                     ],
@@ -451,6 +453,9 @@ export default function User_Page() {
                 ));
               })()}
             </div>
+
+            {/* Smart Weak Topics AI Advisor */}
+            <WeakTopicsWidget userId={userId} />
 
             <div className="home-menu-grid">
               {menus.map((m, i) => (

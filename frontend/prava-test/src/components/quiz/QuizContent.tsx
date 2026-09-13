@@ -499,7 +499,7 @@ export function QuizContent({
       )}
 
       {/* Question text + Bookmark */}
-      <Box p="lg">
+      <Box p={{ base: "xs", sm: "md", md: "lg" }}>
         <Flex justify="center" align="center" gap="sm">
           {/*
             O'QILUVCHANLIK: savol matni `size="lg"` (18px) markazga tekislangan
@@ -542,8 +542,8 @@ export function QuizContent({
         </Flex>
       </Box>
 
-      <Container fluid px="lg">
-        <Grid gutter="xl">
+      <Container fluid px={{ base: "xs", sm: "md", md: "lg" }}>
+        <Grid gutter={{ base: "sm", md: "xl" }}>
           {/* Options - left side */}
           <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 2, md: 1 }}>
             {currentQuestion?.options?.map((option: Option) => {
@@ -809,7 +809,7 @@ export function QuizContent({
       )}
 
       {/* Question navigation - bottom */}
-      <Container fluid mt="xl" pb="xl">
+      <Container fluid mt={{ base: "md", sm: "xl" }} pb={{ base: "md", sm: "xl" }} px={{ base: "xs", sm: "md" }}>
         {/* Savol raqamlari - tepada */}
         <ScrollArea type="auto" offsetScrollbars scrollbarSize={4} mx={"-md"}>
           <Flex gap={4} justify="center" wrap="wrap" py={6} px={4}>

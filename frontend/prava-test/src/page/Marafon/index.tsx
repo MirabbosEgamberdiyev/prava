@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import type { OfflineQuestion, OfflineTopic } from "../../types/desktop";
 import {
@@ -15,6 +15,8 @@ import {
   localizeOpt,
   localizeExp,
   parseOptions,
+  getActiveMarathonSessionId,
+  submitExamSession,
 } from "../../services/desktopAdapter";
 import ColorMode from "../../components/other/ColorMode";
 import LanguagePicker from "../../components/language/LanguagePicker";
@@ -53,9 +55,9 @@ export default function Marafon_Page() {
   const { user } = useAuth();
   const userId = user?.id ? Number(user.id) : 1;
 
-  const initialTopicId = searchParams.get("topicId")
-    ? Number(searchParams.get("topicId"))
-    : null;
+  const location = useLocation();
+  const rawTopicId = searchParams.get("topicId") || (location.state as any)?.topicId;
+  const initialTopicId = rawTopicId ? Number(rawTopicId) : null;
 
   // Setup state
   const [topics, setTopics] = useState<OfflineTopic[]>([]);
@@ -126,23 +128,32 @@ export default function Marafon_Page() {
     setCurrent(0);
     setErrorMsg(null);
 
-    const limit = COUNT_OPTIONS[countIdx] || undefined;
-    getMarathonQuestions(selTopic ?? undefined)
+    const maxQ =
+      selTopic != null
+        ? topics.find((t) => t.id === selTopic)?.question_count ?? 0
+        : topics.reduce((s, t) => s + (t.question_count || 0), 0);
+
+    const chosenOption = COUNT_OPTIONS[countIdx];
+    const limit =
+      chosenOption === 0
+        ? (maxQ > 0 ? maxQ : 1190)
+        : (maxQ > 0 ? Math.min(chosenOption, maxQ) : chosenOption);
+
+    getMarathonQuestions(selTopic ?? undefined, limit)
       .then((qs) => {
         if (qs.length === 0) {
           setErrorMsg(t("marathon.noQuestions", "Savollar topilmadi"));
           setPhase("result");
           return;
         }
-        const slice = limit ? qs.slice(0, limit) : qs;
-        setQuestions(slice);
+        setQuestions(qs);
         setPhase("exam");
       })
       .catch((e) => {
         setErrorMsg(String(e));
         setPhase("result");
       });
-  }, [selTopic, countIdx, t]);
+  }, [selTopic, countIdx, topics, t]);
 
   const triggerFinish = useCallback(() => {
     if (autoRef.current) {
@@ -162,7 +173,16 @@ export default function Marafon_Page() {
       durationSeconds: 0,
       examType: "marathon",
     }).catch(() => {});
-  }, [questions.length, userId]);
+
+    const activeId = getActiveMarathonSessionId();
+    if (activeId && questions.length > 0) {
+      const submitList = questions.map((q, idx) => ({
+        questionId: q.id,
+        selectedOptionIndex: curAnswers[idx]?.selected ?? null,
+      }));
+      submitExamSession(activeId, submitList).catch(() => {});
+    }
+  }, [questions, userId]);
 
   const handleSelect = (optIdx: number) => {
     if (answers[current] !== undefined) return;
@@ -297,16 +317,27 @@ export default function Marafon_Page() {
                 {t("marathon.questionCount", "Savollar soni")}
               </label>
               <div className="marathon-count-btns">
-                {COUNT_OPTIONS.map((n, idx) => (
-                  <button
-                    key={idx}
-                    className={`marathon-count-btn${countIdx === idx ? " active" : ""}`}
-                    onClick={() => setCountIdx(idx)}
-                    type="button"
-                  >
-                    {n === 0 ? t("marathon.allQuestions", "Barchasi") : n}
-                  </button>
-                ))}
+                {COUNT_OPTIONS.map((n, idx) => {
+                  const isAll = n === 0;
+                  const label = isAll
+                    ? `${t("marathon.allQuestions", "Barchasi")}${maxQ > 0 ? ` (${maxQ})` : ""}`
+                    : String(n);
+                  const isOptionExcessive = !isAll && maxQ > 0 && n > maxQ;
+
+                  return (
+                    <button
+                      key={idx}
+                      className={`marathon-count-btn${countIdx === idx ? " active" : ""}`}
+                      onClick={() => setCountIdx(idx)}
+                      disabled={isOptionExcessive}
+                      style={isOptionExcessive ? { opacity: 0.45, cursor: "not-allowed" } : undefined}
+                      title={isOptionExcessive ? `${maxQ} ta savol mavjud` : undefined}
+                      type="button"
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
               <p className="marathon-setup-hint">
                 <IconListNumbers size={13} />
@@ -557,23 +588,64 @@ export default function Marafon_Page() {
 
             <div className="exam-qnums-wrap">
               <div className="exam-qnums scrollable">
-                {questions.map((_, i) => {
-                  const a = answers[i];
-                  let cls = "exam-qnum";
-                  if (i === current) cls += " active";
-                  else if (a) cls += a.selected === a.correct ? " correct" : " wrong";
+                {(() => {
+                  const total = questions.length;
+                  const windowSize = 60;
+                  let startIdx = 0;
+                  let endIdx = total;
+                  if (total > windowSize) {
+                    startIdx = Math.max(0, current - Math.floor(windowSize / 2));
+                    endIdx = Math.min(total, startIdx + windowSize);
+                    if (endIdx - startIdx < windowSize) {
+                      startIdx = Math.max(0, endIdx - windowSize);
+                    }
+                  }
+                  const visibleIndices: number[] = [];
+                  for (let i = startIdx; i < endIdx; i++) {
+                    visibleIndices.push(i);
+                  }
                   return (
-                    <button
-                      key={i}
-                      ref={i === current ? activeQnumRef : undefined}
-                      className={cls}
-                      onClick={() => setCurrent(i)}
-                      type="button"
-                    >
-                      {i + 1}
-                    </button>
+                    <>
+                      {startIdx > 0 && (
+                        <button
+                          className="exam-qnum"
+                          onClick={() => setCurrent(0)}
+                          type="button"
+                          title="1-savol"
+                        >
+                          1..
+                        </button>
+                      )}
+                      {visibleIndices.map((i) => {
+                        const a = answers[i];
+                        let cls = "exam-qnum";
+                        if (i === current) cls += " active";
+                        else if (a) cls += a.selected === a.correct ? " correct" : " wrong";
+                        return (
+                          <button
+                            key={i}
+                            ref={i === current ? activeQnumRef : undefined}
+                            className={cls}
+                            onClick={() => setCurrent(i)}
+                            type="button"
+                          >
+                            {i + 1}
+                          </button>
+                        );
+                      })}
+                      {endIdx < total && (
+                        <button
+                          className="exam-qnum"
+                          onClick={() => setCurrent(total - 1)}
+                          type="button"
+                          title={`${total}-savol`}
+                        >
+                          ..{total}
+                        </button>
+                      )}
+                    </>
                   );
-                })}
+                })()}
               </div>
             </div>
 

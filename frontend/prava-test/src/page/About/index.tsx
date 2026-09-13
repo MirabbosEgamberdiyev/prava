@@ -2,6 +2,7 @@ import {
   Badge,
   Box,
   Divider,
+  Flex,
   Grid,
   Group,
   SimpleGrid,
@@ -277,7 +278,14 @@ export default function About_Page() {
                 "Bugunoq bepul ro'yxatdan o'ting yoki sinov imtihonida o'z kuchingizni sinab ko'ring."
               )}
             </p>
-            <Group gap="md" mt="sm">
+            <Flex
+              direction={{ base: "column", sm: "row" }}
+              justify="center"
+              align="center"
+              gap="md"
+              mt="sm"
+              w={{ base: "100%", sm: "auto" }}
+            >
               <Link to="/auth/register" className="saas-btn-primary">
                 {t("home.hero.startFree", "Bepul boshlash")}
                 <IconArrowRight size={16} />
@@ -285,7 +293,7 @@ export default function About_Page() {
               <Link to="/partners" className="saas-btn-secondary">
                 {t("nav.corporate", "Hamkorlik imkoniyatlari")}
               </Link>
-            </Group>
+            </Flex>
           </Stack>
         </div>
       </div>

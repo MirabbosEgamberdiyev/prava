@@ -3,6 +3,7 @@ import {
   Badge,
   Box,
   Button,
+  Flex,
   Grid,
   Group,
   SimpleGrid,
@@ -416,7 +417,14 @@ export default function Partners_Page() {
             )}
           </Text>
 
-          <Group justify="center" gap="sm" mt="lg">
+          <Flex
+            direction={{ base: "column", sm: "row" }}
+            justify="center"
+            align="center"
+            gap="sm"
+            mt="lg"
+            w={{ base: "100%", sm: "auto" }}
+          >
             <Button
               size="md"
               radius="md"
@@ -436,7 +444,7 @@ export default function Partners_Page() {
                 {t("partners.ctaDownload", "Desktop versiyani ko'rish")}
               </Button>
             </Link>
-          </Group>
+          </Flex>
         </div>
 
         {/* Audience Segments */}

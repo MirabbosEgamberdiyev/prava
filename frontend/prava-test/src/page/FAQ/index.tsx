@@ -224,7 +224,7 @@ export default function FAQ_Page() {
           radius="xl"
           mb="xl"
         >
-          <Tabs.List justify="center">
+          <Tabs.List justify="center" style={{ flexWrap: "wrap", justifyContent: "center", gap: 6 }}>
             <Tabs.Tab value="all">{t("faq.tabAll", "Barchasi")}</Tabs.Tab>
             <Tabs.Tab value="exam">{t("faq.tabExam", "Imtihon")}</Tabs.Tab>
             <Tabs.Tab value="payment">{t("faq.tabPayment", "To'lov va Tariflar")}</Tabs.Tab>

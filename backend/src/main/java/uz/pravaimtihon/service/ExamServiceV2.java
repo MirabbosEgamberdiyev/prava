@@ -260,14 +260,15 @@ public class ExamServiceV2 {
                 ? new ArrayList<>()
                 : new ArrayList<>(questionRepository.findByIdsWithOptions(candidateIds));
 
-        if (availableQuestions.size() < request.getQuestionCount()) {
+        int targetCount = Math.min(request.getQuestionCount(), availableQuestions.size());
+        if (targetCount == 0) {
             throw new BusinessException("error.marathon.insufficient.questions");
         }
 
         // Savollarni tanlash va aralashtirish
         List<Question> selectedQuestions = selectAndShuffleQuestions(
                 availableQuestions,
-                request.getQuestionCount()
+                targetCount
         );
 
         // ✅ OPTIONS allaqachon yuklangan - loadOptionsForQuestions kerak emas

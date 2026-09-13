@@ -15,6 +15,8 @@ import {
   localizeOpt,
   localizeExp,
   parseOptions,
+  getActiveTicketSessionId,
+  submitExamSession,
 } from "../../../services/desktopAdapter";
 import ColorMode from "../../../components/other/ColorMode";
 import LanguagePicker from "../../../components/language/LanguagePicker";
@@ -170,7 +172,6 @@ export default function TicketExamPage() {
       setSavedScore(score);
       if (!timeUp) setIsTimeUp(false);
       setPhase("result");
-
       const isPassed = !timeUp && score >= ticket.passing_score;
       saveExamResult({
         userId,
@@ -181,8 +182,17 @@ export default function TicketExamPage() {
         examType: `ticket_${ticket.ticket_number}`,
       }).catch(() => {});
       saveTicketStat(userId, ticket.id, duration, correct, score, isPassed).catch(() => {});
+
+      const activeSessionId = getActiveTicketSessionId();
+      if (activeSessionId && questions.length > 0) {
+        const answersPayload = questions.map((q, idx) => ({
+          questionId: q.id,
+          selectedOptionIndex: curAnswers[idx]?.selected ?? null,
+        }));
+        submitExamSession(activeSessionId, answersPayload).catch(() => {});
+      }
     },
-    [questions.length, ticket, userId]
+    [questions, ticket, userId]
   );
 
   useEffect(() => {

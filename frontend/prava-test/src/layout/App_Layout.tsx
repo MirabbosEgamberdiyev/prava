@@ -26,7 +26,7 @@ const App_Layout = () => {
       <Navbar close={close} />
       <AppShell.Main
         px={0}
-        style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+        style={{ display: "flex", flexDirection: "column", minHeight: "100dvh" }}
       >
         <div
           style={{ flex: 1 }}
