@@ -21,22 +21,20 @@ import {
 import ColorMode from "../../components/other/ColorMode";
 import LanguagePicker from "../../components/language/LanguagePicker";
 import ImageZoomModal, { ZoomableImage } from "../../components/common/ImageZoomModal";
+import GamificationResult from "../../components/quiz/GamificationResult";
+import QuizReviewModal from "../../components/quiz/QuizReviewModal";
+import TestSetupCard from "../../components/quiz/TestSetupCard";
 import SEO from "../../components/common/SEO";
 import {
   IconChevronLeft,
   IconChevronRight,
   IconCheck,
   IconX,
-  IconArrowLeft,
-  IconTrophy,
   IconSteeringWheel,
   IconBulb,
   IconBookmark,
   IconBookmarkFilled,
-  IconPlayerPlay,
-  IconListNumbers,
-  IconRefresh,
-  IconClock,
+  IconAlertTriangle,
 } from "@tabler/icons-react";
 
 type Phase = "setup" | "loading" | "exam" | "result";
@@ -46,7 +44,7 @@ interface Answer {
   correct: number;
 }
 
-const COUNT_OPTIONS = [20, 50, 100, 0]; // 0 = barchasi
+const COUNT_OPTIONS = [10, 20, 30, 50, 0]; // 0 = barchasi
 
 export default function Marafon_Page() {
   const { t, i18n } = useTranslation();
@@ -73,11 +71,24 @@ export default function Marafon_Page() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
   const [zoomSrc, setZoomSrc] = useState<string | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [confirmFinishOpen, setConfirmFinishOpen] = useState(false);
 
   const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const answersRef = useRef(answers);
   const activeQnumRef = useRef<HTMLButtonElement | null>(null);
   answersRef.current = answers;
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (phase === "exam" && Object.keys(answers).length > 0) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [phase, answers]);
 
   const localizeTopic = (tp: OfflineTopic): string => {
     if (!tp) return "";
@@ -263,94 +274,49 @@ export default function Marafon_Page() {
 
   // ─── SETUP ───
   if (phase === "setup") {
-    const maxQ =
-      selTopic != null
-        ? topics.find((t) => t.id === selTopic)?.question_count ?? 0
-        : topics.reduce((s, t) => s + t.question_count, 0);
+    const isSingleTopic = selTopic != null;
+    const pageTitle = isSingleTopic
+      ? t("testSetup.topicTestTitle", "Mavzulashtirilgan test")
+      : t("testSetup.marathonTitle", "Katta Marafon");
 
     return (
       <>
         <SEO
-          title="Marafon - Katta test rejimi"
-          description="Prava Online marafon sinovi"
+          title={`${pageTitle} - Prava Online`}
+          description="Yo'l harakati qoidalari bo'yicha mustahkamlash testi"
           canonical="/marafon"
         />
-        <div className="marathon-setup-screen">
-          <div className="marathon-setup-card">
-            {/* Header */}
-            <div className="marathon-setup-header">
-              <button
-                className="quiz-back-btn"
-                onClick={onBack}
-                style={{ position: "static" }}
-                type="button"
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
+          <header className="home-header">
+            <div className="home-header-inner">
+              <div
+                className="home-header-logo"
+                style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
+                onClick={() => navigate("/me")}
               >
-                <IconArrowLeft size={18} />
-              </button>
-              <h2 className="marathon-setup-title">{t("marathon.title", "Marafon")}</h2>
-            </div>
-
-            {/* Topic select */}
-            <div className="marathon-setup-section">
-              <label className="marathon-setup-label">
-                {t("marathon.selectTopic", "Mavzuni tanlang")}
-              </label>
-              <select
-                className="marathon-setup-select"
-                value={selTopic ?? ""}
-                onChange={(e) =>
-                  setSelTopic(e.target.value === "" ? null : Number(e.target.value))
-                }
-              >
-                <option value="">{t("marathon.allTopics", "Barcha mavzular")}</option>
-                {topics.map((tp) => (
-                  <option key={tp.id} value={tp.id}>
-                    {localizeTopic(tp)} ({tp.question_count})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Question count */}
-            <div className="marathon-setup-section">
-              <label className="marathon-setup-label">
-                {t("marathon.questionCount", "Savollar soni")}
-              </label>
-              <div className="marathon-count-btns">
-                {COUNT_OPTIONS.map((n, idx) => {
-                  const isAll = n === 0;
-                  const label = isAll
-                    ? `${t("marathon.allQuestions", "Barchasi")}${maxQ > 0 ? ` (${maxQ})` : ""}`
-                    : String(n);
-                  const isOptionExcessive = !isAll && maxQ > 0 && n > maxQ;
-
-                  return (
-                    <button
-                      key={idx}
-                      className={`marathon-count-btn${countIdx === idx ? " active" : ""}`}
-                      onClick={() => setCountIdx(idx)}
-                      disabled={isOptionExcessive}
-                      style={isOptionExcessive ? { opacity: 0.45, cursor: "not-allowed" } : undefined}
-                      title={isOptionExcessive ? `${maxQ} ta savol mavjud` : undefined}
-                      type="button"
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
+                <img src="/logo.png" width={32} height={32} alt="Prava" onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }} />
+                <span className="home-header-brand">PRAVA<span className="brand-accent">ONLINE</span></span>
               </div>
-              <p className="marathon-setup-hint">
-                <IconListNumbers size={13} />
-                {t("marathon.available", "Mavjud")}: {maxQ} {t("common.questions", "savol")}
-              </p>
+              <div className="home-header-right">
+                <LanguagePicker />
+                <ColorMode />
+              </div>
             </div>
+          </header>
 
-            {/* Start */}
-            <button className="marathon-start-btn" onClick={startExam} type="button">
-              <IconPlayerPlay size={18} />
-              {t("marathon.startExam", "Marafonni boshlash")}
-            </button>
-          </div>
+          <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 12px" }}>
+            <TestSetupCard
+              topics={topics}
+              selectedTopicId={selTopic}
+              onSelectTopic={(id) => setSelTopic(id)}
+              countOptions={COUNT_OPTIONS}
+              selectedCountIdx={countIdx}
+              onSelectCountIdx={(idx) => setCountIdx(idx)}
+              onStart={startExam}
+              onBack={onBack}
+              localizeTopic={localizeTopic}
+            />
+          </main>
         </div>
       </>
     );
@@ -375,65 +341,59 @@ export default function Marafon_Page() {
     const unanswered = Math.max(0, total - answeredCount);
     const score = total > 0 ? Math.round((correct / total) * 100) : 0;
 
+    const isSingleTopic = selTopic != null;
+    const screenTitle = isSingleTopic
+      ? t("testSetup.topicTestTitle", "Mavzulashtirilgan test")
+      : t("testSetup.marathonTitle", "Katta Marafon");
+
     return (
       <>
         <SEO
-          title="Marafon natijasi"
-          description="Marafon natijalari"
+          title={`${screenTitle} natijasi`}
+          description="Prava Online test natijalari va statistikasi"
           canonical="/marafon"
         />
-        <div className="quiz-result-screen">
-          <div className="quiz-result-card">
-            <div className={`quiz-result-badge ${errorMsg ? "failed" : "passed"}`}>
-              {errorMsg ? <IconX size={34} /> : <IconTrophy size={34} />}
-            </div>
-            <h2 className="quiz-result-title">
-              {errorMsg
-                ? t("common.error", "Xatolik")
-                : t("marathon.finished", "Marafon yakunlandi")}
-            </h2>
-            {errorMsg ? (
-              <p className="quiz-result-sub">{errorMsg}</p>
-            ) : (
-              <>
-                <div className="quiz-result-score">{score}%</div>
-                <div className="quiz-result-stats">
-                  <div className="quiz-res-stat">
-                    <IconCheck size={18} color="#2f9e44" />
-                    <span>
-                      {correct} {t("common.correct", "to'g'ri")}
-                    </span>
-                  </div>
-                  <div className="quiz-res-stat">
-                    <IconX size={18} color="#e03131" />
-                    <span>
-                      {wrong} {t("common.wrong", "noto'g'ri")}
-                    </span>
-                  </div>
-                  {unanswered > 0 && (
-                    <div className="quiz-res-stat">
-                      <IconClock size={18} color="#868e96" />
-                      <span>
-                        {unanswered} {t("marathon.unanswered", "javob berilmagan")}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-            <div className="quiz-result-actions">
-              <button className="quiz-res-btn" onClick={() => setPhase("setup")} type="button">
-                <IconRefresh size={16} /> {t("common.retry", "Qayta urinish")}
-              </button>
-              <button
-                className="quiz-res-btn primary"
+        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
+          <header className="home-header">
+            <div className="home-header-inner">
+              <div
+                className="home-header-logo"
+                style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
                 onClick={() => navigate("/me")}
-                type="button"
               >
-                <IconArrowLeft size={16} /> {t("common.backToHome", "Bosh sahifa")}
-              </button>
+                <img src="/logo.png" width={32} height={32} alt="Prava" onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }} />
+                <span className="home-header-brand">PRAVA<span className="brand-accent">ONLINE</span></span>
+              </div>
+              <div className="home-header-right">
+                <LanguagePicker />
+                <ColorMode />
+              </div>
             </div>
-          </div>
+          </header>
+
+          <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 12px" }}>
+            <GamificationResult
+              score={score}
+              correct={correct}
+              wrong={wrong}
+              unanswered={unanswered}
+              totalQuestions={total}
+              errorMsg={errorMsg}
+              onReviewMistakes={() => setReviewOpen(true)}
+              onRetry={() => {
+                setPhase("setup");
+              }}
+              onBackHome={() => navigate("/me")}
+              title={`${screenTitle} natijasi`}
+            />
+          </main>
+
+          <QuizReviewModal
+            opened={reviewOpen}
+            onClose={() => setReviewOpen(false)}
+            questions={questions}
+            answers={answers}
+          />
         </div>
       </>
     );
@@ -458,8 +418,19 @@ export default function Marafon_Page() {
         {/* ── Top bar ── */}
         <div className="exam-topbar">
           <div className="exam-topbar-left">
-            <button className="exam-finish-btn" onClick={triggerFinish} type="button">
-              {t("exam.finish", "Yakunlash")} <IconX size={15} />
+            <button
+              className="exam-finish-btn"
+              onClick={() => {
+                const answeredCount = Object.keys(answers).length;
+                if (answeredCount < questions.length) {
+                  setConfirmFinishOpen(true);
+                } else {
+                  triggerFinish();
+                }
+              }}
+              type="button"
+            >
+              {t("activeTest.finishTest", "Yakunlash")} <IconX size={15} />
             </button>
           </div>
 
@@ -652,10 +623,17 @@ export default function Marafon_Page() {
             {current === questions.length - 1 ? (
               <button
                 className="exam-nav-btn primary"
-                onClick={triggerFinish}
+                onClick={() => {
+                  const answeredCount = Object.keys(answers).length;
+                  if (answeredCount < questions.length) {
+                    setConfirmFinishOpen(true);
+                  } else {
+                    triggerFinish();
+                  }
+                }}
                 type="button"
               >
-                {t("exam.finish", "Yakunlash")} <IconCheck size={17} />
+                {t("activeTest.finishTest", "Yakunlash")} <IconCheck size={17} />
               </button>
             ) : (
               <button
@@ -668,6 +646,100 @@ export default function Marafon_Page() {
             )}
           </div>
         </div>
+
+        {/* Confirmation Modal before early finish */}
+        {confirmFinishOpen && (
+          <div
+            className="modal-overlay"
+            onClick={() => setConfirmFinishOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(4px)",
+              zIndex: 9999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "16px",
+            }}
+          >
+            <div
+              className="modal-card"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                maxWidth: "420px",
+                width: "100%",
+                background: "var(--card-bg, var(--surface, #fff))",
+                borderRadius: "18px",
+                padding: "24px",
+                border: "1.5px solid var(--border)",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "56px",
+                  height: "56px",
+                  borderRadius: "50%",
+                  background: "rgba(224, 49, 49, 0.12)",
+                  color: "#e03131",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 16px",
+                }}
+              >
+                <IconAlertTriangle size={28} stroke={2} />
+              </div>
+              <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text)" }}>
+                {t("activeTest.confirmFinishTitle", "Testni yakunlaysizmi?")}
+              </h3>
+              <p style={{ margin: "0 0 20px 0", fontSize: "13.5px", color: "var(--text-muted)", lineHeight: 1.45 }}>
+                {t("activeTest.confirmFinishDesc", "Belgilanmagan savollar xato deb hisoblanadi. Rostdan ham testni yakunlamoqchimisiz?")}
+              </p>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  type="button"
+                  onClick={() => setConfirmFinishOpen(false)}
+                  style={{
+                    flex: 1,
+                    minHeight: "42px",
+                    borderRadius: "10px",
+                    border: "1.5px solid var(--border)",
+                    background: "var(--surface)",
+                    color: "var(--text)",
+                    fontSize: "13.5px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {t("activeTest.cancel", "Davom etish")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmFinishOpen(false);
+                    triggerFinish();
+                  }}
+                  style={{
+                    flex: 1,
+                    minHeight: "42px",
+                    borderRadius: "10px",
+                    border: "none",
+                    background: "#e03131",
+                    color: "#fff",
+                    fontSize: "13.5px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {t("activeTest.confirm", "Yakunlash")}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

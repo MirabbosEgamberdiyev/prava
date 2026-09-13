@@ -1654,5 +1654,45 @@
   },
   "preview": {
     "statsScoreDemo": "Statistika va imtihon ko'rsatkichlari"
+  },
+  "gamification": {
+    "tierGold": "Ajoyib natija! Imtihonga deyarli tayyorsiz!",
+    "tierTarget": "Yaxshi ko'rsatkich! Yana bir oz mashq qilsangiz yetarli.",
+    "tierRetry": "Taslim bo'lmang! Xatolar ustida ishlab, qayta topshiring.",
+    "reviewMistakes": "Xatolarni tahlil qilish",
+    "allCorrect": "Barcha savollarga to'g'ri javob berildi!",
+    "noMistakes": "Ajoyib! Birorta ham xato qilmadingiz.",
+    "retryTest": "Qayta urinish",
+    "backHome": "Bosh sahifaga qaytish",
+    "score": "Natija"
+  },
+  "testSetup": {
+    "topicTestTitle": "Mavzulashtirilgan test",
+    "marathonTitle": "Katta Marafon",
+    "selectTopic": "Mavzuni tanlang",
+    "allTopics": "Barcha mavzular",
+    "questionCount": "Savollar soni",
+    "allQuestions": "Barchasi",
+    "startTest": "Testni boshlash",
+    "available": "Mavjud",
+    "limitExceededTooltip": "Bu mavzuda faqat {{count}} ta savol mavjud",
+    "topicTitle": "Mavzulashtirilgan test"
+  },
+  "activeTest": {
+    "question": "Savol",
+    "finishTest": "Yakunlash",
+    "confirmFinishTitle": "Testni yakunlaysizmi?",
+    "confirmFinishDesc": "Belgilanmagan savollar xato deb hisoblanadi. Rostdan ham testni yakunlamoqchimisiz?",
+    "cancel": "Davom etish",
+    "confirm": "Yakunlash",
+    "bookmark": "Saqlash",
+    "bookmarked": "Saqlangan",
+    "prev": "Oldingisi",
+    "next": "Keyingisi",
+    "explanation": "YHQ tushuntirishi"
+  },
+  "dashboard": {
+    "noMistakesYet": "Hali xatolaringiz yo'q, ajoyib!",
+    "noMistakesDesc": "Barcha mavzularda savollarni to'g'ri yechib boryapsiz"
   }
 }

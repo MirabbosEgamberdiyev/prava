@@ -68,7 +68,7 @@ export default function Topics_Page() {
 
   const onBack = () => navigate("/me");
 
-  const onStartMarathon = (topicId: number) => {
+  const onStartTopicTest = (topicId: number) => {
     navigate(`/marafon?topicId=${topicId}`);
   };
 
@@ -154,14 +154,14 @@ export default function Topics_Page() {
                     {topic.question_count} {t("common.questions", "savol")}
                   </div>
 
-                  {/* Marathon button */}
+                  {/* Test button */}
                   <button
                     className="tpc-btn"
-                    onClick={() => onStartMarathon(topic.id)}
+                    onClick={() => onStartTopicTest(topic.id)}
                     type="button"
                   >
                     <IconPlayerPlay size={14} />
-                    {t("topics.startMarathon", "Marafonda boshlash")}
+                    {t("topics.startTest", "Testni boshlash")}
                   </button>
                 </div>
               );

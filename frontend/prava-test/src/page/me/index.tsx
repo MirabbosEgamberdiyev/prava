@@ -739,21 +739,33 @@ export default function User_Page() {
                   </div>
 
                   <div className="nba-topic-list" role="list">
-                    {currentWeakTopics.map((topic) => (
-                      <button
-                        key={topic.id}
-                        type="button"
-                        className="nba-topic-item"
-                        onClick={() => navigate(`/marathon?topicId=${topic.id}`)}
-                        title={topic.name}
-                      >
-                        <span className="nba-topic-name">{topic.name}</span>
-                        <span className="nba-topic-count">
-                          {topic.wrongCount} {tr.totalUnit} {currentLang === "ru" ? "ошибок" : "xato"}
-                        </span>
-                        <IconArrowRight size={16} className="nba-topic-arrow" />
-                      </button>
-                    ))}
+                    {currentWeakTopics.length === 0 ? (
+                      <div style={{ textAlign: "center", padding: "32px 16px", color: "var(--text-muted)" }}>
+                        <IconSparkles size={32} color="#2f9e44" style={{ marginBottom: 8 }} />
+                        <div style={{ fontSize: "15px", fontWeight: 700, color: "var(--text)" }}>
+                          {currentLang === "ru" ? "У вас пока нет ошибок, отлично!" : "Hali xatolaringiz yo'q, ajoyib!"}
+                        </div>
+                        <div style={{ fontSize: "13px", marginTop: 4 }}>
+                          {currentLang === "ru" ? "Вы отлично справляетесь со всеми темами" : "Barcha mavzularda savollarni to'g'ri yechib boryapsiz"}
+                        </div>
+                      </div>
+                    ) : (
+                      currentWeakTopics.map((topic) => (
+                        <button
+                          key={topic.id}
+                          type="button"
+                          className="nba-topic-item"
+                          onClick={() => navigate(`/marafon?topicId=${topic.id}`)}
+                          title={topic.name}
+                        >
+                          <span className="nba-topic-name">{topic.name}</span>
+                          <span className="nba-topic-count">
+                            {topic.wrongCount} {tr.totalUnit} {currentLang === "ru" ? "ошибок" : "xato"}
+                          </span>
+                          <IconArrowRight size={16} className="nba-topic-arrow" />
+                        </button>
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -768,23 +780,11 @@ export default function User_Page() {
                     <p className="smart-col-desc">{tr.mistakesDesc}</p>
                   </div>
 
-                  <div className="nba-progress-box">
-                    <div className="nba-progress-header">
-                      <span>{currentLang === "ru" ? "Потенциал готовности" : "Tayyorgarlik salohiyati"}</span>
-                      <span className="nba-progress-highlight" style={{ color: "#2f9e44" }}>+94%</span>
-                    </div>
-                    <div className="nba-progress-track">
-                      <div
-                        className="nba-progress-fill"
-                        style={{ width: "85%" }}
-                      />
-                    </div>
-                  </div>
-
                   <button
                     type="button"
                     className="nba-cta-btn secondary"
-                    onClick={() => navigate("/marathon?mode=wrong")}
+                    style={{ marginTop: "auto" }}
+                    onClick={() => navigate("/wrong-exam")}
                   >
                     <span>{tr.fixMistakesBtn}</span>
                     <IconArrowRight size={18} stroke={2.5} />
@@ -853,6 +853,9 @@ export default function User_Page() {
                     </button>
                   ))}
                 </div>
+                <p style={{ marginTop: 18, textAlign: "center", fontSize: "12px", color: "var(--text-muted)", margin: "18px 0 0 0" }}>
+                  © {new Date().getFullYear()} PravaOnline. {currentLang === "ru" ? "Все права защищены." : "Barcha huquqlar himoyalangan."}
+                </p>
               </div>
             </footer>
           </div>

@@ -15,8 +15,6 @@ import {
   IconBrandTelegram,
   IconBrandInstagram,
   IconBrandYoutube,
-  IconBrandTiktok,
-  IconWorld,
   IconPhone,
   IconMail,
 } from "@tabler/icons-react";
@@ -49,18 +47,6 @@ const Footer = React.memo(() => {
       href: "https://youtube.com/@pravaonlineuz",
       icon: <IconBrandYoutube size={18} />,
       color: "red",
-    },
-    {
-      label: "TikTok",
-      href: "https://tiktok.com/@pravaonlineuz",
-      icon: <IconBrandTiktok size={18} />,
-      color: "dark",
-    },
-    {
-      label: t("footer.website", "Veb-sayt"),
-      href: "https://pravaonline.uz",
-      icon: <IconWorld size={18} />,
-      color: "teal",
     },
   ];
 

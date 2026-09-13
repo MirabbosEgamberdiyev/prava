@@ -22,19 +22,20 @@ import ColorMode from "../../../components/other/ColorMode";
 import LanguagePicker from "../../../components/language/LanguagePicker";
 import ImageZoomModal, { ZoomableImage } from "../../../components/common/ImageZoomModal";
 import SEO from "../../../components/common/SEO";
+import GamificationResult from "../../../components/quiz/GamificationResult";
+import QuizReviewModal from "../../../components/quiz/QuizReviewModal";
 import {
   IconChevronLeft,
   IconChevronRight,
   IconCheck,
   IconX,
   IconArrowLeft,
-  IconTrophy,
-  IconRefresh,
   IconSteeringWheel,
   IconTicket,
   IconBookmark,
   IconBookmarkFilled,
   IconBulb,
+  IconAlertTriangle,
 } from "@tabler/icons-react";
 
 type Phase = "loading" | "exam" | "result";
@@ -83,6 +84,8 @@ export default function TicketExamPage() {
   const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
   const [showExp, setShowExp] = useState(false);
   const [zoomSrc, setZoomSrc] = useState<string | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [confirmFinishOpen, setConfirmFinishOpen] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(Date.now());
@@ -91,6 +94,17 @@ export default function TicketExamPage() {
   answersRef.current = answers;
 
   const onBack = () => navigate("/tickets");
+
+  // Beforeunload listener during exam
+  useEffect(() => {
+    if (phase !== "exam") return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [phase]);
 
   const loadQuestions = useCallback(() => {
     setPhase("loading");
@@ -297,7 +311,25 @@ export default function TicketExamPage() {
     const answered = Object.keys(answers).length;
     const unanswered = total - answered;
     const score = total > 0 ? Math.round((correct / total) * 100) : savedScore;
-    const passed = !isTimeUp && score >= ticket.passing_score;
+
+    if (errorMsg) {
+      return (
+        <div className="exam-result-screen">
+          <div className="exam-result-card">
+            <div className="exam-result-icon failed">
+              <IconAlertTriangle size={36} stroke={1.5} />
+            </div>
+            <h2 className="exam-result-title failed">{t("common.error", "Xatolik")}</h2>
+            <p className="exam-result-sub">{errorMsg}</p>
+            <div className="exam-result-actions">
+              <button className="exam-result-btn primary" onClick={onBack} type="button">
+                <IconArrowLeft size={18} /> {t("common.backToHome", "Bosh sahifaga qaytish")}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <>
@@ -306,62 +338,30 @@ export default function TicketExamPage() {
           description="Bilet imtihon natijalari"
           canonical={`/tickets/${ticket.id}`}
         />
-        <div className="exam-result-screen">
-          <div className="exam-result-card">
-            <div className="ticket-result-label">
-              <IconTicket size={16} />
-              {localizeName(ticket)}
-            </div>
-            <div className={`exam-result-icon ${passed ? "passed" : "failed"}`}>
-              {passed ? <IconTrophy size={36} stroke={1.5} /> : <IconX size={36} stroke={2} />}
-            </div>
-            <h2 className={`exam-result-title ${passed ? "passed" : "failed"}`}>
-              {errorMsg
-                ? t("common.error", "Xatolik")
-                : isTimeUp
-                ? t("exam.timeUp", "Vaqt tugadi!")
-                : passed
-                ? t("exam.passed", "Imtihondan o'tdingiz!")
-                : t("exam.failed", "Imtihondan o'ta olmadingiz")}
-            </h2>
-            {errorMsg ? (
-              <p className="exam-result-sub">{errorMsg}</p>
-            ) : (
-              <>
-                <div className="exam-result-score">{score}%</div>
-                <div className="exam-result-sub">
-                  {t("exam.passingScore", "O'tish bali")}: {ticket.passing_score}%
-                </div>
-                <div className="exam-result-stats">
-                  <div className="exam-result-stat green">
-                    <div className="exam-stat-val">{correct}</div>
-                    <div className="exam-stat-lbl">{t("common.correct", "To'g'ri")}</div>
-                  </div>
-                  <div className="exam-result-stat red">
-                    <div className="exam-stat-val">{wrong}</div>
-                    <div className="exam-stat-lbl">{t("common.wrong", "Noto'g'ri")}</div>
-                  </div>
-                  {unanswered > 0 && (
-                    <div className="exam-result-stat gray">
-                      <div className="exam-stat-val">{unanswered}</div>
-                      <div className="exam-stat-lbl">
-                        {t("exam.unanswered", "Javob berilmagan")}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-            <div className="exam-result-actions">
-              <button className="exam-result-btn primary" onClick={onBack} type="button">
-                <IconArrowLeft size={16} /> {t("common.backToHome", "Bosh sahifaga qaytish")}
-              </button>
-              <button className="exam-result-btn" onClick={loadQuestions} type="button">
-                <IconRefresh size={16} /> {t("exam.retry", "Qayta topshirish")}
-              </button>
-            </div>
-          </div>
+        <div className="min-h-[85vh] flex items-center justify-center p-4">
+          <GamificationResult
+            score={score}
+            correct={correct}
+            wrong={wrong}
+            unanswered={unanswered}
+            total={total}
+            title={localizeName(ticket)}
+            badge={`${ticket.question_count} ${t("activeTest.questionsCount", "savol")} • ${t("exam.passingScore", "O'tish bali")}: ${ticket.passing_score}%`}
+            isTimeUp={isTimeUp}
+            onRetry={loadQuestions}
+            onReviewMistakes={() => setReviewOpen(true)}
+            onHome={onBack}
+          />
         </div>
+
+        <QuizReviewModal
+          isOpen={reviewOpen}
+          onClose={() => setReviewOpen(false)}
+          questions={questions}
+          answers={answers}
+          onToggleSave={handleToggleSave}
+          savedIds={savedIds}
+        />
       </>
     );
   }
@@ -373,6 +373,15 @@ export default function TicketExamPage() {
   const explanation = answered !== undefined ? localizeExp(q) : null;
   const correct = Object.values(answers).filter((a) => a.selected === a.correct).length;
   const wrong = Object.values(answers).length - correct;
+
+  const handleFinishClick = () => {
+    const answeredCount = Object.keys(answers).length;
+    if (answeredCount < questions.length) {
+      setConfirmFinishOpen(true);
+    } else {
+      triggerFinish(false);
+    }
+  };
 
   return (
     <>
@@ -387,7 +396,7 @@ export default function TicketExamPage() {
           <div className="exam-topbar-left">
             <button
               className="exam-finish-btn"
-              onClick={() => triggerFinish(false)}
+              onClick={handleFinishClick}
               type="button"
             >
               {t("exam.finish", "Yakunlash")} <IconX size={15} />
@@ -550,7 +559,7 @@ export default function TicketExamPage() {
             {current === questions.length - 1 ? (
               <button
                 className="exam-nav-btn primary"
-                onClick={() => triggerFinish(false)}
+                onClick={handleFinishClick}
                 type="button"
               >
                 {t("exam.finish", "Yakunlash")} <IconCheck size={17} />
@@ -567,6 +576,45 @@ export default function TicketExamPage() {
           </div>
         </div>
       </div>
+
+      {/* Early finish confirmation modal */}
+      {confirmFinishOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-700 text-center">
+            <div className="w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-4">
+              <IconAlertTriangle size={28} />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+              {t("activeTest.confirmFinishTitle", "Testni muddatidan oldin yakunlaysizmi?")}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+              {t(
+                "activeTest.confirmFinishDesc",
+                "Hali barcha savollarga javob bermadingiz. Belgilanmagan savollar xato deb hisoblanadi."
+              )}
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmFinishOpen(false)}
+                className="py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
+              >
+                {t("activeTest.continueTest", "Davom etish")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmFinishOpen(false);
+                  triggerFinish(false);
+                }}
+                className="py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold shadow-md shadow-red-600/20 transition-all"
+              >
+                {t("activeTest.confirmFinish", "Yakunlash")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
