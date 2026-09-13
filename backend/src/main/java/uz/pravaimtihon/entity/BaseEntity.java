@@ -21,6 +21,7 @@ import java.util.Objects;
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public abstract class BaseEntity implements Serializable {
 
     @Id

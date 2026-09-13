@@ -24,7 +24,10 @@ import {
   IconEye,
   IconCircleCheckFilled,
   IconChartBar,
+  IconCopy,
 } from "@tabler/icons-react";
+import { notifications } from "@mantine/notifications";
+import api from "../../../services/api";
 import { useTranslation } from "react-i18next";
 import { useQuestions } from "../hooks/useQuestions";
 import { QuestionViewModal } from "./QuestionViewModal";
@@ -89,6 +92,24 @@ export const QuestionList = ({ searchQuery, topicId }: QuestionListProps) => {
   const handleDeleteClick = (question: Question) => {
     setSelectedQuestionId(question.id);
     setDeleteModalOpen(true);
+  };
+
+  const handleClone = async (question: Question) => {
+    try {
+      await api.post(`/api/v1/admin/questions/${question.id}/clone`);
+      notifications.show({
+        title: t("common.success"),
+        message: "Savoldan muvaffaqiyatli nusxa olindi",
+        color: "green",
+      });
+      mutate();
+    } catch (err: any) {
+      notifications.show({
+        title: t("common.error"),
+        message: err.response?.data?.message || "Nusxa olishda xatolik yuz berdi",
+        color: "red",
+      });
+    }
   };
 
   if (isLoading) {
@@ -174,6 +195,15 @@ export const QuestionList = ({ searchQuery, topicId }: QuestionListProps) => {
                           onClick={() => handleEdit(q)}
                          aria-label={t("questions.editTooltip")}>
                           <IconEdit size={16} />
+                        </ActionIcon>
+                      </Tooltip>
+                      <Tooltip label="Nusxa olish (Clone)">
+                        <ActionIcon
+                          variant="light"
+                          color="teal"
+                          onClick={() => handleClone(q)}
+                          aria-label="Clone question">
+                          <IconCopy size={16} />
                         </ActionIcon>
                       </Tooltip>
                       <Tooltip label={t("questions.deleteTooltip")}>

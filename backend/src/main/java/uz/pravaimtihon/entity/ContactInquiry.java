@@ -63,4 +63,17 @@ public class ContactInquiry extends BaseEntity {
 
     @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 30)
+    @Builder.Default
+    private uz.pravaimtihon.enums.InquiryStatus status = uz.pravaimtihon.enums.InquiryStatus.NEW;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "inquiry_type", nullable = false, length = 30)
+    @Builder.Default
+    private uz.pravaimtihon.enums.InquiryType inquiryType = uz.pravaimtihon.enums.InquiryType.CONTACT;
+
+    @Column(name = "admin_note", columnDefinition = "TEXT")
+    private String adminNote;
 }

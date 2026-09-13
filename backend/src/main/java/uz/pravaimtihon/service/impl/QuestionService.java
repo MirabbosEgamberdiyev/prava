@@ -730,4 +730,84 @@ public class QuestionService {
 
         log.info("Question deleted: {}", id);
     }
+
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+    public QuestionResponse cloneQuestion(Long id, AcceptLanguage language) {
+        Question orig = questionRepository.findById(id)
+                .filter(q -> !q.getDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("error.question.not.found"));
+
+        Question copy = Question.builder()
+                .textUzl(orig.getTextUzl() != null ? orig.getTextUzl() + " (Nusxa)" : "Nusxa")
+                .textUzc(orig.getTextUzc() != null ? orig.getTextUzc() + " (Нусха)" : null)
+                .textEn(orig.getTextEn() != null ? orig.getTextEn() + " (Copy)" : null)
+                .textRu(orig.getTextRu() != null ? orig.getTextRu() + " (Копия)" : null)
+                .explanationUzl(orig.getExplanationUzl())
+                .explanationUzc(orig.getExplanationUzc())
+                .explanationEn(orig.getExplanationEn())
+                .explanationRu(orig.getExplanationRu())
+                .topic(orig.getTopic())
+                .difficulty(orig.getDifficulty())
+                .correctAnswerIndex(orig.getCorrectAnswerIndex())
+                .imageUrl(orig.getImageUrl())
+                .isActive(orig.getIsActive())
+                .build();
+
+        copy = questionRepository.save(copy);
+
+        List<QuestionOption> origOptions = optionRepository.findByQuestionIdOrderByOptionIndex(orig.getId());
+        List<QuestionOption> copyOptions = new ArrayList<>();
+        for (QuestionOption o : origOptions) {
+            QuestionOption optCopy = QuestionOption.builder()
+                    .question(copy)
+                    .optionIndex(o.getOptionIndex())
+                    .textUzl(o.getTextUzl())
+                    .textUzc(o.getTextUzc())
+                    .textEn(o.getTextEn())
+                    .textRu(o.getTextRu())
+                    .build();
+            copyOptions.add(optCopy);
+        }
+        copyOptions = optionRepository.saveAll(copyOptions);
+        copy.setOptions(copyOptions);
+
+        if (copy.getTopic() != null) {
+            topicService.incrementQuestionCount(copy.getTopic().getId());
+        }
+
+        return questionMapper.toResponse(copy, language);
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] exportQuestionsCsv() {
+        List<Question> questions = questionRepository.findAll().stream()
+                .filter(q -> !Boolean.TRUE.equals(q.getDeleted()))
+                .toList();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("\uFEFF"); // UTF-8 BOM
+        sb.append("ID,Topic ID,Text (Lotin),Text (Kirill),Text (Rus),Correct Answer Index,Explanation,Image URL,Is Active\n");
+
+        for (Question q : questions) {
+            sb.append(q.getId()).append(",");
+            sb.append(q.getTopic() != null ? q.getTopic().getId() : "").append(",");
+            sb.append(escapeCsv(q.getTextUzl())).append(",");
+            sb.append(escapeCsv(q.getTextUzc())).append(",");
+            sb.append(escapeCsv(q.getTextRu())).append(",");
+            sb.append(q.getCorrectAnswerIndex() != null ? q.getCorrectAnswerIndex() : 0).append(",");
+            sb.append(escapeCsv(q.getExplanationUzl())).append(",");
+            sb.append(escapeCsv(q.getImageUrl())).append(",");
+            sb.append(Boolean.TRUE.equals(q.getIsActive()) ? "Active" : "Inactive").append("\n");
+        }
+
+        return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private String escapeCsv(String val) {
+        if (val == null) return "";
+        if (val.contains(",") || val.contains("\"") || val.contains("\n")) {
+            return "\"" + val.replace("\"", "\"\"") + "\"";
+        }
+        return val;
+    }
 }

@@ -9,6 +9,9 @@ import {
   Title,
   Box,
   Stack,
+  Group,
+  Badge,
+  Divider,
   rem,
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +22,15 @@ import api from "../../../services/api";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import LanguagePicker from "../../../components/language/LanguagePicker";
+
+const DEFAULT_ACCOUNTS = [
+  { role: "SUPER_ADMIN", label: "Super Admin", email: "superadmin@pravaonline.uz", pass: "SuperAdmin2026", color: "red" },
+  { role: "ADMIN", label: "Admin", email: "admin@pravaonline.uz", pass: "Admin2026", color: "blue" },
+  { role: "CONTENT_MANAGER", label: "Content Manager", email: "content@pravaonline.uz", pass: "Content2026", color: "grape" },
+  { role: "SUPPORT", label: "Support", email: "support@pravaonline.uz", pass: "Support2026", color: "teal" },
+  { role: "ANALYST", label: "Analyst", email: "analyst@pravaonline.uz", pass: "Analyst2026", color: "indigo" },
+  { role: "USER", label: "User", email: "user@pravaonline.uz", pass: "User2026", color: "gray" },
+];
 
 const Login_Page = () => {
   const { t, i18n } = useTranslation();
@@ -176,6 +188,30 @@ const Login_Page = () => {
                 >
                   {t("auth.login")}
                 </Button>
+
+                <Divider label={t("auth.quick_login", "Standart hisoblar (1-bosish)")} labelPosition="center" my="xs" />
+
+                <Text size="xs" c="dimmed" ta="center">
+                  Rolni tanlang, forma avtomatik to'ldiriladi:
+                </Text>
+
+                <Group gap="xs" justify="center">
+                  {DEFAULT_ACCOUNTS.map((acc) => (
+                    <Badge
+                      key={acc.role}
+                      color={acc.color}
+                      variant="light"
+                      size="md"
+                      style={{ cursor: "pointer", textTransform: "none" }}
+                      onClick={() => {
+                        form.setFieldValue("identifier", acc.email);
+                        form.setFieldValue("password", acc.pass);
+                      }}
+                    >
+                      {acc.label}
+                    </Badge>
+                  ))}
+                </Group>
               </Stack>
             </form>
           </Paper>

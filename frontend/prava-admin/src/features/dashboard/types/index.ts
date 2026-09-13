@@ -32,6 +32,14 @@ export interface DashboardStats {
   passedExams: number;
   failedExams: number;
   passRate: number;
+  activeUsers?: number;
+  todayRegistrations?: number;
+  loginsLast24h?: number;
+  activeQuestions?: number;
+  totalTopics?: number;
+  contactInquiriesCount?: number;
+  partnerLeadsCount?: number;
+  totalDownloads?: number;
   popularPackages: PopularPackageItem[];
   popularTickets: PopularTicketItem[];
 }

@@ -49,4 +49,14 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 700,
   },
+  server: {
+    port: 5174,
+    host: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+      },
+    },
+  },
 })

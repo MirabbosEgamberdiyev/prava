@@ -41,6 +41,22 @@ public interface ExamSessionRepository extends JpaRepository<ExamSession, Long> 
     Page<ExamSession> findByUserIdAndStatusOrderByStartedAtDesc(
             Long userId, ExamStatus status, Pageable pageable);
 
+    @Query(value = "SELECT es FROM ExamSession es " +
+            "LEFT JOIN FETCH es.user " +
+            "LEFT JOIN FETCH es.examPackage " +
+            "LEFT JOIN FETCH es.ticket t " +
+            "LEFT JOIN FETCH t.topic " +
+            "WHERE " +
+            "(:status IS NULL OR es.status = :status) AND " +
+            "(:userId IS NULL OR es.user.id = :userId)",
+            countQuery = "SELECT COUNT(es) FROM ExamSession es WHERE " +
+            "(:status IS NULL OR es.status = :status) AND " +
+            "(:userId IS NULL OR es.user.id = :userId)")
+    Page<ExamSession> findAllAdminFiltered(
+            @Param("status") ExamStatus status,
+            @Param("userId") Long userId,
+            Pageable pageable);
+
     @Query("SELECT es FROM ExamSession es WHERE es.user.id = :userId " +
             "AND es.status = 'IN_PROGRESS' AND es.expiresAt > :now")
     Optional<ExamSession> findActiveSession(@Param("userId") Long userId,

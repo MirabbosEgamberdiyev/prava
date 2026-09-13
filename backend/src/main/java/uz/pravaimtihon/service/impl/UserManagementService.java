@@ -39,6 +39,7 @@ public class UserManagementService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final uz.pravaimtihon.repository.RefreshTokenRepository refreshTokenRepository;
 
     /**
      * ✅ Get all users with filters and pagination
@@ -332,5 +333,78 @@ public class UserManagementService {
         if (!currentUser.getId().equals(targetUser.getId())) {
             throw new ForbiddenException("error.permission.denied");
         }
+    }
+
+    public void resetPassword(Long userId, String newPassword) {
+        User user = getUserOrThrow(userId);
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        refreshTokenRepository.revokeAllByUserId(userId, java.time.LocalDateTime.now());
+        log.info("Password reset by admin for user id: {}", userId);
+    }
+
+    public void forceLogout(Long userId) {
+        User user = getUserOrThrow(userId);
+        refreshTokenRepository.deleteAllByUserId(user.getId());
+        log.info("Force logout executed for user id: {}", userId);
+    }
+
+    public void bulkUpdateStatus(List<Long> ids, boolean isActive) {
+        if (ids == null || ids.isEmpty()) return;
+        List<User> users = userRepository.findAllById(ids);
+        for (User u : users) {
+            if (!Boolean.TRUE.equals(u.getDeleted())) {
+                u.setIsActive(isActive);
+                if (!isActive) {
+                    refreshTokenRepository.deleteAllByUserId(u.getId());
+                }
+            }
+        }
+        userRepository.saveAll(users);
+        log.info("Bulk status update (isActive={}) applied for {} users", isActive, users.size());
+    }
+
+    public void bulkDelete(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return;
+        List<User> users = userRepository.findAllById(ids);
+        for (User u : users) {
+            u.setDeleted(true);
+            refreshTokenRepository.deleteAllByUserId(u.getId());
+        }
+        userRepository.saveAll(users);
+        log.info("Bulk delete applied for {} users", users.size());
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] exportUsersCsv() {
+        List<User> allUsers = userRepository.findAll().stream()
+                .filter(u -> !Boolean.TRUE.equals(u.getDeleted()))
+                .toList();
+
+        StringBuilder sb = new StringBuilder();
+        // UTF-8 BOM so Microsoft Excel opens special characters correctly
+        sb.append("\uFEFF");
+        sb.append("ID,First Name,Last Name,Phone,Email,Role,Is Active,Created At\n");
+
+        for (User u : allUsers) {
+            sb.append(u.getId()).append(",");
+            sb.append(escapeCsv(u.getFirstName())).append(",");
+            sb.append(escapeCsv(u.getLastName())).append(",");
+            sb.append(escapeCsv(u.getPhoneNumber())).append(",");
+            sb.append(escapeCsv(u.getEmail())).append(",");
+            sb.append(u.getRole() != null ? u.getRole().name() : "").append(",");
+            sb.append(Boolean.TRUE.equals(u.getIsActive()) ? "Active" : "Blocked").append(",");
+            sb.append(u.getCreatedAt() != null ? u.getCreatedAt().toString() : "").append("\n");
+        }
+
+        return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private String escapeCsv(String val) {
+        if (val == null) return "";
+        if (val.contains(",") || val.contains("\"") || val.contains("\n")) {
+            return "\"" + val.replace("\"", "\"\"") + "\"";
+        }
+        return val;
     }
 }

@@ -1,4 +1,7 @@
 package uz.pravaimtihon.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,10 +21,12 @@ public class ExamAnswer extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "exam_session_id", nullable = false)
+    @JsonIgnore
     private ExamSession examSession;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "topic", "category", "ticketQuestions"})
     private Question question;
 
     @Column(name = "question_order", nullable = false)

@@ -31,7 +31,7 @@ import java.util.Map;
  * <p>Ruxsat: ADMIN va SUPER_ADMIN</p>
  */
 @RestController
-@RequestMapping("/api/v1/admin/app-releases")
+@RequestMapping({"/api/v1/admin/app-releases", "/api/v1/app-releases/admin", "/api/v1/admin/applications"})
 @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
 @RequiredArgsConstructor
 @Slf4j

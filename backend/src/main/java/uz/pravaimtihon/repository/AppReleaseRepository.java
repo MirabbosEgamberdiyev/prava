@@ -33,6 +33,12 @@ public interface AppReleaseRepository extends JpaRepository<AppRelease, Long> {
 
     List<AppRelease> findAllByIsLatestTrueAndStatusAndDeletedFalse(AppReleaseStatus status);
 
+    @Query("SELECT COALESCE(SUM(ar.downloadCount), 0) FROM AppRelease ar WHERE ar.deleted = false")
+    long sumTotalDownloads();
+
+    @Query("SELECT COALESCE(SUM(ar.downloadCount), 0) FROM AppRelease ar WHERE ar.deleted = false AND ar.platform = :platform")
+    long sumDownloadsByPlatform(@Param("platform") AppPlatform platform);
+
     // ── Filtered paginated list ───────────────────────────────────────────
 
     /**

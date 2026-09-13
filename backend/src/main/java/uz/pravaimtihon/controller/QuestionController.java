@@ -357,4 +357,25 @@ public class QuestionController {
         QuestionResponse response = questionService.deleteQuestionImage(id, language);
         return ResponseEntity.ok(ApiResponse.success(messageService.getMessage("success.question.image.deleted", language), response));
     }
+
+    @PostMapping("/{id}/clone")
+    @Operation(summary = "Clone question")
+    public ResponseEntity<ApiResponse<QuestionResponse>> cloneQuestion(
+            @PathVariable Long id,
+            @Parameter(description = "uzl|uzc|en|ru")
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        QuestionResponse response = questionService.cloneQuestion(id, language);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Savol nusxalandi", response));
+    }
+
+    @GetMapping("/export/csv")
+    @Operation(summary = "Export questions as CSV")
+    public ResponseEntity<byte[]> exportCsv() {
+        byte[] csv = questionService.exportQuestionsCsv();
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"questions.csv\"")
+                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
+                .body(csv);
+    }
 }

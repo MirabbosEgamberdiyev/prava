@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import uz.pravaimtihon.enums.AcceptLanguage;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,6 +89,7 @@ public class Ticket extends BaseEntity {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "package_id", nullable = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "tickets", "questions"})
     private ExamPackage examPackage;
 
     /**
@@ -94,6 +97,7 @@ public class Ticket extends BaseEntity {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "topic_id", nullable = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "questions", "tickets"})
     private Topic topic;
 
     /**
@@ -107,6 +111,7 @@ public class Ticket extends BaseEntity {
     )
     @OrderColumn(name = "question_order")
     @Builder.Default
+    @JsonIgnore
     private List<Question> questions = new ArrayList<>();
 
     /**
@@ -187,15 +192,19 @@ public class Ticket extends BaseEntity {
     /**
      * Savollar soni yetarlimi? (aniq son bilan tekshirish)
      */
+    @JsonIgnore
     public boolean hasExactQuestionCount() {
-        return questions != null && questions.size() == getEffectiveQuestionCount();
+        return org.hibernate.Hibernate.isInitialized(questions) && questions != null && questions.size() == getEffectiveQuestionCount();
     }
 
     /**
      * Haqiqiy savollar sonini olish (joriy)
      */
     public int getQuestionCount() {
-        return questions != null ? questions.size() : 0;
+        if (!org.hibernate.Hibernate.isInitialized(questions) || questions == null) {
+            return targetQuestionCount != null ? targetQuestionCount : DEFAULT_QUESTIONS_PER_TICKET;
+        }
+        return questions.size();
     }
 
     /**

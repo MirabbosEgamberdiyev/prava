@@ -24,13 +24,22 @@ public class DashboardStatsResponse {
     // ============================================
 
     private Long totalUsers;
+    private Long todayRegistrations;
+    private Long activeUsers;
+    private Long loginsLast24h;
     private Long totalQuestions;
+    private Long activeQuestions;
+    private Long totalTopics;
+    private Long totalCategories;
     private Long totalPackages;
     private Long totalTickets;
     private Long totalExams;
     private Long completedExams;
     private Long activeExams;
     private Double averageScore;
+    private Long contactInquiriesCount;
+    private Long partnerLeadsCount;
+    private Long totalDownloads;
 
     // ============================================
     // Vaqt bo'yicha statistikalar

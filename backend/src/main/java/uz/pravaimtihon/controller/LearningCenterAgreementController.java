@@ -29,7 +29,7 @@ import java.time.temporal.ChronoUnit;
  * Hech qanday aktivatsiya kodi yoki license bilan bog'lanmagan.
  */
 @RestController
-@RequestMapping("/api/v1/admin/learning-center-agreements")
+@RequestMapping({"/api/v1/admin/learning-center-agreements", "/api/v1/admin/agreements"})
 @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
 @RequiredArgsConstructor
 @Slf4j

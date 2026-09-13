@@ -82,7 +82,14 @@
     "learningCenters": "Learning Centers",
     "agreements": "Agreements",
     "license": "Activation Codes",
-    "applications": "Applications"
+    "applications": "Applications",
+    "contact": "Inquiries (CRM)",
+    "partners": "Partners (Leads)",
+    "downloads": "Downloads",
+    "news": "News CMS",
+    "faq": "FAQ CMS",
+    "audit": "Audit Logs",
+    "exams": "Exams & Results"
   },
   "common": {
     "save": "Save",

@@ -50,6 +50,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Query("SELECT COUNT(u) FROM User u WHERE u.deleted = false AND u.isActive = true")
     long countActiveUsers();
 
+    long countByCreatedAtAfterAndDeletedFalse(LocalDateTime date);
+
     @Query("SELECT u FROM User u WHERE u.accountLockedUntil IS NOT NULL " +
             "AND u.accountLockedUntil < :now")
     List<User> findLockedAccountsToUnlock(@Param("now") LocalDateTime now);

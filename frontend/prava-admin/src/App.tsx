@@ -35,6 +35,14 @@ const Edit_Package_Page = lazy(() => import("./page/Packages/Edit_Package_Page/E
 const Add_Ticket_Page = lazy(() => import("./page/Tickets/Add_Ticket_Page/Add_Ticket_Page"));
 const Edit_Ticket_Page = lazy(() => import("./page/Tickets/Edit_Ticket_Page/Edit_Ticket_Page"));
 
+const Exams_Page = lazy(() => import("./page/Exams"));
+const Contact_Page = lazy(() => import("./page/Contact"));
+const Partners_Page = lazy(() => import("./page/Partners"));
+const Downloads_Page = lazy(() => import("./page/Downloads"));
+const News_Page = lazy(() => import("./page/News"));
+const Faq_Page = lazy(() => import("./page/Faq"));
+const Audit_Page = lazy(() => import("./page/Audit"));
+
 function App() {
   return (
     <>
@@ -56,11 +64,11 @@ function App() {
                   }
                 />
 
-                {/* Savollar - ADMIN va SUPER_ADMIN (backend: /api/v1/admin/questions) */}
+                {/* Savollar - ADMIN, SUPER_ADMIN va CONTENT_MANAGER (backend: /api/v1/admin/questions) */}
                 <Route
                   path="/questions"
                   element={
-                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Question_Page />
                     </RoleGuard>
                   }
@@ -68,7 +76,7 @@ function App() {
                 <Route
                   path="/questions/add"
                   element={
-                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Add_Question_Page />
                     </RoleGuard>
                   }
@@ -76,17 +84,17 @@ function App() {
                 <Route
                   path="/questions/edit/:id"
                   element={
-                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Edit_Question_Page />
                     </RoleGuard>
                   }
                 />
 
-                {/* Mavzular - ADMIN va SUPER_ADMIN (backend: /api/v1/admin/topics) */}
+                {/* Mavzular - ADMIN, SUPER_ADMIN va CONTENT_MANAGER (backend: /api/v1/admin/topics) */}
                 <Route
                   path="/topics"
                   element={
-                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Topic_Page />
                     </RoleGuard>
                   }
@@ -94,17 +102,17 @@ function App() {
                 <Route
                   path="/topics/add"
                   element={
-                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Add_Topic_Page />
                     </RoleGuard>
                   }
                 />
 
-                {/* Paketlar - ADMIN va SUPER_ADMIN (backend: /api/v1/packages/admin) */}
+                {/* Paketlar - ADMIN, SUPER_ADMIN va CONTENT_MANAGER (backend: /api/v1/packages/admin) */}
                 <Route
                   path="/packages"
                   element={
-                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Packages_Page />
                     </RoleGuard>
                   }
@@ -112,7 +120,7 @@ function App() {
                 <Route
                   path="/packages/add"
                   element={
-                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Add_Package_Page />
                     </RoleGuard>
                   }
@@ -120,17 +128,17 @@ function App() {
                 <Route
                   path="/packages/edit/:id"
                   element={
-                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Edit_Package_Page />
                     </RoleGuard>
                   }
                 />
 
-                {/* Biletlar - ADMIN va SUPER_ADMIN (backend: /api/v2/tickets create/update/delete) */}
+                {/* Biletlar - ADMIN, SUPER_ADMIN va CONTENT_MANAGER (backend: /api/v2/tickets) */}
                 <Route
                   path="/tickets"
                   element={
-                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Tickets_Page />
                     </RoleGuard>
                   }
@@ -138,7 +146,7 @@ function App() {
                 <Route
                   path="/tickets/add"
                   element={
-                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Add_Ticket_Page />
                     </RoleGuard>
                   }
@@ -146,8 +154,78 @@ function App() {
                 <Route
                   path="/tickets/edit/:id"
                   element={
-                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Edit_Ticket_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Imtihonlar auditi - ADMIN, SUPER_ADMIN va ANALYST */}
+                <Route
+                  path="/exams"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "ANALYST"]}>
+                      <Exams_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Murojaatlar CRM - ADMIN, SUPER_ADMIN va SUPPORT */}
+                <Route
+                  path="/contact"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "SUPPORT"]}>
+                      <Contact_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Hamkorlar CRM - ADMIN, SUPER_ADMIN va SUPPORT */}
+                <Route
+                  path="/partners"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "SUPPORT"]}>
+                      <Partners_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Yuklab olishlar - ADMIN, SUPER_ADMIN va ANALYST */}
+                <Route
+                  path="/downloads"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "ANALYST"]}>
+                      <Downloads_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Yangiliklar CMS - ADMIN, SUPER_ADMIN va CONTENT_MANAGER */}
+                <Route
+                  path="/news"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
+                      <News_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* FAQ CMS - ADMIN, SUPER_ADMIN va CONTENT_MANAGER */}
+                <Route
+                  path="/faq"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
+                      <Faq_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Audit jurnali - faqat ADMIN va SUPER_ADMIN */}
+                <Route
+                  path="/audit"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <Audit_Page />
                     </RoleGuard>
                   }
                 />
@@ -157,9 +235,7 @@ function App() {
                   path="/applications"
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-                      
-                        <Applications_Page />
-                      
+                      <Applications_Page />
                     </RoleGuard>
                   }
                 />
@@ -168,9 +244,9 @@ function App() {
                 <Route
                   path="/statistics"
                   element={
-                    
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "ANALYST"]}>
                       <Statistics_Page />
-                    
+                    </RoleGuard>
                   }
                 />
 

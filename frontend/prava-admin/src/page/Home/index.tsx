@@ -24,16 +24,23 @@ import {
   IconFolder,
   IconTicket,
   IconClipboardCheck,
-  IconTrendingUp,
   IconPlayerPlay,
-  IconCalendarEvent,
   IconChartBar,
   IconCircleCheck,
   IconCircleX,
   IconTarget,
   IconAlertTriangle,
+  IconUserPlus,
+  IconLogin,
+  IconAlignBoxLeftTop,
+  IconMail,
+  IconHeartHandshake,
+  IconDownload,
+  IconPlus,
+  IconSettings,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDashboardStats, useTopicStats, useRecentExams } from "../../features/dashboard";
 import { formatDate } from "../../utils/formatDate";
 import { useTranslation } from "react-i18next";
@@ -44,10 +51,18 @@ interface StatCardProps {
   icon: React.ReactNode;
   color: string;
   subtitle?: string;
+  onClick?: () => void;
 }
 
-const StatCard = ({ title, value, icon, color, subtitle }: StatCardProps) => (
-  <Card shadow="sm" padding="lg" radius="md" withBorder>
+const StatCard = ({ title, value, icon, color, subtitle, onClick }: StatCardProps) => (
+  <Card
+    shadow="sm"
+    padding="lg"
+    radius="md"
+    withBorder
+    style={{ cursor: onClick ? "pointer" : "default" }}
+    onClick={onClick}
+  >
     <Group justify="space-between" align="flex-start">
       <Stack gap={4}>
         <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
@@ -72,7 +87,7 @@ const StatCard = ({ title, value, icon, color, subtitle }: StatCardProps) => (
 const DashboardSkeleton = () => (
   <Stack gap="md">
     <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
-      {Array.from({ length: 8 }).map((_, i) => (
+      {Array.from({ length: 12 }).map((_, i) => (
         <Skeleton key={i} height={110} radius="md" />
       ))}
     </SimpleGrid>
@@ -89,6 +104,7 @@ const DashboardSkeleton = () => (
 
 const Home_Page = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { stats, isLoading: statsLoading, isError: statsError, refresh: refreshStats } =
     useDashboardStats();
   const { topics, isLoading: topicsLoading, isError: topicsError } = useTopicStats();
@@ -100,15 +116,12 @@ const Home_Page = () => {
     isError: examsError,
   } = useRecentExams(examPage, 8);
 
-  // Oxirgi sahifadagi imtihonlar yo'qolsa `examPage` diapazondan chiqib ketmasin
   useEffect(() => {
     if (totalPages > 0 && examPage > totalPages - 1) setExamPage(totalPages - 1);
   }, [totalPages, examPage]);
 
   if (statsLoading) return <DashboardSkeleton />;
 
-  // Ilgari faqat `!stats` tekshirilardi va tarmoq xatosi ham "ma'lumot yo'q"
-  // bo'lib ko'rinardi — admin nima bo'lganini bilmasdi va qayta urinolmasdi.
   if (statsError) {
     return (
       <Center h={400}>
@@ -132,67 +145,252 @@ const Home_Page = () => {
   }
 
   return (
-    <Stack gap="md">
-      <Title order={1} fz="h3">{t("dashboard.title")}</Title>
+    <Stack gap="lg">
+      {/* Header & Quick Actions */}
+      <Group justify="space-between" align="center" wrap="wrap">
+        <div>
+          <Title order={1} fz="h3">{t("dashboard.title")}</Title>
+          <Text size="sm" c="dimmed">Avtomaktab imtihon tizimi real vaqt nazorat paneli</Text>
+        </div>
+        <Button variant="light" color="blue" onClick={() => refreshStats()} size="sm">
+          {t("common.refresh")}
+        </Button>
+      </Group>
 
-      {/* Row 1: Asosiy statistikalar */}
-      <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
-        <StatCard
-          title={t("dashboard.totalUsers")}
-          value={stats.totalUsers}
-          icon={<IconUsers size={24} />}
-          color="blue"
-          subtitle={t("dashboard.activeToday", { count: stats.activeUsersToday })}
-        />
-        <StatCard
-          title={t("dashboard.totalQuestions")}
-          value={stats.totalQuestions}
-          icon={<IconQuestionMark size={24} />}
-          color="violet"
-        />
-        <StatCard
-          title={t("dashboard.totalPackages")}
-          value={stats.totalPackages}
-          icon={<IconFolder size={24} />}
-          color="teal"
-        />
-        <StatCard
-          title={t("dashboard.totalTickets")}
-          value={stats.totalTickets}
-          icon={<IconTicket size={24} />}
-          color="orange"
-        />
-      </SimpleGrid>
+      {/* Quick Actions Panel */}
+      <Card shadow="xs" padding="sm" radius="md" withBorder>
+        <Stack gap="xs">
+          <Text size="xs" fw={700} c="dimmed" tt="uppercase">
+            Tezkor Amallar (Quick Actions)
+          </Text>
+          <Group gap="xs" wrap="wrap">
+            <Button
+              size="xs"
+              variant="light"
+              color="violet"
+              leftSection={<IconPlus size={14} />}
+              onClick={() => navigate("/questions/add")}
+            >
+              Yangi savol
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="orange"
+              leftSection={<IconPlus size={14} />}
+              onClick={() => navigate("/tickets/add")}
+            >
+              Yangi bilet
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="indigo"
+              leftSection={<IconPlus size={14} />}
+              onClick={() => navigate("/topics/add")}
+            >
+              Yangi mavzu
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="blue"
+              leftSection={<IconUsers size={14} />}
+              onClick={() => navigate("/users")}
+            >
+              Foydalanuvchilar
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="teal"
+              leftSection={<IconMail size={14} />}
+              onClick={() => navigate("/contact")}
+            >
+              Murojaatlar
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="cyan"
+              leftSection={<IconHeartHandshake size={14} />}
+              onClick={() => navigate("/partners")}
+            >
+              Hamkorlar
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="green"
+              leftSection={<IconDownload size={14} />}
+              onClick={() => navigate("/downloads")}
+            >
+              Yuklab olishlar
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="gray"
+              leftSection={<IconSettings size={14} />}
+              onClick={() => navigate("/settings")}
+            >
+              Sozlamalar
+            </Button>
+          </Group>
+        </Stack>
+      </Card>
 
-      {/* Row 2: Imtihon statistikalari */}
-      <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
-        <StatCard
-          title={t("dashboard.examsToday")}
-          value={stats.examsToday}
-          icon={<IconCalendarEvent size={24} />}
-          color="cyan"
-          subtitle={t("dashboard.thisWeek", { count: stats.examsThisWeek })}
-        />
-        <StatCard
-          title={t("dashboard.activeExams")}
-          value={stats.activeExams}
-          icon={<IconPlayerPlay size={24} />}
-          color="green"
-        />
-        <StatCard
-          title={t("dashboard.passRate")}
-          value={`${(stats.passRate ?? 0).toFixed(1)}%`}
-          icon={<IconTrendingUp size={24} />}
-          color="lime"
-          subtitle={`${stats.passedExams} / ${stats.completedExams}`}
-        />
-        <StatCard
-          title={t("dashboard.avgScore")}
-          value={(stats.averageScore ?? 0).toFixed(1)}
-          icon={<IconTarget size={24} />}
-          color="grape"
-        />
-      </SimpleGrid>
+      {/* Row 1: Foydalanuvchilar va Faollik (4 Metrika) */}
+      <Stack gap="xs">
+        <Text size="sm" fw={700} c="dimmed">FOYDALANUVCHILAR VA FAOLLIK</Text>
+        <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
+          <StatCard
+            title={t("dashboard.totalUsers")}
+            value={stats.totalUsers}
+            icon={<IconUsers size={24} />}
+            color="blue"
+            subtitle={`Faol: ${stats.activeUsers ?? stats.activeUsersToday ?? 0}`}
+            onClick={() => navigate("/users")}
+          />
+          <StatCard
+            title="Faol Foydalanuvchilar"
+            value={stats.activeUsers ?? stats.activeUsersToday ?? 0}
+            icon={<IconUsers size={24} />}
+            color="teal"
+            subtitle="Tizimda bloklanmaganlar"
+            onClick={() => navigate("/users")}
+          />
+          <StatCard
+            title="Bugun Qo'shilganlar"
+            value={stats.todayRegistrations ?? 0}
+            icon={<IconUserPlus size={24} />}
+            color="cyan"
+            subtitle="Oxirgi 24 soatda"
+          />
+          <StatCard
+            title="24 Soatda Kirganlar"
+            value={stats.loginsLast24h ?? 0}
+            icon={<IconLogin size={24} />}
+            color="indigo"
+            subtitle="Faol sessiyalar"
+          />
+        </SimpleGrid>
+      </Stack>
+
+      {/* Row 2: Kontent va Savollar Bazasi (4 Metrika) */}
+      <Stack gap="xs">
+        <Text size="sm" fw={700} c="dimmed">KONTENT VA SAVOLLAR BAZASI</Text>
+        <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
+          <StatCard
+            title={t("dashboard.totalQuestions")}
+            value={stats.totalQuestions}
+            icon={<IconQuestionMark size={24} />}
+            color="violet"
+            subtitle={`Faol: ${stats.activeQuestions ?? stats.totalQuestions}`}
+            onClick={() => navigate("/questions")}
+          />
+          <StatCard
+            title="Jami Mavzular"
+            value={stats.totalTopics ?? 0}
+            icon={<IconAlignBoxLeftTop size={24} />}
+            color="grape"
+            subtitle="Yo'l harakati qoidalari"
+            onClick={() => navigate("/topics")}
+          />
+          <StatCard
+            title={t("dashboard.totalTickets")}
+            value={stats.totalTickets}
+            icon={<IconTicket size={24} />}
+            color="orange"
+            subtitle="Rasmiy biletlar"
+            onClick={() => navigate("/tickets")}
+          />
+          <StatCard
+            title={t("dashboard.totalPackages")}
+            value={stats.totalPackages}
+            icon={<IconFolder size={24} />}
+            color="yellow"
+            subtitle="Tayyor to'plamlar"
+            onClick={() => navigate("/packages")}
+          />
+        </SimpleGrid>
+      </Stack>
+
+      {/* Row 3: Imtihonlar va Natijalar (4 Metrika) */}
+      <Stack gap="xs">
+        <Text size="sm" fw={700} c="dimmed">IMTIHONLAR VA NATIJALAR</Text>
+        <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
+          <StatCard
+            title="Jami Imtihonlar"
+            value={stats.totalExams}
+            icon={<IconClipboardCheck size={24} />}
+            color="blue"
+            subtitle={`Bugun: ${stats.examsToday}`}
+            onClick={() => navigate("/exams")}
+          />
+          <StatCard
+            title="Muvaffaqiyatli"
+            value={stats.passedExams}
+            icon={<IconCircleCheck size={24} />}
+            color="green"
+            subtitle={`${(stats.passRate ?? 0).toFixed(1)}% o'tish ko'rsatkichi`}
+            onClick={() => navigate("/exams")}
+          />
+          <StatCard
+            title="Yiqilganlar"
+            value={stats.failedExams}
+            icon={<IconCircleX size={24} />}
+            color="red"
+            subtitle="Qayta topshirish kerak"
+            onClick={() => navigate("/exams")}
+          />
+          <StatCard
+            title={t("dashboard.avgScore")}
+            value={(stats.averageScore ?? 0).toFixed(1)}
+            icon={<IconTarget size={24} />}
+            color="lime"
+            subtitle="O'rtacha to'g'ri javoblar"
+          />
+        </SimpleGrid>
+      </Stack>
+
+      {/* Row 4: CRM va Tarqatish (3 Metrika + Faol Imtihonlar) */}
+      <Stack gap="xs">
+        <Text size="sm" fw={700} c="dimmed">CRM VA ILOVA STATISTIKASI</Text>
+        <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
+          <StatCard
+            title="Sayt Murojaatlari"
+            value={stats.contactInquiriesCount ?? 0}
+            icon={<IconMail size={24} />}
+            color="pink"
+            subtitle="Foydalanuvchi xabarlari"
+            onClick={() => navigate("/contact")}
+          />
+          <StatCard
+            title="Hamkorlik Arizalari"
+            value={stats.partnerLeadsCount ?? 0}
+            icon={<IconHeartHandshake size={24} />}
+            color="teal"
+            subtitle="Avtomaktab arizalari"
+            onClick={() => navigate("/partners")}
+          />
+          <StatCard
+            title="Ilova Yuklab Olishlar"
+            value={stats.totalDownloads ?? 0}
+            icon={<IconDownload size={24} />}
+            color="cyan"
+            subtitle="Desktop & Mobil platformalar"
+            onClick={() => navigate("/downloads")}
+          />
+          <StatCard
+            title={t("dashboard.activeExams")}
+            value={stats.activeExams}
+            icon={<IconPlayerPlay size={24} />}
+            color="indigo"
+            subtitle="Ayni paytda test ishlayotganlar"
+          />
+        </SimpleGrid>
+      </Stack>
 
       <Grid>
         {/* Recent Exams */}

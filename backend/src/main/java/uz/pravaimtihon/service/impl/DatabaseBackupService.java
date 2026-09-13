@@ -233,13 +233,17 @@ public class DatabaseBackupService {
      */
     private List<Map<String, Object>> exportPackageQuestions() {
         return examPackageRepository.findAll().stream()
-                .flatMap(pkg -> pkg.getQuestions().stream()
-                        .map(question -> {
-                            Map<String, Object> map = new LinkedHashMap<>();
-                            map.put("packageId", pkg.getId());
-                            map.put("questionId", question.getId());
-                            return map;
-                        }))
+                .flatMap(pkg -> {
+                    if (pkg.getQuestions() == null) return java.util.stream.Stream.empty();
+                    return pkg.getQuestions().stream()
+                            .filter(Objects::nonNull)
+                            .map(question -> {
+                                Map<String, Object> map = new LinkedHashMap<>();
+                                map.put("packageId", pkg.getId());
+                                map.put("questionId", question.getId());
+                                return map;
+                            });
+                })
                 .collect(Collectors.toList());
     }
 
@@ -277,12 +281,17 @@ public class DatabaseBackupService {
                 .flatMap(ticket -> {
                     List<Question> questions = ticket.getQuestions();
                     List<Map<String, Object>> result = new ArrayList<>();
-                    for (int i = 0; i < questions.size(); i++) {
-                        Map<String, Object> map = new LinkedHashMap<>();
-                        map.put("ticketId", ticket.getId());
-                        map.put("questionId", questions.get(i).getId());
-                        map.put("questionOrder", i);
-                        result.add(map);
+                    if (questions != null) {
+                        for (int i = 0; i < questions.size(); i++) {
+                            Question q = questions.get(i);
+                            if (q != null && q.getId() != null) {
+                                Map<String, Object> map = new LinkedHashMap<>();
+                                map.put("ticketId", ticket.getId());
+                                map.put("questionId", q.getId());
+                                map.put("questionOrder", i);
+                                result.add(map);
+                            }
+                        }
                     }
                     return result.stream();
                 })

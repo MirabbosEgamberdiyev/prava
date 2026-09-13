@@ -52,6 +52,10 @@ public class StatisticsService {
     private final UserRepository userRepository;
     private final ExamPackageRepository packageRepository;
     private final TicketRepository ticketRepository;
+    private final uz.pravaimtihon.repository.TopicRepository topicRepository;
+    private final uz.pravaimtihon.repository.ContactInquiryRepository contactInquiryRepository;
+    private final uz.pravaimtihon.repository.PartnerLeadRepository partnerLeadRepository;
+    private final uz.pravaimtihon.repository.AppReleaseRepository appReleaseRepository;
     private final StatisticsMapper statisticsMapper;
 
     // ============================================
@@ -342,10 +346,19 @@ public class StatisticsService {
         LocalDateTime weekStart = today.minusDays(7);
         LocalDateTime monthStart = today.minusDays(30);
 
+        long todayRegistrations = userRepository.countByCreatedAtAfterAndDeletedFalse(today);
         long examsToday = sessionRepository.countByStartedAtAfter(today);
         long examsThisWeek = sessionRepository.countByStartedAtAfter(weekStart);
         long examsThisMonth = sessionRepository.countByStartedAtAfter(monthStart);
         long activeUsersToday = sessionRepository.countActiveUsersToday(today);
+        long loginsLast24h = sessionRepository.countActiveUsersToday(LocalDateTime.now().minusHours(24));
+
+        long activeQuestions = questionRepository.countByDeletedFalseAndIsActiveTrue();
+        long totalTopics = topicRepository.count();
+        long totalCategories = totalTopics;
+        long contactInquiriesCount = contactInquiryRepository.count();
+        long partnerLeadsCount = partnerLeadRepository.count();
+        long totalDownloads = appReleaseRepository.sumTotalDownloads();
 
         // Imtihon turlari bo'yicha
         long ticketExams = sessionRepository.countTicketSessions();
@@ -396,7 +409,13 @@ public class StatisticsService {
 
         return DashboardStatsResponse.builder()
                 .totalUsers(totalUsers)
+                .todayRegistrations(todayRegistrations)
+                .activeUsers(activeUsersToday)
+                .loginsLast24h(loginsLast24h)
                 .totalQuestions(totalQuestions)
+                .activeQuestions(activeQuestions)
+                .totalTopics(totalTopics)
+                .totalCategories(totalCategories)
                 .totalPackages(totalPackages)
                 .totalTickets(totalTickets)
                 .totalExams(totalExams)
@@ -411,6 +430,9 @@ public class StatisticsService {
                 .ticketExams(ticketExams)
                 .marathonExams(marathonExams)
                 .passRate(passRate)
+                .contactInquiriesCount(contactInquiriesCount)
+                .partnerLeadsCount(partnerLeadsCount)
+                .totalDownloads(totalDownloads)
                 .popularPackages(popularPackages)
                 .popularTickets(popularTickets)
                 .build();

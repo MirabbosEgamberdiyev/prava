@@ -22,9 +22,7 @@ if exist .env (
     echo [.env] Konfiguratsiya yuklanmoqda...
     for /f "usebackq eol=# tokens=1,* delims==" %%A in (".env") do (
         if not "%%A"=="" (
-            set "_val=%%B"
-            set "_val=!_val:$$=$!"
-            set "%%A=!_val!"
+            set "%%A=%%B"
         )
     )
 ) else (

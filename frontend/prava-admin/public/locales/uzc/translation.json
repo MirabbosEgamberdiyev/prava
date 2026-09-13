@@ -82,7 +82,14 @@
     "learningCenters": "Ўқув Марказлари",
     "agreements": "Шартномалар",
     "license": "Активация Кодлари",
-    "applications": "Иловалар"
+    "applications": "Иловалар",
+    "contact": "Мурожаатлар (CRM)",
+    "partners": "Ҳамкорлик (Leads)",
+    "downloads": "Юклаб олишлар",
+    "news": "Янгиликлар CMS",
+    "faq": "FAQ CMS",
+    "audit": "Аудит Логлар",
+    "exams": "Имтиҳонлар & Натижалар"
   },
   "common": {
     "save": "Сақлаш",

@@ -170,9 +170,9 @@ public class SecurityConfig {
                         ).hasAnyRole("SUPER_ADMIN", "ADMIN", "USER")
 
                         // ============================================
-                        // ADMIN + SUPER_ADMIN
+                        // ADMIN ROLES (SUPER_ADMIN, ADMIN, CONTENT_MANAGER, SUPPORT, ANALYST)
                         // ============================================
-                        .requestMatchers("/api/v1/admin/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
+                        .requestMatchers("/api/v1/admin/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CONTENT_MANAGER", "SUPPORT", "ANALYST")
 
                         // ============================================
                         // DESKTOP APP — USER + ADMIN + SUPER_ADMIN

@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
  * Barcha filterlar bilan ishlash imkoniyati.
  */
 @RestController
-@RequestMapping("/api/v2/admin/statistics")
+@RequestMapping({"/api/v2/admin/statistics", "/api/v1/admin/statistics"})
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
 @Tag(name = "Admin Statistics", description = "Admin uchun mukammal statistika - barcha filterlar bilan")
@@ -179,8 +179,8 @@ public class AdminStatisticsController {
     // QUICK FILTERS
     // ============================================
 
-    @GetMapping("/today")
-    @Operation(summary = "Bugungi statistika")
+    @GetMapping({"/today", "/overview", ""})
+    @Operation(summary = "Bugungi / umumiy statistika")
     public ResponseEntity<ApiResponse<ComprehensiveStatisticsResponse>> getTodayStatistics(
             @Parameter(description = "uzl|uzc|en|ru")
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {

@@ -409,4 +409,33 @@ public class ContactInquiryService {
                 .replace("\"", "&quot;")
                 .replace("'", "&#39;");
     }
+
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<ContactInquiry> getAllInquiries(
+            org.springframework.data.domain.Pageable pageable,
+            uz.pravaimtihon.enums.InquiryStatus status,
+            uz.pravaimtihon.enums.InquiryType inquiryType,
+            String search) {
+        return inquiryRepository.searchInquiries(status, inquiryType, search, pageable);
+    }
+
+    @Transactional
+    public ContactInquiry updateStatus(Long id, uz.pravaimtihon.enums.InquiryStatus status, String adminNote) {
+        ContactInquiry inquiry = inquiryRepository.findById(id)
+                .orElseThrow(() -> new uz.pravaimtihon.exception.ResourceNotFoundException("Murojaat topilmadi"));
+        if (status != null) {
+            inquiry.setStatus(status);
+        }
+        if (adminNote != null) {
+            inquiry.setAdminNote(adminNote);
+        }
+        return inquiryRepository.save(inquiry);
+    }
+
+    @Transactional
+    public void deleteInquiry(Long id) {
+        ContactInquiry inquiry = inquiryRepository.findById(id)
+                .orElseThrow(() -> new uz.pravaimtihon.exception.ResourceNotFoundException("Murojaat topilmadi"));
+        inquiryRepository.delete(inquiry);
+    }
 }

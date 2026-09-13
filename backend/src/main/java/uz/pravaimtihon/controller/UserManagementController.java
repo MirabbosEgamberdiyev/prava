@@ -190,4 +190,63 @@ public class UserManagementController {
         userManagementService.deleteUser(id, language);
         return ResponseEntity.ok(ApiResponse.success(messageService.getMessage("success.user.deleted", language), null));
     }
+
+    @PostMapping("/{id}/reset-password")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Operation(summary = "Reset user password by admin")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, String> body) {
+        String newPassword = body != null ? body.get("newPassword") : null;
+        if (newPassword == null || newPassword.length() < 6) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Parol kamida 6 belgidan iborat bo'lishi kerak"));
+        }
+        userManagementService.resetPassword(id, newPassword);
+        return ResponseEntity.ok(ApiResponse.success("Parol muvaffaqiyatli yangilandi", null));
+    }
+
+    @PostMapping("/{id}/force-logout")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+    @Operation(summary = "Force logout user and revoke sessions")
+    public ResponseEntity<ApiResponse<Void>> forceLogout(@PathVariable Long id) {
+        userManagementService.forceLogout(id);
+        return ResponseEntity.ok(ApiResponse.success("Foydalanuvchi barcha qurilmalardan chiqarildi", null));
+    }
+
+    @PostMapping("/bulk/status")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+    @Operation(summary = "Bulk update user active status")
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<ApiResponse<Void>> bulkStatus(@RequestBody java.util.Map<String, Object> body) {
+        java.util.List<Number> idsNum = (java.util.List<Number>) body.get("ids");
+        Boolean isActive = (Boolean) body.get("isActive");
+        if (idsNum == null || isActive == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Noto'g'ri parametrlar"));
+        }
+        java.util.List<Long> ids = idsNum.stream().map(Number::longValue).toList();
+        userManagementService.bulkUpdateStatus(ids, isActive);
+        return ResponseEntity.ok(ApiResponse.success("Ommaviy holat muvaffaqiyatli yangilandi", null));
+    }
+
+    @PostMapping("/bulk/delete")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Operation(summary = "Bulk delete users")
+    public ResponseEntity<ApiResponse<Void>> bulkDelete(@RequestBody java.util.List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Foydalanuvchilar tanlanmagan"));
+        }
+        userManagementService.bulkDelete(ids);
+        return ResponseEntity.ok(ApiResponse.success("Tanlangan foydalanuvchilar o'chirildi", null));
+    }
+
+    @GetMapping("/export/csv")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+    @Operation(summary = "Export users as CSV")
+    public ResponseEntity<byte[]> exportCsv() {
+        byte[] csvData = userManagementService.exportUsersCsv();
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"users.csv\"")
+                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
+                .body(csvData);
+    }
 }

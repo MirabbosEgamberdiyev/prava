@@ -5,7 +5,7 @@ export interface User {
   lastName: string;
   phoneNumber: string | null;
   email: string | null;
-  role: "SUPER_ADMIN" | "ADMIN" | "USER";
+  role: "SUPER_ADMIN" | "ADMIN" | "CONTENT_MANAGER" | "SUPPORT" | "ANALYST" | "USER";
   isActive: boolean;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
@@ -37,7 +37,7 @@ export interface CreateUserDTO {
   phoneNumber?: string;
   email?: string;
   password: string;
-  role: "ADMIN" | "USER";
+  role: "SUPER_ADMIN" | "ADMIN" | "CONTENT_MANAGER" | "SUPPORT" | "ANALYST" | "USER";
   preferredLanguage?: string;
 }
 
@@ -50,7 +50,7 @@ export interface UpdateUserDTO {
 }
 
 export interface ChangeRoleDTO {
-  role: "SUPER_ADMIN" | "ADMIN" | "USER";
+  role: "SUPER_ADMIN" | "ADMIN" | "CONTENT_MANAGER" | "SUPPORT" | "ANALYST" | "USER";
 }
 
 export interface ChangeStatusDTO {

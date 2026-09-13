@@ -82,7 +82,14 @@
     "learningCenters": "O'quv Markazlari",
     "agreements": "Shartnomalar",
     "license": "Aktivatsiya Kodlari",
-    "applications": "Ilovalar"
+    "applications": "Ilovalar",
+    "contact": "Murojaatlar (CRM)",
+    "partners": "Hamkorlik (Leads)",
+    "downloads": "Yuklab olishlar",
+    "news": "Yangiliklar CMS",
+    "faq": "FAQ CMS",
+    "audit": "Audit Loglar",
+    "exams": "Imtihonlar & Natijalar"
   },
   "common": {
     "save": "Saqlash",

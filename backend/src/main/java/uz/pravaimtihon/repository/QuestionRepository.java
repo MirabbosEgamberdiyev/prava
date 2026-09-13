@@ -18,6 +18,9 @@ import java.util.stream.Stream;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
+    long countByDeletedFalseAndIsActiveTrue();
+    long countByDeletedFalse();
+
     Page<Question> findByDeletedFalseAndIsActiveTrue(Pageable pageable);
 
     Page<Question> findByTopicAndDeletedFalseAndIsActiveTrue(Topic topic, Pageable pageable);

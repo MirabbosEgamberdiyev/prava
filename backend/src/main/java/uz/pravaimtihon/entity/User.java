@@ -10,6 +10,7 @@ import uz.pravaimtihon.enums.AcceptLanguage;
 import uz.pravaimtihon.enums.OAuthProvider;
 import uz.pravaimtihon.enums.Role;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -51,6 +52,7 @@ public class User extends BaseEntity {
     private String email;
 
     @NotBlank
+    @JsonIgnore
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
@@ -127,9 +129,11 @@ public class User extends BaseEntity {
     private Boolean deviceLimitCustomized = false;
 
     // Relationships
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RefreshToken> refreshTokens;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExamSession> examSessions;
 

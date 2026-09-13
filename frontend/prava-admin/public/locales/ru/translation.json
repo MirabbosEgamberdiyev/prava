@@ -82,7 +82,14 @@
     "learningCenters": "Учебные центры",
     "agreements": "Договоры",
     "license": "Коды активации",
-    "applications": "Приложения"
+    "applications": "Приложения",
+    "contact": "Обращения (CRM)",
+    "partners": "Партнеры (Leads)",
+    "downloads": "Загрузки",
+    "news": "Новости CMS",
+    "faq": "FAQ CMS",
+    "audit": "Журнал аудита",
+    "exams": "Экзамены и результаты"
   },
   "common": {
     "save": "Сохранить",

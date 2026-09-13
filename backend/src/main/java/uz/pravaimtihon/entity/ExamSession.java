@@ -1,5 +1,7 @@
 package uz.pravaimtihon.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import uz.pravaimtihon.enums.ExamStatus;
@@ -29,14 +31,17 @@ public class ExamSession extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "passwordHash", "refreshTokens", "examSessions"})
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "package_id", nullable = true)  // Nullable for marathon mode
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "tickets"})
     private ExamPackage examPackage;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_id", nullable = true)  // Nullable - only for ticket mode
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "questions"})
     private Ticket ticket;
 
     @Enumerated(EnumType.STRING)
@@ -91,6 +96,7 @@ public class ExamSession extends BaseEntity {
     private LocalDateTime lastSavedAt;
 
     // ✅ FIXED: Proper cascade and fetch settings
+    @JsonIgnore
     @OneToMany(mappedBy = "examSession", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("questionOrder ASC")
     @Builder.Default

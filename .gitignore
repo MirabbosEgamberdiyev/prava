@@ -65,3 +65,4 @@ build/
 *.local
 nul
 test_output.txt
+*.zip

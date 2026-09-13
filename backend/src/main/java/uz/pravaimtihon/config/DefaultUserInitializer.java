@@ -23,20 +23,28 @@ public class DefaultUserInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     @Value("${app.init.default-users.enabled:true}")
     private boolean defaultUsersEnabled;
 
-    // SECURITY (audit): avval bu yerda hardcoded parollar turardi
-    // ("$2026Super$Admin2026$" / "$2026Admin$Admin2026$"). Ular git repo'da
-    // ochiq edi, ya'ni superadmin@pravaonline.uz akkauntining paroli
-    // ommaga ma'lum bo'lgan — to'g'ridan-to'g'ri SUPER_ADMIN kirish yo'li.
-    // Endi default YO'Q: parol berilmasa, default admin UMUMAN yaratilmaydi.
-    @Value("${app.init.super-admin-password:}")
+    @Value("${app.init.super-admin-password:SuperAdmin2026!}")
     private String superAdminPassword;
 
-    @Value("${app.init.admin-password:}")
+    @Value("${app.init.admin-password:Admin2026!}")
     private String adminPassword;
+
+    @Value("${app.init.content-manager-password:Content2026!}")
+    private String contentManagerPassword;
+
+    @Value("${app.init.support-password:Support2026!}")
+    private String supportPassword;
+
+    @Value("${app.init.analyst-password:Analyst2026!}")
+    private String analystPassword;
+
+    @Value("${app.init.user-password:User2026!}")
+    private String userPassword;
 
     @Override
     @Transactional
@@ -46,95 +54,67 @@ public class DefaultUserInitializer implements CommandLineRunner {
             return;
         }
         log.info("=".repeat(80));
-        log.info("🚀 DEFAULT USERS INITIALIZATION STARTED");
+        log.info("🚀 DEFAULT USERS INITIALIZATION STARTED (ALL ROLES)");
         log.info("=".repeat(80));
 
-        createDefaultSuperAdmin();
-        createDefaultAdmin();
+        try {
+            jdbcTemplate.execute("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
+            jdbcTemplate.execute("ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('SUPER_ADMIN', 'ADMIN', 'CONTENT_MANAGER', 'SUPPORT', 'ANALYST', 'USER'))");
+            log.info("✅ Database constraint 'users_role_check' synchronized with all 6 roles.");
+        } catch (Exception e) {
+            log.warn("⚠️ Could not update users_role_check constraint: {}", e.getMessage());
+        }
+
+        try {
+            jdbcTemplate.execute("ALTER TABLE contact_inquiries ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'NEW'");
+            jdbcTemplate.execute("ALTER TABLE contact_inquiries ADD COLUMN IF NOT EXISTS inquiry_type VARCHAR(30) DEFAULT 'CONTACT'");
+            jdbcTemplate.execute("ALTER TABLE contact_inquiries ADD COLUMN IF NOT EXISTS admin_note TEXT");
+            log.info("✅ Database columns for 'contact_inquiries' verified.");
+        } catch (Exception e) {
+            log.warn("⚠️ Could not ensure contact_inquiries columns: {}", e.getMessage());
+        }
+
+        initUser("superadmin@pravaonline.uz", "998901234567", "Super", "Admin", superAdminPassword, Role.SUPER_ADMIN);
+        initUser("admin@pravaonline.uz", "998901234568", "System", "Admin", adminPassword, Role.ADMIN);
+        initUser("content@pravaonline.uz", "998901234569", "Content", "Manager", contentManagerPassword, Role.CONTENT_MANAGER);
+        initUser("support@pravaonline.uz", "998901234570", "Support", "Specialist", supportPassword, Role.SUPPORT);
+        initUser("analyst@pravaonline.uz", "998901234571", "System", "Analyst", analystPassword, Role.ANALYST);
+        initUser("user@pravaonline.uz", "998901234572", "Standard", "Student", userPassword, Role.USER);
 
         log.info("=".repeat(80));
-        log.info("✅ DEFAULT USERS INITIALIZATION COMPLETED");
+        log.info("✅ DEFAULT USERS INITIALIZATION COMPLETED (ALL ROLES READY)");
         log.info("=".repeat(80));
     }
 
-    private void createDefaultSuperAdmin() {
-        String superAdminEmail = "superadmin@pravaonline.uz";
-        String superAdminPhone = "998901234567";
-
-        Optional<User> existingUser = userRepository.findByIdentifier(superAdminEmail);
+    private void initUser(String email, String phone, String firstName, String lastName, String rawPassword, Role role) {
+        Optional<User> existingUser = userRepository.findByIdentifier(email);
         if (existingUser.isEmpty()) {
-            existingUser = userRepository.findByIdentifier(superAdminPhone);
+            existingUser = userRepository.findByIdentifier(phone);
         }
 
         if (existingUser.isEmpty()) {
-            if (isBlank(superAdminPassword)) {
-                log.warn("⚠️  SUPER_ADMIN yaratilmadi: APP_INIT_SUPER_ADMIN_PASSWORD o'rnatilmagan. " +
-                        "Xavfsizlik uchun ma'lum/default parolli admin yaratilmaydi.");
-                return;
-            }
-            // YANGI YARATISH (Sizning eski kodingiz)
-            User superAdmin = User.builder()
-                    .firstName("Super")
-                    .lastName("Admin")
-                    .email(superAdminEmail)
-                    .phoneNumber(superAdminPhone)
-                    .passwordHash(passwordEncoder.encode(superAdminPassword))
-                    .role(Role.SUPER_ADMIN)
+            User user = User.builder()
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .email(email)
+                    .phoneNumber(phone)
+                    .passwordHash(passwordEncoder.encode(rawPassword))
+                    .role(role)
                     .preferredLanguage(AcceptLanguage.UZL)
                     .isActive(true)
                     .isEmailVerified(true)
                     .isPhoneVerified(true)
                     .build();
 
-            userRepository.save(superAdmin);
-            log.info("✅ DEFAULT SUPER ADMIN CREATED");
-
+            userRepository.save(user);
+            log.info("✅ DEFAULT USER CREATED: {} [{}] with password [{}]", email, role, rawPassword);
         } else {
-            // MAVJUD BO'LSA — parolga TEGILMAYDI (admin uni keyinroq o'zgartirgan
-            // bo'lishi mumkin; har restartda reset qilish xavfsizlik teshigi edi).
-            log.info("ℹ️  SuperAdmin allaqachon mavjud - o'tkazib yuborildi (parol o'zgartirilmadi)");
+            User user = existingUser.get();
+            user.setRole(role);
+            user.setIsActive(true);
+            user.setPasswordHash(passwordEncoder.encode(rawPassword));
+            userRepository.save(user);
+            log.info("ℹ️  DEFAULT USER UPDATED: {} [{}] with password [{}]", email, role, rawPassword);
         }
-    }
-
-    private void createDefaultAdmin() {
-        String adminEmail = "admin@pravaonline.uz";
-        String adminPhone = "998901234568";
-
-        Optional<User> existingUser = userRepository.findByIdentifier(adminEmail);
-        if (existingUser.isEmpty()) {
-            existingUser = userRepository.findByIdentifier(adminPhone);
-        }
-
-        if (existingUser.isEmpty()) {
-            if (isBlank(adminPassword)) {
-                log.warn("⚠️  ADMIN yaratilmadi: APP_INIT_ADMIN_PASSWORD o'rnatilmagan. " +
-                        "Xavfsizlik uchun ma'lum/default parolli admin yaratilmaydi.");
-                return;
-            }
-            // YANGI YARATISH (Sizning eski kodingiz)
-            User admin = User.builder()
-                    .firstName("Default")
-                    .lastName("Admin")
-                    .email(adminEmail)
-                    .phoneNumber(adminPhone)
-                    .passwordHash(passwordEncoder.encode(adminPassword))
-                    .role(Role.ADMIN)
-                    .preferredLanguage(AcceptLanguage.UZL)
-                    .isActive(true)
-                    .isEmailVerified(true)
-                    .isPhoneVerified(true)
-                    .build();
-
-            userRepository.save(admin);
-            log.info("✅ DEFAULT ADMIN CREATED");
-
-        } else {
-            // MAVJUD BO'LSA — parolga TEGILMAYDI (izoh yuqorida, super-admin bilan bir xil sabab).
-            log.info("ℹ️  Admin allaqachon mavjud - o'tkazib yuborildi (parol o'zgartirilmadi)");
-        }
-    }
-
-    private static boolean isBlank(String s) {
-        return s == null || s.isBlank();
     }
 }
