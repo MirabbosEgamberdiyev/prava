@@ -61,8 +61,33 @@ build/
 # ---- Claude ----
 .claude/
 
+# ---- Backups, Dumps & Archives ----
+backup_*/
+*_backup*/
+backup/
+backups/
+backup_unzipped/
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.bak
+*.dump
+
+# ---- Database & Scratch Scripts ----
+*.sql
+!**/src/main/**/migration/*.sql
+!**/src/main/**/db/*.sql
+*.sqlite
+*.db
+scratch/
+temp/
+tmp/
+
 # ---- Misc ----
 *.local
 nul
 test_output.txt
-*.zip
+
