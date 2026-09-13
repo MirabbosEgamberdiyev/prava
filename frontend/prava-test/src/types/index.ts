@@ -15,3 +15,4 @@ export type {
 } from "./api";
 
 export type { User, AuthData } from "./auth";
+export * from "./desktop";

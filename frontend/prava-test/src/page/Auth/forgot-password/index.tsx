@@ -140,7 +140,16 @@ const ForgotPassword_Page = () => {
   const stepperActive = step - 1;
 
   return (
-    <Container size={480} my={{ base: 30, sm: 60 }}>
+    <Box
+      style={{
+        minHeight: "calc(100vh - 64px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px 12px",
+      }}
+    >
+      <Container size={440} p={0} w="100%">
       <SEO
         title="Parolni tiklash"
         description="Parolingizni unutdingizmi? Email yoki telefon raqamingiz orqali parolni tiklang."
@@ -170,7 +179,16 @@ const ForgotPassword_Page = () => {
         <Stepper.Step icon={<IconLock size={18} />} />
       </Stepper>
 
-      <Paper withBorder shadow="md" p={{ base: "lg", sm: "xl" }} radius="md">
+      <Paper
+        withBorder
+        shadow="md"
+        p={{ base: "lg", sm: "xl" }}
+        radius="lg"
+        style={{
+          background: "var(--surface)",
+          borderColor: "var(--border)",
+        }}
+      >
         {step === 1 && (
           <Stack gap="md">
             <Text size="sm" c="dimmed">
@@ -306,6 +324,7 @@ const ForgotPassword_Page = () => {
         )}
       </Paper>
     </Container>
+  </Box>
   );
 };
 

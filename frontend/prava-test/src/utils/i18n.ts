@@ -12,7 +12,7 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    supportedLngs: ["uzl", "uzc", "ru", "en"],
+    supportedLngs: ["uzl", "uzc", "ru"],
     fallbackLng: "uzl",
     debug: false,
     interpolation: {

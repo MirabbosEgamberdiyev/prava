@@ -90,6 +90,14 @@ public class SecurityConfig {
                                 "/error"
                         ).permitAll()
 
+                        // Packages - PUBLIC READ (biletlar ro'yxati va soni)
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/packages",
+                                "/api/v1/packages/count",
+                                "/api/v1/packages/free",
+                                "/api/v1/packages/topic/*"
+                        ).permitAll()
+
                         // ============================================
                         // FILE ACCESS - PROPER ORDER & PATTERNS
                         // ============================================

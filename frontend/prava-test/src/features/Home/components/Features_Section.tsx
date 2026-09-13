@@ -62,6 +62,9 @@ export function Features_Section() {
   return (
     <section className={classes.featuresSection} aria-label="Features">
       <Box className={classes.sectionTitle}>
+        <div className={classes.sectionBadge}>
+          {t("home.features.badge", "Platforma Imkoniyatlari")}
+        </div>
         <Title order={2}>{t("home.features.title")}</Title>
         <Text size="md" c="dimmed" mt="sm">
           {t("home.features.description")}

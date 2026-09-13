@@ -53,6 +53,9 @@ export function Testimonials_Section() {
   return (
     <section className={classes.testimonialsSection} aria-label="Testimonials">
       <Box className={classes.sectionTitle}>
+        <div className={classes.sectionBadge}>
+          {t("home.testimonials.badge", "Haqiqiy Fikrlar")}
+        </div>
         <Title order={2}>{t("home.testimonials.title")}</Title>
         <Text size="md" c="dimmed" mt="sm">
           {t("home.testimonials.description")}

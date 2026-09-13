@@ -98,12 +98,13 @@ function StatCard({
   );
 }
 
-interface PackageCountResponse {
-  data: number;
-}
-
-interface TopicsResponse {
-  data: Array<{ id: number; questionCount: number }>;
+interface PublicStatsResponse {
+  data: {
+    totalQuestions: number;
+    totalPackages: number;
+    totalTopics: number;
+    activeUsers: number;
+  };
 }
 
 export function Stats_Section() {
@@ -111,42 +112,41 @@ export function Stats_Section() {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  // Fetch real data from API
-  const { data: packageCountData } = useSWR<PackageCountResponse>(
-    "/api/v1/packages/count"
-  );
-  const { data: topicsData } = useSWR<TopicsResponse>(
-    "/api/v1/admin/topics/with-questions"
+  // Fetch real public data from API (100% unauthenticated safe)
+  const { data: publicStatsData } = useSWR<PublicStatsResponse>(
+    "/api/v1/public/stats",
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000,
+    }
   );
 
-  // Calculate real stats with fallbacks
-  const topicsList = topicsData?.data ?? [];
-  const totalQuestions = topicsList.reduce(
-    (sum, t) => sum + (t.questionCount || 0),
-    0
-  );
-  const totalPackages = packageCountData?.data ?? 0;
-  const topicsCount = topicsList.length;
+  // Calculate real stats with reliable fallbacks
+  const statsObj = publicStatsData?.data;
+  const totalQuestions = statsObj?.totalQuestions && statsObj.totalQuestions > 0 ? statsObj.totalQuestions : 1200;
+  const totalPackages = statsObj?.totalPackages && statsObj.totalPackages > 0 ? statsObj.totalPackages : 70;
+  const topicsCount = statsObj?.totalTopics && statsObj.totalTopics > 0 ? statsObj.totalTopics : 30;
+  const activeUsers = statsObj?.activeUsers && statsObj.activeUsers > 0 ? statsObj.activeUsers : 50000;
 
   const stats: StatItem[] = [
     {
       icon: IconUsers,
-      value: 1000,
+      value: activeUsers,
       suffix: "+",
       labelKey: "home.stats.users",
       color: "blue",
     },
     {
       icon: IconFileText,
-      value: totalQuestions > 0 ? totalQuestions : 1200,
+      value: totalQuestions,
       suffix: "+",
       labelKey: "home.stats.questions",
-      color: "green",
+      color: "teal",
     },
     {
       icon: IconClipboardList,
-      value: totalPackages > 0 ? totalPackages : 50,
-      suffix: "+",
+      value: totalPackages > 0 ? totalPackages : 70,
+      suffix: "",
       labelKey: "home.stats.exams",
       color: "orange",
     },

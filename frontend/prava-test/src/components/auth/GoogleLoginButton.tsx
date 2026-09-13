@@ -10,6 +10,7 @@ import { getErrorMessage } from "../../types/errors";
 
 interface GoogleLoginButtonProps {
   mode?: "login" | "register";
+  compact?: boolean;
 }
 
 const GoogleIcon = () => (
@@ -21,7 +22,7 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const GoogleLoginButton = ({ mode = "login" }: GoogleLoginButtonProps) => {
+const GoogleLoginButton = ({ mode = "login", compact = false }: GoogleLoginButtonProps) => {
   const { t, i18n } = useTranslation();
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
@@ -76,13 +77,19 @@ const GoogleLoginButton = ({ mode = "login" }: GoogleLoginButtonProps) => {
     <Button
       leftSection={<GoogleIcon />}
       variant="default"
-      size="md"
+      size={compact ? "sm" : "md"}
+      h={compact ? 40 : 44}
       fullWidth
       radius="md"
       loading={loading}
       onClick={() => googleLogin()}
+      styles={{
+        root: { fontWeight: 600, fontSize: compact ? 13 : undefined },
+      }}
     >
-      {mode === "login"
+      {compact
+        ? "Google"
+        : mode === "login"
         ? t("auth.google.loginButton")
         : t("auth.google.registerButton")}
     </Button>

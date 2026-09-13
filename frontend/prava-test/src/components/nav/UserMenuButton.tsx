@@ -3,6 +3,9 @@ import {
   IconLogout,
   IconSettings,
   IconUser,
+  IconHistory,
+  IconTrophy,
+  IconKey,
 } from "@tabler/icons-react";
 import { Group, Avatar, Text, Menu, UnstyledButton, Box } from "@mantine/core";
 import { useAuth } from "../../auth/AuthContext";
@@ -18,98 +21,115 @@ function UserMenuButton() {
   const handleLogout = () => {
     logout();
     notifications.show({
-      title: t("userMenu.logoutTitle"),
-      message: t("userMenu.logoutMessage"),
+      title: t("userMenu.logoutTitle", "Chiqish"),
+      message: t("userMenu.logoutMessage", "Tizimdan muvaffaqiyatli chiqdingiz"),
       color: "yellow",
     });
   };
 
-  const fullName = user?.fullName || t("userMenu.user");
+  const fullName = user?.fullName || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || t("userMenu.user", "Foydalanuvchi");
   const contact = user?.phoneNumber || user?.email || "";
   const initials =
     `${user?.firstName?.charAt(0) || ""}${user?.lastName?.charAt(0) || ""}`.toUpperCase() ||
+    fullName.charAt(0).toUpperCase() ||
     "U";
 
   return (
-    <Menu shadow="md" width={200} withArrow position="bottom-end">
+    <Menu shadow="md" width={220} position="bottom-end" radius="md" withinPortal>
       <Menu.Target>
         <UnstyledButton
-          aria-label={t("userMenu.application")}
-          style={{
-            padding: "4px 8px",
-            borderRadius: "var(--mantine-radius-md)",
-            color: "var(--mantine-color-text)",
-            transition: "background-color 150ms ease",
-          }}
-          styles={{
-            root: {
-              "&:hover": {
-                backgroundColor: "var(--mantine-color-default-hover)",
-              },
-            },
-          }}
+          className="header-control-btn"
+          aria-label={fullName}
+          style={{ paddingLeft: 4, paddingRight: 8 }}
         >
-          <Group gap={8} wrap="nowrap">
+          <Group gap={6} wrap="nowrap">
             <Avatar
-              size={36}
-              radius="sm"
-              color="blue"
-              style={{ flexShrink: 0 }}
+              size={26}
+              radius="xl"
+              style={{
+                background: "var(--primary)",
+                color: "#ffffff",
+                fontSize: "11px",
+                fontWeight: 700,
+                flexShrink: 0,
+              }}
             >
               {initials}
             </Avatar>
 
-            <Box
-              visibleFrom="sm"
-              style={{
-                overflow: "hidden",
-                maxWidth: 140,
-                flexShrink: 1,
-                minWidth: 0,
-              }}
+            <Text
+              size="xs"
+              fw={600}
+              truncate="end"
+              style={{ maxWidth: 110, color: "var(--text)" }}
+              visibleFrom="xs"
             >
-              <Text size="sm" fw={600} truncate="end" lh={1.3}>
-                {fullName}
-              </Text>
-              {contact && (
-                <Text size="xs" c="dimmed" truncate="end" lh={1.3}>
-                  {contact}
-                </Text>
-              )}
-            </Box>
-            <Box visibleFrom="sm">
-              <IconChevronDown
-                size={14}
-                style={{ flexShrink: 0, opacity: 0.6 }}
-              />
-            </Box>
+              {fullName}
+            </Text>
+
+            <IconChevronDown
+              size={13}
+              style={{ flexShrink: 0, opacity: 0.5, color: "var(--text-muted)" }}
+            />
           </Group>
         </UnstyledButton>
       </Menu.Target>
 
-      <Menu.Dropdown>
-        <Menu.Label>{t("userMenu.application")}</Menu.Label>
+      <Menu.Dropdown style={{ padding: 6 }}>
+        <Box px="xs" py={6}>
+          <Text size="sm" fw={700} truncate="end" c="var(--text)">
+            {fullName}
+          </Text>
+          {contact && (
+            <Text size="xs" c="dimmed" truncate="end">
+              {contact}
+            </Text>
+          )}
+        </Box>
+
+        <Menu.Divider />
+
         <Menu.Item
-          leftSection={<IconUser size={14} />}
+          leftSection={<IconUser size={15} />}
           onClick={() => navigate("/me")}
         >
-          {t("nav.dashboard")}
+          {t("nav.dashboard", "Boshqaruv paneli")}
         </Menu.Item>
         <Menu.Item
-          leftSection={<IconSettings size={14} />}
+          leftSection={<IconSettings size={15} />}
           onClick={() => navigate("/settings")}
         >
-          {t("userMenu.settings")}
+          {t("userMenu.settings", "Sozlamalar")}
         </Menu.Item>
+        <Menu.Item
+          leftSection={<IconHistory size={15} />}
+          onClick={() => navigate("/history")}
+        >
+          {t("history.title", "Imtihon tarixi")}
+        </Menu.Item>
+        <Menu.Item
+          leftSection={<IconTrophy size={15} />}
+          onClick={() => navigate("/leaderboard")}
+        >
+          {t("leaderboard.title", "Reyting")}
+        </Menu.Item>
+        {(user?.role === "SUPER_ADMIN" || user?.role === "ADMIN") && (
+          <Menu.Item
+            leftSection={<IconKey size={15} />}
+            onClick={() => navigate("/admin/activation-codes")}
+          >
+            {t("nav.activationCodes", "Aktivatsiya kodlari")}
+          </Menu.Item>
+        )}
 
         <Menu.Divider />
 
         <Menu.Item
           color="red"
           onClick={handleLogout}
-          leftSection={<IconLogout size={14} />}
+          leftSection={<IconLogout size={15} />}
         >
-          {t("userMenu.logout")}
+          {t("userMenu.logout", "Chiqish")}
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

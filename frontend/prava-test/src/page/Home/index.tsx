@@ -1,13 +1,18 @@
-import { Container, Box } from "@mantine/core";
+import { Box } from "@mantine/core";
 import {
   Hero_Banner,
-  Stats_Section,
+  Trust_Indicators,
+  Key_Benefits,
   Features_Section,
+  Product_Preview,
+  Learning_Flow,
+  Stats_Section,
+  Pricing_Preview,
   Testimonials_Section,
   FAQ_Section,
+  Download_Section,
   CTA_Section,
 } from "../../features/Home";
-import classes from "../../features/Home/components/Home.module.css";
 import SEO from "../../components/common/SEO";
 
 const homeJsonLd = {
@@ -43,41 +48,51 @@ const homeJsonLd = {
 
 const Home_Page = () => {
   return (
-    <Box>
+    <Box className="page-transition-wrapper">
       <SEO
-        title="Prava Online - Haydovchilik guvohnomasi imtihoniga tayyorlaning | YHXBB test"
+        title="Prava Online - Haydovchilik guvohnomasi imtihoniga tayyorlaning | YHXX test"
         description="O'zbekistonda haydovchilik guvohnomasi imtihoniga online tayyorlanish platformasi. 1200+ savollar bazasi, real imtihon formati, biletlar va mavzular bo'yicha testlar. Bepul ro'yxatdan o'ting!"
-        keywords="prava online, haydovchilik guvohnomasi, imtihon, prava test, YHXBB, avtomaktab, prava uz, prava test online, haydovchilik guvohnomasi imtihoni, avtomaktab savollari, pdd test, yo'l harakati qoidalari, водительские права, экзамен ПДД, тест ПДД онлайн, правила дорожного движения, driving license test uzbekistan, prava online uz"
+        keywords="prava online, haydovchilik guvohnomasi, imtihon, prava test, YHXX, avtomaktab, prava uz, prava test online, haydovchilik guvohnomasi imtihoni, avtomaktab savollari, pdd test, yo'l harakati qoidalari, водительские права, экзамен ПДД, тест ПДД онлайн, правила дорожного движения, driving license test uzbekistan, prava online uz"
         canonical="/"
         jsonLd={homeJsonLd}
       />
-      <Container size="xl">
-        {/* Hero Section */}
+      <div className="saas-page-container" style={{ paddingTop: 16 }}>
+        {/* 1. Hero Section */}
         <Hero_Banner />
 
-        <hr className={classes.divider} />
+        {/* 2. Trust Indicators */}
+        <Trust_Indicators />
 
-        {/* Statistics Section */}
-        <Stats_Section />
+        {/* 3. Key Benefits */}
+        <Key_Benefits />
 
-        <hr className={classes.divider} />
-
-        {/* Features Section */}
+        {/* 4. Product Features */}
         <Features_Section />
 
-        <hr className={classes.divider} />
+        {/* 5. Product Screenshots & Interactive Preview */}
+        <Product_Preview />
 
-        {/* Testimonials Section */}
+        {/* 6. Learning Flow */}
+        <Learning_Flow />
+
+        {/* 7. Success Metrics & Live Statistics */}
+        <Stats_Section />
+
+        {/* 8. Pricing Preview */}
+        <Pricing_Preview />
+
+        {/* 9. User Testimonials */}
         <Testimonials_Section />
 
-        <hr className={classes.divider} />
-
-        {/* FAQ Section */}
+        {/* 10. FAQ Preview */}
         <FAQ_Section />
 
-        {/* CTA Section */}
+        {/* 11. Multi-Platform Download Section with QR Code */}
+        <Download_Section />
+
+        {/* 12. Final CTA Banner */}
         <CTA_Section />
-      </Container>
+      </div>
     </Box>
   );
 };

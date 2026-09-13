@@ -1,33 +1,32 @@
-import {
-  useMantineColorScheme,
-  useComputedColorScheme,
-  ActionIcon,
-} from "@mantine/core";
+import { Tooltip, UnstyledButton } from "@mantine/core";
 import { IconMoon, IconSun } from "@tabler/icons-react";
+import { useDesktopTheme } from "@/context/DesktopThemeContext";
+import { useTranslation } from "react-i18next";
 
 const ColorMode = () => {
-  const { setColorScheme } = useMantineColorScheme();
-  const computedColorScheme = useComputedColorScheme("light", {
-    getInitialValueInEffect: true,
-  });
+  const { theme, toggleTheme } = useDesktopTheme();
+  const { t } = useTranslation();
+  const isLight = theme === "light";
+
   return (
-    <>
-      <ActionIcon
-        onClick={() =>
-          setColorScheme(computedColorScheme === "light" ? "dark" : "light")
-        }
-        variant="light"
-        radius={'sm'}
-        size="lg"
-        aria-label="Toggle color scheme"
+    <Tooltip
+      label={isLight ? t("common.darkMode", "Qorong'u rejim") : t("common.lightMode", "Yorug' rejim")}
+      position="bottom"
+      withArrow
+    >
+      <UnstyledButton
+        onClick={toggleTheme}
+        className="header-control-icon-btn"
+        aria-label={isLight ? "Dark mode ga o'tish" : "Light mode ga o'tish"}
+        type="button"
       >
-        {computedColorScheme === "light" ? (
-          <IconMoon stroke={1.5} size={18} />
+        {isLight ? (
+          <IconMoon stroke={1.8} size={18} style={{ color: "var(--text)" }} />
         ) : (
-          <IconSun stroke={1.5} size={18} />
+          <IconSun stroke={1.8} size={18} style={{ color: "#ffd43b" }} />
         )}
-      </ActionIcon>
-    </>
+      </UnstyledButton>
+    </Tooltip>
   );
 };
 

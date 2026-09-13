@@ -84,8 +84,10 @@ export function LeaderboardPage() {
     return null;
   };
 
-  const top3 = leaderboard?.content.slice(0, 3) || [];
-  const restEntries = leaderboard?.content.slice(3) || [];
+  const entries = Array.isArray(leaderboard?.content) ? leaderboard.content : [];
+  const top3 = entries.slice(0, 3);
+  const restEntries = entries.slice(3);
+  const totalPages = leaderboard?.totalPages ?? 0;
 
   return (
     <>
@@ -109,13 +111,13 @@ export function LeaderboardPage() {
         </Center>
       )}
 
-      {!isLoading && (!leaderboard || leaderboard.content.length === 0) && (
+      {!isLoading && entries.length === 0 && (
         <Paper p="xl" radius="md" withBorder shadow="sm" ta="center">
           <Text c="dimmed">{t("leaderboard.empty")}</Text>
         </Paper>
       )}
 
-      {leaderboard && leaderboard.content.length > 0 && (
+      {entries.length > 0 && (
         <Stack gap="lg">
           {/* Top 3 Cards */}
           {top3.length > 0 && (
@@ -228,12 +230,12 @@ export function LeaderboardPage() {
             </Paper>
           )}
 
-          {leaderboard.totalPages > 1 && (
+          {totalPages > 1 && (
             <Flex justify="center">
               <Pagination
                 value={page + 1}
                 onChange={(p) => setPage(p - 1)}
-                total={leaderboard.totalPages}
+                total={totalPages}
                 withEdges
               />
             </Flex>

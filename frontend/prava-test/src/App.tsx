@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
+import { DesktopThemeProvider } from "./context/DesktopThemeContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import AppRoutes from "./routes";
 import GoogleOneTap from "./components/auth/GoogleOneTap";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
+import { ScrollManager } from "./components/common/ScrollManager";
 
 /**
  * Global API error listener with deduplication cooldown.
@@ -68,13 +70,16 @@ function AppInner() {
   const location = useLocation();
 
   return (
-    <ErrorBoundary key={location.pathname}>
+    <DesktopThemeProvider>
       <AuthProvider>
         <ApiErrorListener />
         <GoogleOneTap />
-        <AppRoutes />
+        <ScrollManager />
+        <ErrorBoundary resetKey={location.pathname}>
+          <AppRoutes />
+        </ErrorBoundary>
       </AuthProvider>
-    </ErrorBoundary>
+    </DesktopThemeProvider>
   );
 }
 

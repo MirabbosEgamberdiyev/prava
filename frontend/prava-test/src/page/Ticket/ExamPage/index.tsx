@@ -1,299 +1,562 @@
-import { useEffect, useState, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import {
-  Box,
-  Center,
-  Loader,
-  Text,
-  Title,
-  Button,
-  Group,
-  Paper,
-  Stack,
-  Container,
-  ThemeIcon,
-} from "@mantine/core";
-import { IconAlertCircle, IconPlayerPlay, IconRefresh } from "@tabler/icons-react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { mutate } from "swr";
-import api from "../../../api/api";
-import { QuizNav, type QuizNavHandle } from "../../../components/quiz/QuizNav";
-import { QuizContent } from "../../../components/quiz/QuizContent";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../../auth/AuthContext";
+import type { OfflineQuestion, OfflineTicket } from "../../../types/desktop";
+import {
+  getQuestionsByTicket,
+  saveExamResult,
+  addWrongAnswer,
+  saveTicketStat,
+  toggleSavedQuestion,
+  getSavedQuestions,
+  recordQuestionAttempt,
+  localizeQ,
+  localizeOpt,
+  localizeExp,
+  parseOptions,
+} from "../../../services/desktopAdapter";
+import ColorMode from "../../../components/other/ColorMode";
+import LanguagePicker from "../../../components/language/LanguagePicker";
+import ImageZoomModal, { ZoomableImage } from "../../../components/common/ImageZoomModal";
 import SEO from "../../../components/common/SEO";
-import { useAutoSave, restoreAnswers } from "../../../hooks/useAutoSave";
-import { OfflineBanner } from "../../../components/common/OfflineBanner";
-import type { TicketExamData, AnswersMap } from "../../../types";
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconCheck,
+  IconX,
+  IconArrowLeft,
+  IconTrophy,
+  IconRefresh,
+  IconSteeringWheel,
+  IconTicket,
+  IconBookmark,
+  IconBookmarkFilled,
+  IconBulb,
+} from "@tabler/icons-react";
 
-interface ActiveExamInfo {
-  sessionId: number;
-  ticketId?: number;
-  packageId?: number;
+type Phase = "loading" | "exam" | "result";
+
+interface Answer {
+  selected: number;
+  correct: number;
 }
 
-const TicketExamPage = () => {
-  const { t } = useTranslation();
+export default function TicketExamPage() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const userId = user?.id ? Number(user.id) : 1;
 
-  const isSecureMode = false;
-  const showExplanation = true;
-
-  const [examData, setExamData] = useState<TicketExamData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeConflict, setActiveConflict] = useState<ActiveExamInfo | null>(null);
-  const [answers, setAnswers] = useState<AnswersMap>({});
-
-  const hasFetched = useRef(false);
-  const submittedRef = useRef(false);
-  const sessionIdRef = useRef<number | null>(null);
-  const quizNavRef = useRef<QuizNavHandle>(null);
-
-  const startTicketExam = async (isRetry = false) => {
-    if (hasFetched.current && !isRetry) return;
-    hasFetched.current = true;
-
-    setLoading(true);
-    setError(null);
-    setActiveConflict(null);
-
-    try {
-      const response = await api.post<TicketExamData>("/api/v2/tickets/start-visible", {
-        ticketId: Number(id),
-      });
-
-      if (response.data) {
-        setExamData(response.data);
-        sessionIdRef.current = response.data.data.sessionId;
-        // Uzilib qolgan sessiyaning javoblarini tiklash (sahifa yangilandi,
-        // brauzer qulab tushdi yoki internet uzildi).
-        const restored = restoreAnswers(response.data.data.sessionId);
-        if (restored) setAnswers(restored);
-        // Active exam cache ni yangilaymiz — yangi session boshlandi
-        mutate("/api/v2/exams/active", null, false);
-      }
-    } catch {
-      // Active session bor-yo'qligini tekshirish
-      try {
-        const activeRes = await api.get<{ data: ActiveExamInfo | null }>("/api/v2/exams/active");
-        if (activeRes.data?.data?.sessionId) {
-          setActiveConflict(activeRes.data.data);
-          return; // Conflict UI ko'rsatamiz, generic error emas
-        }
-      } catch {
-        // Active tekshiruv ham xato — generic error ko'rsatamiz
-      }
-
-      setError(t("ticket.startError"));
-    } finally {
-      setLoading(false);
-    }
+  const ticketId = id ? Number(id) : 1;
+  const ticket: OfflineTicket = {
+    id: ticketId,
+    topic_id: null,
+    ticket_number: ticketId,
+    name_uzl: `${ticketId}-bilet`,
+    name_uzc: `${ticketId}-билет`,
+    name_en: `Ticket #${ticketId}`,
+    name_ru: `Билет #${ticketId}`,
+    duration_minutes: 20,
+    passing_score: 90,
+    question_count: 20,
   };
+
+  const localizeName = (tk: OfflineTicket): string => {
+    const l = i18n.language;
+    if (l === "uzc" && tk.name_uzc) return tk.name_uzc;
+    if (l === "ru" && tk.name_ru) return tk.name_ru;
+    return tk.name_uzl;
+  };
+
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [questions, setQuestions] = useState<OfflineQuestion[]>([]);
+  const [current, setCurrent] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, Answer>>({});
+  const [timeLeft, setTimeLeft] = useState(ticket.question_count * 60);
+  const [isTimeUp, setIsTimeUp] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [savedScore, setSavedScore] = useState(0);
+  const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
+  const [showExp, setShowExp] = useState(false);
+  const [zoomSrc, setZoomSrc] = useState<string | null>(null);
+
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startTimeRef = useRef<number>(Date.now());
+  const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
+
+  const onBack = () => navigate("/tickets");
+
+  const loadQuestions = useCallback(() => {
+    setPhase("loading");
+    setAnswers({});
+    answersRef.current = {};
+    setCurrent(0);
+    setIsTimeUp(false);
+    setTimeLeft(ticket.question_count * 60);
+    setErrorMsg(null);
+
+    getQuestionsByTicket(ticket.id)
+      .then((qs) => {
+        if (qs.length === 0) {
+          setErrorMsg(t("exam.noQuestions", "Savollar topilmadi"));
+          setPhase("result");
+          return;
+        }
+        setQuestions(qs);
+        setPhase("exam");
+        startTimeRef.current = Date.now();
+      })
+      .catch((e) => {
+        setErrorMsg(String(e));
+        setPhase("result");
+      });
+  }, [ticket.id, ticket.question_count, t]);
 
   useEffect(() => {
-    if (id) startTicketExam();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    loadQuestions();
+  }, [loadQuestions]);
 
-  /*
-   * OLIB TASHLANDI — `navigator.sendBeacon(.../abandon)` unmount'da.
-   *
-   * Sabablari:
-   *  1. sendBeacon HAR DOIM POST yuboradi, endpoint esa DELETE — so'rov
-   *     hech qachon ishlamagan (jim muvaffaqiyatsizlik).
-   *  2. sendBeacon Authorization header biriktira olmaydi — 401 bo'lardi.
-   *  3. Agar u ISHLAGANDA edi, ancha yomonroq bo'lardi: foydalanuvchi
-   *     tasodifan orqaga bosgani yoki sahifani yangilagani uchun imtihoni
-   *     bekor qilinardi. Buning o'rniga sessiya faol qoladi va /me dagi
-   *     "davom ettirish" banneri hamda conflict UI orqali ataylab
-   *     boshqariladi (u yerda `api.delete` to'g'ri auth bilan chaqiriladi).
-   */
+  // Savol o'zgarganda izohni yop
+  useEffect(() => {
+    setShowExp(false);
+  }, [current]);
 
-  // Javoblarni avtomatik saqlash (localStorage + server).
-  useAutoSave({
-    sessionId: examData?.data.sessionId ?? null,
-    answers,
-    questions: examData?.data.questions ?? [],
-    enabled: !!examData && !submittedRef.current,
-  });
+  // Saqlangan savollarni yuklab olish
+  useEffect(() => {
+    getSavedQuestions(userId)
+      .then((entries) => setSavedIds(new Set(entries.map((e) => e.question.id))))
+      .catch(() => {});
+  }, [userId]);
 
-  const handleAbandonAndRestart = async () => {
-    if (!activeConflict) return;
-    setLoading(true);
-    try {
-      await api.delete(`/api/v2/exams/${activeConflict.sessionId}/abandon`);
-      mutate("/api/v2/exams/active", { data: null }, false);
-    } catch {
-      // Abandon xatosi — baribir qayta urinib ko'ramiz
+  const handleToggleExp = () => {
+    const willOpen = !showExp;
+    setShowExp(willOpen);
+    if (willOpen) {
+      if (autoRef.current) {
+        clearTimeout(autoRef.current);
+        autoRef.current = null;
+      }
+    } else if (current < questions.length - 1) {
+      autoRef.current = setTimeout(() => setCurrent((c) => c + 1), 500);
     }
-    hasFetched.current = false;
-    setActiveConflict(null);
-    await startTicketExam(true);
   };
 
-  const handleAnswerSelect = (
-    questionIndex: number,
-    optionIndex: number,
-    timeSpentSeconds: number,
-  ) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionIndex]: { optionIndex, timeSpentSeconds },
-    }));
+  const handleToggleSave = (q: OfflineQuestion) => {
+    toggleSavedQuestion(userId, q);
+    setSavedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(q.id)) next.delete(q.id);
+      else next.add(q.id);
+      return next;
+    });
   };
 
-  const handleReset = () => setAnswers({});
+  const triggerFinish = useCallback(
+    (timeUp = false) => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (autoRef.current) {
+        clearTimeout(autoRef.current);
+        autoRef.current = null;
+      }
+      const curAnswers = answersRef.current;
+      const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      const correct = Object.values(curAnswers).filter((a) => a.selected === a.correct).length;
+      const total = questions.length || ticket.question_count;
+      const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+      setSavedScore(score);
+      if (!timeUp) setIsTimeUp(false);
+      setPhase("result");
 
-  const handleFinish = () => {
-    quizNavRef.current?.openFinishModal();
+      const isPassed = !timeUp && score >= ticket.passing_score;
+      saveExamResult({
+        userId,
+        score,
+        totalQuestions: total,
+        correctAnswers: correct,
+        durationSeconds: duration,
+        examType: `ticket_${ticket.ticket_number}`,
+      }).catch(() => {});
+      saveTicketStat(userId, ticket.id, duration, correct, score, isPassed).catch(() => {});
+    },
+    [questions.length, ticket, userId]
+  );
+
+  useEffect(() => {
+    if (phase !== "exam") return;
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          setIsTimeUp(true);
+          triggerFinish(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [phase, triggerFinish]);
+
+  useEffect(() => {
+    document.getElementById(`ticket-qnum-${current}`)?.scrollIntoView({
+      block: "nearest",
+      inline: "center",
+      behavior: "smooth",
+    });
+  }, [current]);
+
+  // F1–F5 and 1–5 keyboard shortcuts
+  useEffect(() => {
+    if (phase !== "exam") return;
+    const handleKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+      const map: Record<string, number> = {
+        F1: 0, F2: 1, F3: 2, F4: 3, F5: 4,
+        "1": 0, "2": 1, "3": 2, "4": 3, "5": 4,
+      };
+      if (e.key in map) {
+        e.preventDefault();
+        handleSelect(map[e.key]);
+      }
+      if (e.key === "ArrowLeft") setCurrent((c) => Math.max(0, c - 1));
+      if (e.key === "ArrowRight")
+        setCurrent((c) => Math.min((questions.length || 1) - 1, c + 1));
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [phase, answers, current, questions.length]);
+
+  const handleSelect = (optIdx: number) => {
+    if (answers[current] !== undefined) return;
+    const q = questions[current];
+    if (!q) return;
+    const opts = parseOptions(q.options_json);
+    if (optIdx >= opts.length) return;
+    if (autoRef.current) {
+      clearTimeout(autoRef.current);
+      autoRef.current = null;
+    }
+    const isCorrect = optIdx === q.correct_option;
+    if (!isCorrect) {
+      addWrongAnswer(userId, q).catch(() => {});
+    }
+    recordQuestionAttempt(userId, q.id, isCorrect, "ticket").catch(() => {});
+    const newAns: Record<number, Answer> = {
+      ...answers,
+      [current]: { selected: optIdx, correct: q.correct_option },
+    };
+    setAnswers(newAns);
+    answersRef.current = newAns;
+    if (current < questions.length - 1) {
+      autoRef.current = setTimeout(() => setCurrent((c) => c + 1), 700);
+    }
   };
 
-  const handleSubmitSuccess = () => {
-    submittedRef.current = true;
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
-  // Yuklash
-  if (loading) {
+  const timerIsRed = timeLeft <= 60;
+  const timerIsYellow = !timerIsRed && timeLeft <= 60 * 3;
+
+  // ─── LOADING ───
+  if (phase === "loading") {
     return (
-      <Center h="100vh">
-        <Box ta="center">
-          <Loader size="lg" mb="md" />
-          <Text c="dimmed">{t("ticket.loading")}</Text>
-        </Box>
-      </Center>
+      <div className="loading-screen">
+        <div className="spinner" />
+        <p>{t("common.loading", "Yuklanmoqda...")}</p>
+      </div>
     );
   }
 
-  // Tugallanmagan imtihon bor — conflict UI
-  if (activeConflict) {
-    const isSameTicket = activeConflict.ticketId === Number(id);
+  // ─── RESULT ───
+  if (phase === "result") {
+    const correct = Object.values(answers).filter((a) => a.selected === a.correct).length;
+    const wrong = Object.values(answers).length - correct;
+    const total = questions.length || ticket.question_count;
+    const answered = Object.keys(answers).length;
+    const unanswered = total - answered;
+    const score = total > 0 ? Math.round((correct / total) * 100) : savedScore;
+    const passed = !isTimeUp && score >= ticket.passing_score;
 
     return (
-      <Center h="100vh">
-        <Container size="xs">
-          <Paper p="xl" radius="md" withBorder shadow="md" ta="center">
-            <ThemeIcon size={64} radius="xl" color="orange" variant="light" mb="md" mx="auto">
-              <IconAlertCircle size={32} />
-            </ThemeIcon>
-            <Title order={3} mb="sm">
-              {t("me.stats.resumeExam")}
-            </Title>
-            <Text c="dimmed" mb="xl" size="sm">
-              {isSameTicket
-                ? t("me.stats.resumeExamDesc")
-                : t("exam.activeSessionDesc", {
-                    defaultValue: "Boshqa imtihon tugallanmagan. Uni yakunlab yoki bekor qilib, yangi imtihon boshlashingiz mumkin.",
-                  })}
-            </Text>
-            <Stack gap="sm">
-              <Button
-                loading={loading}
-                leftSection={<IconPlayerPlay size={18} />}
-                onClick={handleAbandonAndRestart}
-              >
-                {t("exam.abandonAndRestart", { defaultValue: "Bekor qilib, yangi boshlash" })}
-              </Button>
-              {isSameTicket && activeConflict.ticketId && (
-                <Button
-                  variant="light"
-                  leftSection={<IconRefresh size={18} />}
-                  onClick={() => navigate(`/tickets/${activeConflict.ticketId}`)}
-                >
-                  {t("me.stats.continue")}
-                </Button>
-              )}
-              <Button
-                variant="subtle"
-                color="gray"
-                onClick={() => navigate("/tickets")}
-              >
-                {t("common.back")}
-              </Button>
-            </Stack>
-          </Paper>
-        </Container>
-      </Center>
+      <>
+        <SEO
+          title={`${localizeName(ticket)} natijasi`}
+          description="Bilet imtihon natijalari"
+          canonical={`/tickets/${ticket.id}`}
+        />
+        <div className="exam-result-screen">
+          <div className="exam-result-card">
+            <div className="ticket-result-label">
+              <IconTicket size={16} />
+              {localizeName(ticket)}
+            </div>
+            <div className={`exam-result-icon ${passed ? "passed" : "failed"}`}>
+              {passed ? <IconTrophy size={36} stroke={1.5} /> : <IconX size={36} stroke={2} />}
+            </div>
+            <h2 className={`exam-result-title ${passed ? "passed" : "failed"}`}>
+              {errorMsg
+                ? t("common.error", "Xatolik")
+                : isTimeUp
+                ? t("exam.timeUp", "Vaqt tugadi!")
+                : passed
+                ? t("exam.passed", "Imtihondan o'tdingiz!")
+                : t("exam.failed", "Imtihondan o'ta olmadingiz")}
+            </h2>
+            {errorMsg ? (
+              <p className="exam-result-sub">{errorMsg}</p>
+            ) : (
+              <>
+                <div className="exam-result-score">{score}%</div>
+                <div className="exam-result-sub">
+                  {t("exam.passingScore", "O'tish bali")}: {ticket.passing_score}%
+                </div>
+                <div className="exam-result-stats">
+                  <div className="exam-result-stat green">
+                    <div className="exam-stat-val">{correct}</div>
+                    <div className="exam-stat-lbl">{t("common.correct", "To'g'ri")}</div>
+                  </div>
+                  <div className="exam-result-stat red">
+                    <div className="exam-stat-val">{wrong}</div>
+                    <div className="exam-stat-lbl">{t("common.wrong", "Noto'g'ri")}</div>
+                  </div>
+                  {unanswered > 0 && (
+                    <div className="exam-result-stat gray">
+                      <div className="exam-stat-val">{unanswered}</div>
+                      <div className="exam-stat-lbl">
+                        {t("exam.unanswered", "Javob berilmagan")}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+            <div className="exam-result-actions">
+              <button className="exam-result-btn primary" onClick={onBack} type="button">
+                <IconArrowLeft size={16} /> {t("common.backToHome", "Bosh sahifaga qaytish")}
+              </button>
+              <button className="exam-result-btn" onClick={loadQuestions} type="button">
+                <IconRefresh size={16} /> {t("exam.retry", "Qayta topshirish")}
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
-  // Xato
-  if (error) {
-    return (
-      <Center h="100vh">
-        <Box ta="center">
-          <Title order={3} c="red" mb="md">
-            {t("common.errorOccurred")}
-          </Title>
-          <Text c="dimmed" mb="lg">
-            {error}
-          </Text>
-          <Group justify="center">
-            <Button variant="outline" onClick={() => navigate("/tickets")}>
-              {t("common.back")}
-            </Button>
-            <Button onClick={() => startTicketExam(true)}>
-              {t("common.retry")}
-            </Button>
-          </Group>
-        </Box>
-      </Center>
-    );
-  }
-
-  if (!examData) {
-    return (
-      <Center h="100vh">
-        <Box ta="center">
-          <Title order={3} mb="md">
-            {t("ticket.notFound")}
-          </Title>
-          <Text c="dimmed" mb="lg">
-            {t("ticket.notFoundDesc")}
-          </Text>
-          <Button onClick={() => navigate("/tickets")}>
-            {t("common.back")}
-          </Button>
-        </Box>
-      </Center>
-    );
-  }
-
-  const ticketName = examData.data.ticketNumber
-    ? `${t("ticket.ticket")} ${examData.data.ticketNumber}`
-    : t("ticket.exam");
-  const examSuffix = t("ticket.examSuffix");
+  // ─── EXAM ───
+  const q = questions[current];
+  const options = parseOptions(q.options_json);
+  const answered = answers[current];
+  const explanation = answered !== undefined ? localizeExp(q) : null;
+  const correct = Object.values(answers).filter((a) => a.selected === a.correct).length;
+  const wrong = Object.values(answers).length - correct;
 
   return (
     <>
       <SEO
-        title={`${ticketName} ${examSuffix}`}
-        description={`${ticketName} savollari — haydovchilik guvohnomasi imtihoniga tayyorgarlik. ${examData.data.totalQuestions} ta savol.`}
-        canonical={`/tickets/${id}`}
-        noIndex
+        title={`${localizeName(ticket)}`}
+        description="Prava Online bilet imtihoni."
+        canonical={`/tickets/${ticket.id}`}
       />
-      <QuizNav
-        ref={quizNavRef}
-        sessionId={examData.data.sessionId}
-        questions={examData.data.questions}
-        totalQuestions={examData.data.totalQuestions}
-        durationMinutes={examData.data.durationMinutes}
-        answers={answers}
-        onReset={handleReset}
-        backUrl="/tickets"
-        isSecureMode={isSecureMode}
-        onSubmitSuccess={handleSubmitSuccess}
-      />
-      <OfflineBanner />
-      <QuizContent
-        questions={examData.data.questions}
-        onAnswerSelect={handleAnswerSelect}
-        onFinish={handleFinish}
-        selectedAnswers={answers}
-        isSecureMode={isSecureMode}
-        showExplanation={showExplanation}
-      />
+      <div className="exam-screen">
+        {/* ── Top bar ── */}
+        <div className="exam-topbar">
+          <div className="exam-topbar-left">
+            <button
+              className="exam-finish-btn"
+              onClick={() => triggerFinish(false)}
+              type="button"
+            >
+              {t("exam.finish", "Yakunlash")} <IconX size={15} />
+            </button>
+            <span
+              className={`exam-timer${timerIsRed ? " red" : timerIsYellow ? " yellow" : ""}`}
+            >
+              {formatTime(timeLeft)}
+            </span>
+          </div>
+
+          <div className="exam-topbar-center">
+            <span className="exam-ticket-label">
+              <IconTicket size={14} /> #{ticket.ticket_number}
+            </span>
+            <span className="exam-counter">
+              {current + 1} / {questions.length}
+            </span>
+          </div>
+
+          <div className="exam-topbar-right">
+            <span className="exam-score-chip green">
+              <IconCheck size={13} /> {correct}
+            </span>
+            <span className="exam-score-chip red">
+              <IconX size={13} /> {wrong}
+            </span>
+            <ColorMode />
+            <LanguagePicker />
+          </div>
+        </div>
+
+        {/* ── Question text ── */}
+        <div className="exam-question-header">
+          <p className="exam-question-text">{localizeQ(q)}</p>
+          <button
+            className={`exam-bookmark-btn${savedIds.has(q.id) ? " saved" : ""}`}
+            onClick={() => handleToggleSave(q)}
+            title={
+              savedIds.has(q.id)
+                ? t("saved.remove", "Saqlangandan o'chirish")
+                : t("common.save", "Saqlash")
+            }
+            type="button"
+          >
+            {savedIds.has(q.id) ? (
+              <IconBookmarkFilled size={18} />
+            ) : (
+              <IconBookmark size={18} />
+            )}
+          </button>
+        </div>
+
+        {/* ── Two-column body ── */}
+        <div className="exam-two-col">
+          {/* Left: options + explanation */}
+          <div className="exam-col-options">
+            {options.map((opt, idx) => {
+              let cls = "exam-option";
+              if (answered) {
+                if (idx === q.correct_option) cls += " correct";
+                else if (idx === answered.selected) cls += " wrong";
+              }
+              return (
+                <button
+                  key={idx}
+                  className={cls}
+                  onClick={() => handleSelect(idx)}
+                  disabled={!!answered}
+                  type="button"
+                >
+                  <span className="exam-option-key">F{idx + 1}</span>
+                  <span className="exam-option-text">{localizeOpt(opt)}</span>
+                  {answered && idx === q.correct_option && (
+                    <IconCheck size={15} className="opt-icon correct" />
+                  )}
+                  {answered &&
+                    idx === answered.selected &&
+                    idx !== q.correct_option && (
+                      <IconX size={15} className="opt-icon wrong" />
+                    )}
+                </button>
+              );
+            })}
+
+            {/* Explanation toggle */}
+            {explanation && (
+              <div className="quiz-explanation-wrap" style={{ marginTop: 10 }}>
+                <button
+                  className="quiz-explanation-toggle"
+                  onClick={handleToggleExp}
+                  type="button"
+                >
+                  <IconBulb size={15} />
+                  {showExp
+                    ? t("marathon.hideExplanation", "Izohni yashirish")
+                    : t("marathon.showExplanation", "Izohni ko'rish")}
+                </button>
+                {showExp && (
+                  <div className="quiz-explanation-text">{explanation}</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Right: image or placeholder */}
+          <div className="exam-col-image">
+            {q.image_path ? (
+              <ZoomableImage
+                path={q.image_path}
+                className="exam-question-img"
+                onOpen={(src) => setZoomSrc(src)}
+              />
+            ) : (
+              <div className="exam-img-placeholder">
+                <IconSteeringWheel size={52} stroke={1} color="var(--border)" />
+                <span className="exam-placeholder-text">pravaonline.uz</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Zoom modal */}
+        {zoomSrc && <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />}
+
+        {/* ── Bottom: question numbers + nav ── */}
+        <div className="exam-bottom">
+          <div className="exam-bottom-row">
+            <button
+              className="exam-nav-btn"
+              onClick={() => setCurrent((c) => Math.max(0, c - 1))}
+              disabled={current === 0}
+              type="button"
+            >
+              <IconChevronLeft size={17} /> {t("exam.prev", "Oldingi")}
+            </button>
+
+            <div className="exam-qnums-wrap">
+              <div className="exam-qnums scrollable">
+                {questions.map((_, i) => {
+                  const a = answers[i];
+                  let cls = "exam-qnum";
+                  if (i === current) cls += " active";
+                  else if (a) cls += a.selected === a.correct ? " correct" : " wrong";
+                  return (
+                    <button
+                      key={i}
+                      id={`ticket-qnum-${i}`}
+                      className={cls}
+                      onClick={() => setCurrent(i)}
+                      type="button"
+                    >
+                      {i + 1}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {current === questions.length - 1 ? (
+              <button
+                className="exam-nav-btn primary"
+                onClick={() => triggerFinish(false)}
+                type="button"
+              >
+                {t("exam.finish", "Yakunlash")} <IconCheck size={17} />
+              </button>
+            ) : (
+              <button
+                className="exam-nav-btn primary"
+                onClick={() => setCurrent((c) => Math.min(questions.length - 1, c + 1))}
+                type="button"
+              >
+                {t("exam.next", "Keyingi")} <IconChevronRight size={17} />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
     </>
   );
-};
-
-export default TicketExamPage;
+}

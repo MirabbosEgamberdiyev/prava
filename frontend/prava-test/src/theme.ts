@@ -73,4 +73,43 @@ export const theme = createTheme({
   // Kodda tugmalar/kartalar allaqachon `radius="md"` ni qo'lda uzatardi —
   // defaultni "md" qilib, `sm` bilan aralashib ketishiga chek qo'yamiz.
   defaultRadius: "md",
+
+  components: {
+    Card: {
+      defaultProps: {
+        radius: "lg",
+      },
+    },
+    Paper: {
+      defaultProps: {
+        radius: "lg",
+      },
+    },
+    Button: {
+      defaultProps: {
+        radius: "md",
+      },
+    },
+    Modal: {
+      defaultProps: {
+        radius: "lg",
+        centered: true,
+      },
+    },
+    TextInput: {
+      defaultProps: {
+        radius: "md",
+      },
+    },
+    PasswordInput: {
+      defaultProps: {
+        radius: "md",
+      },
+    },
+    Select: {
+      defaultProps: {
+        radius: "md",
+      },
+    },
+  },
 });

@@ -46,6 +46,9 @@ export function FAQ_Section() {
     <section className={classes.faqSection} aria-label="FAQ">
       <FAQStructuredData t={t} />
       <Box className={classes.sectionTitle}>
+        <div className={classes.sectionBadge}>
+          {t("home.faq.badge", "Savol-Javoblar")}
+        </div>
         <Title order={2}>{t("home.faq.title")}</Title>
         <Text size="md" c="dimmed" mt="sm">
           {t("home.faq.description")}

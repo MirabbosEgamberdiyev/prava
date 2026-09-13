@@ -10,7 +10,6 @@ import {
   Stack,
   Text,
   Tooltip,
-  useComputedColorScheme,
 } from "@mantine/core";
 import {
   IconBrandTelegram,
@@ -18,71 +17,89 @@ import {
   IconBrandYoutube,
   IconBrandTiktok,
   IconWorld,
-  IconHeart,
   IconPhone,
+  IconMail,
 } from "@tabler/icons-react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { useDesktopTheme } from "@/context/DesktopThemeContext";
+import { prefetchRoute } from "../../utils/routePrefetch";
 
-const Footer = () => {
+const Footer = React.memo(() => {
   const { t } = useTranslation();
-  const colorScheme = useComputedColorScheme("light", {
-    getInitialValueInEffect: true,
-  });
-  const isDark = colorScheme === "dark";
+  const { theme } = useDesktopTheme();
+  const isDark = theme === "dark";
 
   const socialLinks = [
     {
       label: "Telegram",
       href: "https://t.me/pravaonlineuz",
-      icon: <IconBrandTelegram size={20} />,
+      icon: <IconBrandTelegram size={18} />,
       color: "blue",
     },
     {
       label: "Instagram",
       href: "https://instagram.com/pravaonlineuz",
-      icon: <IconBrandInstagram size={20} />,
+      icon: <IconBrandInstagram size={18} />,
       color: "grape",
     },
     {
       label: "YouTube",
       href: "https://youtube.com/@pravaonlineuz",
-      icon: <IconBrandYoutube size={20} />,
+      icon: <IconBrandYoutube size={18} />,
       color: "red",
     },
     {
       label: "TikTok",
       href: "https://tiktok.com/@pravaonlineuz",
-      icon: <IconBrandTiktok size={20} />,
+      icon: <IconBrandTiktok size={18} />,
       color: "dark",
     },
     {
-      label: t("footer.website"),
+      label: t("footer.website", "Veb-sayt"),
       href: "https://pravaonline.uz",
-      icon: <IconWorld size={20} />,
+      icon: <IconWorld size={18} />,
       color: "teal",
     },
   ];
 
-  const navLinks = [
-    { label: t("nav.home"), to: "/" },
+  const platformLinks = [
+    { label: t("nav.home", "Bosh sahifa"), to: "/" },
+    { label: t("nav.corporate", "Hamkorlik"), to: "/partners" },
+    { label: t("home.hero.freeExam", "Sinov imtihoni"), to: "/try-exam" },
+    { label: t("nav.downloads", "Ilovalar (Desktop & Mobile)"), to: "/downloads" },
+  ];
+
+  const companyLinks = [
+    { label: t("nav.about", "Biz haqimizda"), to: "/about" },
+    { label: t("nav.contact", "Bog'lanish"), to: "/contact" },
+    { label: t("footer.faq", "Ko'p so'raladigan savollar"), to: "/faq" },
     {
-      label: t("footer.telegram"),
-      to: "https://t.me/pravaonlineuz",
-      external: true,
-    },
-    {
-      label: t("footer.donate"),
+      label: t("footer.donate", "Loyihani qo'llab-quvvatlash"),
       to: "https://tirikchilik.uz/pravaonline",
       external: true,
     },
   ];
 
+  const legalLinks = [
+    { label: t("footer.terms", "Foydalanish shartlari"), to: "/terms" },
+    { label: t("footer.privacy", "Maxfiylik siyosati"), to: "/privacy" },
+  ];
+
   return (
-    <Paper component="footer" bg={isDark ? "dark.8" : "gray.1"} mt={"lg"}>
+    <Paper
+      component="footer"
+      bg="var(--surface)"
+      mt="auto"
+      style={{
+        borderTop: "1px solid var(--border)",
+        transition: "all 0.2s ease",
+      }}
+    >
       <Container size="xl" py="xl">
-        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xl">
-          {/* Brand */}
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="xl">
+          {/* Col 1: Brand & Bio */}
           <Stack gap="sm">
             <Group gap="xs">
               <Image
@@ -92,14 +109,14 @@ const Footer = () => {
                 h={32}
                 fallbackSrc="/favicon.svg"
               />
-              <Text fw={800} size="lg" c="blue">
-                PravaOnline
-              </Text>
+              <span className="saas-brand-text" style={{ fontSize: "1.25rem" }}>
+                PRAVA<span className="brand-accent">ONLINE</span>
+              </span>
             </Group>
-            <Text size="sm" c="dimmed" maw={280} lh={1.6}>
-              {t("footer.description")}
+            <Text size="sm" c="dimmed" lh={1.6}>
+              {t("footer.description", "O'zbekistonda haydovchilik guvohnomasi imtihoniga online tayyorlanish platformasi.")}
             </Text>
-            <Group gap="xs" mt={4}>
+            <Group gap={6} mt={4}>
               {socialLinks.map((link) => (
                 <Tooltip label={link.label} key={link.href}>
                   <ActionIcon
@@ -109,8 +126,8 @@ const Footer = () => {
                     rel="noopener noreferrer"
                     variant="subtle"
                     color={link.color}
-                    size="lg"
-                    radius="xl"
+                    size="md"
+                    radius="md"
                     aria-label={link.label}
                   >
                     {link.icon}
@@ -120,12 +137,34 @@ const Footer = () => {
             </Group>
           </Stack>
 
-          {/* Quick Links */}
+          {/* Col 2: Platform Links */}
           <Stack gap="xs">
-            <Text fw={600} size="sm" tt="uppercase" c="dimmed" mb={4}>
-              {t("footer.links")}
+            <Text fw={700} size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
+              {t("nav.mainPage", "Platforma")}
             </Text>
-            {navLinks.map((link) =>
+            {platformLinks.map((link) => (
+              <Anchor
+                key={link.to}
+                component={Link}
+                to={link.to}
+                onMouseEnter={() => prefetchRoute(link.to)}
+                onFocus={() => prefetchRoute(link.to)}
+                size="sm"
+                c={isDark ? "gray.4" : "gray.7"}
+                underline="hover"
+                style={{ fontWeight: 500 }}
+              >
+                {link.label}
+              </Anchor>
+            ))}
+          </Stack>
+
+          {/* Col 3: Company & Help */}
+          <Stack gap="xs">
+            <Text fw={700} size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
+              {t("footer.links", "Kompaniya")}
+            </Text>
+            {companyLinks.map((link) =>
               link.external ? (
                 <Anchor
                   key={link.to}
@@ -135,6 +174,7 @@ const Footer = () => {
                   size="sm"
                   c={isDark ? "gray.4" : "gray.7"}
                   underline="hover"
+                  style={{ fontWeight: 500 }}
                 >
                   {link.label}
                 </Anchor>
@@ -143,9 +183,12 @@ const Footer = () => {
                   key={link.to}
                   component={Link}
                   to={link.to}
+                  onMouseEnter={() => prefetchRoute(link.to)}
+                  onFocus={() => prefetchRoute(link.to)}
                   size="sm"
                   c={isDark ? "gray.4" : "gray.7"}
                   underline="hover"
+                  style={{ fontWeight: 500 }}
                 >
                   {link.label}
                 </Anchor>
@@ -153,46 +196,70 @@ const Footer = () => {
             )}
           </Stack>
 
-          {/* Contact */}
+          {/* Col 4: Legal & Direct Contact */}
           <Stack gap="xs">
-            <Text fw={600} size="sm" tt="uppercase" c="dimmed" mb={4}>
-              {t("footer.contact")}
+            <Text fw={700} size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
+              {t("footer.legal", "Huquqiy & Aloqa")}
             </Text>
-            <Group gap={8}>
-              <IconPhone size={16} color="var(--mantine-color-dimmed)" />
+            {legalLinks.map((link) => (
               <Anchor
-                href="tel:+998993912505"
+                key={link.to}
+                component={Link}
+                to={link.to}
+                onMouseEnter={() => prefetchRoute(link.to)}
+                onFocus={() => prefetchRoute(link.to)}
                 size="sm"
                 c={isDark ? "gray.4" : "gray.7"}
                 underline="hover"
+                style={{ fontWeight: 500 }}
+              >
+                {link.label}
+              </Anchor>
+            ))}
+
+            <Group gap={8} mt={6}>
+              <IconPhone size={15} color="var(--mantine-color-blue-5)" />
+              <Anchor
+                href="tel:+998993912505"
+                size="sm"
+                c="var(--text)"
+                underline="hover"
+                style={{ fontWeight: 600 }}
               >
                 +998 99 391 25 05
               </Anchor>
             </Group>
+
             <Group gap={8}>
-              <IconHeart size={16} color="var(--mantine-color-red-5)" />
+              <IconMail size={15} color="var(--mantine-color-blue-5)" />
               <Anchor
-                href="https://tirikchilik.uz/pravaonline"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="mailto:support@pravaonline.uz"
                 size="sm"
-                c={isDark ? "gray.4" : "gray.7"}
+                c="var(--text)"
                 underline="hover"
+                style={{ fontWeight: 500 }}
               >
-                {t("footer.donate")}
+                support@pravaonline.uz
               </Anchor>
             </Group>
           </Stack>
         </SimpleGrid>
 
-        <Divider my="lg" color={isDark ? "dark.4" : "gray.3"} />
+        <Divider my="xl" color="var(--border)" />
 
-        <Text size="xs" c="dimmed" ta="center">
-          {t("footer.copyright", { year: new Date().getFullYear() })}
-        </Text>
+        <Group justify="space-between" align="center" wrap="wrap" gap="xs">
+          <Text size="xs" c="dimmed">
+            {t("footer.copyright", { year: new Date().getFullYear() })}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {t("footer.basedOnOfficial", "O'zbekiston Respublikasi YHXX rasmiy dasturi asosida")}
+          </Text>
+        </Group>
       </Container>
     </Paper>
   );
-};
+});
+
+Footer.displayName = "Footer";
 
 export default Footer;

@@ -45,10 +45,10 @@ export function ExamHistoryPage() {
 
   // Client-side filter for COMPLETED (passed only) and FAILED (not passed)
   const filteredContent = useMemo(() => {
-    if (!history?.content) return [];
-    if (filter === "COMPLETED") return history.content.filter((item) => item.passed);
-    if (filter === "FAILED") return history.content.filter((item) => !item.passed);
-    return history.content;
+    if (!history?.content || !Array.isArray(history.content)) return [];
+    if (filter === "COMPLETED") return history.content.filter((item) => item && item.passed);
+    if (filter === "FAILED") return history.content.filter((item) => item && !item.passed);
+    return history.content.filter(Boolean);
   }, [history?.content, filter]);
 
   const filterOptions = [

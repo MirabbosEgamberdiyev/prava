@@ -17,6 +17,8 @@ import {
   IconPackages,
   IconTicket,
   IconRun,
+  IconArrowLeft,
+  IconBook2,
 } from "@tabler/icons-react";
 import useSWR from "swr";
 import { useTranslation } from "react-i18next";
@@ -117,28 +119,45 @@ const TopicDetail_Page = () => {
   const topicName = localize(topic.name);
 
   return (
-    <Container size="xl" py="md">
+    <div className="review-screen">
       <SEO
         title={`${topicName} - Mavzu bo'yicha testlar`}
         description={`${topicName} mavzusi bo'yicha haydovchilik guvohnomasi imtihon savollarini yeching.`}
         canonical={`/topics/${topicCode}`}
         noIndex={true}
       />
-      <BreadcrumbNav
-        items={[
-          { label: t("topics.title"), href: "/topics" },
-          { label: topicName },
-        ]}
-      />
+      <header className="review-header">
+        <button
+          className="review-back-btn"
+          onClick={() => navigate("/topics")}
+          type="button"
+        >
+          <IconArrowLeft size={18} stroke={2} />
+          {t("topics.title", "Mavzular")}
+        </button>
+        <div className="review-header-title">
+          <IconBook2 size={20} stroke={2} color="var(--mantine-color-blue-5)" />
+          <span>{topicName}</span>
+        </div>
+      </header>
 
-      <Title order={2} mb="xs">
-        {topicName}
-      </Title>
-      {topic.description && (
-        <Text c="dimmed" mb="lg">
-          {localize(topic.description)}
-        </Text>
-      )}
+      <main style={{ flex: 1, overflowY: "auto", padding: "20px 16px" }}>
+        <Container size="xl">
+          <BreadcrumbNav
+            items={[
+              { label: t("topics.title"), href: "/topics" },
+              { label: topicName },
+            ]}
+          />
+
+          <Title order={2} mb="xs">
+            {topicName}
+          </Title>
+          {topic.description && (
+            <Text c="dimmed" mb="lg">
+              {localize(topic.description)}
+            </Text>
+          )}
 
       <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List mb="md">
@@ -228,7 +247,9 @@ const TopicDetail_Page = () => {
           </Center>
         </Tabs.Panel>
       </Tabs>
-    </Container>
+        </Container>
+      </main>
+    </div>
   );
 };
 

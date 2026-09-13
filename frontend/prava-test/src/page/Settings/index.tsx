@@ -1,6 +1,5 @@
 import {
   Stack,
-  Title,
   Tabs,
   Paper,
   Text,
@@ -9,6 +8,7 @@ import {
   Center,
   Loader,
   SimpleGrid,
+  Container,
 } from "@mantine/core";
 import {
   IconUser,
@@ -16,8 +16,11 @@ import {
   IconDevices,
   IconDeviceMobile,
   IconDeviceDesktop,
+  IconArrowLeft,
+  IconSettings,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { ProfileInfoCard } from "../../features/me/components/ProfileInfoCard";
 import { ChangePasswordForm } from "../../features/me/components/ChangePasswordForm";
@@ -36,6 +39,7 @@ interface DeviceInfo {
 
 const Settings_Page = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const { data: deviceResponse, isLoading: devicesLoading } = useSWR<{
     data: DeviceInfo;
@@ -51,13 +55,26 @@ const Settings_Page = () => {
         canonical="/settings"
         noIndex={true}
       />
-      <Title order={2} mb="md">
-        {t("settings.title")}
-      </Title>
-
-      <Tabs defaultValue="profile">
-        <Tabs.List mb="md">
-          <Tabs.Tab value="profile" leftSection={<IconUser size={16} />}>
+      <div className="review-screen">
+        <header className="review-header">
+          <button
+            className="review-back-btn"
+            onClick={() => navigate("/me")}
+            type="button"
+          >
+            <IconArrowLeft size={18} stroke={2} />
+            {t("common.back", "Orqaga")}
+          </button>
+          <div className="review-header-title">
+            <IconSettings size={20} stroke={2} color="var(--mantine-color-blue-5)" />
+            <span>{t("settings.title", "Sozlamalar va Profil")}</span>
+          </div>
+        </header>
+        <main style={{ flex: 1, overflowY: "auto", padding: "24px 16px" }}>
+          <Container size="md">
+            <Tabs defaultValue="profile">
+              <Tabs.List mb="md">
+                <Tabs.Tab value="profile" leftSection={<IconUser size={16} />}>
             {t("settings.profile")}
           </Tabs.Tab>
           <Tabs.Tab value="security" leftSection={<IconLock size={16} />}>
@@ -150,6 +167,9 @@ const Settings_Page = () => {
           </Stack>
         </Tabs.Panel>
       </Tabs>
+          </Container>
+        </main>
+      </div>
     </>
   );
 };

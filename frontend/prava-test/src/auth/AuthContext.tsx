@@ -112,10 +112,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     const onFocus = () => syncAuthState();
     window.addEventListener("focus", onFocus);
 
+    // Instant multi-tab synchronization
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "auth_sync_event") {
+        syncAuthState();
+      }
+    };
+    window.addEventListener("storage", onStorage);
+
     // Listen for forced logout from API interceptor (e.g. refresh token expired)
     const onForceLogout = () => {
       setIsAuthenticated(false);
       setUser(null);
+      try {
+        localStorage.setItem("auth_sync_event", `logout_${Date.now()}`);
+      } catch {
+        // ignore
+      }
       navigate("/", { replace: true });
     };
     window.addEventListener("auth-logout", onForceLogout);
@@ -123,6 +136,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return () => {
       clearInterval(interval);
       window.removeEventListener("focus", onFocus);
+      window.removeEventListener("storage", onStorage);
       window.removeEventListener("auth-logout", onForceLogout);
     };
   }, [syncAuthState, navigate]);
@@ -156,6 +170,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       sameSite: isSecure ? "strict" : "lax",
     });
 
+    try {
+      localStorage.setItem("auth_sync_event", `login_${Date.now()}`);
+    } catch {
+      // ignore
+    }
+
     setIsAuthenticated(true);
     setUser(userData);
   };
@@ -180,6 +200,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       Cookies.remove(ACCESS_TOKEN_KEY);
       Cookies.remove(REFRESH_TOKEN_KEY);
       Cookies.remove(USER_DATA_KEY);
+      try {
+        localStorage.setItem("auth_sync_event", `logout_${Date.now()}`);
+      } catch {
+        // ignore
+      }
       setIsAuthenticated(false);
       setUser(null);
       navigate("/", { replace: true });

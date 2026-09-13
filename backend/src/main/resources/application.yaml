@@ -2,6 +2,10 @@ spring:
   application:
     name: prava-online
 
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: false
+
   # Database Configuration
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/prava_online_db}
@@ -130,13 +134,19 @@ app:
       enabled: true
       auth-data-max-age-seconds: 86400  # 24 hours
 
-  # Telegram Bot Configuration (for Login Widget verification + Bot commands)
+  # Telegram Bot Configuration (for Login Widget verification + Bot commands + Notifications)
   telegram:
     # SECURITY: bot token = to'liq bot ustidan nazorat. Hardcoded default olib tashlandi.
     bot-token: ${TELEGRAM_BOT_TOKEN:}
     bot-username: ${TELEGRAM_BOT_USERNAME:pravaonlineuzbot}
+    admin-chat-id: ${TELEGRAM_CHAT_ID:${TELEGRAM_ADMIN_CHAT_ID:}}
     webhook-url: ${TELEGRAM_WEBHOOK_URL:}
     base-url: ${TELEGRAM_BASE_URL:https://pravaonline.uz}
+
+  # Multi-Channel Contact / Partnership Inquiries
+  contact:
+    admin-email: ${ADMIN_NOTIFICATION_EMAIL:info@pravaonline.uz}
+    from-email: ${MAIL_FROM:${MAIL_USERNAME:info@pravaonline.uz}}
 
   # Security
   security:
@@ -323,6 +333,9 @@ management:
         enabled: true
     caches:
       enabled: true
+  health:
+    mail:
+      enabled: false
   metrics:
     export:
       prometheus:

@@ -4,6 +4,7 @@ import i18n from "../utils/i18n";
 
 interface Props {
   children: ReactNode;
+  resetKey?: string;
 }
 
 interface State {
@@ -47,6 +48,12 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("ErrorBoundary caught:", error, errorInfo);
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    if (this.state.hasError && this.props.resetKey !== prevProps.resetKey) {
+      this.setState({ hasError: false, error: null, errorType: "render" });
+    }
   }
 
   componentDidMount() {

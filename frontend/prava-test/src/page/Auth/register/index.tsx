@@ -1,4 +1,5 @@
 import {
+  Alert,
   Anchor,
   Box,
   Button,
@@ -6,29 +7,31 @@ import {
   Container,
   Divider,
   Flex,
-  Grid,
+  Group,
   Image,
-  ActionIcon,
   Paper,
   PasswordInput,
   PinInput,
-  Progress,
   SegmentedControl,
+  SimpleGrid,
   Stack,
   Text,
   TextInput,
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import api from "../../../api/api";
 import { useAuth } from "../../../auth/AuthContext";
 import { notifications } from "@mantine/notifications";
 import {
-  IconAt,
+  IconAlertCircle,
+  IconArrowLeft,
   IconDeviceMobile,
+  IconExternalLink,
   IconLock,
+  IconMail,
   IconMailShare,
   IconMessageShare,
   IconUser,
@@ -38,41 +41,46 @@ import GoogleLoginButton from "../../../components/auth/GoogleLoginButton";
 import TelegramLoginButton from "../../../components/auth/TelegramLoginButton";
 import SEO from "../../../components/common/SEO";
 import { getErrorMessage } from "../../../types/errors";
-
-function getPasswordStrength(password: string): number {
-  let strength = 0;
-  if (password.length >= 8) strength += 25;
-  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
-  if (/\d/.test(password)) strength += 25;
-  if (/[@$!%*?&#]/.test(password)) strength += 25;
-  return strength;
-}
-
-function getStrengthColor(strength: number): string {
-  if (strength <= 25) return "red";
-  if (strength <= 50) return "orange";
-  if (strength <= 75) return "yellow";
-  return "green";
-}
+import { useCapsLock } from "../../../hooks/useCapsLock";
+import CapsLockWarning from "../../../components/auth/CapsLockWarning";
+import AuthSecurityBadge from "../../../components/auth/AuthSecurityBadge";
+import PasswordStrengthMeter, {
+  checkPasswordRules,
+} from "../../../components/auth/PasswordStrengthMeter";
+import {
+  formatUzPhone,
+  isValidUzPhone,
+  normalizeUzPhone,
+} from "../../../utils/phoneUtils";
 
 const Register_Page = () => {
   const { register: authRegister, isAuthenticated } = useAuth();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [code, setCode] = useState("");
-  const [verificationType, setVerificationType] = useState<"EMAIL" | "SMS">(
-    "EMAIL"
-  );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+  const [verificationType, setVerificationType] = useState<"EMAIL" | "SMS">("EMAIL");
+  const isCapsLock = useCapsLock();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  /*
-   * HOOK TARTIBI BUZILISHI TUZATILDI — `if (isAuthenticated) return <Navigate/>`
-   * avval `useForm()` dan OLDIN turardi. Ro'yxatdan o'tish yakunlanganda
-   * `isAuthenticated` true bo'lib, keyingi renderда `useForm` o'tkazib
-   * yuborilardi → React "Rendered fewer hooks than expected" bilan yiqilishi
-   * mumkin edi. Redirect endi barcha hooklardan KEYIN.
-   */
+  // Countdown timer for OTP resend
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (step === 2 && countdown > 0) {
+      timerRef.current = setTimeout(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [step, countdown]);
+
   const form = useForm({
     initialValues: {
       firstName: "",
@@ -90,38 +98,26 @@ const Register_Page = () => {
       lastName: (value) =>
         value.trim().length < 2 ? t("validation.nameTooShort") : null,
       email: (value, values) => {
-        if (values.verificationType === "SMS") {
-          // SMS mode: email is optional — only validate format if user typed something
-          if (!value || value.trim().length === 0) return null;
-          return /^\S+@\S+\.\S+$/.test(value)
-            ? null
-            : t("validation.invalidEmail");
-        }
-        // EMAIL mode: email is required
+        if (values.verificationType === "SMS") return null;
         if (!value || value.trim().length === 0)
           return t("validation.invalidEmail");
-        return /^\S+@\S+\.\S+$/.test(value)
+        return /^\S+@\S+\.\S+$/.test(value.trim())
           ? null
           : t("validation.invalidEmail");
       },
       phoneNumber: (value, values) => {
-        if (values.verificationType === "EMAIL") {
-          // EMAIL mode: phone is optional — only validate format if user typed something
-          if (!value || value.trim().length === 0) return null;
-          const digits = value.replace(/\D/g, "");
-          if (digits.length > 0 && digits.length < 12)
-            return t("validation.invalidPhone");
-          return null;
-        }
-        // SMS mode: phone is required
+        if (values.verificationType === "EMAIL") return null;
         if (!value || value.trim().length === 0)
           return t("validation.invalidPhone");
-        return value.replace(/\D/g, "").length < 12
-          ? t("validation.invalidPhone")
-          : null;
+        return isValidUzPhone(value) ? null : t("validation.phoneLength");
       },
-      password: (value) =>
-        value.length < 8 ? t("validation.minChars", { count: 8 }) : null,
+      password: (value) => {
+        const rules = checkPasswordRules(value);
+        if (!rules.allValid) {
+          return t("validation.passwordComplexity");
+        }
+        return null;
+      },
     },
   });
 
@@ -133,22 +129,29 @@ const Register_Page = () => {
   // Step 1: Init registration — send form data + get OTP
   const handleInit = async (values: typeof form.values) => {
     setLoading(true);
+    setErrorMessage(null);
     try {
-      const trimmedEmail = values.email.trim();
-      const trimmedPhone = values.phoneNumber.trim();
+      const isEmail = values.verificationType === "EMAIL";
       const payload = {
-        ...values,
         firstName: values.firstName.trim(),
         lastName: values.lastName.trim(),
-        email: trimmedEmail || null,
-        phoneNumber: trimmedPhone || null,
+        password: values.password,
+        verificationType: values.verificationType,
+        preferredLanguage: i18n.language || "uzl",
+        email: isEmail ? values.email.trim() : null,
+        phoneNumber: !isEmail ? normalizeUzPhone(values.phoneNumber) : null,
       };
+
       await api.post("/api/v1/auth/register/init", payload);
       setStep(2);
+      setCountdown(60);
+      setCode("");
     } catch (error: unknown) {
+      const msg = getErrorMessage(error, t("register.errorMessage"));
+      setErrorMessage(msg);
       notifications.show({
         title: t("register.errorTitle"),
-        message: getErrorMessage(error, t("register.errorMessage")),
+        message: msg,
         color: "red",
         withBorder: true,
       });
@@ -157,23 +160,60 @@ const Register_Page = () => {
     }
   };
 
+  // Resend OTP
+  const handleResendCode = async () => {
+    if (countdown > 0) return;
+    setResending(true);
+    setErrorMessage(null);
+    try {
+      const isEmail = form.values.verificationType === "EMAIL";
+      const payload = {
+        firstName: form.values.firstName.trim(),
+        lastName: form.values.lastName.trim(),
+        password: form.values.password,
+        verificationType: form.values.verificationType,
+        preferredLanguage: i18n.language || "uzl",
+        email: isEmail ? form.values.email.trim() : null,
+        phoneNumber: !isEmail ? normalizeUzPhone(form.values.phoneNumber) : null,
+      };
+
+      await api.post("/api/v1/auth/register/init", payload);
+      setCountdown(60);
+      notifications.show({
+        title: t("common.success"),
+        message: t("register.otpSentTo"),
+        color: "teal",
+        withBorder: true,
+      });
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error, t("register.errorMessage"));
+      setErrorMessage(msg);
+    } finally {
+      setResending(false);
+    }
+  };
+
   // Step 2: Verify OTP and complete registration
   const handleComplete = async () => {
     if (code.length < 6) return;
 
     setLoading(true);
+    setErrorMessage(null);
     try {
-      const trimmedEmail = form.values.email.trim();
-      const trimmedPhone = form.values.phoneNumber.trim();
+      const isEmail = form.values.verificationType === "EMAIL";
+      const payload = {
+        firstName: form.values.firstName.trim(),
+        lastName: form.values.lastName.trim(),
+        password: form.values.password,
+        verificationType: form.values.verificationType,
+        preferredLanguage: i18n.language || "uzl",
+        email: isEmail ? form.values.email.trim() : null,
+        phoneNumber: !isEmail ? normalizeUzPhone(form.values.phoneNumber) : null,
+      };
+
       const res = await api.post(
-        `/api/v1/auth/register/complete?code=${code}`,
-        {
-          ...form.values,
-          firstName: form.values.firstName.trim(),
-          lastName: form.values.lastName.trim(),
-          email: trimmedEmail || null,
-          phoneNumber: trimmedPhone || null,
-        }
+        `/api/v1/auth/register/complete?code=${code.trim()}`,
+        payload
       );
 
       if (res.data) {
@@ -181,15 +221,17 @@ const Register_Page = () => {
         notifications.show({
           title: t("register.successTitle"),
           message: t("register.successMessage"),
-          color: "green",
+          color: "teal",
           withBorder: true,
         });
         navigate("/me");
       }
     } catch (error: unknown) {
+      const msg = getErrorMessage(error, t("register.codeError"));
+      setErrorMessage(msg);
       notifications.show({
         title: t("register.errorTitle"),
-        message: getErrorMessage(error, t("register.codeError")),
+        message: msg,
         color: "red",
         withBorder: true,
       });
@@ -200,13 +242,14 @@ const Register_Page = () => {
 
   const getInboxLink = (email: string) => {
     if (!email || !email.includes("@")) return "#";
-    const domain = email.split("@")[1];
+    const domain = email.split("@")[1].toLowerCase();
 
     if (domain === "gmail.com") return "https://mail.google.com";
-    if (domain === "mail.ru") return "https://e.mail.ru/inbox";
+    if (domain === "mail.ru" || domain === "inbox.ru" || domain === "bk.ru")
+      return "https://e.mail.ru/inbox";
     if (domain === "outlook.com" || domain === "hotmail.com")
       return "https://outlook.live.com/mail/0/inbox";
-    if (domain === "yandex.ru" || domain === "yandex.com")
+    if (domain === "yandex.ru" || domain === "yandex.com" || domain === "ya.ru")
       return "https://mail.yandex.ru";
 
     return `https://${domain}`;
@@ -217,260 +260,361 @@ const Register_Page = () => {
     setVerificationType(type);
     form.setFieldValue("verificationType", type);
 
-    // Smart field adjustment
-    if (type === "SMS") {
-      // Pre-fill phone with country code if empty
-      if (!form.values.phoneNumber || form.values.phoneNumber.trim() === "") {
-        form.setFieldValue("phoneNumber", "998");
-      }
-    } else {
-      // Clear phone if it's just the country code
-      if (form.values.phoneNumber === "998") {
-        form.setFieldValue("phoneNumber", "");
-      }
+    if (type === "SMS" && !form.values.phoneNumber) {
+      form.setFieldValue("phoneNumber", "+998 ");
     }
 
-    // Clear validation errors when switching type
     form.clearFieldError("email");
     form.clearFieldError("phoneNumber");
+    setErrorMessage(null);
   };
 
   const isEmailMode = verificationType === "EMAIL";
 
   return (
-    <Container size="lg" my={{ base: 30, sm: 50 }}>
-      <SEO
-        title="Ro'yxatdan o'tish - Bepul boshlang"
-        description="Prava Online platformasida bepul ro'yxatdan o'ting va haydovchilik guvohnomasi imtihoniga tayyorlanishni boshlang. 1200+ savol bazasi, real imtihon formati. Email yoki telefon orqali ro'yxatdan o'ting."
-        keywords="prava online ro'yxat, haydovchilik imtihoni, bepul tayyorlanish, prava online registratsiya, регистрация prava online, YHXBB ro'yxat"
-        canonical="/auth/register"
-      />
-      <Grid>
-        <Grid.Col span={{ base: 12 }}>
-          <Flex
-            gap="sm"
-            justify="space-between"
-            align="center"
-            wrap="wrap"
+    <Box
+      style={{
+        minHeight: "calc(100dvh - 64px)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        paddingTop: "clamp(24px, 4.2vh, 48px)",
+        paddingBottom: "clamp(40px, 8vh, 80px)",
+        paddingLeft: 16,
+        paddingRight: 16,
+      }}
+    >
+      <Container size={410} p={0} w="100%">
+        <SEO
+          title="Ro'yxatdan o'tish - Bepul boshlang"
+          description="Prava Online platformasida bepul ro'yxatdan o'ting va haydovchilik guvohnomasi imtihoniga tayyorlanishni boshlang. 1200+ savol bazasi, real imtihon formati. Email yoki telefon orqali ro'yxatdan o'ting."
+          keywords="prava online ro'yxat, haydovchilik imtihoni, bepul tayyorlanish, prava online registratsiya, регистрация prava online, YHXBB ro'yxat"
+          canonical="/auth/register"
+        />
+
+        {/* Header section with brand mark */}
+        <Stack gap={6} align="center" mb="md">
+          <Center
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: "var(--mantine-radius-md)",
+              border: "1px solid var(--border)",
+              background: "var(--surface)",
+              boxShadow: "var(--shadow-sm)",
+            }}
           >
-            <Title ta="left" order={3}>
-              {t("register.title")}
-            </Title>
-            <Flex align="center" gap="xs">
-              <Text size="sm" c="dimmed">
-                {t("register.noAccount")}
+            <Image
+              src="/favicon.svg"
+              fallbackSrc="/logo.svg"
+              alt="Prava Online Logo"
+              w={26}
+              h={26}
+              fit="contain"
+            />
+          </Center>
+
+          <Title order={2} ta="center" size="1.35rem" fw={700} style={{ letterSpacing: "-0.02em" }}>
+            {step === 1 ? t("register.title") : t("register.otpTitle")}
+          </Title>
+
+          <Text size="xs" c="dimmed" ta="center" maw={360} style={{ lineHeight: 1.4 }}>
+            {step === 1
+              ? t("register.registerSubtitle")
+              : t("register.enterCodeSubtitle")}
+          </Text>
+
+          {step === 1 && (
+            <Group gap={4} justify="center">
+              <Text size="xs" c="dimmed">
+                {t("register.alreadyHaveAccount")}
               </Text>
-              <Anchor component={Link} to="/auth/login" fw={600} size="sm">
+              <Anchor component={Link} to="/auth/login" size="xs" fw={600} c="brand">
                 {t("register.login")}
               </Anchor>
-            </Flex>
-          </Flex>
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, sm: 6, lg: 5 }}>
-          <Paper withBorder shadow="md" p={{ base: "lg", sm: "xl" }} radius="md">
-            {step === 1 ? (
-              <form onSubmit={form.onSubmit(handleInit)}>
-                <Stack gap="md">
-                  <Flex gap="md">
-                    <TextInput
-                      label={t("register.firstName")}
-                      required
-                      size="md"
-                      radius="md"
-                      style={{ flex: 1 }}
-                      leftSection={<IconUser size={18} />}
-                      {...form.getInputProps("firstName")}
-                    />
-                    <TextInput
-                      label={t("register.lastName")}
-                      required
-                      size="md"
-                      radius="md"
-                      style={{ flex: 1 }}
-                      {...form.getInputProps("lastName")}
-                    />
-                  </Flex>
+            </Group>
+          )}
+        </Stack>
 
-                  <SegmentedControl
-                    value={verificationType}
-                    onChange={handleVerificationTypeChange}
-                    fullWidth
+        <Paper
+          withBorder
+          shadow="sm"
+          p={{ base: "md", sm: 20 }}
+          radius="lg"
+          style={{
+            background: "var(--surface)",
+            borderColor: "var(--border)",
+          }}
+        >
+          {errorMessage && (
+            <Alert
+              icon={<IconAlertCircle size={16} />}
+              color="red"
+              variant="light"
+              radius="md"
+              mb="sm"
+              withCloseButton
+              onClose={() => setErrorMessage(null)}
+            >
+              {errorMessage}
+            </Alert>
+          )}
+
+          {step === 1 ? (
+            <form
+              onSubmit={form.onSubmit(handleInit)}
+              onChange={() => errorMessage && setErrorMessage(null)}
+            >
+              <Stack gap="xs">
+                {/* Names row */}
+                <Flex gap="xs" direction={{ base: "column", xs: "row" }}>
+                  <TextInput
+                    label={t("register.firstName")}
+                    placeholder="Ali"
+                    required
+                    size="sm"
                     radius="md"
-                    data={[
-                      {
-                        label: (
-                          <Flex align="center" gap={6} justify="center">
-                            <IconAt size={16} />
-                            <span>{t("register.verifyByEmail")}</span>
-                          </Flex>
-                        ),
-                        value: "EMAIL",
-                      },
-                      {
-                        label: (
-                          <Flex align="center" gap={6} justify="center">
-                            <IconDeviceMobile size={16} />
-                            <span>{t("register.verifyBySms")}</span>
-                          </Flex>
-                        ),
-                        value: "SMS",
-                      },
-                    ]}
+                    style={{ flex: 1 }}
+                    leftSection={<IconUser size={16} />}
+                    {...form.getInputProps("firstName")}
                   />
+                  <TextInput
+                    label={t("register.lastName")}
+                    placeholder="Valiyev"
+                    required
+                    size="sm"
+                    radius="md"
+                    style={{ flex: 1 }}
+                    {...form.getInputProps("lastName")}
+                  />
+                </Flex>
 
+                {/* Verification channel switcher */}
+                <SegmentedControl
+                  value={verificationType}
+                  onChange={handleVerificationTypeChange}
+                  fullWidth
+                  size="xs"
+                  radius="md"
+                  data={[
+                    {
+                      label: (
+                        <Flex align="center" gap={6} justify="center">
+                          <IconMail size={15} />
+                          <span>{t("register.verifyByEmail")}</span>
+                        </Flex>
+                      ),
+                      value: "EMAIL",
+                    },
+                    {
+                      label: (
+                        <Flex align="center" gap={6} justify="center">
+                          <IconDeviceMobile size={15} />
+                          <span>{t("register.verifyBySms")}</span>
+                        </Flex>
+                      ),
+                      value: "SMS",
+                    },
+                  ]}
+                />
+
+                {/* Contact field based on mode */}
+                {isEmailMode ? (
                   <TextInput
                     label={t("register.email")}
                     placeholder="example@mail.com"
-                    required={isEmailMode}
-                    size="md"
+                    required
+                    size="sm"
                     radius="md"
-                    leftSection={<IconAt size={18} />}
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    leftSection={<IconMail size={16} />}
                     {...form.getInputProps("email")}
                   />
-
+                ) : (
                   <TextInput
                     label={t("register.phoneNumber")}
-                    placeholder="998XXXXXXXXX"
-                    required={!isEmailMode}
-                    size="md"
+                    placeholder="+998 90 123 45 67"
+                    required
+                    size="sm"
                     radius="md"
-                    maxLength={13}
-                    leftSection={<IconDeviceMobile size={18} />}
-                    {...form.getInputProps("phoneNumber")}
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    maxLength={17}
+                    leftSection={<IconDeviceMobile size={16} />}
+                    value={form.values.phoneNumber}
+                    onChange={(e) => {
+                      const formatted = formatUzPhone(e.currentTarget.value);
+                      form.setFieldValue("phoneNumber", formatted);
+                    }}
+                    error={form.errors.phoneNumber}
                   />
+                )}
 
-                  <Box>
-                    <PasswordInput
-                      label={t("register.password")}
-                      required
-                      size="md"
-                      radius="md"
-                      leftSection={<IconLock size={18} />}
-                      {...form.getInputProps("password")}
-                    />
-                    {form.values.password.length > 0 && (
-                      <Progress
-                        value={getPasswordStrength(form.values.password)}
-                        color={getStrengthColor(
-                          getPasswordStrength(form.values.password)
-                        )}
-                        size="xs"
-                        mt={6}
-                        radius="xl"
-                      />
-                    )}
-                  </Box>
-
-                  <Button
-                    type="submit"
-                    fullWidth
+                {/* Password field with Caps Lock & Strength meter */}
+                <Box>
+                  <PasswordInput
+                    label={t("register.password")}
+                    placeholder={t("auth.passwordPlaceholder")}
+                    required
+                    size="sm"
                     radius="md"
-                    size="md"
-                    loading={loading}
-                  >
-                    {t("register.register")}
-                  </Button>
-
-                  <Divider
-                    label={t("auth.orContinueWith")}
-                    labelPosition="center"
+                    autoComplete="new-password"
+                    leftSection={<IconLock size={16} />}
+                    onFocus={() => setPasswordFocused(true)}
+                    onBlur={() => setPasswordFocused(false)}
+                    {...form.getInputProps("password")}
                   />
+                  <CapsLockWarning active={isCapsLock && passwordFocused} />
+                  <PasswordStrengthMeter password={form.values.password} />
+                </Box>
 
-                  <GoogleLoginButton mode="register" />
-                  <TelegramLoginButton mode="register" />
-                </Stack>
-              </form>
-            ) : (
-              <Box>
-                <Center>
-                  <ActionIcon
-                    size={70}
-                    variant="light"
-                    radius="xl"
-                    color={isEmailMode ? "blue" : "green"}
-                  >
-                    {isEmailMode ? (
-                      <IconMailShare size={30} />
-                    ) : (
-                      <IconMessageShare size={30} />
-                    )}
-                  </ActionIcon>
+                <Button
+                  type="submit"
+                  fullWidth
+                  radius="md"
+                  size="md"
+                  loading={loading}
+                  h={42}
+                  fw={600}
+                  mt={2}
+                >
+                  {t("register.register")}
+                </Button>
+
+                <Divider
+                  label={t("auth.orContinueWith")}
+                  labelPosition="center"
+                  my={2}
+                />
+
+                <SimpleGrid cols={2} spacing="xs">
+                  <GoogleLoginButton mode="register" compact />
+                  <TelegramLoginButton mode="register" compact />
+                </SimpleGrid>
+              </Stack>
+            </form>
+          ) : (
+            /* Step 2: OTP Verification */
+            <Box>
+              <Stack align="center" gap="sm">
+                <Center
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: "50%",
+                    background: isEmailMode
+                      ? "var(--mantine-color-blue-light)"
+                      : "var(--mantine-color-teal-light)",
+                    color: isEmailMode
+                      ? "var(--mantine-color-blue-7)"
+                      : "var(--mantine-color-teal-7)",
+                  }}
+                >
+                  {isEmailMode ? (
+                    <IconMailShare size={28} />
+                  ) : (
+                    <IconMessageShare size={28} />
+                  )}
                 </Center>
-                <Text ta="center" fw={500} mt="sm">
+
+                <Text size="sm" c="dimmed" ta="center">
                   {isEmailMode
                     ? t("register.otpSentTo")
                     : t("register.codeSentToPhone")}
                 </Text>
-                <Center>
-                  {isEmailMode ? (
-                    <Anchor
-                      href={getInboxLink(form.values.email)}
-                      target="_blank"
-                      fw={500}
-                    >
-                      {form.values.email}
-                    </Anchor>
-                  ) : (
-                    <Text ta="center" fw={500} c="blue">
-                      {form.values.phoneNumber}
-                    </Text>
-                  )}
-                </Center>
-                <Center mt="lg">
-                  <PinInput
-                    length={6}
-                    size="md"
-                    value={code}
-                    onChange={setCode}
-                    type="number"
-                    autoFocus
-                  />
-                </Center>
-                <Button
-                  fullWidth
-                  loading={loading}
-                  disabled={code.length < 6}
-                  onClick={handleComplete}
-                  radius="md"
-                  mt="xl"
+
+                <Text fw={600} size="md" ta="center">
+                  {isEmailMode ? form.values.email : form.values.phoneNumber}
+                </Text>
+
+                {isEmailMode && (
+                  <Button
+                    component="a"
+                    href={getInboxLink(form.values.email)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="light"
+                    size="xs"
+                    radius="md"
+                    rightSection={<IconExternalLink size={14} />}
+                  >
+                    {t("register.openEmailInbox")}
+                  </Button>
+                )}
+              </Stack>
+
+              <Center mt="lg" mb="sm">
+                <PinInput
+                  length={6}
                   size="md"
+                  value={code}
+                  onChange={setCode}
+                  type="number"
+                  autoFocus
+                  placeholder="○"
+                />
+              </Center>
+
+              <Group justify="center" mt="xs" mb="md">
+                {countdown > 0 ? (
+                  <Text size="xs" c="dimmed">
+                    {t("register.resendCodeIn", { seconds: countdown })}
+                  </Text>
+                ) : (
+                  <Anchor
+                    component="button"
+                    type="button"
+                    size="xs"
+                    fw={600}
+                    c="brand"
+                    onClick={handleResendCode}
+                    disabled={resending}
+                  >
+                    {resending ? "..." : t("register.resendCode")}
+                  </Anchor>
+                )}
+              </Group>
+
+              <Button
+                fullWidth
+                loading={loading}
+                disabled={code.length < 6}
+                onClick={handleComplete}
+                radius="md"
+                size="md"
+                h={42}
+                fw={600}
+              >
+                {t("register.confirm")}
+              </Button>
+
+              <Center mt="sm">
+                <Anchor
+                  component="button"
+                  type="button"
+                  size="xs"
+                  c="dimmed"
+                  onClick={() => {
+                    setStep(1);
+                    setErrorMessage(null);
+                  }}
+                  style={{ display: "flex", alignItems: "center", gap: 4 }}
                 >
-                  {t("register.confirm")}
-                </Button>
-              </Box>
-            )}
-          </Paper>
-        </Grid.Col>
-        <Grid.Col visibleFrom="sm" span={{ base: 12, sm: 6, lg: 7 }}>
-          <Flex
-            direction="column"
-            justify="center"
-            align="center"
-            h="100%"
-            style={{
-              background: "linear-gradient(135deg, #228be6 0%, #1864ab 100%)",
-              borderRadius: "var(--mantine-radius-md)",
-              padding: "var(--mantine-spacing-xl)",
-            }}
-          >
-            <Image
-              radius="md"
-              src="/logo.svg"
-              w={120}
-              h={120}
-              fit="contain"
-              fallbackSrc="/favicon.svg"
-            />
-            <Text c="white" size="xl" fw={700} ta="center" mt="lg">
-              PravaOnline
-            </Text>
-            <Text c="blue.1" size="sm" ta="center" mt="xs" maw={300}>
-              {t("home.hero.description")}
-            </Text>
-          </Flex>
-        </Grid.Col>
-      </Grid>
-    </Container>
+                  <IconArrowLeft size={14} />
+                  {t("register.editInfo")}
+                </Anchor>
+              </Center>
+            </Box>
+          )}
+
+          <AuthSecurityBadge compact />
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

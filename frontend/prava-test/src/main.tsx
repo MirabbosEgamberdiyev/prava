@@ -7,6 +7,7 @@ import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/nprogress/styles.css";
 import "./index.css";
+import "./styles/desktop.css";
 import { theme } from "./theme";
 
 import { Notifications } from "@mantine/notifications";

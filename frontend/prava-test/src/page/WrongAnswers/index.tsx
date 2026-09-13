@@ -1,209 +1,194 @@
-import { useState } from "react";
-import {
-  Title, Paper, Text, Group, Stack, Badge, Center, Loader,
-  ActionIcon, Tooltip, Collapse, Image, Alert, Button,
-  ThemeIcon, Box,
-} from "@mantine/core";
-import {
-  IconAlertTriangle, IconTrash, IconCheck, IconX,
-  IconRefresh, IconChevronDown, IconChevronRight,
-} from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWR from "swr";
-import { useLanguage } from "../../hooks/useLanguage";
-import { EmptyState } from "../../components/common/EmptyState";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
+import type { WrongAnswerEntry } from "../../types/desktop";
+import {
+  getWrongAnswers,
+  removeWrongAnswer,
+  parseOptions,
+  localizeQ,
+  localizeOpt,
+  localizeExp,
+} from "../../services/desktopAdapter";
+import {
+  IconArrowLeft,
+  IconTrash,
+  IconAlertTriangle,
+  IconCheck,
+  IconX,
+  IconPlayerPlay,
+  IconBulb,
+} from "@tabler/icons-react";
+import ImageZoomModal, { ZoomableImage } from "../../components/common/ImageZoomModal";
 import SEO from "../../components/common/SEO";
-import { getImageUrl } from "../../utils/imageUtils";
-import api from "../../api/api";
-import type { LocalizedText } from "../../types";
 
-interface OptionItem {
-  text: LocalizedText;
-}
-
-interface WrongAnswerItem {
-  questionId: number;
-  wrongCount: number;
-  lastSeen: string;
-  text?: LocalizedText;
-  imageUrl?: string;
-  options?: OptionItem[];
-  correctOptionIndex?: number;
-  explanation?: LocalizedText;
-  topicId?: number;
-  topicName?: LocalizedText;
-}
-
-const WrongAnswers_Page = () => {
+export default function WrongAnswers_Page() {
   const { t } = useTranslation();
-  const { localize } = useLanguage();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const userId = user?.id ? Number(user.id) : 1;
+
+  const [entries, setEntries] = useState<WrongAnswerEntry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [zoomSrc, setZoomSrc] = useState<string | null>(null);
 
-  const { data: rawResponse, error, isLoading, mutate } = useSWR<{
-    success: boolean;
-    data: WrongAnswerItem[];
-  }>("/api/v1/app/wrong-answers", { refreshInterval: 0 });
-
-  // Backend ApiResponse: { success, message, data: [...] }
-  const entries: WrongAnswerItem[] = (() => {
-    if (!rawResponse) return [];
-    // SWR fetcher returns res.data = { success, message, data: [...] }
-    const d = rawResponse.data;
-    if (Array.isArray(d)) return d;
-    // Fallback: rawResponse itself might be the array
-    if (Array.isArray(rawResponse)) return rawResponse as unknown as WrongAnswerItem[];
-    return [];
-  })();
-
-  const handleRemove = async (questionId: number) => {
-    try {
-      await api.delete(`/api/v1/app/wrong-answers/${questionId}`);
-      mutate();
-    } catch (e) {
-      console.warn("Failed to remove wrong answer:", e);
-    }
+  const loadData = () => {
+    getWrongAnswers(userId)
+      .then((data) => setEntries(Array.isArray(data) ? data.filter((e) => e && e.question) : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   };
 
-  const toggle = (id: number) => setExpanded(expanded === id ? null : id);
+  useEffect(() => {
+    loadData();
+    const onStorage = () => loadData();
+    window.addEventListener("prava-storage-changed", onStorage);
+    return () => window.removeEventListener("prava-storage-changed", onStorage);
+  }, [userId]);
+
+  const handleRemove = async (questionId: number) => {
+    await removeWrongAnswer(userId, questionId).catch(() => {});
+    setEntries((prev) => prev.filter((e) => e?.question?.id !== questionId));
+  };
+
+  const onBack = () => navigate("/me");
+  const onStartPractice = () => navigate("/wrong-exam");
 
   return (
     <>
       <SEO
-        title="Xato javoblar"
-        description="Xato qilgan savollaringizni qayta ko'ring va bilimingizni mustahkamlang."
+        title="Xatolar ustida ishlash"
+        description="Xato qilingan savollarni qayta ko'rish va amaliyot qilish"
         canonical="/wrong-answers"
-        noIndex={true}
       />
-
-      <Group justify="space-between" align="center" mb="lg">
-        <Group gap="sm">
-          <ThemeIcon size="lg" radius="md" variant="gradient" gradient={{ from: "red", to: "orange" }}>
-            <IconAlertTriangle size={20} />
-          </ThemeIcon>
-          <div>
-            <Title order={2}>{t("wrongAnswers.title")}</Title>
-            {entries.length > 0 && (
-              <Text size="xs" c="dimmed">{entries.length} {t("common.questions")}</Text>
-            )}
+      <div className="review-screen">
+        <header className="review-header">
+          <button className="review-back-btn" onClick={onBack} type="button">
+            <IconArrowLeft size={18} stroke={2} />
+            {t("common.back", "Orqaga")}
+          </button>
+          <div className="review-header-title">
+            <IconAlertTriangle size={20} stroke={2} color="#e03131" />
+            <span>{t("wrongAnswers.title", "Xatolar ustida ishlash")}</span>
           </div>
-        </Group>
-        <Tooltip label={t("common.refresh")}>
-          <ActionIcon variant="light" size="lg" onClick={() => mutate()} aria-label={t("common.refresh")}>
-            <IconRefresh size={18} />
-          </ActionIcon>
-        </Tooltip>
-      </Group>
+          <div className="review-header-count">
+            {entries.length} {t("common.questions", "savol")}
+          </div>
+          {entries.length > 0 && (
+            <button
+              className="review-practice-btn"
+              onClick={onStartPractice}
+              type="button"
+            >
+              <IconPlayerPlay size={16} stroke={2} />
+              {t("wrongAnswers.practice", "Amaliyot")}
+            </button>
+          )}
+        </header>
 
-      {error && !isLoading && (
-        <Alert color="red" icon={<IconAlertTriangle size={16} />} mb="md">
-          {t("common.loadError", { defaultValue: "Ma'lumotlarni yuklashda xatolik" })}
-          <Button size="xs" variant="light" ml="sm" onClick={() => mutate()}>
-            {t("common.retry")}
-          </Button>
-        </Alert>
-      )}
-
-      {isLoading && (
-        <Center py={60}><Loader size="lg" /></Center>
-      )}
-
-      {!isLoading && !error && entries.length === 0 && (
-        <EmptyState
-          icon={<IconCheck size={48} color="green" style={{ opacity: 0.6 }} />}
-          title={t("wrongAnswers.emptyTitle")}
-          description={t("wrongAnswers.emptySub")}
-        />
-      )}
-
-      {!isLoading && entries.length > 0 && (
-        <Stack gap="sm">
-          {entries.map((entry) => {
-            const isOpen = expanded === entry.questionId;
-            const opts = entry.options || [];
-            const img = getImageUrl(entry.imageUrl);
-
-            return (
-              <Paper key={entry.questionId} withBorder radius="md" shadow="sm" p={0} style={{ overflow: "hidden" }}>
-                <Group
-                  px="md" py="sm"
-                  justify="space-between"
-                  wrap="nowrap"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => toggle(entry.questionId)}
-                >
-                  <Group gap="sm" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
-                    <Badge color="red" variant="filled" size="sm" radius="sm">
-                      {entry.wrongCount}x
-                    </Badge>
-                    <Text size="sm" fw={500} lineClamp={isOpen ? undefined : 2} style={{ flex: 1 }}>
-                      {localize(entry.text)}
-                    </Text>
-                  </Group>
-                  <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
-                    {entry.topicName && (
-                      <Badge color="blue" variant="light" size="xs">
-                        {localize(entry.topicName)}
-                      </Badge>
-                    )}
-                    <Tooltip label={t("wrongAnswers.remove")}>
-                      <ActionIcon
-                        variant="light" color="red" size="sm"
-                        onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleRemove(entry.questionId); }}
-                        aria-label={t("wrongAnswers.remove")}
+        <main className="review-content">
+          {loading ? (
+            <div className="loading-screen">
+              <div className="spinner" />
+            </div>
+          ) : entries.length === 0 ? (
+            <div className="review-empty">
+              <IconCheck size={56} stroke={1.5} color="#2f9e44" />
+              <h3>{t("wrongAnswers.emptyTitle", "Xatolar yo'q!")}</h3>
+              <p>
+                {t(
+                  "wrongAnswers.emptySub",
+                  "Test yoki imtihon davomida qilgan xatolaringiz shu yerda to'planadi."
+                )}
+              </p>
+              <button
+                type="button"
+                className="saas-btn-primary"
+                onClick={() => navigate("/tickets")}
+                style={{ marginTop: 12 }}
+              >
+                {t("home.biletlar", "Biletlarni yechish")}
+              </button>
+            </div>
+          ) : (
+            <div className="review-list">
+              {entries.map((entry) => {
+                const q = entry.question;
+                const opts = parseOptions(q.options_json);
+                const isOpen = expanded === q.id;
+                return (
+                  <div key={q.id} className={`review-card ${isOpen ? "open" : ""}`}>
+                    <div
+                      className="review-card-top"
+                      onClick={() => setExpanded(isOpen ? null : q.id)}
+                    >
+                      <div className="review-card-badge wrong-badge">
+                        {entry.wrong_count}✕
+                      </div>
+                      <p className="review-card-text">{localizeQ(q)}</p>
+                      <button
+                        className="review-remove-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemove(q.id);
+                        }}
+                        title={t("wrongAnswers.remove", "O'chirish")}
+                        type="button"
                       >
-                        <IconTrash size={14} />
-                      </ActionIcon>
-                    </Tooltip>
-                    {isOpen ? <IconChevronDown size={16} /> : <IconChevronRight size={16} />}
-                  </Group>
-                </Group>
-
-                <Collapse in={isOpen}>
-                  <Box px="md" pb="md">
-                    {img && (
-                      <Center mb="sm">
-                        <Image src={img} alt="" radius="md" maw={400} fit="contain" />
-                      </Center>
+                        <IconTrash size={14} stroke={2} />
+                      </button>
+                    </div>
+                    {isOpen && (
+                      <div className="review-card-body">
+                        <div className="review-card-options">
+                          {opts.map((opt) => (
+                            <div
+                              key={opt.index}
+                              className={`review-option ${
+                                opt.index === q.correct_option ? "correct" : ""
+                              }`}
+                            >
+                              {opt.index === q.correct_option ? (
+                                <IconCheck size={14} stroke={2.5} />
+                              ) : (
+                                <IconX size={14} stroke={2.5} />
+                              )}
+                              {localizeOpt(opt)}
+                            </div>
+                          ))}
+                        </div>
+                        {q.image_path && (
+                          <div className="review-card-img-wrap">
+                            <ZoomableImage
+                              path={q.image_path}
+                              className="review-card-img"
+                              onOpen={(src) => setZoomSrc(src)}
+                            />
+                          </div>
+                        )}
+                        {localizeExp(q) && (
+                          <div className="quiz-explanation-wrap" style={{ marginTop: 10 }}>
+                            <div className="quiz-explanation-text" style={{ display: "block" }}>
+                              <strong>
+                                <IconBulb size={15} style={{ verticalAlign: "middle", marginRight: 4 }} />
+                                {t("exam.explanation", "Izoh")}:
+                              </strong>{" "}
+                              {localizeExp(q)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     )}
-                    <Stack gap={4}>
-                      {opts.map((opt, idx) => {
-                        const isCorrect = idx === entry.correctOptionIndex;
-                        return (
-                          <Paper
-                            key={idx}
-                            withBorder
-                            radius="sm"
-                            px="sm" py={6}
-                            bg={isCorrect ? "green.0" : undefined}
-                            style={{ borderColor: isCorrect ? "var(--mantine-color-green-4)" : undefined }}
-                          >
-                            <Group gap="xs" wrap="nowrap">
-                              {isCorrect
-                                ? <IconCheck size={14} color="green" />
-                                : <IconX size={14} color="var(--mantine-color-dimmed)" />
-                              }
-                              <Text size="sm" c={isCorrect ? "green.8" : undefined}>
-                                {localize(opt.text)}
-                              </Text>
-                            </Group>
-                          </Paper>
-                        );
-                      })}
-                    </Stack>
-                    {entry.explanation && localize(entry.explanation) && (
-                      <Alert color="blue" variant="light" mt="sm" radius="md">
-                        <Text size="xs">{localize(entry.explanation)}</Text>
-                      </Alert>
-                    )}
-                  </Box>
-                </Collapse>
-              </Paper>
-            );
-          })}
-        </Stack>
-      )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </main>
+        {zoomSrc && <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />}
+      </div>
     </>
   );
-};
-
-export default WrongAnswers_Page;
+}

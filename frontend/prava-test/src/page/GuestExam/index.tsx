@@ -7,6 +7,7 @@ import {
   Text,
   Title,
   Button,
+  Group,
   Paper,
   Stack,
   ThemeIcon,
@@ -19,7 +20,7 @@ import {
 } from "@mantine/core";
 import {
   IconAlertCircle,
-  IconLock,
+  IconSparkles,
   IconUserPlus,
   IconChartBar,
   IconHome,
@@ -46,7 +47,6 @@ const GuestExamPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [limitReached, setLimitReached] = useState(false);
   const [answers, setAnswers] = useState<AnswersMap>({});
-  const [redirectCountdown, setRedirectCountdown] = useState(5);
   const [guestResultOpened, setGuestResultOpened] = useState(false);
 
   const hasFetched = useRef(false);
@@ -88,21 +88,26 @@ const GuestExamPage = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  // Auto-redirect when limit reached
-  useEffect(() => {
-    if (!limitReached) return;
-    const interval = setInterval(() => {
-      setRedirectCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          navigate("/", { replace: true });
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [limitReached, navigate]);
+  const handleRetryGuestExam = () => {
+    localStorage.removeItem(GUEST_EXAM_KEY);
+    setLimitReached(false);
+    setLoading(true);
+    api
+      .get("/api/v1/public/guest-exam")
+      .then((res) => {
+        const exam = res.data?.data;
+        if (!exam?.questions?.length) throw new Error("No questions");
+        setQuestions(exam.questions);
+        setDurationMinutes(exam.durationMinutes ?? 20);
+        setAnswers({});
+        setGuestResultOpened(false);
+        localStorage.setItem(GUEST_EXAM_KEY, "1");
+      })
+      .catch(() => {
+        setError(t("exam.loadError"));
+      })
+      .finally(() => setLoading(false));
+  };
 
   const handleAnswerSelect = (
     questionIndex: number,
@@ -138,10 +143,10 @@ const GuestExamPage = () => {
 
   if (loading) {
     return (
-      <Center h="100vh">
+      <Center h="100vh" style={{ background: "var(--bg)" }}>
         <Box ta="center">
           <Loader size="lg" mb="md" />
-          <Text c="dimmed">{t("common.loading")}</Text>
+          <Text c="dimmed">{t("common.loading", "Savollar yuklanmoqda...")}</Text>
         </Box>
       </Center>
     );
@@ -149,36 +154,58 @@ const GuestExamPage = () => {
 
   if (limitReached) {
     return (
-      <Center h="100vh">
+      <Center h="100vh" style={{ background: "var(--bg)", padding: 16 }}>
         <Container size="xs">
-          <Paper p="xl" radius="md" withBorder shadow="md" ta="center">
-            <ThemeIcon size={64} radius="xl" color="orange" variant="light" mb="md" mx="auto">
-              <IconLock size={32} />
+          <Paper p="xl" radius="lg" withBorder shadow="sm" ta="center" style={{ background: "var(--surface)" }}>
+            <ThemeIcon size={56} radius="xl" color="blue" variant="light" mb="md" mx="auto">
+              <IconSparkles size={28} />
             </ThemeIcon>
-            <Title order={3} mb="sm">
-              {t("guestExam.limitReached")}
+            <Title order={2} size="h3" mb="xs">
+              {t("guestExam.completedTitle", "Sinov imtihoni yakunlandi")}
             </Title>
-            <Text c="dimmed" mb="sm">
-              {t("guestExam.registerPrompt")}
-            </Text>
-            <Text size="sm" c="dimmed" mb="md">
-              {t("guestExam.redirecting", { seconds: redirectCountdown })}
+            <Text size="sm" c="dimmed" mb="lg" lh={1.6}>
+              {t(
+                "guestExam.registerPromptFull",
+                "Siz bepul sinov imtihonidan foydalandingiz. Barcha 70 ta rasmiy bilet, xatolar ustida ishlash, cheksiz marafon va natijalaringizni doimiy saqlab borish uchun bepul ro'yxatdan o'ting."
+              )}
             </Text>
             <Stack gap="sm">
               <Button
                 size="md"
+                radius="md"
+                h={44}
                 leftSection={<IconUserPlus size={18} />}
                 onClick={() => navigate("/auth/register")}
               >
-                {t("register.register")}
+                {t("register.register", "Bepul ro'yxatdan o'tish")}
               </Button>
               <Button
                 variant="light"
                 size="md"
-                onClick={() => navigate("/")}
+                radius="md"
+                h={44}
+                onClick={() => navigate("/partners")}
               >
-                {t("notFound.backHome")}
+                {t("nav.corporate", "Avtomaktablar va Hamkorlik")}
               </Button>
+              <Group justify="center" gap="md" mt="xs">
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  color="gray"
+                  onClick={handleRetryGuestExam}
+                >
+                  {t("guestExam.tryAgain", "Sinovni qayta yechish")}
+                </Button>
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  color="gray"
+                  onClick={() => navigate("/")}
+                >
+                  {t("notFound.backHome", "Bosh sahifa")}
+                </Button>
+              </Group>
             </Stack>
           </Paper>
         </Container>
@@ -300,8 +327,13 @@ const GuestExamPage = () => {
             />
             <Text fw={600} size="md" c={scoreColor} ta="center">
               {correctPercentage >= 90
-                ? t("exam.result.passed")
-                : t("exam.result.failed")}
+                ? t("exam.result.passed", "Imtihondan o'tdingiz!")
+                : t("exam.result.failed", "Imtihondan o'ta olmadingiz")}
+            </Text>
+            <Text size="xs" c="dimmed" ta="center" maw={320}>
+              {correctPercentage >= 90
+                ? t("guestExam.passedEncourage", "Ajoyib natija! Haqiqiy davlat imtihonida ham 18+ to'g'ri javob talab etiladi. Barcha 70 ta biletni to'liq o'zlashtirishni tavsiya etamiz.")
+                : t("guestExam.failedEncourage", "Davlat imtihonidan o'tish uchun kamida 18 ta to'g'ri javob kerak. Xatolar ustida ishlab, bilimingizni 100% ga chiqaring.")}
             </Text>
           </Stack>
 
@@ -311,16 +343,16 @@ const GuestExamPage = () => {
               align="center"
               gap={6}
               p="sm"
-              style={{ borderRadius: 12, border: "1px solid var(--mantine-color-green-5)" }}
+              style={{ borderRadius: 12, border: "1px solid var(--mantine-color-green-5)", background: "var(--surface)" }}
             >
-              <ThemeIcon size={44} radius="xl" color="green" variant="light">
-                <IconCheck size={22} />
+              <ThemeIcon size={40} radius="xl" color="green" variant="light">
+                <IconCheck size={20} />
               </ThemeIcon>
-              <Text size="xl" fw={800} c="green">
+              <Text size="lg" fw={800} c="green">
                 {correctCount}
               </Text>
               <Text size="xs" c="dimmed" ta="center">
-                {t("exam.correct")}
+                {t("exam.correct", "To'g'ri")}
               </Text>
             </Stack>
 
@@ -328,16 +360,16 @@ const GuestExamPage = () => {
               align="center"
               gap={6}
               p="sm"
-              style={{ borderRadius: 12, border: "1px solid var(--mantine-color-red-5)" }}
+              style={{ borderRadius: 12, border: "1px solid var(--mantine-color-red-5)", background: "var(--surface)" }}
             >
-              <ThemeIcon size={44} radius="xl" color="red" variant="light">
-                <IconX size={22} />
+              <ThemeIcon size={40} radius="xl" color="red" variant="light">
+                <IconX size={20} />
               </ThemeIcon>
-              <Text size="xl" fw={800} c="red">
+              <Text size="lg" fw={800} c="red">
                 {incorrectCount}
               </Text>
               <Text size="xs" c="dimmed" ta="center">
-                {t("exam.incorrect")}
+                {t("exam.incorrect", "Noto'g'ri")}
               </Text>
             </Stack>
 
@@ -345,16 +377,16 @@ const GuestExamPage = () => {
               align="center"
               gap={6}
               p="sm"
-              style={{ borderRadius: 12, border: "1px solid var(--mantine-color-default-border)" }}
+              style={{ borderRadius: 12, border: "1px solid var(--border)", background: "var(--surface)" }}
             >
-              <ThemeIcon size={44} radius="xl" color="gray" variant="light">
-                <IconClock size={22} />
+              <ThemeIcon size={40} radius="xl" color="gray" variant="light">
+                <IconClock size={20} />
               </ThemeIcon>
-              <Text size="xl" fw={800} c="dimmed">
+              <Text size="lg" fw={800} c="dimmed">
                 {unansweredCount}
               </Text>
               <Text size="xs" c="dimmed" ta="center">
-                {t("exam.unanswered")}
+                {t("exam.unanswered", "Qoldirilgan")}
               </Text>
             </Stack>
           </SimpleGrid>
@@ -367,31 +399,34 @@ const GuestExamPage = () => {
               fullWidth
               size="md"
               radius="md"
-              leftSection={<IconChartBar size={18} />}
-              onClick={() => setGuestResultOpened(false)}
+              h={44}
+              color="blue"
+              onClick={() => navigate("/auth/register")}
             >
-              {t("exam.reviewAnswers")}
+              {t("guestExam.unlockAll", "Barcha 70 ta biletni ochish")}
             </Button>
             <Button
               fullWidth
               size="md"
               radius="md"
+              h={44}
               variant="light"
-              leftSection={<IconUserPlus size={18} />}
-              onClick={() => navigate("/auth/register")}
+              leftSection={<IconChartBar size={18} />}
+              onClick={() => setGuestResultOpened(false)}
             >
-              {t("register.register")}
+              {t("exam.reviewAnswers", "Javoblarni ko'rish va tahlil qilish")}
             </Button>
             <Button
               fullWidth
               size="sm"
               radius="md"
+              h={36}
               variant="subtle"
               color="gray"
               leftSection={<IconHome size={16} />}
               onClick={() => navigate("/")}
             >
-              {t("notFound.backHome")}
+              {t("notFound.backHome", "Bosh sahifa")}
             </Button>
           </Stack>
         </Stack>

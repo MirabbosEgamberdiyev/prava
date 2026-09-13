@@ -10,6 +10,7 @@ import { getErrorMessage } from "../../types/errors";
 
 interface TelegramLoginButtonProps {
   mode?: "login" | "register";
+  compact?: boolean;
 }
 
 interface TelegramUser {
@@ -43,7 +44,7 @@ const TelegramIcon = () => (
   </svg>
 );
 
-const TelegramLoginButton = ({ mode = "login" }: TelegramLoginButtonProps) => {
+const TelegramLoginButton = ({ mode = "login", compact = false }: TelegramLoginButtonProps) => {
   const { t, i18n } = useTranslation();
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
@@ -133,13 +134,19 @@ const TelegramLoginButton = ({ mode = "login" }: TelegramLoginButtonProps) => {
       leftSection={<TelegramIcon />}
       variant="filled"
       color="#229ED9"
-      size="md"
+      size={compact ? "sm" : "md"}
+      h={compact ? 40 : 44}
       fullWidth
       radius="md"
       loading={loading}
       onClick={handleTelegramLogin}
+      styles={{
+        root: { fontWeight: 600, fontSize: compact ? 13 : undefined },
+      }}
     >
-      {mode === "login"
+      {compact
+        ? "Telegram"
+        : mode === "login"
         ? t("auth.telegram.loginButton")
         : t("auth.telegram.registerButton")}
     </Button>

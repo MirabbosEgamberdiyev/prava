@@ -1,22 +1,24 @@
-import { ActionIcon, Menu, Text, Group, Box } from "@mantine/core";
+import { Menu, Text, UnstyledButton } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import Cookies from "js-cookie";
-import { IconCheck, IconLanguage } from "@tabler/icons-react";
+import { IconCheck, IconChevronDown, IconWorld } from "@tabler/icons-react";
 
-const languages = [
-  { value: "uzl", label: "O'zbekcha", short: "UZ" },
-  { value: "uzc", label: "Ўзбекча", short: "ЎЗ" },
-  { value: "ru", label: "Русский", short: "RU" },
-  { value: "en", label: "English", short: "EN" },
+export const languages = [
+  { value: "uzl", label: "O‘zbekcha (Lotin)", short: "O‘zbek" },
+  { value: "uzc", label: "Ўзбекча (Кирилл)", short: "Ўзбек" },
+  { value: "ru", label: "Русский", short: "Русский" },
 ] as const;
 
 export default function LanguagePicker() {
   const { i18n } = useTranslation();
+  const currentLang = i18n.resolvedLanguage || i18n.language || "uzl";
+  const current = languages.find((l) => l.value === currentLang) ?? languages[0];
 
   const handleLanguageChange = (value: string) => {
     i18n.changeLanguage(value);
-    Cookies.set("i18next", value, { expires: 365 });
+    Cookies.set("i18next", value, { expires: 365, path: "/" });
     try {
+      localStorage.setItem("prava_lang", value);
       localStorage.setItem("i18nextLng", value);
     } catch {
       // localStorage may be unavailable
@@ -24,49 +26,58 @@ export default function LanguagePicker() {
   };
 
   return (
-    <Menu shadow="md" width={180} withArrow position="bottom-end">
+    <Menu shadow="md" width={190} position="bottom-end" radius="md" withinPortal>
       <Menu.Target>
-        <ActionIcon
-          variant="light"
-          size="lg"
-          radius={"sm"}
-          aria-label="Change language"
+        <UnstyledButton
+          className="header-control-btn"
+          aria-label={`Til: ${current.label}`}
+          title={current.label}
         >
-          <IconLanguage size={18} />
-        </ActionIcon>
+          <IconWorld
+            size={16}
+            stroke={1.6}
+            style={{ color: "var(--primary)", flexShrink: 0 }}
+            aria-hidden="true"
+          />
+          <span style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "0.2px" }}>
+            {current.short}
+          </span>
+          <IconChevronDown
+            size={13}
+            style={{ opacity: 0.5, flexShrink: 0, color: "var(--text-muted)" }}
+            aria-hidden="true"
+          />
+        </UnstyledButton>
       </Menu.Target>
 
-      <Menu.Dropdown>
+      <Menu.Dropdown style={{ padding: 6 }}>
         {languages.map((lang) => {
-          const isActive = i18n.resolvedLanguage === lang.value;
+          const isActive = currentLang === lang.value;
           return (
             <Menu.Item
               key={lang.value}
               onClick={() => handleLanguageChange(lang.value)}
-              rightSection={isActive ? <IconCheck size={14} /> : null}
-              style={isActive ? { fontWeight: 600 } : undefined}
+              rightSection={
+                isActive ? (
+                  <IconCheck
+                    size={14}
+                    stroke={2.2}
+                    style={{ color: "var(--primary)" }}
+                  />
+                ) : null
+              }
+              style={{
+                fontWeight: isActive ? 600 : 500,
+                backgroundColor: isActive ? "var(--primary-light)" : undefined,
+                color: isActive ? "var(--primary)" : "var(--text)",
+                borderRadius: 6,
+                padding: "8px 12px",
+                fontSize: "13px",
+              }}
             >
-              <Group gap="xs" wrap="nowrap">
-                <Box
-                  w={28}
-                  h={20}
-                  style={{
-                    borderRadius: 3,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: isActive
-                      ? "var(--mantine-color-blue-light)"
-                      : "var(--mantine-color-default-hover)",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Text size="xs" fw={700} c={isActive ? "blue" : "dimmed"}>
-                    {lang.short}
-                  </Text>
-                </Box>
-                <Text size="sm">{lang.label}</Text>
-              </Group>
+              <Text size="sm" fw={isActive ? 600 : 500}>
+                {lang.label}
+              </Text>
             </Menu.Item>
           );
         })}

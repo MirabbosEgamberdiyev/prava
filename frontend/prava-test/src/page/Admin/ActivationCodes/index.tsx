@@ -28,9 +28,11 @@ import {
   Divider,
   Box,
 } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
 import { useDebouncedValue } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
+  IconArrowLeft,
   IconPlus,
   IconSearch,
   IconDots,
@@ -99,6 +101,7 @@ function extractErrorMessage(err: unknown): string {
 
 const ActivationCodesPage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab]       = useState<GroupTab>("ALL");
   const [page, setPage]                 = useState(1);
@@ -231,6 +234,14 @@ const ActivationCodesPage: React.FC = () => {
           </Text>
         </Stack>
         <Group>
+          <Button
+            variant="default"
+            leftSection={<IconArrowLeft size={16} />}
+            onClick={() => navigate("/me")}
+            radius="md"
+          >
+            {t("common.back", "Orqaga")}
+          </Button>
           <Tooltip label={t(`${NS}.refresh`)}>
             <ActionIcon variant="light" onClick={refreshAll} size="lg" radius="md">
               <IconRefresh size={18} />

@@ -14,6 +14,7 @@ import {
   Stack,
   Text,
   Title,
+  Image,
   useComputedColorScheme,
 } from "@mantine/core";
 import { IconArrowLeft, IconCheck, IconX } from "@tabler/icons-react";
@@ -21,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { useLanguage } from "../../../hooks/useLanguage";
+import { getImageUrl } from "../../../utils/imageUtils";
 import type { LocalizedText } from "../../../types";
 import type { ExamResultResponse, AnswerDetail } from "../types";
 
@@ -119,7 +121,7 @@ export function ExamResultPage() {
   };
 
   return (
-    <Box bg={computedColorScheme === "light" ? "gray.0" : "dark.8"} mih="100vh">
+    <Box bg="var(--bg)" mih="100vh" style={{ color: "var(--text)" }}>
       {/*
         Mobil ko'rinishda pastdagi "Orqaga" tugmasi `position: fixed` —
         avval kontent tagida qo'shimcha joy yo'q edi va tugma oxirgi
@@ -127,7 +129,14 @@ export function ExamResultPage() {
       */}
       <Container size="xl" p={0} pb={{ base: 70, sm: 0 }}>
         {/* Header: Score Ring + Pass/Fail */}
-        <Paper p="xl" radius="md" withBorder shadow="sm" mb="xl">
+        <Paper
+          p="xl"
+          radius="md"
+          withBorder
+          shadow="sm"
+          mb="xl"
+          style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+        >
           <Flex
             direction={{ base: "column", sm: "row" }}
             align="center"
@@ -305,7 +314,12 @@ function AnswerReviewCard({
     answer.selectedOptionIndex === -1;
 
   return (
-    <Paper p="md" radius="md" withBorder>
+    <Paper
+      p="md"
+      radius="md"
+      withBorder
+      style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+    >
       <Flex justify="space-between" align="center" mb="sm">
         <Text fw={600}>
           {t("examResult.question")} {index + 1}
@@ -329,7 +343,30 @@ function AnswerReviewCard({
         )}
       </Flex>
 
-      <Text mb="sm">{localize(answer.questionText)}</Text>
+      <Text mb="sm" fw={500}>{localize(answer.questionText)}</Text>
+
+      {/* Savol rasmi (yo'l belgilari, chorraha holatlari) */}
+      {answer.imageUrl && (
+        <Box
+          mb="md"
+          style={{
+            maxHeight: 240,
+            display: "flex",
+            justifyContent: "center",
+            background: "rgba(0, 0, 0, 0.04)",
+            borderRadius: "var(--radius)",
+            padding: 8,
+          }}
+        >
+          <Image
+            src={getImageUrl(answer.imageUrl)}
+            alt={localize(answer.questionText)}
+            fit="contain"
+            mah={220}
+            radius="sm"
+          />
+        </Box>
+      )}
 
       <Grid gutter="xs">
         {answer.options.map((option) => {
@@ -379,7 +416,13 @@ function AnswerReviewCard({
           p="xs"
           mt="sm"
           radius="sm"
-          bg={computedColorScheme === "light" ? "blue.0" : "dark.6"}
+          style={{
+            background:
+              computedColorScheme === "light"
+                ? "rgba(25, 113, 194, 0.08)"
+                : "rgba(255, 255, 255, 0.05)",
+            border: "1px solid var(--border)",
+          }}
         >
           <Text size="sm" c="dimmed">
             <strong>{t("examResult.explanation")}:</strong>{" "}

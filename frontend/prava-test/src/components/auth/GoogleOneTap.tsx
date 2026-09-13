@@ -152,7 +152,7 @@ export function GoogleOneTap() {
           client_id: ENV.GOOGLE_CLIENT_ID,
           callback: callbackWrapper,
           cancel_on_tap_outside: false,
-          auto_select: false,
+          auto_select: true,
           context: "signin",
           itp_support: true,
         });

@@ -1,19 +1,23 @@
+import { Suspense } from "react";
 import { AppShell } from "@mantine/core";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Footer from "../components/nav/Footer";
 import { useDisclosure } from "@mantine/hooks";
 import Navbar from "@/components/nav/Navbar";
 import Header from "@/components/nav/Header";
+import { RouteContentFallback } from "../components/common/RouteContentFallback";
 
 const App_Layout = () => {
   const [opened, { toggle, close }] = useDisclosure();
+  const location = useLocation();
+  const isAuthPage = location.pathname.startsWith("/auth");
 
   return (
     <AppShell
-      header={{ height: 60 }}
+      header={{ height: 64 }}
       navbar={{
         width: 300,
-        breakpoint: "sm",
+        breakpoint: "md",
         collapsed: { desktop: true, mobile: !opened },
       }}
       padding="md"
@@ -22,12 +26,18 @@ const App_Layout = () => {
       <Navbar close={close} />
       <AppShell.Main
         px={0}
-        style={{ display: "flex", flexDirection: "column" }}
+        style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
       >
-        <div style={{ flex: 1 }}>
-          <Outlet />
+        <div
+          style={{ flex: 1 }}
+          className="page-transition-wrapper"
+          key={location.pathname}
+        >
+          <Suspense fallback={<RouteContentFallback />}>
+            <Outlet />
+          </Suspense>
         </div>
-        <Footer />
+        {!isAuthPage && <Footer />}
       </AppShell.Main>
     </AppShell>
   );

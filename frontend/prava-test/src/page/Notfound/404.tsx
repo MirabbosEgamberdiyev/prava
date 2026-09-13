@@ -29,9 +29,9 @@ const NotFound_Page = () => {
               {t("notFound.description")}
             </Text>
             <Group justify="center">
-              <Link to={"/"}>
-                <Button size="md">{t("notFound.backHome")}</Button>
-              </Link>
+              <Button component={Link} to="/" size="md" radius="md">
+                {t("notFound.backHome", "Bosh sahifaga qaytish")}
+              </Button>
             </Group>
           </div>
         </div>

@@ -1,5 +1,6 @@
 package uz.pravaimtihon.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "Imtihon boshlash so'rovi")
 public class ExamStartRequest {
 
@@ -28,4 +30,7 @@ public class ExamStartRequest {
     @Max(value = 180, message = "validation.exam.duration.max")
     @Schema(description = "Davomiylik (daqiqa, ixtiyoriy)", example = "30")
     private Integer durationMinutes;
+
+    @Schema(description = "Savollar soni (ixtiyoriy)", example = "20")
+    private Integer questionCount;
 }

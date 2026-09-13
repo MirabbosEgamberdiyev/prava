@@ -1,753 +1,805 @@
+import React, { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
+import type {
+  ExamResult,
+  FullStats,
+  TicketReadinessStat,
+  QuestionStatDetail,
+} from "../../types/desktop";
 import {
-  Alert,
-  Button,
-  Title,
-  SegmentedControl,
-  Stack,
-  SimpleGrid,
-  Paper,
-  Text,
-  Group,
-  RingProgress,
-  Progress,
-  Table,
-  Badge,
-  Center,
-  Skeleton,
-  ScrollArea,
-  Tabs,
-  ThemeIcon,
-  ActionIcon,
-  Tooltip,
-} from "@mantine/core";
+  getFullStats,
+  getExamHistory,
+  getQuestionStats,
+  resetAllStats,
+} from "../../services/desktopAdapter";
+import SEO from "../../components/common/SEO";
 import {
-  IconAlertCircle,
-  IconChartBar,
-  IconPackage,
-  IconTicket,
+  IconArrowLeft,
   IconTrophy,
-  IconClipboardList,
-  IconClock,
   IconCheck,
   IconX,
-  IconRefresh,
+  IconClock,
+  IconTicket,
+  IconQuestionMark,
+  IconHistory,
+  IconSearch,
+  IconTrash,
+  IconAlertTriangle,
+  IconCircleCheck,
+  IconCircleHalf,
+  IconCircleX,
+  IconCircleDashed,
 } from "@tabler/icons-react";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import useSWR from "swr";
-import { useLanguage } from "../../hooks/useLanguage";
-import { EmptyState } from "../../components/common/EmptyState";
-import SEO from "../../components/common/SEO";
-import type { LocalizedText } from "../../types";
 
-type TimePeriod = "today" | "week" | "month" | "all";
+type Tab = "tickets" | "questions" | "history";
+type QFilter = "all" | "ready" | "average" | "weak" | "untouched";
 
-interface StatData {
-  totalExams: number;
-  passedExams: number;
-  failedExams: number;
-  averageScore: number;
-  bestScore: number;
-  totalCorrectAnswers: number;
-  totalIncorrectAnswers: number;
-  totalUnanswered: number;
-  totalQuestions: number;
-  totalTimeSpentSeconds: number;
-  accuracy: number;
-  currentStreak: number;
-  longestStreak: number;
-  packageStats?: PackageStatItem[];
-  ticketStats?: TicketStatItem[];
-  topicStats?: TopicStatItem[];
-  marathonStats?: MarathonStatItem;
+// ── Stacked bar ────────────────────────────────────────────────────────────
+interface StackedBarProps {
+  ready: number;
+  average: number;
+  notReady: number;
+  untouched: number;
 }
-
-interface PackageStatItem {
-  packageId: number;
-  packageName: LocalizedText;
-  totalExams: number;
-  passedExams: number;
-  failedExams: number;
-  averageScore: number;
-  bestScore: number;
-}
-
-interface TicketStatItem {
-  ticketId: number;
-  ticketNumber: number;
-  ticketName: LocalizedText;
-  totalExams: number;
-  passedExams: number;
-  averageScore: number;
-  bestScore?: number;
-  lastAttemptDate?: string;
-}
-
-interface TopicStatItem {
-  topicId: number;
-  topicName: LocalizedText;
-  topicCode: string;
-  totalExams: number;
-  passedExams: number;
-  averageScore: number;
-  accuracy: number;
-}
-
-interface MarathonStatItem {
-  totalExams: number;
-  passedExams: number;
-  failedExams: number;
-  averageScore: number;
-  totalCorrectAnswers: number;
-  totalQuestions: number;
-  accuracy: number;
-}
-
-const periodToUrl: Record<TimePeriod, string> = {
-  today: "/api/v2/my-statistics/today",
-  week: "/api/v2/my-statistics/this-week",
-  month: "/api/v2/my-statistics/this-month",
-  all: "/api/v2/my-statistics",
-};
-
-function clamp(value: number): number {
-  return Math.min(100, Math.max(0, value));
-}
-
-function formatTime(seconds: number, hLabel = "h", mLabel = "m"): string {
-  if (!seconds || !Number.isFinite(seconds) || seconds < 0) return `0${mLabel}`;
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  if (hrs > 0) return `${hrs}${hLabel} ${mins}${mLabel}`;
-  return `${mins}${mLabel}`;
-}
-
-const StatCard = ({
-  label,
-  value,
-  icon,
-  color = "blue",
-}: {
-  label: string;
-  value: string | number;
-  icon: React.ReactNode;
-  color?: string;
-}) => (
-  <Paper p="md" radius="md" withBorder shadow="sm">
-    <Group justify="space-between" mb="xs">
-      <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-        {label}
-      </Text>
-      <ThemeIcon variant="light" color={color} size="sm" radius="xl">
-        {icon}
-      </ThemeIcon>
-    </Group>
-    <Text size="xl" fw={700} c={color}>
-      {value}
-    </Text>
-  </Paper>
-);
-
-function safePercent(value: number | undefined | null): string {
-  const num = value ?? 0;
-  if (!Number.isFinite(num)) return "0.0";
-  return clamp(num).toFixed(1);
-}
-
-function safePercentNum(value: number | undefined | null): number {
-  const num = value ?? 0;
-  if (!Number.isFinite(num)) return 0;
-  return clamp(num);
-}
-
-function safeDivide(numerator: number, denominator: number): number {
-  if (denominator === 0 || !Number.isFinite(numerator) || !Number.isFinite(denominator)) return 0;
-  return numerator / denominator;
-}
-
-/** Build RingProgress sections that always sum to 100, with gray fallback at 0% */
-function buildRingSections(sections: { value: number; color: string; tooltip?: string }[]): { value: number; color: string; tooltip?: string }[] {
-  const total = sections.reduce((sum, s) => sum + s.value, 0);
-  if (total === 0) return [{ value: 100, color: "gray.3" }];
-  return sections;
-}
-
-function StatsSkeleton() {
-  return (
-    <Stack gap="lg">
-      <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <Paper key={i} p="md" radius="md" withBorder shadow="sm">
-            <Group justify="space-between" mb="xs">
-              <Skeleton height={12} width="60%" radius="sm" />
-              <Skeleton height={20} width={20} circle />
-            </Group>
-            <Skeleton height={24} width="40%" radius="sm" />
-          </Paper>
-        ))}
-      </SimpleGrid>
-      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-        {Array.from({ length: 2 }).map((_, i) => (
-          <Paper key={i} p="lg" radius="md" withBorder shadow="sm">
-            <Skeleton height={14} width="40%" radius="sm" mb="md" />
-            <Center>
-              <Skeleton height={160} width={160} circle />
-            </Center>
-          </Paper>
-        ))}
-      </SimpleGrid>
-    </Stack>
-  );
-}
-
-const Statistics_Page = () => {
+function StackedBar({ ready, average, notReady, untouched }: StackedBarProps) {
   const { t } = useTranslation();
-  const { localize } = useLanguage();
-  const [period, setPeriod] = useState<TimePeriod>("all");
-
-  const { data: rawResponse, error, isLoading, isValidating, mutate } = useSWR<{ data: Record<string, unknown> }>(
-    periodToUrl[period],
-    { refreshInterval: 30_000 }
+  const total = ready + average + notReady + untouched || 1;
+  const rPct = (ready / total) * 100;
+  const aPct = (average / total) * 100;
+  const nPct = (notReady / total) * 100;
+  const uPct = (untouched / total) * 100;
+  return (
+    <div className="stacked-bar">
+      {rPct > 0 && (
+        <div
+          className="sb-seg ready"
+          style={{ width: `${rPct}%` }}
+          title={t("stats.tooltipReady", { count: ready })}
+        />
+      )}
+      {aPct > 0 && (
+        <div
+          className="sb-seg avg"
+          style={{ width: `${aPct}%` }}
+          title={t("stats.tooltipAverage", { count: average })}
+        />
+      )}
+      {nPct > 0 && (
+        <div
+          className="sb-seg bad"
+          style={{ width: `${nPct}%` }}
+          title={t("stats.tooltipNotReady", { count: notReady })}
+        />
+      )}
+      {uPct > 0 && (
+        <div
+          className="sb-seg unseen"
+          style={{ width: `${uPct}%` }}
+          title={t("stats.tooltipUntouched", { count: untouched })}
+        />
+      )}
+    </div>
   );
+}
 
-  // Map backend nested response (summary.*) to flat StatData
-  const stats: StatData | null = rawResponse?.data ? (() => {
-    const d = rawResponse.data;
-    // Support both flat (StatData) and nested (ComprehensiveStatisticsResponse) formats
-    const summary = (d.summary as Record<string, unknown>) ?? d;
-    return {
-      totalExams: (summary.totalExams as number) ?? 0,
-      passedExams: (summary.passedExams as number) ?? 0,
-      failedExams: (summary.failedExams as number) ?? 0,
-      averageScore: (summary.averageScore as number) ?? 0,
-      bestScore: (summary.bestScore as number) ?? 0,
-      totalCorrectAnswers: (summary.correctAnswers as number) ?? (summary.totalCorrectAnswers as number) ?? 0,
-      totalIncorrectAnswers: (summary.wrongAnswers as number) ?? (summary.totalIncorrectAnswers as number) ?? 0,
-      totalUnanswered: (summary.unansweredQuestions as number) ?? (summary.totalUnanswered as number) ?? 0,
-      totalQuestions: (summary.totalQuestions as number) ?? 0,
-      totalTimeSpentSeconds: (summary.totalTimeSpentSeconds as number) ?? 0,
-      accuracy: (summary.accuracy as number) ?? 0,
-      currentStreak: (summary.currentStreak as number) ?? 0,
-      longestStreak: (summary.longestStreak as number) ?? 0,
-      ticketStats: (d.ticketStats as TicketStatItem[]) ?? [],
-      packageStats: (d.packageStats as PackageStatItem[]) ?? [],
-      topicStats: (d.topicStats as TopicStatItem[]) ?? [],
-      marathonStats: (d.marathonStats as MarathonStatItem) ?? null,
-    };
-  })() : null;
+// ── Horizontal bar row ─────────────────────────────────────────────────────
+interface HBarProps {
+  label: string;
+  count: number;
+  total: number;
+  color: string;
+  icon: React.ReactNode;
+}
+function HBar({ label, count, total, color, icon }: HBarProps) {
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+  return (
+    <div className="hbar-row">
+      <div className="hbar-icon" style={{ color }}>
+        {icon}
+      </div>
+      <div className="hbar-label">{label}</div>
+      <div className="hbar-track">
+        <div className="hbar-fill" style={{ width: `${pct}%`, background: color }} />
+      </div>
+      <div className="hbar-count">{count}</div>
+      <div className="hbar-pct" style={{ color }}>
+        {pct}%
+      </div>
+    </div>
+  );
+}
 
-  const passRate =
-    stats && stats.totalExams > 0
-      ? clamp(Math.round(safeDivide(stats.passedExams, stats.totalExams) * 100))
-      : 0;
+// ── Readiness badge ────────────────────────────────────────────────────────
+function ReadinessBadge({ r, t }: { r: string; t: any }) {
+  if (r === "ready")
+    return (
+      <span className="rd-badge rd-ready">
+        <IconCircleCheck size={11} />
+        {t("stats.ready", "Tayyor")}
+      </span>
+    );
+  if (r === "average")
+    return (
+      <span className="rd-badge rd-avg">
+        <IconCircleHalf size={11} />
+        {t("stats.average", "O'rtacha")}
+      </span>
+    );
+  if (r === "not_ready")
+    return (
+      <span className="rd-badge rd-bad">
+        <IconCircleX size={11} />
+        {t("stats.notReady", "Tayyor emas")}
+      </span>
+    );
+  if (r === "weak")
+    return (
+      <span className="rd-badge rd-bad">
+        <IconCircleX size={11} />
+        {t("stats.weakLabel", "Kuchsiz")}
+      </span>
+    );
+  return (
+    <span className="rd-badge rd-none">
+      <IconCircleDashed size={11} />
+      {t("stats.untouched", "Ko'rilmagan")}
+    </span>
+  );
+}
 
-  // Normalize accuracy: handle both 0-1 fraction and 0-100 percentage formats
-  const normalizedAccuracy = stats
-    ? (stats.accuracy > 0 && stats.accuracy <= 1 ? stats.accuracy * 100 : stats.accuracy)
-    : 0;
+// ── Dot progress ───────────────────────────────────────────────────────────
+function DotProgress({ count, max }: { count: number; max: number }) {
+  return (
+    <div className="dot-progress">
+      {Array.from({ length: max }).map((_, i) => (
+        <span key={i} className={`dot${i < count ? " dot-filled" : ""}`} />
+      ))}
+    </div>
+  );
+}
+
+export default function Statistics_Page() {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const userId = user?.id ? Number(user.id) : 1;
+
+  const [tab, setTab] = useState<Tab>("tickets");
+  const [stats, setStats] = useState<FullStats | null>(null);
+  const [history, setHistory] = useState<ExamResult[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Question stats — lazy loaded
+  const [qStats, setQStats] = useState<QuestionStatDetail[] | null>(null);
+  const [qLoading, setQLoading] = useState(false);
+  const [qFilter, setQFilter] = useState<QFilter>("all");
+  const [qTopicId, setQTopicId] = useState<number | "all">("all");
+  const [qSearch, setQSearch] = useState("");
+
+  // Reset all stats
+  const [resetConfirm, setResetConfirm] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const onBack = () => navigate("/me");
+
+  const getLang = () => {
+    const l = i18n.language;
+    if (l === "uzc") return "uzc";
+    if (l === "ru") return "ru";
+    return "uzl";
+  };
+
+  const localizeTicket = (tk: TicketReadinessStat): string => {
+    if (!tk) return "";
+    const l = getLang();
+    if (l === "uzc" && tk.name_uzc) return tk.name_uzc;
+    if (l === "ru" && tk.name_ru) return tk.name_ru;
+    return tk.name_uzl || tk.name_ru || tk.name_uzc || `Bilet #${tk.ticket_id || ""}`;
+  };
+
+  const localizeExamType = (type: string): string => {
+    if (type === "exam") return t("exam.title", "Imtihon");
+    if (type === "marathon") return t("marathon.title", "Marafon");
+    if (type.startsWith("ticket_"))
+      return `${t("stats.ticket", "Bilet")} #${type.replace("ticket_", "")}`;
+    return type;
+  };
+
+  const localizeQuestion = (q: QuestionStatDetail): string => {
+    if (!q) return "";
+    const l = getLang();
+    if (l === "uzc" && q.text_uzc) return q.text_uzc;
+    if (l === "ru" && q.text_ru) return q.text_ru;
+    return q.text_uzl || q.text_ru || q.text_uzc || `Savol #${q.question_id || ""}`;
+  };
+
+  const localizeQTopic = (q: QuestionStatDetail): string | null => {
+    if (!q) return null;
+    const l = getLang();
+    if (l === "uzc" && q.topic_name_uzc) return q.topic_name_uzc;
+    if (l === "ru" && q.topic_name_ru) return q.topic_name_ru;
+    return q.topic_name_uzl ?? q.topic_name_ru ?? q.topic_name_uzc ?? null;
+  };
+
+  const fmtTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${String(sec).padStart(2, "0")}`;
+  };
+
+  const fmtDate = (d: string) => {
+    try {
+      const locale =
+        i18n.language === "ru"
+          ? "ru-RU"
+          : i18n.language === "en"
+          ? "en-US"
+          : "uz-UZ";
+      return new Date(d).toLocaleDateString(locale, {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return d;
+    }
+  };
+
+  useEffect(() => {
+    Promise.all([getFullStats(userId), getExamHistory(userId, 30)])
+      .then(([s, h]) => {
+        setStats(s);
+        setHistory(h);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  // Load question stats when tab is first opened
+  useEffect(() => {
+    if (tab === "questions" && qStats === null && !qLoading) {
+      setQLoading(true);
+      getQuestionStats(userId)
+        .then(setQStats)
+        .catch(() => setQStats([]))
+        .finally(() => setQLoading(false));
+    }
+  }, [tab, qStats, qLoading, userId]);
+
+  // Filtered question list
+  const filteredQuestions = useMemo(() => {
+    if (!qStats) return [];
+    return qStats.filter((q) => {
+      if (qFilter !== "all" && q.readiness !== qFilter) return false;
+      if (qTopicId !== "all" && q.topic_id !== qTopicId) return false;
+      if (qSearch.trim()) {
+        const s = qSearch.toLowerCase();
+        const text = localizeQuestion(q).toLowerCase();
+        if (!text.includes(s)) return false;
+      }
+      return true;
+    });
+  }, [qStats, qFilter, qTopicId, qSearch]);
+
+  // Unique topic list for dropdown
+  const topicList = useMemo(() => {
+    if (!qStats) return [];
+    const seen = new Map<number, { id: number; name: string }>();
+    for (const q of qStats) {
+      if (q.topic_id != null && !seen.has(q.topic_id)) {
+        seen.set(q.topic_id, {
+          id: q.topic_id,
+          name: localizeQTopic(q) ?? String(q.topic_id),
+        });
+      }
+    }
+    return Array.from(seen.values());
+  }, [qStats]);
+
+  // ── Reset all stats ───────────────────────────────────────────────────────
+  async function handleResetAll() {
+    setResetting(true);
+    try {
+      await resetAllStats(userId);
+      const [s, h] = await Promise.all([
+        getFullStats(userId),
+        getExamHistory(userId, 30),
+      ]);
+      setStats(s);
+      setHistory(h);
+      setQStats(null);
+    } catch (_) {}
+    setResetting(false);
+    setResetConfirm(false);
+  }
+
+  function ticketRowClass(r: string) {
+    if (r === "ready") return "td-row ready";
+    if (r === "average") return "td-row average";
+    if (r === "not_ready") return "td-row not_ready";
+    return "td-row untouched";
+  }
 
   return (
     <>
       <SEO
-        title="Statistika - O'quv natijalari"
-        description="Imtihon natijalaringiz statistikasi. O'rtacha ball, aniqlik va boshqa ko'rsatkichlar."
+        title="Statistika - Natijalar va tahlil"
+        description="Prava Online tayyorgarlik statistikasi"
         canonical="/statistics"
-        noIndex={true}
       />
-      <Group justify="space-between" align="center" mb="lg">
-        <Group gap="sm">
-          <Title order={2}>{t("statistics.title")}</Title>
-        </Group>
-        <Tooltip label={t("statistics.refreshing")}>
-          <ActionIcon
-            variant="light"
-            size="lg"
-            onClick={() => mutate()}
-            loading={isValidating}
-            aria-label={t("statistics.refreshing")}
+      <div className="stats-screen">
+        {/* ── Reset confirm modal ── */}
+        {resetConfirm && (
+          <div
+            className="reset-overlay"
+            onClick={() => !resetting && setResetConfirm(false)}
           >
-            <IconRefresh size={18} />
-          </ActionIcon>
-        </Tooltip>
-      </Group>
+            <div className="reset-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="reset-modal-icon">
+                <IconAlertTriangle size={32} />
+              </div>
+              <div className="reset-modal-title">
+                {t("stats.resetAll", "Barcha statistikani tozalash")}
+              </div>
+              <div className="reset-modal-msg">
+                {t(
+                  "stats.resetAllConfirm",
+                  "Haqiqatan ham barcha biletlar, savollar va imtihon tarixini qayta boshlamoqchimisiz?"
+                )}
+              </div>
+              <div className="reset-modal-actions">
+                <button
+                  className="reset-cancel-btn"
+                  onClick={() => setResetConfirm(false)}
+                  disabled={resetting}
+                  type="button"
+                >
+                  {t("common.cancel", "Bekor qilish")}
+                </button>
+                <button
+                  className="reset-confirm-btn"
+                  onClick={handleResetAll}
+                  disabled={resetting}
+                  type="button"
+                >
+                  {resetting ? <span className="spinner-sm" /> : <IconTrash size={14} />}
+                  {resetting ? t("common.loading", "Yuklanmoqda...") : t("common.yes", "Ha, tozalash")}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-      <SegmentedControl
-        value={period}
-        onChange={(v) => setPeriod(v as TimePeriod)}
-        data={[
-          { label: t("statistics.today"), value: "today" },
-          { label: t("statistics.thisWeek"), value: "week" },
-          { label: t("statistics.thisMonth"), value: "month" },
-          { label: t("statistics.allTime"), value: "all" },
-        ]}
-        fullWidth
-        mb="lg"
-      />
+        <header className="stats-header">
+          <button
+            className="quiz-back-btn"
+            style={{ position: "static" }}
+            onClick={onBack}
+            type="button"
+          >
+            <IconArrowLeft size={18} />
+          </button>
+          <h2 className="stats-header-title">{t("stats.title", "Statistika")}</h2>
+          <button
+            className="stats-reset-btn"
+            onClick={() => setResetConfirm(true)}
+            title={t("stats.resetAll", "Barcha statistikani tozalash")}
+            type="button"
+          >
+            <IconTrash size={15} />
+          </button>
+        </header>
 
-      {error && !isLoading && (
-        <Alert color="red" icon={<IconAlertCircle size={16} />} mb="md">
-          {t("statistics.loadError")}
-          <Button size="xs" variant="light" ml="sm" onClick={() => mutate()}>
-            {t("common.retry")}
-          </Button>
-        </Alert>
-      )}
+        {/* ── Tab bar ── */}
+        <div className="stats-tabs">
+          <button
+            className={`stats-tab-btn${tab === "tickets" ? " active" : ""}`}
+            onClick={() => setTab("tickets")}
+            type="button"
+          >
+            <IconTicket size={15} />
+            {t("stats.tabTickets", "Biletlar")}
+          </button>
+          <button
+            className={`stats-tab-btn${tab === "questions" ? " active" : ""}`}
+            onClick={() => setTab("questions")}
+            type="button"
+          >
+            <IconQuestionMark size={15} />
+            {t("stats.tabQuestions", "Savollar")}
+          </button>
+          <button
+            className={`stats-tab-btn${tab === "history" ? " active" : ""}`}
+            onClick={() => setTab("history")}
+            type="button"
+          >
+            <IconHistory size={15} />
+            {t("stats.tabHistory", "Tarix")}
+          </button>
+        </div>
 
-      {isLoading && <StatsSkeleton />}
+        {loading ? (
+          <div className="loading-screen">
+            <div className="spinner" />
+          </div>
+        ) : (
+          <div className="stats-content">
+            <div className="stats-container">
+              {/* ══════════════════════════════════════════════════
+                  TAB 1 — BILETLAR
+              ══════════════════════════════════════════════════ */}
+              {tab === "tickets" && (
+                <>
+                  {/* Summary overview */}
+                  {stats && stats.ticket_total > 0 && (
+                    <div className="stats-section-card">
+                      <div className="stats-section-header">
+                        <span className="stats-section-icon">
+                          <IconTicket size={17} />
+                        </span>
+                        <span className="stats-section-title">
+                          {t("stats.ticketSection", "Biletlar bo'yicha tayyorgarlik")}
+                        </span>
+                      </div>
 
-      {!isLoading && stats && stats.totalExams === 0 && (
-        <EmptyState
-          icon={<IconChartBar size={48} color="gray" style={{ opacity: 0.5 }} />}
-          title={t("statistics.emptyTitle")}
-          description={t("statistics.emptyDescription")}
-        />
-      )}
-
-      {!isLoading && stats && stats.totalExams > 0 && (
-        <Tabs defaultValue="overview">
-          <Tabs.List mb="md">
-            <Tabs.Tab value="overview" leftSection={<IconChartBar size={16} />}>
-              {t("statistics.overview")}
-            </Tabs.Tab>
-            <Tabs.Tab value="packages" leftSection={<IconPackage size={16} />}>
-              {t("statistics.packages")}
-            </Tabs.Tab>
-            <Tabs.Tab value="tickets" leftSection={<IconTicket size={16} />}>
-              {t("statistics.tickets")}
-            </Tabs.Tab>
-            <Tabs.Tab value="marathon" leftSection={<IconTrophy size={16} />}>
-              {t("statistics.marathon")}
-            </Tabs.Tab>
-          </Tabs.List>
-
-          {/* Overview Tab */}
-          <Tabs.Panel value="overview">
-            <Stack gap="lg">
-              {/* Main Stats Grid */}
-              <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
-                <StatCard
-                  label={t("statistics.totalExams")}
-                  value={stats.totalExams}
-                  icon={<IconClipboardList size={14} />}
-                  color="blue"
-                />
-                <StatCard
-                  label={t("statistics.passed")}
-                  value={stats.passedExams}
-                  icon={<IconCheck size={14} />}
-                  color="green"
-                />
-                <StatCard
-                  label={t("statistics.failed")}
-                  value={stats.failedExams}
-                  icon={<IconX size={14} />}
-                  color="red"
-                />
-                <StatCard
-                  label={t("statistics.avgScore")}
-                  value={`${safePercent(stats.averageScore)}%`}
-                  icon={<IconChartBar size={14} />}
-                  color="cyan"
-                />
-                <StatCard
-                  label={t("statistics.bestScore")}
-                  value={`${safePercent(stats.bestScore)}%`}
-                  icon={<IconTrophy size={14} />}
-                  color="yellow"
-                />
-                <StatCard
-                  label={t("statistics.timeSpent")}
-                  value={formatTime(stats.totalTimeSpentSeconds, t("statistics.hours"), t("statistics.minutes"))}
-                  icon={<IconClock size={14} />}
-                  color="teal"
-                />
-                <StatCard
-                  label={t("statistics.currentStreak")}
-                  value={stats.currentStreak ?? 0}
-                  icon={<IconTrophy size={14} />}
-                  color="orange"
-                />
-                <StatCard
-                  label={t("statistics.longestStreak")}
-                  value={stats.longestStreak ?? 0}
-                  icon={<IconTrophy size={14} />}
-                  color="grape"
-                />
-              </SimpleGrid>
-
-              {/* Pass Rate Ring */}
-              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                <Paper p="lg" radius="md" withBorder shadow="sm">
-                  <Text size="sm" fw={600} mb="md">
-                    {t("statistics.passRate")}
-                  </Text>
-                  <Center>
-                    <RingProgress
-                      size={160}
-                      thickness={14}
-                      roundCaps
-                      label={
-                        <Text size="lg" ta="center" fw={700}>
-                          {passRate}%
-                        </Text>
-                      }
-                      sections={buildRingSections([
-                        { value: passRate, color: passRate >= 70 ? "green" : passRate >= 50 ? "yellow" : "red" },
-                      ])}
-                    />
-                  </Center>
-                  <Group justify="center" mt="md" gap="lg">
-                    <Group gap="xs">
-                      <Badge size="xs" color="green" circle />
-                      <Text size="xs" c="dimmed">
-                        {t("statistics.passed")}: {stats.passedExams}
-                      </Text>
-                    </Group>
-                    <Group gap="xs">
-                      <Badge size="xs" color="red" circle />
-                      <Text size="xs" c="dimmed">
-                        {t("statistics.failed")}: {stats.failedExams}
-                      </Text>
-                    </Group>
-                  </Group>
-                </Paper>
-
-                {/* Answer Accuracy */}
-                <Paper p="lg" radius="md" withBorder shadow="sm">
-                  <Text size="sm" fw={600} mb="md">
-                    {t("statistics.answerAccuracy")}
-                  </Text>
-                  {(() => {
-                    const correctPct = clamp(safeDivide(stats.totalCorrectAnswers, stats.totalQuestions) * 100);
-                    const incorrectPct = clamp(safeDivide(stats.totalIncorrectAnswers, stats.totalQuestions) * 100);
-                    const unansweredPct = clamp(100 - correctPct - incorrectPct);
-
-                    return (
-                      <>
-                        <Center>
-                          <RingProgress
-                            size={160}
-                            thickness={14}
-                            roundCaps
-                            label={
-                              <Text size="lg" ta="center" fw={700}>
-                                {safePercent(normalizedAccuracy)}%
-                              </Text>
-                            }
-                            sections={buildRingSections([
-                              {
-                                value: correctPct,
-                                color: "green",
-                                tooltip: `${t("statistics.correct")}: ${stats.totalCorrectAnswers}`,
-                              },
-                              {
-                                value: incorrectPct,
-                                color: "red",
-                                tooltip: `${t("statistics.incorrect")}: ${stats.totalIncorrectAnswers}`,
-                              },
-                              {
-                                value: unansweredPct,
-                                color: "gray",
-                                tooltip: `${t("statistics.unanswered")}: ${stats.totalUnanswered ?? 0}`,
-                              },
-                            ])}
-                          />
-                        </Center>
-                        <Group justify="center" mt="md" gap="lg">
-                          <Group gap="xs">
-                            <Badge size="xs" color="green" circle />
-                            <Text size="xs" c="dimmed">
-                              {stats.totalCorrectAnswers}
-                            </Text>
-                          </Group>
-                          <Group gap="xs">
-                            <Badge size="xs" color="red" circle />
-                            <Text size="xs" c="dimmed">
-                              {stats.totalIncorrectAnswers}
-                            </Text>
-                          </Group>
-                          <Group gap="xs">
-                            <Badge size="xs" color="gray" circle />
-                            <Text size="xs" c="dimmed">
-                              {stats.totalUnanswered ?? 0}
-                            </Text>
-                          </Group>
-                        </Group>
-                      </>
-                    );
-                  })()}
-                </Paper>
-              </SimpleGrid>
-
-              {/* Topic Stats */}
-              {stats.topicStats && stats.topicStats.length > 0 && (
-                <Paper p="md" radius="md" withBorder shadow="sm">
-                  <Text size="sm" fw={600} mb="md">
-                    {t("statistics.byTopic")}
-                  </Text>
-                  <Stack gap="sm">
-                    {stats.topicStats.map((topic) => (
-                      <div key={topic.topicId}>
-                        <Group justify="space-between" mb={4}>
-                          <Text size="sm">{localize(topic.topicName)}</Text>
-                          <Group gap="xs">
-                            <Badge size="xs" variant="light">
-                              {topic.totalExams} {t("statistics.exams")}
-                            </Badge>
-                            <Text size="xs" c="dimmed">
-                              {safePercent(topic.averageScore)}%
-                            </Text>
-                          </Group>
-                        </Group>
-                        <Progress
-                          value={safePercentNum(topic.accuracy ?? topic.averageScore)}
-                          color={topic.averageScore >= 70 ? "green" : topic.averageScore >= 50 ? "yellow" : "red"}
-                          size="sm"
-                          radius="xl"
+                      <StackedBar
+                        ready={stats.ticket_ready}
+                        average={stats.ticket_average}
+                        notReady={stats.ticket_not_ready}
+                        untouched={stats.ticket_untouched}
+                      />
+                      <div className="hbar-list">
+                        <HBar
+                          label={t("stats.ready", "Tayyor")}
+                          count={stats.ticket_ready}
+                          total={stats.ticket_total}
+                          color="var(--correct)"
+                          icon={<IconCircleCheck size={15} />}
+                        />
+                        <HBar
+                          label={t("stats.average", "O'rtacha")}
+                          count={stats.ticket_average}
+                          total={stats.ticket_total}
+                          color="#f08c00"
+                          icon={<IconCircleHalf size={15} />}
+                        />
+                        <HBar
+                          label={t("stats.notReady", "Tayyor emas")}
+                          count={stats.ticket_not_ready}
+                          total={stats.ticket_total}
+                          color="var(--wrong)"
+                          icon={<IconCircleX size={15} />}
+                        />
+                        <HBar
+                          label={t("stats.untouched", "Ko'rilmagan")}
+                          count={stats.ticket_untouched}
+                          total={stats.ticket_total}
+                          color="var(--text-muted)"
+                          icon={<IconCircleDashed size={15} />}
                         />
                       </div>
-                    ))}
-                  </Stack>
-                </Paper>
-              )}
-            </Stack>
-          </Tabs.Panel>
+                      <div className="stats-condition-info">
+                        <div className="condition-row ready">
+                          <IconCircleCheck size={13} />
+                          {t("stats.conditionReady", "Kamida 1 marta 100% va <5 daqiqa")}
+                        </div>
+                        <div className="condition-row avg">
+                          <IconCircleHalf size={13} />
+                          {t("stats.conditionAvg", "Kamida 1 marta o'tgan (>=70%)")}
+                        </div>
+                        <div className="condition-row bad">
+                          <IconCircleX size={13} />
+                          {t("stats.conditionBad", "Ishlangan lekin o'ta olinmagan (<70%)")}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-          {/* Packages Tab */}
-          <Tabs.Panel value="packages">
-            {stats.packageStats && stats.packageStats.length > 0 ? (
-              <Paper withBorder radius="md" shadow="sm">
-                <ScrollArea type="auto">
-                  <Table striped highlightOnHover miw={600}>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>{t("statistics.packageName")}</Table.Th>
-                        <Table.Th ta="center">{t("statistics.totalExams")}</Table.Th>
-                        <Table.Th ta="center">{t("statistics.passed")}</Table.Th>
-                        <Table.Th ta="center">{t("statistics.failed")}</Table.Th>
-                        <Table.Th ta="center">{t("statistics.avgScore")}</Table.Th>
-                        <Table.Th ta="center">{t("statistics.bestScore")}</Table.Th>
-                        <Table.Th ta="center">{t("statistics.progress")}</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {stats.packageStats.map((pkg) => {
-                        const pkgPassRate = clamp(
-                          Math.round(safeDivide(pkg.passedExams, pkg.totalExams) * 100)
-                        );
+                  {/* Per-ticket detail list */}
+                  {!stats || stats.ticket_total === 0 ? (
+                    <div className="stats-section-card">
+                      <p className="stats-empty-hint">
+                        {t("stats.noTicketsYet", "Hozircha biletlar yechilmagan")}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="stats-section-card" style={{ padding: 0 }}>
+                      <div className="td-list">
+                        {stats.ticket_stats.map((tk) => (
+                          <div
+                            key={tk.ticket_id}
+                            className={ticketRowClass(tk.readiness)}
+                          >
+                            {/* Left: number + name */}
+                            <div className="td-left">
+                              <span className="td-num">#{tk.ticket_number}</span>
+                              <span className="td-name">{localizeTicket(tk)}</span>
+                            </div>
+
+                            {/* Middle: dots progress */}
+                            {tk.readiness !== "untouched" ? (
+                              <div className="td-mid">
+                                <DotProgress count={tk.fast_perfect_count} max={5} />
+                                <span className="td-dot-label">
+                                  {tk.fast_perfect_count}/5
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="td-mid">
+                                <span className="td-untouched-label">—</span>
+                              </div>
+                            )}
+
+                            {/* Right: badge + meta */}
+                            <div className="td-right">
+                              <ReadinessBadge r={tk.readiness} t={t} />
+                              <div className="td-meta">
+                                {tk.last_score != null && (
+                                  <span className="td-score">{tk.last_score}%</span>
+                                )}
+                                {tk.last_duration != null && (
+                                  <span className="td-time">
+                                    <IconClock size={10} />
+                                    {fmtTime(tk.last_duration)}
+                                  </span>
+                                )}
+                                {tk.times_done > 0 && (
+                                  <span className="td-attempts">×{tk.times_done}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* ══════════════════════════════════════════════════
+                  TAB 2 — SAVOLLAR
+              ══════════════════════════════════════════════════ */}
+              {tab === "questions" && (
+                <>
+                  {/* Summary overview card */}
+                  {stats && (
+                    <div className="stats-section-card">
+                      <div className="stats-section-header">
+                        <span className="stats-section-icon">
+                          <IconQuestionMark size={17} />
+                        </span>
+                        <span className="stats-section-title">
+                          {t("stats.questionSection", "Savollar bo'yicha tayyorgarlik")}
+                        </span>
+                      </div>
+                      <StackedBar
+                        ready={stats.question_readiness.ready}
+                        average={stats.question_readiness.average}
+                        notReady={stats.question_readiness.weak}
+                        untouched={stats.question_readiness.untouched}
+                      />
+                      <div className="hbar-list">
+                        <HBar
+                          label={t("stats.ready", "Tayyor")}
+                          count={stats.question_readiness.ready}
+                          total={stats.question_readiness.total}
+                          color="var(--correct)"
+                          icon={<IconCircleCheck size={15} />}
+                        />
+                        <HBar
+                          label={t("stats.average", "O'rtacha")}
+                          count={stats.question_readiness.average}
+                          total={stats.question_readiness.total}
+                          color="#f08c00"
+                          icon={<IconCircleHalf size={15} />}
+                        />
+                        <HBar
+                          label={t("stats.weakLabel", "Kuchsiz")}
+                          count={stats.question_readiness.weak}
+                          total={stats.question_readiness.total}
+                          color="var(--wrong)"
+                          icon={<IconCircleX size={15} />}
+                        />
+                        <HBar
+                          label={t("stats.untouched", "Ko'rilmagan")}
+                          count={stats.question_readiness.untouched}
+                          total={stats.question_readiness.total}
+                          color="var(--text-muted)"
+                          icon={<IconCircleDashed size={15} />}
+                        />
+                      </div>
+                      <div className="stats-condition-info">
+                        <div className="condition-row ready">
+                          <IconCircleCheck size={13} />
+                          {t("stats.qConditionReady", "5+ marta to'g'ri yechilgan")}
+                        </div>
+                        <div className="condition-row avg">
+                          <IconCircleHalf size={13} />
+                          {t("stats.qConditionAvg", "3-4 marta to'g'ri yechilgan")}
+                        </div>
+                        <div className="condition-row bad">
+                          <IconCircleX size={13} />
+                          {t("stats.qConditionBad", "1-2 marta to'g'ri yechilgan")}
+                        </div>
+                      </div>
+                      <div className="stats-total-hint">
+                        {t("stats.totalQuestions", "Jami savollar")}:{" "}
+                        <strong>{stats.question_readiness.total}</strong>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Filter + search */}
+                  <div className="stats-section-card q-filter-card">
+                    {/* Readiness filter buttons */}
+                    <div className="q-filter-bar">
+                      {(
+                        ["all", "ready", "average", "weak", "untouched"] as QFilter[]
+                      ).map((f) => (
+                        <button
+                          key={f}
+                          className={`q-filter-btn ${f}${qFilter === f ? " active" : ""}`}
+                          onClick={() => setQFilter(f)}
+                          type="button"
+                        >
+                          {f === "all" && t("stats.filterAll", "Barchasi")}
+                          {f === "ready" && t("stats.ready", "Tayyor")}
+                          {f === "average" && t("stats.average", "O'rtacha")}
+                          {f === "weak" && t("stats.weakLabel", "Kuchsiz")}
+                          {f === "untouched" && t("stats.untouched", "Ko'rilmagan")}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Topic + search row */}
+                    <div className="q-search-row">
+                      <select
+                        className="q-topic-select"
+                        value={qTopicId === "all" ? "all" : String(qTopicId)}
+                        onChange={(e) =>
+                          setQTopicId(
+                            e.target.value === "all" ? "all" : Number(e.target.value)
+                          )
+                        }
+                      >
+                        <option value="all">
+                          {t("stats.allTopics", "Barcha mavzular")}
+                        </option>
+                        {topicList.map((tp) => (
+                          <option key={tp.id} value={tp.id}>
+                            {tp.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="q-search-wrap">
+                        <IconSearch size={14} className="q-search-icon" />
+                        <input
+                          type="text"
+                          className="q-search-input"
+                          placeholder={t(
+                            "stats.searchPlaceholder",
+                            "Savol matni bo'yicha qidirish..."
+                          )}
+                          value={qSearch}
+                          onChange={(e) => setQSearch(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Question list */}
+                  {qLoading ? (
+                    <div style={{ padding: 24, textAlign: "center" }}>
+                      <div className="spinner" />
+                    </div>
+                  ) : filteredQuestions.length === 0 ? (
+                    <div className="stats-section-card">
+                      <p className="stats-empty-hint">
+                        {t("stats.noResults", "Savollar topilmadi")}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="stats-section-card" style={{ padding: 0 }}>
+                      <div className="q-list">
+                        {filteredQuestions.map((q) => (
+                          <div
+                            key={q.question_id}
+                            className={`q-row q-row-${q.readiness}`}
+                          >
+                            <div className="q-row-num">#{q.order_num}</div>
+                            <div className="q-row-body">
+                              <div className="q-row-text">{localizeQuestion(q)}</div>
+                              {localizeQTopic(q) && (
+                                <div className="q-row-topic">{localizeQTopic(q)}</div>
+                              )}
+                            </div>
+                            <div className="q-row-right">
+                              <ReadinessBadge r={q.readiness} t={t} />
+                              <div className="q-row-counts">
+                                <span className="q-correct">{q.correct_count}</span>
+                                <span className="q-sep">/</span>
+                                <span className="q-total">{q.total_attempts}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="q-list-footer">
+                        {t("stats.showingCount", {
+                          count: filteredQuestions.length,
+                          defaultValue: `${filteredQuestions.length} ta savol`,
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* ══════════════════════════════════════════════════
+                  TAB 3 — TARIX
+              ══════════════════════════════════════════════════ */}
+              {tab === "history" && (
+                <div className="stats-section-card">
+                  <div className="stats-section-header">
+                    <span className="stats-section-icon">
+                      <IconTrophy size={17} />
+                    </span>
+                    <span className="stats-section-title">
+                      {t("stats.recentExams", "Oxirgi imtihonlar tarixi")}
+                    </span>
+                  </div>
+                  {history.length === 0 ? (
+                    <p className="stats-empty-hint">
+                      {t("stats.noExams", "Hozircha imtihonlar tarixi yo'q")}
+                    </p>
+                  ) : (
+                    <div className="stats-history-list">
+                      {history.map((h) => {
+                        const passed = h.score >= 90;
                         return (
-                          <Table.Tr key={pkg.packageId}>
-                            <Table.Td fw={500}>{localize(pkg.packageName)}</Table.Td>
-                            <Table.Td ta="center">{pkg.totalExams}</Table.Td>
-                            <Table.Td ta="center">
-                              <Badge size="sm" color="green" variant="light">
-                                {pkg.passedExams}
-                              </Badge>
-                            </Table.Td>
-                            <Table.Td ta="center">
-                              <Badge size="sm" color="red" variant="light">
-                                {pkg.failedExams}
-                              </Badge>
-                            </Table.Td>
-                            <Table.Td ta="center">{safePercent(pkg.averageScore)}%</Table.Td>
-                            <Table.Td ta="center">{safePercent(pkg.bestScore)}%</Table.Td>
-                            <Table.Td ta="center" w={120}>
-                              <Progress
-                                value={pkgPassRate}
-                                color={pkgPassRate >= 70 ? "green" : pkgPassRate >= 50 ? "yellow" : "red"}
-                                size="sm"
-                                radius="xl"
-                              />
-                            </Table.Td>
-                          </Table.Tr>
+                          <div
+                            key={h.id}
+                            className={`stats-history-item ${
+                              passed ? "passed" : "failed"
+                            }`}
+                          >
+                            <div
+                              className={`stats-history-badge ${
+                                passed ? "passed" : "failed"
+                              }`}
+                            >
+                              {passed ? <IconCheck size={13} /> : <IconX size={13} />}
+                            </div>
+                            <div className="stats-history-info">
+                              <div className="stats-history-type">
+                                {localizeExamType(h.exam_type)}
+                              </div>
+                              <div className="stats-history-score">
+                                {h.correct_answers}/{h.total_questions} —{" "}
+                                <strong>{h.score}%</strong>
+                              </div>
+                            </div>
+                            <div className="stats-history-right">
+                              <div className="stats-history-time">
+                                <IconClock size={11} /> {fmtTime(h.duration_seconds)}
+                              </div>
+                              <div className="stats-history-date">
+                                {fmtDate(h.created_at)}
+                              </div>
+                            </div>
+                          </div>
                         );
                       })}
-                    </Table.Tbody>
-                  </Table>
-                </ScrollArea>
-              </Paper>
-            ) : (
-              <Paper p="xl" radius="md" withBorder ta="center">
-                <IconPackage size={48} color="gray" style={{ opacity: 0.5 }} />
-                <Text c="dimmed" mt="sm">
-                  {t("statistics.noPackageData")}
-                </Text>
-              </Paper>
-            )}
-          </Tabs.Panel>
-
-          {/* Tickets Tab */}
-          <Tabs.Panel value="tickets">
-            {stats.ticketStats && stats.ticketStats.length > 0 ? (
-              <Paper withBorder radius="md" shadow="sm">
-                <ScrollArea type="auto">
-                  <Table striped highlightOnHover miw={500}>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th w={60}>#</Table.Th>
-                        <Table.Th>{t("statistics.ticketName")}</Table.Th>
-                        <Table.Th ta="center">{t("statistics.totalExams")}</Table.Th>
-                        <Table.Th ta="center">{t("statistics.passed")}</Table.Th>
-                        <Table.Th ta="center">{t("statistics.avgScore")}</Table.Th>
-                        <Table.Th ta="center">{t("statistics.bestScore")}</Table.Th>
-                        <Table.Th ta="center">{t("statistics.lastAttempt")}</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {stats.ticketStats.map((ticket) => (
-                        <Table.Tr key={ticket.ticketId}>
-                          <Table.Td>{ticket.ticketNumber}</Table.Td>
-                          <Table.Td fw={500}>{localize(ticket.ticketName)}</Table.Td>
-                          <Table.Td ta="center">{ticket.totalExams}</Table.Td>
-                          <Table.Td ta="center">
-                            <Badge
-                              size="sm"
-                              color={ticket.passedExams > 0 ? "green" : "gray"}
-                              variant="light"
-                            >
-                              {ticket.passedExams}/{ticket.totalExams}
-                            </Badge>
-                          </Table.Td>
-                          <Table.Td ta="center">{safePercent(ticket.averageScore)}%</Table.Td>
-                          <Table.Td ta="center">{safePercent(ticket.bestScore)}%</Table.Td>
-                          <Table.Td ta="center">
-                            {ticket.lastAttemptDate
-                              ? new Date(ticket.lastAttemptDate).toLocaleDateString()
-                              : "—"}
-                          </Table.Td>
-                        </Table.Tr>
-                      ))}
-                    </Table.Tbody>
-                  </Table>
-                </ScrollArea>
-              </Paper>
-            ) : (
-              <Paper p="xl" radius="md" withBorder ta="center">
-                <IconTicket size={48} color="gray" style={{ opacity: 0.5 }} />
-                <Text c="dimmed" mt="sm">
-                  {t("statistics.noTicketData")}
-                </Text>
-              </Paper>
-            )}
-          </Tabs.Panel>
-
-          {/* Marathon Tab */}
-          <Tabs.Panel value="marathon">
-            {stats.marathonStats && stats.marathonStats.totalExams > 0 ? (
-              <Stack gap="md">
-                <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
-                  <StatCard
-                    label={t("statistics.totalExams")}
-                    value={stats.marathonStats.totalExams}
-                    icon={<IconClipboardList size={14} />}
-                    color="blue"
-                  />
-                  <StatCard
-                    label={t("statistics.passed")}
-                    value={stats.marathonStats.passedExams}
-                    icon={<IconCheck size={14} />}
-                    color="green"
-                  />
-                  <StatCard
-                    label={t("statistics.failed")}
-                    value={stats.marathonStats.failedExams}
-                    icon={<IconX size={14} />}
-                    color="red"
-                  />
-                  <StatCard
-                    label={t("statistics.avgScore")}
-                    value={`${safePercent(stats.marathonStats.averageScore)}%`}
-                    icon={<IconChartBar size={14} />}
-                    color="cyan"
-                  />
-                </SimpleGrid>
-
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                  <Paper p="lg" radius="md" withBorder shadow="sm">
-                    <Text size="sm" fw={600} mb="md">
-                      {t("statistics.marathonPassRate")}
-                    </Text>
-                    {(() => {
-                      const mPassRate = clamp(
-                        Math.round(safeDivide(stats.marathonStats!.passedExams, stats.marathonStats!.totalExams) * 100)
-                      );
-                      return (
-                        <Center>
-                          <RingProgress
-                            size={140}
-                            thickness={12}
-                            roundCaps
-                            label={
-                              <Text size="md" ta="center" fw={700}>
-                                {mPassRate}%
-                              </Text>
-                            }
-                            sections={buildRingSections([
-                              { value: mPassRate, color: "green" },
-                            ])}
-                          />
-                        </Center>
-                      );
-                    })()}
-                  </Paper>
-
-                  <Paper p="lg" radius="md" withBorder shadow="sm">
-                    <Text size="sm" fw={600} mb="md">
-                      {t("statistics.marathonAccuracy")}
-                    </Text>
-                    {(() => {
-                      const mAccuracy = stats.marathonStats!.accuracy;
-                      const normalizedMAcc = mAccuracy > 0 && mAccuracy <= 1 ? mAccuracy * 100 : mAccuracy;
-                      return (
-                        <>
-                          <Center>
-                            <RingProgress
-                              size={140}
-                              thickness={12}
-                              roundCaps
-                              label={
-                                <Text size="md" ta="center" fw={700}>
-                                  {safePercent(normalizedMAcc)}%
-                                </Text>
-                              }
-                              sections={buildRingSections([
-                                { value: safePercentNum(normalizedMAcc), color: "cyan" },
-                              ])}
-                            />
-                          </Center>
-                          <Group justify="center" mt="sm">
-                            <Text size="xs" c="dimmed">
-                              {stats.marathonStats!.totalCorrectAnswers}/{stats.marathonStats!.totalQuestions}{" "}
-                              {t("statistics.correct").toLowerCase()}
-                            </Text>
-                          </Group>
-                        </>
-                      );
-                    })()}
-                  </Paper>
-                </SimpleGrid>
-              </Stack>
-            ) : (
-              <Paper p="xl" radius="md" withBorder ta="center">
-                <IconTrophy size={48} color="gray" style={{ opacity: 0.5 }} />
-                <Text c="dimmed" mt="sm">
-                  {t("statistics.noMarathonData")}
-                </Text>
-              </Paper>
-            )}
-          </Tabs.Panel>
-        </Tabs>
-      )}
-
-      {!isLoading && !stats && (
-        <EmptyState
-          icon={<IconChartBar size={48} color="gray" style={{ opacity: 0.5 }} />}
-          title={t("statistics.emptyTitle")}
-          description={t("statistics.emptyDescription")}
-        />
-      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
-};
-
-export default Statistics_Page;
+}
