@@ -20,7 +20,7 @@ const App_Layout = () => {
         breakpoint: "md",
         collapsed: { desktop: true, mobile: !opened },
       }}
-      padding="md"
+      padding={isAuthPage ? 0 : "md"}
     >
       <Header opened={opened} toggle={toggle} />
       <Navbar close={close} />

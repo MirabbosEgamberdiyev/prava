@@ -272,20 +272,8 @@ const Register_Page = () => {
   const isEmailMode = verificationType === "EMAIL";
 
   return (
-    <Box
-      style={{
-        minHeight: "calc(100dvh - 64px)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "flex-start",
-        alignItems: "center",
-        paddingTop: "clamp(24px, 4.2vh, 48px)",
-        paddingBottom: "clamp(40px, 8vh, 80px)",
-        paddingLeft: 16,
-        paddingRight: 16,
-      }}
-    >
-      <Container size={410} p={0} w="100%">
+    <Box className="auth-page-container">
+      <Container size={410} p={0} className="auth-page-inner">
         <SEO
           title="Ro'yxatdan o'tish - Bepul boshlang"
           description="Prava Online platformasida bepul ro'yxatdan o'ting va haydovchilik guvohnomasi imtihoniga tayyorlanishni boshlang. 1200+ savol bazasi, real imtihon formati. Email yoki telefon orqali ro'yxatdan o'ting."
@@ -294,11 +282,11 @@ const Register_Page = () => {
         />
 
         {/* Header section with brand mark */}
-        <Stack gap={6} align="center" mb="md">
+        <Stack gap={4} align="center" mb={{ base: 12, sm: 16 }}>
           <Center
             style={{
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               borderRadius: "var(--mantine-radius-md)",
               border: "1px solid var(--border)",
               background: "var(--surface)",
@@ -309,17 +297,17 @@ const Register_Page = () => {
               src="/favicon.svg"
               fallbackSrc="/logo.svg"
               alt="Prava Online Logo"
-              w={26}
-              h={26}
+              w={24}
+              h={24}
               fit="contain"
             />
           </Center>
 
-          <Title order={2} ta="center" size="1.35rem" fw={700} style={{ letterSpacing: "-0.02em" }}>
+          <Title order={2} ta="center" size="1.25rem" fw={700} style={{ letterSpacing: "-0.02em", lineHeight: 1.25 }}>
             {step === 1 ? t("register.title") : t("register.otpTitle")}
           </Title>
 
-          <Text size="xs" c="dimmed" ta="center" maw={360} style={{ lineHeight: 1.4 }}>
+          <Text size="xs" c="dimmed" ta="center" maw={360} style={{ lineHeight: 1.35 }}>
             {step === 1
               ? t("register.registerSubtitle")
               : t("register.enterCodeSubtitle")}
@@ -340,7 +328,7 @@ const Register_Page = () => {
         <Paper
           withBorder
           shadow="sm"
-          p={{ base: "md", sm: 20 }}
+          p={{ base: 14, sm: 20 }}
           radius="lg"
           style={{
             background: "var(--surface)",
@@ -368,7 +356,7 @@ const Register_Page = () => {
             >
               <Stack gap="xs">
                 {/* Names row */}
-                <Flex gap="xs" direction={{ base: "column", xs: "row" }}>
+                <Flex gap="xs" direction={{ base: "row", xs: "row" }}>
                   <TextInput
                     label={t("register.firstName")}
                     placeholder="Ali"
@@ -491,7 +479,7 @@ const Register_Page = () => {
                   my={2}
                 />
 
-                <SimpleGrid cols={2} spacing="xs">
+                <SimpleGrid cols={{ base: 2, 320: 2 }} spacing="xs">
                   <GoogleLoginButton mode="register" compact />
                   <TelegramLoginButton mode="register" compact />
                 </SimpleGrid>
@@ -500,11 +488,11 @@ const Register_Page = () => {
           ) : (
             /* Step 2: OTP Verification */
             <Box>
-              <Stack align="center" gap="sm">
+              <Stack align="center" gap="xs">
                 <Center
                   style={{
-                    width: 56,
-                    height: 56,
+                    width: 48,
+                    height: 48,
                     borderRadius: "50%",
                     background: isEmailMode
                       ? "var(--mantine-color-blue-light)"
@@ -515,19 +503,19 @@ const Register_Page = () => {
                   }}
                 >
                   {isEmailMode ? (
-                    <IconMailShare size={28} />
+                    <IconMailShare size={24} />
                   ) : (
-                    <IconMessageShare size={28} />
+                    <IconMessageShare size={24} />
                   )}
                 </Center>
 
-                <Text size="sm" c="dimmed" ta="center">
+                <Text size="xs" c="dimmed" ta="center">
                   {isEmailMode
                     ? t("register.otpSentTo")
                     : t("register.codeSentToPhone")}
                 </Text>
 
-                <Text fw={600} size="md" ta="center">
+                <Text fw={600} size="sm" ta="center">
                   {isEmailMode ? form.values.email : form.values.phoneNumber}
                 </Text>
 
@@ -547,7 +535,7 @@ const Register_Page = () => {
                 )}
               </Stack>
 
-              <Center mt="lg" mb="sm" style={{ maxWidth: "100%", overflowX: "hidden" }}>
+              <Center mt="md" mb="xs" style={{ maxWidth: "100%", overflowX: "hidden" }}>
                 <PinInput
                   length={6}
                   size="sm"
@@ -568,7 +556,7 @@ const Register_Page = () => {
                 />
               </Center>
 
-              <Group justify="center" mt="xs" mb="md">
+              <Group justify="center" mt="xs" mb="sm">
                 {countdown > 0 ? (
                   <Text size="xs" c="dimmed">
                     {t("register.resendCodeIn", { seconds: countdown })}
@@ -601,7 +589,7 @@ const Register_Page = () => {
                 {t("register.confirm")}
               </Button>
 
-              <Center mt="sm">
+              <Center mt="xs">
                 <Anchor
                   component="button"
                   type="button"

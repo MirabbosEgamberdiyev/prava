@@ -129,20 +129,8 @@ const Login_Page = () => {
   };
 
   return (
-    <Box
-      style={{
-        minHeight: "calc(100dvh - 64px)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "flex-start",
-        alignItems: "center",
-        paddingTop: "clamp(32px, 5.5vh, 60px)",
-        paddingBottom: "clamp(48px, 9vh, 90px)",
-        paddingLeft: 16,
-        paddingRight: 16,
-      }}
-    >
-      <Container size={410} p={0} w="100%">
+    <Box className="auth-page-container">
+      <Container size={410} p={0} className="auth-page-inner">
         <SEO
           title="Kirish - Prava Online platformasiga kirish"
           description="Prava Online platformasiga kiring va haydovchilik guvohnomasi imtihoniga tayyorlanishni davom eting. Google yoki Telegram orqali tez kirish."
@@ -151,11 +139,11 @@ const Login_Page = () => {
         />
 
         {/* Header section with brand mark */}
-        <Stack gap={6} align="center" mb="md">
+        <Stack gap={4} align="center" mb={{ base: 12, sm: 16 }}>
           <Center
             style={{
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               borderRadius: "var(--mantine-radius-md)",
               border: "1px solid var(--border)",
               background: "var(--surface)",
@@ -166,17 +154,17 @@ const Login_Page = () => {
               src="/favicon.svg"
               fallbackSrc="/logo.svg"
               alt="Prava Online Logo"
-              w={26}
-              h={26}
+              w={24}
+              h={24}
               fit="contain"
             />
           </Center>
 
-          <Title order={2} ta="center" size="1.35rem" fw={700} style={{ letterSpacing: "-0.02em" }}>
+          <Title order={2} ta="center" size="1.25rem" fw={700} style={{ letterSpacing: "-0.02em", lineHeight: 1.25 }}>
             {t("auth.welcome")}
           </Title>
 
-          <Text size="xs" c="dimmed" ta="center" maw={340} style={{ lineHeight: 1.4 }}>
+          <Text size="xs" c="dimmed" ta="center" maw={320} style={{ lineHeight: 1.35 }}>
             {t("auth.loginSubtitle")}
           </Text>
 
@@ -193,7 +181,7 @@ const Login_Page = () => {
         <Paper
           withBorder
           shadow="sm"
-          p={{ base: "md", sm: 22 }}
+          p={{ base: 14, sm: 22 }}
           radius="lg"
           style={{
             background: "var(--surface)",
@@ -218,7 +206,7 @@ const Login_Page = () => {
             onSubmit={form.onSubmit(handleSubmit)}
             onChange={() => errorMessage && setErrorMessage(null)}
           >
-            <Stack gap="sm">
+            <Stack gap="xs">
               <TextInput
                 label={t("auth.identifier")}
                 placeholder={t("auth.identifierPlaceholder")}
@@ -276,7 +264,7 @@ const Login_Page = () => {
                 my={2}
               />
 
-              <SimpleGrid cols={{ base: 1, 360: 2 }} spacing="xs">
+              <SimpleGrid cols={{ base: 2, 320: 2 }} spacing="xs">
                 <GoogleLoginButton mode="login" compact />
                 <TelegramLoginButton mode="login" compact />
               </SimpleGrid>

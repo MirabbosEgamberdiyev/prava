@@ -140,191 +140,200 @@ const ForgotPassword_Page = () => {
   const stepperActive = step - 1;
 
   return (
-    <Box
-      style={{
-        minHeight: "calc(100vh - 64px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "16px 12px",
-      }}
-    >
-      <Container size={440} p={0} w="100%">
-      <SEO
-        title="Parolni tiklash"
-        description="Parolingizni unutdingizmi? Email yoki telefon raqamingiz orqali parolni tiklang."
-        canonical="/auth/forgot-password"
-        noIndex={true}
-      />
-      <Flex gap="sm" justify="space-between" align="center" mb="lg">
-        <Title order={3}>{t("forgotPassword.title")}</Title>
-        <Anchor component={Link} to="/auth/login">
-          <Button
-            leftSection={<IconArrowLeft size={16} />}
-            variant="subtle"
-            size="sm"
-          >
-            {t("forgotPassword.backToLogin")}
-          </Button>
-        </Anchor>
-      </Flex>
-
-      <Stepper
-        active={stepperActive}
-        size="sm"
-        mb="lg"
-      >
-        <Stepper.Step icon={<IconUser size={18} />} />
-        <Stepper.Step icon={<IconMailShare size={18} />} />
-        <Stepper.Step icon={<IconLock size={18} />} />
-      </Stepper>
-
-      <Paper
-        withBorder
-        shadow="md"
-        p={{ base: "lg", sm: "xl" }}
-        radius="lg"
-        style={{
-          background: "var(--surface)",
-          borderColor: "var(--border)",
-        }}
-      >
-        {step === 1 && (
-          <Stack gap="md">
-            <Text size="sm" c="dimmed">
-              {t("forgotPassword.description")}
-            </Text>
-            <TextInput
-              label={t("forgotPassword.identifier")}
-              placeholder="email@example.com"
-              required
-              size="md"
-              radius="md"
-              leftSection={<IconUser size={18} />}
-              {...form.getInputProps("identifier")}
-            />
-            <SegmentedControl
-              value={verificationType}
-              onChange={(v) => setVerificationType(v as "EMAIL" | "SMS")}
-              fullWidth
-              radius="md"
-              data={[
-                {
-                  label: (
-                    <Flex align="center" gap={6} justify="center">
-                      <IconAt size={16} />
-                      <span>{t("forgotPassword.verifyByEmail")}</span>
-                    </Flex>
-                  ),
-                  value: "EMAIL",
-                },
-                {
-                  label: (
-                    <Flex align="center" gap={6} justify="center">
-                      <IconDeviceMobile size={16} />
-                      <span>{t("forgotPassword.verifyBySms")}</span>
-                    </Flex>
-                  ),
-                  value: "SMS",
-                },
-              ]}
-            />
+    <Box className="auth-page-container">
+      <Container size={440} p={0} className="auth-page-inner">
+        <SEO
+          title="Parolni tiklash"
+          description="Parolingizni unutdingizmi? Email yoki telefon raqamingiz orqali parolni tiklang."
+          canonical="/auth/forgot-password"
+          noIndex={true}
+        />
+        <Flex gap="sm" justify="space-between" align="center" mb={{ base: 10, sm: "md" }}>
+          <Title order={3} size="1.2rem">{t("forgotPassword.title")}</Title>
+          <Anchor component={Link} to="/auth/login">
             <Button
-              fullWidth
-              mt="xs"
-              loading={loading}
-              radius="md"
-              size="md"
-              onClick={handleSendCode}
+              leftSection={<IconArrowLeft size={16} />}
+              variant="subtle"
+              size="xs"
             >
-              {t("forgotPassword.sendCode")}
+              {t("forgotPassword.backToLogin")}
             </Button>
-          </Stack>
-        )}
+          </Anchor>
+        </Flex>
 
-        {step === 2 && (
-          <Box>
-            <Center>
-              <ActionIcon
-                size={70}
-                variant="light"
-                radius="xl"
-                color={verificationType === "EMAIL" ? "blue" : "green"}
-              >
-                {verificationType === "SMS" ? (
-                  <IconMessageShare size={30} />
-                ) : (
-                  <IconMailShare size={30} />
-                )}
-              </ActionIcon>
-            </Center>
-            <Text ta="center" fw={500} mt="sm">
-              {verificationType === "SMS"
-                ? t("forgotPassword.codeSentToPhone")
-                : t("forgotPassword.codeSent")}
-            </Text>
-            <Center>
-              <Text ta="center" fw={500} c="blue">
-                {form.values.identifier}
+        <Stepper
+          active={stepperActive}
+          size="xs"
+          mb={{ base: 12, sm: "md" }}
+        >
+          <Stepper.Step icon={<IconUser size={16} />} />
+          <Stepper.Step icon={<IconMailShare size={16} />} />
+          <Stepper.Step icon={<IconLock size={16} />} />
+        </Stepper>
+
+        <Paper
+          withBorder
+          shadow="sm"
+          p={{ base: 14, sm: "xl" }}
+          radius="lg"
+          style={{
+            background: "var(--surface)",
+            borderColor: "var(--border)",
+          }}
+        >
+          {step === 1 && (
+            <Stack gap="sm">
+              <Text size="xs" c="dimmed">
+                {t("forgotPassword.description")}
               </Text>
-            </Center>
-            <Center mt="lg">
-              <PinInput
-                length={6}
-                size="md"
-                value={code}
-                onChange={setCode}
-                type="number"
-                autoFocus
+              <TextInput
+                label={t("forgotPassword.identifier")}
+                placeholder="email@example.com"
+                required
+                size="sm"
+                radius="md"
+                leftSection={<IconUser size={16} />}
+                {...form.getInputProps("identifier")}
               />
-            </Center>
-            <Button
-              fullWidth
-              loading={loading}
-              disabled={code.length < 6}
-              onClick={handleCodeEntered}
-              radius="md"
-              mt="xl"
-              size="md"
-            >
-              {t("forgotPassword.enterCode")}
-            </Button>
-          </Box>
-        )}
+              <SegmentedControl
+                value={verificationType}
+                onChange={(v) => setVerificationType(v as "EMAIL" | "SMS")}
+                fullWidth
+                size="xs"
+                radius="md"
+                data={[
+                  {
+                    label: (
+                      <Flex align="center" gap={6} justify="center">
+                        <IconAt size={15} />
+                        <span>{t("forgotPassword.verifyByEmail")}</span>
+                      </Flex>
+                    ),
+                    value: "EMAIL",
+                  },
+                  {
+                    label: (
+                      <Flex align="center" gap={6} justify="center">
+                        <IconDeviceMobile size={15} />
+                        <span>{t("forgotPassword.verifyBySms")}</span>
+                      </Flex>
+                    ),
+                    value: "SMS",
+                  },
+                ]}
+              />
+              <Button
+                fullWidth
+                mt={4}
+                loading={loading}
+                radius="md"
+                size="md"
+                h={42}
+                fw={600}
+                onClick={handleSendCode}
+              >
+                {t("forgotPassword.sendCode")}
+              </Button>
+            </Stack>
+          )}
 
-        {step === 3 && (
-          <Stack gap="md">
-            <PasswordInput
-              label={t("forgotPassword.newPassword")}
-              required
-              size="md"
-              radius="md"
-              leftSection={<IconLock size={18} />}
-              {...form.getInputProps("newPassword")}
-            />
-            <PasswordInput
-              label={t("forgotPassword.confirmPassword")}
-              required
-              size="md"
-              radius="md"
-              leftSection={<IconLock size={18} />}
-              {...form.getInputProps("confirmPassword")}
-            />
-            <Button
-              fullWidth
-              mt="xs"
-              loading={loading}
-              radius="md"
-              size="md"
-              onClick={handleResetPassword}
-            >
-              {t("forgotPassword.resetPassword")}
-            </Button>
-          </Stack>
-        )}
-      </Paper>
-    </Container>
-  </Box>
+          {step === 2 && (
+            <Box>
+              <Center>
+                <ActionIcon
+                  size={54}
+                  variant="light"
+                  radius="xl"
+                  color={verificationType === "EMAIL" ? "blue" : "green"}
+                >
+                  {verificationType === "SMS" ? (
+                    <IconMessageShare size={24} />
+                  ) : (
+                    <IconMailShare size={24} />
+                  )}
+                </ActionIcon>
+              </Center>
+              <Text ta="center" fw={500} size="sm" mt="xs">
+                {verificationType === "SMS"
+                  ? t("forgotPassword.codeSentToPhone")
+                  : t("forgotPassword.codeSent")}
+              </Text>
+              <Center>
+                <Text ta="center" fw={600} size="sm" c="blue">
+                  {form.values.identifier}
+                </Text>
+              </Center>
+              <Center mt="md">
+                <PinInput
+                  length={6}
+                  size="sm"
+                  gap={6}
+                  value={code}
+                  onChange={setCode}
+                  type="number"
+                  autoFocus
+                  placeholder="○"
+                  styles={{
+                    input: {
+                      width: "clamp(28px, 9vw, 44px)",
+                      height: "clamp(34px, 10vw, 48px)",
+                      fontSize: "clamp(13px, 3.5vw, 18px)",
+                      padding: 0,
+                    },
+                  }}
+                />
+              </Center>
+              <Button
+                fullWidth
+                loading={loading}
+                disabled={code.length < 6}
+                onClick={handleCodeEntered}
+                radius="md"
+                mt="md"
+                size="md"
+                h={42}
+                fw={600}
+              >
+                {t("forgotPassword.enterCode")}
+              </Button>
+            </Box>
+          )}
+
+          {step === 3 && (
+            <Stack gap="sm">
+              <PasswordInput
+                label={t("forgotPassword.newPassword")}
+                required
+                size="sm"
+                radius="md"
+                leftSection={<IconLock size={16} />}
+                {...form.getInputProps("newPassword")}
+              />
+              <PasswordInput
+                label={t("forgotPassword.confirmPassword")}
+                required
+                size="sm"
+                radius="md"
+                leftSection={<IconLock size={16} />}
+                {...form.getInputProps("confirmPassword")}
+              />
+              <Button
+                fullWidth
+                mt={4}
+                loading={loading}
+                radius="md"
+                size="md"
+                h={42}
+                fw={600}
+                onClick={handleResetPassword}
+              >
+                {t("forgotPassword.resetPassword")}
+              </Button>
+            </Stack>
+          )}
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

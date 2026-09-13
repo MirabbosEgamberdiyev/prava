@@ -5696,3 +5696,34 @@ body:has(.app) {
   border-radius: 8px !important;
 }
 
+/* ── Auth Pages Responsive Mobile-First Architecture ── */
+.auth-page-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 16px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+  padding-left: max(16px, env(safe-area-inset-left, 16px));
+  padding-right: max(16px, env(safe-area-inset-right, 16px));
+  min-height: calc(100dvh - 64px);
+  box-sizing: border-box;
+}
+
+.auth-page-inner {
+  width: 100%;
+  max-width: 420px;
+}
+
+@media (min-width: 768px) {
+  .auth-page-container {
+    padding-top: 28px;
+    padding-bottom: 36px;
+  }
+  .auth-page-inner {
+    margin: auto 0;
+  }
+}
+
+

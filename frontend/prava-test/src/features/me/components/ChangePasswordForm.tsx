@@ -97,7 +97,7 @@ export function ChangePasswordForm() {
   };
 
   return (
-    <Paper p="lg" radius="md" withBorder shadow="sm">
+    <Paper p={{ base: "md", sm: "lg" }} radius="md" withBorder shadow="sm">
       <Title order={4} mb="md">
         {t("profile.changePassword")}
       </Title>
