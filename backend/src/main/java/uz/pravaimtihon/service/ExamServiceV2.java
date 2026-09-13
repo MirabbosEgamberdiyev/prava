@@ -66,6 +66,14 @@ public class ExamServiceV2 {
      */
     @Transactional
     public ExamResponse startExamVisible(ExamStartRequest request) {
+        if (request.getPackageId() == null) {
+            int qCount = request.getQuestionCount() != null ? request.getQuestionCount() : 20;
+            int dur = request.getDurationMinutes() != null ? request.getDurationMinutes() : qCount;
+            return startMarathonVisible(MarathonStartRequest.builder()
+                    .questionCount(qCount)
+                    .durationMinutes(dur)
+                    .build());
+        }
         return startExamInternal(request, true);
     }
 
@@ -83,6 +91,14 @@ public class ExamServiceV2 {
      */
     @Transactional
     public ExamResponse startExamSecure(ExamStartRequest request) {
+        if (request.getPackageId() == null) {
+            int qCount = request.getQuestionCount() != null ? request.getQuestionCount() : 20;
+            int dur = request.getDurationMinutes() != null ? request.getDurationMinutes() : qCount;
+            return startMarathonSecure(MarathonStartRequest.builder()
+                    .questionCount(qCount)
+                    .durationMinutes(dur)
+                    .build());
+        }
         return startExamInternal(request, false);
     }
 

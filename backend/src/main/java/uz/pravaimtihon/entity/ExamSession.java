@@ -36,11 +36,13 @@ public class ExamSession extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "package_id", nullable = true)  // Nullable for marathon mode
+    @org.hibernate.annotations.NotFound(action = org.hibernate.annotations.NotFoundAction.IGNORE)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "tickets"})
     private ExamPackage examPackage;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_id", nullable = true)  // Nullable - only for ticket mode
+    @org.hibernate.annotations.NotFound(action = org.hibernate.annotations.NotFoundAction.IGNORE)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "questions"})
     private Ticket ticket;
 

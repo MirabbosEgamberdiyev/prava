@@ -126,9 +126,10 @@ const Footer = React.memo(() => {
                     rel="noopener noreferrer"
                     variant="subtle"
                     color={link.color}
-                    size="md"
+                    size="lg"
                     radius="md"
                     aria-label={link.label}
+                    style={{ minWidth: 38, minHeight: 38 }}
                   >
                     {link.icon}
                   </ActionIcon>

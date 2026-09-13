@@ -164,7 +164,7 @@ const Navbar = ({ close }: { close: () => void }) => {
             </Button>
           </Stack>
         ) : (
-          <Group grow w="100%">
+          <Stack gap="xs" w="100%">
             <Button
               component={Link}
               to="/auth/login"
@@ -173,6 +173,8 @@ const Navbar = ({ close }: { close: () => void }) => {
               onClick={close}
               variant="default"
               radius="md"
+              fullWidth
+              h={42}
               styles={{ root: { fontWeight: 600, borderColor: "var(--border)" } }}
             >
               {t("nav.login_btn", "Kirish")}
@@ -185,12 +187,14 @@ const Navbar = ({ close }: { close: () => void }) => {
               onClick={close}
               variant="filled"
               radius="md"
+              fullWidth
+              h={42}
               className="saas-btn-primary"
               styles={{ root: { fontWeight: 600 } }}
             >
               {t("nav.signup_btn", "Ro'yxatdan o'tish")}
             </Button>
-          </Group>
+          </Stack>
         )}
       </Box>
     </AppShell.Navbar>

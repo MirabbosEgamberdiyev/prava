@@ -327,10 +327,10 @@ export default function User_Page() {
               {(() => {
                 const ticketReady = stats?.ticket_ready ?? 0;
                 const ticketAverage = stats?.ticket_average ?? 0;
-                const ticketTotal = stats?.ticket_total ?? 70;
+                const ticketTotal = stats?.ticket_total ?? 60;
                 const qReady = stats?.question_readiness.ready ?? 0;
                 const qAverage = stats?.question_readiness.average ?? 0;
-                const qTotal = stats?.question_readiness.total ?? 1400;
+                const qTotal = stats?.question_readiness.total ?? 1190;
 
                 const ticketReadyPct =
                   ticketTotal > 0 ? Math.round((ticketReady / ticketTotal) * 100) : 0;

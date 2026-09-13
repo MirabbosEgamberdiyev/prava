@@ -148,15 +148,28 @@ export async function getExamQuestions(count = 20): Promise<OfflineQuestion[]> {
   try {
     const res = await api.post<{
       data: { questions: any[] };
-    }>("/api/v2/exams/start-visible", {
+    }>("/api/v2/exams/marathon/start-visible", {
       questionCount: count,
       durationMinutes: count,
     });
-    if (res.data?.data?.questions) {
+    if (res.data?.data?.questions && res.data.data.questions.length > 0) {
       return res.data.data.questions.map(normalizeQuestion);
     }
   } catch {
-    // fallback
+    // fallback to start-visible
+    try {
+      const res2 = await api.post<{
+        data: { questions: any[] };
+      }>("/api/v2/exams/start-visible", {
+        questionCount: count,
+        durationMinutes: count,
+      });
+      if (res2.data?.data?.questions && res2.data.data.questions.length > 0) {
+        return res2.data.data.questions.map(normalizeQuestion);
+      }
+    } catch {
+      // ignore
+    }
   }
   return [];
 }
@@ -204,9 +217,9 @@ export async function getTickets(): Promise<OfflineTicket[]> {
     // fallback: 70 tickets
   }
 
-  // Standalone fallback: 70 bilet
+  // Standalone fallback: 60 bilet
   const fallbackTickets: OfflineTicket[] = [];
-  for (let i = 1; i <= 70; i++) {
+  for (let i = 1; i <= 60; i++) {
     fallbackTickets.push({
       id: i,
       topic_id: null,
@@ -265,23 +278,51 @@ export async function getTopics(): Promise<OfflineTopic[]> {
 export async function getFullStats(_userId?: number): Promise<FullStats> {
   const storedTicketStats = storageService.getTicketStats();
   const ticketStats: TicketReadinessStat[] = [];
-  const totalTickets = 70;
+  const totalTickets = 60;
+
+  // Try fetching live statistics from backend
+  let serverStats: any = null;
+  try {
+    const res = await api.get("/api/v2/my-statistics");
+    if (res.data?.data) {
+      serverStats = res.data.data;
+    }
+  } catch {
+    // Offline or unauthenticated fallback
+  }
+
+  const serverTicketMap = new Map<number, any>();
+  if (serverStats?.ticketStats && Array.isArray(serverStats.ticketStats)) {
+    for (const item of serverStats.ticketStats) {
+      if (item.ticketNumber) {
+        serverTicketMap.set(item.ticketNumber, item);
+      }
+    }
+  }
 
   for (let num = 1; num <= totalTickets; num++) {
     const stat = storedTicketStats[num];
-    const timesDone = stat?.timesDone || 0;
-    const fastPerfect = stat?.fastPerfectCount || 0;
-    const midGood = stat?.timesPassed || 0;
+    const serverTk = serverTicketMap.get(num);
+
+    const localTimesDone = stat?.timesDone || 0;
+    const serverTimesDone = Number(serverTk?.totalExams || 0);
+    const timesDone = Math.max(localTimesDone, serverTimesDone);
+
+    const localPassed = stat?.timesPassed || 0;
+    const serverPassed = Number(serverTk?.passedExams || 0);
+    const midGood = Math.max(localPassed, serverPassed);
+
+    const fastPerfect = stat?.fastPerfectCount || (serverTk?.bestScore === 100 ? 1 : 0);
     const slowPoor = Math.max(0, timesDone - midGood);
-    const lastScore = stat?.lastScore ?? null;
+    const lastScore = stat?.lastScore ?? (serverTk?.bestScore ?? null);
     const lastDuration = stat?.lastDuration ?? null;
 
     let readiness: "ready" | "average" | "not_ready" | "untouched" = "untouched";
     if (timesDone === 0) {
       readiness = "untouched";
-    } else if (fastPerfect >= 1) {
+    } else if (fastPerfect >= 1 || (serverTk?.bestScore != null && serverTk.bestScore >= 95)) {
       readiness = "ready";
-    } else if (midGood >= 1) {
+    } else if (midGood >= 1 || (serverTk?.averageScore != null && serverTk.averageScore >= 80)) {
       readiness = "average";
     } else {
       readiness = "not_ready";
@@ -322,7 +363,19 @@ export async function getFullStats(_userId?: number): Promise<FullStats> {
     else if (att.correct >= 1) weakQ++;
   }
 
-  const totalQ = 1400;
+  const totalQ = 1190;
+
+  // If local questions attempts are empty, reflect questions answered on server
+  if (readyQ + averageQ + weakQ === 0 && serverStats?.summary) {
+    const correctAns = Number(serverStats.summary.correctAnswers || 0);
+    const wrongAns = Number(serverStats.summary.wrongAnswers || 0);
+    if (correctAns > 0 || wrongAns > 0) {
+      readyQ = Math.min(Math.floor(correctAns * 0.4), Math.floor(totalQ * 0.7));
+      averageQ = Math.min(Math.floor(correctAns * 0.6), totalQ - readyQ);
+      weakQ = Math.min(wrongAns, totalQ - (readyQ + averageQ));
+    }
+  }
+
   const untouchedQ = Math.max(0, totalQ - (readyQ + averageQ + weakQ));
 
   return {

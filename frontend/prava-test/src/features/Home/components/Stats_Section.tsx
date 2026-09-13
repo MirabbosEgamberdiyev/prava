@@ -123,9 +123,9 @@ export function Stats_Section() {
 
   // Calculate real stats with reliable fallbacks
   const statsObj = publicStatsData?.data;
-  const totalQuestions = statsObj?.totalQuestions && statsObj.totalQuestions > 0 ? statsObj.totalQuestions : 1200;
-  const totalPackages = statsObj?.totalPackages && statsObj.totalPackages > 0 ? statsObj.totalPackages : 70;
-  const topicsCount = statsObj?.totalTopics && statsObj.totalTopics > 0 ? statsObj.totalTopics : 30;
+  const totalQuestions = statsObj?.totalQuestions && statsObj.totalQuestions > 0 ? statsObj.totalQuestions : 1190;
+  const totalPackages = statsObj?.totalPackages && statsObj.totalPackages > 0 ? statsObj.totalPackages : 60;
+  const topicsCount = statsObj?.totalTopics && statsObj.totalTopics > 0 ? statsObj.totalTopics : 10;
   const activeUsers = statsObj?.activeUsers && statsObj.activeUsers > 0 ? statsObj.activeUsers : 50000;
 
   const stats: StatItem[] = [
@@ -145,7 +145,7 @@ export function Stats_Section() {
     },
     {
       icon: IconClipboardList,
-      value: totalPackages > 0 ? totalPackages : 70,
+      value: totalPackages > 0 ? totalPackages : 60,
       suffix: "",
       labelKey: "home.stats.exams",
       color: "orange",

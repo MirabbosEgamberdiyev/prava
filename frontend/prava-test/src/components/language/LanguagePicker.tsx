@@ -4,9 +4,9 @@ import Cookies from "js-cookie";
 import { IconCheck, IconChevronDown, IconWorld } from "@tabler/icons-react";
 
 export const languages = [
-  { value: "uzl", label: "O‘zbekcha (Lotin)", short: "O‘zbek" },
-  { value: "uzc", label: "Ўзбекча (Кирилл)", short: "Ўзбек" },
-  { value: "ru", label: "Русский", short: "Русский" },
+  { value: "uzl", label: "O‘zbekcha (Lotin)", short: "O‘zbek", code: "UZ" },
+  { value: "uzc", label: "Ўзбекча (Кирилл)", short: "Ўзбек", code: "ЎЗ" },
+  { value: "ru", label: "Русский", short: "Русский", code: "RU" },
 ] as const;
 
 export default function LanguagePicker() {
@@ -39,8 +39,11 @@ export default function LanguagePicker() {
             style={{ color: "var(--primary)", flexShrink: 0 }}
             aria-hidden="true"
           />
-          <span style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "0.2px" }}>
+          <span className="lang-label-full" style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "0.2px" }}>
             {current.short}
+          </span>
+          <span className="lang-label-short" style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.2px" }}>
+            {current.code}
           </span>
           <IconChevronDown
             size={13}

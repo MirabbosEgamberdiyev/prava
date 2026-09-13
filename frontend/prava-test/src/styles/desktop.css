@@ -216,6 +216,18 @@
   align-items: center;
 }
 
+@media (max-width: 400px) {
+  .saas-brand-text {
+    font-size: 13.5px;
+  }
+}
+
+@media (max-width: 350px) {
+  .saas-brand-text {
+    display: none;
+  }
+}
+
 .saas-brand-text .brand-accent {
   color: var(--primary);
 }
@@ -280,6 +292,10 @@
 }
 
 /* Controls (Theme, Language, Social, User Menu) */
+.lang-label-short {
+  display: none;
+}
+
 .header-control-btn {
   height: 36px;
   padding: 0 10px;
@@ -329,6 +345,33 @@
   border-color: var(--primary);
   color: var(--primary);
   transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+  .lang-label-full {
+    display: none;
+  }
+  .lang-label-short {
+    display: inline;
+  }
+  .header-control-btn {
+    height: 38px;
+    padding: 0 8px;
+    gap: 4px;
+  }
+  .header-control-icon-btn {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 350px) {
+  .lang-label-short {
+    display: none;
+  }
+  .header-control-btn {
+    padding: 0 6px;
+  }
 }
 
 .header-control-icon-btn:focus-visible {
@@ -5000,20 +5043,24 @@ body:has(.app) {
 }
 
 .saas-page-title {
-  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  font-size: clamp(1.5rem, 4vw, 2.75rem);
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.2;
   letter-spacing: -0.025em;
   color: var(--text);
   margin: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .saas-page-subtitle {
-  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  font-size: clamp(0.925rem, 1.2vw, 1.125rem);
   line-height: 1.6;
   color: var(--text-muted);
   margin: 0;
   max-width: 640px;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .saas-card {
@@ -5022,6 +5069,13 @@ body:has(.app) {
   border-radius: 14px;
   padding: 24px;
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (max-width: 480px) {
+  .saas-card {
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
 }
 
 .saas-card:hover {

@@ -22,8 +22,7 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Imtihon boshlash so'rovi")
 public class ExamStartRequest {
 
-    @NotNull(message = "validation.exam.packageId.required")
-    @Schema(description = "Paket ID", example = "1", required = true)
+    @Schema(description = "Paket ID (ixtiyoriy, agar ko'rsatilsa paketdan, aks holda tasodifiy)", example = "1", required = false)
     private Long packageId;
 
     @Min(value = 5, message = "validation.exam.duration.min")
