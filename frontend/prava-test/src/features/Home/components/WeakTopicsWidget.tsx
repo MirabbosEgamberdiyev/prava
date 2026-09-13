@@ -115,152 +115,122 @@ export default function WeakTopicsWidget({ userId }: Props) {
     return null;
   }
 
-  // If user has 0 mistakes, show positive reinforcement card
+  // If user has 0 mistakes, show Variant B (Dynamic Welcome & Topic 1 Focus)
   if (totalWrongs === 0) {
     return (
-      <div className="mistakes-practice-card empty-state">
-        <div className="mistakes-empty-row">
-          <div className="mistakes-empty-icon">
-            <IconCheck size={24} stroke={2.5} />
-          </div>
-          <div className="mistakes-empty-info">
-            <h4 className="mistakes-empty-title">
-              {t("home.noWeakTopicsTitle", "Xatolar mavjud emas!")}
-            </h4>
-            <p className="mistakes-empty-desc">
-              {t(
-                "home.noWeakTopicsDesc",
-                "Bilimlaringiz a'lo darajada. To'liq imtihon bilan o'zingizni sinab ko'ring."
-              )}
-            </p>
+      <section className="next-best-action-wrapper" aria-label="Keyingi tavsiya">
+        <div className="next-best-action-card variant-newbie">
+          <div className="nba-newbie-content">
+            <div className="nba-newbie-icon">
+              <IconBulb size={28} stroke={2} />
+            </div>
+            <div className="nba-newbie-text">
+              <div className="nba-badge success">
+                <IconCheck size={13} stroke={2.5} />
+                <span>{t("home.startStepBadge", "Boshlang'ich qadam")}</span>
+              </div>
+              <h3 className="nba-title">
+                {t("home.startTopic1Title", "1-Mavzudan o‘rganishni boshlang")}
+              </h3>
+              <p className="nba-desc">
+                {t(
+                  "home.startTopic1Desc",
+                  "Yo'l harakati qoidalarini noldan, qulay va tizimli o'rganing. 1200+ rasmiy test savollari va qoidalar sizni kutmoqda."
+                )}
+              </p>
+            </div>
           </div>
           <button
-            onClick={() => navigate("/exam?count=20")}
-            className="mistakes-empty-cta"
+            onClick={() => navigate("/topics")}
+            className="nba-cta-btn primary"
             type="button"
           >
-            <IconBulb size={16} />
-            {t("home.startExamBtn", "Sinov imtihoni topshirish")}
+            <span>{t("home.startTopic1Btn", "1-Mavzuni boshlash")}</span>
+            <IconArrowRight size={18} stroke={2.5} />
           </button>
         </div>
-      </div>
+      </section>
     );
   }
 
-  const primaryWeakTopic = weakTopics[0];
-
+  // Variant A: Mistakes exist - Unified Focus Block
   return (
-    <div className="mistakes-two-cards-grid">
-      {/* CARD 1: ⚠ ZAIF MAVZU ANIQLANDI */}
-      <div className="mistakes-independent-card card-weak-topics">
-        <div className="mistakes-ind-header">
-          <span className="mistakes-badge-tag warning">
-            <IconAlertTriangle size={14} stroke={2.5} />
-            {t("home.weakTopicsBadge", "ZAIF MAVZU ANIQLANDI")}
-          </span>
-        </div>
-
-        <div className="mistakes-ind-body">
-          {weakTopics.length > 0 ? (
-            <div className="weak-topics-mini-grid">
-              {weakTopics.map((topic) => {
-                const topicPct = Math.min(100, Math.max(12, Math.round((topic.count / totalWrongs) * 100)));
-                return (
-                  <div key={topic.topicId} className="weak-topic-mini-card">
-                    <div className="weak-topic-mini-top">
-                      <span className="weak-topic-mini-name">{topic.name}</span>
-                      <span className="weak-topic-mini-count">
-                        {topic.count} {t("home.mistakesCountLabel", "ta xato")}
-                      </span>
-                    </div>
-                    <div className="weak-topic-mini-track">
-                      <div
-                        className="weak-topic-mini-bar"
-                        style={{ width: `${topicPct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+    <section className="next-best-action-wrapper" aria-label="Asosiy fokus bloki">
+      <div className="next-best-action-card variant-focus">
+        {/* Left Column: Topics Requiring Attention */}
+        <div className="nba-focus-col nba-col-topics">
+          <div className="nba-col-header">
+            <div className="nba-badge warning">
+              <IconAlertTriangle size={13} stroke={2.5} />
+              <span>{t("home.attentionTopicsBadge", "DIQQAT TALAB QILADIGAN MAVZULAR")}</span>
             </div>
-          ) : (
-            <p className="mistakes-ind-fallback">
-              {t("home.weakTopicDesc", "Xato qilingan savollar bo'yicha maxsus mashg'ulot o'ting.")}
+            <h3 className="nba-col-title">
+              {t("home.weakTopicsHeader", "Zaif mavzular ro'yxati")}
+            </h3>
+            <p className="nba-col-desc">
+              {t("home.weakTopicsSub", "Mavzuni tanlang va aynan shu bo'yicha bilimlarni mustahkamlang:")}
             </p>
-          )}
-        </div>
-
-        <div className="mistakes-ind-footer">
-          <button
-            className="mistakes-action-btn primary"
-            onClick={() =>
-              navigate(
-                primaryWeakTopic
-                  ? `/marafon?topicId=${primaryWeakTopic.topicId}`
-                  : "/topics"
-              )
-            }
-            type="button"
-          >
-            <span>{t("home.practiceTopic", "Shu mavzuni kuchaytirish")}</span>
-            <IconArrowRight size={16} stroke={2.5} />
-          </button>
-        </div>
-      </div>
-
-      {/* CARD 2: 📋 BARCHA XATOLAR */}
-      <div className="mistakes-independent-card card-all-mistakes">
-        <div className="mistakes-ind-header">
-          <span className="mistakes-badge-tag info">
-            <IconClipboardList size={14} stroke={2.5} />
-            {t("home.allMistakesBadge", "BARCHA XATOLAR")}
-          </span>
-        </div>
-
-        <div className="mistakes-ind-body">
-          <div className="all-mistakes-stat-row">
-            <div className="all-mistakes-stat-item">
-              <span className="all-mistakes-stat-label">
-                {t("home.totalMistakesCountText", "Jami xatolar")}:
-              </span>
-              <span className="all-mistakes-stat-number">{totalWrongs}</span>
-            </div>
           </div>
 
-          <p className="all-mistakes-stat-desc">
-            {t(
-              "home.allMistakesDesc",
-              "Jami to'plangan xatolar bazasi. Xatolaringiz ustida ishlab bilimingizni mustahkamlang."
-            )}
-          </p>
+          <div className="nba-topic-list">
+            {weakTopics.map((topic) => (
+              <button
+                key={topic.topicId}
+                className="nba-topic-item"
+                type="button"
+                onClick={() => navigate(`/marafon?topicId=${topic.topicId}`)}
+              >
+                <span className="nba-topic-name">{topic.name}</span>
+                <span className="nba-topic-count">
+                  {topic.count} {t("home.mistakesCountLabel", "ta xato")}
+                </span>
+                <IconArrowRight size={15} className="nba-topic-arrow" />
+              </button>
+            ))}
+          </div>
+        </div>
 
-          <div className="all-mistakes-progress-section">
-            <div className="all-mistakes-progress-head">
-              <span className="all-mistakes-progress-label">
-                {t("home.readinessProgress", "O'zlashtirish ko'rsatkichi:")}
-              </span>
-              <span className="all-mistakes-progress-val">{progressPct}%</span>
+        {/* Right Column: Mistakes Practice Action */}
+        <div className="nba-focus-col nba-col-action">
+          <div className="nba-col-header">
+            <div className="nba-badge info">
+              <IconClipboardList size={13} stroke={2.5} />
+              <span>{t("home.mistakesPracticeBadge", "XATOLAR USTIDA ISHLASH")}</span>
             </div>
-            <div className="all-mistakes-progress-track">
+            <h3 className="nba-col-title">
+              {t("home.mistakesCountTitle", "Jami xato javoblar: {{count}} ta", { count: totalWrongs })}
+            </h3>
+            <p className="nba-col-desc">
+              {t(
+                "home.mistakesPracticeDesc",
+                "Xatolar ustida muntazam ishlash haqiqiy davlat imtihonidan birinchi urinishda o'tish ehtimolini 94% ga oshiradi."
+              )}
+            </p>
+          </div>
+
+          <div className="nba-progress-box">
+            <div className="nba-progress-header">
+              <span className="nba-progress-label">{t("home.readinessProgress", "O'zlashtirish ko'rsatkichi:")}</span>
+              <span className="nba-progress-value">{progressPct}%</span>
+            </div>
+            <div className="nba-progress-track">
               <div
-                className="all-mistakes-progress-bar"
-                style={{ width: `${progressPct}%` }}
+                className="nba-progress-fill"
+                style={{ width: `${Math.max(5, progressPct)}%` }}
               />
             </div>
           </div>
-        </div>
 
-        <div className="mistakes-ind-footer">
           <button
-            className="mistakes-action-btn secondary"
+            className="nba-cta-btn secondary"
             onClick={() => navigate("/wrong-answers")}
             type="button"
           >
-            <span>{t("home.allMistakesBtn", "Xatolar ustida ishlash")}</span>
-            <IconArrowRight size={16} stroke={2.5} />
+            <span>{t("home.retakeWeakest20Btn", "Eng zaif 20 ta savolni qayta ishlash")}</span>
+            <IconArrowRight size={18} stroke={2.5} />
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

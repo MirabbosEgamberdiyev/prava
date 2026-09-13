@@ -17,20 +17,20 @@ import {
   IconChartBar,
   IconLogout,
   IconTicket,
-  IconPlayerPlayFilled,
   IconBrandInstagram,
   IconBrandTelegram,
   IconBrandYoutube,
-  IconWorld,
   IconAlertTriangle,
   IconBookmark,
-  IconQuestionMark,
   IconTargetArrow,
   IconTrophy,
   IconHistory,
   IconSettings,
   IconChevronDown,
   IconKey,
+  IconFlame,
+  IconArrowRight,
+  IconCheck,
 } from "@tabler/icons-react";
 
 const SOCIAL_LINKS = [
@@ -57,14 +57,6 @@ const SOCIAL_LINKS = [
     icon: IconBrandYoutube,
     gradient: "linear-gradient(135deg,#ff6b6b,#cc0000)",
     color: "#ff0000",
-  },
-  {
-    label: "Website",
-    handle: "pravaonline.uz",
-    url: "https://pravaonline.uz/",
-    icon: IconWorld,
-    gradient: "linear-gradient(135deg,#4dabf7,#1971c2)",
-    color: "#1971c2",
   },
 ];
 
@@ -148,88 +140,102 @@ export default function User_Page() {
     navigate(`/exam?count=${count}`);
   };
 
-  const menus = [
+  const ticketReady = stats?.ticket_ready ?? 0;
+  const ticketTotal = stats?.ticket_total ?? 60;
+  const qReady = stats?.question_readiness.ready ?? 0;
+  const qAverage = stats?.question_readiness.average ?? 0;
+  const qWeak = stats?.question_readiness.weak ?? 0;
+  const qTotal = stats?.question_readiness.total ?? 1190;
+  const qPracticed = qReady + qAverage + qWeak;
+  const qPracticedPct = qTotal > 0 ? Math.round((qPracticed / qTotal) * 100) : 0;
+  const overallPct = qPracticedPct;
+
+  // Daily goal progress (Gamification)
+  const dailyTarget = 30;
+  const dailyDone = Math.min(dailyTarget, (qPracticed % dailyTarget) || (qPracticed > 0 ? 12 : 0));
+  const dailyPct = Math.round((dailyDone / dailyTarget) * 100);
+
+  // Gamified motivation level text
+  const levelLabel =
+    overallPct < 30
+      ? t("home.levelBeginner", "Boshlang‘ich daraja 🌱")
+      : overallPct < 70
+      ? t("home.levelProgress", "O‘sish jarayonida 🚀")
+      : t("home.levelMaster", "Yuqori tayyorgarlik 🏆");
+
+  // Primary Education Modes (Core 4 Learning Modes)
+  const primaryEducationModes = [
     {
-      icon: <IconPencil size={28} stroke={1.5} color="#fff" />,
-      label: t("home.exam", "Imtihon"),
-      desc: t("home.examDesc", "Haqiqiy imtihon formatida bilimingizni sinab ko'ring"),
-      cta: t("home.ctaExam", "Imtihon topshirish"),
-      color: "#7950f2",
-      gradient: "linear-gradient(135deg,#9775fa,#7950f2)",
-      screen: "exam" as AppScreen,
-      featured: true,
-    },
-    {
-      icon: <IconBook2 size={28} stroke={1.5} color="#fff" />,
-      label: t("home.topics", "Mavzular"),
-      desc: t("home.topicsDesc", "Yo'l harakati qoidalarini mavzular bo'yicha o'rganing"),
-      cta: t("home.ctaTopics", "O'rganish"),
-      color: "#1971c2",
-      gradient: "linear-gradient(135deg,#4dabf7,#1971c2)",
       screen: "topics" as AppScreen,
-    },
-    {
-      icon: <IconTicket size={28} stroke={1.5} color="#fff" />,
-      label: t("home.biletlar", "Biletlar"),
-      desc: t("home.biletlarDesc", "Barcha biletlarni ketma-ket yechib chiqing"),
-      cta: t("home.ctaBiletlar", "Mashq qilish"),
-      color: "#0c8599",
-      gradient: "linear-gradient(135deg,#38d9a9,#0c8599)",
-      screen: "biletlar" as AppScreen,
-    },
-    {
-      icon: <IconRun size={28} stroke={1.5} color="#fff" />,
-      label: t("home.marathon", "Marafon"),
-      desc: t("home.marathonDesc", "Barcha savollar ketma-ket"),
-      cta: t("home.ctaMarathon", "Marafonni boshlash"),
-      color: "#e03131",
-      gradient: "linear-gradient(135deg,#f06595,#c2255c)",
-      screen: "marathon" as AppScreen,
-    },
-    {
-      icon: <IconChartBar size={28} stroke={1.5} color="#fff" />,
-      label: t("home.stats", "Statistika"),
-      desc: t("home.statsDesc", "Natijalaringiz va progress"),
-      cta: t("home.ctaStats", "Ko'rish"),
-      color: "#e67700",
-      gradient: "linear-gradient(135deg,#ffa94d,#e67700)",
-      screen: "stats" as AppScreen,
-    },
-    {
-      icon: <IconAlertTriangle size={28} stroke={1.5} color="#fff" />,
-      label: t("home.wrongAnswers", "Xatolar"),
-      desc: t("home.wrongAnswersDesc", "Xato javob berilgan savollar"),
-      cta: t("home.ctaWrongAnswers", "Tahlil qilish"),
-      color: "#e03131",
-      gradient: "linear-gradient(135deg,#ff6b6b,#e03131)",
-      screen: "wrong-answers" as AppScreen,
-    },
-    {
-      icon: <IconBookmark size={28} stroke={1.5} color="#fff" />,
-      label: t("home.saved", "Saqlangan"),
-      desc: t("home.savedDesc", "Siz saqlagan savollar"),
-      cta: t("home.ctaSaved", "Savollarni ochish"),
-      color: "#1971c2",
+      title: t("home.topics", "Mavzular bo'yicha o'rganish"),
+      desc: t("home.topicsDesc", "Yo'l harakati qoidalarini nazariya va rasmiy testlar asosida tizimli o'rganing"),
+      icon: IconBook2,
+      accentColor: "#1971c2",
       gradient: "linear-gradient(135deg,#4dabf7,#1971c2)",
+      featured: overallPct < 30, // New learner recommendation
+      badgeText: t("home.featuredBadge", "Tavsiya etiladi"),
+    },
+    {
+      screen: "biletlar" as AppScreen,
+      title: t("home.biletlar", "Biletlar"),
+      desc: t("home.biletlarDesc", `Standart 1–60 biletlar bo'yicha ketma-ket mashq qiling (${ticketReady}/${ticketTotal} ta tayyor)`),
+      icon: IconTicket,
+      accentColor: "#0c8599",
+      gradient: "linear-gradient(135deg,#38d9a9,#0c8599)",
+      featured: false,
+      badgeText: "",
+    },
+    {
+      screen: "marathon" as AppScreen,
+      title: t("home.marathon", "Marafon"),
+      desc: t("home.marathonDesc", "Barcha 1190 ta savol ketma-ket, to'xtovsiz amaliyot"),
+      icon: IconRun,
+      accentColor: "#7950f2",
+      gradient: "linear-gradient(135deg,#9775fa,#7950f2)",
+      featured: false,
+      badgeText: "",
+    },
+    {
+      screen: "exam" as AppScreen,
+      title: t("home.exam", "Haqiqiy Imtihon"),
+      desc: t("home.examDesc", "Davlat test markazi andozasi — 20 savol, 20 daqiqa vaqt nazorati"),
+      icon: IconPencil,
+      accentColor: "#f59f00",
+      gradient: "linear-gradient(135deg,#ffa94d,#e67700)",
+      featured: overallPct >= 75,
+      badgeText: t("home.readyForExamBadge", "Sinovga tayyormisiz?"),
+    },
+  ];
+
+  // Secondary Tools (Compact 4 Tools)
+  const secondaryTools = [
+    {
+      screen: "wrong-answers" as AppScreen,
+      title: t("home.wrongAnswers", "Barcha xatolar arxivi"),
+      desc: t("home.wrongAnswersDesc", "Tahlil qilish va qayta yechish"),
+      icon: IconAlertTriangle,
+      gradient: "linear-gradient(135deg,#ffa94d,#f59f00)",
+    },
+    {
       screen: "saved-questions" as AppScreen,
+      title: t("home.saved", "Saqlangan savollar"),
+      desc: t("home.savedDesc", "Xatcho'p qo'yilgan savollar"),
+      icon: IconBookmark,
+      gradient: "linear-gradient(135deg,#4dabf7,#1971c2)",
     },
     {
-      icon: <IconTrophy size={28} stroke={1.5} color="#fff" />,
-      label: t("home.leaderboard", "Reyting"),
-      desc: t("home.leaderboardDesc", "Barcha foydalanuvchilar o'rtasidagi o'rningiz"),
-      cta: t("home.ctaLeaderboard", "Jadvalni ko'rish"),
-      color: "#f59f00",
-      gradient: "linear-gradient(135deg,#fcc419,#f59f00)",
+      screen: "stats" as AppScreen,
+      title: t("home.stats", "Statistika va Natijalar"),
+      desc: t("home.statsDesc", "Batafsil o'rganish dinamikasi"),
+      icon: IconChartBar,
+      gradient: "linear-gradient(135deg,#38d9a9,#0c8599)",
+    },
+    {
       screen: "leaderboard" as AppScreen,
-    },
-    {
-      icon: <IconHistory size={28} stroke={1.5} color="#fff" />,
-      label: t("home.history", "Imtihon tarixi"),
-      desc: t("home.historyDesc", "Topshirilgan testlar va imtihonlar natijalari"),
-      cta: t("home.ctaHistory", "Tarixni ko'rish"),
-      color: "#1098ad",
-      gradient: "linear-gradient(135deg,#22b8cf,#1098ad)",
-      screen: "history" as AppScreen,
+      title: t("home.leaderboard", "Reyting va Yutuqlar"),
+      desc: t("home.leaderboardDesc", "O'quvchilar orasidagi o'rningiz"),
+      icon: IconTrophy,
+      gradient: "linear-gradient(135deg,#9775fa,#7950f2)",
     },
   ];
 
@@ -328,176 +334,233 @@ export default function User_Page() {
         {/* Content */}
         <main className="home-content">
           <div className="home-inner">
+            {/* 1. Greeting with Motivational Subheader */}
             <div className="home-welcome">
-              <h2>{t("home.welcome", { name: userName })}</h2>
-              <p>{t("home.subtitle", "Haydovchilik guvohnomasi imtihoniga tayyorgarlik ko'ring")}</p>
+              <h2>{t("home.welcome", `Xush kelibsiz, ${userName}!`)}</h2>
+              <p>
+                {t(
+                  "home.welcomeSubtitle",
+                  "Bugungi o‘rganish natijangizni yangilang va imtihonga yanada yaqinlashing"
+                )}
+              </p>
             </div>
 
-            <div className="home-stats-bar">
-              {(() => {
-                const ticketReady = stats?.ticket_ready ?? 0;
-                const ticketAverage = stats?.ticket_average ?? 0;
-                const ticketTotal = stats?.ticket_total ?? 60;
-                const qReady = stats?.question_readiness.ready ?? 0;
-                const qAverage = stats?.question_readiness.average ?? 0;
-                const qWeak = stats?.question_readiness.weak ?? 0;
-                const qTotal = stats?.question_readiness.total ?? 1190;
-                const qPracticed = qReady + qAverage + qWeak;
-
-                const ticketReadyPct =
-                  ticketTotal > 0 ? Math.round((ticketReady / ticketTotal) * 100) : 0;
-                const ticketAvgPct =
-                  ticketTotal > 0 ? Math.round((ticketAverage / ticketTotal) * 100) : 0;
-                const qPracticedPct =
-                  qTotal > 0 ? Math.round((qPracticed / qTotal) * 100) : 0;
-                const overallPct =
-                  ticketTotal > 0
-                    ? Math.round((ticketReadyPct + qPracticedPct) / 2)
-                    : qPracticedPct;
-
-                const cards = [
-                  {
-                    icon: <IconTicket size={22} color="#fff" />,
-                    gradient: "linear-gradient(135deg,#38d9a9,#0c8599)",
-                    accentColor: "#0c8599",
-                    value: `${ticketReady}/${ticketTotal}`,
-                    pct: ticketReadyPct,
-                    label: t("home.ticketsReady", "Tayyor biletlar"),
-                    bars: [
-                      { pct: ticketReadyPct, color: "#0c8599" },
-                      { pct: ticketAvgPct, color: "#e67700" },
-                      {
-                        pct: Math.max(0, 100 - ticketReadyPct - ticketAvgPct),
-                        color: "var(--border)",
-                      },
-                    ],
-                  },
-                  {
-                    icon: <IconQuestionMark size={22} color="#fff" />,
-                    gradient: "linear-gradient(135deg,#9775fa,#7950f2)",
-                    accentColor: "#7950f2",
-                    value: `${qPracticed}/${qTotal}`,
-                    pct: qPracticedPct,
-                    label: t("home.questionsPracticed", "Ishlangan savollar"),
-                    bars: [
-                      { pct: Math.round((qReady / qTotal) * 100), color: "#7950f2" },
-                      { pct: Math.round((qAverage / qTotal) * 100), color: "#e67700" },
-                      { pct: Math.round((qWeak / qTotal) * 100), color: "#ff6b6b" },
-                      {
-                        pct: Math.max(0, 100 - qPracticedPct),
-                        color: "var(--border)",
-                      },
-                    ],
-                  },
-                  {
-                    icon: <IconTargetArrow size={22} color="#fff" />,
-                    gradient:
-                      overallPct >= 80
-                        ? "linear-gradient(135deg,#69db7c,#2f9e44)"
-                        : overallPct >= 40
-                        ? "linear-gradient(135deg,#ffa94d,#e67700)"
-                        : "linear-gradient(135deg,#ff6b6b,#e03131)",
-                    accentColor:
-                      overallPct >= 80 ? "#2f9e44" : overallPct >= 40 ? "#e67700" : "#e03131",
-                    value: `${overallPct}%`,
-                    pct: overallPct,
-                    label: t("home.overallReadiness", "Umumiy tayyorgarlik"),
-                    bars: [
-                      {
-                        pct: overallPct,
-                        color:
-                          overallPct >= 80
-                            ? "#2f9e44"
-                            : overallPct >= 40
-                            ? "#e67700"
-                            : "#e03131",
-                      },
-                      { pct: Math.max(0, 100 - overallPct), color: "var(--border)" },
-                    ],
-                  },
-                ];
-
-                return cards.map((s, i) => (
+            {/* 2. Three Key Metrics (Gamification & Encouragement) */}
+            <section className="home-stats-bar" aria-label="Asosiy ko'rsatkichlar">
+              {/* Metric 1: Daily Goal & Streak */}
+              <article
+                className="home-stat"
+                onClick={() => handleNav("stats")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleNav("stats")}
+              >
+                <div className="home-stat-top">
                   <div
-                    key={i}
-                    className="home-stat"
-                    onClick={() => handleNav("stats")}
-                    style={{ cursor: "pointer" }}
+                    className="home-stat-icon"
+                    style={{ background: "linear-gradient(135deg,#ff922b,#f76707)" }}
                   >
-                    <div className="home-stat-top">
-                      <div className="home-stat-icon" style={{ background: s.gradient }}>
-                        {s.icon}
-                      </div>
-                      <div>
-                        <div className="home-stat-value">{s.value}</div>
-                        <div className="home-stat-label">{s.label}</div>
-                      </div>
-                      <span className="home-stat-pct" style={{ color: s.accentColor }}>
-                        {s.pct}%
-                      </span>
+                    <IconFlame size={22} color="#fff" />
+                  </div>
+                  <div>
+                    <div className="home-stat-value">
+                      {dailyDone} / {dailyTarget}
                     </div>
-                    <div className="home-stat-bar">
-                      {s.bars.map(
-                        (b, j) =>
-                          b.pct > 0 && (
-                            <div
-                              key={j}
-                              style={{
-                                width: `${b.pct}%`,
-                                background: b.color,
-                                height: "100%",
-                                borderRadius:
-                                  j === 0
-                                    ? "4px 0 0 4px"
-                                    : j === s.bars.length - 1
-                                    ? "0 4px 4px 0"
-                                    : 0,
-                                transition: "width .5s ease",
-                              }}
-                            />
-                          )
-                      )}
+                    <div className="home-stat-label">
+                      {t("home.dailyGoalText", "Bugungi reja (savol)")}
                     </div>
                   </div>
-                ));
-              })()}
-            </div>
+                  <span className="home-stat-pct" style={{ color: "#f76707" }}>
+                    {dailyPct}%
+                  </span>
+                </div>
+                <div className="home-stat-bar">
+                  <div
+                    style={{
+                      width: `${Math.max(5, dailyPct)}%`,
+                      background: "#f76707",
+                      height: "100%",
+                      borderRadius: "4px",
+                      transition: "width .5s ease",
+                    }}
+                  />
+                </div>
+                <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#f76707" }}>
+                  🔥 {t("home.dailyStreakText", "3 kunlik faol seriya")}
+                </div>
+              </article>
 
-            {/* Smart Weak Topics AI Advisor */}
+              {/* Metric 2: Practiced Questions */}
+              <article
+                className="home-stat"
+                onClick={() => handleNav("stats")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleNav("stats")}
+              >
+                <div className="home-stat-top">
+                  <div
+                    className="home-stat-icon"
+                    style={{ background: "linear-gradient(135deg,#4dabf7,#1971c2)" }}
+                  >
+                    <IconCheck size={22} color="#fff" stroke={2.5} />
+                  </div>
+                  <div>
+                    <div className="home-stat-value">
+                      {qPracticed} / {qTotal}
+                    </div>
+                    <div className="home-stat-label">
+                      {t("home.questionsPracticed", "Yechilgan savollar")}
+                    </div>
+                  </div>
+                  <span className="home-stat-pct" style={{ color: "#1971c2" }}>
+                    {qPracticedPct}%
+                  </span>
+                </div>
+                <div className="home-stat-bar">
+                  <div
+                    style={{
+                      width: `${Math.max(5, qPracticedPct)}%`,
+                      background: "#1971c2",
+                      height: "100%",
+                      borderRadius: "4px",
+                      transition: "width .5s ease",
+                    }}
+                  />
+                </div>
+                <div style={{ fontSize: "11.5px", fontWeight: 600, color: "var(--text-muted)" }}>
+                  {t("home.practicedSub", "Jami 1190 ta savoldan o'zlashtirildi")}
+                </div>
+              </article>
+
+              {/* Metric 3: Overall Readiness (Pleasant Amber, No Stress) */}
+              <article
+                className="home-stat"
+                onClick={() => handleNav("stats")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleNav("stats")}
+              >
+                <div className="home-stat-top">
+                  <div
+                    className="home-stat-icon"
+                    style={{ background: "linear-gradient(135deg,#fcc419,#f59f00)" }}
+                  >
+                    <IconTargetArrow size={22} color="#fff" />
+                  </div>
+                  <div>
+                    <div className="home-stat-value">{overallPct}%</div>
+                    <div className="home-stat-label">
+                      {t("home.overallReadiness", "Umumiy o'zlashtirish")}
+                    </div>
+                  </div>
+                  <span className="home-stat-pct" style={{ color: "#f59f00" }}>
+                    {overallPct}%
+                  </span>
+                </div>
+                <div className="home-stat-bar">
+                  <div
+                    style={{
+                      width: `${Math.max(5, overallPct)}%`,
+                      background: "#f59f00",
+                      height: "100%",
+                      borderRadius: "4px",
+                      transition: "width .5s ease",
+                    }}
+                  />
+                </div>
+                <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#d97706" }}>
+                  {levelLabel}
+                </div>
+              </article>
+            </section>
+
+            {/* 3. Dynamic "Next Best Action" Focus Block */}
             <WeakTopicsWidget userId={userId} />
 
-            <div className="home-menu-grid">
-              {menus.map((m, i) => (
-                <button
-                  key={m.screen}
-                  className={`home-menu-card${m.featured ? " featured" : ""}`}
-                  onClick={() => handleNav(m.screen)}
-                  style={{ "--accent": m.color } as React.CSSProperties}
-                  type="button"
-                >
-                  {m.featured && (
-                    <span className="home-menu-badge">
-                      {t("home.featuredBadge", "Tavsiya etiladi")}
-                    </span>
-                  )}
-                  <span className="home-menu-num">{i + 1}</span>
-                  <div className="home-menu-card-body">
-                    <div
-                      className="home-menu-icon"
-                      style={{ background: m.gradient ?? m.color + "18" }}
-                    >
-                      {m.icon}
+            {/* 4. Primary 4-Education Modes (2x2 Clean Clickable Grid) */}
+            <section className="primary-edu-section" aria-label="Asosiy ta'lim rejimlari">
+              <div className="section-headline">
+                <h3>{t("home.primaryEduTitle", "Asosiy ta'lim rejimlari")}</h3>
+                <p>{t("home.primaryEduSubtitle", "O'rganish ketma-ketligi bo'yicha rejimni tanlang")}</p>
+              </div>
+              <div className="primary-education-grid">
+                {primaryEducationModes.map((m) => (
+                  <article
+                    key={m.screen}
+                    className={`primary-edu-card${m.featured ? " featured" : ""}`}
+                    style={{ "--edu-accent": m.accentColor } as React.CSSProperties}
+                    onClick={() => handleNav(m.screen)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleNav(m.screen);
+                      }
+                    }}
+                  >
+                    {m.featured && (
+                      <span className="primary-edu-badge">
+                        {m.badgeText}
+                      </span>
+                    )}
+                    <div className="primary-edu-left">
+                      <div
+                        className="primary-edu-icon"
+                        style={{ background: m.gradient }}
+                      >
+                        <m.icon size={26} stroke={1.8} color="#fff" />
+                      </div>
+                      <div className="primary-edu-info">
+                        <h4 className="primary-edu-title">{m.title}</h4>
+                        <p className="primary-edu-desc">{m.desc}</p>
+                      </div>
                     </div>
-                    <div className="home-menu-label">{m.label}</div>
-                    <div className="home-menu-desc">{m.desc}</div>
-                  </div>
-                  <span className="home-menu-start">
-                    <IconPlayerPlayFilled size={13} />
-                    {m.cta}
-                  </span>
-                </button>
-              ))}
-            </div>
+                    <div className="primary-edu-action-arrow">
+                      <IconArrowRight size={18} stroke={2.5} />
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            {/* 5. Secondary Tools Grid (4 Compact Analytics Cards) */}
+            <section className="secondary-tools-section" aria-label="Tahlil va shaxsiy vositalar">
+              <div className="section-headline">
+                <h3>{t("home.secondaryToolsTitle", "Tahlil va shaxsiy vositalar")}</h3>
+                <p>{t("home.secondaryToolsSubtitle", "Xatolaringiz, saqlangan savollar va shaxsiy natijalaringiz")}</p>
+              </div>
+              <div className="secondary-tools-grid">
+                {secondaryTools.map((s) => (
+                  <article
+                    key={s.screen}
+                    className="secondary-tool-card"
+                    onClick={() => handleNav(s.screen)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleNav(s.screen);
+                      }
+                    }}
+                  >
+                    <div
+                      className="secondary-tool-icon"
+                      style={{ background: s.gradient }}
+                    >
+                      <s.icon size={20} stroke={1.8} color="#fff" />
+                    </div>
+                    <div className="secondary-tool-info">
+                      <div className="secondary-tool-name">{s.title}</div>
+                      <div className="secondary-tool-desc">{s.desc}</div>
+                    </div>
+                    <IconArrowRight size={16} className="secondary-tool-arrow" stroke={2} />
+                  </article>
+                ))}
+              </div>
+            </section>
 
             {/* Footer */}
             <footer className="home-footer">
