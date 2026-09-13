@@ -436,6 +436,25 @@ export async function getQuestionStats(_userId?: number): Promise<QuestionStatDe
 }
 
 export async function getExamHistory(userId?: number, _limit?: number): Promise<ExamResult[]> {
+  try {
+    const res = await api.get<{ data: any }>("/api/v2/exams/history?page=0&size=50");
+    const serverExams = res.data?.data?.content || res.data?.data?.recentExams;
+    if (Array.isArray(serverExams) && serverExams.length > 0) {
+      return serverExams.map((item: any) => ({
+        id: item.sessionId || item.id,
+        user_id: userId ?? 1,
+        score: item.score ?? Math.round(item.percentage ?? 0),
+        total_questions: item.totalQuestions ?? 20,
+        correct_answers: item.correctCount ?? item.correctAnswers ?? 0,
+        duration_seconds: item.durationSeconds ?? 0,
+        exam_type: item.examType || "EXAM",
+        created_at: item.finishedAt || item.startedAt || item.createdAt || new Date().toISOString(),
+      }));
+    }
+  } catch {
+    // offline fallback
+  }
+
   const list = storageService.getExamHistory();
   return list.map((item) => ({
     id: item.id,
@@ -477,16 +496,34 @@ export async function saveExamResult(params: {
 }
 
 export async function addWrongAnswer(_userId: number, question: OfflineQuestion | number): Promise<boolean> {
-  if (typeof question === "number") {
-    return true;
+  const qId = typeof question === "number" ? question : question.id;
+  if (typeof question !== "number") {
+    storageService.addWrongAnswer(toStoredQuestion(question));
   }
-  storageService.addWrongAnswer(toStoredQuestion(question));
+  try {
+    await api.post(`/api/v1/app/wrong-answers/${qId}`);
+  } catch {
+    // offline
+  }
   return true;
 }
 
 export async function getWrongAnswers(_userId?: number): Promise<WrongAnswerEntry[]> {
-  const list = storageService.getWrongAnswers();
-  return list.map((w) => ({
+  const localList = storageService.getWrongAnswers();
+  try {
+    const res = await api.get<{ data: any[] }>("/api/v1/app/wrong-answers");
+    if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+      return res.data.data.map((item: any) => ({
+        wrong_count: item.wrongCount || item.count || 1,
+        last_seen: item.lastWrongAt || item.updatedAt || new Date().toISOString(),
+        question: normalizeQuestion(item.question || item),
+      }));
+    }
+  } catch {
+    // fallback
+  }
+
+  return localList.map((w) => ({
     wrong_count: w.wrongCount || 1,
     last_seen: w.date,
     question: fromStoredQuestion(w.question),
@@ -495,20 +532,46 @@ export async function getWrongAnswers(_userId?: number): Promise<WrongAnswerEntr
 
 export async function removeWrongAnswer(_userId: number, questionId: number): Promise<boolean> {
   storageService.removeWrongAnswer(questionId);
+  try {
+    await api.delete(`/api/v1/app/wrong-answers/${questionId}`);
+  } catch {
+    // offline
+  }
   return true;
 }
 
 export async function toggleSavedQuestion(_userId: number, question: OfflineQuestion | number): Promise<boolean> {
+  const qId = typeof question === "number" ? question : question.id;
+  let saved = false;
   if (typeof question === "number") {
     storageService.removeSavedQuestion(question);
-    return false;
+    saved = false;
+  } else {
+    saved = storageService.toggleSavedQuestion(toStoredQuestion(question));
   }
-  return storageService.toggleSavedQuestion(toStoredQuestion(question));
+  try {
+    await api.post(`/api/v1/app/saved-questions/${qId}`);
+  } catch {
+    // offline
+  }
+  return saved;
 }
 
 export async function getSavedQuestions(_userId?: number): Promise<SavedQuestionEntry[]> {
-  const list = storageService.getSavedQuestions();
-  return list.map((s) => ({
+  const localList = storageService.getSavedQuestions();
+  try {
+    const res = await api.get<{ data: any[] }>("/api/v1/app/saved-questions");
+    if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+      return res.data.data.map((item: any) => ({
+        saved_at: item.savedAt || item.createdAt || new Date().toISOString(),
+        question: normalizeQuestion(item.question || item),
+      }));
+    }
+  } catch {
+    // fallback
+  }
+
+  return localList.map((s) => ({
     saved_at: s.date,
     question: fromStoredQuestion(s.question),
   }));
