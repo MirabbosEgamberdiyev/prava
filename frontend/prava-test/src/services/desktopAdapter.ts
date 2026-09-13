@@ -418,9 +418,11 @@ export async function getFullStats(_userId?: number): Promise<FullStats> {
 
   for (const qId of attemptKeys) {
     const att = attempts[Number(qId)];
-    if (att.correct >= 5) readyQ++;
-    else if (att.correct >= 3) averageQ++;
-    else if (att.correct >= 1) weakQ++;
+    if (att && att.total > 0) {
+      if (att.correct >= 5) readyQ++;
+      else if (att.correct >= 3) averageQ++;
+      else weakQ++; // Questions attempted with low or 0 correct count
+    }
   }
 
   const totalQ = 1190;
@@ -569,10 +571,9 @@ export async function addWrongAnswer(_userId: number, question: OfflineQuestion 
 }
 
 export async function getWrongAnswers(_userId?: number): Promise<WrongAnswerEntry[]> {
-  const localList = storageService.getWrongAnswers();
   try {
     const res = await api.get<{ data: any[] }>("/api/v1/app/wrong-answers");
-    if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+    if (res.data && Array.isArray(res.data.data)) {
       return res.data.data.map((item: any) => ({
         wrong_count: item.wrongCount || item.count || 1,
         last_seen: item.lastWrongAt || item.updatedAt || new Date().toISOString(),
@@ -580,7 +581,16 @@ export async function getWrongAnswers(_userId?: number): Promise<WrongAnswerEntr
       }));
     }
   } catch {
-    // fallback
+    // Offline or network error fallback
+  }
+
+  const localList = storageService.getWrongAnswers();
+  const attempts = storageService.getQuestionAttempts();
+  const totalAttempts = Object.values(attempts).reduce((sum, a) => sum + (a.total || 0), 0);
+
+  // If user has never answered any question, mistakes cannot exist
+  if (totalAttempts === 0) {
+    return [];
   }
 
   return localList.map((w) => ({

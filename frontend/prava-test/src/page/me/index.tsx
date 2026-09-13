@@ -153,6 +153,7 @@ export default function User_Page() {
       icon: <IconPencil size={28} stroke={1.5} color="#fff" />,
       label: t("home.exam", "Imtihon"),
       desc: t("home.examDesc", "Haqiqiy imtihon formatida bilimingizni sinab ko'ring"),
+      cta: t("home.ctaExam", "Imtihon topshirish"),
       color: "#7950f2",
       gradient: "linear-gradient(135deg,#9775fa,#7950f2)",
       screen: "exam" as AppScreen,
@@ -162,6 +163,7 @@ export default function User_Page() {
       icon: <IconBook2 size={28} stroke={1.5} color="#fff" />,
       label: t("home.topics", "Mavzular"),
       desc: t("home.topicsDesc", "Yo'l harakati qoidalarini mavzular bo'yicha o'rganing"),
+      cta: t("home.ctaTopics", "O'rganish"),
       color: "#1971c2",
       gradient: "linear-gradient(135deg,#4dabf7,#1971c2)",
       screen: "topics" as AppScreen,
@@ -170,6 +172,7 @@ export default function User_Page() {
       icon: <IconTicket size={28} stroke={1.5} color="#fff" />,
       label: t("home.biletlar", "Biletlar"),
       desc: t("home.biletlarDesc", "Barcha biletlarni ketma-ket yechib chiqing"),
+      cta: t("home.ctaBiletlar", "Mashq qilish"),
       color: "#0c8599",
       gradient: "linear-gradient(135deg,#38d9a9,#0c8599)",
       screen: "biletlar" as AppScreen,
@@ -178,6 +181,7 @@ export default function User_Page() {
       icon: <IconRun size={28} stroke={1.5} color="#fff" />,
       label: t("home.marathon", "Marafon"),
       desc: t("home.marathonDesc", "Barcha savollar ketma-ket"),
+      cta: t("home.ctaMarathon", "Marafonni boshlash"),
       color: "#e03131",
       gradient: "linear-gradient(135deg,#f06595,#c2255c)",
       screen: "marathon" as AppScreen,
@@ -186,6 +190,7 @@ export default function User_Page() {
       icon: <IconChartBar size={28} stroke={1.5} color="#fff" />,
       label: t("home.stats", "Statistika"),
       desc: t("home.statsDesc", "Natijalaringiz va progress"),
+      cta: t("home.ctaStats", "Ko'rish"),
       color: "#e67700",
       gradient: "linear-gradient(135deg,#ffa94d,#e67700)",
       screen: "stats" as AppScreen,
@@ -194,6 +199,7 @@ export default function User_Page() {
       icon: <IconAlertTriangle size={28} stroke={1.5} color="#fff" />,
       label: t("home.wrongAnswers", "Xatolar"),
       desc: t("home.wrongAnswersDesc", "Xato javob berilgan savollar"),
+      cta: t("home.ctaWrongAnswers", "Tahlil qilish"),
       color: "#e03131",
       gradient: "linear-gradient(135deg,#ff6b6b,#e03131)",
       screen: "wrong-answers" as AppScreen,
@@ -202,6 +208,7 @@ export default function User_Page() {
       icon: <IconBookmark size={28} stroke={1.5} color="#fff" />,
       label: t("home.saved", "Saqlangan"),
       desc: t("home.savedDesc", "Siz saqlagan savollar"),
+      cta: t("home.ctaSaved", "Savollarni ochish"),
       color: "#1971c2",
       gradient: "linear-gradient(135deg,#4dabf7,#1971c2)",
       screen: "saved-questions" as AppScreen,
@@ -210,6 +217,7 @@ export default function User_Page() {
       icon: <IconTrophy size={28} stroke={1.5} color="#fff" />,
       label: t("home.leaderboard", "Reyting"),
       desc: t("home.leaderboardDesc", "Barcha foydalanuvchilar o'rtasidagi o'rningiz"),
+      cta: t("home.ctaLeaderboard", "Jadvalni ko'rish"),
       color: "#f59f00",
       gradient: "linear-gradient(135deg,#fcc419,#f59f00)",
       screen: "leaderboard" as AppScreen,
@@ -218,6 +226,7 @@ export default function User_Page() {
       icon: <IconHistory size={28} stroke={1.5} color="#fff" />,
       label: t("home.history", "Imtihon tarixi"),
       desc: t("home.historyDesc", "Topshirilgan testlar va imtihonlar natijalari"),
+      cta: t("home.ctaHistory", "Tarixni ko'rish"),
       color: "#1098ad",
       gradient: "linear-gradient(135deg,#22b8cf,#1098ad)",
       screen: "history" as AppScreen,
@@ -472,17 +481,19 @@ export default function User_Page() {
                     </span>
                   )}
                   <span className="home-menu-num">{i + 1}</span>
-                  <div
-                    className="home-menu-icon"
-                    style={{ background: m.gradient ?? m.color + "18" }}
-                  >
-                    {m.icon}
+                  <div className="home-menu-card-body">
+                    <div
+                      className="home-menu-icon"
+                      style={{ background: m.gradient ?? m.color + "18" }}
+                    >
+                      {m.icon}
+                    </div>
+                    <div className="home-menu-label">{m.label}</div>
+                    <div className="home-menu-desc">{m.desc}</div>
                   </div>
-                  <div className="home-menu-label">{m.label}</div>
-                  <div className="home-menu-desc">{m.desc}</div>
                   <span className="home-menu-start">
                     <IconPlayerPlayFilled size={13} />
-                    {t("home.start", "Boshlash")}
+                    {m.cta}
                   </span>
                 </button>
               ))}
@@ -497,11 +508,11 @@ export default function User_Page() {
                     <button
                       key={s.label}
                       className="home-footer-btn"
-                      style={{ background: s.gradient }}
+                      style={{ "--btn-gradient": s.gradient } as React.CSSProperties}
                       onClick={() => setQrModal(s)}
                       type="button"
                     >
-                      <s.icon size={20} stroke={1.8} color="#fff" />
+                      <s.icon size={20} stroke={1.8} />
                       <span>{s.label}</span>
                     </button>
                   ))}

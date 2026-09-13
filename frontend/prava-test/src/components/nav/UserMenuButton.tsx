@@ -61,7 +61,7 @@ function UserMenuButton() {
               size="xs"
               fw={600}
               truncate="end"
-              style={{ maxWidth: 110, color: "var(--text)" }}
+              style={{ maxWidth: 240, color: "var(--text)" }}
               visibleFrom="xs"
             >
               {fullName}
