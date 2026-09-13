@@ -115,16 +115,22 @@ const Edit_Question_Page = () => {
     formData.append("folder", "questions");
     setUploading(true);
     try {
-      const res = await api.post("/api/v1/files/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      const uploadedUrl = res.data.data?.fileUrl || res.data;
+      // api.ts interceptor FormData uchun Content-Type ni avtomatik to'g'ri o'rnatadi
+      const res = await api.post("/api/v1/files/upload", formData);
+      const uploadedUrl = res.data.data?.fileUrl || res.data?.fileUrl || (typeof res.data === "string" ? res.data : "");
       if (uploadedUrl) {
         form.setFieldValue("imageUrl", uploadedUrl);
         notifications.show({ title: t("common.success"), message: t("questions.imageUploaded"), color: "green" });
+      } else {
+        throw new Error("Fayl manzili olinmadi");
       }
-    } catch {
-      notifications.show({ title: t("common.error"), message: t("questions.imageUploadError"), color: "red" });
+    } catch (err: any) {
+      console.error("Image upload failed:", err);
+      notifications.show({
+        title: t("common.error"),
+        message: err.response?.data?.message || t("questions.imageUploadError"),
+        color: "red",
+      });
     } finally {
       setUploading(false);
     }
@@ -133,9 +139,7 @@ const Edit_Question_Page = () => {
   const handleSubmit = async (values: typeof form.values) => {
     if (!questionId || submitting) return;
 
-    // MUHIM: bo'sh variantlar olib tashlanganda indekslar siljiydi —
-    // correctAnswerIndex ni yangi indeksga qayta xaritalash shart, aks holda
-    // noto'g'ri variant "to'g'ri javob" bo'lib saqlanadi.
+    // Bo'sh variantlarni filtrlash
     const keptOriginalIndexes: number[] = [];
     const options = values.options
       .map((opt, originalIdx) => ({ opt, originalIdx }))
@@ -151,49 +155,52 @@ const Edit_Question_Page = () => {
         };
       });
 
-    const remappedCorrectIndex = keptOriginalIndexes.indexOf(
-      values.correctAnswerIndex,
-    );
-
-    if (options.length < 2 || remappedCorrectIndex < 0) {
+    if (options.length < 2) {
       notifications.show({
         title: t("common.error"),
-        message: t("validation.textRequired"),
+        message: t("validation.atLeastTwoOptions") || "Kamida 2 ta to'ldirilgan variant bo'lishi shart",
         color: "red",
       });
       return;
     }
 
+    const correctIdxNum = Number(values.correctAnswerIndex ?? 0);
+    let remappedCorrectIndex = keptOriginalIndexes.indexOf(correctIdxNum);
+    if (remappedCorrectIndex < 0) {
+      remappedCorrectIndex = 0;
+    }
+
     setSubmitting(true);
     try {
       const payload = {
-        textUzl: values.textUzl || null,
-        textUzc: values.textUzc || null,
-        textEn: values.textEn || null,
-        textRu: values.textRu || null,
-        explanationUzl: values.explanationUzl || null,
-        explanationUzc: values.explanationUzc || null,
-        explanationEn: values.explanationEn || null,
-        explanationRu: values.explanationRu || null,
-        topicId: values.topicId || null,
-        difficulty: values.difficulty || null,
+        textUzl: values.textUzl?.trim() || null,
+        textUzc: values.textUzc?.trim() || null,
+        textEn: values.textEn?.trim() || null,
+        textRu: values.textRu?.trim() || null,
+        explanationUzl: values.explanationUzl?.trim() || null,
+        explanationUzc: values.explanationUzc?.trim() || null,
+        explanationEn: values.explanationEn?.trim() || null,
+        explanationRu: values.explanationRu?.trim() || null,
+        topicId: values.topicId ? Number(values.topicId) : null,
+        difficulty: values.difficulty || "MEDIUM",
         options,
         correctAnswerIndex: remappedCorrectIndex,
-        imageUrl: values.imageUrl && values.imageUrl.trim() !== "" ? values.imageUrl : null,
-        isActive: values.isActive,
+        imageUrl: values.imageUrl && values.imageUrl.trim() !== "" ? values.imageUrl.trim() : null,
+        isActive: values.isActive ?? true,
       };
 
       await api.put(`/api/v1/admin/questions/${questionId}`, payload);
       notifications.show({
         title: t("common.success"),
-        message: t("questions.updateSuccess"),
+        message: t("questions.updateSuccess") || "Savol muvaffaqiyatli yangilandi",
         color: "green",
       });
       navigate("/questions");
     } catch (error: any) {
+      console.error("Question update error:", error);
       notifications.show({
         title: t("common.error"),
-        message: error.response?.data?.message || t("questions.updateError"),
+        message: error.response?.data?.message || t("questions.updateError") || "Savolni yangilashda xatolik yuz berdi",
         color: "red",
       });
     } finally {
@@ -313,14 +320,20 @@ const Edit_Question_Page = () => {
                 data={topicOptions}
                 label={t("questions.topicLabel")}
                 searchable
+                clearable
                 disabled={isTopicsLoading}
-                {...form.getInputProps("topicId")}
-                onChange={(value) => form.setFieldValue("topicId", value ? parseInt(value) : null)}
-                value={form.values.topicId?.toString() ?? null}
+                error={form.errors.topicId}
+                value={form.values.topicId ? String(form.values.topicId) : null}
+                onChange={(value) => form.setFieldValue("topicId", value ? parseInt(value, 10) : null)}
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Select label={t("questions.difficulty")} data={["EASY", "MEDIUM", "HARD"]} {...form.getInputProps("difficulty")} />
+              <Select
+                label={t("questions.difficulty")}
+                data={["EASY", "MEDIUM", "HARD"]}
+                value={form.values.difficulty || "MEDIUM"}
+                onChange={(val) => form.setFieldValue("difficulty", val || "MEDIUM")}
+              />
             </Grid.Col>
 
             {/* Rasm */}
@@ -369,8 +382,8 @@ const Edit_Question_Page = () => {
               </Group>
 
               <Radio.Group
-                value={form.values.correctAnswerIndex.toString()}
-                onChange={(val) => form.setFieldValue("correctAnswerIndex", parseInt(val))}
+                value={String(form.values.correctAnswerIndex ?? 0)}
+                onChange={(val) => form.setFieldValue("correctAnswerIndex", parseInt(val, 10))}
               >
                 <Grid gutter="xl">
                   {form.values.options.map((_, index) => (
@@ -379,7 +392,7 @@ const Edit_Question_Page = () => {
                         <Group justify="space-between" mb="sm">
                           <Group>
                             <Radio value={index.toString()} label={<Text fw={600}>{t("questions.variant", { n: index + 1 })}</Text>} />
-                            {form.values.correctAnswerIndex === index && (
+                            {Number(form.values.correctAnswerIndex) === index && (
                               <Text size="xs" c="blue" fw={700}>{t("questions.correctAnswer")}</Text>
                             )}
                           </Group>

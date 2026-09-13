@@ -91,6 +91,12 @@ api.interceptors.request.use(
 
       // TILNI BIRIKTIRISH (Swaggerdagi kabi)
       config.headers["Accept-Language"] = language;
+
+      // FormData yuborilganda default "application/json" yoki boundary-siz "multipart/form-data"
+      // ketishini oldini olamiz. Brauzer o'zi to'g'ri boundary bilan Content-Type o'rnatadi.
+      if (config.data instanceof FormData) {
+        delete config.headers["Content-Type"];
+      }
     }
 
     return config;

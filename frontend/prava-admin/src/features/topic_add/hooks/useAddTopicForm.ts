@@ -35,10 +35,8 @@ export const useAddTopicForm = () => {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const res = await api.post("/api/v1/files/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      const url = res.data.data?.fileUrl || res.data;
+      const res = await api.post("/api/v1/files/upload", formData);
+      const url = res.data.data?.fileUrl || res.data?.fileUrl || (typeof res.data === "string" ? res.data : "");
       form.setFieldValue("iconUrl", url);
       notifications.show({
         title: t("common.success"),

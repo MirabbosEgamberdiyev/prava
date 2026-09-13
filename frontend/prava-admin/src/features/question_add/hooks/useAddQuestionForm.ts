@@ -81,12 +81,10 @@ export const useAddQuestionForm = () => {
 
     setUploading(true);
     try {
-      const res = await api.post("/api/v1/files/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await api.post("/api/v1/files/upload", formData);
 
       // Backenddan qaytgan URL: res.data.data.fileUrl
-      const uploadedUrl = res.data.data?.fileUrl || res.data;
+      const uploadedUrl = res.data.data?.fileUrl || res.data?.fileUrl || (typeof res.data === "string" ? res.data : "");
 
       if (uploadedUrl) {
         form.setFieldValue("imageUrl", uploadedUrl);
