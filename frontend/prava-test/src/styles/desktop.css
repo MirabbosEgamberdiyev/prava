@@ -2132,14 +2132,21 @@ body:has(.app) {
 
 .primary-education-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+  .primary-education-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+@media (max-width: 640px) {
   .primary-education-grid {
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 12px;
   }
 }
 
@@ -2148,11 +2155,11 @@ body:has(.app) {
   background: var(--card-bg);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 20px 18px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: space-between;
-  gap: 18px;
+  gap: 16px;
   cursor: pointer;
   text-align: left;
   color: var(--text);
@@ -2160,7 +2167,7 @@ body:has(.app) {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
   box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
   box-sizing: border-box;
-  min-height: 120px;
+  min-height: 140px;
 }
 
 .primary-edu-card:hover {
@@ -2171,14 +2178,14 @@ body:has(.app) {
 
 .primary-edu-card.featured {
   border-color: rgba(25, 113, 194, 0.45);
-  background: linear-gradient(180deg, var(--card-bg) 0%, rgba(25, 113, 194, 0.035) 100%);
+  background: linear-gradient(180deg, var(--card-bg) 0%, rgba(25, 113, 194, 0.04) 100%);
   box-shadow: 0 4px 16px rgba(25, 113, 194, 0.08);
 }
 
 .primary-edu-badge {
   position: absolute;
   top: 12px;
-  right: 14px;
+  right: 12px;
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
@@ -2191,17 +2198,17 @@ body:has(.app) {
   pointer-events: none;
 }
 
-.primary-edu-left {
+.primary-edu-top {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .primary-edu-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2212,7 +2219,8 @@ body:has(.app) {
 .primary-edu-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  flex: 1;
 }
 
 .primary-edu-title {
@@ -2224,16 +2232,16 @@ body:has(.app) {
 }
 
 .primary-edu-desc {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-muted);
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .primary-edu-action-arrow {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: var(--surface-muted, rgba(0, 0, 0, 0.03));
   border: 1px solid var(--border);
   display: flex;
@@ -2242,6 +2250,7 @@ body:has(.app) {
   color: var(--text-muted);
   flex-shrink: 0;
   transition: all 0.15s ease;
+  align-self: flex-end;
 }
 
 .primary-edu-card:hover .primary-edu-action-arrow {
@@ -2249,6 +2258,147 @@ body:has(.app) {
   color: #ffffff;
   border-color: var(--edu-accent, var(--primary));
   transform: translateX(3px);
+}
+
+/* ============ SMART RECOMMENDATION (12-COL 7/5 GRID) ============ */
+.smart-recommendation-section {
+  margin-bottom: 36px;
+  width: 100%;
+}
+
+.smart-recommendation-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+}
+
+.smart-col-left {
+  grid-column: span 7;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.smart-col-right {
+  grid-column: span 5;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(180deg, var(--card-bg) 0%, rgba(245, 159, 0, 0.035) 100%);
+}
+
+@media (max-width: 1024px) {
+  .smart-recommendation-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .smart-col-left,
+  .smart-col-right {
+    grid-column: span 1;
+    padding: 18px;
+  }
+}
+
+.smart-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.smart-badge.amber {
+  background: rgba(245, 159, 0, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 159, 0, 0.25);
+}
+
+.smart-badge.red {
+  background: rgba(235, 64, 52, 0.12);
+  color: #e03131;
+  border: 1px solid rgba(235, 64, 52, 0.25);
+}
+
+.smart-col-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 6px 0 0 0;
+  letter-spacing: -0.2px;
+}
+
+.smart-col-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 8px 0 0 0;
+}
+
+.primary-edu-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+}
+
+.primary-edu-cta-text {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+
+.primary-edu-card:hover .primary-edu-cta-text {
+  color: var(--edu-accent, var(--primary));
+}
+
+.home-lang-group {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.home-lang-btn {
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.home-lang-btn:hover {
+  color: var(--text);
+}
+
+.home-lang-btn.active {
+  background: var(--card-bg);
+  color: var(--primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 /* ============ SECONDARY COMPACT TOOLS GRID ============ */
@@ -2266,10 +2416,11 @@ body:has(.app) {
 @media (max-width: 1024px) {
   .secondary-tools-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
   }
 }
 
-@media (max-width: 540px) {
+@media (max-width: 640px) {
   .secondary-tools-grid {
     grid-template-columns: 1fr;
     gap: 12px;
