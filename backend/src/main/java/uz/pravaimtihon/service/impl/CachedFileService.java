@@ -21,6 +21,28 @@ public class CachedFileService {
         this.uploadDir = Paths.get(uploadDirStr).toAbsolutePath().normalize();
     }
 
+    private Path resolveFilePath(String folder, String filename) {
+        Path filePath = uploadDir.resolve(folder).resolve(filename).normalize();
+        if (!filePath.startsWith(uploadDir)) {
+            throw new FileStorageException("Invalid file path");
+        }
+
+        if (!Files.exists(filePath)) {
+            if ("questions".equals(folder)) {
+                Path fallback = uploadDir.resolve("general").resolve(filename).normalize();
+                if (fallback.startsWith(uploadDir) && Files.exists(fallback)) {
+                    return fallback;
+                }
+            } else if ("general".equals(folder)) {
+                Path fallback = uploadDir.resolve("questions").resolve(filename).normalize();
+                if (fallback.startsWith(uploadDir) && Files.exists(fallback)) {
+                    return fallback;
+                }
+            }
+        }
+        return filePath;
+    }
+
     /**
      * ✅ Get file with caching
      * Cache key: folder + filename
@@ -29,16 +51,10 @@ public class CachedFileService {
     @Cacheable(value = "fileCache", key = "#folder + ':' + #filename")
     public byte[] getCachedFile(String folder, String filename) {
         try {
-            Path uploadDir = this.uploadDir;
-            Path filePath = uploadDir.resolve(folder).resolve(filename).normalize();
-
-            // Security check
-            if (!filePath.startsWith(uploadDir)) {
-                throw new FileStorageException("Invalid file path");
-            }
+            Path filePath = resolveFilePath(folder, filename);
 
             if (!Files.exists(filePath)) {
-                log.warn("File not found: {}", filePath);
+                log.warn("File not found: {}/{}", folder, filename);
                 throw new FileStorageException("File not found: " + filename);
             }
 
@@ -59,8 +75,7 @@ public class CachedFileService {
     @Cacheable(value = "contentTypeCache", key = "#folder + ':' + #filename")
     public String getContentType(String folder, String filename) {
         try {
-            Path uploadDir = this.uploadDir;
-            Path filePath = uploadDir.resolve(folder).resolve(filename).normalize();
+            Path filePath = resolveFilePath(folder, filename);
 
             if (!Files.exists(filePath)) {
                 return "application/octet-stream";
@@ -69,7 +84,7 @@ public class CachedFileService {
             String contentType = Files.probeContentType(filePath);
             return contentType != null ? contentType : "application/octet-stream";
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Error detecting content type: {}/{}", folder, filename, e);
             return "application/octet-stream";
         }
@@ -81,9 +96,7 @@ public class CachedFileService {
     @Cacheable(value = "fileExistsCache", key = "#folder + ':' + #filename")
     public boolean fileExists(String folder, String filename) {
         try {
-            Path uploadDir = this.uploadDir;
-            Path filePath = uploadDir.resolve(folder).resolve(filename).normalize();
-
+            Path filePath = resolveFilePath(folder, filename);
             return Files.exists(filePath);
 
         } catch (Exception e) {

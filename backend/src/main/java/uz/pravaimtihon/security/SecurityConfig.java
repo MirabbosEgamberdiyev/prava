@@ -114,13 +114,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/files/installers/**")
                         .permitAll()
 
-                        // 3️⃣ Question image by ID - PROTECTED (before wildcard)
-                        .requestMatchers(HttpMethod.GET, "/api/v1/files/questions/by-id/**")
-                        .hasAnyRole("SUPER_ADMIN", "ADMIN", "USER")
-
-                        // 4️⃣ Question images by filename - PROTECTED (requires active exam)
+                        // 3️⃣ Question images - PUBLIC (brauzer <img> teglari Authorization headersiz yuklaydi)
                         .requestMatchers(HttpMethod.GET, "/api/v1/files/questions/**")
-                        .hasAnyRole("SUPER_ADMIN", "ADMIN", "USER")
+                        .permitAll()
+
+                        // HEAD requests for all public file endpoints
+                        .requestMatchers(HttpMethod.HEAD,
+                                "/api/v1/files/profiles/**",
+                                "/api/v1/files/general/**",
+                                "/api/v1/files/installers/**",
+                                "/api/v1/files/questions/**"
+                        ).permitAll()
 
                         // 5️⃣ File metadata, utilities, downloads - ADMIN ONLY
                         .requestMatchers(

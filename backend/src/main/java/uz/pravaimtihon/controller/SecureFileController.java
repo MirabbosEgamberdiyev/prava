@@ -352,86 +352,20 @@ public class SecureFileController {
     }
 
     // ============================================
-    // SECURE QUESTION IMAGE ACCESS
+    // ============================================
+    // QUESTION IMAGE ACCESS (Public for browser <img> tags)
     // ============================================
 
     @GetMapping("/questions/{filename:.+}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'USER')")
     @Operation(
-            summary = "Savol rasmi (xavfsiz)",
-            description = "Faqat aktiv imtihon paytida ko'rinadi. Admin har doim ko'rishi mumkin."
+            summary = "Savol rasmi (public)",
+            description = "Brauzer <img> teglari orqali yuklash uchun ochiq"
     )
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "200",
-                    description = "Rasm muvaffaqiyatli qaytarildi"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "400",
-                    description = "Noto'g'ri fayl nomi"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "401",
-                    description = "Autentifikatsiya talab qilinadi"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "403",
-                    description = "Aktiv imtihon yo'q - rasm ko'rsatilmaydi"
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "500",
-                    description = "Fayl o'qishda xatolik"
-            )
-    })
     public ResponseEntity<Resource> getQuestionImage(
             @PathVariable String filename,
             @Parameter(description = "uzl|uzc|en|ru")
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
-
-        try {
-            // Validate filename
-            if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
-                log.warn("⚠️ Invalid filename attempt: {}", filename);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            }
-
-            Long userId = SecurityUtils.getCurrentUserId();
-            if (userId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
-            // Admin/SuperAdmin har doim ko'rishi mumkin
-            boolean isAdmin = SecurityUtils.hasRole("SUPER_ADMIN") || SecurityUtils.hasRole("ADMIN");
-
-            if (!isAdmin) {
-                boolean hasActiveExam = examSessionRepository
-                        .findActiveSession(userId, LocalDateTime.now())
-                        .isPresent();
-
-                if (!hasActiveExam) {
-                    log.warn("⚠️ User {} tried to access question image without active exam", userId);
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                }
-            }
-
-            // Use cached file service
-            byte[] fileData = cachedFileService.getCachedFile("questions", filename);
-            ByteArrayResource resource = new ByteArrayResource(fileData);
-            String contentType = cachedFileService.getContentType("questions", filename);
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CACHE_CONTROL, "private, max-age=3600")
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                    .header("X-Content-Type-Options", "nosniff")
-                    .header("Content-Security-Policy", "default-src 'none'; sandbox")
-                    .contentLength(fileData.length)
-                    .body(resource);
-
-        } catch (Exception e) {
-            log.error("❌ Error reading question image: {}", filename, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return getPublicFile("questions", filename, language);
     }
 
     // ============================================
@@ -571,11 +505,11 @@ public class SecureFileController {
 
     private ResponseEntity<Resource> getPublicFile(String folder, String filename, AcceptLanguage language) {
         try {
-            if (filename.contains("..")) {
+            if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
 
-            List<String> allowedFolders = Arrays.asList("profiles", "general");
+            List<String> allowedFolders = Arrays.asList("profiles", "general", "questions");
             if (!allowedFolders.contains(folder)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
@@ -592,11 +526,15 @@ public class SecureFileController {
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
                     .header("X-Content-Type-Options", "nosniff")
                     .header("Content-Security-Policy", "default-src 'none'; sandbox")
                     .contentLength(fileData.length)
                     .body(resource);
 
+        } catch (FileStorageException e) {
+            log.warn("⚠️ File not found: {}/{}", folder, filename);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
             log.error("❌ Error reading file: {}/{}", folder, filename, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
