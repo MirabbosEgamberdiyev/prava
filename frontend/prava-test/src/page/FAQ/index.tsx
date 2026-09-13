@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Accordion,
+  ActionIcon,
   Box,
   Center,
   Group,
@@ -18,6 +19,7 @@ import {
   IconArrowRight,
   IconBrandTelegram,
   IconSparkles,
+  IconX,
 } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -30,10 +32,52 @@ interface FAQItem {
   answer: string;
 }
 
+function HighlightMatch({ text, query }: { text: string; query: string }) {
+  const cleanQuery = query.trim();
+  if (!cleanQuery) return <>{text}</>;
+  try {
+    const escaped = cleanQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escaped})`, "gi");
+    const parts = text.split(regex);
+    return (
+      <>
+        {parts.map((part, i) =>
+          regex.test(part) ? (
+            <mark
+              key={i}
+              style={{
+                backgroundColor: "rgba(34, 139, 230, 0.25)",
+                color: "inherit",
+                borderRadius: "3px",
+                padding: "1px 3px",
+                fontWeight: 700,
+              }}
+            >
+              {part}
+            </mark>
+          ) : (
+            part
+          )
+        )}
+      </>
+    );
+  } catch {
+    return <>{text}</>;
+  }
+}
+
 export default function FAQ_Page() {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeTab, setActiveTab] = useState<string>("all");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const faqs: FAQItem[] = useMemo(
     () => [
@@ -156,14 +200,14 @@ export default function FAQ_Page() {
   const filteredFaqs = useMemo(() => {
     return faqs.filter((item) => {
       const matchCategory = activeTab === "all" || item.category === activeTab;
-      const query = search.toLowerCase().trim();
+      const query = debouncedSearch.toLowerCase().trim();
       const matchSearch =
         !query ||
         item.question.toLowerCase().includes(query) ||
         item.answer.toLowerCase().includes(query);
       return matchCategory && matchSearch;
     });
-  }, [faqs, activeTab, search]);
+  }, [faqs, activeTab, debouncedSearch]);
 
   const jsonLdData = {
     "@context": "https://schema.org",
@@ -210,8 +254,22 @@ export default function FAQ_Page() {
               size="md"
               radius="xl"
               leftSection={<IconSearch size={18} />}
+              rightSection={
+                search ? (
+                  <ActionIcon
+                    size="sm"
+                    variant="subtle"
+                    color="gray"
+                    onClick={() => setSearch("")}
+                    aria-label={t("common.clear", "Tozalash")}
+                  >
+                    <IconX size={14} />
+                  </ActionIcon>
+                ) : null
+              }
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              aria-label={t("faq.searchPlaceholder", "Savolingizni qidiring...")}
             />
           </Box>
         </div>
@@ -263,14 +321,17 @@ export default function FAQ_Page() {
                   style={{
                     backgroundColor: "var(--surface)",
                     borderColor: "var(--border)",
+                    boxShadow: "var(--card-shadow-sm)",
+                    borderRadius: "var(--radius-md, 16px)",
                     marginBottom: 12,
+                    overflow: "hidden",
                   }}
                 >
                   <Accordion.Control style={{ fontSize: 15, fontWeight: 600 }}>
-                    {faq.question}
+                    <HighlightMatch text={faq.question} query={debouncedSearch} />
                   </Accordion.Control>
                   <Accordion.Panel style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.7 }}>
-                    {faq.answer}
+                    <HighlightMatch text={faq.answer} query={debouncedSearch} />
                   </Accordion.Panel>
                 </Accordion.Item>
               ))}

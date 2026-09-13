@@ -27,13 +27,13 @@ export default function EnterpriseContactCard({
   const content = (
     <>
       <ThemeIcon
-        size={40}
+        size={44}
         radius="md"
         color={color}
         variant="light"
         style={{ flexShrink: 0 }}
       >
-        <IconComp size={20} />
+        <IconComp size={22} />
       </ThemeIcon>
 
       <Box style={{ flex: 1, minWidth: 0 }}>

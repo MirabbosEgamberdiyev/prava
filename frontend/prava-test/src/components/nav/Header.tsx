@@ -48,10 +48,10 @@ export default function Header({
 
   return (
     <AppShell.Header className="saas-header">
-      <Container h="100%" size="xl" px={{ base: "sm", sm: "md", lg: "lg" }}>
+      <Container h="100%" size={1440} px={{ base: "sm", sm: "md", lg: "lg" }} style={{ maxWidth: 1440 }}>
         <div className="saas-header-inner">
           {/* Left: Mobile Burger + Brand */}
-          <Group gap="sm" wrap="nowrap" align="center">
+          <Group gap="sm" wrap="nowrap" align="center" style={{ flexShrink: 0 }}>
             <Burger
               opened={opened}
               onClick={toggle}
@@ -104,7 +104,7 @@ export default function Header({
           </nav>
 
           {/* Right: Social + Theme + Language + Auth */}
-          <Group gap={8} wrap="nowrap" align="center" style={{ flexShrink: 0 }}>
+          <Group gap={8} wrap="nowrap" align="center" style={{ flexShrink: 0 }} className="saas-header-right">
             <Box visibleFrom="sm">
               <Tooltip label="Telegram" position="bottom" withArrow>
                 <a

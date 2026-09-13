@@ -97,7 +97,7 @@ const Footer = React.memo(() => {
         transition: "all 0.2s ease",
       }}
     >
-      <Container size="xl" py="xl">
+      <Container maw={1440} px={{ base: "md", sm: "xl" }} py={{ base: "xl", md: 48 }}>
         <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="xl">
           {/* Col 1: Brand & Bio */}
           <Stack gap="sm">

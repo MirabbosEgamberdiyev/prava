@@ -174,7 +174,7 @@ const Navbar = ({ close }: { close: () => void }) => {
               variant="default"
               radius="md"
               fullWidth
-              h={42}
+              h={44}
               styles={{ root: { fontWeight: 600, borderColor: "var(--border)" } }}
             >
               {t("nav.login_btn", "Kirish")}
@@ -188,7 +188,7 @@ const Navbar = ({ close }: { close: () => void }) => {
               variant="filled"
               radius="md"
               fullWidth
-              h={42}
+              h={44}
               className="saas-btn-primary"
               styles={{ root: { fontWeight: 600 } }}
             >

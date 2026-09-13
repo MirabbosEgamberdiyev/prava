@@ -558,6 +558,7 @@ export default function Partners_Page() {
                   position: "relative",
                   display: "flex",
                   flexDirection: "column",
+                  height: "100%",
                   padding: "24px 20px",
                 }}
               >
@@ -829,10 +830,11 @@ export default function Partners_Page() {
                         size="md"
                         radius="md"
                         loading={isSubmitting}
-                        className="saas-btn-primary"
+                        className="saas-btn-primary saas-interactive-btn"
                         rightSection={<IconSend size={16} />}
                         mt="sm"
-                        h={44}
+                        h={48}
+                        fw={700}
                       >
                         {isSubmitting
                           ? t("partners.sending", "Yuborilmoqda...")

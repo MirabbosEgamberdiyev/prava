@@ -29,9 +29,9 @@ export function Hero_Banner() {
 
   return (
     <section className={classes.heroSection} aria-label="Hero">
-      <Grid justify="center" align="center" gutter={{ base: "xl", md: 48 }}>
-        {/* Chap qism - Matn */}
-        <Grid.Col span={{ base: 12, md: 6, lg: 7 }}>
+      <Grid columns={20} justify="center" align="center" gutter={{ base: "xl", md: 36, lg: 48 }} style={{ width: "100%" }}>
+        {/* Chap qism - Matn (55% on desktop) */}
+        <Grid.Col span={{ base: 20, md: 11 }}>
           <Box className={classes.heroContent}>
             <div className={classes.sectionBadge} style={{ marginBottom: 16 }}>
               <IconShieldCheck size={14} stroke={2.5} />
@@ -81,17 +81,25 @@ export function Hero_Banner() {
               </List.Item>
             </List>
 
-            <Group mt={32} className={classes.heroButtons}>
+            <Group mt={32} className={classes.heroButtons} gap="md">
               <Link
                 to="/try-exam"
                 onMouseEnter={() => prefetchRoute("/try-exam")}
                 onTouchStart={() => prefetchRoute("/try-exam")}
+                style={{ textDecoration: "none" }}
               >
                 <Button
                   radius="xl"
                   size="lg"
-                  h={44}
+                  h={50}
                   className={classes.heroButton}
+                  style={{
+                    background: "var(--primary)",
+                    color: "#ffffff",
+                    fontWeight: 700,
+                    padding: "0 28px",
+                    boxShadow: "0 4px 16px rgba(25, 113, 194, 0.35)",
+                  }}
                   rightSection={<IconArrowRight size={18} />}
                 >
                   {t("guestExam.tryFree", "Bepul sinov imtihoni")}
@@ -101,13 +109,20 @@ export function Hero_Banner() {
                 to="/auth/register"
                 onMouseEnter={() => prefetchRoute("/auth/register")}
                 onTouchStart={() => prefetchRoute("/auth/register")}
+                style={{ textDecoration: "none" }}
               >
                 <Button
                   radius="xl"
                   size="lg"
-                  h={44}
+                  h={50}
                   variant="default"
-                  styles={{ root: { fontWeight: 600 } }}
+                  style={{
+                    fontWeight: 600,
+                    padding: "0 24px",
+                    borderColor: "var(--border)",
+                    background: "var(--card-bg)",
+                    color: "var(--text)",
+                  }}
                 >
                   {t("home.hero.startFree", "Ro'yxatdan o'tish")}
                 </Button>
@@ -132,8 +147,8 @@ export function Hero_Banner() {
           </Box>
         </Grid.Col>
 
-        {/* O'ng qism - Telefon mockup → Realistik mobil simulyatsiya */}
-        <Grid.Col span={{ base: 12, md: 6, lg: 5 }}>
+        {/* O'ng qism - Telefon mockup (45% on desktop) */}
+        <Grid.Col span={{ base: 20, md: 9 }}>
           <Flex
             justify="center"
             align="center"

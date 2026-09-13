@@ -337,10 +337,6 @@ export default function Downloads_Page() {
                 mb="md"
                 style={{
                   minHeight: 48,
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
                 }}
               >
                 {p.desc}
@@ -370,8 +366,10 @@ export default function Downloads_Page() {
                   fullWidth
                   size="md"
                   radius="md"
-                  h={44}
+                  h={46}
+                  fw={600}
                   color={p.badgeColor}
+                  className="saas-interactive-btn"
                   leftSection={<IconDownload size={16} />}
                   rightSection={p.primaryAction.isExternal ? <IconExternalLink size={14} /> : undefined}
                 >

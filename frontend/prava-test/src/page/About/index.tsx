@@ -175,9 +175,9 @@ export default function About_Page() {
                 </div>
               </Group>
               <Divider mb="lg" />
-              <SimpleGrid cols={2} spacing="md">
+              <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="md">
                 {milestones.map((m, idx) => (
-                  <div key={idx} className="saas-card-flat">
+                  <div key={idx} className="saas-card-flat" style={{ padding: "16px" }}>
                     <Text fw={800} size="1.6rem" c="blue.6" className="font-tabular" style={{ lineHeight: 1.2 }}>
                       {m.number}
                     </Text>

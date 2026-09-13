@@ -79,11 +79,40 @@
   --theme-border: #dee2e6;
   --header-bg: rgba(255, 255, 255, 0.82);
   --header-border: rgba(222, 226, 230, 0.85);
+
+  /* ============ GLOBAL DESIGN SYSTEM TOKENS ============ */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+
   --radius: 8px;
-  --radius-lg: 12px;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+  --radius-lg-legacy: 12px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  --container-max: 1440px;
+
+  --card-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --card-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --card-shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.12);
+
+  --shadow-sm: var(--card-shadow-sm);
+  --shadow: var(--card-shadow-md);
+  --shadow-lg: var(--card-shadow-lg);
+
+  --transition-fast: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Mantine V7 Semantic Token Bridge */
   --mantine-color-body: #f8f9fa;
@@ -123,9 +152,14 @@
   --theme-border: #1a364d;
   --header-bg: rgba(3, 24, 36, 0.82);
   --header-border: rgba(26, 54, 77, 0.85);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.07);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(77, 171, 247, 0.25);
+
+  --card-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --card-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.07);
+  --card-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(77, 171, 247, 0.25);
+
+  --shadow-sm: var(--card-shadow-sm);
+  --shadow: var(--card-shadow-md);
+  --shadow-lg: var(--card-shadow-lg);
 
   /* Mantine V7 Semantic Token Bridge */
   --mantine-color-body: #031824;
@@ -171,6 +205,51 @@
   }
 }
 
+/* ============ GLOBAL CONTAINER & INTERACTIVE DESIGN SYSTEM ============ */
+.saas-container {
+  width: 100%;
+  max-width: var(--container-max, 1440px);
+  margin: 0 auto;
+  padding-left: clamp(16px, 3vw, 32px);
+  padding-right: clamp(16px, 3vw, 32px);
+  box-sizing: border-box;
+}
+
+.saas-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--card-shadow-sm);
+  transition: var(--transition-fast);
+}
+
+.saas-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-md);
+  border-color: var(--primary);
+}
+
+.saas-interactive-btn {
+  transition: var(--transition-fast);
+  cursor: pointer;
+}
+
+.saas-interactive-btn:hover {
+  transform: scale(1.02);
+}
+
+.saas-interactive-btn:active {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saas-card:hover,
+  .saas-interactive-btn:hover,
+  .saas-interactive-btn:active {
+    transform: none !important;
+  }
+}
+
 /* ============ ENTERPRISE HEADER & NAVBAR (PREMIUM SAAS) ============ */
 .saas-header {
   height: 64px;
@@ -186,10 +265,20 @@
 
 .saas-header-inner {
   height: 100%;
+  max-width: var(--container-max, 1440px);
+  margin: 0 auto;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+}
+
+.saas-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .saas-brand {
@@ -422,8 +511,8 @@
 
 /* Auth Buttons */
 .saas-btn-ghost {
-  height: 36px;
-  padding: 0 14px;
+  height: 38px;
+  padding: 0 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -431,17 +520,20 @@
   font-weight: 600;
   color: var(--text);
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: var(--radius-xs, 8px);
   background: transparent;
   border: 1px solid transparent;
-  transition: all 0.15s ease;
+  transition: var(--transition-fast, all 0.2s ease);
   font-family: "Montserrat", sans-serif;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .saas-btn-ghost:hover {
   background: var(--surface-muted);
   color: var(--primary);
+  transform: scale(1.02);
 }
 
 .saas-btn-ghost:focus-visible {
@@ -450,8 +542,8 @@
 }
 
 .saas-btn-primary {
-  height: 36px;
-  padding: 0 16px;
+  height: 38px;
+  padding: 0 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -460,23 +552,25 @@
   font-weight: 600;
   color: #ffffff !important;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: var(--radius-xs, 8px);
   background: var(--primary);
   border: 1px solid transparent;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: var(--transition-fast, all 0.2s ease);
   font-family: "Montserrat", sans-serif;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .saas-btn-primary:hover {
   background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(25, 113, 194, 0.28);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 14px rgba(25, 113, 194, 0.3);
 }
 
 .saas-btn-primary:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.98);
 }
 
 .saas-btn-primary:focus-visible {
@@ -5660,8 +5754,16 @@ body:has(.app) {
 .saas-card-flat {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-sm, 12px);
   padding: 20px;
+  box-shadow: var(--card-shadow-sm);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.saas-card-flat:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-md);
 }
 
 .saas-btn-primary {
@@ -5722,22 +5824,24 @@ body:has(.app) {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px;
-  border-radius: 12px;
+  padding: 18px 16px;
+  border-radius: var(--radius-sm, 12px);
   border: 1px solid var(--border);
   background: var(--surface);
   text-decoration: none !important;
   color: var(--text) !important;
-  min-height: 56px;
+  min-height: 76px;
+  height: 100%;
   cursor: pointer;
+  box-shadow: var(--card-shadow-sm);
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .enterprise-contact-card:hover {
   border-color: var(--primary);
   background: var(--surface-muted);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-md);
 }
 
 .enterprise-contact-card:focus-visible {

@@ -130,7 +130,7 @@ const Login_Page = () => {
 
   return (
     <Box className="auth-page-container">
-      <Container size={410} p={0} className="auth-page-inner">
+      <Container size={480} maw={480} p={{ base: "xs", sm: 0 }} className="auth-page-inner">
         <SEO
           title="Kirish - Prava Online platformasiga kirish"
           description="Prava Online platformasiga kiring va haydovchilik guvohnomasi imtihoniga tayyorlanishni davom eting. Google yoki Telegram orqali tez kirish."
@@ -139,40 +139,40 @@ const Login_Page = () => {
         />
 
         {/* Header section with brand mark */}
-        <Stack gap={4} align="center" mb={{ base: 12, sm: 16 }}>
+        <Stack gap={6} align="center" mb={{ base: 16, sm: 24 }}>
           <Center
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: "var(--mantine-radius-md)",
+              width: 44,
+              height: 44,
+              borderRadius: "var(--radius-sm, 12px)",
               border: "1px solid var(--border)",
               background: "var(--surface)",
-              boxShadow: "var(--shadow-sm)",
+              boxShadow: "var(--card-shadow-sm)",
             }}
           >
             <Image
               src="/favicon.svg"
               fallbackSrc="/logo.svg"
               alt="Prava Online Logo"
-              w={24}
-              h={24}
+              w={26}
+              h={26}
               fit="contain"
             />
           </Center>
 
-          <Title order={2} ta="center" size="1.25rem" fw={700} style={{ letterSpacing: "-0.02em", lineHeight: 1.25 }}>
+          <Title order={2} ta="center" size="1.45rem" fw={800} style={{ letterSpacing: "-0.02em", lineHeight: 1.25 }}>
             {t("auth.welcome")}
           </Title>
 
-          <Text size="xs" c="dimmed" ta="center" maw={320} style={{ lineHeight: 1.35 }}>
+          <Text size="sm" c="dimmed" ta="center" maw={360} style={{ lineHeight: 1.45 }}>
             {t("auth.loginSubtitle")}
           </Text>
 
-          <Group gap={4} justify="center">
+          <Group gap={6} justify="center">
             <Text size="xs" c="dimmed">
               {t("auth.noAccount")}
             </Text>
-            <Anchor component={Link} to="/auth/register" size="xs" fw={600} c="brand">
+            <Anchor component={Link} to="/auth/register" size="xs" fw={700} c="brand">
               {t("auth.register")}
             </Anchor>
           </Group>
@@ -181,22 +181,24 @@ const Login_Page = () => {
         <Paper
           withBorder
           shadow="sm"
-          p={{ base: 14, sm: 22 }}
+          p={{ base: 20, sm: 32 }}
           radius="lg"
           style={{
             background: "var(--surface)",
             borderColor: "var(--border)",
+            boxShadow: "var(--card-shadow-md)",
           }}
         >
           {errorMessage && (
             <Alert
-              icon={<IconAlertCircle size={16} />}
+              icon={<IconAlertCircle size={18} />}
               color="red"
               variant="light"
               radius="md"
-              mb="sm"
+              mb="md"
               withCloseButton
               onClose={() => setErrorMessage(null)}
+              role="alert"
             >
               {errorMessage}
             </Alert>
@@ -205,16 +207,20 @@ const Login_Page = () => {
           <form
             onSubmit={form.onSubmit(handleSubmit)}
             onChange={() => errorMessage && setErrorMessage(null)}
+            noValidate
           >
-            <Stack gap="xs">
+            <Stack gap={20}>
               <TextInput
                 label={t("auth.identifier")}
                 placeholder={t("auth.identifierPlaceholder")}
                 required
-                size="sm"
+                size="md"
                 radius="md"
                 autoComplete="username"
                 leftSection={getIdentifierIcon()}
+                styles={{ input: { height: 52, fontSize: "15px" } }}
+                aria-required="true"
+                aria-invalid={!!form.errors.identifier}
                 {...form.getInputProps("identifier")}
               />
 
@@ -223,10 +229,13 @@ const Login_Page = () => {
                   label={t("auth.password")}
                   placeholder={t("auth.passwordPlaceholder")}
                   required
-                  size="sm"
+                  size="md"
                   radius="md"
                   autoComplete="current-password"
-                  leftSection={<IconLock size={16} />}
+                  leftSection={<IconLock size={18} />}
+                  styles={{ input: { height: 52, fontSize: "15px" } }}
+                  aria-required="true"
+                  aria-invalid={!!form.errors.password}
                   onFocus={() => setPasswordFocused(true)}
                   onBlur={() => setPasswordFocused(false)}
                   {...form.getInputProps("password")}
@@ -234,13 +243,13 @@ const Login_Page = () => {
                 <CapsLockWarning active={isCapsLock && passwordFocused} />
               </Box>
 
-              <Group justify="flex-end" mt={-4}>
+              <Group justify="flex-end" mt={-6}>
                 <Anchor
                   component={Link}
                   to="/auth/forgot-password"
                   size="xs"
                   c="dimmed"
-                  fw={500}
+                  fw={600}
                 >
                   {t("auth.forgotPassword")}
                 </Anchor>
@@ -252,8 +261,12 @@ const Login_Page = () => {
                 radius="md"
                 type="submit"
                 loading={loading}
-                h={42}
-                fw={600}
+                h={56}
+                style={{
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  boxShadow: "0 4px 14px rgba(25, 113, 194, 0.25)",
+                }}
               >
                 {t("auth.login")}
               </Button>
@@ -261,12 +274,12 @@ const Login_Page = () => {
               <Divider
                 label={t("auth.orContinueWith")}
                 labelPosition="center"
-                my={2}
+                my={4}
               />
 
-              <SimpleGrid cols={{ base: 2, 320: 2 }} spacing="xs">
-                <GoogleLoginButton mode="login" compact />
-                <TelegramLoginButton mode="login" compact />
+              <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
+                <GoogleLoginButton mode="login" />
+                <TelegramLoginButton mode="login" />
               </SimpleGrid>
             </Stack>
           </form>

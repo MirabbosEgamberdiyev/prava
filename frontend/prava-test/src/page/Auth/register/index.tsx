@@ -273,7 +273,7 @@ const Register_Page = () => {
 
   return (
     <Box className="auth-page-container">
-      <Container size={410} p={0} className="auth-page-inner">
+      <Container size={480} maw={480} p={{ base: "xs", sm: 0 }} className="auth-page-inner">
         <SEO
           title="Ro'yxatdan o'tish - Bepul boshlang"
           description="Prava Online platformasida bepul ro'yxatdan o'ting va haydovchilik guvohnomasi imtihoniga tayyorlanishni boshlang. 1200+ savol bazasi, real imtihon formati. Email yoki telefon orqali ro'yxatdan o'ting."
@@ -282,43 +282,43 @@ const Register_Page = () => {
         />
 
         {/* Header section with brand mark */}
-        <Stack gap={4} align="center" mb={{ base: 12, sm: 16 }}>
+        <Stack gap={6} align="center" mb={{ base: 16, sm: 24 }}>
           <Center
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: "var(--mantine-radius-md)",
+              width: 44,
+              height: 44,
+              borderRadius: "var(--radius-sm, 12px)",
               border: "1px solid var(--border)",
               background: "var(--surface)",
-              boxShadow: "var(--shadow-sm)",
+              boxShadow: "var(--card-shadow-sm)",
             }}
           >
             <Image
               src="/favicon.svg"
               fallbackSrc="/logo.svg"
               alt="Prava Online Logo"
-              w={24}
-              h={24}
+              w={26}
+              h={26}
               fit="contain"
             />
           </Center>
 
-          <Title order={2} ta="center" size="1.25rem" fw={700} style={{ letterSpacing: "-0.02em", lineHeight: 1.25 }}>
+          <Title order={2} ta="center" size="1.45rem" fw={800} style={{ letterSpacing: "-0.02em", lineHeight: 1.25 }}>
             {step === 1 ? t("register.title") : t("register.otpTitle")}
           </Title>
 
-          <Text size="xs" c="dimmed" ta="center" maw={360} style={{ lineHeight: 1.35 }}>
+          <Text size="sm" c="dimmed" ta="center" maw={380} style={{ lineHeight: 1.45 }}>
             {step === 1
               ? t("register.registerSubtitle")
               : t("register.enterCodeSubtitle")}
           </Text>
 
           {step === 1 && (
-            <Group gap={4} justify="center">
+            <Group gap={6} justify="center">
               <Text size="xs" c="dimmed">
                 {t("register.alreadyHaveAccount")}
               </Text>
-              <Anchor component={Link} to="/auth/login" size="xs" fw={600} c="brand">
+              <Anchor component={Link} to="/auth/login" size="xs" fw={700} c="brand">
                 {t("register.login")}
               </Anchor>
             </Group>
@@ -328,11 +328,12 @@ const Register_Page = () => {
         <Paper
           withBorder
           shadow="sm"
-          p={{ base: 14, sm: 20 }}
+          p={{ base: 20, sm: 32 }}
           radius="lg"
           style={{
             background: "var(--surface)",
             borderColor: "var(--border)",
+            boxShadow: "var(--card-shadow-md)",
           }}
         >
           {errorMessage && (
@@ -341,7 +342,7 @@ const Register_Page = () => {
               color="red"
               variant="light"
               radius="md"
-              mb="sm"
+              mb="md"
               withCloseButton
               onClose={() => setErrorMessage(null)}
             >
@@ -353,59 +354,100 @@ const Register_Page = () => {
             <form
               onSubmit={form.onSubmit(handleInit)}
               onChange={() => errorMessage && setErrorMessage(null)}
+              aria-label={t("register.title")}
             >
-              <Stack gap="xs">
-                {/* Names row */}
-                <Flex gap="xs" direction={{ base: "row", xs: "row" }}>
+              <Stack gap="md">
+                {/* Names row - 1 col on mobile, 2 cols on tablet+ */}
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                   <TextInput
                     label={t("register.firstName")}
                     placeholder="Ali"
                     required
-                    size="sm"
+                    size="md"
                     radius="md"
-                    style={{ flex: 1 }}
-                    leftSection={<IconUser size={16} />}
+                    leftSection={<IconUser size={18} />}
+                    styles={{
+                      input: {
+                        height: 50,
+                        fontSize: "15px",
+                        backgroundColor: "var(--bg-input, var(--surface))",
+                        borderColor: "var(--border)",
+                      },
+                      label: {
+                        fontWeight: 600,
+                        fontSize: "13px",
+                        marginBottom: 6,
+                      },
+                    }}
                     {...form.getInputProps("firstName")}
                   />
                   <TextInput
                     label={t("register.lastName")}
                     placeholder="Valiyev"
                     required
-                    size="sm"
+                    size="md"
                     radius="md"
-                    style={{ flex: 1 }}
+                    styles={{
+                      input: {
+                        height: 50,
+                        fontSize: "15px",
+                        backgroundColor: "var(--bg-input, var(--surface))",
+                        borderColor: "var(--border)",
+                      },
+                      label: {
+                        fontWeight: 600,
+                        fontSize: "13px",
+                        marginBottom: 6,
+                      },
+                    }}
                     {...form.getInputProps("lastName")}
                   />
-                </Flex>
+                </SimpleGrid>
 
                 {/* Verification channel switcher */}
-                <SegmentedControl
-                  value={verificationType}
-                  onChange={handleVerificationTypeChange}
-                  fullWidth
-                  size="xs"
-                  radius="md"
-                  data={[
-                    {
-                      label: (
-                        <Flex align="center" gap={6} justify="center">
-                          <IconMail size={15} />
-                          <span>{t("register.verifyByEmail")}</span>
-                        </Flex>
-                      ),
-                      value: "EMAIL",
-                    },
-                    {
-                      label: (
-                        <Flex align="center" gap={6} justify="center">
-                          <IconDeviceMobile size={15} />
-                          <span>{t("register.verifyBySms")}</span>
-                        </Flex>
-                      ),
-                      value: "SMS",
-                    },
-                  ]}
-                />
+                <Box>
+                  <Text size="xs" fw={600} mb={6} c="dimmed">
+                    {t("register.verificationChannel", "Tasdiqlash usuli")}
+                  </Text>
+                  <SegmentedControl
+                    value={verificationType}
+                    onChange={handleVerificationTypeChange}
+                    fullWidth
+                    size="sm"
+                    radius="md"
+                    styles={{
+                      root: {
+                        backgroundColor: "var(--bg-input, var(--mantine-color-gray-1))",
+                        padding: 4,
+                      },
+                      label: {
+                        padding: "8px 12px",
+                        fontWeight: 600,
+                        fontSize: "13px",
+                      },
+                    }}
+                    data={[
+                      {
+                        label: (
+                          <Flex align="center" gap={6} justify="center">
+                            <IconMail size={16} />
+                            <span>{t("register.verifyByEmail")}</span>
+                          </Flex>
+                        ),
+                        value: "EMAIL",
+                      },
+                      {
+                        label: (
+                          <Flex align="center" gap={6} justify="center">
+                            <IconDeviceMobile size={16} />
+                            <span>{t("register.verifyBySms")}</span>
+                          </Flex>
+                        ),
+                        value: "SMS",
+                      },
+                    ]}
+                  />
+                </Box>
 
                 {/* Contact field based on mode */}
                 {isEmailMode ? (
@@ -413,12 +455,25 @@ const Register_Page = () => {
                     label={t("register.email")}
                     placeholder="example@mail.com"
                     required
-                    size="sm"
+                    size="md"
                     radius="md"
                     type="email"
                     inputMode="email"
                     autoComplete="email"
-                    leftSection={<IconMail size={16} />}
+                    leftSection={<IconMail size={18} />}
+                    styles={{
+                      input: {
+                        height: 50,
+                        fontSize: "15px",
+                        backgroundColor: "var(--bg-input, var(--surface))",
+                        borderColor: "var(--border)",
+                      },
+                      label: {
+                        fontWeight: 600,
+                        fontSize: "13px",
+                        marginBottom: 6,
+                      },
+                    }}
                     {...form.getInputProps("email")}
                   />
                 ) : (
@@ -426,13 +481,26 @@ const Register_Page = () => {
                     label={t("register.phoneNumber")}
                     placeholder="+998 90 123 45 67"
                     required
-                    size="sm"
+                    size="md"
                     radius="md"
                     type="tel"
                     inputMode="tel"
                     autoComplete="tel"
                     maxLength={17}
-                    leftSection={<IconDeviceMobile size={16} />}
+                    leftSection={<IconDeviceMobile size={18} />}
+                    styles={{
+                      input: {
+                        height: 50,
+                        fontSize: "15px",
+                        backgroundColor: "var(--bg-input, var(--surface))",
+                        borderColor: "var(--border)",
+                      },
+                      label: {
+                        fontWeight: 600,
+                        fontSize: "13px",
+                        marginBottom: 6,
+                      },
+                    }}
                     value={form.values.phoneNumber}
                     onChange={(e) => {
                       const formatted = formatUzPhone(e.currentTarget.value);
@@ -448,10 +516,23 @@ const Register_Page = () => {
                     label={t("register.password")}
                     placeholder={t("auth.passwordPlaceholder")}
                     required
-                    size="sm"
+                    size="md"
                     radius="md"
                     autoComplete="new-password"
-                    leftSection={<IconLock size={16} />}
+                    leftSection={<IconLock size={18} />}
+                    styles={{
+                      input: {
+                        height: 50,
+                        fontSize: "15px",
+                        backgroundColor: "var(--bg-input, var(--surface))",
+                        borderColor: "var(--border)",
+                      },
+                      label: {
+                        fontWeight: 600,
+                        fontSize: "13px",
+                        marginBottom: 6,
+                      },
+                    }}
                     onFocus={() => setPasswordFocused(true)}
                     onBlur={() => setPasswordFocused(false)}
                     {...form.getInputProps("password")}
@@ -466,9 +547,11 @@ const Register_Page = () => {
                   radius="md"
                   size="md"
                   loading={loading}
-                  h={42}
-                  fw={600}
-                  mt={2}
+                  h={52}
+                  fw={700}
+                  fz="md"
+                  mt={4}
+                  className="saas-interactive-btn"
                 >
                   {t("register.register")}
                 </Button>
@@ -476,10 +559,10 @@ const Register_Page = () => {
                 <Divider
                   label={t("auth.orContinueWith")}
                   labelPosition="center"
-                  my={2}
+                  my="xs"
                 />
 
-                <SimpleGrid cols={{ base: 2, 320: 2 }} spacing="xs">
+                <SimpleGrid cols={2} spacing="sm">
                   <GoogleLoginButton mode="register" compact />
                   <TelegramLoginButton mode="register" compact />
                 </SimpleGrid>
@@ -583,8 +666,10 @@ const Register_Page = () => {
                 onClick={handleComplete}
                 radius="md"
                 size="md"
-                h={42}
-                fw={600}
+                h={52}
+                fw={700}
+                fz="md"
+                className="saas-interactive-btn"
               >
                 {t("register.confirm")}
               </Button>
