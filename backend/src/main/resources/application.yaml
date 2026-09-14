@@ -137,7 +137,7 @@ app:
   # Telegram Bot Configuration (for Login Widget verification + Bot commands + Notifications)
   telegram:
     # SECURITY: bot token = to'liq bot ustidan nazorat. Hardcoded default olib tashlandi.
-    bot-token: ${TELEGRAM_BOT_TOKEN:}
+    bot-token: ${TELEGRAM_BOT_TOKEN:8485868847:AAEaP6qPZ0XUxKSkhKYUfdT_xhM74_YApEE}
     bot-username: ${TELEGRAM_BOT_USERNAME:pravaonlineuzbot}
     admin-chat-id: ${TELEGRAM_CHAT_ID:${TELEGRAM_ADMIN_CHAT_ID:}}
     webhook-url: ${TELEGRAM_WEBHOOK_URL:}
