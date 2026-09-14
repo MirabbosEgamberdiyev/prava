@@ -11,6 +11,7 @@ const Login_Page = lazy(() => import("../page/Auth/login"));
 const Register_Page = lazy(() => import("../page/Auth/register"));
 const ForgotPassword_Page = lazy(() => import("../page/Auth/forgot-password"));
 const TelegramCallback_Page = lazy(() => import("../page/Auth/telegram-callback"));
+const Pair_Page = lazy(() => import("../page/Auth/pair"));
 const User_Page = lazy(() => import("../page/me"));
 const Packages_Page = lazy(() => import("../page/Packages"));
 const PackageExamPage = lazy(() => import("../page/Packages/ExamPage"));
@@ -97,6 +98,7 @@ function AppRoutes() {
           <Route path="register" element={<Register_Page />} />
           <Route path="forgot-password" element={<ForgotPassword_Page />} />
           <Route path="telegram-callback" element={<TelegramCallback_Page />} />
+          <Route path="pair" element={<Pair_Page />} />
         </Route>
 
         {/* Protected Routes */}

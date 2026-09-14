@@ -85,7 +85,7 @@ public class AuthService {
     }
 
     /**
-     * ✅ Step 1 - Send verification code with language
+     * вњ… Step 1 - Send verification code with language
      */
     public VerificationSentResponse initiateRegistration(RegisterRequest request, AcceptLanguage language) {
         log.info("Initiating registration for: {} [lang={}]", maskIdentifier(request), language);
@@ -115,7 +115,7 @@ public class AuthService {
     }
 
     /**
-     * ✅ Step 2 - Complete registration with language
+     * вњ… Step 2 - Complete registration with language
      */
     public AuthResponse completeRegistration(RegisterRequest request, String code, AcceptLanguage language) {
         log.info("Completing registration for: {} [lang={}]", maskIdentifier(request), language);
@@ -169,7 +169,7 @@ public class AuthService {
     }
 
     /**
-     * ✅ Login with language
+     * вњ… Login with language
      */
     @Transactional
     public AuthResponse login(LoginRequest request, AcceptLanguage language) {
@@ -180,11 +180,11 @@ public class AuthService {
         log.info("Login attempt for identifier={} [lang={}]",
                 maskIdentifierValue(request.getIdentifier()), language);
 
-        // 1️⃣ USER TOPISH (login fail bo‘lishi mumkin)
+        // 1пёЏвѓЈ USER TOPISH (login fail boвЂlishi mumkin)
         User user = userRepository.findByIdentifier(request.getIdentifier())
                 .orElseThrow(() -> new UnauthorizedException("error.auth.invalid.credentials"));
 
-        // 2️⃣ BUSINESS CHECKS
+        // 2пёЏвѓЈ BUSINESS CHECKS
         if (!Boolean.TRUE.equals(user.getIsActive())) {
             throw new UnauthorizedException("error.user.account.inactive");
         }
@@ -193,7 +193,7 @@ public class AuthService {
             throw new UnauthorizedException("error.user.account.locked");
         }
 
-        // 3️⃣ AUTHENTICATION (FAFAQAT SHU JOY LOGIN FAIL QILADI)
+        // 3пёЏвѓЈ AUTHENTICATION (FAFAQAT SHU JOY LOGIN FAIL QILADI)
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -203,7 +203,7 @@ public class AuthService {
             );
         } catch (AuthenticationException ex) {
 
-            // ❗ faqat shu holatda failedAttempt oshadi
+            // вќ— faqat shu holatda failedAttempt oshadi
             user.incrementFailedLoginAttempts();
             userRepository.save(user);
 
@@ -213,19 +213,19 @@ public class AuthService {
             throw new UnauthorizedException("error.auth.invalid.credentials");
         }
 
-        // 4️⃣ AUTH SUCCESS (BU YERDAN PASTGA — LOGIN MUVAFFAQIYATLI)
+        // 4пёЏвѓЈ AUTH SUCCESS (BU YERDAN PASTGA вЂ” LOGIN MUVAFFAQIYATLI)
         user.resetFailedLoginAttempts();
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
 
         log.info("User authenticated successfully: userId={}", user.getId());
 
-        // 5️⃣ TOKEN GENERATION (agar shu yerda xato bo‘lsa → 500)
+        // 5пёЏвѓЈ TOKEN GENERATION (agar shu yerda xato boвЂlsa в†’ 500)
         return generateAuthResponse(user, language);
     }
 
     /**
-     * ✅ Refresh token with rotation — revoke old, issue new refresh token.
+     * вњ… Refresh token with rotation вЂ” revoke old, issue new refresh token.
      * If a revoked token is reused, the entire token family is revoked (security breach).
      */
     public AuthResponse refreshToken(RefreshTokenRequest request, AcceptLanguage language) {
@@ -281,7 +281,7 @@ public class AuthService {
     }
 
     /**
-     * ✅ UPDATED: Logout with language for success message
+     * вњ… UPDATED: Logout with language for success message
      */
     public void logout(String refreshTokenStr, AcceptLanguage language) {
         log.info("Logging out user [lang={}]", language);
@@ -301,13 +301,13 @@ public class AuthService {
     }
 
     /**
-     * ✅ Forgot password with language
+     * вњ… Forgot password with language
      */
     public VerificationSentResponse forgotPassword(ForgotPasswordRequest request, AcceptLanguage language) {
         log.info("Forgot password request for: {} [lang={}]",
                 maskIdentifierValue(request.getIdentifier()), language);
 
-        // ⚠️ AUDIT — USER ENUMERATION: avval foydalanuvchi topilmasa 404
+        // вљ пёЏ AUDIT вЂ” USER ENUMERATION: avval foydalanuvchi topilmasa 404
         // "error.user.not.found" qaytarilardi. Bu endpoint autentifikatsiyasiz
         // ochiq, ya'ni istalgan kishi telefon/email ro'yxatini aylanib chiqib,
         // qaysi biri tizimda BOR ekanini aniq bilib olardi.
@@ -330,10 +330,10 @@ public class AuthService {
             }
             log.info("Forgot password: tanlangan kanal uchun manzil yo'q, userId={}", user.getId());
         } else {
-            log.info("Forgot password: bunday foydalanuvchi yo'q — neytral javob qaytarildi");
+            log.info("Forgot password: bunday foydalanuvchi yo'q вЂ” neytral javob qaytarildi");
         }
 
-        // Neytral (enumeration'ga qarshi) javob — haqiqiy holatni oshkor qilmaydi.
+        // Neytral (enumeration'ga qarshi) javob вЂ” haqiqiy holatni oshkor qilmaydi.
         return VerificationSentResponse.builder()
                 .recipient(request.getIdentifier())
                 .maskedRecipient(maskIdentifierValue(request.getIdentifier()))
@@ -345,7 +345,7 @@ public class AuthService {
     }
 
     /**
-     * ✅ UPDATED: Reset password with language
+     * вњ… UPDATED: Reset password with language
      */
     public void resetPassword(ResetPasswordRequest request, AcceptLanguage language) {
         log.info("Resetting password for: {} [lang={}]",
@@ -377,7 +377,7 @@ public class AuthService {
     }
 
     /**
-     * ✅ UPDATED: Change password with language
+     * вњ… UPDATED: Change password with language
      */
     public void changePassword(ChangePasswordRequest request, AcceptLanguage language) {
         Long userId = SecurityUtils.getCurrentUserId();
@@ -408,7 +408,7 @@ public class AuthService {
     }
 
     /**
-     * ✅ Get current user with language
+     * вњ… Get current user with language
      */
     @Transactional(readOnly = true)
     public UserResponse getCurrentUser(AcceptLanguage language) {
@@ -590,10 +590,10 @@ public class AuthService {
     }
 
     // ============================================
-    // ✅ Helper Methods
+    // вњ… Helper Methods
     // ============================================
 
-    private AuthResponse generateAuthResponse(User user, AcceptLanguage language) {
+    public AuthResponse generateAuthResponse(User user, AcceptLanguage language) {
         // Device limit enforcement: if limit reached, remove oldest session
         try {
             if (!deviceManagementService.canAddNewDevice(user.getId())) {
