@@ -252,7 +252,7 @@
 
 /* ============ ENTERPRISE HEADER & NAVBAR (PREMIUM SAAS) ============ */
 .saas-header {
-  height: 64px;
+  height: 58px;
   background: var(--header-bg);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -1631,24 +1631,24 @@ body:has(.app) {
 }
 
 .home-content {
-  padding: 28px 32px;
+  padding: 16px 24px 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
 }
 
 @media (max-width: 640px) {
   .home-content {
-    padding: 16px 12px;
-    gap: 16px;
+    padding: 10px 10px 24px;
+    gap: 12px;
   }
 }
 
 @media (max-width: 480px) {
   .home-content {
-    padding: 14px 8px;
-    gap: 12px;
+    padding: 8px 6px 20px;
+    gap: 10px;
   }
 }
 
@@ -1661,25 +1661,25 @@ body:has(.app) {
 }
 
 .home-welcome {
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
 @media (max-width: 640px) {
   .home-welcome {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 }
 
 .home-welcome h2 {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   color: var(--text);
   letter-spacing: -0.3px;
 }
 
 .home-welcome p {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -1687,8 +1687,8 @@ body:has(.app) {
 .home-stats-bar {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: 14px;
+  margin-bottom: 18px;
   width: 100%;
 }
 
@@ -3219,12 +3219,12 @@ body:has(.app) {
   background: var(--bg);
 }
 .review-header {
-  height: 56px;
+  height: 50px;
   background: var(--header-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  padding: 0 24px;
+  padding: 0 16px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -3307,7 +3307,7 @@ body:has(.app) {
   flex: 1;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  padding: 24px 32px;
+  padding: 14px 20px 32px;
   max-width: 900px;
   width: 100%;
   margin: 0 auto;
@@ -3643,7 +3643,7 @@ body:has(.app) {
 .exam-topbar {
   background: var(--card-bg);
   border-bottom: 1px solid var(--border);
-  padding: 8px 20px;
+  padding: 6px 16px;
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -3762,12 +3762,12 @@ body:has(.app) {
 .exam-question-header {
   background: var(--card-bg);
   border-bottom: 1px solid var(--border);
-  padding: 16px 32px;
+  padding: 10px 20px;
   flex-shrink: 0;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
 }
 .exam-question-text {
   font-size: 16px;
@@ -4201,31 +4201,31 @@ body:has(.app) {
   background: var(--bg);
 }
 .topics-header {
-  height: 56px;
+  height: 50px;
   background: var(--header-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  padding: 0 20px;
+  padding: 0 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-shrink: 0;
   position: sticky;
   top: 0;
   z-index: 50;
 }
 .topics-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
 }
 .topics-count-chip {
   background: var(--primary-light);
   color: var(--primary);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
-  padding: 2px 10px;
+  padding: 1px 8px;
   border-radius: 6px;
   border: 1px solid var(--border);
 }
@@ -4244,15 +4244,15 @@ body:has(.app) {
   pointer-events: none;
 }
 .topics-search-input {
-  padding: 8px 12px 8px 32px;
+  padding: 6px 10px 6px 30px;
   background: var(--bg);
   color: var(--text);
   border: 1.5px solid var(--border);
   border-radius: var(--radius);
-  font-size: 13px;
+  font-size: 12.5px;
   font-family: "Montserrat", sans-serif;
   outline: none;
-  width: 220px;
+  width: 200px;
   transition: border-color 0.15s;
 }
 .topics-search-input:focus {
@@ -4266,20 +4266,20 @@ body:has(.app) {
 .topics-grid {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 20px;
+  padding: 12px 16px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
+  gap: 12px;
   align-content: start;
 }
 
 @media (max-width: 600px) {
   .topics-header {
     height: auto;
-    min-height: 52px;
-    padding: 10px 14px;
+    min-height: 46px;
+    padding: 8px 12px;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
   }
   .topics-search-wrap {
     width: 100%;
@@ -4290,13 +4290,13 @@ body:has(.app) {
     width: 100%;
   }
   .topics-grid {
-    padding: 12px 10px;
-    gap: 10px;
+    padding: 8px 8px;
+    gap: 8px;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
   }
   .tc-grid {
-    padding: 12px 10px;
-    gap: 10px;
+    padding: 8px 8px;
+    gap: 8px;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
   }
 }
@@ -5943,23 +5943,23 @@ body:has(.app) {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 48px 24px 80px;
+  padding: 20px 20px 50px;
 }
 
 @media (max-width: 768px) {
   .saas-page-container {
-    padding: 32px 16px 60px;
+    padding: 12px 14px 36px;
   }
 }
 
 .saas-header-block {
   text-align: center;
   max-width: 760px;
-  margin: 0 auto 48px;
+  margin: 0 auto 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .saas-badge-pill {
@@ -6163,26 +6163,26 @@ body:has(.app) {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 16px;
-  padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
-  padding-left: max(16px, env(safe-area-inset-left, 16px));
-  padding-right: max(16px, env(safe-area-inset-right, 16px));
-  min-height: calc(100dvh - 64px);
+  padding-top: clamp(8px, 2vh, 18px);
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  padding-left: max(12px, env(safe-area-inset-left, 12px));
+  padding-right: max(12px, env(safe-area-inset-right, 12px));
   box-sizing: border-box;
 }
 
 .auth-page-inner {
   width: 100%;
   max-width: 420px;
+  margin: 0 auto;
 }
 
 @media (min-width: 768px) {
   .auth-page-container {
-    padding-top: 28px;
-    padding-bottom: 36px;
+    padding-top: 20px;
+    padding-bottom: 32px;
   }
   .auth-page-inner {
-    margin: auto 0;
+    margin: 0 auto;
   }
 }
 

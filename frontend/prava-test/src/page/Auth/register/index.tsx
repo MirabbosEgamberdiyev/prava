@@ -282,12 +282,12 @@ const Register_Page = () => {
         />
 
         {/* Header section with brand mark */}
-        <Stack gap={6} align="center" mb={{ base: 16, sm: 24 }}>
+        <Stack gap={4} align="center" mb={{ base: 10, sm: 14 }}>
           <Center
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: "var(--radius-sm, 12px)",
+              width: 38,
+              height: 38,
+              borderRadius: "var(--radius-sm, 10px)",
               border: "1px solid var(--border)",
               background: "var(--surface)",
               boxShadow: "var(--card-shadow-sm)",
@@ -297,17 +297,17 @@ const Register_Page = () => {
               src="/favicon.svg"
               fallbackSrc="/logo.svg"
               alt="Prava Online Logo"
-              w={26}
-              h={26}
+              w={22}
+              h={22}
               fit="contain"
             />
           </Center>
 
-          <Title order={2} ta="center" size="1.45rem" fw={800} style={{ letterSpacing: "-0.02em", lineHeight: 1.25 }}>
+          <Title order={2} ta="center" size="1.35rem" fw={800} style={{ letterSpacing: "-0.02em", lineHeight: 1.25 }}>
             {step === 1 ? t("register.title") : t("register.otpTitle")}
           </Title>
 
-          <Text size="sm" c="dimmed" ta="center" maw={380} style={{ lineHeight: 1.45 }}>
+          <Text size="xs" c="dimmed" ta="center" maw={380} style={{ lineHeight: 1.4 }}>
             {step === 1
               ? t("register.registerSubtitle")
               : t("register.enterCodeSubtitle")}
@@ -328,7 +328,7 @@ const Register_Page = () => {
         <Paper
           withBorder
           shadow="sm"
-          p={{ base: 20, sm: 32 }}
+          p={{ base: 18, sm: 24 }}
           radius="lg"
           style={{
             background: "var(--surface)",
@@ -356,7 +356,7 @@ const Register_Page = () => {
               onChange={() => errorMessage && setErrorMessage(null)}
               aria-label={t("register.title")}
             >
-              <Stack gap="md">
+              <Stack gap="sm">
                 {/* Names row - 1 col on mobile, 2 cols on tablet+ */}
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                   <TextInput
@@ -368,15 +368,15 @@ const Register_Page = () => {
                     leftSection={<IconUser size={18} />}
                     styles={{
                       input: {
-                        height: 50,
-                        fontSize: "15px",
+                        height: 46,
+                        fontSize: "14px",
                         backgroundColor: "var(--bg-input, var(--surface))",
                         borderColor: "var(--border)",
                       },
                       label: {
                         fontWeight: 600,
-                        fontSize: "13px",
-                        marginBottom: 6,
+                        fontSize: "12px",
+                        marginBottom: 4,
                       },
                     }}
                     {...form.getInputProps("firstName")}
@@ -389,15 +389,15 @@ const Register_Page = () => {
                     radius="md"
                     styles={{
                       input: {
-                        height: 50,
-                        fontSize: "15px",
+                        height: 46,
+                        fontSize: "14px",
                         backgroundColor: "var(--bg-input, var(--surface))",
                         borderColor: "var(--border)",
                       },
                       label: {
                         fontWeight: 600,
-                        fontSize: "13px",
-                        marginBottom: 6,
+                        fontSize: "12px",
+                        marginBottom: 4,
                       },
                     }}
                     {...form.getInputProps("lastName")}
@@ -406,31 +406,31 @@ const Register_Page = () => {
 
                 {/* Verification channel switcher */}
                 <Box>
-                  <Text size="xs" fw={600} mb={6} c="dimmed">
+                  <Text size="xs" fw={600} mb={4} c="dimmed">
                     {t("register.verificationChannel", "Tasdiqlash usuli")}
                   </Text>
                   <SegmentedControl
                     value={verificationType}
                     onChange={handleVerificationTypeChange}
                     fullWidth
-                    size="sm"
+                    size="xs"
                     radius="md"
                     styles={{
                       root: {
                         backgroundColor: "var(--bg-input, var(--mantine-color-gray-1))",
-                        padding: 4,
+                        padding: 3,
                       },
                       label: {
-                        padding: "8px 12px",
+                        padding: "6px 10px",
                         fontWeight: 600,
-                        fontSize: "13px",
+                        fontSize: "12px",
                       },
                     }}
                     data={[
                       {
                         label: (
                           <Flex align="center" gap={6} justify="center">
-                            <IconMail size={16} />
+                            <IconMail size={15} />
                             <span>{t("register.verifyByEmail")}</span>
                           </Flex>
                         ),
@@ -439,7 +439,7 @@ const Register_Page = () => {
                       {
                         label: (
                           <Flex align="center" gap={6} justify="center">
-                            <IconDeviceMobile size={16} />
+                            <IconDeviceMobile size={15} />
                             <span>{t("register.verifyBySms")}</span>
                           </Flex>
                         ),
@@ -463,15 +463,15 @@ const Register_Page = () => {
                     leftSection={<IconMail size={18} />}
                     styles={{
                       input: {
-                        height: 50,
-                        fontSize: "15px",
+                        height: 46,
+                        fontSize: "14px",
                         backgroundColor: "var(--bg-input, var(--surface))",
                         borderColor: "var(--border)",
                       },
                       label: {
                         fontWeight: 600,
-                        fontSize: "13px",
-                        marginBottom: 6,
+                        fontSize: "12px",
+                        marginBottom: 4,
                       },
                     }}
                     {...form.getInputProps("email")}
@@ -490,15 +490,15 @@ const Register_Page = () => {
                     leftSection={<IconDeviceMobile size={18} />}
                     styles={{
                       input: {
-                        height: 50,
-                        fontSize: "15px",
+                        height: 46,
+                        fontSize: "14px",
                         backgroundColor: "var(--bg-input, var(--surface))",
                         borderColor: "var(--border)",
                       },
                       label: {
                         fontWeight: 600,
-                        fontSize: "13px",
-                        marginBottom: 6,
+                        fontSize: "12px",
+                        marginBottom: 4,
                       },
                     }}
                     value={form.values.phoneNumber}
@@ -522,15 +522,15 @@ const Register_Page = () => {
                     leftSection={<IconLock size={18} />}
                     styles={{
                       input: {
-                        height: 50,
-                        fontSize: "15px",
+                        height: 46,
+                        fontSize: "14px",
                         backgroundColor: "var(--bg-input, var(--surface))",
                         borderColor: "var(--border)",
                       },
                       label: {
                         fontWeight: 600,
-                        fontSize: "13px",
-                        marginBottom: 6,
+                        fontSize: "12px",
+                        marginBottom: 4,
                       },
                     }}
                     onFocus={() => setPasswordFocused(true)}
@@ -547,10 +547,10 @@ const Register_Page = () => {
                   radius="md"
                   size="md"
                   loading={loading}
-                  h={52}
+                  h={48}
                   fw={700}
-                  fz="md"
-                  mt={4}
+                  fz="sm"
+                  mt={2}
                   className="saas-interactive-btn"
                 >
                   {t("register.register")}
@@ -574,8 +574,8 @@ const Register_Page = () => {
               <Stack align="center" gap="xs">
                 <Center
                   style={{
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     borderRadius: "50%",
                     background: isEmailMode
                       ? "var(--mantine-color-blue-light)"
@@ -586,9 +586,9 @@ const Register_Page = () => {
                   }}
                 >
                   {isEmailMode ? (
-                    <IconMailShare size={24} />
+                    <IconMailShare size={20} />
                   ) : (
-                    <IconMessageShare size={24} />
+                    <IconMessageShare size={20} />
                   )}
                 </Center>
 
@@ -666,9 +666,9 @@ const Register_Page = () => {
                 onClick={handleComplete}
                 radius="md"
                 size="md"
-                h={52}
+                h={48}
                 fw={700}
-                fz="md"
+                fz="sm"
                 className="saas-interactive-btn"
               >
                 {t("register.confirm")}

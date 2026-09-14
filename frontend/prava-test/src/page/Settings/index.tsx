@@ -70,7 +70,7 @@ const Settings_Page = () => {
             <span>{t("settings.title", "Sozlamalar va Profil")}</span>
           </div>
         </header>
-        <main style={{ flex: 1, overflowY: "auto", padding: "24px 16px" }}>
+        <main style={{ flex: 1, overflowY: "auto", padding: "14px 16px 32px" }}>
           <Container size="md">
             <Tabs defaultValue="profile">
               <Tabs.List mb="md">

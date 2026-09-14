@@ -164,7 +164,7 @@ const ForgotPassword_Page = () => {
         <Stepper
           active={stepperActive}
           size="xs"
-          mb={{ base: 12, sm: "md" }}
+          mb={{ base: 10, sm: 14 }}
         >
           <Stepper.Step icon={<IconUser size={16} />} />
           <Stepper.Step icon={<IconMailShare size={16} />} />
@@ -174,7 +174,7 @@ const ForgotPassword_Page = () => {
         <Paper
           withBorder
           shadow="sm"
-          p={{ base: 14, sm: "xl" }}
+          p={{ base: 16, sm: 24 }}
           radius="lg"
           style={{
             background: "var(--surface)",

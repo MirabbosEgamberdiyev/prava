@@ -32,7 +32,7 @@ const Packages_Page = () => {
             <span>{t("packages.title", "Imtihon paketlari")}</span>
           </div>
         </header>
-        <main style={{ flex: 1, overflowY: "auto", padding: "24px 16px" }}>
+        <main style={{ flex: 1, overflowY: "auto", padding: "14px 16px 32px" }}>
           <Container size="lg">
             <Package_List />
           </Container>

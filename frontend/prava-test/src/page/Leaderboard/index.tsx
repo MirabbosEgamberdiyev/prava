@@ -32,7 +32,7 @@ const Leaderboard_Page = () => {
             <span>{t("leaderboard.title", "Peshqadamlar reytingi")}</span>
           </div>
         </header>
-        <main style={{ flex: 1, overflowY: "auto", padding: "24px 16px" }}>
+        <main style={{ flex: 1, overflowY: "auto", padding: "14px 16px 32px" }}>
           <Container size="lg">
             <LeaderboardPage />
           </Container>

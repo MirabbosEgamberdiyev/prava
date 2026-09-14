@@ -14,13 +14,13 @@ const App_Layout = () => {
 
   return (
     <AppShell
-      header={{ height: 64 }}
+      header={{ height: 58 }}
       navbar={{
         width: 300,
         breakpoint: "md",
         collapsed: { desktop: true, mobile: !opened },
       }}
-      padding={isAuthPage ? 0 : "md"}
+      padding={0}
     >
       <Header opened={opened} toggle={toggle} />
       <Navbar close={close} />

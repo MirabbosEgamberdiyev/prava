@@ -139,12 +139,12 @@ const Login_Page = () => {
         />
 
         {/* Header section with brand mark */}
-        <Stack gap={6} align="center" mb={{ base: 16, sm: 24 }}>
+        <Stack gap={4} align="center" mb={{ base: 10, sm: 14 }}>
           <Center
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: "var(--radius-sm, 12px)",
+              width: 38,
+              height: 38,
+              borderRadius: "var(--radius-sm, 10px)",
               border: "1px solid var(--border)",
               background: "var(--surface)",
               boxShadow: "var(--card-shadow-sm)",
@@ -154,17 +154,17 @@ const Login_Page = () => {
               src="/favicon.svg"
               fallbackSrc="/logo.svg"
               alt="Prava Online Logo"
-              w={26}
-              h={26}
+              w={22}
+              h={22}
               fit="contain"
             />
           </Center>
 
-          <Title order={2} ta="center" size="1.45rem" fw={800} style={{ letterSpacing: "-0.02em", lineHeight: 1.25 }}>
+          <Title order={2} ta="center" size="1.35rem" fw={800} style={{ letterSpacing: "-0.02em", lineHeight: 1.2 }}>
             {t("auth.welcome")}
           </Title>
 
-          <Text size="sm" c="dimmed" ta="center" maw={360} style={{ lineHeight: 1.45 }}>
+          <Text size="xs" c="dimmed" ta="center" maw={360} style={{ lineHeight: 1.4 }}>
             {t("auth.loginSubtitle")}
           </Text>
 
@@ -181,7 +181,7 @@ const Login_Page = () => {
         <Paper
           withBorder
           shadow="sm"
-          p={{ base: 20, sm: 32 }}
+          p={{ base: 18, sm: 24 }}
           radius="lg"
           style={{
             background: "var(--surface)",
@@ -209,16 +209,19 @@ const Login_Page = () => {
             onChange={() => errorMessage && setErrorMessage(null)}
             noValidate
           >
-            <Stack gap={20}>
+            <Stack gap={14}>
               <TextInput
                 label={t("auth.identifier")}
                 placeholder={t("auth.identifierPlaceholder")}
                 required
-                size="md"
+                size="sm"
                 radius="md"
                 autoComplete="username"
                 leftSection={getIdentifierIcon()}
-                styles={{ input: { height: 52, fontSize: "15px" } }}
+                styles={{
+                  input: { height: 46, fontSize: "14.5px" },
+                  label: { fontSize: "13px", fontWeight: 600, marginBottom: 4 }
+                }}
                 aria-required="true"
                 aria-invalid={!!form.errors.identifier}
                 {...form.getInputProps("identifier")}
@@ -229,11 +232,14 @@ const Login_Page = () => {
                   label={t("auth.password")}
                   placeholder={t("auth.passwordPlaceholder")}
                   required
-                  size="md"
+                  size="sm"
                   radius="md"
                   autoComplete="current-password"
                   leftSection={<IconLock size={18} />}
-                  styles={{ input: { height: 52, fontSize: "15px" } }}
+                  styles={{
+                    input: { height: 46, fontSize: "14.5px" },
+                    label: { fontSize: "13px", fontWeight: 600, marginBottom: 4 }
+                  }}
                   aria-required="true"
                   aria-invalid={!!form.errors.password}
                   onFocus={() => setPasswordFocused(true)}
@@ -243,7 +249,7 @@ const Login_Page = () => {
                 <CapsLockWarning active={isCapsLock && passwordFocused} />
               </Box>
 
-              <Group justify="flex-end" mt={-6}>
+              <Group justify="flex-end" mt={-4}>
                 <Anchor
                   component={Link}
                   to="/auth/forgot-password"
@@ -261,9 +267,9 @@ const Login_Page = () => {
                 radius="md"
                 type="submit"
                 loading={loading}
-                h={56}
+                h={48}
                 style={{
-                  fontSize: "16px",
+                  fontSize: "15px",
                   fontWeight: 700,
                   boxShadow: "0 4px 14px rgba(25, 113, 194, 0.25)",
                 }}
@@ -274,10 +280,10 @@ const Login_Page = () => {
               <Divider
                 label={t("auth.orContinueWith")}
                 labelPosition="center"
-                my={4}
+                my={2}
               />
 
-              <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="sm">
+              <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="xs">
                 <GoogleLoginButton mode="login" />
                 <TelegramLoginButton mode="login" />
               </SimpleGrid>
