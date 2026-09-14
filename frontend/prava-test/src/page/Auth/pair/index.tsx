@@ -25,6 +25,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../auth/AuthContext";
 import api from "../../../api/api";
 import SEO from "../../../components/common/SEO";
@@ -37,11 +38,13 @@ interface SessionInfo {
   platform: string;
   appVersion: string;
   ipAddress?: string;
-  createdAt: string;
-  expiresAt: string;
+  createdAt: string | number;
+  expiresAt: string | number;
+  expired?: boolean;
 }
 
 export default function PairPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -57,7 +60,7 @@ export default function PairPage() {
 
   useEffect(() => {
     if (!sessionId || !challenge) {
-      setError("QR havola yaroqsiz yoki parametrlari to'liq emas.");
+      setError(t("pair.invalidUrl", { defaultValue: "QR havola yaroqsiz yoki parametrlari to'liq emas." }));
       setLoading(false);
       return;
     }
@@ -67,26 +70,34 @@ export default function PairPage() {
       try {
         setLoading(true);
         setError(null);
-        const res = await api.get<SessionInfo>(
+        const res = await api.get<any>(
           `/api/v1/auth/qr/session-info?sessionId=${encodeURIComponent(
             sessionId
           )}&challenge=${encodeURIComponent(challenge)}`
         );
         if (isMounted) {
-          setSessionInfo(res.data);
-          if (res.data.status === "APPROVED" || res.data.status === "CONSUMED") {
+          const sessionData: SessionInfo = (res.data as any)?.data || res.data;
+          setSessionInfo(sessionData);
+
+          if (sessionData.status === "APPROVED" || sessionData.status === "CONSUMED") {
             setSuccess(true);
-          } else if (res.data.status === "REJECTED" || res.data.status === "CANCELLED") {
-            setError("Ushbu sessiya bekor qilingan.");
-          } else if (res.data.status === "EXPIRED") {
-            setError("QR kod muddati tugagan (90 soniya). Desktop ilovasida qaytadan yangilang.");
+          } else if (sessionData.status === "REJECTED" || sessionData.status === "CANCELLED") {
+            setError(t("pair.cancelled", { defaultValue: "Ushbu sessiya bekor qilingan." }));
+          } else if (sessionData.status === "EXPIRED" || sessionData.expired) {
+            setError(
+              t("pair.expired", {
+                defaultValue: "QR kod muddati tugagan (90 soniya). Desktop ilovasida qaytadan yangilang.",
+              })
+            );
           }
         }
       } catch (err: any) {
         if (isMounted) {
           const msg =
             err.response?.data?.message ||
-            "QR kod sessiyasi topilmadi yoki muddati tugagan. Desktop ilovasida yangilang.";
+            t("pair.expired", {
+              defaultValue: "QR kod sessiyasi topilmadi yoki muddati tugagan. Desktop ilovasida yangilang.",
+            });
           setError(msg);
         }
       } finally {
@@ -101,7 +112,7 @@ export default function PairPage() {
     return () => {
       isMounted = false;
     };
-  }, [sessionId, challenge]);
+  }, [sessionId, challenge, t]);
 
   const handleApprove = async () => {
     if (!sessionId || !challenge) return;
@@ -116,7 +127,7 @@ export default function PairPage() {
     } catch (err: any) {
       const msg =
         err.response?.data?.message ||
-        "Qurilmani ulashda xatolik yuz berdi. Qaytadan urinib ko'ring.";
+        t("common.error", { defaultValue: "Qurilmani ulashda xatolik yuz berdi. Qaytadan urinib ko'ring." });
       setError(msg);
     } finally {
       setActionLoading(false);
@@ -131,9 +142,9 @@ export default function PairPage() {
         sessionId,
         challenge,
       });
-      setError("Ulanish so'rovi bekor qilindi.");
+      setError(t("pair.cancelled", { defaultValue: "Ulanish so'rovi bekor qilindi." }));
     } catch {
-      setError("Ulanish so'rovi bekor qilindi.");
+      setError(t("pair.cancelled", { defaultValue: "Ulanish so'rovi bekor qilindi." }));
     } finally {
       setActionLoading(false);
     }
@@ -146,23 +157,33 @@ export default function PairPage() {
   return (
     <>
       <SEO
-        title="Qurilmani Ulash — PRAVA"
-        description="PRAVA Desktop ilovasini hisobingizga xavfsiz QR orqali ulang"
+        title={`${t("pair.title", { defaultValue: "Qurilmani Ulash" })} — PRAVA`}
+        description={t("pair.subtitle", {
+          defaultValue: "PRAVA Desktop ilovasini hisobingizga xavfsiz QR orqali ulang",
+        })}
       />
-      <Container size="xs" py="xl">
-        <Paper radius="md" p="xl" withBorder shadow="sm">
+      <Container size="xs" py={{ base: "md", sm: "xl" }} px={{ base: "xs", sm: "md" }}>
+        <Paper
+          radius="lg"
+          p={{ base: "md", sm: "xl" }}
+          withBorder
+          shadow="sm"
+          style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+        >
           <Center mb="md">
             <ThemeIcon size={64} radius="xl" color="blue" variant="light">
               <IconDeviceDesktop size={36} />
             </ThemeIcon>
           </Center>
 
-          <Title order={2} ta="center" mb="xs">
-            Yangi qurilma ulanishi
+          <Title order={2} ta="center" mb="xs" size="1.4rem" fw={800}>
+            {t("pair.title", { defaultValue: "Yangi qurilma ulanishi" })}
           </Title>
 
-          <Text c="dimmed" size="sm" ta="center" mb="xl">
-            PRAVA Desktop ilovasi hisobingizga kirish uchun ruxsat so'ramoqda
+          <Text c="dimmed" size="xs" ta="center" mb="xl" maw={380} mx="auto" style={{ lineHeight: 1.5 }}>
+            {t("pair.subtitle", {
+              defaultValue: "PRAVA Desktop ilovasi hisobingizga kirish uchun ruxsat so'ramoqda",
+            })}
           </Text>
 
           {loading && (
@@ -170,7 +191,7 @@ export default function PairPage() {
               <Stack align="center" gap="xs">
                 <Loader size="md" />
                 <Text size="sm" c="dimmed">
-                  Sessiya tekshirilmoqda...
+                  {t("pair.checking", { defaultValue: "Sessiya tekshirilmoqda..." })}
                 </Text>
               </Stack>
             </Center>
@@ -180,18 +201,20 @@ export default function PairPage() {
             <Stack gap="md">
               <Alert
                 icon={<IconAlertCircle size={18} />}
-                title="Xatolik"
+                title={t("pair.errorTitle", { defaultValue: "Xatolik" })}
                 color="red"
                 variant="light"
+                radius="md"
               >
                 {error}
               </Alert>
               <Button
                 variant="default"
                 fullWidth
+                radius="md"
                 onClick={() => navigate("/")}
               >
-                Bosh sahifaga qaytish
+                {t("pair.goHome", { defaultValue: "Bosh sahifaga qaytish" })}
               </Button>
             </Stack>
           )}
@@ -201,11 +224,14 @@ export default function PairPage() {
               <ThemeIcon size={60} radius="xl" color="green" variant="filled">
                 <IconCheck size={36} />
               </ThemeIcon>
-              <Title order={3} ta="center" c="green.7">
-                Muvaffaqiyatli ulandi!
+              <Title order={3} ta="center" c="green.7" size="1.25rem" fw={800}>
+                {t("pair.successTitle", { defaultValue: "Muvaffaqiyatli ulandi!" })}
               </Title>
-              <Text size="sm" ta="center" c="dimmed">
-                Desktop ilovangizga avtomatik kirildi. Endi siz barcha testlar, obunalar va saqlangan natijalaringizdan Desktop ilovada foydalanishingiz mumkin.
+              <Text size="xs" ta="center" c="dimmed" maw={380} style={{ lineHeight: 1.5 }}>
+                {t("pair.successDesc", {
+                  defaultValue:
+                    "Desktop ilovangizga avtomatik kirildi. Endi siz barcha testlar, obunalar va saqlangan natijalaringizdan Desktop ilovada foydalanishingiz mumkin.",
+                })}
               </Text>
               <Button
                 component={Link}
@@ -214,20 +240,26 @@ export default function PairPage() {
                 color="blue"
                 fullWidth
                 mt="md"
+                radius="md"
               >
-                Shaxsiy kabinetga o'tish
+                {t("pair.goToCabinet", { defaultValue: "Shaxsiy kabinetga o'tish" })}
               </Button>
             </Stack>
           )}
 
           {!loading && !error && !success && sessionInfo && (
             <Stack gap="lg">
-              <Card withBorder radius="md" p="md" bg="gray.0">
+              <Card
+                withBorder
+                radius="md"
+                p="md"
+                style={{ background: "var(--surface-muted)", borderColor: "var(--border)" }}
+              >
                 <Group justify="space-between" mb="xs">
-                  <Text size="xs" fw={700} c="dimmed" tt="uppercase">
-                    Qurilma ma'lumotlari
+                  <Text size="xs" fw={700} c="dimmed" tt="uppercase" style={{ letterSpacing: 0.5 }}>
+                    {t("pair.deviceInfo", { defaultValue: "Qurilma ma'lumotlari" })}
                   </Text>
-                  <Badge color="blue" variant="light">
+                  <Badge color="blue" variant="light" size="sm">
                     {sessionInfo.platform || "Desktop"}
                   </Badge>
                 </Group>
@@ -239,21 +271,26 @@ export default function PairPage() {
                 </Group>
                 {sessionInfo.appVersion && (
                   <Text size="xs" c="dimmed">
-                    Ilova versiyasi: v{sessionInfo.appVersion}
+                    {t("pair.appVersion", { defaultValue: "Ilova versiyasi" })}: v{sessionInfo.appVersion}
                   </Text>
                 )}
               </Card>
 
               {isAuthenticated ? (
                 <Stack gap="md">
-                  <Paper withBorder p="sm" radius="md" bg="blue.0">
+                  <Paper
+                    withBorder
+                    p="sm"
+                    radius="md"
+                    style={{ background: "var(--mantine-color-blue-0)", borderColor: "var(--mantine-color-blue-2)" }}
+                  >
                     <Group gap="xs">
                       <IconUserCheck size={20} color="var(--mantine-color-blue-7)" />
                       <Box>
                         <Text size="xs" c="dimmed">
-                          Ulanadigan hisob:
+                          {t("pair.targetAccount", { defaultValue: "Ulanadigan hisob:" })}
                         </Text>
-                        <Text size="sm" fw={600} c="blue.9">
+                        <Text size="sm" fw={700} c="blue.9">
                           {user?.fullName || user?.phoneNumber || user?.email || "Foydalanuvchi"}
                         </Text>
                       </Box>
@@ -266,8 +303,11 @@ export default function PairPage() {
                       color="var(--mantine-color-green-6)"
                       style={{ marginTop: 2, flexShrink: 0 }}
                     />
-                    <Text size="xs" c="dimmed">
-                      "Tasdiqlash" tugmasini bosganingizda ushbu kompyuter profilingizga ulanadi va hisobingizdagi obuna ochiladi.
+                    <Text size="xs" c="dimmed" style={{ lineHeight: 1.4 }}>
+                      {t("pair.notice", {
+                        defaultValue:
+                          "«Tasdiqlash» tugmasini bosganingizda ushbu kompyuter profilingizga ulanadi va hisobingizdagi obuna ochiladi.",
+                      })}
                     </Text>
                   </Group>
 
@@ -277,20 +317,22 @@ export default function PairPage() {
                     <Button
                       variant="default"
                       color="gray"
+                      radius="md"
                       leftSection={<IconX size={16} />}
                       onClick={handleReject}
                       disabled={actionLoading}
                     >
-                      Rad etish
+                      {t("pair.reject", { defaultValue: "Rad etish" })}
                     </Button>
                     <Button
                       variant="filled"
                       color="green"
+                      radius="md"
                       leftSection={<IconCheck size={16} />}
                       onClick={handleApprove}
                       loading={actionLoading}
                     >
-                      Tasdiqlash
+                      {t("pair.approve", { defaultValue: "Tasdiqlash" })}
                     </Button>
                   </Group>
                 </Stack>
@@ -298,34 +340,40 @@ export default function PairPage() {
                 <Stack gap="md">
                   <Alert
                     icon={<IconAlertCircle size={18} />}
-                    title="Avtorizatsiya talab qilinadi"
+                    title={t("pair.authRequired", { defaultValue: "Avtorizatsiya talab qilinadi" })}
                     color="blue"
                     variant="light"
+                    radius="md"
                   >
-                    Desktop ilovani ulash uchun avval o'z hisobingizga kiring. Agar hisobingiz bo'lmasa, yangi hisob ochishingiz mumkin.
+                    {t("pair.authRequiredDesc", {
+                      defaultValue:
+                        "Desktop ilovani ulash uchun avval o'z hisobingizga kiring. Agar hisobingiz bo'lmasa, yangi hisob ochishingiz mumkin.",
+                    })}
                   </Alert>
 
                   <Button
                     component={Link}
                     to="/auth/login"
-                    state={{ from: { pathname: currentPairUrl } }}
+                    state={{ from: currentPairUrl }}
                     variant="filled"
                     color="blue"
                     fullWidth
                     size="md"
+                    radius="md"
                   >
-                    Mavjud hisob bilan kirish
+                    {t("pair.loginExisting", { defaultValue: "Mavjud hisob bilan kirish" })}
                   </Button>
 
                   <Button
                     component={Link}
                     to="/auth/register"
-                    state={{ from: { pathname: currentPairUrl } }}
+                    state={{ from: currentPairUrl }}
                     variant="outline"
                     color="blue"
                     fullWidth
+                    radius="md"
                   >
-                    Yangi hisob yaratish
+                    {t("pair.registerNew", { defaultValue: "Yangi hisob yaratish" })}
                   </Button>
                 </Stack>
               )}

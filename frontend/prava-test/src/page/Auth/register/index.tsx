@@ -21,7 +21,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, Navigate } from "react-router-dom";
+import { Link, useNavigate, useLocation, Navigate } from "react-router-dom";
 import api from "../../../api/api";
 import { useAuth } from "../../../auth/AuthContext";
 import { notifications } from "@mantine/notifications";
@@ -65,7 +65,20 @@ const Register_Page = () => {
   const [verificationType, setVerificationType] = useState<"EMAIL" | "SMS">("EMAIL");
   const isCapsLock = useCapsLock();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, i18n } = useTranslation();
+
+  const locationState = location.state as { from?: string | { pathname: string; search?: string } } | undefined;
+  let from = "/me";
+  if (typeof locationState?.from === "string") {
+    from = locationState.from;
+  } else if (locationState?.from?.pathname) {
+    from = locationState.from.pathname + (locationState.from.search || "");
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to={from} replace />;
+  }
 
   // Countdown timer for OTP resend
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -224,7 +237,7 @@ const Register_Page = () => {
           color: "teal",
           withBorder: true,
         });
-        navigate("/me");
+        navigate(from, { replace: true });
       }
     } catch (error: unknown) {
       const msg = getErrorMessage(error, t("register.codeError"));

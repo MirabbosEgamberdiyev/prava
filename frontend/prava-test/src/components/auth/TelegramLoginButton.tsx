@@ -50,7 +50,13 @@ const TelegramLoginButton = ({ mode = "login", compact = false }: TelegramLoginB
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/me";
+  const locationState = location.state as { from?: string | { pathname: string; search?: string } } | undefined;
+  let from = "/me";
+  if (typeof locationState?.from === "string") {
+    from = locationState.from;
+  } else if (locationState?.from?.pathname) {
+    from = locationState.from.pathname + (locationState.from.search || "");
+  }
 
   const handleTelegramLogin = useCallback(() => {
     // Try popup API first
@@ -127,7 +133,7 @@ const TelegramLoginButton = ({ mode = "login", compact = false }: TelegramLoginB
       };
       document.head.appendChild(script);
     }
-  }, [authLogin, navigate, t, i18n]);
+  }, [authLogin, navigate, t, i18n, from]);
 
   return (
     <Button
