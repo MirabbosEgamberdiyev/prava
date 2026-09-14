@@ -309,6 +309,16 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiResponse<?>> handleHttpMediaTypeNotSupportedException(
+            org.springframework.web.HttpMediaTypeNotSupportedException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("HttpMediaTypeNotSupportedException [415]: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body(ApiResponse.error("Content-Type qo'llab-quvvatlanmaydi: " + ex.getContentType()));
+    }
+
     private String getMessage(String key, Object... args) {
         try {
             return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());

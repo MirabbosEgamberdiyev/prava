@@ -127,11 +127,10 @@ export default function PairPage() {
     if (!sessionId || !challenge) return;
     try {
       setActionLoading(true);
-      await api.post(
-        `/api/v1/auth/qr/reject?sessionId=${encodeURIComponent(
-          sessionId
-        )}&challenge=${encodeURIComponent(challenge)}`
-      );
+      await api.post("/api/v1/auth/qr/reject", {
+        sessionId,
+        challenge,
+      });
       setError("Ulanish so'rovi bekor qilindi.");
     } catch {
       setError("Ulanish so'rovi bekor qilindi.");

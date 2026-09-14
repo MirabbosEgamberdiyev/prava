@@ -106,9 +106,16 @@ public class QrAuthController {
     @PostMapping("/reject")
     @Operation(summary = "Foydalanuvchi ulanishni bekor qiladi")
     public ResponseEntity<ApiResponse<Map<String, Object>>> rejectPairing(
-            @Valid @RequestBody QrPairingApproveRequest request
+            @RequestBody(required = false) QrPairingApproveRequest request,
+            @RequestParam(value = "sessionId", required = false) String sessionIdParam,
+            @RequestParam(value = "challenge", required = false) String challengeParam
     ) {
-        boolean rejected = sessionStore.rejectSession(request.getSessionId(), request.getChallenge());
+        String sessionId = (request != null && request.getSessionId() != null) ? request.getSessionId() : sessionIdParam;
+        String challenge = (request != null && request.getChallenge() != null) ? request.getChallenge() : challengeParam;
+        if (sessionId == null || challenge == null) {
+            throw new BusinessException("sessionId va challenge talab qilinadi");
+        }
+        boolean rejected = sessionStore.rejectSession(sessionId, challenge);
         return ResponseEntity.ok(ApiResponse.success(Map.of("rejected", rejected)));
     }
 
@@ -118,7 +125,7 @@ public class QrAuthController {
             @RequestBody(required = false) Map<String, String> body,
             @RequestParam(value = "sessionId", required = false) String sessionIdParam
     ) {
-        String sessionId = sessionIdParam != null ? sessionIdParam : (body != null ? body.get("sessionId") : null);
+        String sessionId = (sessionIdParam != null) ? sessionIdParam : (body != null ? body.get("sessionId") : null);
         if (sessionId != null) {
             sessionStore.cancelSession(sessionId);
         }
