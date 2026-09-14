@@ -92,7 +92,7 @@ app:
 
   # Telegram Bot — env variable orqali
   telegram:
-    bot-token: ${TELEGRAM_BOT_TOKEN:8485868847:AAGR9eBV1qibgJfXHpqZ04JlbyrjemaTrGA}
+    bot-token: ${TELEGRAM_BOT_TOKEN:8485868847:AAFtvLLKcTeSUu7aHvQ1I7561zOXnohg0yc}
     bot-username: ${TELEGRAM_BOT_USERNAME:pravaonlineuzbot}
     webhook-url: ${TELEGRAM_WEBHOOK_URL:https://pravaonline.uz/api/v1/telegram/webhook}
     base-url: ${TELEGRAM_BASE_URL:https://pravaonline.uz}
