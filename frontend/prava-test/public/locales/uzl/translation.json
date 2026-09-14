@@ -1692,7 +1692,82 @@
     "explanation": "YHQ tushuntirishi"
   },
   "dashboard": {
+    "greeting": "Xush kelibsiz",
+    "subtitle": "Haydovchilik imtihoniga tayyorlanishda davom eting",
+    "fallbackName": "Hurmatli haydovchi",
+    "dailyGoal": "Kunlik reja",
+    "questionsSolved": "Yechilgan savollar",
+    "overallReadiness": "Umumiy tayyorgarlik",
+    "beginnerLevel": "Boshlang'ich",
+    "questionsUnit": "savol",
+    "totalUnit": "ta",
+    "recommended": "Tavsiya etiladi",
+    "mainModesTitle": "Asosiy ta'lim rejimlari",
+    "selectFormat": "O'rganish ketma-ketligi bo'yicha rejimni tanlang",
+    "activeStreak": "3 kunlik faol seriya",
+    "totalQuestionsInDb": "Jami 1190 ta rasmiy savoldan",
+    "steadyProgress": "Muntazam amaliyot bilan o'sish",
+    "start": "Boshlash",
+    "modes": {
+      "topics": {
+        "title": "Mavzular",
+        "desc": "Nazariya va qoidalar bo'yicha bosqichma-bosqich o'rganish"
+      },
+      "tickets": {
+        "title": "Biletlar",
+        "desc": "1-dan 60-gacha rasmiy biletlar bilan mustahkamlash"
+      },
+      "marathon": {
+        "title": "Marafon",
+        "desc": "Barcha 1190 ta savol ketma-ket, to'xtovsiz rejimda"
+      },
+      "exam": {
+        "title": "Haqiqiy Imtihon",
+        "desc": "Vaqt chegaralangan rasmiy DTM test simulyatori"
+      }
+    },
+    "smartSectionTitle": "Aqlli tavsiya va xatolar ustida ishlash",
+    "smartSectionSubtitle": "Imtihon natijangizni oshirish uchun eng zaif mavzular va xatolarni tizimli bartaraf eting",
+    "weakTopicsTitle": "Zaif mavzular",
+    "weakTopicsSubtitle": "Eng ko'p xato tushgan yo'nalishlar",
     "noMistakesYet": "Hali xatolaringiz yo'q, ajoyib!",
-    "noMistakesDesc": "Barcha mavzularda savollarni to'g'ri yechib boryapsiz"
+    "noMistakesDesc": "Barcha mavzularda savollarni to'g'ri yechib boryapsiz",
+    "weakTopicsList": {
+      "roadSigns": "Yo'l belgilari va chiziqlari",
+      "generalRules": "Umumiy qoidalar va haydovchining majburiyatlari",
+      "intersections": "Chorrahada harakatlanish qoidalari",
+      "firstAid": "Birinchi tibbiy yordam ko'rsatish asoslari"
+    },
+    "mistakesTitle": "ta xato javob",
+    "mistakesCount": "xato",
+    "mistakesDesc": "Xatolar ustida muntazam ishlash imtihondan birinchi urinishda o'tish imkonini 94% ga oshiradi.",
+    "fixMistakesBtn": "Eng zaif 20 ta savolni tuzatish",
+    "quickFix": "Tezkor tuzatish",
+    "analyticsTitle": "Tahlil va shaxsiy vositalar",
+    "personalToolsDesc": "Shaxsiy o'sish, natijalar va sinovlar monitoringi",
+    "tools": {
+      "saved": {
+        "title": "Saqlanganlar",
+        "desc": "Xatcho'p qo'yilgan savollar"
+      },
+      "stats": {
+        "title": "Statistika",
+        "desc": "Batafsil o'rganish statistikasi"
+      },
+      "rating": {
+        "title": "Reyting",
+        "desc": "O'quvchilar reytingidagi o'rin"
+      },
+      "history": {
+        "title": "Imtihon tarixi",
+        "desc": "Avvalgi sinov urinishlari tarixi"
+      }
+    },
+    "footerFollow": "Bizni ijtimoiy tarmoqlarda kuzating",
+    "allRightsReserved": "Barcha huquqlar himoyalangan.",
+    "scanQrCode": "QR kodni skanerlang",
+    "examQuestionCount": "Nechta savoldan imtihon?",
+    "minutesUnit": "daq",
+    "cancel": "Bekor qilish"
   }
 }

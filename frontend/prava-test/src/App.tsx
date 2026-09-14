@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { DesktopThemeProvider } from "./context/DesktopThemeContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import AppRoutes from "./routes";
 import GoogleOneTap from "./components/auth/GoogleOneTap";
@@ -72,12 +73,14 @@ function AppInner() {
   return (
     <DesktopThemeProvider>
       <AuthProvider>
-        <ApiErrorListener />
-        <GoogleOneTap />
-        <ScrollManager />
-        <ErrorBoundary resetKey={location.pathname}>
-          <AppRoutes />
-        </ErrorBoundary>
+        <LanguageProvider>
+          <ApiErrorListener />
+          <GoogleOneTap />
+          <ScrollManager />
+          <ErrorBoundary resetKey={location.pathname}>
+            <AppRoutes />
+          </ErrorBoundary>
+        </LanguageProvider>
       </AuthProvider>
     </DesktopThemeProvider>
   );

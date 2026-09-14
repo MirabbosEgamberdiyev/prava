@@ -13,12 +13,19 @@ import type {
 } from "../types/desktop";
 import storageService, { type StoredQuestion } from "./storageService";
 import api from "../api/api";
+import { normalizeLanguage, type AppLanguage } from "../context/LanguageContext";
 
-export function getLang(): "uzl" | "uzc" | "ru" {
-  const l = i18n.language;
-  if (l === "uzc") return "uzc";
-  if (l === "ru") return "ru";
-  return "uzl";
+export function getLang(): AppLanguage {
+  const l = i18n.resolvedLanguage || i18n.language;
+  return normalizeLanguage(l);
+}
+
+export function localizeTopic(tp: OfflineTopic | null | undefined): string {
+  if (!tp) return "";
+  const lang = getLang();
+  if (lang === "uzc" && tp.name_uzc) return tp.name_uzc;
+  if (lang === "ru" && tp.name_ru) return tp.name_ru;
+  return tp.name_uzl || tp.name_uzc || tp.name_ru || "";
 }
 
 export function parseOptions(json: string): QuestionOption[] {

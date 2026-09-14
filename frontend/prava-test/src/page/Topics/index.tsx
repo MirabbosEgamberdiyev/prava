@@ -41,8 +41,11 @@ const PALETTE_DARK = [
   { bg: "#e0313122", color: "#ffa8a8", border: "#e0313140" },
 ];
 
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function Topics_Page() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { localizeTopic } = useLanguage();
   const navigate = useNavigate();
   const [topics, setTopics] = useState<OfflineTopic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,14 +60,6 @@ export default function Topics_Page() {
 
   const { theme } = useDesktopTheme();
   const isDark = theme === "dark";
-
-  const localizeTopic = (tp: OfflineTopic): string => {
-    if (!tp) return "";
-    const l = i18n.language;
-    if (l === "uzc" && tp.name_uzc) return tp.name_uzc;
-    if (l === "ru" && tp.name_ru) return tp.name_ru;
-    return tp.name_uzl || tp.name_ru || tp.name_uzc || "";
-  };
 
   const onBack = () => navigate("/me");
 

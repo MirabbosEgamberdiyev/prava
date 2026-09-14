@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import type { OfflineTicket, TicketStat } from "../../types/desktop";
-import { getTickets, getTicketStats } from "../../services/desktopAdapter";
+import { getTickets, getTicketStats, getLang } from "../../services/desktopAdapter";
 import SEO from "../../components/common/SEO";
 import {
   IconArrowLeft,
@@ -16,7 +16,7 @@ import {
 } from "@tabler/icons-react";
 
 export default function Tickets_Page() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const userId = user?.id ? Number(user.id) : 1;
@@ -27,7 +27,7 @@ export default function Tickets_Page() {
 
   const localizeName = (tk: OfflineTicket): string => {
     if (!tk) return "";
-    const l = i18n.language;
+    const l = getLang();
     if (l === "uzc" && tk.name_uzc) return tk.name_uzc;
     if (l === "ru" && tk.name_ru) return tk.name_ru;
     return tk.name_uzl || tk.name_ru || tk.name_uzc || `${t("home.biletlar", "Bilet")} #${tk.ticket_number || ""}`;

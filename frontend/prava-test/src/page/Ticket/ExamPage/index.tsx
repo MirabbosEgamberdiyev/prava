@@ -17,6 +17,7 @@ import {
   parseOptions,
   getActiveTicketSessionId,
   submitExamSession,
+  getLang,
 } from "../../../services/desktopAdapter";
 import ColorMode from "../../../components/other/ColorMode";
 import LanguagePicker from "../../../components/language/LanguagePicker";
@@ -46,7 +47,7 @@ interface Answer {
 }
 
 export default function TicketExamPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -67,7 +68,7 @@ export default function TicketExamPage() {
   };
 
   const localizeName = (tk: OfflineTicket): string => {
-    const l = i18n.language;
+    const l = getLang();
     if (l === "uzc" && tk.name_uzc) return tk.name_uzc;
     if (l === "ru" && tk.name_ru) return tk.name_ru;
     return tk.name_uzl;

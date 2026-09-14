@@ -135,14 +135,34 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
 
   // Fallback to prevent {{name}} bug
   const cleanName = (name || "").replace(/\{\{.*?\}\}/g, "").trim();
-  const displayName = cleanName || (lang === "ru" ? "Уважаемый курсант" : "Hurmatli haydovchi");
+  const fallbackNames: Record<Language, string> = {
+    uzl: "Hurmatli haydovchi",
+    uzc: "Ҳурматли ҳайдовчи",
+    ru: "Уважаемый курсант",
+  };
+  const displayName = cleanName || fallbackNames[lang] || fallbackNames.uzl;
 
-  const weakTopics = [
-    { id: 1, name: lang === "ru" ? "Дорожные знаки и разметка" : "Yo'l belgilari va chiziqlari", mistakes: 41 },
-    { id: 2, name: lang === "ru" ? "Общие положения и обязанности водителей" : "Umumiy qoidalar va haydovchining majburiyatlari", mistakes: 13 },
-    { id: 3, name: lang === "ru" ? "Проезд перекрестков" : "Chorrahada harakatlanish qoidalari", mistakes: 5 },
-    { id: 4, name: lang === "ru" ? "Основы оказания первой помощи" : "Birinchi tibbiy yordam ko'rsatish asoslari", mistakes: 5 },
-  ];
+  const weakTopicsByLang: Record<Language, Array<{ id: number; name: string; mistakes: number }>> = {
+    uzl: [
+      { id: 1, name: "Yo'l belgilari va chiziqlari", mistakes: 41 },
+      { id: 2, name: "Umumiy qoidalar va haydovchining majburiyatlari", mistakes: 13 },
+      { id: 3, name: "Chorrahada harakatlanish qoidalari", mistakes: 5 },
+      { id: 4, name: "Birinchi tibbiy yordam ko'rsatish asoslari", mistakes: 5 },
+    ],
+    uzc: [
+      { id: 1, name: "Йўл белгилари ва чизиқлари", mistakes: 41 },
+      { id: 2, name: "Умумий қоидалар ва ҳайдовчининг мажбуриятлари", mistakes: 13 },
+      { id: 3, name: "Чорраҳада ҳаракатланиш қоидалари", mistakes: 5 },
+      { id: 4, name: "Биринчи тиббий ёрдам кўрсатиш асослари", mistakes: 5 },
+    ],
+    ru: [
+      { id: 1, name: "Дорожные знаки и разметка", mistakes: 41 },
+      { id: 2, name: "Общие положения и обязанности водителей", mistakes: 13 },
+      { id: 3, name: "Проезд перекрестков", mistakes: 5 },
+      { id: 4, name: "Основы оказания первой помощи", mistakes: 5 },
+    ],
+  };
+  const weakTopics = weakTopicsByLang[lang] || weakTopicsByLang.uzl;
 
   return (
     <div className={`min-h-screen transition-colors duration-200 ${darkMode ? "dark bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
@@ -276,7 +296,7 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
                 </div>
               </div>
               <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs font-bold text-blue-600 dark:text-blue-400">
-                <span>{lang === "ru" ? "Начать" : "Boshlash"}</span>
+                <span>{lang === "ru" ? "Начать" : lang === "uzc" ? "Бошлаш" : "Boshlash"}</span>
                 <ArrowRight size={15} />
               </div>
             </div>
@@ -293,7 +313,7 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
                 </div>
               </div>
               <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-                <span>{lang === "ru" ? "Начать" : "Boshlash"}</span>
+                <span>{lang === "ru" ? "Начать" : lang === "uzc" ? "Бошлаш" : "Boshlash"}</span>
                 <ArrowRight size={15} />
               </div>
             </div>
@@ -310,7 +330,7 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
                 </div>
               </div>
               <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-                <span>{lang === "ru" ? "Начать" : "Boshlash"}</span>
+                <span>{lang === "ru" ? "Начать" : lang === "uzc" ? "Бошлаш" : "Boshlash"}</span>
                 <ArrowRight size={15} />
               </div>
             </div>
@@ -327,7 +347,7 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
                 </div>
               </div>
               <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-                <span>{lang === "ru" ? "Начать" : "Boshlash"}</span>
+                <span>{lang === "ru" ? "Начать" : lang === "uzc" ? "Бошлаш" : "Boshlash"}</span>
                 <ArrowRight size={15} />
               </div>
             </div>
@@ -363,7 +383,7 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
                   </span>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs font-black text-amber-700 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-900/50 px-2 py-0.5 rounded-md">
-                      {topic.mistakes} {t.totalUnit} {lang === "ru" ? "ошибок" : "xato"}
+                      {topic.mistakes} {t.totalUnit} {lang === "ru" ? "ошибок" : lang === "uzc" ? "хато" : "xato"}
                     </span>
                     <ArrowRight size={14} className="text-slate-400" />
                   </div>
@@ -377,7 +397,7 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
             <div>
               <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-2.5 py-1 rounded-lg mb-3">
                 <Flame size={14} />
-                <span>{lang === "ru" ? "Быстрый прогресс" : "Tezkor natija"}</span>
+                <span>{lang === "ru" ? "Быстрый прогресс" : lang === "uzc" ? "Тезкор натижа" : "Tezkor natija"}</span>
               </div>
               <h3 className="text-2xl font-black">79 {t.mistakesTitle}</h3>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">

@@ -8,8 +8,7 @@ import {
   IconBulb,
   IconClipboardList,
 } from "@tabler/icons-react";
-import { getWrongAnswers, getTopics, getFullStats } from "../../../services/desktopAdapter";
-import type { OfflineTopic } from "../../../types/desktop";
+import { getWrongAnswers, getTopics, getFullStats, localizeTopic } from "../../../services/desktopAdapter";
 
 interface WeakTopicSummary {
   topicId: number;
@@ -28,14 +27,6 @@ export default function WeakTopicsWidget({ userId }: Props) {
   const [totalWrongs, setTotalWrongs] = useState(0);
   const [weakTopics, setWeakTopics] = useState<WeakTopicSummary[]>([]);
   const [progressPct, setProgressPct] = useState(0);
-
-  const localizeTopic = (tp: OfflineTopic): string => {
-    if (!tp) return "";
-    const l = i18n.language;
-    if (l === "uzc" && tp.name_uzc) return tp.name_uzc;
-    if (l === "ru" && tp.name_ru) return tp.name_ru;
-    return tp.name_uzl || tp.name_ru || tp.name_uzc || "";
-  };
 
   const loadData = async () => {
     try {

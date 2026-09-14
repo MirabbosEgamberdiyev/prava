@@ -1,28 +1,19 @@
 import { Menu, Text, UnstyledButton } from "@mantine/core";
-import { useTranslation } from "react-i18next";
-import Cookies from "js-cookie";
 import { IconCheck, IconChevronDown, IconWorld } from "@tabler/icons-react";
+import { useLanguage, APP_LANGUAGES, type AppLanguage } from "../../context/LanguageContext";
 
-export const languages = [
-  { value: "uzl", label: "O‘zbekcha (Lotin)", short: "O‘zbek", code: "UZ" },
-  { value: "uzc", label: "Ўзбекча (Кирилл)", short: "Ўзбек", code: "ЎЗ" },
-  { value: "ru", label: "Русский", short: "Русский", code: "RU" },
-] as const;
+export const languages = APP_LANGUAGES.map((l) => ({
+  value: l.code,
+  label: l.label,
+  short: l.short,
+  code: l.flagCode,
+}));
 
 export default function LanguagePicker() {
-  const { i18n } = useTranslation();
-  const currentLang = i18n.resolvedLanguage || i18n.language || "uzl";
-  const current = languages.find((l) => l.value === currentLang) ?? languages[0];
+  const { language, setLanguage, currentLanguageOption } = useLanguage();
 
-  const handleLanguageChange = (value: string) => {
-    i18n.changeLanguage(value);
-    Cookies.set("i18next", value, { expires: 365, path: "/" });
-    try {
-      localStorage.setItem("prava_lang", value);
-      localStorage.setItem("i18nextLng", value);
-    } catch {
-      // localStorage may be unavailable
-    }
+  const handleLanguageChange = (value: AppLanguage) => {
+    setLanguage(value);
   };
 
   return (
@@ -30,8 +21,8 @@ export default function LanguagePicker() {
       <Menu.Target>
         <UnstyledButton
           className="header-control-btn"
-          aria-label={`Til: ${current.label}`}
-          title={current.label}
+          aria-label={`Til: ${currentLanguageOption.label}`}
+          title={currentLanguageOption.label}
         >
           <IconWorld
             size={16}
@@ -40,10 +31,10 @@ export default function LanguagePicker() {
             aria-hidden="true"
           />
           <span className="lang-label-full" style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "0.2px" }}>
-            {current.short}
+            {currentLanguageOption.short}
           </span>
           <span className="lang-label-short" style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.2px" }}>
-            {current.code}
+            {currentLanguageOption.flagCode}
           </span>
           <IconChevronDown
             size={13}
@@ -54,12 +45,12 @@ export default function LanguagePicker() {
       </Menu.Target>
 
       <Menu.Dropdown style={{ padding: 6 }}>
-        {languages.map((lang) => {
-          const isActive = currentLang === lang.value;
+        {APP_LANGUAGES.map((lang) => {
+          const isActive = language === lang.code;
           return (
             <Menu.Item
-              key={lang.value}
-              onClick={() => handleLanguageChange(lang.value)}
+              key={lang.code}
+              onClick={() => handleLanguageChange(lang.code)}
               rightSection={
                 isActive ? (
                   <IconCheck

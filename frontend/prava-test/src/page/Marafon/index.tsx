@@ -14,6 +14,7 @@ import {
   localizeQ,
   localizeOpt,
   localizeExp,
+  localizeTopic,
   parseOptions,
   getActiveMarathonSessionId,
   submitExamSession,
@@ -47,7 +48,7 @@ interface Answer {
 const COUNT_OPTIONS = [10, 20, 30, 50, 0]; // 0 = barchasi
 
 export default function Marafon_Page() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -89,14 +90,6 @@ export default function Marafon_Page() {
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [phase, answers]);
-
-  const localizeTopic = (tp: OfflineTopic): string => {
-    if (!tp) return "";
-    const l = i18n.language;
-    if (l === "uzc" && tp.name_uzc) return tp.name_uzc;
-    if (l === "ru" && tp.name_ru) return tp.name_ru;
-    return tp.name_uzl || tp.name_ru || tp.name_uzc || "";
-  };
 
   const onBack = () => {
     if (phase === "setup") {

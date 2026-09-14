@@ -14,19 +14,25 @@ i18n
   .init({
     supportedLngs: ["uzl", "uzc", "ru"],
     fallbackLng: "uzl",
+    preload: ["uzl", "uzc", "ru"], // Preload all 3 languages into memory immediately for <10ms switches
     debug: false,
     interpolation: {
       escapeValue: false,
     },
     detection: {
-      order: ["cookie", "localStorage", "navigator"],
+      order: ["localStorage", "cookie", "navigator"],
+      lookupLocalStorage: "prava_lang",
       lookupCookie: "i18next",
-      lookupLocalStorage: "i18nextLng",
-      caches: ["cookie", "localStorage"],
+      caches: ["localStorage", "cookie"],
     },
     backend: {
       loadPath: "/locales/{{lng}}/translation.json",
       queryStringParams: { v: BUILD_VERSION },
+    },
+    react: {
+      useSuspense: false,
+      bindI18n: "languageChanged loaded",
+      bindI18nStore: "added removed",
     },
   });
 

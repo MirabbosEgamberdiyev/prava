@@ -33,168 +33,14 @@ import {
   IconSparkles,
 } from "@tabler/icons-react";
 
-type Language = "uzl" | "uzc" | "ru";
+import { useLanguage } from "../../context/LanguageContext";
 
-const translations: Record<Language, {
-  greeting: string;
-  subtitle: string;
-  dailyGoal: string;
-  questionsSolved: string;
-  overallReadiness: string;
-  beginnerLevel: string;
-  questionsUnit: string;
-  totalUnit: string;
-  recommended: string;
-  mainModesTitle: string;
-  modes: {
-    topics: { title: string; desc: string };
-    tickets: { title: string; desc: string };
-    marathon: { title: string; desc: string };
-    exam: { title: string; desc: string };
-  };
-  smartSectionTitle: string;
-  smartSectionSubtitle: string;
-  weakTopicsTitle: string;
-  weakTopicsSubtitle: string;
-  mistakesTitle: string;
-  mistakesDesc: string;
-  fixMistakesBtn: string;
-  analyticsTitle: string;
-  tools: {
-    saved: string;
-    stats: string;
-    rating: string;
-    history: string;
-  };
-  footerFollow: string;
-}> = {
-  uzl: {
-    greeting: "Xush kelibsiz",
-    subtitle: "Haydovchilik imtihoniga tayyorlanishda davom eting",
-    dailyGoal: "Kunlik reja",
-    questionsSolved: "Yechilgan savollar",
-    overallReadiness: "Umumiy tayyorgarlik",
-    beginnerLevel: "Boshlang'ich",
-    questionsUnit: "savol",
-    totalUnit: "ta",
-    recommended: "Tavsiya etiladi",
-    mainModesTitle: "Asosiy ta'lim rejimlari",
-    modes: {
-      topics: { title: "Mavzular", desc: "Nazariya va qoidalar bo'yicha bosqichma-bosqich o'rganish" },
-      tickets: { title: "Biletlar", desc: "1-dan 60-gacha rasmiy biletlar bilan mustahkamlash" },
-      marathon: { title: "Marafon", desc: "Barcha 1190 ta savol ketma-ket, to'xtovsiz rejimda" },
-      exam: { title: "Haqiqiy Imtihon", desc: "Vaqt chegaralangan rasmiy DTM test simulyatori" }
-    },
-    smartSectionTitle: "Aqlli tavsiya va xatolar ustida ishlash",
-    smartSectionSubtitle: "Imtihon natijangizni oshirish uchun eng zaif mavzular va xatolarni tizimli bartaraf eting",
-    weakTopicsTitle: "Zaif mavzular",
-    weakTopicsSubtitle: "Eng ko'p xato tushgan yo'nalishlar",
-    mistakesTitle: "ta xato javob",
-    mistakesDesc: "Xatolar ustida muntazam ishlash imtihondan birinchi urinishda o'tish imkonini 94% ga oshiradi.",
-    fixMistakesBtn: "Eng zaif 20 ta savolni tuzatish",
-    analyticsTitle: "Tahlil va shaxsiy vositalar",
-    tools: {
-      saved: "Saqlanganlar",
-      stats: "Statistika",
-      rating: "Reyting",
-      history: "Imtihon tarixi"
-    },
-    footerFollow: "Bizni ijtimoiy tarmoqlarda kuzating"
-  },
-  uzc: {
-    greeting: "Хуш келибсиз",
-    subtitle: "Ҳайдовчилик имтиҳонига тайёрланишда давом этинг",
-    dailyGoal: "Кунлик режа",
-    questionsSolved: "Ечилган саволлар",
-    overallReadiness: "Умумий тайёргарлик",
-    beginnerLevel: "Бошланғич",
-    questionsUnit: "савол",
-    totalUnit: "та",
-    recommended: "Тавсия этилади",
-    mainModesTitle: "Асосий таълим режимлари",
-    modes: {
-      topics: { title: "Мавзулар", desc: "Назария ва қоидалар бўйича босқичма-босқич ўрганиш" },
-      tickets: { title: "Билетлар", desc: "1-дан 60-гача расмий билетлар билан мустаҳкамлаш" },
-      marathon: { title: "Марафон", desc: "Барча 1190 та савол кетма-кет, тўхтовсиз режимда" },
-      exam: { title: "Ҳақиқий Имтиҳон", desc: "Вақт чегараланган расмий ДТМ тест симулятори" }
-    },
-    smartSectionTitle: "Ақлли тавсия ва хатолар устида ишлаш",
-    smartSectionSubtitle: "Имтиҳон натижангизни ошириш учун энг заиф мавзулар ва хатоларни тизимли бартараф этинг",
-    weakTopicsTitle: "Заиф мавзулар",
-    weakTopicsSubtitle: "Энг кўп хато тушган йўналишлар",
-    mistakesTitle: "та хато жавоб",
-    mistakesDesc: "Хатолар устида мунтазам ишлаш имтиҳондан биринчи уринишда ўтиш имконини 94% га оширади.",
-    fixMistakesBtn: "Энг заиф 20 та саволни тузатиш",
-    analyticsTitle: "Таҳлил ва шахсий воситалар",
-    tools: {
-      saved: "Сақланганлар",
-      stats: "Статистика",
-      rating: "Рейтинг",
-      history: "Имтиҳон тарихи"
-    },
-    footerFollow: "Бизни ижтимоий тармоқларда кузатинг"
-  },
-  ru: {
-    greeting: "Добро пожаловать",
-    subtitle: "Продолжайте подготовку к экзамену по вождению",
-    dailyGoal: "Дневной план",
-    questionsSolved: "Пройдено вопросов",
-    overallReadiness: "Общая готовность",
-    beginnerLevel: "Начальный",
-    questionsUnit: "вопросов",
-    totalUnit: "из",
-    recommended: "Рекомендуется",
-    mainModesTitle: "Основные режимы обучения",
-    modes: {
-      topics: { title: "Темы", desc: "Поэтапное изучение правил и теоретической базы" },
-      tickets: { title: "Билеты", desc: "Закрепление по официальным билетам от 1 до 60" },
-      marathon: { title: "Марафон", desc: "Все 1190 вопросов подряд в непрерывном режиме" },
-      exam: { title: "Реальный Экзамен", desc: "Официальный симулятор тестирования с таймером" }
-    },
-    smartSectionTitle: "Умные рекомендации и работа над ошибками",
-    smartSectionSubtitle: "Систематический анализ и устранение слабых мест для максимального результата",
-    weakTopicsTitle: "Слабые темы",
-    weakTopicsSubtitle: "Направления с наибольшим числом ошибок",
-    mistakesTitle: "ошибок в ответах",
-    mistakesDesc: "Регулярная работа над ошибками повышает шанс сдать экзамен с первого раза на 94%.",
-    fixMistakesBtn: "Исправить 20 сложных вопросов",
-    analyticsTitle: "Анализ и персональные инструменты",
-    tools: {
-      saved: "Сохраненные",
-      stats: "Статистика",
-      rating: "Рейтинг",
-      history: "История экзаменов"
-    },
-    footerFollow: "Следите за нами в социальных сетях"
-  }
-};
-
-const WEAK_TOPICS_LIST: Record<Language, Array<{ id: number; name: string; wrongCount: number }>> = {
-  uzl: [
-    { id: 1, name: "Yo'l belgilari va chiziqlari", wrongCount: 41 },
-    { id: 2, name: "Umumiy qoidalar va haydovchining majburiyatlari", wrongCount: 13 },
-    { id: 3, name: "Chorrahada harakatlanish qoidalari", wrongCount: 5 },
-    { id: 4, name: "Birinchi tibbiy yordam ko'rsatish asoslari", wrongCount: 5 },
-  ],
-  uzc: [
-    { id: 1, name: "Йўл белгилари ва чизиқлари", wrongCount: 41 },
-    { id: 2, name: "Умумий қоидалар ва ҳайдовчининг мажбуриятлари", wrongCount: 13 },
-    { id: 3, name: "Чорраҳада ҳаракатланиш қоидалари", wrongCount: 5 },
-    { id: 4, name: "Биринчи тиббий ёрдам кўрсатиш асослари", wrongCount: 5 },
-  ],
-  ru: [
-    { id: 1, name: "Дорожные знаки и разметка", wrongCount: 41 },
-    { id: 2, name: "Общие положения и обязанности водителей", wrongCount: 13 },
-    { id: 3, name: "Проезд перекрестков", wrongCount: 5 },
-    { id: 4, name: "Основы оказания первой медицинской помощи", wrongCount: 5 },
-  ],
-};
-
-const FALLBACK_NAMES: Record<Language, string> = {
-  uzl: "Hurmatli haydovchi",
-  uzc: "Ҳурматли ҳайдовчи",
-  ru: "Уважаемый курсант",
-};
+const WEAK_TOPICS_CONFIG = [
+  { id: 1, key: "roadSigns", wrongCount: 41 },
+  { id: 2, key: "generalRules", wrongCount: 13 },
+  { id: 3, key: "intersections", wrongCount: 5 },
+  { id: 4, key: "firstAid", wrongCount: 5 },
+];
 
 const SOCIAL_LINKS = [
   {
@@ -247,16 +93,9 @@ const EXAM_OPTIONS = [20, 40, 50, 60, 80, 100];
 export default function User_Page() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
+  useLanguage();
 
-  const getAppLang = (): Language => {
-    const l = (i18n.resolvedLanguage || i18n.language || "uz").toLowerCase();
-    if (l.startsWith("ru")) return "ru";
-    if (l.includes("cyrl") || l === "uzc") return "uzc";
-    return "uzl";
-  };
-
-  const [currentLang, setCurrentLang] = useState<Language>(getAppLang());
   const [qrModal, setQrModal] = useState<typeof SOCIAL_LINKS[0] | null>(null);
   const [showExamPicker, setShowExamPicker] = useState(false);
   const [stats, setStats] = useState<FullStats | null>(null);
@@ -267,22 +106,10 @@ export default function User_Page() {
     getFullStats(userId).then(setStats).catch(() => {});
   }, [userId]);
 
-  useEffect(() => {
-    const onLangChange = () => {
-      setCurrentLang(getAppLang());
-    };
-    i18n.on("languageChanged", onLangChange);
-    return () => {
-      i18n.off("languageChanged", onLangChange);
-    };
-  }, [i18n]);
-
-  const tr = translations[currentLang] || translations.uzl;
-
   // Sanitized Dynamic User Name (Eliminates {{name}} template interpolation bugs)
   const rawName = (user?.fullName || user?.phoneNumber || "").trim();
   const cleanName = rawName.includes("{{") ? "" : rawName;
-  const displayName = cleanName || FALLBACK_NAMES[currentLang];
+  const displayName = cleanName || t("dashboard.fallbackName");
 
   // Verified EdTech Metrics
   const qPracticed = stats ? (stats.question_readiness.ready + stats.question_readiness.average + stats.question_readiness.weak) || 322 : 322;
@@ -335,8 +162,8 @@ export default function User_Page() {
   const primaryModes = [
     {
       screen: "topics" as AppScreen,
-      title: tr.modes.topics.title,
-      desc: tr.modes.topics.desc,
+      title: t("dashboard.modes.topics.title"),
+      desc: t("dashboard.modes.topics.desc"),
       icon: IconBook2,
       accentColor: "#1971c2",
       gradient: "linear-gradient(135deg,#4dabf7,#1971c2)",
@@ -344,8 +171,8 @@ export default function User_Page() {
     },
     {
       screen: "biletlar" as AppScreen,
-      title: tr.modes.tickets.title,
-      desc: tr.modes.tickets.desc,
+      title: t("dashboard.modes.tickets.title"),
+      desc: t("dashboard.modes.tickets.desc"),
       icon: IconTicket,
       accentColor: "#0c8599",
       gradient: "linear-gradient(135deg,#38d9a9,#0c8599)",
@@ -353,8 +180,8 @@ export default function User_Page() {
     },
     {
       screen: "marathon" as AppScreen,
-      title: tr.modes.marathon.title,
-      desc: tr.modes.marathon.desc,
+      title: t("dashboard.modes.marathon.title"),
+      desc: t("dashboard.modes.marathon.desc"),
       icon: IconRun,
       accentColor: "#7950f2",
       gradient: "linear-gradient(135deg,#9775fa,#7950f2)",
@@ -362,8 +189,8 @@ export default function User_Page() {
     },
     {
       screen: "exam" as AppScreen,
-      title: tr.modes.exam.title,
-      desc: tr.modes.exam.desc,
+      title: t("dashboard.modes.exam.title"),
+      desc: t("dashboard.modes.exam.desc"),
       icon: IconPencil,
       accentColor: "#f59f00",
       gradient: "linear-gradient(135deg,#ffa94d,#e67700)",
@@ -374,41 +201,45 @@ export default function User_Page() {
   const secondaryTools = [
     {
       screen: "saved-questions" as AppScreen,
-      title: tr.tools.saved,
+      title: t("dashboard.tools.saved.title"),
+      desc: t("dashboard.tools.saved.desc"),
       icon: IconBookmark,
       gradient: "linear-gradient(135deg,#4dabf7,#1971c2)",
-      desc: currentLang === "ru" ? "Закладки и избранное" : "Xatcho'p qo'yilgan savollar",
     },
     {
       screen: "stats" as AppScreen,
-      title: tr.tools.stats,
+      title: t("dashboard.tools.stats.title"),
+      desc: t("dashboard.tools.stats.desc"),
       icon: IconChartBar,
       gradient: "linear-gradient(135deg,#38d9a9,#0c8599)",
-      desc: currentLang === "ru" ? "Графики и аналитика" : "Batafsil o'rganish statistikasi",
     },
     {
       screen: "leaderboard" as AppScreen,
-      title: tr.tools.rating,
+      title: t("dashboard.tools.rating.title"),
+      desc: t("dashboard.tools.rating.desc"),
       icon: IconTrophy,
       gradient: "linear-gradient(135deg,#9775fa,#7950f2)",
-      desc: currentLang === "ru" ? "Место среди учеников" : "O'quvchilar reytingidagi o'rin",
     },
     {
       screen: "history" as AppScreen,
-      title: tr.tools.history,
+      title: t("dashboard.tools.history.title"),
+      desc: t("dashboard.tools.history.desc"),
       icon: IconHistory,
       gradient: "linear-gradient(135deg,#ffa94d,#f59f00)",
-      desc: currentLang === "ru" ? "Все прошлые попытки" : "Avvalgi sinov urinishlari tarixi",
     },
   ];
 
-  const currentWeakTopics = WEAK_TOPICS_LIST[currentLang] || WEAK_TOPICS_LIST.uzl;
+  const currentWeakTopics = WEAK_TOPICS_CONFIG.map((item) => ({
+    id: item.id,
+    name: t(`dashboard.weakTopicsList.${item.key}`),
+    wrongCount: item.wrongCount,
+  }));
 
   return (
     <>
       <SEO
-        title={`Prava Online - ${tr.mainModesTitle}`}
-        description={tr.subtitle}
+        title={`Prava Online - ${t("dashboard.mainModesTitle")}`}
+        description={t("dashboard.subtitle")}
         canonical="/me"
       />
 
@@ -470,26 +301,26 @@ export default function User_Page() {
                     leftSection={<IconSettings size={16} />}
                     onClick={() => navigate("/settings")}
                   >
-                    {currentLang === "ru" ? "Настройки" : "Sozlamalar"}
+                    {t("nav.settings", "Sozlamalar")}
                   </Menu.Item>
                   <Menu.Item
                     leftSection={<IconHistory size={16} />}
                     onClick={() => navigate("/history")}
                   >
-                    {tr.tools.history}
+                    {t("dashboard.tools.history.title")}
                   </Menu.Item>
                   <Menu.Item
                     leftSection={<IconTrophy size={16} />}
                     onClick={() => navigate("/leaderboard")}
                   >
-                    {tr.tools.rating}
+                    {t("dashboard.tools.rating.title")}
                   </Menu.Item>
                   {(user?.role === "SUPER_ADMIN" || user?.role === "ADMIN") && (
                     <Menu.Item
                       leftSection={<IconKey size={16} />}
                       onClick={() => navigate("/admin/activation-codes")}
                     >
-                      Aktivatsiya kodlari
+                      {t("nav.activationCodes", "Aktivatsiya kodlari")}
                     </Menu.Item>
                   )}
                   <Menu.Divider />
@@ -498,7 +329,7 @@ export default function User_Page() {
                     leftSection={<IconLogout size={16} />}
                     onClick={logout}
                   >
-                    {currentLang === "ru" ? "Выйти" : "Chiqish"}
+                    {t("auth.logout", "Chiqish")}
                   </Menu.Item>
                 </Menu.Dropdown>
               </Menu>
@@ -512,9 +343,9 @@ export default function User_Page() {
             {/* 1. Greeting Section */}
             <div className="home-welcome">
               <h2>
-                {tr.greeting}, <span style={{ color: "var(--primary)" }}>{displayName}</span>!
+                {t("dashboard.greeting")}, <span style={{ color: "var(--primary)" }}>{displayName}</span>!
               </h2>
-              <p>{tr.subtitle}</p>
+              <p>{t("dashboard.subtitle")}</p>
             </div>
 
             {/* 2. Three Gamified Metrics Bar */}
@@ -539,7 +370,7 @@ export default function User_Page() {
                       {dailyDone} / {dailyTarget}
                     </div>
                     <div className="home-stat-label">
-                      {tr.dailyGoal} ({tr.questionsUnit})
+                      {t("dashboard.dailyGoal")} ({t("dashboard.questionsUnit")})
                     </div>
                   </div>
                   <span className="home-stat-pct" style={{ color: "#f76707" }}>
@@ -558,7 +389,7 @@ export default function User_Page() {
                   />
                 </div>
                 <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#f76707" }}>
-                  🔥 {currentLang === "ru" ? "3 дня активной серии" : "3 kunlik faol seriya"}
+                  🔥 {t("dashboard.activeStreak")}
                 </div>
               </article>
 
@@ -579,10 +410,10 @@ export default function User_Page() {
                   </div>
                   <div>
                     <div className="home-stat-value">
-                      {qPracticed} / {qTotal} {tr.totalUnit}
+                      {qPracticed} / {qTotal} {t("dashboard.totalUnit")}
                     </div>
                     <div className="home-stat-label">
-                      {tr.questionsSolved}
+                      {t("dashboard.questionsSolved")}
                     </div>
                   </div>
                   <span className="home-stat-pct" style={{ color: "#1971c2" }}>
@@ -601,7 +432,7 @@ export default function User_Page() {
                   />
                 </div>
                 <div style={{ fontSize: "11.5px", fontWeight: 600, color: "var(--text-muted)" }}>
-                  {currentLang === "ru" ? "1190 вопросов в базе" : "Jami 1190 ta rasmiy savoldan"}
+                  {t("dashboard.totalQuestionsInDb")}
                 </div>
               </article>
 
@@ -625,7 +456,7 @@ export default function User_Page() {
                       {readinessPercent}%
                     </div>
                     <div className="home-stat-label">
-                      {tr.overallReadiness}
+                      {t("dashboard.overallReadiness")}
                     </div>
                   </div>
                   <span
@@ -639,7 +470,7 @@ export default function User_Page() {
                       marginLeft: "auto",
                     }}
                   >
-                    🌱 {tr.beginnerLevel}
+                    🌱 {t("dashboard.beginnerLevel")}
                   </span>
                 </div>
                 <div className="home-stat-bar">
@@ -654,20 +485,16 @@ export default function User_Page() {
                   />
                 </div>
                 <div style={{ fontSize: "11.5px", fontWeight: 600, color: "var(--text-muted)" }}>
-                  {currentLang === "ru" ? "Стабильный темп обучения" : "Muntazam amaliyot bilan o'sish"}
+                  {t("dashboard.steadyProgress")}
                 </div>
               </article>
             </section>
 
             {/* ================= 3. HERO: ASOSIY TA'LIM REJIMLARI (4 COLUMNS ON DESKTOP) ================= */}
-            <section className="primary-edu-section" aria-label={tr.mainModesTitle}>
+            <section className="primary-edu-section" aria-label={t("dashboard.mainModesTitle")}>
               <div className="section-headline">
-                <h3>{tr.mainModesTitle}</h3>
-                <p>
-                  {currentLang === "ru"
-                    ? "Выберите подходящий формат подготовки"
-                    : "O'rganish ketma-ketligi bo'yicha rejimni tanlang"}
-                </p>
+                <h3>{t("dashboard.mainModesTitle")}</h3>
+                <p>{t("dashboard.selectFormat")}</p>
               </div>
 
               <div className="primary-education-grid">
@@ -689,7 +516,7 @@ export default function User_Page() {
                     {m.recommended && (
                       <span className="primary-edu-badge">
                         <IconSparkles size={11} stroke={2.5} style={{ verticalAlign: "middle", marginRight: 3 }} />
-                        {tr.recommended}
+                        {t("dashboard.recommended")}
                       </span>
                     )}
 
@@ -709,7 +536,7 @@ export default function User_Page() {
 
                     <div className="primary-edu-bottom">
                       <span className="primary-edu-cta-text">
-                        {currentLang === "ru" ? "Начать" : "Boshlash"}
+                        {t("dashboard.start")}
                       </span>
                       <div className="primary-edu-action-arrow">
                         <IconArrowRight size={16} stroke={2.5} />
@@ -721,10 +548,10 @@ export default function User_Page() {
             </section>
 
             {/* ================= 4. AQLLI TAVSIYA VA XATOLAR (12 USTUNLI 7/5 NISBAT) ================= */}
-            <section className="smart-recommendation-section" aria-label={tr.smartSectionTitle}>
+            <section className="smart-recommendation-section" aria-label={t("dashboard.smartSectionTitle")}>
               <div className="section-headline">
-                <h3>{tr.smartSectionTitle}</h3>
-                <p>{tr.smartSectionSubtitle}</p>
+                <h3>{t("dashboard.smartSectionTitle")}</h3>
+                <p>{t("dashboard.smartSectionSubtitle")}</p>
               </div>
 
               <div className="smart-recommendation-grid">
@@ -733,9 +560,9 @@ export default function User_Page() {
                   <div>
                     <span className="smart-badge amber">
                       <IconAlertTriangle size={12} stroke={2.5} />
-                      <span>{tr.weakTopicsTitle}</span>
+                      <span>{t("dashboard.weakTopicsTitle")}</span>
                     </span>
-                    <h4 className="smart-col-title">{tr.weakTopicsSubtitle}</h4>
+                    <h4 className="smart-col-title">{t("dashboard.weakTopicsSubtitle")}</h4>
                   </div>
 
                   <div className="nba-topic-list" role="list">
@@ -743,10 +570,10 @@ export default function User_Page() {
                       <div style={{ textAlign: "center", padding: "32px 16px", color: "var(--text-muted)" }}>
                         <IconSparkles size={32} color="#2f9e44" style={{ marginBottom: 8 }} />
                         <div style={{ fontSize: "15px", fontWeight: 700, color: "var(--text)" }}>
-                          {currentLang === "ru" ? "У вас пока нет ошибок, отлично!" : "Hali xatolaringiz yo'q, ajoyib!"}
+                          {t("dashboard.noMistakesYet")}
                         </div>
                         <div style={{ fontSize: "13px", marginTop: 4 }}>
-                          {currentLang === "ru" ? "Вы отлично справляетесь со всеми темами" : "Barcha mavzularda savollarni to'g'ri yechib boryapsiz"}
+                          {t("dashboard.noMistakesDesc")}
                         </div>
                       </div>
                     ) : (
@@ -760,7 +587,7 @@ export default function User_Page() {
                         >
                           <span className="nba-topic-name">{topic.name}</span>
                           <span className="nba-topic-count">
-                            {topic.wrongCount} {tr.totalUnit} {currentLang === "ru" ? "ошибок" : "xato"}
+                            {topic.wrongCount} {t("dashboard.totalUnit")} {t("dashboard.mistakesCount")}
                           </span>
                           <IconArrowRight size={16} className="nba-topic-arrow" />
                         </button>
@@ -774,10 +601,10 @@ export default function User_Page() {
                   <div>
                     <span className="smart-badge red">
                       <IconFlame size={12} stroke={2.5} />
-                      <span>{currentLang === "ru" ? "Быстрое исправление" : "Tezkor tuzatish"}</span>
+                      <span>{t("dashboard.quickFix")}</span>
                     </span>
-                    <h4 className="smart-col-title">79 {tr.mistakesTitle}</h4>
-                    <p className="smart-col-desc">{tr.mistakesDesc}</p>
+                    <h4 className="smart-col-title">79 {t("dashboard.mistakesTitle")}</h4>
+                    <p className="smart-col-desc">{t("dashboard.mistakesDesc")}</p>
                   </div>
 
                   <button
@@ -786,7 +613,7 @@ export default function User_Page() {
                     style={{ marginTop: "auto" }}
                     onClick={() => navigate("/wrong-exam")}
                   >
-                    <span>{tr.fixMistakesBtn}</span>
+                    <span>{t("dashboard.fixMistakesBtn")}</span>
                     <IconArrowRight size={18} stroke={2.5} />
                   </button>
                 </div>
@@ -794,14 +621,10 @@ export default function User_Page() {
             </section>
 
             {/* ================= 5. SECONDARY COMPACT TOOLS GRID (4 COLS) ================= */}
-            <section className="secondary-tools-section" aria-label={tr.analyticsTitle}>
+            <section className="secondary-tools-section" aria-label={t("dashboard.analyticsTitle")}>
               <div className="section-headline">
-                <h3>{tr.analyticsTitle}</h3>
-                <p>
-                  {currentLang === "ru"
-                    ? "Персональные инструменты для глубокого анализа"
-                    : "Shaxsiy o'sish, natijalar va sinovlar monitoringi"}
-                </p>
+                <h3>{t("dashboard.analyticsTitle")}</h3>
+                <p>{t("dashboard.personalToolsDesc")}</p>
               </div>
 
               <div className="secondary-tools-grid">
@@ -838,7 +661,7 @@ export default function User_Page() {
             {/* ================= 6. FOOTER ================= */}
             <footer className="home-footer">
               <div className="home-footer-inner">
-                <p className="home-footer-title">{tr.footerFollow}</p>
+                <p className="home-footer-title">{t("dashboard.footerFollow")}</p>
                 <div className="home-footer-cards">
                   {SOCIAL_LINKS.map((item) => (
                     <button
@@ -854,7 +677,7 @@ export default function User_Page() {
                   ))}
                 </div>
                 <p style={{ marginTop: 18, textAlign: "center", fontSize: "12px", color: "var(--text-muted)", margin: "18px 0 0 0" }}>
-                  © {new Date().getFullYear()} PravaOnline. {currentLang === "ru" ? "Все права защищены." : "Barcha huquqlar himoyalangan."}
+                  © {new Date().getFullYear()} PravaOnline. {t("dashboard.allRightsReserved")}
                 </p>
               </div>
             </footer>
@@ -884,7 +707,7 @@ export default function User_Page() {
                   }}
                 />
                 <div className="qr-modal-url">{qrModal.handle}</div>
-                <p className="qr-modal-hint">{currentLang === "ru" ? "Отсканируйте QR-код" : "QR kodni skanerlang"}</p>
+                <p className="qr-modal-hint">{t("dashboard.scanQrCode")}</p>
               </div>
               <button
                 className="qr-modal-close"
@@ -903,7 +726,7 @@ export default function User_Page() {
           <div className="modal-overlay" onClick={() => setShowExamPicker(false)}>
             <div className="modal-card exam-picker-modal" onClick={(e) => e.stopPropagation()}>
               <h3 className="modal-title">
-                {currentLang === "ru" ? "Количество вопросов:" : "Nechta savoldan imtihon?"}
+                {t("dashboard.examQuestionCount")}
               </h3>
               <div className="exam-picker-grid">
                 {EXAM_OPTIONS.map((count) => (
@@ -914,9 +737,9 @@ export default function User_Page() {
                     type="button"
                   >
                     <span className="exam-picker-num">{count}</span>
-                    <span className="exam-picker-label">{tr.questionsUnit}</span>
+                    <span className="exam-picker-label">{t("dashboard.questionsUnit")}</span>
                     <span className="exam-picker-time">
-                      {count} {currentLang === "ru" ? "мин" : "daq"}
+                      {count} {t("dashboard.minutesUnit")}
                     </span>
                   </button>
                 ))}
@@ -926,7 +749,7 @@ export default function User_Page() {
                 onClick={() => setShowExamPicker(false)}
                 type="button"
               >
-                {currentLang === "ru" ? "Отмена" : "Bekor qilish"}
+                {t("dashboard.cancel")}
               </button>
             </div>
           </div>

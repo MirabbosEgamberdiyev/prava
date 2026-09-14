@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useLanguage, APP_LANGUAGES, type AppLanguage } from "../../context/LanguageContext";
 
-export const LANGUAGES = [
-  { code: "uzl", label: "O‘zbekcha (Lotin)" },
-  { code: "uzc", label: "Ўзбекча (Кирилл)" },
-  { code: "ru", label: "Русский" },
-];
+export const LANGUAGES = APP_LANGUAGES.map((l) => ({
+  code: l.code,
+  label: l.label,
+}));
 
 export default function LanguagePicker() {
-  const { i18n } = useTranslation();
+  const { language, setLanguage, currentLanguageOption } = useLanguage();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -20,34 +19,24 @@ export default function LanguagePicker() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const currentLang = i18n.language || "uzl";
-  const current = LANGUAGES.find((l) => l.code === currentLang) ?? LANGUAGES[0];
-
-  const handleSelect = (code: string) => {
-    i18n.changeLanguage(code);
-    try {
-      localStorage.setItem("prava_lang", code);
-      localStorage.setItem("i18nextLng", code);
-      document.cookie = `i18next=${code}; path=/; max-age=31536000`;
-    } catch {
-      // ignore
-    }
+  const handleSelect = (code: AppLanguage) => {
+    setLanguage(code);
     setOpen(false);
   };
 
   return (
     <div className="lang-picker" ref={ref}>
       <button className="lang-btn" onClick={() => setOpen((o) => !o)} type="button">
-        <span className="lang-btn-label">{current.label}</span>
+        <span className="lang-btn-label">{currentLanguageOption.label}</span>
         <span className="lang-btn-arrow">{open ? "▲" : "▼"}</span>
       </button>
       {open && (
         <div className="lang-dropdown">
-          {LANGUAGES.map((lang) => (
+          {APP_LANGUAGES.map((lang) => (
             <button
               key={lang.code}
               type="button"
-              className={`lang-option${lang.code === currentLang ? " active" : ""}`}
+              className={`lang-option${lang.code === language ? " active" : ""}`}
               onClick={() => handleSelect(lang.code)}
             >
               <span>{lang.label}</span>
