@@ -17,9 +17,6 @@ import uz.pravaimtihon.enums.Role;
 import uz.pravaimtihon.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import uz.pravaimtihon.entity.UserStatistics;
-import uz.pravaimtihon.repository.UserStatisticsRepository;
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -32,7 +29,6 @@ public class TelegramBotService {
     private final TelegramTokenStore tokenStore;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserStatisticsRepository statisticsRepository;
 
     @Value("${app.telegram.bot-token:}")
     private String botToken;
@@ -102,8 +98,7 @@ public class TelegramBotService {
     private void setupBotCommands() {
         try {
             List<Map<String, String>> commands = List.of(
-                    Map.of("command", "start", "description", "Tizimga kirish / Войти / Login"),
-                    Map.of("command", "lang", "description", "Tilni tanlash / Сменить язык / Change language")
+                    Map.of("command", "start", "description", "Tizimga kirish / Войти / Login")
             );
             Map<String, Object> body = Map.of("commands", commands);
 
@@ -111,7 +106,7 @@ public class TelegramBotService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
             restTemplate.postForObject(getApiUrl() + "/setMyCommands", request, String.class);
-            log.info("Telegram bot commands set successfully");
+            log.info("Telegram bot commands set successfully (auth only)");
         } catch (Exception e) {
             log.warn("Failed to set Telegram bot commands: {}", e.getMessage());
         }
@@ -155,19 +150,9 @@ public class TelegramBotService {
             String languageCode = from != null ? (String) from.get("language_code") : "uz";
             long userId = from != null ? ((Number) from.get("id")).longValue() : chatId;
 
-            if (text.startsWith("/start")) {
-                String payload = text.length() > 7 ? text.substring(7).trim() : null;
-                handleStartCommand(chatId, userId, firstName, lastName, username, languageCode, payload);
-            } else if (text.equals("/help")) {
-                handleHelpCommand(chatId, userId);
-            } else if (text.equals("/lang")) {
-                handleLangCommand(chatId, userId);
-            } else if (text.equals("/stats")) {
-                handleStatsCommand(chatId, userId);
-            } else if (text.startsWith("/")) {
-                // Unknown command — respond with help hint
-                handleUnknownCommand(chatId, userId);
-            }
+            // Pure authentication: /start or any text generates one-time login token
+            String payload = text.startsWith("/start") && text.length() > 7 ? text.substring(7).trim() : null;
+            handleStartCommand(chatId, userId, firstName, lastName, username, languageCode, payload);
         } catch (Exception e) {
             log.error("Error handling Telegram update: {}", e.getMessage(), e);
             // Try to send error message to user
@@ -194,142 +179,7 @@ public class TelegramBotService {
                 .orElse(AcceptLanguage.UZL);
     }
 
-    private void handleHelpCommand(long chatId, long telegramUserId) {
-        AcceptLanguage lang = getUserLanguage(telegramUserId);
-        String helpText = switch (lang) {
-            case RU -> """
-                    <b>Prava Online Bot</b>
 
-                    /start - Начать / Получить ссылку для входа
-                    /help - Показать эту справку
-                    /lang - Изменить язык
-                    /stats - Моя статистика
-
-                    Готовьтесь к экзамену на водительские права онлайн!
-                    """;
-            case EN -> """
-                    <b>Prava Online Bot</b>
-
-                    /start - Start / Get login link
-                    /help - Show this help
-                    /lang - Change language
-                    /stats - My statistics
-
-                    Prepare for your driving license exam online!
-                    """;
-            case UZC -> """
-                    <b>Prava Online Bot</b>
-
-                    /start - Бошлаш / Кириш ҳаволасини олиш
-                    /help - Ёрдамни кўрсатиш
-                    /lang - Тилни ўзгартириш
-                    /stats - Менинг статистикам
-
-                    Ҳайдовчилик гувоҳномаси имтиҳонига онлайн тайёрланинг!
-                    """;
-            default -> """
-                    <b>Prava Online Bot</b>
-
-                    /start - Boshlash / Kirish havolasini olish
-                    /help - Yordamni ko'rsatish
-                    /lang - Tilni o'zgartirish
-                    /stats - Mening statistikam
-
-                    Haydovchilik guvohnomasi imtihoniga online tayyorlaning!
-                    """;
-        };
-        sendMessage(chatId, helpText.trim(), null);
-    }
-
-    private void handleLangCommand(long chatId, long telegramUserId) {
-        AcceptLanguage lang = getUserLanguage(telegramUserId);
-        sendLanguageSelectionKeyboard(chatId, lang);
-    }
-
-    private void handleUnknownCommand(long chatId, long telegramUserId) {
-        AcceptLanguage lang = getUserLanguage(telegramUserId);
-        String msg = switch (lang) {
-            case RU -> "❓ Неизвестная команда. Нажмите /help чтобы увидеть доступные команды.";
-            case EN -> "❓ Unknown command. Press /help to see available commands.";
-            case UZC -> "❓ Номаълум буйруқ. Мавжуд буйруқларни кўриш учун /help босинг.";
-            default -> "❓ Noma'lum buyruq. Mavjud buyruqlarni ko'rish uchun /help bosing.";
-        };
-        sendMessage(chatId, msg, null);
-    }
-
-    private void handleStatsCommand(long chatId, long telegramUserId) {
-        AcceptLanguage lang = getUserLanguage(telegramUserId);
-        String tgId = String.valueOf(telegramUserId);
-        Optional<User> userOpt = userRepository.findByTelegramIdAndDeletedFalse(tgId);
-
-        if (userOpt.isEmpty()) {
-            String msg = switch (lang) {
-                case RU -> "Вы еще не зарегистрированы. Нажмите /start";
-                case EN -> "You are not registered yet. Press /start";
-                case UZC -> "Сиз ҳали рўйхатдан ўтмагансиз. /start босинг";
-                default -> "Siz hali ro'yxatdan o'tmagansiz. /start bosing";
-            };
-            sendMessage(chatId, msg, null);
-            return;
-        }
-
-        User user = userOpt.get();
-        List<UserStatistics> stats = statisticsRepository.findByUserId(user.getId());
-
-        if (stats == null || stats.isEmpty()) {
-            String noStats = switch (lang) {
-                case RU -> "📊 У вас пока нет статистики. Начните экзамен на pravaonline.uz!";
-                case EN -> "📊 You have no statistics yet. Start an exam at pravaonline.uz!";
-                case UZC -> "📊 Сизда ҳали статистика йўқ. pravaonline.uz да имтиҳон бошланг!";
-                default -> "📊 Sizda hali statistika yo'q. pravaonline.uz da imtihon boshlang!";
-            };
-            sendMessage(chatId, noStats, null);
-            return;
-        }
-
-        long totalExams = stats.stream().mapToLong(UserStatistics::getTotalExams).sum();
-        long passedExams = stats.stream().mapToLong(UserStatistics::getPassedExams).sum();
-        double accuracy = stats.stream().mapToInt(UserStatistics::getTotalQuestions).sum() > 0
-                ? stats.stream().mapToInt(UserStatistics::getCorrectAnswers).sum() * 100.0
-                  / stats.stream().mapToInt(UserStatistics::getTotalQuestions).sum()
-                : 0.0;
-
-        String statsText = switch (lang) {
-            case RU -> String.format("""
-                    📊 <b>Ваша статистика</b>
-
-                    📝 Всего экзаменов: %d
-                    ✅ Сдано: %d
-                    ❌ Не сдано: %d
-                    🎯 Точность: %.1f%%
-                    """, totalExams, passedExams, totalExams - passedExams, accuracy);
-            case EN -> String.format("""
-                    📊 <b>Your Statistics</b>
-
-                    📝 Total exams: %d
-                    ✅ Passed: %d
-                    ❌ Failed: %d
-                    🎯 Accuracy: %.1f%%
-                    """, totalExams, passedExams, totalExams - passedExams, accuracy);
-            case UZC -> String.format("""
-                    📊 <b>Сизнинг статистикангиз</b>
-
-                    📝 Жами имтиҳонлар: %d
-                    ✅ Ўтганлар: %d
-                    ❌ Ўтмаганлар: %d
-                    🎯 Аниқлик: %.1f%%
-                    """, totalExams, passedExams, totalExams - passedExams, accuracy);
-            default -> String.format("""
-                    📊 <b>Sizning statistikangiz</b>
-
-                    📝 Jami imtihonlar: %d
-                    ✅ O'tganlar: %d
-                    ❌ O'tmaganlar: %d
-                    🎯 Aniqlik: %.1f%%
-                    """, totalExams, passedExams, totalExams - passedExams, accuracy);
-        };
-        sendMessage(chatId, statsText.trim(), null);
-    }
 
     @SuppressWarnings("unchecked")
     private void handleCallbackQuery(Map<String, Object> callbackQuery) {
