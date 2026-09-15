@@ -102,10 +102,8 @@ public class TelegramBotService {
     private void setupBotCommands() {
         try {
             List<Map<String, String>> commands = List.of(
-                    Map.of("command", "start", "description", "Boshlash / Start"),
-                    Map.of("command", "help", "description", "Yordam / Help"),
-                    Map.of("command", "lang", "description", "Tilni tanlash / Change language"),
-                    Map.of("command", "stats", "description", "Statistika / My statistics")
+                    Map.of("command", "start", "description", "Tizimga kirish / Войти / Login"),
+                    Map.of("command", "lang", "description", "Tilni tanlash / Сменить язык / Change language")
             );
             Map<String, Object> body = Map.of("commands", commands);
 
@@ -439,7 +437,7 @@ public class TelegramBotService {
             }
         }
 
-        sendWelcomeMessage(chatId, firstName, lang, loginUrl);
+        sendWelcomeMessage(chatId, firstName, lang, loginUrl, token);
     }
 
     private AcceptLanguage mapTelegramLanguage(String languageCode) {
@@ -451,75 +449,65 @@ public class TelegramBotService {
         };
     }
 
-    private void sendWelcomeMessage(long chatId, String firstName, AcceptLanguage lang, String loginUrl) {
+    private void sendWelcomeMessage(long chatId, String firstName, AcceptLanguage lang, String loginUrl, String token) {
         String greeting;
-        String loginBtnText;
-        String openBtnText;
+        String mobileBtnText;
+        String webBtnText;
+        String mobileDeepLink = "pravamobile://auth?token=" + token;
 
         switch (lang) {
             case RU -> {
-                greeting = "Привет, " + firstName + "! 👋\n\n" +
-                        "🚗 Добро пожаловать в Prava Online!\n\n" +
-                        "Здесь вы можете подготовиться к экзамену на водительские права.\n\n" +
-                        "✅ Тесты по билетам\n" +
-                        "✅ Марафон режим\n" +
-                        "✅ Экзамен по пакетам\n\n" +
-                        "Нажмите кнопку ниже, чтобы войти на сайт!";
-                loginBtnText = "🔑 Войти на сайт";
-                openBtnText = "🌐 Открыть Prava Online";
+                greeting = "👋 Здравствуйте, " + firstName + "!\n\n" +
+                        "🚗 <b>Prava Online — Авторизация</b>\n\n" +
+                        "Ваш код для входа:\n" +
+                        "<code>" + token + "</code>\n\n" +
+                        "Нажмите кнопку ниже, чтобы войти:";
+                mobileBtnText = "📱 Мобильное приложение";
+                webBtnText = "💻 Сайт / Desktop";
             }
             case EN -> {
-                greeting = "Hello, " + firstName + "! 👋\n\n" +
-                        "🚗 Welcome to Prava Online!\n\n" +
-                        "Prepare for your driving license exam here.\n\n" +
-                        "✅ Ticket-based tests\n" +
-                        "✅ Marathon mode\n" +
-                        "✅ Package exams\n\n" +
-                        "Click the button below to log in!";
-                loginBtnText = "🔑 Log in to website";
-                openBtnText = "🌐 Open Prava Online";
+                greeting = "👋 Hello, " + firstName + "!\n\n" +
+                        "🚗 <b>Prava Online — Authentication</b>\n\n" +
+                        "Your login code:\n" +
+                        "<code>" + token + "</code>\n\n" +
+                        "Click below to sign in:";
+                mobileBtnText = "📱 Mobile App";
+                webBtnText = "💻 Website / Desktop";
             }
             case UZC -> {
-                greeting = "Салом, " + firstName + "! 👋\n\n" +
-                        "🚗 Prava Online га хуш келибсиз!\n\n" +
-                        "Бу ерда ҳайдовчилик гувоҳномаси имтиҳонига тайёрланинг.\n\n" +
-                        "✅ Билетлар бўйича тестлар\n" +
-                        "✅ Марафон режими\n" +
-                        "✅ Пакетли имтиҳонлар\n\n" +
-                        "Сайтга кириш учун пастдаги тугмани босинг!";
-                loginBtnText = "🔑 Сайтга кириш";
-                openBtnText = "🌐 Prava Online га кириш";
+                greeting = "👋 Ассалому алайкум, " + firstName + "!\n\n" +
+                        "🚗 <b>Prava Online — Хавфсиз кириш</b>\n\n" +
+                        "Сизнинг тасдиқлаш кодингиз:\n" +
+                        "<code>" + token + "</code>\n\n" +
+                        "Ҳисобингизга кириш учун тугмани босинг:";
+                mobileBtnText = "📱 Мобил иловага кириш";
+                webBtnText = "💻 Сайт / Desktop га кириш";
             }
             default -> {
-                greeting = "Salom, " + firstName + "! 👋\n\n" +
-                        "🚗 Prava Online ga xush kelibsiz!\n\n" +
-                        "Bu yerda haydovchilik guvohnomasi imtihoniga tayyorlaning.\n\n" +
-                        "✅ Biletlar bo'yicha testlar\n" +
-                        "✅ Marafon rejimi\n" +
-                        "✅ Paketli imtihonlar\n\n" +
-                        "Saytga kirish uchun pastdagi tugmani bosing!";
-                loginBtnText = "🔑 Saytga kirish";
-                openBtnText = "🌐 Prava Online ga kirish";
+                greeting = "👋 Assalomu alaykum, " + firstName + "!\n\n" +
+                        "🚗 <b>Prava Online — Xavfsiz kirish</b>\n\n" +
+                        "Sizning tasdiqlash kodingiz:\n" +
+                        "<code>" + token + "</code>\n\n" +
+                        "Hisobingizga kirish uchun tugmani bosing:";
+                mobileBtnText = "📱 Mobil ilovaga kirish";
+                webBtnText = "💻 Sayt / Desktopga kirish";
             }
         }
 
         Map<String, Object> inlineKeyboard = Map.of(
                 "inline_keyboard", List.of(
                         List.of(Map.of(
-                                "text", loginBtnText,
-                                "url", loginUrl
+                                "text", mobileBtnText,
+                                "url", mobileDeepLink
                         )),
                         List.of(Map.of(
-                                "text", openBtnText,
-                                "url", baseUrl
+                                "text", webBtnText,
+                                "url", loginUrl
                         ))
                 )
         );
 
         sendMessage(chatId, greeting, inlineKeyboard);
-
-        // Send language selection keyboard
-        sendLanguageSelectionKeyboard(chatId, lang);
     }
 
     private void sendLanguageSelectionKeyboard(long chatId, AcceptLanguage currentLang) {

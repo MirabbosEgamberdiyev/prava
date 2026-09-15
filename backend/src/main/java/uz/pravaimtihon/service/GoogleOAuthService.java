@@ -32,6 +32,7 @@ public class GoogleOAuthService {
             @Value("${app.google.client-id}") String clientId,
             @Value("${app.google.android-client-id:}") String androidClientId,
             @Value("${app.google.ios-client-id:}") String iosClientId,
+            @Value("${app.google.desktop-client-id:}") String desktopClientId,
             RestTemplate restTemplate
     ) {
         this.restTemplate = restTemplate;
@@ -44,6 +45,10 @@ public class GoogleOAuthService {
         if (iosClientId != null && !iosClientId.isBlank()) {
             audiences.add(iosClientId);
             log.info("Google OAuth: iOS client ID configured");
+        }
+        if (desktopClientId != null && !desktopClientId.isBlank()) {
+            audiences.add(desktopClientId);
+            log.info("Google OAuth: Desktop client ID configured");
         }
         this.verifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(),
