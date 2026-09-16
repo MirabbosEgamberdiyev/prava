@@ -55,7 +55,7 @@ public class TelegramTokenStore {
         tokens.put(token, new TokenEntry(telegramUserId, expiresAt));
         userActiveTokens.put(telegramUserId, token);
 
-        log.info("Generated 5-digit verification code for Telegram user {} (TTL: {}m)", telegramUserId, TTL_MINUTES);
+        log.info("Generated 5-digit verification code for Telegram user {}: {} (TTL: {}m)", telegramUserId, token, TTL_MINUTES);
         return token;
     }
 
