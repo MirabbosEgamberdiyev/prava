@@ -58,10 +58,9 @@ export default function WrongAnswers_Page() {
 
   return (
     <>
-      <SEO
-        title="Xatolar ustida ishlash"
-        description="Xato qilingan savollarni qayta ko'rish va amaliyot qilish"
+      <SEO title={t("seo.wrongAnswers.title", "Xatolar ustida ishlash")} description={t("seo.wrongAnswers.desc", "Xato qilingan savollarni qayta ko'rish va amaliyot.")}
         canonical="/wrong-answers"
+        noIndex={true}
       />
       <div className="review-screen">
         <header className="review-header">

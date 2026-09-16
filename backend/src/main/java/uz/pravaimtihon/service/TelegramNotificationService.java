@@ -66,18 +66,6 @@ public class TelegramNotificationService {
                         emoji, session.getCorrectCount(), session.getTotalQuestions(),
                         session.getPercentage(),
                         Boolean.TRUE.equals(session.getIsPassed()) ? "🎉 Сдано!" : "📚 Попробуйте ещё раз");
-                case EN -> String.format("""
-                        %s <b>Exam Result</b>
-
-                        📝 Correct: %d / %d
-                        🎯 Score: %.1f%%
-                        %s
-
-                        Keep practicing at pravaonline.uz!
-                        """,
-                        emoji, session.getCorrectCount(), session.getTotalQuestions(),
-                        session.getPercentage(),
-                        Boolean.TRUE.equals(session.getIsPassed()) ? "🎉 Passed!" : "📚 Try again");
                 case UZC -> String.format("""
                         %s <b>Имтиҳон натижаси</b>
 
@@ -108,7 +96,6 @@ public class TelegramNotificationService {
             String resultUrl = baseUrl + "/exam/result/" + session.getId();
             String btnText = switch (lang) {
                 case RU -> "📋 Посмотреть результат";
-                case EN -> "📋 View Result";
                 case UZC -> "📋 Натижани кўриш";
                 default -> "📋 Natijani ko'rish";
             };
@@ -141,7 +128,6 @@ public class TelegramNotificationService {
 
             String text = switch (lang) {
                 case RU -> String.format("🔥 Поздравляем! Серия из %d подряд сданных экзаменов! Так держать!", streakDays);
-                case EN -> String.format("🔥 Congratulations! %d exam pass streak! Keep going!", streakDays);
                 case UZC -> String.format("🔥 Табриклаймиз! Кетма-кет %d та имтиҳон топширдингиз! Давом этинг!", streakDays);
                 default -> String.format("🔥 Tabriklaymiz! Ketma-ket %d ta imtihon topshirdingiz! Davom eting!", streakDays);
             };

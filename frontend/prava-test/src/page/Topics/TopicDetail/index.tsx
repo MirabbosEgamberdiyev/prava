@@ -121,8 +121,8 @@ const TopicDetail_Page = () => {
   return (
     <div className="review-screen">
       <SEO
-        title={`${topicName} - Mavzu bo'yicha testlar`}
-        description={`${topicName} mavzusi bo'yicha haydovchilik guvohnomasi imtihon savollarini yeching.`}
+        title={`${topicName} — ${t("seo.topicDetail.title", "Mavzu Testlari")}`}
+        description={`${topicName} — ${t("seo.topicDetail.desc", "Mavzu bo'yicha imtihon savollarini yeching.")}`}
         canonical={`/topics/${topicCode}`}
         noIndex={true}
       />

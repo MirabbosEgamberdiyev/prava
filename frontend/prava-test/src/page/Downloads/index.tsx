@@ -267,10 +267,23 @@ export default function Downloads_Page() {
   return (
     <>
       <SEO
-        title="Ilovalarni yuklab olish — Windows, Android, iOS, macOS | Prava Online"
-        description="Prava Online platformasini kompyuter va telefoningizga o'rnating. Windows offline dasturi, Android Google Play, iOS va macOS ilovalari. Rasmiy va xavfsiz yuklab olish."
-        keywords="prava online yuklab olish, prava desktop yuklash, prava skachat, haydovchilik testi dastur"
+        title={t("seo.downloads.title", "Ilovalarni yuklab olish — Windows, Android, iOS | Prava Online")}
+        description={t("seo.downloads.desc", "Prava Online mobil va kompyuter ilovalarini yuklab oling. Internetisiz offline rejimda ham o'rganing.")}
+        keywords="prava online ilova, prava online dastur, prava online yuklab olish, prava desktop yuklash, prava online windows, haydovchilik testi dasturi, haydovchilik guvohnomasiga tayyorlanish dasturi, prava online android, prava app"
         canonical="/downloads"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "Prava Online",
+          operatingSystem: "Windows 10+, Android, iOS",
+          applicationCategory: "EducationalApplication",
+          offers: {
+            "@type": "Offer",
+            price: "0",
+            priceCurrency: "UZS",
+          },
+          downloadUrl: "https://pravaonline.uz/downloads",
+        }}
       />
 
       <div className="saas-page-container">

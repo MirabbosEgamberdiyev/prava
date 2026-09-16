@@ -57,10 +57,10 @@ export default function About_Page() {
     },
     {
       icon: IconShieldCheck,
-      title: t("about.val4Title", "99.4% Muvaffaqiyat ko'rsatkichi"),
+      title: t("about.val4Title", "Tizimli tayyorgarlik"),
       desc: t(
         "about.val4Desc",
-        "Barcha 70 ta bilet bo'yicha to'liq tayyorgarlik ko'rgan o'quvchilarimiz haqiqiy davlat imtihonida 20 tadan 18+ to'g'ri javob bilan birinchi urinishda o'tishmoqda."
+        "Barcha 70 ta bilet bo'yicha to'liq tayyorgarlik ko'rgan o'quvchilarimiz haqiqiy davlat imtihonida ishonch bilan o'tishmoqda."
       ),
       color: "blue",
     },
@@ -69,7 +69,7 @@ export default function About_Page() {
   const milestones = [
     { number: "1 200+", label: t("about.stat1", "Rasmiy savollar bazasi") },
     { number: "70", label: t("about.stat2", "Rasmiy imtihon biletlari") },
-    { number: "50 000+", label: t("about.stat3", "Muvaffaqiyatli o'quvchilar") },
+    { number: "24/7", label: t("about.stat3", "Uzluksiz online tayyorgarlik") },
     { number: "3", label: t("about.stat4", "O'rganish tillari (Lotin, Kirill, Rus)") },
   ];
 
@@ -107,10 +107,23 @@ export default function About_Page() {
   return (
     <>
       <SEO
-        title="Biz haqimizda — Prava Online professional ta'lim platformasi"
-        description="Prava Online — O'zbekistonda haydovchilik guvohnomasi imtihoniga tayyorlanishning eng ilg'or, ishonchli va to'liq raqamli ekotizimi. Bizning missiyamiz va afzalliklarimiz."
-        keywords="prava online biz haqimizda, haydovchilik maktabi test, avtomaktab prava uz, YHXBB imtihon tayyorgarlik"
+        title={t("seo.about.title", "Biz haqimizda — Prava Online professional ta'lim platformasi")}
+        description={t("seo.about.desc", "Prava Online — O'zbekistonda haydovchilik guvohnomasi nazariy imtihoniga zamonaviy tayyorgarlik tizimi.")}
+        keywords="prava online biz haqimizda, haydovchilik imtihoniga tayyorlanish platformasi, avtomaktab online test, prava online missiyasi, haydovchilik guvohnomasi o'qitish tizimi"
         canonical="/about"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          name: "Biz haqimizda — Prava Online",
+          description: "O'zbekistonda haydovchilik guvohnomasi nazariy imtihoniga zamonaviy tayyorgarlik tizimi",
+          url: "https://pravaonline.uz/about",
+          mainEntity: {
+            "@type": "Organization",
+            name: "Prava Online",
+            url: "https://pravaonline.uz",
+            logo: "https://pravaonline.uz/logo.svg",
+          },
+        }}
       />
 
       <div className="saas-page-container">

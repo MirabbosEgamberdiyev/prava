@@ -136,11 +136,10 @@ const Login_Page = () => {
   return (
     <Box className="auth-page-container">
       <Container size={480} maw={480} p={{ base: "xs", sm: 0 }} className="auth-page-inner">
-        <SEO
-          title="Kirish - Prava Online platformasiga kirish"
-          description="Prava Online platformasiga kiring va haydovchilik guvohnomasi imtihoniga tayyorlanishni davom eting. Google yoki Telegram orqali tez kirish."
+        <SEO title={t("seo.login.title", "Tizimga kirish")} description={t("seo.login.desc", "Shaxsiy kabinetingizga kiring.")}
           keywords="prava online kirish, login, haydovchilik guvohnomasi, вход prava online"
           canonical="/auth/login"
+          noIndex={true}
         />
 
         {/* Header section with brand mark */}
@@ -224,7 +223,12 @@ const Login_Page = () => {
                 autoComplete="username"
                 leftSection={getIdentifierIcon()}
                 styles={{
-                  input: { height: 46, fontSize: "14.5px" },
+                  input: {
+                    height: 46,
+                    fontSize: "14px",
+                    backgroundColor: "var(--bg-input)",
+                    borderColor: "var(--border)",
+                  },
                   label: { fontSize: "13px", fontWeight: 600, marginBottom: 4 }
                 }}
                 aria-required="true"
@@ -242,7 +246,12 @@ const Login_Page = () => {
                   autoComplete="current-password"
                   leftSection={<IconLock size={18} />}
                   styles={{
-                    input: { height: 46, fontSize: "14.5px" },
+                    input: {
+                      height: 46,
+                      fontSize: "14px",
+                      backgroundColor: "var(--bg-input)",
+                      borderColor: "var(--border)",
+                    },
                     label: { fontSize: "13px", fontWeight: 600, marginBottom: 4 }
                   }}
                   aria-required="true"
@@ -276,7 +285,8 @@ const Login_Page = () => {
                 style={{
                   fontSize: "15px",
                   fontWeight: 700,
-                  boxShadow: "0 4px 14px rgba(25, 113, 194, 0.25)",
+                  backgroundColor: "#0284c7",
+                  boxShadow: "0 4px 14px rgba(2, 132, 199, 0.35)",
                 }}
               >
                 {t("auth.login")}
@@ -288,9 +298,9 @@ const Login_Page = () => {
                 my={2}
               />
 
-              <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="xs">
-                <GoogleLoginButton mode="login" />
-                <TelegramLoginButton mode="login" />
+              <SimpleGrid cols={2} spacing="xs">
+                <GoogleLoginButton mode="login" compact />
+                <TelegramLoginButton mode="login" compact />
               </SimpleGrid>
             </Stack>
           </form>

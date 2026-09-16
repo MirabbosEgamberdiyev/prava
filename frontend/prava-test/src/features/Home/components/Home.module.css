@@ -1009,3 +1009,396 @@
   box-shadow: var(--shadow-sm);
   display: inline-block;
 }
+
+/* ==================== OSONPRAVA-STYLE MINIMAL LANDING ==================== */
+
+/* Centered Hero */
+.heroCenteredSection {
+  padding: clamp(36px, 6vh, 72px) 0 clamp(24px, 4vh, 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.heroCenteredContent {
+  max-width: 820px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.heroPillBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  background: rgba(2, 132, 199, 0.08);
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.25);
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+}
+
+:global([data-mantine-color-scheme="dark"]) .heroPillBadge {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.heroCenteredTitle {
+  font-size: clamp(2.1rem, 4.5vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  margin-bottom: 16px;
+  max-width: 760px;
+}
+
+.heroHighlightWord {
+  color: #0284c7;
+  display: inline;
+}
+
+:global([data-mantine-color-scheme="dark"]) .heroHighlightWord {
+  color: #38bdf8;
+}
+
+.heroCenteredSubtitle {
+  font-size: clamp(1rem, 1.6vw, 1.125rem);
+  line-height: 1.65;
+  color: var(--text-muted);
+  max-width: 620px;
+  margin: 0 auto 28px;
+}
+
+.heroActionsGroup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.heroPrimaryBtn {
+  height: 48px;
+  padding: 0 28px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+}
+
+.heroPrimaryBtn:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+}
+
+.heroSecondaryBtn {
+  height: 48px;
+  padding: 0 24px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.heroSecondaryBtn:hover {
+  background: var(--surface-muted);
+  border-color: var(--text-muted);
+  transform: translateY(-1px);
+}
+
+/* Store download badges */
+.storeBadgesRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.storeBadgeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.storeBadgeLink:hover {
+  background: var(--surface-muted);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+/* Minimal Stats */
+.statsMinimalSection {
+  padding: clamp(24px, 4vh, 48px) 0;
+}
+
+.statCardMinimal {
+  text-align: center;
+  padding: 24px 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.statCardMinimal:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.statValueMinimal {
+  font-size: clamp(1.75rem, 2.8vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.statLabelMinimal {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Section Header (Centered) */
+.sectionHeaderCentered {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto clamp(32px, 5vh, 48px);
+}
+
+.sectionHeaderTitle {
+  font-size: clamp(1.6rem, 2.8vw, 2.15rem);
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.25;
+}
+
+.sectionHeaderSubtitle {
+  font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Benefits 2x2 Grid */
+.benefitsSectionMinimal {
+  padding: clamp(32px, 6vh, 64px) 0;
+}
+
+.benefitCardClean {
+  padding: 28px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.benefitCardClean:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+.benefitIconSquare {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.benefitTitleClean {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.benefitDescClean {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  flex: 1;
+}
+
+/* How It Works 3-Step */
+.howItWorksSectionMinimal {
+  padding: clamp(32px, 6vh, 64px) 0;
+}
+
+.stepCardClean {
+  padding: 28px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s ease;
+  height: 100%;
+}
+
+.stepCardClean:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+.stepCircleBadge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-weight: 800;
+  font-size: 1.125rem;
+  background: rgba(2, 132, 199, 0.1);
+  color: #0284c7;
+  border: 1.5px solid rgba(2, 132, 199, 0.28);
+}
+
+:global([data-mantine-color-scheme="dark"]) .stepCircleBadge {
+  background: rgba(56, 189, 248, 0.16);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.stepTitleClean {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.stepDescClean {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* FAQ Minimal */
+.faqSectionMinimal {
+  padding: clamp(32px, 6vh, 64px) 0;
+}
+
+.faqContainerClean {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.faqItemClean {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  margin-bottom: 12px !important;
+  transition: all 0.2s ease !important;
+  overflow: hidden;
+}
+
+.faqItemClean:hover {
+  border-color: var(--primary) !important;
+}
+
+/* Final CTA Minimal */
+.finalCtaSectionMinimal {
+  padding: clamp(36px, 6vh, 64px) 0 clamp(48px, 8vh, 80px);
+}
+
+.finalCtaBox {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: clamp(36px, 6vh, 56px) clamp(20px, 4vw, 40px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
+}
+
+@media (max-width: 640px) {
+  .heroActionsGroup {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .heroPrimaryBtn,
+  .heroSecondaryBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .storeBadgesRow {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    width: 100%;
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .storeBadgeLink {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.78rem;
+    padding: 0 8px;
+    height: 38px;
+  }
+
+  .appDeviceCard {
+    flex-direction: column;
+    padding: 20px 16px;
+    gap: 14px;
+  }
+}
+

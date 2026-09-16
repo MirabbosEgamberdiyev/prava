@@ -6,10 +6,22 @@ import axios, {
 import Cookies from "js-cookie";
 import { ENV } from "../config/env";
 import i18n from "../utils/i18n";
+import { getSharedCookieDomain } from "../utils/domain";
 
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_DATA_KEY = "userData";
+
+function clearCookies(): void {
+  const domain = getSharedCookieDomain();
+  const keys = [ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_DATA_KEY];
+  keys.forEach((k) => {
+    Cookies.remove(k);
+    if (domain) {
+      Cookies.remove(k, { domain });
+    }
+  });
+}
 
 // Refresh so'rovi uchun alohida instance (interceptor loop'dan qochish)
 const refreshClient = axios.create({
@@ -83,16 +95,19 @@ api.interceptors.request.use(
 
           if (newAccessToken) {
             const isSecure = window.location.protocol === "https:";
+            const domain = getSharedCookieDomain();
             Cookies.set(ACCESS_TOKEN_KEY, newAccessToken, {
               expires: 1,
               secure: isSecure,
-              sameSite: isSecure ? "strict" : "lax",
+              sameSite: "lax",
+              domain,
             });
             if (newRefreshToken) {
               Cookies.set(REFRESH_TOKEN_KEY, newRefreshToken, {
                 expires: 30,
                 secure: isSecure,
-                sameSite: isSecure ? "strict" : "lax",
+                sameSite: "lax",
+                domain,
               });
             }
             // Extend userData cookie expiry to match access token
@@ -101,7 +116,8 @@ api.interceptors.request.use(
               Cookies.set(USER_DATA_KEY, existingUserData, {
                 expires: 1,
                 secure: isSecure,
-                sameSite: isSecure ? "strict" : "lax",
+                sameSite: "lax",
+                domain,
               });
             }
             if (config.headers) {
@@ -219,9 +235,7 @@ api.interceptors.response.use(
 
       // Refresh token yo'q bo'lsa - to'g'ridan-to'g'ri logout
       if (!refreshToken) {
-        Cookies.remove(ACCESS_TOKEN_KEY);
-        Cookies.remove(REFRESH_TOKEN_KEY);
-        Cookies.remove(USER_DATA_KEY);
+        clearCookies();
         window.dispatchEvent(new CustomEvent("auth-logout"));
         return Promise.reject(error);
       }
@@ -253,18 +267,21 @@ api.interceptors.response.use(
 
         if (newAccessToken) {
           const isSecure = window.location.protocol === "https:";
+          const domain = getSharedCookieDomain();
 
           Cookies.set(ACCESS_TOKEN_KEY, newAccessToken, {
             expires: 1,
             secure: isSecure,
-            sameSite: isSecure ? "strict" : "lax",
+            sameSite: "lax",
+            domain,
           });
 
           if (newRefreshToken) {
             Cookies.set(REFRESH_TOKEN_KEY, newRefreshToken, {
               expires: 30,
               secure: isSecure,
-              sameSite: isSecure ? "strict" : "lax",
+              sameSite: "lax",
+              domain,
             });
           }
 
@@ -274,7 +291,8 @@ api.interceptors.response.use(
             Cookies.set(USER_DATA_KEY, existingUserData, {
               expires: 1,
               secure: isSecure,
-              sameSite: isSecure ? "strict" : "lax",
+              sameSite: "lax",
+              domain,
             });
           }
 
@@ -289,9 +307,7 @@ api.interceptors.response.use(
         throw new Error("No access token in refresh response");
       } catch (refreshError) {
         processQueue(refreshError, null);
-        Cookies.remove(ACCESS_TOKEN_KEY);
-        Cookies.remove(REFRESH_TOKEN_KEY);
-        Cookies.remove(USER_DATA_KEY);
+        clearCookies();
         window.dispatchEvent(new CustomEvent("auth-logout"));
         return Promise.reject(refreshError);
       } finally {

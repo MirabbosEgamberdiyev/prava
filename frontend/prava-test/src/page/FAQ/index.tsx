@@ -224,9 +224,7 @@ export default function FAQ_Page() {
 
   return (
     <>
-      <SEO
-        title="Ko'p so'raladigan savollar (FAQ) — Prava Online"
-        description="Prava Online haydovchilik imtihoni platformasi bo'yicha eng ko'p beriladigan savollarga javoblar. Imtihon tartibi, to'lovlar, ilovalar va akkaunt."
+      <SEO title={t("seo.faq.title", "Ko'p so'raladigan savollar (FAQ)")} description={t("seo.faq.desc", "Eng ko'p beriladigan savollarga javoblar.")}
         keywords="prava online faq, haydovchilik imtihoni savollar javoblar, prava test qanday ishlaydi, YHXBB imtihon qoidalari"
         canonical="/faq"
         jsonLd={jsonLdData}

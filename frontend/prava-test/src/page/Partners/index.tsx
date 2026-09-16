@@ -389,10 +389,25 @@ export default function Partners_Page() {
   return (
     <>
       <SEO
-        title="Avtomaktablar va Hamkorlar uchun Korporativ Yechimlar — Prava Online"
-        description="Avtomaktablar, o'quv markazlari va tashkilotlar uchun Prava Desktop Enterprise offline tizimi. Lokal tarmoq, o'qituvchi paneli, F1-F5 imtihon simulyatori va rasmiy savollar bazasi."
-        keywords="avtomaktablar uchun dastur, prava desktop enterprise, avtomaktab test dasturi, haydovchilik o'quv markazi dasturi, offline prava test"
+        title={t("seo.partners.title", "Avtomaktablar va Hamkorlar uchun Korporativ Yechimlar — Prava Online")}
+        description={t("seo.partners.desc", "Avtomaktablar uchun o'quvchilar monitoringi, kompyuter sinflari, guruh statistikasi va maxsus dasturiy yechimlar.")}
+        keywords="avtomaktablar uchun dastur, avtomaktab test dasturi, haydovchilik o'quv markazi dasturi, offline prava test, prava desktop enterprise, prava avtomaktab hamkorlik"
         canonical="/partners"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "Avtomaktablar va Korporativ Hamkorlik — Prava Online",
+          description: "Avtomaktablar va ta'lim muassasalari uchun kompyuter sinflari, offline imtihon tizimi va o'quvchilar monitoringi",
+          provider: {
+            "@type": "Organization",
+            name: "Prava Online",
+            url: "https://pravaonline.uz",
+          },
+          areaServed: {
+            "@type": "Country",
+            name: "Uzbekistan",
+          },
+        }}
       />
 
       <div className="saas-page-container">

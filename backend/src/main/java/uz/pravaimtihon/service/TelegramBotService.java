@@ -119,7 +119,8 @@ public class TelegramBotService {
         try {
             List<Map<String, String>> commands = List.of(
                     Map.of("command", "start", "description", "Kirish kodi / Код входа"),
-                    Map.of("command", "lang", "description", "Tilni tanlash / Выбрать язык")
+                    Map.of("command", "lang", "description", "Tilni tanlash / Выбрать язык"),
+                    Map.of("command", "help", "description", "Yordam va ma'lumot / Помощь")
             );
             Map<String, Object> body = Map.of("commands", commands);
 
@@ -127,7 +128,7 @@ public class TelegramBotService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
             restTemplate.postForObject(getApiUrl() + "/setMyCommands", request, String.class);
-            log.info("Telegram bot commands set successfully (auth + language)");
+            log.info("Telegram bot commands set successfully (auth + language + help)");
         } catch (Exception e) {
             log.warn("Failed to set Telegram bot commands: {}", e.getMessage());
         }
@@ -158,9 +159,6 @@ public class TelegramBotService {
             Map<String, Object> message = (Map<String, Object>) update.get("message");
             if (message == null) return;
 
-            String text = (String) message.get("text");
-            if (text == null) return;
-
             Map<String, Object> chat = (Map<String, Object>) message.get("chat");
             long chatId = ((Number) chat.get("id")).longValue();
 
@@ -170,6 +168,22 @@ public class TelegramBotService {
             String username = from != null ? (String) from.get("username") : "";
             String languageCode = from != null ? (String) from.get("language_code") : "uz";
             long userId = from != null ? ((Number) from.get("id")).longValue() : chatId;
+
+            // Handle contact sharing (phone number linking)
+            Map<String, Object> contact = (Map<String, Object>) message.get("contact");
+            if (contact != null) {
+                handleContactMessage(chatId, userId, from, contact);
+                return;
+            }
+
+            String text = (String) message.get("text");
+            if (text == null) return;
+
+            if (text.startsWith("/help") || text.startsWith("/yordam") || text.startsWith("/info")) {
+                AcceptLanguage userLang = getUserLanguage(userId);
+                sendHelpMessage(chatId, userLang);
+                return;
+            }
 
             if (text.startsWith("/lang") || text.startsWith("/language") || text.startsWith("/settings")) {
                 AcceptLanguage userLang = getUserLanguage(userId);
@@ -205,8 +219,6 @@ public class TelegramBotService {
                 .map(User::getPreferredLanguage)
                 .orElse(AcceptLanguage.UZL);
     }
-
-
 
     @SuppressWarnings("unchecked")
     private void handleCallbackQuery(Map<String, Object> callbackQuery) {
@@ -265,7 +277,8 @@ public class TelegramBotService {
             String lastName = from.get("last_name") != null ? (String) from.get("last_name") : "";
             String username = from.get("username") != null ? (String) from.get("username") : "";
             String token = tokenStore.generateToken(userId, firstName, lastName, username);
-            sendWelcomeMessage(chatId, selectedLang, token);
+            String loginUrl = baseUrl + "/auth/telegram-callback?token=" + token;
+            sendWelcomeMessage(chatId, selectedLang, token, loginUrl);
         }
     }
 
@@ -363,7 +376,166 @@ public class TelegramBotService {
             }
         }
 
-        sendWelcomeMessage(chatId, lang, token);
+        sendWelcomeMessage(chatId, lang, token, loginUrl);
+    }
+
+    private void handleContactMessage(long chatId, long userId, Map<String, Object> from, Map<String, Object> contact) {
+        try {
+            Number contactUserIdNum = (Number) contact.get("user_id");
+            if (contactUserIdNum != null && contactUserIdNum.longValue() != userId) {
+                AcceptLanguage lang = getUserLanguage(userId);
+                String warning = switch (lang) {
+                    case RU -> "⚠️ Пожалуйста, отправьте свой собственный номер телефона через кнопку контактов.";
+                    case UZC -> "⚠️ Илтимос, контакт тугмаси орқали фақат ўзингизнинг телефон рақамингизни юборинг.";
+                    default -> "⚠️ Iltimos, kontakt tugmasi orqali faqat o'zingizning telefon raqamingizni yuboring.";
+                };
+                sendMessage(chatId, warning, null);
+                return;
+            }
+
+            String rawPhone = (String) contact.get("phone_number");
+            if (rawPhone == null || rawPhone.isBlank()) return;
+
+            String clean = rawPhone.replaceAll("[^0-9]", "");
+            if (clean.length() == 9) {
+                clean = "998" + clean;
+            } else if (clean.startsWith("8") && clean.length() == 10) {
+                clean = "998" + clean.substring(1);
+            }
+
+            if (!clean.matches("^998[0-9]{9}$")) {
+                log.warn("Invalid phone number format received from Telegram: {}", clean);
+                return;
+            }
+
+            String tgId = String.valueOf(userId);
+            AcceptLanguage lang = getUserLanguage(userId);
+
+            Optional<User> byPhone = userRepository.findByPhoneNumberAndDeletedFalse(clean);
+            if (byPhone.isPresent()) {
+                User existing = byPhone.get();
+                existing.setTelegramId(tgId);
+                if (from != null && from.get("username") != null) {
+                    existing.setTelegramUsername((String) from.get("username"));
+                }
+                existing.setIsPhoneVerified(true);
+                userRepository.save(existing);
+                log.info("Linked existing phone user {} to Telegram ID {}", existing.getId(), tgId);
+            } else {
+                Optional<User> byTg = userRepository.findByTelegramIdAndDeletedFalse(tgId);
+                if (byTg.isPresent()) {
+                    User tgUser = byTg.get();
+                    tgUser.setPhoneNumber(clean);
+                    tgUser.setIsPhoneVerified(true);
+                    userRepository.save(tgUser);
+                    log.info("Updated Telegram user {} with phone number {}", tgId, clean);
+                } else {
+                    String firstName = from != null ? (String) from.get("first_name") : "User";
+                    String lastName = from != null ? (String) from.get("last_name") : null;
+                    String username = from != null ? (String) from.get("username") : null;
+                    userRepository.save(User.builder()
+                            .telegramId(tgId)
+                            .telegramUsername(username)
+                            .phoneNumber(clean)
+                            .isPhoneVerified(true)
+                            .firstName(sanitizeFirstName(firstName, username))
+                            .lastName(sanitizeLastName(lastName))
+                            .oauthProvider(OAuthProvider.TELEGRAM)
+                            .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
+                            .role(Role.USER)
+                            .preferredLanguage(lang)
+                            .isActive(true)
+                            .build());
+                    log.info("Registered new user with phone {} and Telegram ID {}", clean, tgId);
+                }
+            }
+
+            String formattedPhone = "+" + clean.substring(0, 3) + " " + clean.substring(3, 5) + " " +
+                    clean.substring(5, 8) + " " + clean.substring(8, 10) + " " + clean.substring(10, 12);
+
+            String successMsg = switch (lang) {
+                case RU -> String.format("✅ Телефон номер <b>%s</b> успешно привязан к вашему аккаунту Prava Online!", formattedPhone);
+                case UZC -> String.format("✅ <b>%s</b> телефон рақами Prava Online аккаунтингизга муваффақиятли уланди!", formattedPhone);
+                default -> String.format("✅ <b>%s</b> telefon raqami Prava Online akkauntingizga muvaffaqiyatli ulandi!", formattedPhone);
+            };
+
+            sendMessage(chatId, successMsg, null);
+        } catch (Exception e) {
+            log.error("Failed to handle contact message from Telegram user {}: {}", userId, e.getMessage(), e);
+        }
+    }
+
+    private void sendHelpMessage(long chatId, AcceptLanguage lang) {
+        String message = switch (lang) {
+            case RU -> """
+                    🚗 <b>Prava Online — Официальный бот платформы</b>
+
+                    Этот бот предназначен для быстрой и безопасной авторизации в приложениях Prava Online (Web, Desktop, Mobile).
+
+                    <b>Доступные команды:</b>
+                    /start — Получить 5-значный код для входа
+                    /lang — Сменить язык интерфейса (O'zbek / Ўзбекча / Русский)
+                    /help — Справка и контакты поддержки
+
+                    <b>Как войти:</b>
+                    1. Нажмите /start и получите код.
+                    2. Введите полученный 5-значный код в приложении Prava Online или нажмите кнопку «Войти на сайт».
+
+                    <b>Служба поддержки:</b>
+                    📞 Телефон: +998 99 391 25 05
+                    💬 Telegram: @pravaonlineuz
+                    🌐 Сайт: https://pravaonline.uz
+                    """;
+            case UZC -> """
+                    🚗 <b>Prava Online — Платформанинг расмий боти</b>
+
+                    Ушбу бот Prava Online иловаларига (Web, Desktop, Mobile) тезкор ва хавфсиз кириш учун мўлжалланган.
+
+                    <b>Мавжуд буйруқлар:</b>
+                    /start — Кириш учун 5 хонали тасдиқлаш кодини олиш
+                    /lang — Тилни ўзгартириш (O'zbek / Ўзбекча / Русский)
+                    /help — Ёрдам ва маълумот
+
+                    <b>Қандай кирилади:</b>
+                    1. /start буйруғини босинг ва кодни олинг.
+                    2. Кодни Prava Online иловасига киритинг ёки «Сайтга кириш» тугмасини босинг.
+
+                    <b>Қўллаб-қувватлаш хизмати:</b>
+                    📞 Телефон: +998 99 391 25 05
+                    💬 Telegram: @pravaonlineuz
+                    🌐 Сайт: https://pravaonline.uz
+                    """;
+            default -> """
+                    🚗 <b>Prava Online — Platformaning rasmiy boti</b>
+
+                    Ushbu bot Prava Online ilovalariga (Web, Desktop, Mobile) tezkor va xavfsiz kirish uchun mo'ljallangan.
+
+                    <b>Mavjud buyruqlar:</b>
+                    /start — Kirish uchun 5 xonali tasdiqlash kodini olish
+                    /lang — Tilni o'zgartirish (O'zbek / Ўзбекcha / Русский)
+                    /help — Yordam va ma'lumot
+
+                    <b>Qanday kiriladi:</b>
+                    1. /start buyrug'ini bosing va kodni oling.
+                    2. Kodni Prava Online ilovasiga kiriting yoki «Saytga kirish» tugmasini bosing.
+
+                    <b>Qo'llab-quvvatlash xizmati:</b>
+                    📞 Telefon: +998 99 391 25 05
+                    💬 Telegram: @pravaonlineuz
+                    🌐 Sayt: https://pravaonline.uz
+                    """;
+        };
+
+        Map<String, Object> replyMarkup = Map.of(
+                "inline_keyboard", List.of(
+                        List.of(
+                                Map.of("text", "🌐 Saytga o'tish / Перейти на сайт", "url", baseUrl),
+                                Map.of("text", "📞 Aloqa / Поддержка", "url", "https://t.me/pravaonlineuz")
+                        )
+                )
+        );
+
+        sendMessage(chatId, message.trim(), replyMarkup);
     }
 
     private AcceptLanguage mapTelegramLanguage(String languageCode) {
@@ -375,41 +547,48 @@ public class TelegramBotService {
         };
     }
 
-    private void sendWelcomeMessage(long chatId, AcceptLanguage lang, String token) {
+    private void sendWelcomeMessage(long chatId, AcceptLanguage lang, String token, String loginUrl) {
         String message;
+        String enterSiteText;
+        String changeLangText;
 
         switch (lang) {
             case RU -> {
                 message = "🔐 <b>Prava Online</b>\n\n" +
                         "Ваш код подтверждения:\n\n" +
                         "<code>" + token + "</code>\n\n" +
-                        "Введите этот код в приложение Prava Online.\n\n" +
+                        "Введите этот код в приложение Prava Online (нажмите на код для копирования).\n\n" +
                         "⚠️ Не передавайте код третьим лицам.";
+                enterSiteText = "🚀 Войти на сайт (В один клик)";
+                changeLangText = "🌐 Сменить язык";
             }
             case UZC -> {
                 message = "🔐 <b>Prava Online</b>\n\n" +
                         "Тасдиқлаш кодингиз:\n\n" +
                         "<code>" + token + "</code>\n\n" +
-                        "Ушбу кодни Prava Online иловасига киритинг.\n\n" +
+                        "Ушбу кодни Prava Online иловасига киритинг (нусха олиш учун код устига босинг).\n\n" +
                         "⚠️ Кодни бошқа одамларга берманг.";
+                enterSiteText = "🚀 Сайтга кириш (Бир босишда)";
+                changeLangText = "🌐 Тилни ўзгартириш";
             }
             default -> {
                 message = "🔐 <b>Prava Online</b>\n\n" +
                         "Tasdiqlash kodingiz:\n\n" +
                         "<code>" + token + "</code>\n\n" +
-                        "Ushbu kodni Prava Online ilovasiga kiriting.\n\n" +
+                        "Ushbu kodni Prava Online ilovasiga kiriting (nusxa olish uchun kod ustiga bosing).\n\n" +
                         "⚠️ Kodni boshqa odamlarga bermang.";
+                enterSiteText = "🚀 Saytga kirish (Bir bosishda)";
+                changeLangText = "🌐 Tilni o'zgartirish";
             }
         }
 
-        Map<String, Object> replyMarkup = Map.of(
-                "inline_keyboard", List.of(
-                        List.of(
-                                Map.of("text", "🌐 Tilni o'zgartirish / Сменить язык", "callback_data", "choose_lang")
-                        )
-                )
-        );
+        List<List<Map<String, Object>>> keyboardRows = new ArrayList<>();
+        if (loginUrl != null && !loginUrl.isBlank()) {
+            keyboardRows.add(List.of(Map.of("text", enterSiteText, "url", loginUrl)));
+        }
+        keyboardRows.add(List.of(Map.of("text", changeLangText, "callback_data", "choose_lang")));
 
+        Map<String, Object> replyMarkup = Map.of("inline_keyboard", keyboardRows);
         sendMessage(chatId, message, replyMarkup);
     }
 

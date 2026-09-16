@@ -108,9 +108,7 @@ const TelegramCallback = () => {
 
   return (
     <>
-    <SEO
-      title="Telegram orqali kirish"
-      description="Telegram orqali avtorizatsiya — Prava Online haydovchilik guvohnomasi imtihoniga tayyorgarlik platformasi."
+    <SEO title={t("seo.telegramCallback.title", "Telegram orqali kirish")} description={t("seo.telegramCallback.desc", "Telegram orqali xavfsiz autentifikatsiya.")}
       canonical="/auth/telegram-callback"
       noIndex
     />

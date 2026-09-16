@@ -18,7 +18,7 @@ interface ImagePlaceholderProps {
 export function ImagePlaceholder({
   src,
   onClick,
-  radius = "xs",
+  radius = "md",
   style,
 }: ImagePlaceholderProps) {
   const colorScheme = useComputedColorScheme("light", {

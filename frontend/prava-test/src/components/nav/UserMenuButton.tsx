@@ -12,11 +12,20 @@ import { useAuth } from "../../auth/AuthContext";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { getWebAppUrl, isLandingDomain } from "../../utils/domain";
 
 function UserMenuButton() {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const goToApp = (path: string) => {
+    if (isLandingDomain()) {
+      window.location.href = getWebAppUrl(path);
+    } else {
+      navigate(path);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -91,32 +100,32 @@ function UserMenuButton() {
 
         <Menu.Item
           leftSection={<IconUser size={15} />}
-          onClick={() => navigate("/me")}
+          onClick={() => goToApp("/me")}
         >
           {t("nav.dashboard", "Boshqaruv paneli")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconSettings size={15} />}
-          onClick={() => navigate("/settings")}
+          onClick={() => goToApp("/settings")}
         >
           {t("userMenu.settings", "Sozlamalar")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconHistory size={15} />}
-          onClick={() => navigate("/history")}
+          onClick={() => goToApp("/history")}
         >
           {t("history.title", "Imtihon tarixi")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconTrophy size={15} />}
-          onClick={() => navigate("/leaderboard")}
+          onClick={() => goToApp("/leaderboard")}
         >
           {t("leaderboard.title", "Reyting")}
         </Menu.Item>
         {(user?.role === "SUPER_ADMIN" || user?.role === "ADMIN") && (
           <Menu.Item
             leftSection={<IconKey size={15} />}
-            onClick={() => navigate("/admin/activation-codes")}
+            onClick={() => goToApp("/admin/activation-codes")}
           >
             {t("nav.activationCodes", "Aktivatsiya kodlari")}
           </Menu.Item>

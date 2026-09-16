@@ -325,9 +325,10 @@ export default function Statistics_Page() {
   return (
     <>
       <SEO
-        title="Statistika - Natijalar va tahlil"
-        description="Prava Online tayyorgarlik statistikasi"
+        title={t("seo.statistics.title", "Statistika va Tahlillar")}
+        description={t("seo.statistics.desc", "O'rganish darajangiz va tayyorgarlik statistikasi")}
         canonical="/statistics"
+        noIndex={true}
       />
       <div className="stats-screen">
         {/* ── Reset confirm modal ── */}

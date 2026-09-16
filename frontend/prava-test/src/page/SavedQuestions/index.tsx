@@ -58,10 +58,9 @@ export default function SavedQuestions_Page() {
 
   return (
     <>
-      <SEO
-        title="Saqlangan savollar"
-        description="Belgilangan muhim savollar ro'yxati"
+      <SEO title={t("seo.savedQuestions.title", "Saqlangan savollar")} description={t("seo.savedQuestions.desc", "Belgilangan muhim savollar ro'yxati.")}
         canonical="/saved-questions"
+        noIndex={true}
       />
       <div className="review-screen">
         <header className="review-header">

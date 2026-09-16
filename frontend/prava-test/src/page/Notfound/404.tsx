@@ -10,9 +10,7 @@ const NotFound_Page = () => {
 
   return (
     <div>
-      <SEO
-        title="404 - Sahifa topilmadi"
-        description="Siz qidirayotgan sahifa topilmadi. Bosh sahifaga qaytib, haydovchilik guvohnomasi imtihoniga tayyorlanishni davom eting."
+      <SEO title={t("seo.notFound.title", "404 — Sahifa topilmadi")} description={t("seo.notFound.desc", "Kechirasiz, sahifa topilmadi.")}
         noIndex={true}
       />
       <Container className={classes.root}>

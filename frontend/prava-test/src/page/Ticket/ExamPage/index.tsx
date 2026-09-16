@@ -335,9 +335,10 @@ export default function TicketExamPage() {
     return (
       <>
         <SEO
-          title={`${localizeName(ticket)} natijasi`}
-          description="Bilet imtihon natijalari"
+          title={`${localizeName(ticket)} — ${t("seo.examResult.title", "Natija")}`}
+          description={t("seo.ticketExam.desc", "Bilet imtihon natijalari")}
           canonical={`/tickets/${ticket.id}`}
+          noIndex={true}
         />
         <div className="min-h-[85vh] flex items-center justify-center p-4">
           <GamificationResult
@@ -387,9 +388,10 @@ export default function TicketExamPage() {
   return (
     <>
       <SEO
-        title={`${localizeName(ticket)}`}
-        description="Prava Online bilet imtihoni."
+        title={`${localizeName(ticket)} — ${t("seo.ticketExam.title", "Bilet Imtihoni")}`}
+        description={t("seo.ticketExam.desc", "Prava Online bilet imtihoni.")}
         canonical={`/tickets/${ticket.id}`}
+          noIndex={true}
       />
       <div className="exam-screen">
         {/* ── Top bar ── */}

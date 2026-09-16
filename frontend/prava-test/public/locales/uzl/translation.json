@@ -56,7 +56,8 @@
     "identifierPlaceholder": "Email yoki +998 XX XXX XX XX",
     "passwordPlaceholder": "Parolingizni kiriting",
     "byPassword": "Parol bilan",
-    "byQr": "QR kod bilan"
+    "byQr": "QR kod bilan",
+    "logout": "Chiqish"
   },
   "register": {
     "title": "Ro'yxatdan o'tish",
@@ -86,7 +87,8 @@
     "resendCodeIn": "Kodni qayta yuborish: {{seconds}}s",
     "openEmailInbox": "Pochtani ochish",
     "editInfo": "Ma'lumotlarni o'zgartirish",
-    "passwordRequirementsNotMet": "Parol barcha xavfsizlik talablariga javob berishi kerak"
+    "passwordRequirementsNotMet": "Parol barcha xavfsizlik talablariga javob berishi kerak",
+    "verificationChannel": "Tasdiqlash usuli"
   },
   "forgotPassword": {
     "title": "Parolni tiklash",
@@ -140,7 +142,12 @@
     "logout": "Chiqish",
     "scanQrCode": "QR kodni skanerlang",
     "close": "Yopish",
-    "free": "Bepul"
+    "free": "Bepul",
+    "darkMode": "Tungi rejim",
+    "lightMode": "Kunduzgi rejim",
+    "all": "Barchasi",
+    "clear": "Tozalash",
+    "unknownError": "Kutilmagan xatolik yuz berdi"
   },
   "notFound": {
     "title": "Sahifa topilmadi",
@@ -189,8 +196,8 @@
     "hero": {
       "title": "Haydovchilik guvohnomasiga",
       "highlight": "online",
-      "titleEnd": "tayyorlaning!",
-      "description": "O'zbekiston bo'ylab minglab foydalanuvchilar ishonchini qozongan platforma orqali imtihonga tayyorlaning va birinchi urinishda muvaffaqiyatga erishing.",
+      "titleEnd": "oling!",
+      "description": "Haydovchilik guvohnomasi olishni oson qiladigan zamonaviy platforma. 1200+ rasmiy savollar, 70 ta bilet va real davlat imtihoni simulyatori orqali bir urinishda topshiring.",
       "feature1Title": "1200+ savollar bazasi",
       "feature1Desc": "Barcha kategoriyalar bo'yicha to'liq qamrov",
       "feature2Title": "Haqiqiy imtihon formati",
@@ -213,7 +220,11 @@
       "demoOptC": "Bir vaqtda harakatlanadi",
       "demoReadinessLabel": "Imtihonga tayyorlik",
       "demoSuccessRate": "96% Muvaffaqiyat",
-      "demoResultBadge": "A'lo natija"
+      "demoResultBadge": "A'lo natija",
+      "titleStart": "'Prava'ni",
+      "highlightWord": "oson",
+      "startNow": "Boshlash",
+      "openWebApp": "Web ilovani ochish"
     },
     "stats": "Statistika",
     "features": {
@@ -260,7 +271,7 @@
       "q3": "Savollar haqiqiy imtihondagi savollarga o'xshaydimi?",
       "a3": "Ha, bizning savollar bazasi O'zbekiston Respublikasi IIV YHXX (Yo'l harakati xavfsizligi xizmati) tomonidan beriladigan rasmiy imtihon savollariga to'liq asoslangan. Savollar muntazam yangilanib turadi.",
       "q4": "Internetsiz (offline) rejimda ishlasa bo'ladimi?",
-      "a4": "Ha! Bizning kompyuterlar uchun mo'ljallangan Prava Desktop (Windows, Linux, macOS) mustaqil ilovamiz yordamida internetsiz, to'liq offline rejimda barcha savollar va biletlarni mashq qilishingiz mumkin.",
+      "a4": "Ha! Bizning kompyuterlar uchun mo'ljallangan Prava Desktop (Windows) mustaqil dasturimiz yordamida internetsiz, to'liq offline rejimda barcha savollar va biletlarni mashq qilishingiz mumkin.",
       "q5": "Nechta marta test topshirish mumkin?",
       "a5": "Cheklovsiz! Siz xohlaganingizcha ko'p marta mashq qilishingiz mumkin. Qancha ko'p mashq qilsangiz, haqiqiy imtihonda shuncha ishonchli bo'lasiz.",
       "q6": "Qaysi tillarni qo'llab-quvvatlaysiz?",
@@ -269,7 +280,7 @@
     },
     "cta": {
       "title": "Hoziroq boshlang!",
-      "description": "Minglab foydalanuvchilarga qo'shiling va haydovchilik guvohnomasiga eng yaxshi tarzda tayyorlaning.",
+      "description": "Foydalanuvchi bo'lish shart emas — darhol test yechishni boshlang. Telegram yoki brauzer orqali ham kirishingiz mumkin.",
       "register": "Bepul ro'yxatdan o'tish",
       "login": "Kirish"
     },
@@ -345,8 +356,8 @@
       "badge": "O'zbekiston bo'yicha #1 tanlov",
       "official": "IIV YHXX Davlat standartlari",
       "officialDesc": "Rasmiy imtihon dasturi va qonunchilikka 100% mos",
-      "passRate": "99.4% O'tish ko'rsatkichi",
-      "passRateDesc": "O'quvchilarimizning birinchi urinishdagi natijasi",
+      "passRate": "Tizimli tayyorgarlik",
+      "passRateDesc": "Barcha bilet va mavzularni to'liq o'zlashtirish",
       "learners": "50,000+ Muvaffaqiyatli haydovchi",
       "learnersDesc": "Butun respublika bo'ylab faol tayyorlanuvchilar",
       "questions": "1,200+ Akkreditatsiyalangan savol",
@@ -363,7 +374,17 @@
       "b3Title": "Cheksiz Marafon Rejimi",
       "b3Desc": "Barcha 1200+ savollarni to'xtovsiz, birin-ketin yechish imkoniyati. Bitta xato qilsangiz ham zaif joyingizni darhol ko'rsatadi.",
       "b4Title": "Har qanday Qurilmada va Offline",
-      "b4Desc": "Kompyuter (Windows), Android telefon yoki veb orqali istalgan joyda mashq qiling. Windows ilovasi internetsiz to'liq ishlaydi."
+      "b4Desc": "Kompyuter (Windows), Android telefon yoki veb orqali istalgan joyda mashq qiling. Windows ilovasi internetsiz to'liq ishlaydi.",
+      "heading": "Nima uchun Prava Online?",
+      "subheading": "Imtihonga tayyorlanishning eng samarali va zamonaviy yo'li",
+      "card1Title": "70 ta rasmiy bilet",
+      "card1Desc": "IIV YHXBB bazasidagi barcha 70 ta rasmiy bilet va 1200+ savollar to'liq jamlangan.",
+      "card2Title": "Davlat imtihoni simulyatori",
+      "card2Desc": "20 ta savol, 25 daqiqa vaqt va YHXX kompyuter markazidagi kabi haqiqiy imtihon muhiti.",
+      "card3Title": "Xatolar ustida ishlash",
+      "card3Desc": "Siz adashgan savollar avtomatik saqlanadi va to'liq o'zlashtirilgunga qadar qayta mashq qildiriladi.",
+      "card4Title": "Offline va barcha qurilmalar",
+      "card4Desc": "Windows kompyuter uchun ilova internetsiz to'liq ishlaydi, shuningdek mobil telefon va vebda mavjud."
     },
     "preview": {
       "badge": "Interaktiv Ko'rinish",
@@ -381,12 +402,44 @@
       "statsScoreDemo": "94% Tayyorlik darajasi",
       "statsPassedDemo": "68/70 Biletlar o'zlashtirildi",
       "correctBadge": "TO'G'RI ✓",
-      "tryNow": "Sinab ko'rish"
+      "tryNow": "Sinab ko'rish",
+      "previewWindowLabel": "PRAVA ONLINE · WEB & DESKTOP SIMULATOR",
+      "liveDemoBadge": "INTERAKTIV DEMO",
+      "ticketHeader": "Bilet #14 · Savol 8/20",
+      "categoryB": "Kategoriya B",
+      "timeLeft": "18:42 qoldi",
+      "officialRuleTitle": "Rasmiy Qoida Izohi:",
+      "weakPointDetected": "Zaif nuqta aniqlandi",
+      "weakTopicTitle": "Mavzu: Chorrahalarda harakatlanish ustuvorligi",
+      "weakTopicDesc": "Ushbu mavzuda noaniq javoblar qayd etildi. Tizim avtomatik tarzda shaxsiy takrorlash rejasini tuzadi.",
+      "weakTopicProgress": "Mavzuni o'zlashtirish: 33%",
+      "smartAdviceTitle": "Intellektual maslahat",
+      "smartAdviceTopic": "Regulyator ishoralari va svetofor",
+      "smartAdviceDesc": "Regulyatorning qo'l ishoralari har doim svetofor va yo'l belgilaridan ustun turishini esda saqlang!",
+      "solveMistakes": "Xatolarni yechish",
+      "readinessTitle": "Umumiy Tayyorlik",
+      "readinessReady": "Imtihonga tayyor",
+      "masteredTicketsTitle": "O'zlashtirilgan Biletlar",
+      "masteredTicketsCount": "68 / 70",
+      "masteredTicketsPct": "97% yakunlandi",
+      "avgTimeTitle": "O'rtacha Vaqt",
+      "avgTimeValue": "11:20",
+      "avgTimeBadge": "Tezkor (20 daqiqadan)",
+      "sign1Title": "2.1 Asosiy yo'l",
+      "sign1Cat": "Imtiyoz belgilari",
+      "sign2Title": "3.1 Kirish taqiqlangan",
+      "sign2Cat": "Taqiqlovchi",
+      "sign3Title": "4.1.1 Harakat to'g'riga",
+      "sign3Cat": "Buyuruvchi",
+      "sign4Title": "5.1 Avtomagistral",
+      "sign4Cat": "Axborot-ishora",
+      "signDesc": "Imtihon savollarida eng ko'p uchraydigan belgilar",
+      "tryFreeExam": "Imtihonni Bepul Sinab Ko'rish"
     },
     "learningFlow": {
       "badge": "O'rganish Bosqichlari",
       "title": "Guvohnomaga eltuvchi 4 qadam",
-      "subtitle": "Oddiy nazariyadan tortib, davlat imtihonida 100% ishonch bilan o'tishgacha bo'lgan aniq yo'l xaritasi.",
+      "subtitle": "Oddiy nazariyadan tortib, davlat imtihoniga to'liq tayyor bo'lishgacha bo'lgan aniq yo'l xaritasi.",
       "step1Title": "1. Mavzularni o'zlashtirish",
       "step1Desc": "Yo'l harakati qoidalarining 33 ta asosiy bobi bo'yicha nazariya va tematik testlar.",
       "step2Title": "2. 70 ta biletni mashq qilish",
@@ -394,7 +447,7 @@
       "step3Title": "3. Xatolar ustida ishlash",
       "step3Desc": "Siz adashgan savollar avtomatik to'planadi. Ularni to'g'ri yechmaguningizcha takrorlaysiz.",
       "step4Title": "4. YHXX Davlat Imtihoni",
-      "step4Desc": "Real vaqt va qat'iy talablar bilan simulyatsiyadan o'tib, imtihonga 100% tayyor bo'lasiz."
+      "step4Desc": "Real vaqt va rasmiy talablar bilan simulyatsiyadan o'tib, imtihonga to'liq tayyor bo'lasiz."
     },
     "solutionsPreview": {
       "badge": "Ekotizim va Hamkorlik",
@@ -448,7 +501,55 @@
       "directDownload": "To'g'ridan-to'g'ri yuklab olish",
       "windowsApp": "Windows (Desktop)",
       "androidApp": "Android (Google Play)",
-      "iosApp": "iOS (PWA / Web App)"
+      "iosApp": "iOS (PWA / Web App)",
+      "openBrowser": "Brauzerda ochish"
+    },
+    "landingStats": {
+      "questions": "Savollar bazasi",
+      "tickets": "Rasmiy biletlar",
+      "realExam": "Real imtihon",
+      "languages": "Mavjud tillar"
+    },
+    "howItWorks": {
+      "title": "Qanday ishlaydi?",
+      "subtitle": "3 oddiy qadamda imtihonga tayyorlaning",
+      "step1Title": "Ilovani oching",
+      "step1Desc": "Brauzer orqali darhol kiring yoki Windows ilovani kompyuteringizga yuklab oling.",
+      "step2Title": "Testlarni yeching",
+      "step2Desc": "Biletlar, alohida mavzular yoki marafon rejimida bilimlaringizni sinovdan o'tkazing.",
+      "step3Title": "Imtihonga tayyor bo'ling",
+      "step3Desc": "Xatolaringiz ustida ishlab, davlat imtihoniga to'liq tayyor bo'ling va ishonch bilan topshiring."
+    },
+    "startStepBadge": "1-qadam",
+    "startTopic1Title": "Umumiy qoidalar",
+    "startTopic1Desc": "Yo'l harakati asosiy tushunchalari",
+    "startTopic1Btn": "Boshlash",
+    "attentionTopicsBadge": "Diqqat",
+    "weakTopicsHeader": "Ko'p xato qilingan mavzular",
+    "weakTopicsSub": "O'zlashtirish darajasini oshirish uchun tavsiya etiladi",
+    "mistakesPracticeBadge": "Amaliyot",
+    "mistakesCountTitle": "Xatolar soni",
+    "mistakesPracticeDesc": "Xatolar ustida ishlab, bilimingizni mustahkamlang",
+    "retakeWeakest20Btn": "Xatolar ustida ishlash",
+    "devices": {
+      "badge": "Barcha Qurilmalarda",
+      "title": "Istalgan qurilmada qulay o'rganing",
+      "subtitle": "Brauzerda, kompyuterda internetsiz yoki mobil telefonda — barcha qulay formatlar mavjud.",
+      "webCardBadge": "O'rnatish shart emas",
+      "webCardTitle": "Web Ilova",
+      "webCardDesc": "Zamonaviy kompyuter yoki telefon brauzerida to'liq ishlaydi. Ro'yxatdan o'ting va darhol boshlang.",
+      "webCardAction": "Web ilovaga o'tish",
+      "windowsCardBadge": "Internetsiz (Offline)",
+      "windowsCardTitle": "Windows Desktop",
+      "windowsCardDesc": "Kompyuter uchun mustaqil dastur (.exe). Barcha 70 ta bilet va 1200+ savollar internetsiz to'liq ishlaydi.",
+      "windowsCardAction": "Yuklab olish (.exe)",
+      "mobileCardBadge": "Android & iOS",
+      "mobileCardTitle": "Mobil Ilova",
+      "mobileCardDesc": "Jamoat transportida, navbatda yoki yo'lda har kuni telefoningizda qulay mashq qiling.",
+      "telegramCardBadge": "Yordamchi",
+      "telegramCardTitle": "Telegram Bot",
+      "telegramCardDesc": "Rasmiy bot orqali tezkor bildirishnomalar va qo'shimcha testlardan foydalaning.",
+      "telegramCardAction": "Telegramda ochish"
     }
   },
   "nav": {
@@ -483,7 +584,9 @@
     "contact": "Bog'lanish",
     "faq": "FAQ",
     "terms": "Foydalanish shartlari",
-    "privacy": "Maxfiylik siyosati"
+    "privacy": "Maxfiylik siyosati",
+    "close_menu": "Menyuni yopish",
+    "open_menu": "Menyuni ochish"
   },
   "exam": {
     "finish": "Yakunlash",
@@ -545,7 +648,9 @@
     "abandonAndRestart": "Bekor qilib, yangi boshlash",
     "howManyQuestions": "Nechta savoldan imtihon?",
     "questionsUnit": "ta savol",
-    "minuteShort": "daq"
+    "minuteShort": "daq",
+    "officialTitle": "YHXX Rasmiy Imtihon Simulyatori",
+    "maxWrongAllowed": "Maksimal ruxsat etilgan xatolar: 2 ta"
   },
   "package": {
     "title": "Mavzular ro'yxati",
@@ -735,7 +840,8 @@
     "terms": "Foydalanish shartlari",
     "privacy": "Maxfiylik siyosati",
     "downloads": "Ilovalar",
-    "basedOnOfficial": "O'zbekiston Respublikasi YHXX rasmiy dasturi asosida"
+    "basedOnOfficial": "O'zbekiston Respublikasi YHXX rasmiy dasturi asosida",
+    "allRightsReserved": "Barcha huquqlar himoyalangan."
   },
   "pwa": {
     "updateTitle": "Yangilanish mavjud",
@@ -782,7 +888,8 @@
     "tickets": "Biletlar",
     "startMarathon": "Marafon boshlash",
     "backToTopics": "Mavzularga qaytish",
-    "noTopics": "Mavzular topilmadi"
+    "noTopics": "Mavzular topilmadi",
+    "startTest": "Testni boshlash"
   },
   "statistics": {
     "title": "Statistika",
@@ -1092,7 +1199,8 @@
     "emptySub": "Hozircha xato javob bermadingiz",
     "remove": "Ro'yxatdan o'chirish",
     "practice": "Xatolarni ishlash",
-    "fixedCount": "{{count}} ta savol to'g'ri javoblandi va ro'yxatdan olib tashlandi"
+    "fixedCount": "{{count}} ta savol to'g'ri javoblandi va ro'yxatdan olib tashlandi",
+    "fixedShort": "tuzatildi"
   },
   "saved": {
     "title": "Saqlangan savollar",
@@ -1267,11 +1375,11 @@
     "val2Desc": "Har bir noto'g'ri javobingiz tahlil qilinadi va maxsus 'Xatolar ustida ishlash' tizimi orqali zaif mavzularingiz mustahkamlanadi.",
     "val3Title": "Online va Offline sinergiya",
     "val3Desc": "Veb-sayt bilan bir qatorda mustaqil ishlaydigan tezkor Desktop ilovamiz yordamida internetsiz kompyuteringizda ham mashq qilishingiz mumkin.",
-    "val4Title": "99.4% Muvaffaqiyat ko'rsatkichi",
-    "val4Desc": "Barcha 70 ta bilet bo'yicha to'liq tayyorgarlik ko'rgan o'quvchilarimiz haqiqiy davlat imtihonida 20 tadan 18+ to'g'ri javob bilan birinchi urinishda o'tishmoqda.",
+    "val4Title": "Tizimli tayyorgarlik",
+    "val4Desc": "Barcha 70 ta bilet bo'yicha to'liq tayyorgarlik ko'rgan o'quvchilarimiz haqiqiy davlat imtihonida ishonch bilan o'tishmoqda.",
     "stat1": "Rasmiy savollar bazasi",
     "stat2": "Rasmiy imtihon biletlari",
-    "stat3": "Muvaffaqiyatli o'quvchilar",
+    "stat3": "Uzluksiz online tayyorgarlik",
     "stat4": "O'rganish tillari (Lotin, Kirill, Rus)",
     "reason1Title": "Savollarni shunchaki yodlamaysiz — tushunasiz",
     "reason1Desc": "Oddiy test saytlaridan farqli o'laroq, har bir savolda rasmiy YHQ moddasi, batafsil qoida izohi va ko'rgazmali yo'l vaziyatlari tushuntiriladi.",
@@ -1528,7 +1636,8 @@
     "stateFailed": "Xatolik",
     "statePending": "Kutilmoqda",
     "startLearning": "O'rganishni boshlash",
-    "retry": "Qayta urinib ko'rish"
+    "retry": "Qayta urinib ko'rish",
+    "verifyingDesc": "To'lov tekshirilmoqda, iltimos kuting..."
   },
   "partners": {
     "badge": "Avtomaktablar va Korporativ Hamkorlik",
@@ -1667,7 +1776,10 @@
     "noMistakes": "Ajoyib! Birorta ham xato qilmadingiz.",
     "retryTest": "Qayta urinish",
     "backHome": "Bosh sahifaga qaytish",
-    "score": "Natija"
+    "score": "Natija",
+    "tierGoldTitle": "Oltin daraja",
+    "tierTargetTitle": "Maqsadli daraja",
+    "tierRetryTitle": "Qayta urinish"
   },
   "testSetup": {
     "topicTestTitle": "Mavzulashtirilgan test",
@@ -1692,7 +1804,11 @@
     "bookmarked": "Saqlangan",
     "prev": "Oldingisi",
     "next": "Keyingisi",
-    "explanation": "YHQ tushuntirishi"
+    "explanation": "YHQ tushuntirishi",
+    "results": "Natijalar",
+    "questionsCount": "Savollar soni",
+    "continueTest": "Testni davom ettirish",
+    "confirmFinish": "Haqiqatan ham testni yakunlamoqchimisiz?"
   },
   "dashboard": {
     "greeting": "Xush kelibsiz",
@@ -1704,11 +1820,11 @@
     "beginnerLevel": "Boshlang'ich",
     "questionsUnit": "savol",
     "totalUnit": "ta",
-    "recommended": "Tavsiya etiladi",
+    "recommended": "TAVSIYA ETILADI",
     "mainModesTitle": "Asosiy ta'lim rejimlari",
     "selectFormat": "O'rganish ketma-ketligi bo'yicha rejimni tanlang",
-    "activeStreak": "3 kunlik faol seriya",
-    "totalQuestionsInDb": "Jami 1190 ta rasmiy savoldan",
+    "activeStreak": "{{count}} kunlik faol seriya",
+    "totalQuestionsInDb": "Jami {{total}} ta rasmiy savoldan",
     "steadyProgress": "Muntazam amaliyot bilan o'sish",
     "start": "Boshlash",
     "modes": {
@@ -1731,7 +1847,7 @@
     },
     "smartSectionTitle": "Aqlli tavsiya va xatolar ustida ishlash",
     "smartSectionSubtitle": "Imtihon natijangizni oshirish uchun eng zaif mavzular va xatolarni tizimli bartaraf eting",
-    "weakTopicsTitle": "Zaif mavzular",
+    "weakTopicsTitle": "ZAIF MAVZULAR",
     "weakTopicsSubtitle": "Eng ko'p xato tushgan yo'nalishlar",
     "noMistakesYet": "Hali xatolaringiz yo'q, ajoyib!",
     "noMistakesDesc": "Barcha mavzularda savollarni to'g'ri yechib boryapsiz",
@@ -1742,10 +1858,10 @@
       "firstAid": "Birinchi tibbiy yordam ko'rsatish asoslari"
     },
     "mistakesTitle": "ta xato javob",
-    "mistakesCount": "xato",
-    "mistakesDesc": "Xatolar ustida muntazam ishlash imtihondan birinchi urinishda o'tish imkonini 94% ga oshiradi.",
+    "mistakesCount": "ta xato",
+    "mistakesDesc": "Xatolar ustida muntazam ishlash imtihon savollarini yaxshiroq tushunish va ishonch bilan topshirishga yordam beradi.",
     "fixMistakesBtn": "Eng zaif 20 ta savolni tuzatish",
-    "quickFix": "Tezkor tuzatish",
+    "quickFix": "TEZKOR TUZATISH",
     "analyticsTitle": "Tahlil va shaxsiy vositalar",
     "personalToolsDesc": "Shaxsiy o'sish, natijalar va sinovlar monitoringi",
     "tools": {
@@ -1766,12 +1882,16 @@
         "desc": "Avvalgi sinov urinishlari tarixi"
       }
     },
-    "footerFollow": "Bizni ijtimoiy tarmoqlarda kuzating",
+    "footerFollow": "BIZNI IJTIMOIY TARMOQLARDA KUZATING",
     "allRightsReserved": "Barcha huquqlar himoyalangan.",
     "scanQrCode": "QR kodni skanerlang",
     "examQuestionCount": "Nechta savoldan imtihon?",
     "minutesUnit": "daq",
-    "cancel": "Bekor qilish"
+    "cancel": "Bekor qilish",
+    "intermediateLevel": "O'rta",
+    "advancedLevel": "Yuqori",
+    "readyLevel": "Tayyor",
+    "startExamBtn": "Sinov imtihonini boshlash"
   },
   "mode": {
     "online": "Onlayn",
@@ -1841,5 +1961,155 @@
     "authRequiredDesc": "Desktop ilovani ulash uchun avval o'z hisobingizga kiring. Agar hisobingiz bo'lmasa, yangi hisob ochishingiz mumkin.",
     "loginExisting": "Mavjud hisob bilan kirish",
     "registerNew": "Yangi hisob yaratish"
+  },
+  "modes": "Rejimlar",
+  "metrics": "Ko'rsatkichlar",
+  "weakTopics": "Zaif mavzular",
+  "utility": "Foydali",
+  "setup": "Sozlash",
+  "testing": "Sinov",
+  "review": "Ko'rib chiqish",
+  "results": "Natijalar",
+  "seo": {
+    "home": {
+      "title": "Prava Test — Haydovchilik Guvohnomasi Imtihoniga Online Tayyorgarlik | Prava Online",
+      "desc": "O'zbekistonda haydovchilik guvohnomasi imtihoni uchun online testlar: 70 ta bilet, 1200+ rasmiy YHXBB savollari, yo'l harakati qoidalari (YHQ) va davlat imtihoni simulyatori. Bepul sinov testini topshiring!"
+    },
+    "about": {
+      "title": "Biz haqimizda — Prava Online professional ta'lim platformasi",
+      "desc": "Prava Online — O'zbekistonda haydovchilik guvohnomasi nazariy imtihoniga zamonaviy tayyorgarlik tizimi."
+    },
+    "partners": {
+      "title": "Avtomaktablar va Hamkorlar uchun Korporativ Yechimlar — Prava Online",
+      "desc": "Avtomaktablar uchun o'quvchilar monitoringi, guruh statistikasi va maxsus shartlar."
+    },
+    "pricing": {
+      "title": "Tariflar va Paketlar — Prava Online",
+      "desc": "Hamyonbop ta'lim paketlari. Imtihonga to'liq tayyorgarlik ko'ring."
+    },
+    "downloads": {
+      "title": "Ilovalarni yuklab olish — Windows, Android, iOS | Prava Online",
+      "desc": "Prava Online mobil va kompyuter ilovalarini yuklab oling. Internetisiz offline rejimda ham o'rganing."
+    },
+    "contact": {
+      "title": "Aloqa va Qo'llab-quvvatlash — Prava Online",
+      "desc": "Savollaringiz bormi? Biz bilan bog'laning: Telegram, telefon yoki murojaat shakli orqali."
+    },
+    "faq": {
+      "title": "Ko'p so'raladigan savollar (FAQ) — Prava Online",
+      "desc": "Imtihon qoidalari, platformadan foydalanish va to'lovlar bo'yicha eng ko'p beriladigan savollarga javoblar."
+    },
+    "terms": {
+      "title": "Foydalanish shartlari — Prava Online",
+      "desc": "Prava Online platformasidan foydalanish shartlari va ommaviy oferta."
+    },
+    "privacy": {
+      "title": "Maxfiylik siyosati — Prava Online",
+      "desc": "Prava Online platformasida shaxsiy ma'lumotlarning xavfsizligi va maxfiylik siyosati."
+    },
+    "tryExam": {
+      "title": "Bepul Sinov Imtihoni — Prava Online",
+      "desc": "Ro'yxatdan o'tmasdan YHXX sinov imtihonini bepul topshirib ko'ring."
+    },
+    "login": {
+      "title": "Tizimga kirish — Prava Online",
+      "desc": "Shaxsiy kabinetingizga kiring va tayyorgarlikni davom ettiring."
+    },
+    "register": {
+      "title": "Ro'yxatdan o'tish — Prava Online",
+      "desc": "Prava Online platformasida bepul hisob oching."
+    },
+    "forgotPassword": {
+      "title": "Parolni tiklash — Prava Online",
+      "desc": "Hisobingiz parolini tiklash va yangilash."
+    },
+    "telegramCallback": {
+      "title": "Telegram orqali kirish — Prava Online",
+      "desc": "Telegram orqali xavfsiz autentifikatsiya."
+    },
+    "pair": {
+      "title": "Desktop Ilovani Ulash — Prava Online",
+      "desc": "Kompyuteringizdagi Prava Online ilovasini QR kod orqali profilingiz bilan bog'lang."
+    },
+    "dashboard": {
+      "title": "Boshqaruv Paneli (Dashboard) — Prava Online",
+      "desc": "Sizning shaxsiy o'rganish statistikangiz, kunlik rejangiz va ta'lim rejimlari."
+    },
+    "tickets": {
+      "title": "Biletlar — 70 ta Rasmiy YHXX Biletlari | Prava Online",
+      "desc": "Barcha 70 ta rasmiy biletni yeching va har bir bilet bo'yicha bilimingizni tekshiring."
+    },
+    "ticketExam": {
+      "title": "Bilet Imtihoni — Prava Online",
+      "desc": "Tanlangan bilet savollarini yechish va tekshirish."
+    },
+    "topics": {
+      "title": "Mavzular — YHQ Qoidalari bo'yicha Testlar | Prava Online",
+      "desc": "Yo'l harakati qoidalarining barcha mavzulari bo'yicha alohida testlar."
+    },
+    "topicDetail": {
+      "title": "Mavzu Testlari — Prava Online",
+      "desc": "Tanlangan mavzu bo'yicha qoidalar va test savollari."
+    },
+    "packages": {
+      "title": "Imtihon Paketlari — Prava Online",
+      "desc": "Kategoriyalar va paketlar bo'yicha saralangan savollar to'plami."
+    },
+    "packageExam": {
+      "title": "Paket Imtihoni — Prava Online",
+      "desc": "Tanlangan paket bo'yicha test topshirish."
+    },
+    "marathon": {
+      "title": "Marafon — To'xtovsiz Test Rejimi | Prava Online",
+      "desc": "Barcha 1190 ta savoldan iborat marafon. Xato qilmasdan maksimal ball to'plang."
+    },
+    "exam": {
+      "title": "Rasmiy Sinov Imtihoni — Prava Online",
+      "desc": "YHXX rasmiy imtihoni bilan bir xil vaqt va qoidalardagi haqiqiy sinov simulyatsiyasi."
+    },
+    "examResult": {
+      "title": "Imtihon Natijasi — Prava Online",
+      "desc": "Topshirilgan imtihonning batafsil tahlili, to'g'ri va xato javoblar hisoboti."
+    },
+    "wrongAnswers": {
+      "title": "Xatolar ustida ishlash — Prava Online",
+      "desc": "Oldingi testlarda xato qilgan savollaringiz ro'yxati va ularni tahlil qilish."
+    },
+    "wrongExam": {
+      "title": "Xatolar bo'yicha Amaliyot — Prava Online",
+      "desc": "Faqat xato qilingan savollar bo'yicha qayta sinov topshirish."
+    },
+    "savedQuestions": {
+      "title": "Saqlangan savollar — Prava Online",
+      "desc": "Siz saqlab qo'ygan muhim va qiyin savollar to'plami."
+    },
+    "statistics": {
+      "title": "Statistika va Tahlillar — Prava Online",
+      "desc": "O'rganish darajangiz, savollar bo'yicha tayyorgarlik va umumiy o'sish dinamikasi."
+    },
+    "history": {
+      "title": "Imtihonlar Tarixi — Prava Online",
+      "desc": "Avval topshirilgan barcha imtihonlar ro'yxati va ularning ballari."
+    },
+    "leaderboard": {
+      "title": "Foydalanuvchilar Reytingi — Prava Online",
+      "desc": "Platformadagi eng faol va yuqori natija ko'rsatgan foydalanuvchilar ro'yxati."
+    },
+    "settings": {
+      "title": "Sozlamalar va Profil — Prava Online",
+      "desc": "Shaxsiy ma'lumotlar, xavfsizlik va qurilmalarni boshqarish."
+    },
+    "paymentSuccess": {
+      "title": "To'lov Muvaffaqiyatli — Prava Online",
+      "desc": "To'lov qabul qilindi. Ta'lim xizmatlari hisobingizga muvaffaqiyatli faollashtirildi."
+    },
+    "adminCodes": {
+      "title": "Litsenziya Kodlari (Admin) — Prava Online",
+      "desc": "Offline litsenziya kodlarini yaratish va boshqarish."
+    },
+    "notFound": {
+      "title": "404 — Sahifa topilmadi | Prava Online",
+      "desc": "Kechirasiz, siz qidirayotgan sahifa mavjud emas yoki boshqa manzilga ko'chirilgan."
+    }
   }
 }

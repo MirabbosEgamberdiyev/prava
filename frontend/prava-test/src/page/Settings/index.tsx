@@ -49,9 +49,7 @@ const Settings_Page = () => {
 
   return (
     <>
-      <SEO
-        title="Sozlamalar"
-        description="Profil sozlamalari, parol o'zgartirish va qurilmalarni boshqarish."
+      <SEO title={t("seo.settings.title", "Sozlamalar va Profil")} description={t("seo.settings.desc", "Profil sozlamalari va xavfsizlik.")}
         canonical="/settings"
         noIndex={true}
       />

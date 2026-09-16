@@ -1,11 +1,9 @@
 import React from "react";
-import { Box, Text, Title, Group } from "@mantine/core";
+import { SimpleGrid } from "@mantine/core";
 import {
-  IconBook,
-  IconTicket,
-  IconAlertTriangle,
+  IconDeviceLaptop,
+  IconCheckbox,
   IconTrophy,
-  IconRoute,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import classes from "./Home.module.css";
@@ -15,85 +13,60 @@ export const Learning_Flow = React.memo(() => {
 
   const steps = [
     {
-      num: "01",
-      icon: IconBook,
-      title: t("home.learningFlow.step1Title", "1. Mavzularni o'zlashtirish"),
+      num: 1,
+      icon: IconDeviceLaptop,
+      title: t("home.howItWorks.step1Title", "Ilovani oching"),
       desc: t(
-        "home.learningFlow.step1Desc",
-        "Yo'l harakati qoidalarining 33 ta asosiy bobi bo'yicha nazariya va tematik testlar."
+        "home.howItWorks.step1Desc",
+        "Brauzer orqali darhol kiring yoki Windows ilovani kompyuteringizga yuklab oling."
       ),
-      color: "#228be6",
     },
     {
-      num: "02",
-      icon: IconTicket,
-      title: t("home.learningFlow.step2Title", "2. 70 ta biletni mashq qilish"),
+      num: 2,
+      icon: IconCheckbox,
+      title: t("home.howItWorks.step2Title", "Testlarni yeching"),
       desc: t(
-        "home.learningFlow.step2Desc",
-        "Har biri 20 savoldan iborat rasmiy imtihon biletlarini ketma-ket o'rganish."
+        "home.howItWorks.step2Desc",
+        "Biletlar, alohida mavzular yoki marafon rejimida bilimlaringizni sinovdan o'tkazing."
       ),
-      color: "#12b886",
     },
     {
-      num: "03",
-      icon: IconAlertTriangle,
-      title: t("home.learningFlow.step3Title", "3. Xatolar ustida ishlash"),
-      desc: t(
-        "home.learningFlow.step3Desc",
-        "Siz adashgan savollar avtomatik to'planadi. Ularni to'g'ri yechmaguningizcha takrorlaysiz."
-      ),
-      color: "#f59f00",
-    },
-    {
-      num: "04",
+      num: 3,
       icon: IconTrophy,
-      title: t("home.learningFlow.step4Title", "4. YHXX Davlat Imtihoni"),
+      title: t("home.howItWorks.step3Title", "Imtihonga tayyor bo'ling"),
       desc: t(
-        "home.learningFlow.step4Desc",
-        "Real vaqt va qat'iy talablar bilan simulyatsiyadan o'tib, imtihonga 100% tayyor bo'lasiz."
+        "home.howItWorks.step3Desc",
+        "Xatolaringizni tahlil qilib, davlat imtihonini 100% birinchi urinishdayoq topshiring."
       ),
-      color: "#fa5252",
     },
   ];
 
   return (
-    <section className={classes.learningFlowSection} aria-label="Learning Flow">
-      <Box className={classes.sectionTitle}>
-        <div className={classes.sectionBadge}>
-          <IconRoute size={14} />
-          {t("home.learningFlow.badge", "O'rganish Bosqichlari")}
-        </div>
-        <Title order={2}>
-          {t("home.learningFlow.title", "Guvohnomaga eltuvchi 4 qadam")}
-        </Title>
-        <Text size="md" c="var(--text-muted)" mt="sm" maw={720} mx="auto" lh={1.6}>
+    <section className={classes.howItWorksSectionMinimal} aria-label="How it works">
+      <div className={classes.sectionHeaderCentered}>
+        <h2 className={classes.sectionHeaderTitle}>
+          {t("home.howItWorks.title", "Qanday ishlaydi?")}
+        </h2>
+        <p className={classes.sectionHeaderSubtitle}>
           {t(
-            "home.learningFlow.subtitle",
-            "Oddiy nazariyadan tortib, davlat imtihonida 100% ishonch bilan o'tishgacha bo'lgan aniq yo'l xaritasi."
+            "home.howItWorks.subtitle",
+            "3 oddiy qadamda imtihonga tayyorlaning"
           )}
-        </Text>
-      </Box>
+        </p>
+      </div>
 
-      <div className={classes.flowGrid} style={{ marginTop: 40 }}>
-        {steps.map((step, idx) => (
-          <div key={idx} className={classes.flowCard}>
-            <Group justify="space-between" align="center" mb="md">
-              <div className={classes.flowStepBadge} style={{ backgroundColor: step.color }}>
-                {step.num}
-              </div>
-              <step.icon size={28} color={step.color} stroke={1.6} />
-            </Group>
-            <Text fw={700} size="md" c="var(--text)" mb="xs" lh={1.3}>
-              {step.title}
-            </Text>
-            <Text size="sm" c="var(--text-muted)" lh={1.6} style={{ flex: 1 }}>
-              {step.desc}
-            </Text>
+      <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
+        {steps.map((step) => (
+          <div key={step.num} className={classes.stepCardClean}>
+            <div className={classes.stepCircleBadge}>{step.num}</div>
+            <h3 className={classes.stepTitleClean}>{step.title}</h3>
+            <p className={classes.stepDescClean}>{step.desc}</p>
           </div>
         ))}
-      </div>
+      </SimpleGrid>
     </section>
   );
 });
 
 Learning_Flow.displayName = "Learning_Flow";
+

@@ -141,126 +141,142 @@ const GuestExamPage = () => {
   const scoreColor =
     correctPercentage >= 90 ? "green" : correctPercentage >= 60 ? "yellow" : "red";
 
+  const seoElement = (
+    <SEO
+      title={t("seo.tryExam.title", t("guestExam.seoTitle", "Bepul Sinov Imtihoni — Prava Online"))}
+      description={t("seo.tryExam.desc", t("guestExam.seoDescription", "Ro'yxatdan o'tmasdan YHXBB sinov imtihonini bepul topshirib ko'ring."))}
+      keywords="prava test, prava test bepul, prava sinov imtihoni, haydovchilik imtihoni sinov, YHXBB test online, online prava test, bepul prava test, 70 ta bilet, avtotest, тест ПДД онлайн, бесплатный экзамен ПДД"
+      canonical="/try-exam"
+      jsonLd={{
+        "@context": "https://schema.org",
+        "@type": "Quiz",
+        name: "Haydovchilik guvohnomasi sinov imtihoni",
+        description: "YHXBB imtihonini bepul sinab ko'ring - real imtihon formati",
+        educationalLevel: "Beginner",
+        inLanguage: ["uz", "uz-Cyrl", "ru"],
+        isAccessibleForFree: true,
+        provider: { "@type": "Organization", name: "Prava Online", url: "https://pravaonline.uz" },
+      }}
+    />
+  );
+
   if (loading) {
     return (
-      <Center h="100vh" style={{ background: "var(--bg)" }}>
-        <Box ta="center">
-          <Loader size="lg" mb="md" />
-          <Text c="dimmed">{t("common.loading", "Savollar yuklanmoqda...")}</Text>
-        </Box>
-      </Center>
+      <>
+        {seoElement}
+        <Center h="100vh" style={{ background: "var(--bg)" }}>
+          <Box ta="center">
+            <Loader size="lg" mb="md" />
+            <Text c="dimmed">{t("common.loading", "Savollar yuklanmoqda...")}</Text>
+          </Box>
+        </Center>
+      </>
     );
   }
 
   if (limitReached) {
     return (
-      <Center h="100vh" style={{ background: "var(--bg)", padding: 16 }}>
-        <Container size="xs">
-          <Paper p="xl" radius="lg" withBorder shadow="sm" ta="center" style={{ background: "var(--surface)" }}>
-            <ThemeIcon size={56} radius="xl" color="blue" variant="light" mb="md" mx="auto">
-              <IconSparkles size={28} />
-            </ThemeIcon>
-            <Title order={2} size="h3" mb="xs">
-              {t("guestExam.completedTitle", "Sinov imtihoni yakunlandi")}
-            </Title>
-            <Text size="sm" c="dimmed" mb="lg" lh={1.6}>
-              {t(
-                "guestExam.registerPromptFull",
-                "Siz bepul sinov imtihonidan foydalandingiz. Barcha 70 ta rasmiy bilet, xatolar ustida ishlash, cheksiz marafon va natijalaringizni doimiy saqlab borish uchun bepul ro'yxatdan o'ting."
-              )}
-            </Text>
-            <Stack gap="sm">
-              <Button
-                size="md"
-                radius="md"
-                h={44}
-                leftSection={<IconUserPlus size={18} />}
-                onClick={() => navigate("/auth/register")}
-              >
-                {t("register.register", "Bepul ro'yxatdan o'tish")}
-              </Button>
-              <Button
-                variant="light"
-                size="md"
-                radius="md"
-                h={44}
-                onClick={() => navigate("/partners")}
-              >
-                {t("nav.corporate", "Avtomaktablar va Hamkorlik")}
-              </Button>
-              <Group justify="center" gap="md" mt="xs">
+      <>
+        {seoElement}
+        <Center h="100vh" style={{ background: "var(--bg)", padding: 16 }}>
+          <Container size="xs">
+            <Paper p="xl" radius="lg" withBorder shadow="sm" ta="center" style={{ background: "var(--surface)" }}>
+              <ThemeIcon size={56} radius="xl" color="blue" variant="light" mb="md" mx="auto">
+                <IconSparkles size={28} />
+              </ThemeIcon>
+              <Title order={2} size="h3" mb="xs">
+                {t("guestExam.completedTitle", "Sinov imtihoni yakunlandi")}
+              </Title>
+              <Text size="sm" c="dimmed" mb="lg" lh={1.6}>
+                {t(
+                  "guestExam.registerPromptFull",
+                  "Siz bepul sinov imtihonidan foydalandingiz. Barcha 70 ta rasmiy bilet, xatolar ustida ishlash, cheksiz marafon va natijalaringizni doimiy saqlab borish uchun bepul ro'yxatdan o'ting."
+                )}
+              </Text>
+              <Stack gap="sm">
                 <Button
-                  variant="subtle"
-                  size="xs"
-                  color="gray"
-                  onClick={handleRetryGuestExam}
+                  size="md"
+                  radius="md"
+                  h={44}
+                  leftSection={<IconUserPlus size={18} />}
+                  onClick={() => navigate("/auth/register")}
                 >
-                  {t("guestExam.tryAgain", "Sinovni qayta yechish")}
+                  {t("register.register", "Bepul ro'yxatdan o'tish")}
                 </Button>
                 <Button
-                  variant="subtle"
-                  size="xs"
-                  color="gray"
-                  onClick={() => navigate("/")}
+                  variant="light"
+                  size="md"
+                  radius="md"
+                  h={44}
+                  onClick={() => navigate("/partners")}
                 >
-                  {t("notFound.backHome", "Bosh sahifa")}
+                  {t("nav.corporate", "Avtomaktablar va Hamkorlik")}
                 </Button>
-              </Group>
-            </Stack>
-          </Paper>
-        </Container>
-      </Center>
+                <Group justify="center" gap="md" mt="xs">
+                  <Button
+                    variant="subtle"
+                    size="xs"
+                    color="gray"
+                    onClick={handleRetryGuestExam}
+                  >
+                    {t("guestExam.tryAgain", "Sinovni qayta yechish")}
+                  </Button>
+                  <Button
+                    variant="subtle"
+                    size="xs"
+                    color="gray"
+                    onClick={() => navigate("/")}
+                  >
+                    {t("notFound.backHome", "Bosh sahifa")}
+                  </Button>
+                </Group>
+              </Stack>
+            </Paper>
+          </Container>
+        </Center>
+      </>
     );
   }
 
   if (error) {
     return (
-      <Center h="100vh">
-        <Box ta="center">
-          <Title order={3} mb="md" c="red">
-            {error}
-          </Title>
-          <Button onClick={() => navigate("/")}>
-            {t("notFound.backHome")}
-          </Button>
-        </Box>
-      </Center>
+      <>
+        {seoElement}
+        <Center h="100vh">
+          <Box ta="center">
+            <Title order={3} mb="md" c="red">
+              {error}
+            </Title>
+            <Button onClick={() => navigate("/")}>
+              {t("notFound.backHome")}
+            </Button>
+          </Box>
+        </Center>
+      </>
     );
   }
 
   if (questions.length === 0) {
     return (
-      <Center h="100vh">
-        <Box ta="center">
-          <Title order={3} mb="md">
-            {t("exam.notFound")}
-          </Title>
-          <Button onClick={() => navigate("/")}>
-            {t("notFound.backHome")}
-          </Button>
-        </Box>
-      </Center>
+      <>
+        {seoElement}
+        <Center h="100vh">
+          <Box ta="center">
+            <Title order={3} mb="md">
+              {t("exam.notFound")}
+            </Title>
+            <Button onClick={() => navigate("/")}>
+              {t("notFound.backHome")}
+            </Button>
+          </Box>
+        </Center>
+      </>
     );
   }
 
   return (
     <>
-      <SEO
-        title={t("guestExam.seoTitle")}
-        description={t("guestExam.seoDescription")}
-        keywords="prava test bepul, haydovchilik imtihoni sinash, YHXBB test online, prava sinov, бесплатный тест ПДД"
-        canonical="/try-exam"
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "Quiz",
-          name: "Haydovchilik guvohnomasi sinov imtihoni",
-          description: "YHXBB imtihonini bepul sinab ko'ring - real imtihon formati",
-          educationalLevel: "Beginner",
-          inLanguage: ["uz", "ru", "en"],
-          isAccessibleForFree: true,
-          provider: { "@type": "Organization", name: "Prava Online", url: "https://pravaonline.uz" },
-        }}
-      />
+      {seoElement}
       <QuizNav
         questions={questions}
         totalQuestions={questions.length}

@@ -20,8 +20,9 @@ import {
   IconArrowRight,
   IconSparkles,
 } from "@tabler/icons-react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { DomainLink } from "@/components/common/DomainLink";
+import { getLandingUrl } from "@/utils/domain";
 import classes from "./Home.module.css";
 
 type TabKey = "exam" | "errors" | "stats" | "signs";
@@ -29,7 +30,7 @@ type TabKey = "exam" | "errors" | "stats" | "signs";
 export function Product_Preview() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>("exam");
-  const [selectedOption, setSelectedOption] = useState<number | null>(2); // Default to option 2
+  const [selectedOption, setSelectedOption] = useState<number | null>(2);
 
   const tabs: { key: TabKey; label: string; icon: typeof IconDeviceDesktopAnalytics }[] = [
     { key: "exam", label: t("home.preview.tabExam", "Imtihon Simulyatori"), icon: IconDeviceDesktopAnalytics },
@@ -39,7 +40,7 @@ export function Product_Preview() {
   ];
 
   return (
-    <section className={classes.previewSection} aria-label="Product Showcase">
+    <section className={classes.previewSection} aria-label={t("home.preview.title", "Zamonaviy interfeys")}>
       <Box className={classes.sectionTitle}>
         <div className={classes.sectionBadge}>
           <IconSparkles size={14} />
@@ -56,7 +57,7 @@ export function Product_Preview() {
         </Text>
       </Box>
 
-      <div className={classes.previewWindow} style={{ marginTop: 40 }}>
+      <div className={classes.previewWindow} style={{ marginTop: 36 }}>
         {/* Window Topbar */}
         <div className={classes.previewHeader}>
           <div className={classes.windowDots}>
@@ -65,10 +66,10 @@ export function Product_Preview() {
             <span className={`${classes.windowDot} ${classes.windowDotMax}`} />
           </div>
           <Text size="xs" fw={700} c="var(--text-muted)" style={{ letterSpacing: "0.5px" }}>
-            PRAVA ONLINE · WEB & DESKTOP SIMULATOR
+            {t("home.preview.previewWindowLabel", "PRAVA ONLINE · WEB & DESKTOP SIMULATOR")}
           </Text>
           <Badge size="xs" variant="light" color="blue">
-            LIVE DEMO
+            {t("home.preview.liveDemoBadge", "INTERAKTIV DEMO")}
           </Badge>
         </div>
 
@@ -85,28 +86,29 @@ export function Product_Preview() {
               onClick={() => setActiveTab(tab.key)}
             >
               <tab.icon size={17} />
-              {tab.label}
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>
 
         {/* Dynamic Interactive Body */}
         <div className={classes.previewBody}>
+          {/* TAB 1: Real Exam Question Demo */}
           {activeTab === "exam" && (
             <div className={classes.mockExamContainer}>
               <Group justify="space-between" align="center" mb="md" wrap="wrap">
                 <Group gap="xs">
                   <Badge color="blue" size="sm" variant="filled">
-                    Bilet #14 · Savol 8/20
+                    {t("home.preview.ticketHeader", "Bilet #14 · Savol 8/20")}
                   </Badge>
                   <Badge color="gray" size="sm" variant="light">
-                    Kategoriya B
+                    {t("home.preview.categoryB", "Kategoriya B")}
                   </Badge>
                 </Group>
                 <Group gap={6} c="var(--primary)">
                   <IconClock size={16} />
                   <Text size="sm" fw={700}>
-                    18:42 qoldi
+                    {t("home.preview.timeLeft", "18:42 qoldi")}
                   </Text>
                 </Group>
               </Group>
@@ -134,6 +136,13 @@ export function Product_Preview() {
                       key={opt.id}
                       className={optStyle}
                       onClick={() => setSelectedOption(opt.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          setSelectedOption(opt.id);
+                        }
+                      }}
                     >
                       <ThemeIcon
                         size={26}
@@ -184,7 +193,7 @@ export function Product_Preview() {
                   <Group gap="xs" mb={4}>
                     <IconCheck size={16} color="var(--success)" />
                     <Text size="xs" fw={700} c="var(--success)">
-                      Rasmiy Qoida Izohi:
+                      {t("home.preview.officialRuleTitle", "Rasmiy Qoida Izohi:")}
                     </Text>
                   </Group>
                   <Text size="xs" c="var(--text)" lh={1.5}>
@@ -198,90 +207,115 @@ export function Product_Preview() {
             </div>
           )}
 
+          {/* TAB 2: Error Review Demo */}
           {activeTab === "errors" && (
             <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
               <Box className={classes.mockExamContainer}>
                 <Badge color="red" size="sm" variant="light" mb="xs">
-                  Zaif nuqta aniqlandi
+                  {t("home.preview.weakPointDetected", "Zaif nuqta aniqlandi")}
                 </Badge>
                 <Text fw={700} size="sm" mb="sm">
-                  Mavzu: Chorrahalarda harakatlanish ustuvorligi
+                  {t("home.preview.weakTopicTitle", "Mavzu: Chorrahalarda harakatlanish ustuvorligi")}
                 </Text>
-                <Text size="xs" c="var(--text-muted)" mb="md">
-                  Siz ushbu mavzuda 3 marta noaniq javob berdingiz. Tizim avtomatik tarzda shaxsiy takrorlash rejasini tuzdi.
+                <Text size="xs" c="var(--text-muted)" mb="md" lh={1.6}>
+                  {t(
+                    "home.preview.weakTopicDesc",
+                    "Ushbu mavzuda noaniq javoblar qayd etildi. Tizim avtomatik tarzda shaxsiy takrorlash rejasini tuzadi."
+                  )}
                 </Text>
                 <Progress value={33} color="red" size="sm" radius="xl" mb="xs" />
                 <Text size="xs" c="dimmed">
-                  Mavzuni o'zlashtirish: 33% (Yana 4 ta savol takrorlanishi kerak)
+                  {t("home.preview.weakTopicProgress", "Mavzuni o'zlashtirish: 33%")}
                 </Text>
               </Box>
 
               <Box className={classes.mockExamContainer}>
                 <Badge color="teal" size="sm" variant="light" mb="xs">
-                  Intellektual maslahat
+                  {t("home.preview.smartAdviceTitle", "Intellektual maslahat")}
                 </Badge>
                 <Text fw={700} size="sm" mb="sm">
-                  Regulyator ishoralari va svetofor
+                  {t("home.preview.smartAdviceTopic", "Regulyator ishoralari va svetofor")}
                 </Text>
-                <Text size="xs" c="var(--text-muted)" mb="md">
-                  Regulyatorning qo'l ishoralari har doim svetofor va yo'l belgilaridan ustun turishini esda saqlang!
+                <Text size="xs" c="var(--text-muted)" mb="md" lh={1.6}>
+                  {t(
+                    "home.preview.smartAdviceDesc",
+                    "Regulyatorning qo'l ishoralari har doim svetofor va yo'l belgilaridan ustun turishini esda saqlang!"
+                  )}
                 </Text>
-                <Link to="/try-exam">
+                <DomainLink href={getLandingUrl("/try-exam")} style={{ textDecoration: "none" }}>
                   <Button size="xs" variant="light" color="blue" rightSection={<IconArrowRight size={14} />}>
-                    Xatolarni yechish
+                    {t("home.preview.solveMistakes", "Xatolarni yechish")}
                   </Button>
-                </Link>
+                </DomainLink>
               </Box>
             </SimpleGrid>
           )}
 
+          {/* TAB 3: Personal Statistics Demo */}
           {activeTab === "stats" && (
             <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
               <Box className={classes.mockExamContainer} style={{ textAlign: "center" }}>
                 <Text size="xs" c="var(--text-muted)" fw={700} tt="uppercase">
-                  Umumiy Tayyorlik
+                  {t("home.preview.readinessTitle", "Umumiy Tayyorlik")}
                 </Text>
                 <Text size="2.5rem" fw={900} c="var(--primary)" my="xs">
                   94%
                 </Text>
                 <Badge color="green" variant="light">
-                  Imtihonga tayyor
+                  {t("home.preview.readinessReady", "Imtihonga tayyor")}
                 </Badge>
               </Box>
 
               <Box className={classes.mockExamContainer} style={{ textAlign: "center" }}>
                 <Text size="xs" c="var(--text-muted)" fw={700} tt="uppercase">
-                  O'zlashtirilgan Biletlar
+                  {t("home.preview.masteredTicketsTitle", "O'zlashtirilgan Biletlar")}
                 </Text>
                 <Text size="2.5rem" fw={900} c="var(--text)" my="xs">
-                  68 / 70
+                  {t("home.preview.masteredTicketsCount", "68 / 70")}
                 </Text>
                 <Badge color="blue" variant="light">
-                  97% yakunlandi
+                  {t("home.preview.masteredTicketsPct", "97% yakunlandi")}
                 </Badge>
               </Box>
 
               <Box className={classes.mockExamContainer} style={{ textAlign: "center" }}>
                 <Text size="xs" c="var(--text-muted)" fw={700} tt="uppercase">
-                  O'rtacha Vaqt
+                  {t("home.preview.avgTimeTitle", "O'rtacha Vaqt")}
                 </Text>
                 <Text size="2.5rem" fw={900} c="var(--text)" my="xs">
-                  11:20
+                  {t("home.preview.avgTimeValue", "11:20")}
                 </Text>
                 <Badge color="teal" variant="light">
-                  Juda tez (20 daqiqadan)
+                  {t("home.preview.avgTimeBadge", "Tezkor (20 daqiqadan)")}
                 </Badge>
               </Box>
             </SimpleGrid>
           )}
 
+          {/* TAB 4: Traffic Signs Demo */}
           {activeTab === "signs" && (
             <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
               {[
-                { title: "2.1 Asosiy yo'l", cat: "Imtiyoz belgilari", color: "orange" },
-                { title: "3.1 Kirish taqiqlangan", cat: "Taqiqlovchi", color: "red" },
-                { title: "4.1.1 Harakat to'g'riga", cat: "Buyuruvchi", color: "blue" },
-                { title: "5.1 Avtomagistral", cat: "Axborot-ishora", color: "green" },
+                {
+                  title: t("home.preview.sign1Title", "2.1 Asosiy yo'l"),
+                  cat: t("home.preview.sign1Cat", "Imtiyoz belgilari"),
+                  color: "orange",
+                },
+                {
+                  title: t("home.preview.sign2Title", "3.1 Kirish taqiqlangan"),
+                  cat: t("home.preview.sign2Cat", "Taqiqlovchi"),
+                  color: "red",
+                },
+                {
+                  title: t("home.preview.sign3Title", "4.1.1 Harakat to'g'riga"),
+                  cat: t("home.preview.sign3Cat", "Buyuruvchi"),
+                  color: "blue",
+                },
+                {
+                  title: t("home.preview.sign4Title", "5.1 Avtomagistral"),
+                  cat: t("home.preview.sign4Cat", "Axborot-ishora"),
+                  color: "green",
+                },
               ].map((sign, idx) => (
                 <Box
                   key={idx}
@@ -300,7 +334,7 @@ export function Product_Preview() {
                     {sign.title}
                   </Text>
                   <Text size="xs" c="dimmed" mt={4}>
-                    Barcha imtihon savollarida uchrash darajasi yuqori
+                    {t("home.preview.signDesc", "Imtihon savollarida eng ko'p uchraydigan belgilar")}
                   </Text>
                 </Box>
               ))}
@@ -309,16 +343,16 @@ export function Product_Preview() {
 
           {/* Action button beneath window preview */}
           <Group justify="center" mt="xl">
-            <Link to="/try-exam">
+            <DomainLink href={getLandingUrl("/try-exam")} style={{ textDecoration: "none" }}>
               <Button
                 radius="xl"
                 size="md"
                 className="saas-btn-primary"
                 rightSection={<IconArrowRight size={18} />}
               >
-                {t("home.preview.tryNow", "Imtihonni Bepul Sinab Ko'rish")}
+                {t("home.preview.tryFreeExam", "Imtihonni Bepul Sinab Ko'rish")}
               </Button>
-            </Link>
+            </DomainLink>
           </Group>
         </div>
       </div>

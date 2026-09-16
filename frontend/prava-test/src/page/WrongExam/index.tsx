@@ -284,6 +284,7 @@ export default function WrongExam_Page() {
           title={t("wrongAnswers.title", "Xatolar ustida ishlash")}
           description="Xatolar ustida ishlash natijalari"
           canonical="/wrong-exam"
+          noIndex={true}
         />
         <div className="min-h-[85vh] flex items-center justify-center p-4">
           <GamificationResult
@@ -336,6 +337,7 @@ export default function WrongExam_Page() {
         title="Xatolar amaliyoti"
         description="Prava Online xatolar ustida ishlash"
         canonical="/wrong-exam"
+        noIndex={true}
       />
       <div className="exam-screen">
         {/* ── Top bar ── */}

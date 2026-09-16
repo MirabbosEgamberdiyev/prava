@@ -16,6 +16,7 @@ BACKEND_DIR="$REPO_DIR/backend"
 FRONTEND_USER_SRC="$REPO_DIR/frontend/prava-test"
 FRONTEND_ADMIN_SRC="$REPO_DIR/frontend/prava-admin"
 FRONTEND_USER_DIR="/var/www/pravaonline.uz"
+FRONTEND_WEB_DIR="/var/www/web.pravaonline.uz"
 FRONTEND_ADMIN_DIR="/var/www/admin"
 BRANCH="main"
 LOCKFILE="/tmp/prava-deploy.lock"
@@ -132,7 +133,10 @@ if [ "$FRONTEND_USER_CHANGED" = true ]; then
     npx vite build 2>&1
     rm -rf "${FRONTEND_USER_DIR:?}"/*
     cp -r dist/* "$FRONTEND_USER_DIR/"
-    log "  prava-test deployed to $FRONTEND_USER_DIR"
+    mkdir -p "$FRONTEND_WEB_DIR"
+    rm -rf "${FRONTEND_WEB_DIR:?}"/*
+    cp -r dist/* "$FRONTEND_WEB_DIR/"
+    log "  prava-test deployed to $FRONTEND_USER_DIR and $FRONTEND_WEB_DIR"
 else
     log "[3/6] Frontend (user) unchanged, skipping build."
 fi

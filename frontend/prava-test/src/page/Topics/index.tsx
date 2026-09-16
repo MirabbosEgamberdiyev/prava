@@ -73,10 +73,9 @@ export default function Topics_Page() {
 
   return (
     <>
-      <SEO
-        title="Mavzular - YHQ mavzulari bo'yicha testlar"
-        description="Yo'l harakati qoidalari mavzulari bo'yicha testlarni yeching. Har bir mavzu bo'yicha alohida tayyorlaning."
+      <SEO title={t("seo.topics.title", "Mavzular — YHQ Qoidalari bo'yicha Testlar")} description={t("seo.topics.desc", "Yo'l harakati qoidalari mavzulari bo'yicha testlar.")}
         canonical="/topics"
+        noIndex={true}
       />
       <div className="topics-screen">
         {/* ── Header ── */}

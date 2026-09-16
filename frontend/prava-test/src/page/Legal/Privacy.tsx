@@ -15,9 +15,7 @@ export default function Privacy_Page() {
 
   return (
     <>
-      <SEO
-        title="Maxfiylik siyosati - Prava Online"
-        description="Prava Online platformasida shaxsiy ma'lumotlarning xavfsizligi va maxfiylik siyosati. Biz sizning ma'lumotlaringizni qanday himoya qilamiz."
+      <SEO title={t("seo.privacy.title", "Maxfiylik siyosati")} description={t("seo.privacy.desc", "Prava Online platformasida shaxsiy ma'lumotlarning xavfsizligi.")}
         keywords="prava online maxfiylik siyosati, privacy policy prava, shaxsiy ma'lumotlar xavfsizligi"
         canonical="/privacy"
       />

@@ -11,9 +11,7 @@ const Leaderboard_Page = () => {
 
   return (
     <>
-      <SEO
-        title="Reyting - Eng yaxshi natijalar"
-        description="Prava Online platformasida eng yaxshi natijalarni ko'rsatgan foydalanuvchilar reytingi."
+      <SEO title={t("seo.leaderboard.title", "Foydalanuvchilar Reytingi")} description={t("seo.leaderboard.desc", "Eng yaxshi natijalar reytingi.")}
         canonical="/leaderboard"
         noIndex={true}
       />

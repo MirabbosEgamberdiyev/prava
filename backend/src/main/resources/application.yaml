@@ -150,7 +150,7 @@ app:
 
   # Security
   security:
-    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,https://pravaonline.uz,https://www.pravaonline.uz,https://admin.pravaonline.uz}
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,https://pravaonline.uz,https://www.pravaonline.uz,https://web.pravaonline.uz,https://admin.pravaonline.uz}
     rate-limit:
       enabled: true
       requests-per-minute: 200

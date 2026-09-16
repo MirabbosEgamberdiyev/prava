@@ -11,9 +11,7 @@ const History_Page = () => {
 
   return (
     <>
-      <SEO
-        title="Imtihon tarixi"
-        description="O'tgan imtihonlaringiz natijalarini ko'ring va tahlil qiling."
+      <SEO title={t("seo.history.title", "Imtihonlar Tarixi")} description={t("seo.history.desc", "O'tgan imtihonlaringiz natijalarini ko'ring.")}
         canonical="/history"
         noIndex={true}
       />

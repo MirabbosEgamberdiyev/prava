@@ -283,6 +283,7 @@ export default function Exam_Page() {
           title={t("activeTest.results", "Imtihon natijasi")}
           description="Imtihon natijalari va statistikasi"
           canonical="/exam"
+          noIndex={true}
         />
         <div className="min-h-[85vh] flex items-center justify-center p-4">
           <GamificationResult
@@ -332,6 +333,7 @@ export default function Exam_Page() {
         title="Imtihon topshirish"
         description="Prava Online haydovchilik imtihoni."
         canonical="/exam"
+        noIndex={true}
       />
       {zoomSrc && <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />}
       <div className="exam-screen">

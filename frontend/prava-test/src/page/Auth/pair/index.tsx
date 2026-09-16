@@ -161,6 +161,8 @@ export default function PairPage() {
         description={t("pair.subtitle", {
           defaultValue: "PRAVA Desktop ilovasini hisobingizga xavfsiz QR orqali ulang",
         })}
+        canonical="/auth/pair"
+        noIndex={true}
       />
       <Container size="xs" py={{ base: "md", sm: "xl" }} px={{ base: "xs", sm: "md" }}>
         <Paper

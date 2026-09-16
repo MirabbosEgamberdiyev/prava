@@ -393,10 +393,28 @@ export default function Contact_Page() {
   return (
     <>
       <SEO
-        title="Aloqa va Korporativ Hamkorlik Markazi — Prava Online"
-        description="Avtomaktablar, o'quv markazlari va tashkilotlar uchun rasmiy aloqa va hamkorlik markazi. Telefon: +998 99 391 25 05, Telegram: @pravaonlineuz, Email: info@pravaonline.uz."
-        keywords="prava online aloqa, avtomaktab hamkorlik, prava desktop o'rnatish, prava online qo'llab-quvvatlash, prava enterprise aloqa"
+        title={t("seo.contact.title", "Aloqa va Qo'llab-quvvatlash — Prava Online")}
+        description={t("seo.contact.desc", "Savollaringiz bormi? Biz bilan bog'laning: Telegram, telefon yoki murojaat shakli orqali.")}
+        keywords="prava online aloqa, avtomaktab hamkorlik, prava desktop o'rnatish, prava online qo'llab-quvvatlash, prava enterprise aloqa, prava online telegram"
         canonical="/contact"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          name: "Aloqa va Qo'llab-quvvatlash — Prava Online",
+          description: "Prava Online platformasi bilan bog'lanish va texnik qo'llab-quvvatlash",
+          url: "https://pravaonline.uz/contact",
+          mainEntity: {
+            "@type": "Organization",
+            name: "Prava Online",
+            url: "https://pravaonline.uz",
+            contactPoint: {
+              "@type": "ContactPoint",
+              contactType: "customer support",
+              url: "https://t.me/pravaonlineuzbot",
+              availableLanguage: ["Uzbek", "Russian"],
+            },
+          },
+        }}
       />
 
       <div className="saas-page-container">

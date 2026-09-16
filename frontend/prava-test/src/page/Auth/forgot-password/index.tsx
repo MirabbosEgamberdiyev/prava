@@ -142,9 +142,7 @@ const ForgotPassword_Page = () => {
   return (
     <Box className="auth-page-container">
       <Container size={440} p={0} className="auth-page-inner">
-        <SEO
-          title="Parolni tiklash"
-          description="Parolingizni unutdingizmi? Email yoki telefon raqamingiz orqali parolni tiklang."
+        <SEO title={t("seo.forgotPassword.title", "Parolni tiklash")} description={t("seo.forgotPassword.desc", "Hisobingiz parolini tiklash va yangilash.")}
           canonical="/auth/forgot-password"
           noIndex={true}
         />
@@ -193,19 +191,29 @@ const ForgotPassword_Page = () => {
                 size="sm"
                 radius="md"
                 leftSection={<IconUser size={16} />}
+                styles={{
+                  input: {
+                    height: 46,
+                    fontSize: "14px",
+                    backgroundColor: "var(--bg-input)",
+                    borderColor: "var(--border)",
+                  },
+                  label: { fontSize: "13px", fontWeight: 600, marginBottom: 4 }
+                }}
                 {...form.getInputProps("identifier")}
               />
               <SegmentedControl
                 value={verificationType}
                 onChange={(v) => setVerificationType(v as "EMAIL" | "SMS")}
                 fullWidth
-                size="xs"
+                size="sm"
                 radius="md"
+                className="auth-segmented-control"
                 data={[
                   {
                     label: (
                       <Flex align="center" gap={6} justify="center">
-                        <IconAt size={15} />
+                        <IconAt size={16} />
                         <span>{t("forgotPassword.verifyByEmail")}</span>
                       </Flex>
                     ),
@@ -214,7 +222,7 @@ const ForgotPassword_Page = () => {
                   {
                     label: (
                       <Flex align="center" gap={6} justify="center">
-                        <IconDeviceMobile size={15} />
+                        <IconDeviceMobile size={16} />
                         <span>{t("forgotPassword.verifyBySms")}</span>
                       </Flex>
                     ),
@@ -228,8 +236,12 @@ const ForgotPassword_Page = () => {
                 loading={loading}
                 radius="md"
                 size="md"
-                h={42}
-                fw={600}
+                h={46}
+                fw={700}
+                style={{
+                  backgroundColor: "#0284c7",
+                  boxShadow: "0 4px 14px rgba(2, 132, 199, 0.35)",
+                }}
                 onClick={handleSendCode}
               >
                 {t("forgotPassword.sendCode")}
@@ -278,6 +290,8 @@ const ForgotPassword_Page = () => {
                       width: "clamp(28px, 9vw, 44px)",
                       height: "clamp(34px, 10vw, 48px)",
                       fontSize: "clamp(13px, 3.5vw, 18px)",
+                      backgroundColor: "var(--bg-input)",
+                      borderColor: "var(--border)",
                       padding: 0,
                     },
                   }}
@@ -291,8 +305,12 @@ const ForgotPassword_Page = () => {
                 radius="md"
                 mt="md"
                 size="md"
-                h={42}
-                fw={600}
+                h={46}
+                fw={700}
+                style={{
+                  backgroundColor: "#0284c7",
+                  boxShadow: "0 4px 14px rgba(2, 132, 199, 0.35)",
+                }}
               >
                 {t("forgotPassword.enterCode")}
               </Button>
@@ -303,18 +321,38 @@ const ForgotPassword_Page = () => {
             <Stack gap="sm">
               <PasswordInput
                 label={t("forgotPassword.newPassword")}
+                placeholder={t("auth.passwordPlaceholder")}
                 required
                 size="sm"
                 radius="md"
                 leftSection={<IconLock size={16} />}
+                styles={{
+                  input: {
+                    height: 46,
+                    fontSize: "14px",
+                    backgroundColor: "var(--bg-input)",
+                    borderColor: "var(--border)",
+                  },
+                  label: { fontSize: "13px", fontWeight: 600, marginBottom: 4 }
+                }}
                 {...form.getInputProps("newPassword")}
               />
               <PasswordInput
                 label={t("forgotPassword.confirmPassword")}
+                placeholder={t("auth.passwordPlaceholder")}
                 required
                 size="sm"
                 radius="md"
                 leftSection={<IconLock size={16} />}
+                styles={{
+                  input: {
+                    height: 46,
+                    fontSize: "14px",
+                    backgroundColor: "var(--bg-input)",
+                    borderColor: "var(--border)",
+                  },
+                  label: { fontSize: "13px", fontWeight: 600, marginBottom: 4 }
+                }}
                 {...form.getInputProps("confirmPassword")}
               />
               <Button
@@ -323,8 +361,12 @@ const ForgotPassword_Page = () => {
                 loading={loading}
                 radius="md"
                 size="md"
-                h={42}
-                fw={600}
+                h={46}
+                fw={700}
+                style={{
+                  backgroundColor: "#0284c7",
+                  boxShadow: "0 4px 14px rgba(2, 132, 199, 0.35)",
+                }}
                 onClick={handleResetPassword}
               >
                 {t("forgotPassword.resetPassword")}

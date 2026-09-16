@@ -22,7 +22,7 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const GoogleLoginButton = ({ mode = "login", compact = false }: GoogleLoginButtonProps) => {
+const GoogleLoginButton = (_props: GoogleLoginButtonProps = {}) => {
   const { t, i18n } = useTranslation();
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
@@ -83,21 +83,15 @@ const GoogleLoginButton = ({ mode = "login", compact = false }: GoogleLoginButto
     <Button
       leftSection={<GoogleIcon />}
       variant="default"
-      size={compact ? "sm" : "md"}
-      h={compact ? 40 : 44}
+      className="auth-social-btn-google"
+      size="sm"
+      h={44}
       fullWidth
       radius="md"
       loading={loading}
       onClick={() => googleLogin()}
-      styles={{
-        root: { fontWeight: 600, fontSize: compact ? 13 : undefined },
-      }}
     >
-      {compact
-        ? "Google"
-        : mode === "login"
-        ? t("auth.google.loginButton")
-        : t("auth.google.registerButton")}
+      Google
     </Button>
   );
 };

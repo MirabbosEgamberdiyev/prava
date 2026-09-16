@@ -13,6 +13,13 @@ if exist "C:\Program Files\Java\jdk-17" (
     set "PATH=%JAVA_HOME%\bin;%PATH%"
 )
 
+REM Maven yo'lini ta'minlash
+if exist "C:\Program Files\Apache\apache-maven-3.9.11\bin" (
+    set "PATH=C:\Program Files\Apache\apache-maven-3.9.11\bin;%PATH%"
+) else if exist "D:\Applications\apache-maven-3.9.11\bin" (
+    set "PATH=D:\Applications\apache-maven-3.9.11\bin;%PATH%"
+)
+
 echo ==========================================
 echo   Prava Online - Spring Boot Backend
 echo ==========================================

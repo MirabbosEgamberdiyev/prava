@@ -65,10 +65,9 @@ export default function Tickets_Page() {
 
   return (
     <>
-      <SEO
-        title="Biletlar - YHXBB imtihon biletlari"
-        description="YHXBB imtihon biletlarini yeching. Har bir biletda real imtihon savollari mavjud."
+      <SEO title={t("seo.tickets.title", "Biletlar — 70 ta Rasmiy YHXX Biletlari")} description={t("seo.tickets.desc", "YHXBB imtihon biletlarini yeching.")}
         canonical="/tickets"
+        noIndex={true}
       />
       <div className="topics-screen">
         {/* ── Header ── */}

@@ -1,16 +1,13 @@
+import { useTranslation } from 'react-i18next';
 import { Box } from "@mantine/core";
 import {
   Hero_Banner,
-  Trust_Indicators,
-  Key_Benefits,
-  Features_Section,
-  Product_Preview,
-  Learning_Flow,
   Stats_Section,
-  Pricing_Preview,
-  Testimonials_Section,
+  Product_Preview,
+  Key_Benefits,
+  Learning_Flow,
+  Device_Platforms,
   FAQ_Section,
-  Download_Section,
   CTA_Section,
 } from "../../features/Home";
 import SEO from "../../components/common/SEO";
@@ -38,7 +35,7 @@ const homeJsonLd = {
           name: "YHXBB imtihon testlari",
           description: "1200+ savollar bazasi bilan real imtihonga tayyorlaning",
           provider: { "@type": "Organization", name: "Prava Online" },
-          inLanguage: ["uz", "ru", "en"],
+          inLanguage: ["uz", "uz-Cyrl", "ru"],
           isAccessibleForFree: true,
         },
       },
@@ -47,50 +44,39 @@ const homeJsonLd = {
 };
 
 const Home_Page = () => {
+  const { t } = useTranslation();
   return (
     <Box className="page-transition-wrapper">
       <SEO
-        title="Prava Online - Haydovchilik guvohnomasi imtihoniga tayyorlaning | YHXX test"
-        description="O'zbekistonda haydovchilik guvohnomasi imtihoniga online tayyorlanish platformasi. 1200+ savollar bazasi, real imtihon formati, biletlar va mavzular bo'yicha testlar. Bepul ro'yxatdan o'ting!"
-        keywords="prava online, haydovchilik guvohnomasi, imtihon, prava test, YHXX, avtomaktab, prava uz, prava test online, haydovchilik guvohnomasi imtihoni, avtomaktab savollari, pdd test, yo'l harakati qoidalari, водительские права, экзамен ПДД, тест ПДД онлайн, правила дорожного движения, driving license test uzbekistan, prava online uz"
+        title={t("seo.home.title", "Prava Test — Haydovchilik guvohnomasi imtihoniga tayyorgarlik | Prava Online")}
+        description={t("seo.home.desc", "O'zbekistonda haydovchilik guvohnomasi imtihoni uchun online testlar: 70 ta bilet, 1200+ rasmiy YHXBB savollari, yo'l harakati qoidalari (YHQ) va davlat imtihoni simulyatori.")}
+        keywords="prava, prava test, prava imtihon, prava imtihoni, prava olish, prava test ishlash, haydovchilik imtihoni, haydovchilik testi, haydovchilik guvohnomasi testi, imtihon testlari, yo'l harakati qoidalari testi, YHQ test, 70 ta bilet, prava savollari, YHXBB test, avtotest, avtomobil testlari, avtomaktab testlari, online prava test, prava online test, driving test uzbekistan, экзамен ПДД, тест ПДД онлайн, правила дорожного движения"
         canonical="/"
         jsonLd={homeJsonLd}
       />
-      <div className="saas-page-container" style={{ paddingTop: 16 }}>
-        {/* 1. Hero Section */}
+      <div className="saas-page-container" style={{ paddingTop: 8 }}>
+        {/* 1. HERO — PRAVA ONLINE nima? */}
         <Hero_Banner />
 
-        {/* 2. Trust Indicators */}
-        <Trust_Indicators />
-
-        {/* 3. Key Benefits */}
-        <Key_Benefits />
-
-        {/* 4. Product Features */}
-        <Features_Section />
-
-        {/* 5. Product Screenshots & Interactive Preview */}
-        <Product_Preview />
-
-        {/* 6. Learning Flow */}
-        <Learning_Flow />
-
-        {/* 7. Success Metrics & Live Statistics */}
+        {/* 2. STATS BAR — Real raqamlar (1200+ savol, 70 bilet, 100% format, 3 til) */}
         <Stats_Section />
 
-        {/* 8. Pricing Preview */}
-        <Pricing_Preview />
+        {/* 3. PRODUCT PREVIEW — Platforma qanday ko'rinadi? (Interaktiv simulyator) */}
+        <Product_Preview />
 
-        {/* 9. User Testimonials */}
-        <Testimonials_Section />
+        {/* 4. BENEFITS — Nima uchun foydalanish kerak? */}
+        <Key_Benefits />
 
-        {/* 10. FAQ Preview */}
+        {/* 5. HOW IT WORKS — Qanday boshlanadi? */}
+        <Learning_Flow />
+
+        {/* 6. DEVICE / APPLICATIONS — Qaysi qurilmalarda ishlaydi? */}
+        <Device_Platforms />
+
+        {/* 7. FAQ — Muhim savollarga javob */}
         <FAQ_Section />
 
-        {/* 11. Multi-Platform Download Section with QR Code */}
-        <Download_Section />
-
-        {/* 12. Final CTA Banner */}
+        {/* 8. FINAL CTA — Boshlash */}
         <CTA_Section />
       </div>
     </Box>

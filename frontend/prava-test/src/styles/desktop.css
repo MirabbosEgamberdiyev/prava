@@ -79,6 +79,9 @@
   --theme-border: #dee2e6;
   --header-bg: rgba(255, 255, 255, 0.82);
   --header-border: rgba(222, 226, 230, 0.85);
+  --bg-input: #f8f9fa;
+  --input-bg: #f8f9fa;
+  --input-border: #dee2e6;
 
   /* ============ GLOBAL DESIGN SYSTEM TOKENS ============ */
   --radius-xs: 8px;
@@ -152,6 +155,9 @@
   --theme-border: #1a364d;
   --header-bg: rgba(3, 24, 36, 0.82);
   --header-border: rgba(26, 54, 77, 0.85);
+  --bg-input: #041a2b;
+  --input-bg: #041a2b;
+  --input-border: #1a364d;
 
   --card-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
   --card-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.07);
@@ -193,6 +199,9 @@
     --theme-border: #1a364d;
     --header-bg: rgba(3, 24, 36, 0.82);
     --header-border: rgba(26, 54, 77, 0.85);
+    --bg-input: #041a2b;
+    --input-bg: #041a2b;
+    --input-border: #1a364d;
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
     --shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.07);
     --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(77, 171, 247, 0.25);
@@ -2506,10 +2515,109 @@ body:has(.app) {
   transform: translateX(3px);
   color: var(--primary);
 }
+
+/* ============ DASHBOARD MARAFON FEATURED & SMART FIX BUTTON ============ */
+.primary-edu-card.marafon-featured {
+  border: 1.5px solid #8b5cf6 !important;
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.16) !important;
+}
+
+.primary-edu-card.marafon-featured .primary-edu-cta-text {
+  color: #a78bfa !important;
+}
+
+.primary-edu-card.marafon-featured .primary-edu-action-arrow {
+  background: #8b5cf6 !important;
+  color: #ffffff !important;
+  border-color: #8b5cf6 !important;
+}
+
+.primary-edu-card.marafon-featured:hover {
+  box-shadow: 0 0 24px rgba(139, 92, 246, 0.3) !important;
+  transform: translateY(-4px);
+}
+
+.smart-fix-btn {
+  width: 100%;
+  height: 50px;
+  background: #f59e0b;
+  color: #111827;
+  font-weight: 800;
+  font-size: 15px;
+  border-radius: 12px;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+  font-family: inherit;
+  margin-top: auto;
+}
+
+.smart-fix-btn:hover {
+  background: #d97706;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+/* ============ DASHBOARD MINIMAL SOCIAL FOOTER ============ */
+.home-footer {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+}
+
+.home-footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.home-footer-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.home-footer-cards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.home-footer-btn {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 9999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.home-footer-btn:hover {
+  background: var(--surface-muted);
+  border-color: var(--primary);
+  transform: translateY(-2px);
 }
 
 .home-menu-label {
@@ -6196,6 +6304,104 @@ body:has(.app) {
   .auth-page-inner {
     margin: 0 auto;
   }
+}
+
+/* ── Universal SegmentedControl Dark/Light Mode Theming ── */
+.mantine-SegmentedControl-root,
+.auth-segmented-control {
+  background-color: var(--surface-muted) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  padding: 3px !important;
+}
+
+.mantine-SegmentedControl-indicator {
+  background-color: #0284c7 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35) !important;
+}
+
+.mantine-SegmentedControl-label {
+  color: var(--text-muted) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  border-radius: 8px !important;
+  transition: color 0.15s ease, background-color 0.15s ease !important;
+}
+
+.mantine-SegmentedControl-label[data-active] {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+.mantine-SegmentedControl-label[data-active] svg {
+  color: #ffffff !important;
+}
+
+.mantine-SegmentedControl-label:not([data-active]):hover {
+  color: var(--text) !important;
+}
+
+/* ── Form Inputs Inset Depth & Contrast Polish ── */
+.mantine-TextInput-input,
+.mantine-PasswordInput-input,
+.mantine-PinInput-input {
+  background-color: var(--bg-input) !important;
+  border-color: var(--input-border, var(--border)) !important;
+  color: var(--text) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.mantine-TextInput-input:focus,
+.mantine-PasswordInput-input:focus,
+.mantine-PinInput-input:focus {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25) !important;
+}
+
+.mantine-PasswordInput-innerInput {
+  color: var(--text) !important;
+}
+
+.mantine-PasswordInput-visibilityToggle {
+  color: var(--text-muted) !important;
+}
+
+.mantine-PasswordInput-visibilityToggle:hover {
+  color: var(--text) !important;
+}
+
+/* ── Auth Social Buttons ── */
+.auth-social-btn-google {
+  background-color: var(--surface-muted) !important;
+  border: 1.5px solid var(--border) !important;
+  color: var(--text) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.auth-social-btn-google:hover {
+  background-color: var(--surface-elevated) !important;
+  border-color: #0284c7 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.auth-social-btn-telegram {
+  background-color: #229ED9 !important;
+  border: 1.5px solid #229ED9 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.auth-social-btn-telegram:hover {
+  background-color: #1b8bbd !important;
+  border-color: #1b8bbd !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 158, 217, 0.35);
 }
 
 

@@ -275,9 +275,10 @@ export default function Marafon_Page() {
     return (
       <>
         <SEO
-          title={`${pageTitle} - Prava Online`}
-          description="Yo'l harakati qoidalari bo'yicha mustahkamlash testi"
+          title={`${pageTitle} — ${t("seo.marathon.title", "Marafon")}`}
+          description={t("seo.marathon.desc", "Barcha 1190 ta savoldan iborat marafon.")}
           canonical="/marafon"
+          noIndex={true}
         />
         <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
           <header className="home-header">
@@ -342,9 +343,10 @@ export default function Marafon_Page() {
     return (
       <>
         <SEO
-          title={`${screenTitle} natijasi`}
-          description="Prava Online test natijalari va statistikasi"
+          title={`${screenTitle} — ${t("seo.examResult.title", "Natija")}`}
+          description={t("seo.marathon.desc", "Prava Online test natijalari va statistikasi")}
           canonical="/marafon"
+          noIndex={true}
         />
         <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
           <header className="home-header">
@@ -403,9 +405,10 @@ export default function Marafon_Page() {
   return (
     <>
       <SEO
-        title="Marafon davom etmoqda"
-        description="Prava Online marafon testi"
+        title={`${t("seo.marathon.title", "Marafon")} — ${t("activeTest.questionsCount", "Savollar")}: ${correct + wrong}`}
+        description={t("seo.marathon.desc", "Prava Online marafon testi")}
         canonical="/marafon"
+        noIndex={true}
       />
       <div className="exam-screen">
         {/* ── Top bar ── */}

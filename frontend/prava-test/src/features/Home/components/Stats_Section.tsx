@@ -1,11 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Box, SimpleGrid, Text, Paper } from "@mantine/core";
-import {
-  IconUsers,
-  IconFileText,
-  IconClipboardList,
-  IconBookmarks,
-} from "@tabler/icons-react";
+import { SimpleGrid } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import classes from "./Home.module.css";
@@ -51,50 +45,31 @@ function formatNumber(num: number): string {
 }
 
 interface StatItem {
-  icon: typeof IconUsers;
   value: number;
   suffix: string;
   labelKey: string;
-  color: string;
+  defaultLabel: string;
 }
 
 function StatCard({
   stat,
-  index,
   isVisible,
   label,
 }: {
   stat: StatItem;
-  index: number;
   isVisible: boolean;
   label: string;
 }) {
-  const count = useCountUp(stat.value, 2000, isVisible);
+  const count = useCountUp(stat.value, 1800, isVisible);
 
   return (
-    <Paper
-      className={classes.statCard}
-      withBorder
-      style={{ animationDelay: `${index * 0.1}s` }}
-    >
-      <Box
-        className={classes.statIcon}
-        style={{
-          backgroundColor: `var(--mantine-color-${stat.color}-1)`,
-        }}
-      >
-        <stat.icon
-          size={28}
-          color={`var(--mantine-color-${stat.color}-6)`}
-          stroke={1.5}
-        />
-      </Box>
-      <Text className={classes.statValue}>
+    <div className={classes.statCardMinimal}>
+      <div className={classes.statValueMinimal}>
         {formatNumber(count)}
         {stat.suffix}
-      </Text>
-      <Text className={classes.statLabel}>{label}</Text>
-    </Paper>
+      </div>
+      <div className={classes.statLabelMinimal}>{label}</div>
+    </div>
   );
 }
 
@@ -121,41 +96,33 @@ export function Stats_Section() {
     }
   );
 
-  // Calculate real stats with reliable fallbacks
   const statsObj = publicStatsData?.data;
-  const totalQuestions = statsObj?.totalQuestions && statsObj.totalQuestions > 0 ? statsObj.totalQuestions : 1190;
-  const totalPackages = statsObj?.totalPackages && statsObj.totalPackages > 0 ? statsObj.totalPackages : 60;
-  const topicsCount = statsObj?.totalTopics && statsObj.totalTopics > 0 ? statsObj.totalTopics : 10;
-  const activeUsers = statsObj?.activeUsers && statsObj.activeUsers > 0 ? statsObj.activeUsers : 50000;
+  const totalQuestions = statsObj?.totalQuestions && statsObj.totalQuestions > 0 ? statsObj.totalQuestions : 1200;
 
   const stats: StatItem[] = [
     {
-      icon: IconUsers,
-      value: activeUsers,
-      suffix: "+",
-      labelKey: "home.stats.users",
-      color: "blue",
-    },
-    {
-      icon: IconFileText,
       value: totalQuestions,
       suffix: "+",
-      labelKey: "home.stats.questions",
-      color: "teal",
+      labelKey: "home.landingStats.questions",
+      defaultLabel: "Savollar",
     },
     {
-      icon: IconClipboardList,
-      value: totalPackages > 0 ? totalPackages : 60,
+      value: 70,
       suffix: "",
-      labelKey: "home.stats.exams",
-      color: "orange",
+      labelKey: "home.landingStats.tickets",
+      defaultLabel: "Biletlar",
     },
     {
-      icon: IconBookmarks,
-      value: topicsCount > 0 ? topicsCount : 10,
+      value: 100,
+      suffix: "%",
+      labelKey: "home.landingStats.realExam",
+      defaultLabel: "Real imtihon",
+    },
+    {
+      value: 3,
       suffix: "",
-      labelKey: "home.stats.topics",
-      color: "grape",
+      labelKey: "home.landingStats.languages",
+      defaultLabel: "Mavjud tillar",
     },
   ];
 
@@ -167,7 +134,7 @@ export function Stats_Section() {
           observer.disconnect();
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.2 }
     );
 
     if (sectionRef.current) {
@@ -178,15 +145,14 @@ export function Stats_Section() {
   }, []);
 
   return (
-    <section className={classes.statsSection} ref={sectionRef} aria-label="Statistics">
-      <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="lg">
-        {stats.map((stat, index) => (
+    <section className={classes.statsMinimalSection} ref={sectionRef} aria-label="Statistics">
+      <SimpleGrid cols={{ base: 2, sm: 4 }} spacing={{ base: "sm", md: "md" }}>
+        {stats.map((stat) => (
           <StatCard
             key={stat.labelKey}
             stat={stat}
-            index={index}
             isVisible={isVisible}
-            label={t(stat.labelKey)}
+            label={t(stat.labelKey, stat.defaultLabel)}
           />
         ))}
       </SimpleGrid>

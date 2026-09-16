@@ -11,9 +11,7 @@ const Packages_Page = () => {
 
   return (
     <>
-      <SEO
-        title="Paketlar - Imtihon paketlari"
-        description="Haydovchilik guvohnomasi imtihoni paketlarini tanlang va o'zingizga mos test to'plamini yeching."
+      <SEO title={t("seo.packages.title", "Imtihon Paketlari")} description={t("seo.packages.desc", "Imtihon paketlari to'plami")}
         canonical="/packages"
         noIndex={true}
       />

@@ -577,8 +577,8 @@ export function QuizContent({
               return (
                 <Paper
                   withBorder
-                  p="xs"
-                  mb="xs"
+                  radius="md"
+                  mb="sm"
                   key={option.id}
                   role="button"
                   tabIndex={isAnswered ? -1 : 0}
@@ -600,9 +600,10 @@ export function QuizContent({
                     }
                   }}
                 >
-                  <Flex gap="sm" align="center">
+                  <Flex gap="md" align="center" w="100%">
                     <ActionIcon
-                      radius="xs"
+                      radius="sm"
+                      size="md"
                       variant={iconProps.variant}
                       color={iconProps.color}
                     >
@@ -616,7 +617,7 @@ export function QuizContent({
                         "F" + (option.index + 1)
                       )}
                     </ActionIcon>
-                    <Text>{localize(option.text)}</Text>
+                    <Text fw={500} size="sm" style={{ flex: 1 }}>{localize(option.text)}</Text>
                   </Flex>
                 </Paper>
               );

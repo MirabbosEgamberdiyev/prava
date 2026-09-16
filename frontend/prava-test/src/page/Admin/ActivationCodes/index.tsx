@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR, { mutate as globalMutate } from "swr";
+import SEO from "../../../components/common/SEO";
 import {
   Container,
   Title,
@@ -218,7 +219,14 @@ const ActivationCodesPage: React.FC = () => {
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
-    <Container size="xl" py="xl">
+    <>
+      <SEO
+        title="Aktivatsiya kodlari | Admin"
+        description="Aktivatsiya kodlarini boshqarish tizimi"
+        canonical="/admin/activation-codes"
+        noIndex={true}
+      />
+      <Container size="xl" py="xl">
 
       {/* Header */}
       <Group justify="space-between" mb="xl" align="flex-start">
@@ -388,6 +396,7 @@ const ActivationCodesPage: React.FC = () => {
         />
       )}
     </Container>
+    </>
   );
 };
 

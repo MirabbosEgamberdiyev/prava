@@ -46,7 +46,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
-    @Value("${app.security.allowed-origins:https://pravaonline.uz,https://www.pravaonline.uz,https://admin.pravaonline.uz,http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:8080}")
+    @Value("${app.security.allowed-origins:https://pravaonline.uz,https://www.pravaonline.uz,https://web.pravaonline.uz,https://admin.pravaonline.uz,http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:8080}")
     private String allowedOrigins;
 
     @Bean

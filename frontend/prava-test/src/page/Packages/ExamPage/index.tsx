@@ -260,8 +260,8 @@ const PackageExamPage = () => {
   return (
     <>
       <SEO
-        title={`Imtihon — ${examData.data.totalQuestions} ta savol`}
-        description={`Haydovchilik guvohnomasi imtihoni — ${examData.data.totalQuestions} ta savol, ${examData.data.durationMinutes} daqiqa.`}
+        title={`${t("seo.packageExam.title", "Paket Imtihoni")} — ${examData.data.totalQuestions} ${t("dashboard.questionsUnit", "savol")}`}
+        description={`${t("seo.packageExam.desc", "Paket bo'yicha imtihon topshirish")} — ${examData.data.totalQuestions} ${t("dashboard.questionsUnit", "savol")}, ${examData.data.durationMinutes} ${t("dashboard.minutesUnit", "daqiqa")}.`}
         canonical={`/packages/${id}`}
         noIndex
       />

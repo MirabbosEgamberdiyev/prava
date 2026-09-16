@@ -44,7 +44,7 @@ const TelegramIcon = () => (
   </svg>
 );
 
-const TelegramLoginButton = ({ mode = "login", compact = false }: TelegramLoginButtonProps) => {
+const TelegramLoginButton = (_props: TelegramLoginButtonProps = {}) => {
   const { t, i18n } = useTranslation();
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
@@ -139,22 +139,15 @@ const TelegramLoginButton = ({ mode = "login", compact = false }: TelegramLoginB
     <Button
       leftSection={<TelegramIcon />}
       variant="filled"
-      color="#229ED9"
-      size={compact ? "sm" : "md"}
-      h={compact ? 40 : 44}
+      className="auth-social-btn-telegram"
+      size="sm"
+      h={44}
       fullWidth
       radius="md"
       loading={loading}
       onClick={handleTelegramLogin}
-      styles={{
-        root: { fontWeight: 600, fontSize: compact ? 13 : undefined },
-      }}
     >
-      {compact
-        ? "Telegram"
-        : mode === "login"
-        ? t("auth.telegram.loginButton")
-        : t("auth.telegram.registerButton")}
+      Telegram
     </Button>
   );
 };

@@ -287,11 +287,10 @@ const Register_Page = () => {
   return (
     <Box className="auth-page-container">
       <Container size={480} maw={480} p={{ base: "xs", sm: 0 }} className="auth-page-inner">
-        <SEO
-          title="Ro'yxatdan o'tish - Bepul boshlang"
-          description="Prava Online platformasida bepul ro'yxatdan o'ting va haydovchilik guvohnomasi imtihoniga tayyorlanishni boshlang. 1200+ savol bazasi, real imtihon formati. Email yoki telefon orqali ro'yxatdan o'ting."
+        <SEO title={t("seo.register.title", "Ro'yxatdan o'tish")} description={t("seo.register.desc", "Prava Online platformasida bepul hisob oching.")}
           keywords="prava online ro'yxat, haydovchilik imtihoni, bepul tayyorlanish, prava online registratsiya, регистрация prava online, YHXBB ro'yxat"
           canonical="/auth/register"
+          noIndex={true}
         />
 
         {/* Header section with brand mark */}
@@ -383,7 +382,7 @@ const Register_Page = () => {
                       input: {
                         height: 46,
                         fontSize: "14px",
-                        backgroundColor: "var(--bg-input, var(--surface))",
+                        backgroundColor: "var(--bg-input)",
                         borderColor: "var(--border)",
                       },
                       label: {
@@ -404,7 +403,7 @@ const Register_Page = () => {
                       input: {
                         height: 46,
                         fontSize: "14px",
-                        backgroundColor: "var(--bg-input, var(--surface))",
+                        backgroundColor: "var(--bg-input)",
                         borderColor: "var(--border)",
                       },
                       label: {
@@ -419,31 +418,21 @@ const Register_Page = () => {
 
                 {/* Verification channel switcher */}
                 <Box>
-                  <Text size="xs" fw={600} mb={4} c="dimmed">
+                  <Text size="xs" fw={600} mb={6} c="dimmed">
                     {t("register.verificationChannel", "Tasdiqlash usuli")}
                   </Text>
                   <SegmentedControl
                     value={verificationType}
                     onChange={handleVerificationTypeChange}
                     fullWidth
-                    size="xs"
+                    size="sm"
                     radius="md"
-                    styles={{
-                      root: {
-                        backgroundColor: "var(--bg-input, var(--mantine-color-gray-1))",
-                        padding: 3,
-                      },
-                      label: {
-                        padding: "6px 10px",
-                        fontWeight: 600,
-                        fontSize: "12px",
-                      },
-                    }}
+                    className="auth-segmented-control"
                     data={[
                       {
                         label: (
                           <Flex align="center" gap={6} justify="center">
-                            <IconMail size={15} />
+                            <IconMail size={16} />
                             <span>{t("register.verifyByEmail")}</span>
                           </Flex>
                         ),
@@ -452,7 +441,7 @@ const Register_Page = () => {
                       {
                         label: (
                           <Flex align="center" gap={6} justify="center">
-                            <IconDeviceMobile size={15} />
+                            <IconDeviceMobile size={16} />
                             <span>{t("register.verifyBySms")}</span>
                           </Flex>
                         ),
@@ -478,7 +467,7 @@ const Register_Page = () => {
                       input: {
                         height: 46,
                         fontSize: "14px",
-                        backgroundColor: "var(--bg-input, var(--surface))",
+                        backgroundColor: "var(--bg-input)",
                         borderColor: "var(--border)",
                       },
                       label: {
@@ -505,7 +494,7 @@ const Register_Page = () => {
                       input: {
                         height: 46,
                         fontSize: "14px",
-                        backgroundColor: "var(--bg-input, var(--surface))",
+                        backgroundColor: "var(--bg-input)",
                         borderColor: "var(--border)",
                       },
                       label: {
@@ -537,7 +526,7 @@ const Register_Page = () => {
                       input: {
                         height: 46,
                         fontSize: "14px",
-                        backgroundColor: "var(--bg-input, var(--surface))",
+                        backgroundColor: "var(--bg-input)",
                         borderColor: "var(--border)",
                       },
                       label: {
@@ -564,7 +553,10 @@ const Register_Page = () => {
                   fw={700}
                   fz="sm"
                   mt={2}
-                  className="saas-interactive-btn"
+                  style={{
+                    backgroundColor: "#0284c7",
+                    boxShadow: "0 4px 14px rgba(2, 132, 199, 0.35)",
+                  }}
                 >
                   {t("register.register")}
                 </Button>
@@ -575,7 +567,7 @@ const Register_Page = () => {
                   my="xs"
                 />
 
-                <SimpleGrid cols={2} spacing="sm">
+                <SimpleGrid cols={2} spacing="xs">
                   <GoogleLoginButton mode="register" compact />
                   <TelegramLoginButton mode="register" compact />
                 </SimpleGrid>
@@ -646,6 +638,8 @@ const Register_Page = () => {
                       width: "clamp(28px, 9vw, 44px)",
                       height: "clamp(34px, 10vw, 48px)",
                       fontSize: "clamp(13px, 3.5vw, 18px)",
+                      backgroundColor: "var(--bg-input)",
+                      borderColor: "var(--border)",
                       padding: 0,
                     },
                   }}
@@ -682,7 +676,10 @@ const Register_Page = () => {
                 h={48}
                 fw={700}
                 fz="sm"
-                className="saas-interactive-btn"
+                style={{
+                  backgroundColor: "#0284c7",
+                  boxShadow: "0 4px 14px rgba(2, 132, 199, 0.35)",
+                }}
               >
                 {t("register.confirm")}
               </Button>

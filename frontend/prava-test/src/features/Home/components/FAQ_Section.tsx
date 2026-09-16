@@ -1,4 +1,4 @@
-import { Box, Text, Title, Accordion, ThemeIcon } from "@mantine/core";
+import { Box, Text, Accordion, ThemeIcon } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import classes from "./Home.module.css";
@@ -43,50 +43,47 @@ export function FAQ_Section() {
   const { t } = useTranslation();
 
   return (
-    <section className={classes.faqSection} aria-label="FAQ">
+    <section className={classes.faqSectionMinimal} aria-label="FAQ">
       <FAQStructuredData t={t} />
-      <Box className={classes.sectionTitle}>
-        <div className={classes.sectionBadge}>
-          {t("home.faq.badge", "Savol-Javoblar")}
-        </div>
-        <Title order={2}>{t("home.faq.title")}</Title>
-        <Text size="md" c="dimmed" mt="sm">
-          {t("home.faq.description")}
-        </Text>
-      </Box>
+      <div className={classes.sectionHeaderCentered}>
+        <h2 className={classes.sectionHeaderTitle}>
+          {t("home.faq.title", "Ko'p so'raladigan savollar")}
+        </h2>
+        <p className={classes.sectionHeaderSubtitle}>
+          {t(
+            "home.faq.description",
+            "Prava Online haqida bilishingiz kerak bo'lgan asosiy savollarga javoblar."
+          )}
+        </p>
+      </div>
 
-      <Box maw={800} mx="auto">
+      <Box className={classes.faqContainerClean}>
         <Accordion
           variant="separated"
-          radius="lg"
+          radius="md"
           chevronPosition="right"
           defaultValue={null}
           chevron={
-            <ThemeIcon variant="light" radius="xl" size="sm">
+            <ThemeIcon variant="light" radius="xl" size="sm" color="gray">
               <IconPlus size={14} />
             </ThemeIcon>
           }
-          styles={{
-            chevron: {
-              "&[data-rotate]": {
-                transform: "rotate(45deg)",
-              },
-            },
+          classNames={{
+            item: classes.faqItemClean,
           }}
         >
           {faqKeys.map((item, index) => (
             <Accordion.Item
               key={index}
               value={`item-${index}`}
-              className={classes.faqItem}
             >
               <Accordion.Control>
-                <Text fw={500} size="md">
+                <Text fw={600} size="sm" c="var(--text)">
                   {t(item.questionKey)}
                 </Text>
               </Accordion.Control>
               <Accordion.Panel>
-                <Text size="sm" c="dimmed" lh={1.8}>
+                <Text size="sm" c="var(--text-muted)" lh={1.7}>
                   {t(item.answerKey)}
                 </Text>
               </Accordion.Panel>

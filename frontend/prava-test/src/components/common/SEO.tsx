@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 const BASE_URL = "https://pravaonline.uz";
 const SITE_NAME = "Prava Online";
@@ -45,6 +46,10 @@ const SEO = ({
   type = "website",
   jsonLd,
 }: SEOProps) => {
+  const { i18n } = useTranslation();
+  const currentLang = i18n?.language || "uzl";
+  const ogLocale = currentLang === "ru" ? "ru_RU" : "uz_UZ";
+
   const fullTitle = title.includes(SITE_NAME)
     ? title
     : `${title} | ${SITE_NAME}`;
@@ -54,6 +59,9 @@ const SEO = ({
     : "index, follow, max-image-preview:large, max-snippet:-1";
 
   useEffect(() => {
+    // Sync HTML document lang
+    document.documentElement.lang = currentLang === "ru" ? "ru" : "uz";
+
     // Title
     document.title = fullTitle;
 
@@ -72,7 +80,7 @@ const SEO = ({
     setMeta("property", "og:url", canonicalUrl);
     setMeta("property", "og:type", type);
     setMeta("property", "og:site_name", SITE_NAME);
-    setMeta("property", "og:locale", "uz_UZ");
+    setMeta("property", "og:locale", ogLocale);
 
     // Twitter
     setMeta("name", "twitter:card", "summary_large_image");

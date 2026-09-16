@@ -1,44 +1,25 @@
 import { useAuth } from "@/auth/AuthContext";
-import { AppShell, Button, Group, NavLink, ScrollArea, Stack, Box, Text, Badge } from "@mantine/core";
+import { AppShell, Button, Group, ScrollArea, Stack, Box, Text } from "@mantine/core";
 import {
-  IconApps,
-  IconBrandInstagram,
   IconBrandTelegram,
-  IconChevronRight,
-  IconHome,
-  IconBuildingCommunity,
   IconPencil,
-  IconInfoCircle,
-  IconPhoneCall,
-  IconHelpCircle,
-  IconChartBar,
+  IconBrandWindows,
+  IconBrandGooglePlay,
+  IconBrandApple,
+  IconArrowRight,
   IconLogout,
+  IconChartBar,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import LanguagePicker from "../language/LanguagePicker";
 import ColorMode from "../other/ColorMode";
 import { prefetchRoute } from "../../utils/routePrefetch";
+import { getWebAppUrl } from "../../utils/domain";
 
 const Navbar = ({ close }: { close: () => void }) => {
   const { t } = useTranslation();
   const { isAuthenticated, logout, user } = useAuth();
-  const location = useLocation();
-
-  const links = [
-    { label: t("nav.home", "Bosh sahifa"), to: "/", icon: <IconHome size={18} /> },
-    { label: t("nav.corporate", "Hamkorlik"), to: "/partners", icon: <IconBuildingCommunity size={18} /> },
-    {
-      label: t("home.hero.freeExam", "Sinov imtihoni"),
-      to: "/try-exam",
-      icon: <IconPencil size={18} />,
-      badge: t("common.free", "Bepul"),
-    },
-    { label: t("nav.downloads", "Ilovalar"), to: "/downloads", icon: <IconApps size={18} /> },
-    { label: t("nav.about", "Biz haqimizda"), to: "/about", icon: <IconInfoCircle size={18} /> },
-    { label: t("nav.contact", "Bog'lanish"), to: "/contact", icon: <IconPhoneCall size={18} /> },
-    { label: t("nav.faq", "FAQ"), to: "/faq", icon: <IconHelpCircle size={18} /> },
-  ];
 
   return (
     <AppShell.Navbar
@@ -65,77 +46,210 @@ const Navbar = ({ close }: { close: () => void }) => {
         </Group>
       </Box>
 
-      {/* Navigation List */}
+      {/* Navigation & Action List */}
       <ScrollArea style={{ flex: 1 }} pt="sm">
-        <Stack gap={4}>
-          {links.map((link) => {
-            const active = link.to === "/" ? location.pathname === "/" : location.pathname.startsWith(link.to);
-            return (
-              <NavLink
-                key={link.to}
-                component={Link}
-                to={link.to}
-                onMouseEnter={() => prefetchRoute(link.to)}
-                onFocus={() => prefetchRoute(link.to)}
-                onTouchStart={() => prefetchRoute(link.to)}
-                label={
-                  <Group gap="xs" wrap="nowrap">
-                    <Text size="sm" fw={active ? 700 : 500} c={active ? "var(--primary)" : "var(--text)"}>
-                      {link.label}
-                    </Text>
-                    {link.badge && (
-                      <Badge size="xs" color="orange" variant="light" radius="sm">
-                        {link.badge}
-                      </Badge>
-                    )}
-                  </Group>
-                }
-                leftSection={<span style={{ color: active ? "var(--primary)" : "var(--text-muted)" }}>{link.icon}</span>}
-                rightSection={<IconChevronRight size={15} style={{ opacity: 0.4 }} />}
-                active={active}
-                onClick={close}
-                styles={{
-                  root: {
-                    borderRadius: 8,
-                    backgroundColor: active ? "var(--primary-light)" : "transparent",
-                    transition: "background-color 0.15s ease",
-                  },
-                }}
-              />
-            );
-          })}
+        <Stack gap="sm" pt="xs">
+          {/* 1. Primary Action: Web App / Boshlash */}
+          <Button
+            component="a"
+            href={getWebAppUrl(isAuthenticated ? "/me" : "/auth/login")}
+            onClick={close}
+            fullWidth
+            size="md"
+            h={48}
+            radius="md"
+            style={{
+              background: "var(--primary, #0284c7)",
+              color: "#ffffff",
+              fontWeight: 700,
+            }}
+            rightSection={<IconArrowRight size={18} />}
+          >
+            {isAuthenticated ? t("nav.dashboard", "Boshqaruv paneli") : t("home.hero.startNow", "Boshlash")}
+          </Button>
 
-          <Box my={8} style={{ height: 1, backgroundColor: "var(--border)" }} />
+          {/* 2. Free Guest Exam */}
+          <Button
+            component={Link}
+            to="/try-exam"
+            onClick={close}
+            fullWidth
+            size="md"
+            h={44}
+            radius="md"
+            variant="light"
+            color="blue"
+            leftSection={<IconPencil size={18} />}
+            styles={{ root: { fontWeight: 600 } }}
+          >
+            {t("guestExam.tryFree", "Bepul sinov imtihoni")}
+          </Button>
 
-          {/* Social Links */}
-          <NavLink
-            href="https://t.me/pravaonlineuz"
-            label="Telegram"
+          <Box my={4} style={{ height: 1, backgroundColor: "var(--border)" }} />
+
+          <Text size="xs" fw={700} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
+            {t("nav.downloads", "Ilovalar")}
+          </Text>
+
+          {/* 3. Downloads */}
+          <Button
+            component="a"
+            href="/api/v1/files/installers/prava-online-setup.exe"
+            download
+            onClick={close}
+            fullWidth
+            size="sm"
+            h={42}
+            radius="md"
+            variant="default"
+            leftSection={<IconBrandWindows size={18} />}
+            styles={{ root: { fontWeight: 600 } }}
+          >
+            Windows (.exe)
+          </Button>
+
+          <Button
+            component="a"
+            href="https://play.google.com/store/apps/details?id=uz.prava.online"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={close}
+            fullWidth
+            size="sm"
+            h={42}
+            radius="md"
+            variant="default"
+            leftSection={<IconBrandGooglePlay size={18} color="#00e676" />}
+            styles={{ root: { fontWeight: 600 } }}
+          >
+            Google Play
+          </Button>
+
+          <Button
+            component="a"
+            href="https://apps.apple.com/app/prava-online/id0000000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={close}
+            fullWidth
+            size="sm"
+            h={42}
+            radius="md"
+            variant="default"
+            leftSection={<IconBrandApple size={18} />}
+            styles={{ root: { fontWeight: 600 } }}
+          >
+            App Store
+          </Button>
+
+          <Button
+            component="a"
+            href="https://t.me/pravaonlineuzbot"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={close}
+            fullWidth
+            size="sm"
+            h={42}
+            radius="md"
+            variant="default"
             leftSection={<IconBrandTelegram size={18} color="#0088cc" />}
-            rightSection={<IconChevronRight size={15} style={{ opacity: 0.4 }} />}
-            styles={{ root: { borderRadius: 8 } }}
-          />
-          <NavLink
-            href="https://instagram.com/pravaonlineuz"
-            label="Instagram"
-            target="_blank"
-            rel="noopener noreferrer"
-            leftSection={<IconBrandInstagram size={18} color="#e1306c" />}
-            rightSection={<IconChevronRight size={15} style={{ opacity: 0.4 }} />}
-            styles={{ root: { borderRadius: 8 } }}
-          />
+            styles={{ root: { fontWeight: 600 } }}
+          >
+            Telegram Bot
+          </Button>
+
+          <Box my={4} style={{ height: 1, backgroundColor: "var(--border)" }} />
+
+          {/* Public Pages Navigation */}
+          <Stack gap={4}>
+            <Button
+              component={Link}
+              to="/downloads"
+              onClick={close}
+              fullWidth
+              size="sm"
+              variant="subtle"
+              color="gray"
+              justify="flex-start"
+              styles={{ root: { fontWeight: 500 } }}
+            >
+              {t("nav.downloads", "Ilovalar (Windows, Mobile)")}
+            </Button>
+            <Button
+              component={Link}
+              to="/partners"
+              onClick={close}
+              fullWidth
+              size="sm"
+              variant="subtle"
+              color="gray"
+              justify="flex-start"
+              styles={{ root: { fontWeight: 500 } }}
+            >
+              {t("nav.corporate", "Avtomaktablar va Hamkorlik")}
+            </Button>
+            <Button
+              component={Link}
+              to="/about"
+              onClick={close}
+              fullWidth
+              size="sm"
+              variant="subtle"
+              color="gray"
+              justify="flex-start"
+              styles={{ root: { fontWeight: 500 } }}
+            >
+              {t("nav.about", "Biz haqimizda")}
+            </Button>
+            <Button
+              component={Link}
+              to="/faq"
+              onClick={close}
+              fullWidth
+              size="sm"
+              variant="subtle"
+              color="gray"
+              justify="flex-start"
+              styles={{ root: { fontWeight: 500 } }}
+            >
+              {t("nav.faq", "Ko'p so'raladigan savollar")}
+            </Button>
+            <Button
+              component={Link}
+              to="/contact"
+              onClick={close}
+              fullWidth
+              size="sm"
+              variant="subtle"
+              color="gray"
+              justify="flex-start"
+              styles={{ root: { fontWeight: 500 } }}
+            >
+              {t("nav.contact", "Bog'lanish")}
+            </Button>
+          </Stack>
+
+          {/* Legal Links */}
+          <Group gap="md" mt="sm" justify="center">
+            <Link to="/terms" onClick={close} style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+              {t("footer.terms", "Foydalanish shartlari")}
+            </Link>
+            <span style={{ color: "var(--border)" }}>•</span>
+            <Link to="/privacy" onClick={close} style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+              {t("footer.privacy", "Maxfiylik")}
+            </Link>
+          </Group>
         </Stack>
       </ScrollArea>
 
-      {/* Bottom Auth Section */}
-      <Box pt="md" style={{ borderTop: "1px solid var(--border)" }}>
-        {isAuthenticated ? (
+      {/* Bottom Auth Section (if authenticated) */}
+      {isAuthenticated && (
+        <Box pt="md" style={{ borderTop: "1px solid var(--border)" }}>
           <Stack gap="xs">
             <Button
-              component={Link}
-              to="/me"
+              component="a"
+              href={getWebAppUrl("/me")}
               onMouseEnter={() => prefetchRoute("/me")}
               onTouchStart={() => prefetchRoute("/me")}
               fullWidth
@@ -163,40 +277,8 @@ const Navbar = ({ close }: { close: () => void }) => {
               {t("common.logout", "Chiqish")}
             </Button>
           </Stack>
-        ) : (
-          <Stack gap="xs" w="100%">
-            <Button
-              component={Link}
-              to="/auth/login"
-              onMouseEnter={() => prefetchRoute("/auth/login")}
-              onTouchStart={() => prefetchRoute("/auth/login")}
-              onClick={close}
-              variant="default"
-              radius="md"
-              fullWidth
-              h={44}
-              styles={{ root: { fontWeight: 600, borderColor: "var(--border)" } }}
-            >
-              {t("nav.login_btn", "Kirish")}
-            </Button>
-            <Button
-              component={Link}
-              to="/auth/register"
-              onMouseEnter={() => prefetchRoute("/auth/register")}
-              onTouchStart={() => prefetchRoute("/auth/register")}
-              onClick={close}
-              variant="filled"
-              radius="md"
-              fullWidth
-              h={44}
-              className="saas-btn-primary"
-              styles={{ root: { fontWeight: 600 } }}
-            >
-              {t("nav.signup_btn", "Ro'yxatdan o'tish")}
-            </Button>
-          </Stack>
-        )}
-      </Box>
+        </Box>
+      )}
     </AppShell.Navbar>
   );
 };

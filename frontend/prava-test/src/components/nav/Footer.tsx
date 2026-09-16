@@ -1,77 +1,18 @@
 import {
-  ActionIcon,
   Anchor,
   Container,
-  Divider,
+  Flex,
   Group,
   Image,
   Paper,
-  SimpleGrid,
-  Stack,
   Text,
-  Tooltip,
 } from "@mantine/core";
-import {
-  IconBrandTelegram,
-  IconBrandInstagram,
-  IconBrandYoutube,
-  IconPhone,
-  IconMail,
-} from "@tabler/icons-react";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { useDesktopTheme } from "@/context/DesktopThemeContext";
-import { prefetchRoute } from "../../utils/routePrefetch";
+import { useTranslation } from "react-i18next";
 
 const Footer = React.memo(() => {
   const { t } = useTranslation();
-  const { theme } = useDesktopTheme();
-  const isDark = theme === "dark";
-
-  const socialLinks = [
-    {
-      label: "Telegram",
-      href: "https://t.me/pravaonlineuz",
-      icon: <IconBrandTelegram size={18} />,
-      color: "blue",
-    },
-    {
-      label: "Instagram",
-      href: "https://instagram.com/pravaonlineuz",
-      icon: <IconBrandInstagram size={18} />,
-      color: "grape",
-    },
-    {
-      label: "YouTube",
-      href: "https://youtube.com/@pravaonlineuz",
-      icon: <IconBrandYoutube size={18} />,
-      color: "red",
-    },
-  ];
-
-  const platformLinks = [
-    { label: t("nav.home", "Bosh sahifa"), to: "/" },
-    { label: t("nav.corporate", "Hamkorlik"), to: "/partners" },
-    { label: t("home.hero.freeExam", "Sinov imtihoni"), to: "/try-exam" },
-    { label: t("nav.downloads", "Ilovalar (Desktop & Mobile)"), to: "/downloads" },
-  ];
-
-  const companyLinks = [
-    { label: t("nav.about", "Biz haqimizda"), to: "/about" },
-    { label: t("nav.contact", "Bog'lanish"), to: "/contact" },
-    { label: t("footer.faq", "Ko'p so'raladigan savollar"), to: "/faq" },
-    {
-      label: t("footer.donate", "Loyihani qo'llab-quvvatlash"),
-      to: "https://tirikchilik.uz/pravaonline",
-      external: true,
-    },
-  ];
-
-  const legalLinks = [
-    { label: t("footer.terms", "Foydalanish shartlari"), to: "/terms" },
-    { label: t("footer.privacy", "Maxfiylik siyosati"), to: "/privacy" },
-  ];
 
   return (
     <Paper
@@ -83,165 +24,66 @@ const Footer = React.memo(() => {
         transition: "all 0.2s ease",
       }}
     >
-      <Container maw={1440} px={{ base: "md", sm: "xl" }} py={{ base: "xl", md: 48 }}>
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="xl">
-          {/* Col 1: Brand & Bio */}
-          <Stack gap="sm">
-            <Group gap="xs">
-              <Image
-                src="/logo.svg"
-                alt="Prava Online"
-                w={32}
-                h={32}
-                fallbackSrc="/favicon.svg"
-              />
-              <span className="saas-brand-text" style={{ fontSize: "1.25rem" }}>
-                PRAVA<span className="brand-accent">ONLINE</span>
-              </span>
-            </Group>
-            <Text size="sm" c="dimmed" lh={1.6}>
-              {t("footer.description", "O'zbekistonda haydovchilik guvohnomasi imtihoniga online tayyorlanish platformasi.")}
+      <Container maw={1200} px={{ base: "md", sm: "xl" }} py={{ base: "md", md: "lg" }}>
+        <Flex
+          justify="space-between"
+          align="center"
+          wrap="wrap"
+          gap="md"
+          direction={{ base: "column", md: "row" }}
+        >
+          {/* Brand & Copyright */}
+          <Group gap="xs">
+            <Image
+              src="/logo.svg"
+              alt="Prava Online"
+              w={24}
+              h={24}
+              fallbackSrc="/favicon.svg"
+            />
+            <span className="saas-brand-text" style={{ fontSize: "1.05rem" }}>
+              PRAVA<span className="brand-accent">ONLINE</span>
+            </span>
+            <Text size="xs" c="dimmed">
+              © {new Date().getFullYear()} Prava Online. {t("footer.allRightsReserved", "Barcha huquqlar himoyalangan.")}
             </Text>
-            <Group gap={6} mt={4}>
-              {socialLinks.map((link) => (
-                <Tooltip label={link.label} key={link.href}>
-                  <ActionIcon
-                    component="a"
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    variant="subtle"
-                    color={link.color}
-                    size="lg"
-                    radius="md"
-                    aria-label={link.label}
-                    style={{ minWidth: 38, minHeight: 38 }}
-                  >
-                    {link.icon}
-                  </ActionIcon>
-                </Tooltip>
-              ))}
-            </Group>
-          </Stack>
+          </Group>
 
-          {/* Col 2: Platform Links */}
-          <Stack gap="xs">
-            <Text fw={700} size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
-              {t("nav.mainPage", "Platforma")}
-            </Text>
-            {platformLinks.map((link) => (
-              <Anchor
-                key={link.to}
-                component={Link}
-                to={link.to}
-                onMouseEnter={() => prefetchRoute(link.to)}
-                onFocus={() => prefetchRoute(link.to)}
-                size="sm"
-                c={isDark ? "gray.4" : "gray.7"}
-                underline="hover"
-                style={{ fontWeight: 500 }}
-              >
-                {link.label}
-              </Anchor>
-            ))}
-          </Stack>
-
-          {/* Col 3: Company & Help */}
-          <Stack gap="xs">
-            <Text fw={700} size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
-              {t("footer.links", "Kompaniya")}
-            </Text>
-            {companyLinks.map((link) =>
-              link.external ? (
-                <Anchor
-                  key={link.to}
-                  href={link.to}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  size="sm"
-                  c={isDark ? "gray.4" : "gray.7"}
-                  underline="hover"
-                  style={{ fontWeight: 500 }}
-                >
-                  {link.label}
-                </Anchor>
-              ) : (
-                <Anchor
-                  key={link.to}
-                  component={Link}
-                  to={link.to}
-                  onMouseEnter={() => prefetchRoute(link.to)}
-                  onFocus={() => prefetchRoute(link.to)}
-                  size="sm"
-                  c={isDark ? "gray.4" : "gray.7"}
-                  underline="hover"
-                  style={{ fontWeight: 500 }}
-                >
-                  {link.label}
-                </Anchor>
-              ),
-            )}
-          </Stack>
-
-          {/* Col 4: Legal & Direct Contact */}
-          <Stack gap="xs">
-            <Text fw={700} size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
-              {t("footer.legal", "Huquqiy & Aloqa")}
-            </Text>
-            {legalLinks.map((link) => (
-              <Anchor
-                key={link.to}
-                component={Link}
-                to={link.to}
-                onMouseEnter={() => prefetchRoute(link.to)}
-                onFocus={() => prefetchRoute(link.to)}
-                size="sm"
-                c={isDark ? "gray.4" : "gray.7"}
-                underline="hover"
-                style={{ fontWeight: 500 }}
-              >
-                {link.label}
-              </Anchor>
-            ))}
-
-            <Group gap={8} mt={6}>
-              <IconPhone size={15} color="var(--mantine-color-blue-5)" />
-              <Anchor
-                href="tel:+998993912505"
-                size="sm"
-                c="var(--text)"
-                underline="hover"
-                style={{ fontWeight: 600 }}
-              >
-                +998 99 391 25 05
-              </Anchor>
-            </Group>
-
-            <Group gap={8}>
-              <IconMail size={15} color="var(--mantine-color-blue-5)" />
-              <Anchor
-                href="mailto:support@pravaonline.uz"
-                size="sm"
-                c="var(--text)"
-                underline="hover"
-                style={{ fontWeight: 500 }}
-              >
-                support@pravaonline.uz
-              </Anchor>
-            </Group>
-          </Stack>
-        </SimpleGrid>
-
-        <Divider my="xl" color="var(--border)" />
-
-        <Group justify="space-between" align="center" wrap="wrap" gap="xs">
-          <Text size="xs" c="dimmed">
-            {t("footer.copyright", { year: new Date().getFullYear() })}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {t("footer.basedOnOfficial", "O'zbekiston Respublikasi YHXX rasmiy dasturi asosida")}
-          </Text>
-        </Group>
+          {/* Public Internal Navigation Links */}
+          <Group gap="md" wrap="wrap" justify="center">
+            <Anchor component={Link} to="/about" size="xs" c="dimmed" underline="hover">
+              {t("nav.about", "Biz haqimizda")}
+            </Anchor>
+            <Anchor component={Link} to="/downloads" size="xs" c="dimmed" underline="hover">
+              {t("nav.downloads", "Ilovalar")}
+            </Anchor>
+            <Anchor component={Link} to="/partners" size="xs" c="dimmed" underline="hover">
+              {t("nav.corporate", "Avtomaktablar")}
+            </Anchor>
+            <Anchor component={Link} to="/faq" size="xs" c="dimmed" underline="hover">
+              {t("nav.faq", "Savol-javob")}
+            </Anchor>
+            <Anchor component={Link} to="/contact" size="xs" c="dimmed" underline="hover">
+              {t("nav.contact", "Bog'lanish")}
+            </Anchor>
+            <Anchor component={Link} to="/terms" size="xs" c="dimmed" underline="hover">
+              {t("footer.terms", "Shartlar")}
+            </Anchor>
+            <Anchor component={Link} to="/privacy" size="xs" c="dimmed" underline="hover">
+              {t("footer.privacy", "Maxfiylik")}
+            </Anchor>
+            <Anchor
+              href="https://t.me/pravaonlineuz"
+              target="_blank"
+              rel="noopener noreferrer"
+              size="xs"
+              c="blue"
+              underline="hover"
+            >
+              Telegram: @pravaonlineuz
+            </Anchor>
+          </Group>
+        </Flex>
       </Container>
     </Paper>
   );

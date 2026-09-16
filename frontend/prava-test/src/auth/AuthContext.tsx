@@ -12,10 +12,22 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import type { User, AuthData } from "../types";
 import api from "../api/api";
+import { getSharedCookieDomain } from "../utils/domain";
 
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_DATA_KEY = "userData";
+
+export function clearAuthCookies(): void {
+  const domain = getSharedCookieDomain();
+  const keys = [ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_DATA_KEY];
+  keys.forEach((k) => {
+    Cookies.remove(k);
+    if (domain) {
+      Cookies.remove(k, { domain });
+    }
+  });
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -63,9 +75,7 @@ const checkAuthStatus = (): boolean => {
   if (refreshToken) return true; // API interceptor yangilaydi
 
   // Hech qanday valid token yo'q — cookie'larni tozalash
-  Cookies.remove(ACCESS_TOKEN_KEY);
-  Cookies.remove(REFRESH_TOKEN_KEY);
-  Cookies.remove(USER_DATA_KEY);
+  clearAuthCookies();
   return false;
 };
 
@@ -149,25 +159,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     // HTTP da secure: true cookie saqlanmaydi, shuning uchun protocol'ga qarab o'rnatamiz
     const isSecure = window.location.protocol === "https:";
+    const domain = getSharedCookieDomain();
 
     Cookies.set(ACCESS_TOKEN_KEY, accessToken, {
       expires: expiryDays,
       secure: isSecure,
-      sameSite: isSecure ? "strict" : "lax",
+      sameSite: "lax",
+      domain,
     });
 
     if (refreshToken) {
       Cookies.set(REFRESH_TOKEN_KEY, refreshToken, {
         expires: 30, // Refresh token uchun 30 kun
         secure: isSecure,
-        sameSite: isSecure ? "strict" : "lax",
+        sameSite: "lax",
+        domain,
       });
     }
 
     Cookies.set(USER_DATA_KEY, JSON.stringify(userData), {
       expires: expiryDays,
       secure: isSecure,
-      sameSite: isSecure ? "strict" : "lax",
+      sameSite: "lax",
+      domain,
     });
 
     try {
@@ -197,9 +211,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     } catch {
       // Logout API xatosi bo'lsa ham, local tokenlarni tozalaymiz
     } finally {
-      Cookies.remove(ACCESS_TOKEN_KEY);
-      Cookies.remove(REFRESH_TOKEN_KEY);
-      Cookies.remove(USER_DATA_KEY);
+      clearAuthCookies();
       try {
         localStorage.setItem("auth_sync_event", `logout_${Date.now()}`);
       } catch {
@@ -207,7 +219,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       }
       setIsAuthenticated(false);
       setUser(null);
-      navigate("/", { replace: true });
+      navigate("/auth/login", { replace: true });
     }
   };
 

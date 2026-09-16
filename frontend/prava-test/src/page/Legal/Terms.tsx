@@ -15,9 +15,7 @@ export default function Terms_Page() {
 
   return (
     <>
-      <SEO
-        title="Foydalanish shartlari - Prava Online"
-        description="Prava Online platformasidan foydalanish shartlari va qoidalari. Foydalanuvchi huquqlari, majburiyatlari va to'lov shartlari."
+      <SEO title={t("seo.terms.title", "Foydalanish shartlari")} description={t("seo.terms.desc", "Prava Online platformasidan foydalanish shartlari va qoidalari.")}
         keywords="prava online foydalanish shartlari, terms of service prava online, ommaviy oferta prava"
         canonical="/terms"
       />

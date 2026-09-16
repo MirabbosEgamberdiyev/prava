@@ -3,131 +3,117 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
-  <!-- Bosh sahifa / Home page -->
+  <!-- 1. Bosh sahifa / Home page -->
   <url>
     <loc>https://pravaonline.uz/</loc>
-    <lastmod>2026-02-27</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-03-16</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://pravaonline.uz/" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://pravaonline.uz/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://pravaonline.uz/" />
     <image:image>
       <image:loc>https://pravaonline.uz/og-image.png</image:loc>
-      <image:title>Prava Online - Haydovchilik guvohnomasi imtihoniga tayyorlaning</image:title>
-      <image:caption>O'zbekistonda haydovchilik guvohnomasi imtihoniga online tayyorlanish platformasi</image:caption>
+      <image:title>Prava Online — Haydovchilik guvohnomasi imtihoniga online tayyorlanish</image:title>
+      <image:caption>O'zbekistonda haydovchilik guvohnomasi imtihoni uchun online testlar: 70 ta bilet, 1200+ YHXBB savollari</image:caption>
     </image:image>
   </url>
 
-  <!-- Sinov imtihoni / Try Exam (bepul) -->
+  <!-- 2. Bepul sinov imtihoni / Try Exam -->
   <url>
     <loc>https://pravaonline.uz/try-exam</loc>
-    <lastmod>2026-02-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/try-exam" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/try-exam" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://pravaonline.uz/try-exam" />
-  </url>
-
-  <!-- Ro'yxatdan o'tish / Register -->
-  <url>
-    <loc>https://pravaonline.uz/auth/register</loc>
-    <lastmod>2026-02-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/auth/register" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/auth/register" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://pravaonline.uz/auth/register" />
-  </url>
-
-  <!-- Kirish / Login -->
-  <url>
-    <loc>https://pravaonline.uz/auth/login</loc>
-    <lastmod>2026-03-01</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/auth/login" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/auth/login" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://pravaonline.uz/auth/login" />
-  </url>
-
-  <!-- Tariflar / Pricing -->
-  <url>
-    <loc>https://pravaonline.uz/pricing</loc>
-    <lastmod>2026-03-01</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/pricing" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/pricing" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://pravaonline.uz/pricing" />
+    <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/try-exam" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://pravaonline.uz/try-exam" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/try-exam" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pravaonline.uz/try-exam" />
   </url>
 
-  <!-- Ilovalar / Downloads -->
+  <!-- 3. Ilovalar / Downloads (Windows, Android, iOS) -->
   <url>
     <loc>https://pravaonline.uz/downloads</loc>
-    <lastmod>2026-03-01</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/downloads" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://pravaonline.uz/downloads" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/downloads" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://pravaonline.uz/downloads" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pravaonline.uz/downloads" />
   </url>
 
-  <!-- Biz haqimizda / About -->
+  <!-- 5. Biz haqimizda / About -->
   <url>
     <loc>https://pravaonline.uz/about</loc>
-    <lastmod>2026-03-01</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.75</priority>
+    <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/about" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://pravaonline.uz/about" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/about" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://pravaonline.uz/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pravaonline.uz/about" />
   </url>
 
-  <!-- Bog'lanish / Contact -->
+  <!-- 6. Avtomaktablar va Hamkorlar / Partners -->
   <url>
-    <loc>https://pravaonline.uz/contact</loc>
-    <lastmod>2026-03-01</lastmod>
+    <loc>https://pravaonline.uz/partners</loc>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/contact" />
-    <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/contact" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://pravaonline.uz/contact" />
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/partners" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://pravaonline.uz/partners" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/partners" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pravaonline.uz/partners" />
   </url>
 
-  <!-- Savol-javob / FAQ -->
+  <!-- 7. Savol-javob / FAQ -->
   <url>
     <loc>https://pravaonline.uz/faq</loc>
-    <lastmod>2026-03-01</lastmod>
+    <lastmod>2026-03-16</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
+    <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/faq" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://pravaonline.uz/faq" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/faq" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://pravaonline.uz/faq" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pravaonline.uz/faq" />
   </url>
 
-  <!-- Foydalanish shartlari / Terms -->
+  <!-- 8. Bog'lanish / Contact -->
+  <url>
+    <loc>https://pravaonline.uz/contact</loc>
+    <lastmod>2026-03-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/contact" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://pravaonline.uz/contact" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/contact" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pravaonline.uz/contact" />
+  </url>
+
+  <!-- 9. Foydalanish shartlari / Terms -->
   <url>
     <loc>https://pravaonline.uz/terms</loc>
-    <lastmod>2026-03-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
+    <lastmod>2026-03-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
     <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/terms" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://pravaonline.uz/terms" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/terms" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://pravaonline.uz/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pravaonline.uz/terms" />
   </url>
 
-  <!-- Maxfiylik siyosati / Privacy -->
+  <!-- 10. Maxfiylik siyosati / Privacy -->
   <url>
     <loc>https://pravaonline.uz/privacy</loc>
-    <lastmod>2026-03-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
+    <lastmod>2026-03-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
     <xhtml:link rel="alternate" hreflang="uz" href="https://pravaonline.uz/privacy" />
+    <xhtml:link rel="alternate" hreflang="uz-Cyrl" href="https://pravaonline.uz/privacy" />
     <xhtml:link rel="alternate" hreflang="ru" href="https://pravaonline.uz/privacy" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://pravaonline.uz/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pravaonline.uz/privacy" />
   </url>
 
 </urlset>

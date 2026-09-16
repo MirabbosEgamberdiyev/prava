@@ -17,5 +17,4 @@ echo   Barcha modullar ishga tushirildi!
 echo   - Backend:  http://localhost:8081
 echo   - Frontend: http://localhost:5173
 echo ========================================================
-echo.
-timeout /t 5
+timeout /t 3 >nul 2>&1 || ping 127.0.0.1 -n 4 >nul

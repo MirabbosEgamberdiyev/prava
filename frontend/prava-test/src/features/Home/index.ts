@@ -10,4 +10,5 @@ export { Testimonials_Section } from "./components/Testimonials_Section";
 export { FAQ_Section } from "./components/FAQ_Section";
 export { App_Showcase } from "./components/App_Showcase";
 export { Download_Section } from "./components/Download_Section";
+export { Device_Platforms } from "./components/Device_Platforms";
 export { CTA_Section } from "./components/CTA_Section";
