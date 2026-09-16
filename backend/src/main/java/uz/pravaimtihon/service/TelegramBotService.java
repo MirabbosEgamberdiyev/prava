@@ -221,7 +221,6 @@ public class TelegramBotService {
                 case "lang_uzl" -> AcceptLanguage.UZL;
                 case "lang_uzc" -> AcceptLanguage.UZC;
                 case "lang_ru" -> AcceptLanguage.RU;
-                case "lang_en" -> AcceptLanguage.EN;
                 default -> null;
             };
 
@@ -242,7 +241,7 @@ public class TelegramBotService {
                 case UZL -> "Til tanlandi: O'zbekcha (Lotin) \u2705";
                 case UZC -> "\u0422\u0438\u043b \u0442\u0430\u043d\u043b\u0430\u043d\u0434\u0438: \u040e\u0437\u0431\u0435\u043a\u0447\u0430 (\u041a\u0438\u0440\u0438\u043b\u043b) \u2705";
                 case RU -> "\u042f\u0437\u044b\u043a \u0432\u044b\u0431\u0440\u0430\u043d: \u0420\u0443\u0441\u0441\u043a\u0438\u0439 \u2705";
-                case EN -> "Language selected: English \u2705";
+                default -> "Til tanlandi: O'zbekcha (Lotin) \u2705";
             };
 
             sendMessage(chatId, confirmMsg, null);
@@ -351,7 +350,7 @@ public class TelegramBotService {
         if (languageCode == null) return AcceptLanguage.UZL;
         return switch (languageCode) {
             case "ru" -> AcceptLanguage.RU;
-            case "en" -> AcceptLanguage.EN;
+            case "uzc" -> AcceptLanguage.UZC;
             default -> AcceptLanguage.UZL;
         };
     }
@@ -366,13 +365,6 @@ public class TelegramBotService {
                         "<code>" + token + "</code>\n\n" +
                         "Введите этот код в приложение Prava Online.\n\n" +
                         "⚠️ Не передавайте код третьим лицам.";
-            }
-            case EN -> {
-                message = "🔐 <b>Prava Online</b>\n\n" +
-                        "Your verification code:\n\n" +
-                        "<code>" + token + "</code>\n\n" +
-                        "Enter this code into the Prava Online application.\n\n" +
-                        "⚠️ Do not share this code with anyone.";
             }
             case UZC -> {
                 message = "🔐 <b>Prava Online</b>\n\n" +
@@ -396,7 +388,6 @@ public class TelegramBotService {
     private void sendLanguageSelectionKeyboard(long chatId, AcceptLanguage currentLang) {
         String langPrompt = switch (currentLang) {
             case RU -> "\uD83C\uDF10 \u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u044f\u0437\u044b\u043a / Tilni tanlang:";
-            case EN -> "\uD83C\uDF10 Select your language / Tilni tanlang:";
             case UZC -> "\uD83C\uDF10 \u0422\u0438\u043b\u043d\u0438 \u0442\u0430\u043d\u043b\u0430\u043d\u0433 / Tilni tanlang:";
             default -> "\uD83C\uDF10 Tilni tanlang / \u0422\u0438\u043b\u043d\u0438 \u0442\u0430\u043d\u043b\u0430\u043d\u0433:";
         };
@@ -408,8 +399,7 @@ public class TelegramBotService {
                                 Map.of("text", "\u040e\u0437\u0431\u0435\u043a\u0447\u0430", "callback_data", "lang_uzc")
                         ),
                         List.of(
-                                Map.of("text", "\u0420\u0443\u0441\u0441\u043a\u0438\u0439", "callback_data", "lang_ru"),
-                                Map.of("text", "English", "callback_data", "lang_en")
+                                Map.of("text", "\u0420\u0443\u0441\u0441\u043a\u0438\u0439", "callback_data", "lang_ru")
                         )
                 )
         );
