@@ -16,7 +16,9 @@ public class TelegramTokenStore {
     /** Verification code is valid for exactly 5 minutes */
     private static final long TTL_MINUTES = 5;
 
-    private record TokenEntry(Long telegramUserId, Instant expiresAt) {}
+    public record TelegramUserData(Long telegramUserId, String firstName, String lastName, String username) {}
+
+    private record TokenEntry(TelegramUserData userData, Instant expiresAt) {}
 
     /** Active tokens: tokenCode -> TokenEntry */
     private final Map<String, TokenEntry> tokens = new ConcurrentHashMap<>();
@@ -27,10 +29,10 @@ public class TelegramTokenStore {
     private final SecureRandom secureRandom = new SecureRandom();
 
     /**
-     * Generates a cryptographically secure 5-digit numeric verification code (00000 - 99999).
+     * Generates a cryptographically secure 5-digit numeric verification code (00000 - 99999) with user profile.
      * If an active token already exists for the user, it is immediately invalidated.
      */
-    public synchronized String generateToken(Long telegramUserId) {
+    public synchronized String generateToken(Long telegramUserId, String firstName, String lastName, String username) {
         // Invalidate previous token for this user if one exists
         String previousToken = userActiveTokens.remove(telegramUserId);
         if (previousToken != null) {
@@ -52,18 +54,23 @@ public class TelegramTokenStore {
         } while (tokens.containsKey(token));
 
         Instant expiresAt = Instant.now().plusSeconds(TTL_MINUTES * 60);
-        tokens.put(token, new TokenEntry(telegramUserId, expiresAt));
+        TelegramUserData userData = new TelegramUserData(telegramUserId, firstName, lastName, username);
+        tokens.put(token, new TokenEntry(userData, expiresAt));
         userActiveTokens.put(telegramUserId, token);
 
         log.info("Generated 5-digit verification code for Telegram user {}: {} (TTL: {}m)", telegramUserId, token, TTL_MINUTES);
         return token;
     }
 
+    public synchronized String generateToken(Long telegramUserId) {
+        return generateToken(telegramUserId, null, null, null);
+    }
+
     /**
      * Atomically validates and consumes the one-time verification code.
-     * Returns the telegramUserId if valid, or null if invalid / expired / already consumed.
+     * Returns the TelegramUserData if valid, or null if invalid / expired / already consumed.
      */
-    public synchronized Long validateAndConsume(String token) {
+    public synchronized TelegramUserData validateAndConsume(String token) {
         if (token == null || token.isBlank()) {
             return null;
         }
@@ -75,15 +82,15 @@ public class TelegramTokenStore {
             return null;
         }
 
-        userActiveTokens.remove(entry.telegramUserId(), normalizedToken);
+        userActiveTokens.remove(entry.userData().telegramUserId(), normalizedToken);
 
         if (Instant.now().isAfter(entry.expiresAt())) {
-            log.warn("Telegram verification code expired for user {}", entry.telegramUserId());
+            log.warn("Telegram verification code expired for user {}", entry.userData().telegramUserId());
             return null;
         }
 
-        log.info("Telegram verification code successfully consumed for user {}", entry.telegramUserId());
-        return entry.telegramUserId();
+        log.info("Telegram verification code successfully consumed for user {}", entry.userData().telegramUserId());
+        return entry.userData();
     }
 
     /**
@@ -97,7 +104,7 @@ public class TelegramTokenStore {
         tokens.entrySet().removeIf(e -> {
             boolean expired = now.isAfter(e.getValue().expiresAt());
             if (expired) {
-                userActiveTokens.remove(e.getValue().telegramUserId(), e.getKey());
+                userActiveTokens.remove(e.getValue().userData().telegramUserId(), e.getKey());
             }
             return expired;
         });

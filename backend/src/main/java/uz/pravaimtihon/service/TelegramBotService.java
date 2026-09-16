@@ -1,5 +1,6 @@
 package uz.pravaimtihon.service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,6 +55,16 @@ public class TelegramBotService {
     /** Max retry attempts for Telegram API calls */
     private static final int MAX_RETRIES = 3;
 
+    @PostConstruct
+    public void initSecret() {
+        if (configuredWebhookSecret != null && !configuredWebhookSecret.isBlank()) {
+            webhookSecretToken = configuredWebhookSecret.trim();
+        } else {
+            webhookSecretToken = "prava_secret_webhook_token_2026";
+        }
+        log.info("Telegram webhookSecretToken initialized");
+    }
+
     public String getWebhookSecretToken() {
         return webhookSecretToken;
     }
@@ -77,10 +88,12 @@ public class TelegramBotService {
 
         try {
             // Use configured secret or generate a secret token for webhook verification
-            if (configuredWebhookSecret != null && !configuredWebhookSecret.isBlank()) {
-                webhookSecretToken = configuredWebhookSecret.trim();
-            } else {
-                webhookSecretToken = UUID.randomUUID().toString().replace("-", "");
+            if (webhookSecretToken == null || webhookSecretToken.isBlank()) {
+                if (configuredWebhookSecret != null && !configuredWebhookSecret.isBlank()) {
+                    webhookSecretToken = configuredWebhookSecret.trim();
+                } else {
+                    webhookSecretToken = UUID.randomUUID().toString().replace("-", "");
+                }
             }
 
             Map<String, Object> body = new HashMap<>();
@@ -253,6 +266,35 @@ public class TelegramBotService {
         }
     }
 
+    private String sanitizeFirstName(String firstName, String fallback) {
+        String name = (firstName != null && !firstName.isBlank()) ? firstName.trim() : null;
+        if (name == null && fallback != null && !fallback.isBlank()) {
+            name = fallback.trim();
+        }
+        if (name == null || name.isBlank()) {
+            name = "Foydalanuvchi";
+        }
+        if (name.length() < 2) {
+            name = name + " User";
+        }
+        if (name.length() > 50) {
+            name = name.substring(0, 50);
+        }
+        return name;
+    }
+
+    private String sanitizeLastName(String lastName) {
+        if (lastName == null || lastName.isBlank()) return null;
+        String trimmed = lastName.trim();
+        return trimmed.length() > 50 ? trimmed.substring(0, 50) : trimmed;
+    }
+
+    private String sanitizeUsername(String username) {
+        if (username == null || username.isBlank()) return null;
+        String trimmed = username.trim();
+        return trimmed.length() > 100 ? trimmed.substring(0, 100) : trimmed;
+    }
+
     private void handleStartCommand(long chatId, long telegramUserId, String firstName,
                                      String lastName, String username, String languageCode,
                                      String payload) {
@@ -265,23 +307,31 @@ public class TelegramBotService {
             lang = existingUser.get().getPreferredLanguage();
         } else {
             lang = mapTelegramLanguage(languageCode);
-            // Auto-register new Telegram user
-            userRepository.save(User.builder()
-                    .telegramId(tgId)
-                    .telegramUsername(username)
-                    .firstName(firstName != null ? firstName : "")
-                    .lastName(lastName != null ? lastName : "")
-                    .oauthProvider(OAuthProvider.TELEGRAM)
-                    .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
-                    .role(Role.USER)
-                    .preferredLanguage(lang)
-                    .isActive(true)
-                    .build());
-            log.info("Auto-registered new Telegram user: tg_id={}", telegramUserId);
+            String safeFirst = sanitizeFirstName(firstName, username);
+            String safeLast = sanitizeLastName(lastName);
+            String safeUsername = sanitizeUsername(username);
+
+            // Auto-register new Telegram user safely
+            try {
+                userRepository.save(User.builder()
+                        .telegramId(tgId)
+                        .telegramUsername(safeUsername)
+                        .firstName(safeFirst)
+                        .lastName(safeLast)
+                        .oauthProvider(OAuthProvider.TELEGRAM)
+                        .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
+                        .role(Role.USER)
+                        .preferredLanguage(lang)
+                        .isActive(true)
+                        .build());
+                log.info("Auto-registered new Telegram user: tg_id={}", telegramUserId);
+            } catch (Exception e) {
+                log.error("Failed to auto-register Telegram user {}: {}", telegramUserId, e.getMessage());
+            }
         }
 
-        // Generate one-time login token
-        String token = tokenStore.generateToken(telegramUserId);
+        // Generate one-time login token with user metadata
+        String token = tokenStore.generateToken(telegramUserId, firstName, lastName, username);
         String loginUrl = baseUrl + "/auth/telegram-callback?token=" + token;
 
         // Deep link support: /start exam_5 → redirect to /packages/5

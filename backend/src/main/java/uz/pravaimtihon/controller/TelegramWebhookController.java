@@ -26,29 +26,35 @@ public class TelegramWebhookController {
     @Value("${app.telegram.ip-validation.enabled:true}")
     private boolean ipValidationEnabled;
 
-    // Telegram server IP ranges: 149.154.160.0/20 and 91.108.4.0/22
+    // Telegram server IP ranges: 149.154.160.0/20 and 91.108.0.0/16 subnets
     private static final String[][] TELEGRAM_IP_RANGES = {
             {"149.154.160.0", "149.154.175.255"},  // 149.154.160.0/20
             {"91.108.4.0", "91.108.7.255"},         // 91.108.4.0/22
+            {"91.108.8.0", "91.108.11.255"},        // 91.108.8.0/22
+            {"91.108.12.0", "91.108.15.255"},       // 91.108.12.0/22
+            {"91.108.16.0", "91.108.19.255"},       // 91.108.16.0/22
+            {"91.108.20.0", "91.108.23.255"},       // 91.108.20.0/22
+            {"91.108.56.0", "91.108.59.255"},       // 91.108.56.0/22
     };
 
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(@RequestBody Map<String, Object> update,
                                                   HttpServletRequest request) {
-        if (ipValidationEnabled && !isValidTelegramIp(request)) {
+        // Verify X-Telegram-Bot-Api-Secret-Token header first (Telegram's official authentication method)
+        String expectedSecret = telegramBotService.getWebhookSecretToken();
+        String receivedSecret = request.getHeader("X-Telegram-Bot-Api-Secret-Token");
+
+        boolean hasSecretConfigured = expectedSecret != null && !expectedSecret.isBlank();
+
+        if (hasSecretConfigured) {
+            if (!expectedSecret.equals(receivedSecret)) {
+                log.warn("Webhook request with invalid secret token from IP: {}", getClientIp(request));
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
+            }
+        } else if (ipValidationEnabled && !isValidTelegramIp(request)) {
             String clientIp = getClientIp(request);
             log.warn("Webhook request from unauthorized IP: {}", clientIp);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
-        }
-
-        // Verify X-Telegram-Bot-Api-Secret-Token header
-        String expectedSecret = telegramBotService.getWebhookSecretToken();
-        if (expectedSecret != null) {
-            String receivedSecret = request.getHeader("X-Telegram-Bot-Api-Secret-Token");
-            if (!expectedSecret.equals(receivedSecret)) {
-                log.warn("Webhook request with invalid secret token");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
-            }
         }
 
         telegramBotService.handleUpdate(update);

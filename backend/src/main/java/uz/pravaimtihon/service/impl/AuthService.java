@@ -468,13 +468,27 @@ public class AuthService {
                         throw new BusinessException("error.google.auto.register.disabled");
                     }
 
+                    String rawFirst = google.getGivenName() != null && !google.getGivenName().isBlank()
+                            ? google.getGivenName().trim()
+                            : (google.getName() != null && !google.getName().isBlank() ? google.getName().trim() : "Google");
+                    if (rawFirst.length() < 2) {
+                        rawFirst = rawFirst + " User";
+                    }
+                    if (rawFirst.length() > 50) {
+                        rawFirst = rawFirst.substring(0, 50);
+                    }
+                    String rawLast = google.getFamilyName() != null && !google.getFamilyName().isBlank()
+                            ? google.getFamilyName().trim()
+                            : null;
+                    if (rawLast != null && rawLast.length() > 50) {
+                        rawLast = rawLast.substring(0, 50);
+                    }
+
                     return userRepository.save(User.builder()
                             .googleId(google.getId())
                             .email(google.getEmail())
-                            .firstName(google.getGivenName() != null
-                                    ? google.getGivenName()
-                                    : google.getName())
-                            .lastName(google.getFamilyName())
+                            .firstName(rawFirst)
+                            .lastName(rawLast)
                             .oauthProvider(OAuthProvider.GOOGLE)
                             .profileImageUrl(google.getPicture())
                             .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
@@ -521,14 +535,49 @@ public class AuthService {
     public AuthResponse telegramTokenLogin(String token, AcceptLanguage language) {
         log.info("Telegram token login attempt");
 
-        Long telegramUserId = telegramTokenStore.validateAndConsume(token);
-        if (telegramUserId == null) {
+        TelegramTokenStore.TelegramUserData userData = telegramTokenStore.validateAndConsume(token);
+        if (userData == null) {
             throw new UnauthorizedException("error.telegram.token.invalid");
         }
 
-        String tgId = String.valueOf(telegramUserId);
+        String tgId = String.valueOf(userData.telegramUserId());
         User user = userRepository.findByTelegramIdAndDeletedFalse(tgId)
-                .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
+                .orElseGet(() -> {
+                    log.info("Auto-registering Telegram user during token login: tg_id={}", tgId);
+                    String rawFirst = (userData.firstName() != null && !userData.firstName().isBlank())
+                            ? userData.firstName().trim()
+                            : "Telegram";
+                    if (rawFirst.length() < 2) {
+                        rawFirst = rawFirst + " User";
+                    }
+                    if (rawFirst.length() > 50) {
+                        rawFirst = rawFirst.substring(0, 50);
+                    }
+                    String rawLast = (userData.lastName() != null && !userData.lastName().isBlank())
+                            ? userData.lastName().trim()
+                            : null;
+                    if (rawLast != null && rawLast.length() > 50) {
+                        rawLast = rawLast.substring(0, 50);
+                    }
+                    String rawUsername = (userData.username() != null && !userData.username().isBlank())
+                            ? userData.username().trim()
+                            : null;
+                    if (rawUsername != null && rawUsername.length() > 100) {
+                        rawUsername = rawUsername.substring(0, 100);
+                    }
+
+                    return userRepository.save(User.builder()
+                            .telegramId(tgId)
+                            .telegramUsername(rawUsername)
+                            .firstName(rawFirst)
+                            .lastName(rawLast)
+                            .oauthProvider(OAuthProvider.TELEGRAM)
+                            .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
+                            .role(Role.USER)
+                            .preferredLanguage(language != null ? language : AcceptLanguage.UZL)
+                            .isActive(true)
+                            .build());
+                });
 
         if (!user.getIsActive() || user.isAccountLocked()) {
             throw new BusinessException("error.user.account.inactive");
@@ -575,11 +624,33 @@ public class AuthService {
     private User createNewTelegramUser(TelegramAuthRequest request, AcceptLanguage language) {
         log.info("Creating new user from Telegram: telegram_id={}", request.getId());
 
+        String rawFirst = (request.getFirstName() != null && !request.getFirstName().isBlank())
+                ? request.getFirstName().trim()
+                : "Telegram";
+        if (rawFirst.length() < 2) {
+            rawFirst = rawFirst + " User";
+        }
+        if (rawFirst.length() > 50) {
+            rawFirst = rawFirst.substring(0, 50);
+        }
+        String rawLast = (request.getLastName() != null && !request.getLastName().isBlank())
+                ? request.getLastName().trim()
+                : null;
+        if (rawLast != null && rawLast.length() > 50) {
+            rawLast = rawLast.substring(0, 50);
+        }
+        String rawUsername = (request.getUsername() != null && !request.getUsername().isBlank())
+                ? request.getUsername().trim()
+                : null;
+        if (rawUsername != null && rawUsername.length() > 100) {
+            rawUsername = rawUsername.substring(0, 100);
+        }
+
         return userRepository.save(User.builder()
                 .telegramId(String.valueOf(request.getId()))
-                .telegramUsername(request.getUsername())
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
+                .telegramUsername(rawUsername)
+                .firstName(rawFirst)
+                .lastName(rawLast)
                 .oauthProvider(OAuthProvider.TELEGRAM)
                 .profileImageUrl(request.getPhotoUrl())
                 .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
