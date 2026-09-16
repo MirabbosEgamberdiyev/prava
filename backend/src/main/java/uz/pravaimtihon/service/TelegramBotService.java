@@ -287,7 +287,7 @@ public class TelegramBotService {
             }
         }
 
-        sendWelcomeMessage(chatId, firstName, lang, loginUrl, token);
+        sendWelcomeMessage(chatId, lang, token);
     }
 
     private AcceptLanguage mapTelegramLanguage(String languageCode) {
@@ -299,59 +299,41 @@ public class TelegramBotService {
         };
     }
 
-    private void sendWelcomeMessage(long chatId, String firstName, AcceptLanguage lang, String loginUrl, String token) {
-        String greeting;
-        String webBtnText;
+    private void sendWelcomeMessage(long chatId, AcceptLanguage lang, String token) {
+        String message;
 
         switch (lang) {
             case RU -> {
-                greeting = "👋 Здравствуйте, " + firstName + "!\n\n" +
-                        "🚗 <b>Prava Online — Авторизация</b>\n\n" +
-                        "Ваш код для входа:\n" +
+                message = "🔐 <b>Prava Online</b>\n\n" +
+                        "Ваш код подтверждения:\n\n" +
                         "<code>" + token + "</code>\n\n" +
-                        "📱 <b>Мобильное приложение:</b> скопируйте код и вставьте в окно Telegram в приложении.\n\n" +
-                        "💻 <b>Сайт и Desktop:</b> нажмите кнопку ниже:";
-                webBtnText = "💻 Войти на сайт / Desktop";
+                        "Введите этот код в приложение Prava Online.\n\n" +
+                        "⚠️ Не передавайте код третьим лицам.";
             }
             case EN -> {
-                greeting = "👋 Hello, " + firstName + "!\n\n" +
-                        "🚗 <b>Prava Online — Authentication</b>\n\n" +
-                        "Your login code:\n" +
+                message = "🔐 <b>Prava Online</b>\n\n" +
+                        "Your verification code:\n\n" +
                         "<code>" + token + "</code>\n\n" +
-                        "📱 <b>Mobile App:</b> Copy the code and paste it into the Telegram modal in the app.\n\n" +
-                        "💻 <b>Website & Desktop:</b> Click the button below:";
-                webBtnText = "💻 Sign in on Website / Desktop";
+                        "Enter this code into the Prava Online application.\n\n" +
+                        "⚠️ Do not share this code with anyone.";
             }
             case UZC -> {
-                greeting = "👋 Ассалому алайкум, " + firstName + "!\n\n" +
-                        "🚗 <b>Prava Online — Хавфсиз кириш</b>\n\n" +
-                        "Сизнинг тасдиқлаш кодингиз:\n" +
+                message = "🔐 <b>Prava Online</b>\n\n" +
+                        "Тасдиқлаш кодингиз:\n\n" +
                         "<code>" + token + "</code>\n\n" +
-                        "📱 <b>Мобил илова:</b> Кодни нусхалаб, иловадаги Telegram ойнасига киритинг.\n\n" +
-                        "💻 <b>Сайт ва Desktop:</b> Қуйидаги тугмани босинг:";
-                webBtnText = "💻 Сайт / Desktop га кириш";
+                        "Ушбу кодни Prava Online иловасига киритинг.\n\n" +
+                        "⚠️ Кодни бошқа одамларга берманг.";
             }
             default -> {
-                greeting = "👋 Assalomu alaykum, " + firstName + "!\n\n" +
-                        "🚗 <b>Prava Online — Xavfsiz kirish</b>\n\n" +
-                        "Sizning tasdiqlash kodingiz:\n" +
+                message = "🔐 <b>Prava Online</b>\n\n" +
+                        "Tasdiqlash kodingiz:\n\n" +
                         "<code>" + token + "</code>\n\n" +
-                        "📱 <b>Mobil ilova:</b> Kodni nusxalab, ilovadagi Telegram oynasiga kiriting.\n\n" +
-                        "💻 <b>Sayt va Desktop:</b> Quyidagi tugmani bosing:";
-                webBtnText = "💻 Sayt / Desktopga kirish";
+                        "Ushbu kodni Prava Online ilovasiga kiriting.\n\n" +
+                        "⚠️ Kodni boshqa odamlarga bermang.";
             }
         }
 
-        Map<String, Object> inlineKeyboard = Map.of(
-                "inline_keyboard", List.of(
-                        List.of(Map.of(
-                                "text", webBtnText,
-                                "url", loginUrl
-                        ))
-                )
-        );
-
-        sendMessage(chatId, greeting, inlineKeyboard);
+        sendMessage(chatId, message, null);
     }
 
     private void sendLanguageSelectionKeyboard(long chatId, AcceptLanguage currentLang) {
