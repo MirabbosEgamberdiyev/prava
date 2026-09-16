@@ -45,7 +45,7 @@ public class QrAuthController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @GetMapping("/status")
+    @GetMapping({"/status", "/poll"})
     @Operation(summary = "Desktop sessiya holatini so'rab turadi (polling)")
     public ResponseEntity<ApiResponse<QrPairingStatusResponse>> checkStatus(
             @RequestParam("sessionId") String sessionId
