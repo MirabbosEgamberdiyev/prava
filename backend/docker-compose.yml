@@ -51,7 +51,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET .env faylda majburiy (openssl rand -base64 48)}
 
       # CORS — production domains
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://pravaonline.uz,https://www.pravaonline.uz,https://admin.pravaonline.uz}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://pravaonline.uz,https://www.pravaonline.uz,https://web.pravaonline.uz,https://admin.pravaonline.uz}
 
       # OAuth & Mail (optional - app will work without these)
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
