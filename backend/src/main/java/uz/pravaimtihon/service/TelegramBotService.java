@@ -42,7 +42,10 @@ public class TelegramBotService {
     @Value("${app.telegram.base-url:https://pravaonline.uz}")
     private String baseUrl;
 
-    /** Secret token for webhook verification (generated on startup) */
+    @Value("${app.telegram.webhook-secret:}")
+    private String configuredWebhookSecret;
+
+    /** Secret token for webhook verification */
     private String webhookSecretToken;
 
     /** Tracks the last processed update_id to skip duplicates */
@@ -73,8 +76,12 @@ public class TelegramBotService {
         }
 
         try {
-            // Generate a secret token for webhook verification
-            webhookSecretToken = UUID.randomUUID().toString().replace("-", "");
+            // Use configured secret or generate a secret token for webhook verification
+            if (configuredWebhookSecret != null && !configuredWebhookSecret.isBlank()) {
+                webhookSecretToken = configuredWebhookSecret.trim();
+            } else {
+                webhookSecretToken = UUID.randomUUID().toString().replace("-", "");
+            }
 
             Map<String, Object> body = new HashMap<>();
             body.put("url", url);
