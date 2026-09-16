@@ -83,15 +83,27 @@ public class UserAppController {
     // ─── Saved Questions ──────────────────────────────────────────────────────
 
     @PostMapping("/saved-questions/{questionId}")
-    @Operation(summary = "Savolni saqlash/o'chirish (toggle). true=saqlandi, false=o'chirildi")
-    public ResponseEntity<ApiResponse<Boolean>> toggleSavedQuestion(
+    @Operation(summary = "Savolni saqlash (idempotent; ?toggle=true bo'lsa toggle)")
+    public ResponseEntity<ApiResponse<Boolean>> saveOrToggleSavedQuestion(
             @PathVariable Long questionId,
+            @RequestParam(required = false, defaultValue = "false") boolean toggle,
             @AuthenticationPrincipal CustomUserDetails principal) {
-        boolean saved = userAppService.toggleSavedQuestion(principal.getId(), questionId);
+        boolean saved = toggle
+                ? userAppService.toggleSavedQuestion(principal.getId(), questionId)
+                : userAppService.saveQuestion(principal.getId(), questionId);
         return ResponseEntity.ok(ApiResponse.success(
                 saved ? "Savol saqlandi" : "Savol o'chirildi",
                 saved
         ));
+    }
+
+    @DeleteMapping("/saved-questions/{questionId}")
+    @Operation(summary = "Savolni saqlanganlardan o'chirish (idempotent)")
+    public ResponseEntity<ApiResponse<Void>> removeSavedQuestion(
+            @PathVariable Long questionId,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        userAppService.removeSavedQuestion(principal.getId(), questionId);
+        return ResponseEntity.ok(ApiResponse.success("Savol o'chirildi", null));
     }
 
     @GetMapping("/saved-questions")

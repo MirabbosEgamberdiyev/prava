@@ -118,7 +118,8 @@ public class TelegramBotService {
     private void setupBotCommands() {
         try {
             List<Map<String, String>> commands = List.of(
-                    Map.of("command", "start", "description", "Tizimga kirish / Войти / Login")
+                    Map.of("command", "start", "description", "Kirish kodi / Код входа"),
+                    Map.of("command", "lang", "description", "Tilni tanlash / Выбрать язык")
             );
             Map<String, Object> body = Map.of("commands", commands);
 
@@ -126,7 +127,7 @@ public class TelegramBotService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
             restTemplate.postForObject(getApiUrl() + "/setMyCommands", request, String.class);
-            log.info("Telegram bot commands set successfully (auth only)");
+            log.info("Telegram bot commands set successfully (auth + language)");
         } catch (Exception e) {
             log.warn("Failed to set Telegram bot commands: {}", e.getMessage());
         }
@@ -169,6 +170,12 @@ public class TelegramBotService {
             String username = from != null ? (String) from.get("username") : "";
             String languageCode = from != null ? (String) from.get("language_code") : "uz";
             long userId = from != null ? ((Number) from.get("id")).longValue() : chatId;
+
+            if (text.startsWith("/lang") || text.startsWith("/language") || text.startsWith("/settings")) {
+                AcceptLanguage userLang = getUserLanguage(userId);
+                sendLanguageSelectionKeyboard(chatId, userLang);
+                return;
+            }
 
             // Pure authentication: /start or any text generates one-time login token
             String payload = text.startsWith("/start") && text.length() > 7 ? text.substring(7).trim() : null;
@@ -216,6 +223,13 @@ public class TelegramBotService {
         Map<String, Object> chat = (Map<String, Object>) message.get("chat");
         long chatId = ((Number) chat.get("id")).longValue();
 
+        if ("choose_lang".equals(data)) {
+            AcceptLanguage currentLang = getUserLanguage(userId);
+            sendLanguageSelectionKeyboard(chatId, currentLang);
+            answerCallbackQuery(callbackQueryId);
+            return;
+        }
+
         if (data.startsWith("lang_")) {
             AcceptLanguage selectedLang = switch (data) {
                 case "lang_uzl" -> AcceptLanguage.UZL;
@@ -246,6 +260,12 @@ public class TelegramBotService {
 
             sendMessage(chatId, confirmMsg, null);
             answerCallbackQuery(callbackQueryId);
+
+            String firstName = from.get("first_name") != null ? (String) from.get("first_name") : "";
+            String lastName = from.get("last_name") != null ? (String) from.get("last_name") : "";
+            String username = from.get("username") != null ? (String) from.get("username") : "";
+            String token = tokenStore.generateToken(userId, firstName, lastName, username);
+            sendWelcomeMessage(chatId, selectedLang, token);
         }
     }
 
@@ -382,24 +402,32 @@ public class TelegramBotService {
             }
         }
 
-        sendMessage(chatId, message, null);
+        Map<String, Object> replyMarkup = Map.of(
+                "inline_keyboard", List.of(
+                        List.of(
+                                Map.of("text", "🌐 Tilni o'zgartirish / Сменить язык", "callback_data", "choose_lang")
+                        )
+                )
+        );
+
+        sendMessage(chatId, message, replyMarkup);
     }
 
     private void sendLanguageSelectionKeyboard(long chatId, AcceptLanguage currentLang) {
         String langPrompt = switch (currentLang) {
-            case RU -> "\uD83C\uDF10 \u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u044f\u0437\u044b\u043a / Tilni tanlang:";
-            case UZC -> "\uD83C\uDF10 \u0422\u0438\u043b\u043d\u0438 \u0442\u0430\u043d\u043b\u0430\u043d\u0433 / Tilni tanlang:";
-            default -> "\uD83C\uDF10 Tilni tanlang / \u0422\u0438\u043b\u043d\u0438 \u0442\u0430\u043d\u043b\u0430\u043d\u0433:";
+            case RU -> "🌐 Выберите язык:";
+            case UZC -> "🌐 Тилни танланг:";
+            default -> "🌐 Tilni tanlang:";
         };
 
         Map<String, Object> langKeyboard = Map.of(
                 "inline_keyboard", List.of(
                         List.of(
-                                Map.of("text", "O'zbekcha", "callback_data", "lang_uzl"),
-                                Map.of("text", "\u040e\u0437\u0431\u0435\u043a\u0447\u0430", "callback_data", "lang_uzc")
+                                Map.of("text", "O'zbekcha (Lotin)" + (currentLang == AcceptLanguage.UZL ? " ✅" : ""), "callback_data", "lang_uzl"),
+                                Map.of("text", "\u040e\u0437\u0431\u0435\u043a\u0447\u0430 (\u041a\u0438\u0440\u0438\u043b\u043b)" + (currentLang == AcceptLanguage.UZC ? " ✅" : ""), "callback_data", "lang_uzc")
                         ),
                         List.of(
-                                Map.of("text", "\u0420\u0443\u0441\u0441\u043a\u0438\u0439", "callback_data", "lang_ru")
+                                Map.of("text", "\u0420\u0443\u0441\u0441\u043a\u0438\u0439" + (currentLang == AcceptLanguage.RU ? " ✅" : ""), "callback_data", "lang_ru")
                         )
                 )
         );

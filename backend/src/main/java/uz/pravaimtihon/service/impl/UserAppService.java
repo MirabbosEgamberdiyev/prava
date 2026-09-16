@@ -102,6 +102,26 @@ public class UserAppService {
     // ─── Saved Questions ──────────────────────────────────────────────────────
 
     @Transactional
+    public boolean saveQuestion(Long userId, Long questionId) {
+        if (!savedQuestionRepo.existsByUserIdAndQuestionId(userId, questionId)) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User topilmadi"));
+            Question q = questionRepository.findById(questionId)
+                    .orElseThrow(() -> new RuntimeException("Savol topilmadi"));
+            savedQuestionRepo.save(UserSavedQuestion.builder()
+                    .user(user).question(q)
+                    .savedAt(LocalDateTime.now())
+                    .build());
+        }
+        return true;
+    }
+
+    @Transactional
+    public void removeSavedQuestion(Long userId, Long questionId) {
+        savedQuestionRepo.deleteByUserIdAndQuestionId(userId, questionId);
+    }
+
+    @Transactional
     public boolean toggleSavedQuestion(Long userId, Long questionId) {
         if (savedQuestionRepo.existsByUserIdAndQuestionId(userId, questionId)) {
             savedQuestionRepo.deleteByUserIdAndQuestionId(userId, questionId);
