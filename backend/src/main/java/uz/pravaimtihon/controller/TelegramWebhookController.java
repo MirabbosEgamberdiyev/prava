@@ -80,7 +80,13 @@ public class TelegramWebhookController {
     }
 
     private boolean isLocalhost(String ip) {
-        return "127.0.0.1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip) || "::1".equals(ip);
+        if (ip == null || ip.isBlank()) return false;
+        String trimmed = ip.trim();
+        if ("127.0.0.1".equals(trimmed) || "0:0:0:0:0:0:0:1".equals(trimmed) || "::1".equals(trimmed)) {
+            return true;
+        }
+        // Allow internal docker bridge and private networks
+        return trimmed.startsWith("172.") || trimmed.startsWith("10.") || trimmed.startsWith("192.168.");
     }
 
     /**
