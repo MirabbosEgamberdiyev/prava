@@ -301,9 +301,7 @@ public class TelegramBotService {
 
     private void sendWelcomeMessage(long chatId, String firstName, AcceptLanguage lang, String loginUrl, String token) {
         String greeting;
-        String mobileBtnText;
         String webBtnText;
-        String mobileDeepLink = "pravamobile://auth?token=" + token;
 
         switch (lang) {
             case RU -> {
@@ -311,26 +309,26 @@ public class TelegramBotService {
                         "🚗 <b>Prava Online — Авторизация</b>\n\n" +
                         "Ваш код для входа:\n" +
                         "<code>" + token + "</code>\n\n" +
-                        "Нажмите кнопку ниже, чтобы войти:";
-                mobileBtnText = "📱 Мобильное приложение";
-                webBtnText = "💻 Сайт / Desktop";
+                        "📱 <b>Мобильное приложение:</b> скопируйте код и вставьте в окно Telegram в приложении.\n\n" +
+                        "💻 <b>Сайт и Desktop:</b> нажмите кнопку ниже:";
+                webBtnText = "💻 Войти на сайт / Desktop";
             }
             case EN -> {
                 greeting = "👋 Hello, " + firstName + "!\n\n" +
                         "🚗 <b>Prava Online — Authentication</b>\n\n" +
                         "Your login code:\n" +
                         "<code>" + token + "</code>\n\n" +
-                        "Click below to sign in:";
-                mobileBtnText = "📱 Mobile App";
-                webBtnText = "💻 Website / Desktop";
+                        "📱 <b>Mobile App:</b> Copy the code and paste it into the Telegram modal in the app.\n\n" +
+                        "💻 <b>Website & Desktop:</b> Click the button below:";
+                webBtnText = "💻 Sign in on Website / Desktop";
             }
             case UZC -> {
                 greeting = "👋 Ассалому алайкум, " + firstName + "!\n\n" +
                         "🚗 <b>Prava Online — Хавфсиз кириш</b>\n\n" +
                         "Сизнинг тасдиқлаш кодингиз:\n" +
                         "<code>" + token + "</code>\n\n" +
-                        "Ҳисобингизга кириш учун тугмани босинг:";
-                mobileBtnText = "📱 Мобил иловага кириш";
+                        "📱 <b>Мобил илова:</b> Кодни нусхалаб, иловадаги Telegram ойнасига киритинг.\n\n" +
+                        "💻 <b>Сайт ва Desktop:</b> Қуйидаги тугмани босинг:";
                 webBtnText = "💻 Сайт / Desktop га кириш";
             }
             default -> {
@@ -338,18 +336,14 @@ public class TelegramBotService {
                         "🚗 <b>Prava Online — Xavfsiz kirish</b>\n\n" +
                         "Sizning tasdiqlash kodingiz:\n" +
                         "<code>" + token + "</code>\n\n" +
-                        "Hisobingizga kirish uchun tugmani bosing:";
-                mobileBtnText = "📱 Mobil ilovaga kirish";
+                        "📱 <b>Mobil ilova:</b> Kodni nusxalab, ilovadagi Telegram oynasiga kiriting.\n\n" +
+                        "💻 <b>Sayt va Desktop:</b> Quyidagi tugmani bosing:";
                 webBtnText = "💻 Sayt / Desktopga kirish";
             }
         }
 
         Map<String, Object> inlineKeyboard = Map.of(
                 "inline_keyboard", List.of(
-                        List.of(Map.of(
-                                "text", mobileBtnText,
-                                "url", mobileDeepLink
-                        )),
                         List.of(Map.of(
                                 "text", webBtnText,
                                 "url", loginUrl
