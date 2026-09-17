@@ -1,16 +1,16 @@
 import { createTheme, type MantineColorsTuple } from "@mantine/core";
 
 const primaryBlue: MantineColorsTuple = [
-  "#e7f5ff",
-  "#d0ebff",
-  "#a5d8ff",
-  "#74c0fc",
-  "#4dabf7",
-  "#339af0",
-  "#228be6",
-  "#1c7ed6",
-  "#1971c2",
-  "#1864ab",
+  "#f0f9ff",
+  "#e0f2fe",
+  "#bae6fd",
+  "#7dd3fc",
+  "#38bdf8",
+  "#0ea5e9",
+  "#0284c7",
+  "#0369a1",
+  "#075985",
+  "#0c4a6e",
 ];
 
 export const theme = createTheme({
@@ -20,11 +20,10 @@ export const theme = createTheme({
   },
 
   /**
-   * `primaryShade` — light rejimda 7-shade (#1c7ed6) ishlatiladi.
-   * Sabab: 6-shade (#228be6) oq fonda ~3.3:1 kontrast beradi — WCAG AA (4.5:1)
-   * dan past. 7-shade ~4.6:1 beradi. Dark rejimda yorqinroq 5-shade kerak.
+   * `primaryShade` — light rejimda 6-shade (#0284c7) ishlatiladi (oq fonda 4.7:1 kontrast).
+   * Dark rejimda esa 4-shade (#38bdf8) ishlatiladi (to'q fonda 7.5:1 kontrast).
    */
-  primaryShade: { light: 7, dark: 5 },
+  primaryShade: { light: 6, dark: 4 },
 
   /**
    * `autoContrast` — "filled" variantlarda matn rangi fon yorqinligiga qarab

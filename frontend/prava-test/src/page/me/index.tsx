@@ -795,7 +795,13 @@ export default function User_Page() {
                     <button
                       key={item.label}
                       className="home-footer-btn"
-                      onClick={() => setQrModal(item)}
+                      onClick={() => {
+                        if (typeof window !== "undefined" && window.innerWidth <= 768) {
+                          window.open(item.url, "_blank", "noopener,noreferrer");
+                        } else {
+                          setQrModal(item);
+                        }
+                      }}
                       type="button"
                     >
                       <item.icon size={18} stroke={1.8} style={{ color: item.color }} />
@@ -835,6 +841,28 @@ export default function User_Page() {
                 />
                 <div className="qr-modal-url">{qrModal.handle}</div>
                 <p className="qr-modal-hint">{t("dashboard.scanQrCode", "QR kodni skanerlang")}</p>
+                <a
+                  href={qrModal.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    marginTop: 10,
+                    padding: "6px 14px",
+                    background: "var(--surface-muted)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--primary)",
+                    textDecoration: "none",
+                  }}
+                >
+                  <span>{t("common.openDirectly", "Havola orqali ochish")}</span>
+                  <IconArrowRight size={14} />
+                </a>
               </div>
               <button
                 className="qr-modal-close"

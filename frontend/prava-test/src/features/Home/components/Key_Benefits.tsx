@@ -30,8 +30,8 @@ export const Key_Benefits = React.memo(() => {
         "home.benefits.card2Desc",
         "20 ta savol, 25 daqiqa vaqt va YHXX kompyuter markazidagi kabi haqiqiy imtihon muhiti."
       ),
-      color: "#2563eb",
-      bg: "rgba(37, 99, 235, 0.1)",
+      color: "#4f46e5",
+      bg: "rgba(79, 70, 229, 0.1)",
     },
     {
       icon: IconBrain,
@@ -40,8 +40,8 @@ export const Key_Benefits = React.memo(() => {
         "home.benefits.card3Desc",
         "Siz adashgan savollar avtomatik saqlanadi va to'liq o'zlashtirilgunga qadar qayta mashq qildiriladi."
       ),
-      color: "#ea580c",
-      bg: "rgba(234, 88, 12, 0.1)",
+      color: "#059669",
+      bg: "rgba(5, 150, 105, 0.1)",
     },
     {
       icon: IconDevices,
@@ -50,8 +50,8 @@ export const Key_Benefits = React.memo(() => {
         "home.benefits.card4Desc",
         "Windows kompyuter uchun ilova internetsiz to'liq ishlaydi, shuningdek mobil telefon va vebda mavjud."
       ),
-      color: "#7c3aed",
-      bg: "rgba(124, 58, 237, 0.1)",
+      color: "#d97706",
+      bg: "rgba(217, 119, 6, 0.1)",
     },
   ];
 

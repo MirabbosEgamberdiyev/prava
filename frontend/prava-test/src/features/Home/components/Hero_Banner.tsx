@@ -83,49 +83,54 @@ export function Hero_Banner() {
         </div>
 
         {/* 5. Platform Store Badges Row */}
-        <div className={classes.storeBadgesRow}>
-          <a
-            href={WINDOWS_DIRECT_URL}
-            download
-            className={classes.storeBadgeLink}
-            title="Windows ilovasi (.exe)"
-          >
-            <IconBrandWindows size={18} />
-            <span>Windows (.exe)</span>
-          </a>
+        <div className={classes.storeBadgesWrapper}>
+          <span className={classes.storeBadgesLabel}>
+            {t("home.hero.availableOn", "Barcha qurilmalarda mavjud:")}
+          </span>
+          <div className={classes.storeBadgesRow}>
+            <a
+              href={WINDOWS_DIRECT_URL}
+              download
+              className={classes.storeBadgeLink}
+              title="Windows ilovasi (.exe)"
+            >
+              <IconBrandWindows size={18} />
+              <span>Windows (.exe)</span>
+            </a>
 
-          <a
-            href={PLAY_STORE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={classes.storeBadgeLink}
-            title="Google Play"
-          >
-            <IconBrandGooglePlay size={18} color="#00e676" />
-            <span>Google Play</span>
-          </a>
+            <a
+              href={PLAY_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={classes.storeBadgeLink}
+              title="Google Play"
+            >
+              <IconBrandGooglePlay size={18} color="#00e676" />
+              <span>Google Play</span>
+            </a>
 
-          <a
-            href={APP_STORE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={classes.storeBadgeLink}
-            title="App Store"
-          >
-            <IconBrandApple size={18} />
-            <span>App Store</span>
-          </a>
+            <a
+              href={APP_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={classes.storeBadgeLink}
+              title="App Store"
+            >
+              <IconBrandApple size={18} />
+              <span>App Store</span>
+            </a>
 
-          <a
-            href={TELEGRAM_BOT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={classes.storeBadgeLink}
-            title="Telegram Bot"
-          >
-            <IconBrandTelegram size={18} color="#0088cc" />
-            <span>Telegram</span>
-          </a>
+            <a
+              href={TELEGRAM_BOT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={classes.storeBadgeLink}
+              title="Telegram Bot"
+            >
+              <IconBrandTelegram size={18} color="#0088cc" />
+              <span>Telegram</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>
