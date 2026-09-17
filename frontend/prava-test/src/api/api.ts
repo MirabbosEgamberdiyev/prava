@@ -169,28 +169,39 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     // Global error handling (non-401 errors)
     const requestUrl = error.config?.url || "unknown";
+    const SELF_HANDLED_URLS = [
+      "/auth/login",
+      "/auth/register",
+      "/auth/google",
+      "/auth/telegram",
+      "/auth/verify-otp",
+      "/auth/forgot-password",
+      "/auth/reset-password",
+      "/auth/logout",
+      "/auth/pair",
+      "/api/v2/exams/active",
+      "/api/v2/tickets/start-visible",
+      "/api/v2/exams/start-visible",
+      "/api/v2/exams/start-secure",
+      "/api/v2/exams/submit",
+    ];
+    const isSelfHandled = SELF_HANDLED_URLS.some((u) => requestUrl.includes(u));
+    const isCanceled = axios.isCancel(error) || error.code === "ERR_CANCELED";
+
     if (error.response) {
       const status = error.response.status;
       if (status === 403) {
         // 403 means authenticated but forbidden — do NOT clear tokens/logout
-        window.dispatchEvent(
-          new CustomEvent("api-error", {
-            detail: { status: 403, message: i18n.t("errors.accessDenied"), url: requestUrl },
-          }),
-        );
+        if (!isSelfHandled) {
+          window.dispatchEvent(
+            new CustomEvent("api-error", {
+              detail: { status: 403, message: i18n.t("errors.accessDenied"), url: requestUrl },
+            }),
+          );
+        }
         return Promise.reject(error);
       }
       if (status >= 500) {
-        // Bu endpointlar o'z error handling'iga ega — global notification kerak emas
-        const SELF_HANDLED_URLS = [
-          "/auth/logout",                    // client-side already handled
-          "/api/v2/exams/active",            // polling — spam bo'ladi
-          "/api/v2/tickets/start-visible",   // page o'zi error ko'rsatadi
-          "/api/v2/exams/start-visible",     // page o'zi error ko'rsatadi
-          "/api/v2/exams/start-secure",      // page o'zi error ko'rsatadi
-          "/api/v2/exams/submit",            // QuizNav o'zi notification ko'rsatadi
-        ];
-        const isSelfHandled = SELF_HANDLED_URLS.some((u) => requestUrl.includes(u));
         if (!isSelfHandled) {
           window.dispatchEvent(
             new CustomEvent("api-error", {
@@ -199,7 +210,7 @@ api.interceptors.response.use(
           );
         }
       }
-    } else if (error.code === "ERR_NETWORK" || !error.response) {
+    } else if (!isCanceled && !isSelfHandled && (error.code === "ERR_NETWORK" || !error.response)) {
       window.dispatchEvent(
         new CustomEvent("api-error", {
           detail: { status: 0, message: i18n.t("errors.networkError"), url: requestUrl },

@@ -57,7 +57,8 @@
     "passwordPlaceholder": "Паролингизни киритинг",
     "byPassword": "Парол билан",
     "byQr": "QR код билан",
-    "logout": "Чиқиш"
+    "logout": "Чиқиш",
+    "telegramDirectHint": "Telegram бот орқали тезкор кириш:"
   },
   "register": {
     "title": "Рўйхатдан ўтиш",
@@ -885,7 +886,8 @@
     "noInternetMessage": "Интернетга уланганингизни текширинг ва қайта уриниб кўринг.",
     "noInternetRetry": "Қайта уриниш",
     "renderTitle": "Хатолик юз берди",
-    "renderReload": "Қайта юклаш"
+    "renderReload": "Қайта юклаш",
+    "serverUnreachable": "Сервер билан алоқа ўрнатилмади. Илтимос, кейинроқ қайта уриниб кўринг."
   },
   "topics": {
     "title": "Мавзулар",

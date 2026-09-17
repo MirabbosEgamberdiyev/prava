@@ -35,7 +35,8 @@
     "telegramCallbackRetry": "Get new link",
     "telegramCallbackInvalid": "Invalid login link. Please try logging in again.",
     "not_title": "Login",
-    "not_massage": "Welcome!"
+    "not_massage": "Welcome!",
+    "telegramDirectHint": "Quick login via Telegram bot:"
   },
   "register": {
     "title": "Sign up",
@@ -597,7 +598,8 @@
     "noInternetMessage": "Please check your internet connection and try again.",
     "noInternetRetry": "Retry",
     "renderTitle": "An error occurred",
-    "renderReload": "Reload"
+    "renderReload": "Reload",
+    "serverUnreachable": "Unable to reach server. Please try again later."
   },
   "topics": {
     "title": "Topics",

@@ -571,6 +571,20 @@ const Register_Page = () => {
                   <GoogleLoginButton mode="register" compact />
                   <TelegramLoginButton mode="register" compact />
                 </SimpleGrid>
+
+                <Text size="xs" c="dimmed" ta="center" mt={2}>
+                  {t("auth.telegramDirectHint", "Telegram bot orqali tezkor kirish:")}{" "}
+                  <Anchor
+                    href="https://t.me/pravaonlineuzbot?start=login"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    size="xs"
+                    fw={600}
+                    c="#0088cc"
+                  >
+                    @pravaonlineuzbot
+                  </Anchor>
+                </Text>
               </Stack>
             </form>
           ) : (

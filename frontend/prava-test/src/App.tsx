@@ -48,9 +48,12 @@ function ApiErrorListener() {
           autoClose: 5000,
         });
       } else if (detail.status === 0) {
+        const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
         notifications.show({
-          title: t("errors.noInternetTitle"),
-          message: detail.message || t("errors.networkError"),
+          title: isOffline ? t("errors.noInternetTitle") : t("common.error"),
+          message: isOffline
+            ? (detail.message || t("errors.networkError"))
+            : t("errors.serverUnreachable", "Server bilan aloqa o'rnatilmadi. Iltimos, keyinroq qayta urinib ko'ring."),
           color: "red",
           autoClose: 5000,
         });

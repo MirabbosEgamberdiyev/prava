@@ -70,7 +70,12 @@ const GoogleLoginButton = (_props: GoogleLoginButtonProps = {}) => {
         setLoading(false);
       }
     },
-    onError: () => {
+    onError: (errorResponse) => {
+      // If user simply closed the popup or cancelled, exit silently without error toast
+      const err = (errorResponse as { error?: string })?.error;
+      if (err === "popup_closed_by_user" || err === "access_denied") {
+        return;
+      }
       notifications.show({
         color: "red",
         title: t("common.error"),

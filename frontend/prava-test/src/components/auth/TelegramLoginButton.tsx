@@ -37,6 +37,7 @@ declare global {
 }
 
 const TELEGRAM_BOT_ID = ENV.TELEGRAM_BOT_ID;
+const DIRECT_BOT_URL = "https://t.me/pravaonlineuzbot?start=login";
 
 const TelegramIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -59,6 +60,13 @@ const TelegramLoginButton = (_props: TelegramLoginButtonProps = {}) => {
   }
 
   const handleTelegramLogin = useCallback(() => {
+    // If on mobile devices, open Telegram app directly for native UX
+    const isMobile = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = DIRECT_BOT_URL;
+      return;
+    }
+
     // Try popup API first
     if (window.Telegram?.Login?.auth) {
       setLoading(true);
@@ -66,6 +74,7 @@ const TelegramLoginButton = (_props: TelegramLoginButtonProps = {}) => {
         { bot_id: TELEGRAM_BOT_ID, request_access: true },
         async (user: TelegramUser | false) => {
           if (!user) {
+            // User closed popup or cancelled — silent exit, do NOT display an error toast
             setLoading(false);
             return;
           }
@@ -109,7 +118,7 @@ const TelegramLoginButton = (_props: TelegramLoginButtonProps = {}) => {
         }
       );
     } else {
-      // Fallback: load Telegram widget script and retry
+      // Fallback: load Telegram widget script
       const script = document.createElement("script");
       script.src = "https://telegram.org/js/telegram-widget.js?22";
       script.async = true;
@@ -117,19 +126,13 @@ const TelegramLoginButton = (_props: TelegramLoginButtonProps = {}) => {
         if (window.Telegram?.Login?.auth) {
           handleTelegramLogin();
         } else {
-          notifications.show({
-            color: "yellow",
-            title: t("common.error"),
-            message: t("auth.telegram.errorMessage"),
-          });
+          // Open direct bot fallback
+          window.open(DIRECT_BOT_URL, "_blank", "noopener,noreferrer");
         }
       };
       script.onerror = () => {
-        notifications.show({
-          color: "red",
-          title: t("common.error"),
-          message: t("auth.telegram.errorMessage"),
-        });
+        // In case widget script is blocked, fallback directly to Telegram bot
+        window.open(DIRECT_BOT_URL, "_blank", "noopener,noreferrer");
       };
       document.head.appendChild(script);
     }
