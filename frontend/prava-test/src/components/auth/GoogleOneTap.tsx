@@ -16,6 +16,7 @@ import { useAuth } from "../../auth/AuthContext";
 import { ENV } from "../../config/env";
 import api from "../../api/api";
 import { getErrorMessage } from "../../types/errors";
+import { isGoogleOneTapAllowed } from "../../utils/domain";
 
 // ----- Google GSI type declarations -----
 interface CredentialResponse {
@@ -78,8 +79,22 @@ export function GoogleOneTap() {
   // Joriy handleCredential ni ref da saqlash — stale closure muammosidan qochish
   const handleCredentialRef = useRef<((r: CredentialResponse) => Promise<void>) | null>(null);
 
+  const isAllowed = isGoogleOneTapAllowed(location.pathname);
   const isExcluded = EXCLUDED_PATHS.some((p) => location.pathname.startsWith(p));
-  const shouldShow = !isAuthenticated && !!ENV.GOOGLE_CLIENT_ID && !isExcluded;
+  const shouldShow = isAllowed && !isAuthenticated && !!ENV.GOOGLE_CLIENT_ID && !isExcluded;
+
+  // Agar landing domainda bo'lsa yoki ruxsat etilmagan bo'lsa, har qanday promptni bekor qilish
+  useEffect(() => {
+    if (!isAllowed) {
+      gsiInitializedRef.current = false;
+      try {
+        window.google?.accounts?.id?.cancel();
+        window.google?.accounts?.id?.disableAutoSelect();
+      } catch {
+        // ignore
+      }
+    }
+  }, [isAllowed]);
 
   // handleCredential ni doim yangilab turish (i18n, navigate, t o'zgarganda ham)
   useEffect(() => {
@@ -152,7 +167,7 @@ export function GoogleOneTap() {
           client_id: ENV.GOOGLE_CLIENT_ID,
           callback: callbackWrapper,
           cancel_on_tap_outside: false,
-          auto_select: true,
+          auto_select: false,
           context: "signin",
           itp_support: true,
         });

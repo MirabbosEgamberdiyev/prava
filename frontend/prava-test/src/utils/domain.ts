@@ -151,3 +151,53 @@ export function redirectToLanding(
 
   window.location.replace(targetUrl);
 }
+
+/**
+ * Determines whether Google One Tap should be active.
+ * STRICTLY disabled on the public landing domain (https://pravaonline.uz)
+ * to prevent auto-login, popups, or intrusive prompts while browsing the public website.
+ * Enabled on the web application domain (https://web.pravaonline.uz) where user authentication takes place.
+ */
+export function isGoogleOneTapAllowed(pathname: string = typeof window !== "undefined" ? window.location.pathname : ""): boolean {
+  if (typeof window === "undefined") return false;
+
+  const hostname = window.location.hostname.toLowerCase();
+
+  // Production landing domain: NEVER enable Google One Tap
+  if (hostname === "pravaonline.uz" || hostname === "www.pravaonline.uz") {
+    return false;
+  }
+
+  // Production web application domain: enable
+  if (hostname === "web.pravaonline.uz") {
+    return true;
+  }
+
+  // Local development / staging mode detection
+  const params = new URLSearchParams(window.location.search);
+  const modeParam = params.get("app_mode") || params.get("mode");
+  if (modeParam === "landing") return false;
+  if (modeParam === "web") return true;
+
+  if (window.location.port === "5174") return true;
+
+  // Localhost unified: disable on public landing pages, enable on web app/auth routes
+  const landingPaths = [
+    "/",
+    "/partners",
+    "/pricing",
+    "/downloads",
+    "/about",
+    "/contact",
+    "/faq",
+    "/terms",
+    "/privacy",
+    "/try-exam",
+  ];
+  if (landingPaths.includes(pathname)) {
+    return false;
+  }
+
+  return true;
+}
+

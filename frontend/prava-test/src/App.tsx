@@ -6,6 +6,7 @@ import { LanguageProvider } from "./context/LanguageContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import AppRoutes from "./routes";
 import GoogleOneTap from "./components/auth/GoogleOneTap";
+import { isGoogleOneTapAllowed } from "./utils/domain";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import { ScrollManager } from "./components/common/ScrollManager";
@@ -72,13 +73,14 @@ function ApiErrorListener() {
  */
 function AppInner() {
   const location = useLocation();
+  const allowGoogleOneTap = isGoogleOneTapAllowed(location.pathname);
 
   return (
     <DesktopThemeProvider>
       <AuthProvider>
         <LanguageProvider>
           <ApiErrorListener />
-          <GoogleOneTap />
+          {allowGoogleOneTap && <GoogleOneTap />}
           <ScrollManager />
           <ErrorBoundary resetKey={location.pathname}>
             <AppRoutes />
