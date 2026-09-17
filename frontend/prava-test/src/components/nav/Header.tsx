@@ -75,7 +75,7 @@ export default function Header({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="header-control-icon-btn"
-                  aria-label="Telegram kanalimiz"
+                  aria-label={t("nav.telegramChannel", "Telegram kanalimiz")}
                 >
                   <IconBrandTelegram size={17} color="#0088cc" stroke={1.8} />
                 </a>

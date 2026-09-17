@@ -578,7 +578,7 @@ export default function Marafon_Page() {
                           className="exam-qnum"
                           onClick={() => setCurrent(0)}
                           type="button"
-                          title="1-savol"
+                          title={t("exam.firstQuestion", "1-savol")}
                         >
                           1..
                         </button>

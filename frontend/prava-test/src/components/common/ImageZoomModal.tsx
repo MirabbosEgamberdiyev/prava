@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { IconX } from "@tabler/icons-react";
 import SecureImage from "./SecureImage";
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function ImageZoomModal({ src, onClose }: Props) {
+  const { t } = useTranslation();
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -22,7 +24,7 @@ export default function ImageZoomModal({ src, onClose }: Props) {
       onClick={onClose}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <button className="img-zoom-close" onClick={onClose} type="button" aria-label="Close">
+      <button className="img-zoom-close" onClick={onClose} type="button" aria-label={t("common.close", "Yopish")}>
         <IconX size={20} />
       </button>
       <div className="img-zoom-content" onClick={(e) => e.stopPropagation()}>

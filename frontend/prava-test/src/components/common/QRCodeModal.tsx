@@ -44,7 +44,7 @@ export default function QRCodeModal({ item, onClose }: Props) {
           <div className="qr-modal-url">{item.handle}</div>
           <p className="qr-modal-hint">{t("common.scanQrCode", "QR kodni skanerlang")}</p>
         </div>
-        <button className="qr-modal-close" onClick={onClose} type="button" aria-label="Close">
+        <button className="qr-modal-close" onClick={onClose} type="button" aria-label={t("common.close", "Yopish")}>
           ✕
         </button>
       </div>

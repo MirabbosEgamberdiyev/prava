@@ -373,7 +373,7 @@ const Register_Page = () => {
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                   <TextInput
                     label={t("register.firstName")}
-                    placeholder="Ali"
+                    placeholder={t("register.firstNamePlaceholder", "Ali")}
                     required
                     size="md"
                     radius="md"

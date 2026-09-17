@@ -157,7 +157,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Yopish"
+              aria-label={t("common.close", "Yopish")}
               style={{
                 background: "none",
                 border: "none",
@@ -222,7 +222,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                         borderRadius: "6px",
                       }}
                     >
-                      {idx + 1}-savol • {isWrong ? t("common.wrong", "Xato") : t("common.correct", "To'g'ri")}
+                      {t("exam.questionReviewNum", { number: idx + 1, defaultValue: `${idx + 1}-savol` })} • {isWrong ? t("common.wrong", "Xato") : t("common.correct", "To'g'ri")}
                     </span>
                   </div>
 
@@ -231,7 +231,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                     <div style={{ marginBottom: "12px", maxHeight: "180px", overflow: "hidden", borderRadius: "8px" }}>
                       <SecureImage
                         path={q.image_path}
-                        alt="Question illustration"
+                        alt={t("exam.questionIllustration", "Savol rasmi")}
                         style={{ width: "100%", maxHeight: "180px", objectFit: "contain", borderRadius: "8px" }}
                       />
                     </div>

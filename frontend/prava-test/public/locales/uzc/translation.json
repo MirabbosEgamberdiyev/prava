@@ -90,7 +90,8 @@
     "editInfo": "Маълумотларни ўзгартириш",
     "passwordRequirementsNotMet": "Пароль барча хавфсизлик талабларига жавоб бериши керак",
     "verificationChannel": "Тасдиқлаш усули",
-    "lastNamePlaceholder": "Валиев"
+    "lastNamePlaceholder": "Валиев",
+    "firstNamePlaceholder": "Али"
   },
   "forgotPassword": {
     "title": "Паролни тиклаш",
@@ -540,7 +541,8 @@
     "terms": "Фойдаланиш шартлари",
     "privacy": "Махфийлик сиёсати",
     "close_menu": "Менюни ёпиш",
-    "open_menu": "Менюни очиш"
+    "open_menu": "Менюни очиш",
+    "telegramChannel": "Телеграм каналимиз"
   },
   "exam": {
     "finish": "Якунлаш",
@@ -604,7 +606,10 @@
     "questionsUnit": "та савол",
     "minuteShort": "дақ",
     "officialTitle": "ЙҲХХ Расмий Имтиҳон Симулятори",
-    "maxWrongAllowed": "Максимал рухсат этилган хатолар: 2 та"
+    "maxWrongAllowed": "Максимал рухсат этилган хатолар: 2 та",
+    "firstQuestion": "1-савол",
+    "questionReviewNum": "{{number}}-савол",
+    "questionIllustration": "Савол расми"
   },
   "package": {
     "title": "Мавзулар рўйхати",
@@ -2074,5 +2079,8 @@
       "title": "404 — Саҳифа топилмади | Prava Online",
       "desc": "Кечирасиз, сиз қидираётган саҳифа мавжуд эмас ёки бошқа манзилга кўчирилган."
     }
+  },
+  "theme": {
+    "toggleTheme": "Мавзуни алмаштириш"
   }
 }

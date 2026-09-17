@@ -90,7 +90,8 @@
     "editInfo": "Ma'lumotlarni o'zgartirish",
     "passwordRequirementsNotMet": "Parol barcha xavfsizlik talablariga javob berishi kerak",
     "verificationChannel": "Tasdiqlash usuli",
-    "lastNamePlaceholder": "Valiyev"
+    "lastNamePlaceholder": "Valiyev",
+    "firstNamePlaceholder": "Ali"
   },
   "forgotPassword": {
     "title": "Parolni tiklash",
@@ -540,7 +541,8 @@
     "terms": "Foydalanish shartlari",
     "privacy": "Maxfiylik siyosati",
     "close_menu": "Menyuni yopish",
-    "open_menu": "Menyuni ochish"
+    "open_menu": "Menyuni ochish",
+    "telegramChannel": "Telegram kanalimiz"
   },
   "exam": {
     "finish": "Yakunlash",
@@ -604,7 +606,10 @@
     "questionsUnit": "ta savol",
     "minuteShort": "daq",
     "officialTitle": "YHXX Rasmiy Imtihon Simulyatori",
-    "maxWrongAllowed": "Maksimal ruxsat etilgan xatolar: 2 ta"
+    "maxWrongAllowed": "Maksimal ruxsat etilgan xatolar: 2 ta",
+    "firstQuestion": "1-savol",
+    "questionReviewNum": "{{number}}-savol",
+    "questionIllustration": "Savol rasmi"
   },
   "package": {
     "title": "Mavzular ro'yxati",
@@ -2074,5 +2079,8 @@
       "title": "404 — Sahifa topilmadi | Prava Online",
       "desc": "Kechirasiz, siz qidirayotgan sahifa mavjud emas yoki boshqa manzilga ko'chirilgan."
     }
+  },
+  "theme": {
+    "toggleTheme": "Mavzuni almashtirish"
   }
 }

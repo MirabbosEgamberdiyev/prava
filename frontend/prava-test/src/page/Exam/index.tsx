@@ -330,8 +330,8 @@ export default function Exam_Page() {
   return (
     <>
       <SEO
-        title="Imtihon topshirish"
-        description="Prava Online haydovchilik imtihoni."
+        title={t("seo.exam.title", "Rasmiy Sinov Imtihoni — Prava Online")}
+        description={t("seo.exam.desc", "YHXX rasmiy imtihoni bilan bir xil vaqt va qoidalardagi haqiqiy sinov simulyatsiyasi.")}
         canonical="/exam"
         noIndex={true}
       />

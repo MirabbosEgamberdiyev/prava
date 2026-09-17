@@ -334,8 +334,8 @@ export default function WrongExam_Page() {
   return (
     <>
       <SEO
-        title="Xatolar amaliyoti"
-        description="Prava Online xatolar ustida ishlash"
+        title={t("seo.wrongExam.title", "Xatolar bo'yicha Amaliyot — Prava Online")}
+        description={t("seo.wrongExam.desc", "Faqat xato qilingan savollar bo'yicha qayta sinov topshirish.")}
         canonical="/wrong-exam"
         noIndex={true}
       />
