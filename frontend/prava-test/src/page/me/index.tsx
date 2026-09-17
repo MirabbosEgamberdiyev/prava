@@ -10,8 +10,8 @@ import {
   getWrongAnswers,
   getTopics,
   getExamHistory,
-  localizeTopic,
 } from "../../services/desktopAdapter";
+import { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP } from "../../constants/topics";
 import type {
   FullStats,
   AppScreen,
@@ -133,7 +133,7 @@ export default function User_Page() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { t } = useTranslation();
-  useLanguage();
+  const { language, localizeTopic } = useLanguage();
 
   const [qrModal, setQrModal] = useState<typeof SOCIAL_LINKS[0] | null>(null);
   const [showExamPicker, setShowExamPicker] = useState(false);
@@ -228,20 +228,21 @@ export default function User_Page() {
       }
     }
 
-    const topicList = Array.isArray(topics) ? topics : [];
+    const topicList = Array.isArray(topics) && topics.length > 0 ? topics : OFFICIAL_TOPICS;
     return Object.entries(topicCountMap)
       .map(([tidStr, count]) => {
         const tid = Number(tidStr);
-        const found = topicList.find((tp) => tp.id === tid);
+        const found = topicList.find((tp) => tp.id === tid) || OFFICIAL_TOPIC_MAP[tid];
         return {
           id: tid,
+          topicObj: found,
           name: found ? localizeTopic(found) : `Mavzu #${tid}`,
           wrongCount: count,
         };
       })
       .sort((a, b) => b.wrongCount - a.wrongCount)
       .slice(0, 4);
-  }, [validWrongs, topics]);
+  }, [validWrongs, topics, language, localizeTopic]);
 
   const handleNav = (screen: AppScreen) => {
     switch (screen) {
@@ -700,21 +701,24 @@ export default function User_Page() {
                         </div>
                       </div>
                     ) : (
-                      currentWeakTopics.map((topic) => (
-                        <button
-                          key={topic.id}
-                          type="button"
-                          className="nba-topic-item"
-                          onClick={() => navigate(`/marafon?topicId=${topic.id}`)}
-                          title={topic.name}
-                        >
-                          <span className="nba-topic-name">{topic.name}</span>
-                          <span className="nba-topic-count">
-                            {topic.wrongCount} {t("dashboard.mistakesCount", "ta xato")}
-                          </span>
-                          <IconArrowRight size={16} className="nba-topic-arrow" />
-                        </button>
-                      ))
+                      currentWeakTopics.map((topic) => {
+                        const topicTitle = topic.topicObj ? localizeTopic(topic.topicObj) : topic.name;
+                        return (
+                          <button
+                            key={topic.id}
+                            type="button"
+                            className="nba-topic-item"
+                            onClick={() => navigate(`/marafon?topicId=${topic.id}`)}
+                            title={topicTitle}
+                          >
+                            <span className="nba-topic-name">{topicTitle}</span>
+                            <span className="nba-topic-count">
+                              {topic.wrongCount} {t("dashboard.mistakesCount", "ta xato")}
+                            </span>
+                            <IconArrowRight size={16} className="nba-topic-arrow" />
+                          </button>
+                        );
+                      })
                     )}
                   </div>
                 </div>

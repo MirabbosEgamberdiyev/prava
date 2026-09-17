@@ -11,6 +11,8 @@ import type {
   WrongAnswerEntry,
   SavedQuestionEntry,
 } from "../types/desktop";
+import { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP } from "../constants/topics";
+export { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP };
 import storageService, { type StoredQuestion } from "./storageService";
 import api from "../api/api";
 import { normalizeLanguage, type AppLanguage } from "../context/LanguageContext";
@@ -20,12 +22,45 @@ export function getLang(): AppLanguage {
   return normalizeLanguage(l);
 }
 
-export function localizeTopic(tp: OfflineTopic | null | undefined): string {
+export function localizeTopic(
+  tp: OfflineTopic | null | undefined,
+  overrideLang?: AppLanguage
+): string {
   if (!tp) return "";
-  const lang = getLang();
-  if (lang === "uzc" && tp.name_uzc) return tp.name_uzc;
-  if (lang === "ru" && tp.name_ru) return tp.name_ru;
-  return tp.name_uzl || tp.name_uzc || tp.name_ru || "";
+  const lang = overrideLang || getLang();
+  const official = tp.id != null ? OFFICIAL_TOPIC_MAP[tp.id] : undefined;
+
+  if (lang === "uzc") {
+    return (
+      tp.name_uzc ||
+      official?.name_uzc ||
+      tp.name_uzl ||
+      official?.name_uzl ||
+      tp.name_ru ||
+      official?.name_ru ||
+      ""
+    );
+  }
+  if (lang === "ru") {
+    return (
+      tp.name_ru ||
+      official?.name_ru ||
+      tp.name_uzl ||
+      official?.name_uzl ||
+      tp.name_uzc ||
+      official?.name_uzc ||
+      ""
+    );
+  }
+  return (
+    tp.name_uzl ||
+    official?.name_uzl ||
+    tp.name_uzc ||
+    official?.name_uzc ||
+    tp.name_ru ||
+    official?.name_ru ||
+    ""
+  );
 }
 
 export function parseOptions(json: string): QuestionOption[] {
@@ -312,24 +347,66 @@ export async function getQuestionsByTicket(ticketId: number): Promise<OfflineQue
 
 export async function getTopics(): Promise<OfflineTopic[]> {
   try {
-    const res = await api.get<{
-      data: any[];
-    }>("/api/v1/admin/topics/active");
-    if (Array.isArray(res.data?.data)) {
-      return res.data.data.map((tp: any) => ({
-        id: tp.id,
-        code: tp.code || null,
-        name_uzl: typeof tp.name === "object" ? tp.name?.uzl : (tp.name || tp.nameUzl || ""),
-        name_uzc: typeof tp.name === "object" ? tp.name?.uzc : (tp.nameUzc || ""),
-        name_en: typeof tp.name === "object" ? tp.name?.en : (tp.nameEn || ""),
-        name_ru: typeof tp.name === "object" ? tp.name?.ru : (tp.nameRu || ""),
-        question_count: tp.questionCount ?? tp.questionsCount ?? 20,
-      }));
+    let rawList: any[] = [];
+    try {
+      const res = await api.get<{ data: any[] }>("/api/v1/app/topics");
+      if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
+        rawList = res.data.data;
+      }
+    } catch {
+      // ignore
+    }
+
+    if (rawList.length === 0) {
+      try {
+        const res = await api.get<{ data: any[] }>("/api/v1/admin/topics/active");
+        if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
+          rawList = res.data.data;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (rawList.length > 0) {
+      return rawList.map((tp: any) => {
+        const official = tp.id != null ? OFFICIAL_TOPIC_MAP[tp.id] : undefined;
+        return {
+          id: tp.id,
+          code: tp.code || official?.code || null,
+          name_uzl:
+            (typeof tp.name === "object" ? tp.name?.uzl : null) ||
+            tp.nameUzl ||
+            tp.name_uzl ||
+            official?.name_uzl ||
+            tp.name ||
+            "",
+          name_uzc:
+            (typeof tp.name === "object" ? tp.name?.uzc : null) ||
+            tp.nameUzc ||
+            tp.name_uzc ||
+            official?.name_uzc ||
+            "",
+          name_en:
+            (typeof tp.name === "object" ? tp.name?.en : null) ||
+            tp.nameEn ||
+            tp.name_en ||
+            official?.name_en ||
+            "",
+          name_ru:
+            (typeof tp.name === "object" ? tp.name?.ru : null) ||
+            tp.nameRu ||
+            tp.name_ru ||
+            official?.name_ru ||
+            "",
+          question_count: tp.questionCount ?? tp.questionsCount ?? official?.question_count ?? 20,
+        };
+      });
     }
   } catch {
     // fallback
   }
-  return [];
+  return OFFICIAL_TOPICS;
 }
 
 // ── STATS & STORAGE WRAPPERS ──────────────────────────────────────────────────

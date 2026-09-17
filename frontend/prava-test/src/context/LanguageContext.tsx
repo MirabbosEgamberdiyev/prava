@@ -16,6 +16,7 @@ import type {
   OfflineTopic,
   QuestionOption,
 } from "../types";
+import { OFFICIAL_TOPIC_MAP } from "../constants/topics";
 
 export type AppLanguage = "uzl" | "uzc" | "ru";
 
@@ -216,9 +217,38 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const localizeTopic = useCallback(
     (topic: OfflineTopic | null | undefined): string => {
       if (!topic) return "";
-      if (language === "uzc" && topic.name_uzc) return topic.name_uzc;
-      if (language === "ru" && topic.name_ru) return topic.name_ru;
-      return topic.name_uzl || topic.name_uzc || topic.name_ru || "";
+      const official = topic.id != null ? OFFICIAL_TOPIC_MAP[topic.id] : undefined;
+      if (language === "uzc") {
+        return (
+          topic.name_uzc ||
+          official?.name_uzc ||
+          topic.name_uzl ||
+          official?.name_uzl ||
+          topic.name_ru ||
+          official?.name_ru ||
+          ""
+        );
+      }
+      if (language === "ru") {
+        return (
+          topic.name_ru ||
+          official?.name_ru ||
+          topic.name_uzl ||
+          official?.name_uzl ||
+          topic.name_uzc ||
+          official?.name_uzc ||
+          ""
+        );
+      }
+      return (
+        topic.name_uzl ||
+        official?.name_uzl ||
+        topic.name_uzc ||
+        official?.name_uzc ||
+        topic.name_ru ||
+        official?.name_ru ||
+        ""
+      );
     },
     [language]
   );
@@ -307,9 +337,38 @@ export function useLanguage(): LanguageContextType {
       },
       localizeTopic: (tp) => {
         if (!tp) return "";
-        if (normalized === "uzc" && tp.name_uzc) return tp.name_uzc;
-        if (normalized === "ru" && tp.name_ru) return tp.name_ru;
-        return tp.name_uzl || tp.name_ru || tp.name_uzc || "";
+        const official = tp.id != null ? OFFICIAL_TOPIC_MAP[tp.id] : undefined;
+        if (normalized === "uzc") {
+          return (
+            tp.name_uzc ||
+            official?.name_uzc ||
+            tp.name_uzl ||
+            official?.name_uzl ||
+            tp.name_ru ||
+            official?.name_ru ||
+            ""
+          );
+        }
+        if (normalized === "ru") {
+          return (
+            tp.name_ru ||
+            official?.name_ru ||
+            tp.name_uzl ||
+            official?.name_uzl ||
+            tp.name_uzc ||
+            official?.name_uzc ||
+            ""
+          );
+        }
+        return (
+          tp.name_uzl ||
+          official?.name_uzl ||
+          tp.name_uzc ||
+          official?.name_uzc ||
+          tp.name_ru ||
+          official?.name_ru ||
+          ""
+        );
       },
       localizeQuestion: (q) => {
         if (!q) return "";

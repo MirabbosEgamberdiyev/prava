@@ -8,10 +8,14 @@ import {
   IconBulb,
   IconClipboardList,
 } from "@tabler/icons-react";
-import { getWrongAnswers, getTopics, getFullStats, localizeTopic } from "../../../services/desktopAdapter";
+import { getWrongAnswers, getTopics, getFullStats } from "../../../services/desktopAdapter";
+import type { OfflineTopic } from "../../../types/desktop";
+import { useLanguage } from "../../../context/LanguageContext";
+import { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP } from "../../../constants/topics";
 
 interface WeakTopicSummary {
   topicId: number;
+  topicObj?: OfflineTopic;
   name: string;
   count: number;
 }
@@ -22,6 +26,7 @@ interface Props {
 
 export default function WeakTopicsWidget({ userId }: Props) {
   const { t, i18n } = useTranslation();
+  const { language, localizeTopic } = useLanguage();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [totalWrongs, setTotalWrongs] = useState(0);
@@ -71,13 +76,14 @@ export default function WeakTopicsWidget({ userId }: Props) {
         }
       }
 
-      const topicList = Array.isArray(topics) ? topics : [];
+      const topicList = Array.isArray(topics) && topics.length > 0 ? topics : OFFICIAL_TOPICS;
       const sorted = Object.entries(topicCountMap)
         .map(([tidStr, count]) => {
           const tid = Number(tidStr);
-          const found = topicList.find((tp) => tp.id === tid);
+          const found = topicList.find((tp) => tp.id === tid) || OFFICIAL_TOPIC_MAP[tid];
           return {
             topicId: tid,
+            topicObj: found,
             name: found ? localizeTopic(found) : `Mavzu #${tid}`,
             count,
           };
@@ -100,7 +106,7 @@ export default function WeakTopicsWidget({ userId }: Props) {
     const onStorage = () => loadData();
     window.addEventListener("prava-storage-changed", onStorage);
     return () => window.removeEventListener("prava-storage-changed", onStorage);
-  }, [userId, i18n.language]);
+  }, [userId, i18n.language, language]);
 
   if (loading) {
     return null;
@@ -164,20 +170,24 @@ export default function WeakTopicsWidget({ userId }: Props) {
           </div>
 
           <div className="nba-topic-list">
-            {weakTopics.map((topic) => (
-              <button
-                key={topic.topicId}
-                className="nba-topic-item"
-                type="button"
-                onClick={() => navigate(`/marafon?topicId=${topic.topicId}`)}
-              >
-                <span className="nba-topic-name">{topic.name}</span>
-                <span className="nba-topic-count">
-                  {topic.count} {t("home.mistakesCountLabel", "ta xato")}
-                </span>
-                <IconArrowRight size={15} className="nba-topic-arrow" />
-              </button>
-            ))}
+            {weakTopics.map((topic) => {
+              const topicName = topic.topicObj ? localizeTopic(topic.topicObj) : topic.name;
+              return (
+                <button
+                  key={topic.topicId}
+                  className="nba-topic-item"
+                  type="button"
+                  onClick={() => navigate(`/marafon?topicId=${topic.topicId}`)}
+                  title={topicName}
+                >
+                  <span className="nba-topic-name">{topicName}</span>
+                  <span className="nba-topic-count">
+                    {topic.count} {t("home.mistakesCountLabel", "ta xato")}
+                  </span>
+                  <IconArrowRight size={15} className="nba-topic-arrow" />
+                </button>
+              );
+            })}
           </div>
         </div>
 
