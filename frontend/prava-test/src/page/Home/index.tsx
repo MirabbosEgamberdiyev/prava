@@ -3,7 +3,6 @@ import { Box } from "@mantine/core";
 import {
   Hero_Banner,
   Stats_Section,
-  Product_Preview,
   Key_Benefits,
   Learning_Flow,
   Device_Platforms,
@@ -61,22 +60,19 @@ const Home_Page = () => {
         {/* 2. STATS BAR — Real raqamlar (1200+ savol, 70 bilet, 100% format, 3 til) */}
         <Stats_Section />
 
-        {/* 3. PRODUCT PREVIEW — Platforma qanday ko'rinadi? (Interaktiv simulyator) */}
-        <Product_Preview />
-
-        {/* 4. BENEFITS — Nima uchun foydalanish kerak? */}
+        {/* 3. BENEFITS — Nima uchun foydalanish kerak? */}
         <Key_Benefits />
 
-        {/* 5. HOW IT WORKS — Qanday boshlanadi? */}
+        {/* 4. HOW IT WORKS — Qanday boshlanadi? */}
         <Learning_Flow />
 
-        {/* 6. DEVICE / APPLICATIONS — Qaysi qurilmalarda ishlaydi? */}
+        {/* 5. DEVICE / APPLICATIONS — Qaysi qurilmalarda ishlaydi? */}
         <Device_Platforms />
 
-        {/* 7. FAQ — Muhim savollarga javob */}
+        {/* 6. FAQ — Muhim savollarga javob */}
         <FAQ_Section />
 
-        {/* 8. FINAL CTA — Boshlash */}
+        {/* 7. FINAL CTA — Boshlash */}
         <CTA_Section />
       </div>
     </Box>
