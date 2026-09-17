@@ -325,11 +325,11 @@
 
 @media (max-width: 400px) {
   .saas-brand-text {
-    font-size: 13.5px;
+    font-size: 13px;
   }
 }
 
-@media (max-width: 350px) {
+@media (max-width: 380px) {
   .saas-brand-text {
     display: none;
   }
@@ -512,8 +512,9 @@
     display: none;
   }
   .header-cta-btn {
-    padding: 0 12px;
-    font-size: 0.85rem;
+    padding: 0 10px;
+    font-size: 0.8rem;
+    height: 34px !important;
   }
 }
 
@@ -3437,6 +3438,60 @@ body:has(.app) {
 .review-practice-btn:active {
   transform: translateY(0);
 }
+
+@media (max-width: 600px) {
+  .review-header {
+    height: auto;
+    min-height: 48px;
+    padding: 6px 12px;
+    gap: 8px;
+  }
+  .review-back-btn {
+    padding: 0 10px;
+    height: 36px;
+    font-size: 12px;
+  }
+  .review-header-title {
+    font-size: 14px;
+    min-width: 0;
+    gap: 6px;
+  }
+  .review-header-title span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .review-header-count {
+    font-size: 11px;
+    padding: 0 6px;
+    height: 24px;
+  }
+  .review-practice-btn {
+    padding: 0 10px;
+    font-size: 12px;
+    height: 34px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 400px) {
+  .review-back-btn {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+  }
+  .review-back-btn span.back-text,
+  .review-back-btn span:not(.back-icon) {
+    display: none;
+  }
+  .review-header-title span {
+    max-width: 140px;
+  }
+  .review-header-count {
+    display: none;
+  }
+}
 .review-content {
   flex: 1;
   overflow-y: auto;
@@ -4587,9 +4642,25 @@ body:has(.app) {
   overflow-y: auto;
   padding: 16px 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
   gap: 14px;
   align-content: start;
+}
+
+@media (max-width: 600px) {
+  .tc-grid {
+    padding: 8px 8px;
+    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  }
+}
+
+@media (max-width: 380px) {
+  .tc-grid {
+    padding: 6px 4px;
+    gap: 8px;
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── tc-card: ikkinchi rasm dizayni ── */
@@ -5420,6 +5491,15 @@ body:has(.app) {
 .td-row:nth-child(odd) {
   border-right: 1px solid var(--border);
 }
+
+@media (max-width: 560px) {
+  .td-list {
+    grid-template-columns: 1fr;
+  }
+  .td-row:nth-child(odd) {
+    border-right: none;
+  }
+}
 .td-row {
   display: flex;
   align-items: center;
@@ -5628,6 +5708,19 @@ body:has(.app) {
   gap: 8px;
   align-items: center;
 }
+@media (max-width: 480px) {
+  .q-search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .q-topic-select {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  .q-search-wrap {
+    width: 100% !important;
+  }
+}
 .q-topic-select {
   flex: 0 0 auto;
   max-width: 150px;
@@ -5775,13 +5868,13 @@ body:has(.app) {
 
 .img-zoom-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  background: rgba(255, 255, 255, 0.15);
+  top: max(16px, env(safe-area-inset-top, 16px));
+  right: max(16px, env(safe-area-inset-right, 16px));
+  background: rgba(255, 255, 255, 0.2);
   border: none;
   color: #fff;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -5791,7 +5884,7 @@ body:has(.app) {
   z-index: 1;
 }
 .img-zoom-close:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.35);
 }
 
 .img-zoom-content {
@@ -6069,6 +6162,32 @@ body:has(.app) {
   }
 }
 
+@media (max-width: 480px) {
+  .exam-topbar {
+    padding: 6px 8px;
+    gap: 6px;
+    justify-content: space-between;
+  }
+  .exam-topbar-left {
+    flex: 1 1 auto;
+    gap: 6px;
+  }
+  .exam-topbar-center {
+    flex: 0 1 auto;
+    order: 2;
+  }
+  .exam-topbar-right {
+    flex: 0 0 auto;
+    gap: 6px;
+    order: 3;
+  }
+  .exam-finish-btn {
+    padding: 4px 8px;
+    height: 32px;
+    font-size: 11px;
+  }
+}
+
 /* ==========================================================================
    ENTERPRISE SAAS PUBLIC EXPERIENCE DESIGN SYSTEM
    Linear / Stripe / Vercel Aesthetic (Zero Visual Noise, WCAG AA)
@@ -6341,6 +6460,13 @@ body:has(.app) {
   font-size: 13px !important;
   border-radius: 8px !important;
   transition: color 0.15s ease, background-color 0.15s ease !important;
+}
+
+@media (max-width: 420px) {
+  .mantine-SegmentedControl-label {
+    font-size: 11.5px !important;
+    padding: 4px 6px !important;
+  }
 }
 
 .mantine-SegmentedControl-label[data-active] {

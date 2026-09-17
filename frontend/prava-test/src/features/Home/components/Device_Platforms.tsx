@@ -137,7 +137,13 @@ export const Device_Platforms = React.memo(() => {
                 "Jamoat transportida, navbatda yoki yo'lda har kuni telefoningizda qulay mashq qiling."
               )}
             </Text>
-            <Group gap="xs" grow>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(115px, 1fr))",
+                gap: 8,
+              }}
+            >
               <Button
                 component="a"
                 href={PLAY_STORE_URL}
@@ -164,7 +170,7 @@ export const Device_Platforms = React.memo(() => {
               >
                 App Store
               </Button>
-            </Group>
+            </div>
           </Box>
         </div>
       </SimpleGrid>

@@ -59,7 +59,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "16px",
+        padding: "clamp(8px, 2vw, 16px)",
       }}
     >
       <div
@@ -81,16 +81,18 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
         {/* Modal Header */}
         <div
           style={{
-            padding: "18px 24px",
+            padding: "clamp(12px, 3vw, 18px) clamp(12px, 4vw, 24px)",
             borderBottom: "1px solid var(--border)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             background: "var(--surface-muted, rgba(0,0,0,0.02))",
+            flexWrap: "wrap",
+            gap: "10px",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "var(--text)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <h3 style={{ margin: 0, fontSize: "clamp(15px, 3.5vw, 17px)", fontWeight: 800, color: "var(--text)" }}>
               {t("gamification.reviewMistakes", "Xatolarni tahlil qilish")}
             </h3>
             <span
@@ -174,11 +176,11 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
         {/* Modal Scrollable Body */}
         <div
           style={{
-            padding: "20px 24px",
+            padding: "clamp(12px, 3vw, 20px) clamp(10px, 3.5vw, 24px)",
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
-            gap: "20px",
+            gap: "16px",
           }}
         >
           {displayedList.length === 0 ? (
@@ -357,7 +359,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
         {/* Modal Footer */}
         <div
           style={{
-            padding: "14px 24px",
+            padding: "clamp(10px, 2.5vw, 14px) clamp(12px, 4vw, 24px)",
             borderTop: "1px solid var(--border)",
             display: "flex",
             justifyContent: "flex-end",
