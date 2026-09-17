@@ -89,7 +89,8 @@
     "openEmailInbox": "Почтани очиш",
     "editInfo": "Маълумотларни ўзгартириш",
     "passwordRequirementsNotMet": "Пароль барча хавфсизлик талабларига жавоб бериши керак",
-    "verificationChannel": "Тасдиқлаш усули"
+    "verificationChannel": "Тасдиқлаш усули",
+    "lastNamePlaceholder": "Валиев"
   },
   "forgotPassword": {
     "title": "Паролни тиклаш",
@@ -148,7 +149,8 @@
     "lightMode": "Кундузги режим",
     "all": "Барчаси",
     "clear": "Тозалаш",
-    "unknownError": "Кутилмаган хатолик юз берди"
+    "unknownError": "Кутилмаган хатолик юз берди",
+    "openDirectly": "Ҳавола орқали очиш"
   },
   "notFound": {
     "title": "Саҳифа топилмади",
@@ -225,7 +227,8 @@
       "titleStart": "Ҳайдовчилик имтиҳонига",
       "highlightWord": "осон",
       "startNow": "Бошлаш",
-      "openWebApp": "Веб иловани очиш"
+      "openWebApp": "Веб иловани очиш",
+      "availableOn": "Барча қурилмаларда мавжуд:"
     },
     "stats": "Статистика",
     "features": {
@@ -1850,7 +1853,8 @@
     "intermediateLevel": "Ўрта",
     "advancedLevel": "Юқори",
     "readyLevel": "Тайёр",
-    "startExamBtn": "Синов имтиҳонини бошлаш"
+    "startExamBtn": "Синов имтиҳонини бошлаш",
+    "metricsAria": "Метрикалар"
   },
   "mode": {
     "online": "Онлайн",

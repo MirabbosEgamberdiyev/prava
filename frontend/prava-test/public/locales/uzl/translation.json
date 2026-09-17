@@ -89,7 +89,8 @@
     "openEmailInbox": "Pochtani ochish",
     "editInfo": "Ma'lumotlarni o'zgartirish",
     "passwordRequirementsNotMet": "Parol barcha xavfsizlik talablariga javob berishi kerak",
-    "verificationChannel": "Tasdiqlash usuli"
+    "verificationChannel": "Tasdiqlash usuli",
+    "lastNamePlaceholder": "Valiyev"
   },
   "forgotPassword": {
     "title": "Parolni tiklash",
@@ -148,7 +149,8 @@
     "lightMode": "Kunduzgi rejim",
     "all": "Barchasi",
     "clear": "Tozalash",
-    "unknownError": "Kutilmagan xatolik yuz berdi"
+    "unknownError": "Kutilmagan xatolik yuz berdi",
+    "openDirectly": "Havola orqali ochish"
   },
   "notFound": {
     "title": "Sahifa topilmadi",
@@ -225,7 +227,8 @@
       "titleStart": "Haydovchilik imtihoniga",
       "highlightWord": "oson",
       "startNow": "Boshlash",
-      "openWebApp": "Web ilovani ochish"
+      "openWebApp": "Web ilovani ochish",
+      "availableOn": "Barcha qurilmalarda mavjud:"
     },
     "stats": "Statistika",
     "features": {
@@ -1850,7 +1853,8 @@
     "intermediateLevel": "O'rta",
     "advancedLevel": "Yuqori",
     "readyLevel": "Tayyor",
-    "startExamBtn": "Sinov imtihonini boshlash"
+    "startExamBtn": "Sinov imtihonini boshlash",
+    "metricsAria": "Metrikalar"
   },
   "mode": {
     "online": "Onlayn",

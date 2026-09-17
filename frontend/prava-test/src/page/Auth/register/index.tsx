@@ -395,7 +395,7 @@ const Register_Page = () => {
                   />
                   <TextInput
                     label={t("register.lastName")}
-                    placeholder="Valiyev"
+                    placeholder={t("register.lastNamePlaceholder", "Valiyev")}
                     required
                     size="md"
                     radius="md"

@@ -160,8 +160,16 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       // ignore
     }
 
-    // 3. Persist to Cookie
-    Cookies.set("i18next", normalized, { expires: 365, path: "/" });
+    // 3. Persist to Cookie (cross-subdomain support between pravaonline.uz and web.pravaonline.uz)
+    const isPravaDomain =
+      typeof window !== "undefined" &&
+      window.location.hostname.endsWith("pravaonline.uz");
+    Cookies.set("i18next", normalized, {
+      expires: 365,
+      path: "/",
+      domain: isPravaDomain ? ".pravaonline.uz" : undefined,
+      sameSite: "Lax",
+    });
 
     // 4. Update DOM attribute
     if (typeof document !== "undefined") {

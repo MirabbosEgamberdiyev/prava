@@ -89,7 +89,8 @@
     "openEmailInbox": "Открыть почту",
     "editInfo": "Изменить данные",
     "passwordRequirementsNotMet": "Пароль должен отвечать всем требованиям безопасности",
-    "verificationChannel": "Способ подтверждения"
+    "verificationChannel": "Способ подтверждения",
+    "lastNamePlaceholder": "Валиев"
   },
   "forgotPassword": {
     "title": "Сброс пароля",
@@ -148,7 +149,8 @@
     "lightMode": "Светлая тема",
     "all": "Все",
     "clear": "Очистить",
-    "unknownError": "Произошла непредвиденная ошибка"
+    "unknownError": "Произошла непредвиденная ошибка",
+    "openDirectly": "Открыть по ссылке"
   },
   "notFound": {
     "title": "Страница не найдена",
@@ -225,7 +227,8 @@
       "titleStart": "Подготовьтесь к экзамену на права",
       "highlightWord": "легко",
       "startNow": "Начать",
-      "openWebApp": "Открыть веб-приложение"
+      "openWebApp": "Открыть веб-приложение",
+      "availableOn": "Доступно на всех устройствах:"
     },
     "stats": "Статистика",
     "features": {
@@ -1850,7 +1853,8 @@
     "intermediateLevel": "Средний",
     "advancedLevel": "Высокий",
     "readyLevel": "Готов к сдаче",
-    "startExamBtn": "Начать пробный экзамен"
+    "startExamBtn": "Начать пробный экзамен",
+    "metricsAria": "Показатели"
   },
   "mode": {
     "online": "Онлайн",

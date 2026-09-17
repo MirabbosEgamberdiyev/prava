@@ -472,7 +472,7 @@ export default function User_Page() {
             </div>
 
             {/* 2. Three Gamified Metrics Bar */}
-            <section className="home-stats-bar" aria-label="Metrikalar">
+            <section className="home-stats-bar" aria-label={t("dashboard.metricsAria", "Metrikalar")}>
               {/* Metric 1: Daily Goal & Streak */}
               <article
                 className="home-stat"
@@ -868,7 +868,7 @@ export default function User_Page() {
                 className="qr-modal-close"
                 onClick={() => setQrModal(null)}
                 type="button"
-                aria-label="Close"
+                aria-label={t("common.close", "Yopish")}
               >
                 ✕
               </button>
