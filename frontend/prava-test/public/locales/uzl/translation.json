@@ -196,8 +196,8 @@
     "hero": {
       "title": "Haydovchilik guvohnomasiga",
       "highlight": "online",
-      "titleEnd": "oling!",
-      "description": "Haydovchilik guvohnomasi olishni oson qiladigan zamonaviy platforma. 1200+ rasmiy savollar, 70 ta bilet va real davlat imtihoni simulyatori orqali bir urinishda topshiring.",
+      "titleEnd": "tayyorlaning!",
+      "description": "1200+ rasmiy savollar, 70 ta bilet va IIV YHXBB davlat imtihoni simulyatori. Kompyuter yoki telefon orqali bilimlaringizni sinovdan o'tkazing va imtihondan birinchi urinishda o'ting.",
       "feature1Title": "1200+ savollar bazasi",
       "feature1Desc": "Barcha kategoriyalar bo'yicha to'liq qamrov",
       "feature2Title": "Haqiqiy imtihon formati",
@@ -208,7 +208,7 @@
       "login": "Kirish",
       "phoneText": "Ilovani telefoningizga o'rnating va istalgan joyda mashq qiling",
       "installApp": "Ilovani o'rnatish",
-      "freeExam": "Sinov imtihoni",
+      "freeExam": "Bepul sinov imtihoni",
       "verifiedBadge": "IIV YHXBB 2026-yilgi amaldagi reglamenti asosida",
       "studentsActive": "50,000+ faol tayyorlanuvchilar",
       "ratingLabel": "4.9/5 (12 000+ sharh)",
@@ -221,7 +221,7 @@
       "demoReadinessLabel": "Imtihonga tayyorlik",
       "demoSuccessRate": "96% Muvaffaqiyat",
       "demoResultBadge": "A'lo natija",
-      "titleStart": "'Prava'ni",
+      "titleStart": "Haydovchilik imtihoniga",
       "highlightWord": "oson",
       "startNow": "Boshlash",
       "openWebApp": "Web ilovani ochish"
@@ -279,10 +279,10 @@
       "badge": "FAQ"
     },
     "cta": {
-      "title": "Hoziroq boshlang!",
-      "description": "Foydalanuvchi bo'lish shart emas — darhol test yechishni boshlang. Telegram yoki brauzer orqali ham kirishingiz mumkin.",
-      "register": "Bepul ro'yxatdan o'tish",
-      "login": "Kirish"
+      "title": "Haydovchilik imtihoniga tayyorgarlikni hoziroq boshlang!",
+      "description": "Ro'yxatdan o'ting va to'liq imkoniyatlardan foydalaning yoki bepul sinov imtihoni orqali bilimlaringizni sinab ko'ring.",
+      "openWebApp": "Web ilovani ochish",
+      "tryFree": "Bepul sinov imtihoni"
     },
     "welcome": "Xush kelibsiz, {{name}}!",
     "subtitle": "Haydovchilik imtihoniga tayyorlanishni davom ettiring",
@@ -387,13 +387,13 @@
       "card4Desc": "Windows kompyuter uchun ilova internetsiz to'liq ishlaydi, shuningdek mobil telefon va vebda mavjud."
     },
     "preview": {
-      "badge": "Interaktiv Ko'rinish",
-      "title": "Zamonaviy interfeys — o'rganish endi oson va maroqli",
-      "subtitle": "Platformaning real imkoniyatlarini hoziroq sinab ko'ring. Barcha asosiy bo'limlar bir joyda.",
-      "tabExam": "Imtihon Simulyatori",
-      "tabErrors": "Xatolar Tahlili",
-      "tabStats": "Shaxsiy Statistika",
-      "tabSigns": "Yo'l Belgilari",
+      "badge": "Imtihon jarayoni",
+      "title": "Imtihon jarayoni va platforma imkoniyatlari",
+      "subtitle": "Haqiqiy YHXBB imtihon muhiti, xatolar tahlili va shaxsiy statistika — barchasi bir joyda.",
+      "tabExam": "Imtihon simulyatori",
+      "tabErrors": "Xatolar tahlili",
+      "tabStats": "Shaxsiy statistika",
+      "tabSigns": "Yo'l belgilari",
       "examQuestionDemo": "Chorrahada qaysi transport vositasi birinchi bo'lib o'tadi?",
       "examOption1": "Ko'k avtomobil (o'ng qo'l qoidasi)",
       "examOption2": "Qizil avtomobil (asosiy yo'lda)",
@@ -403,12 +403,12 @@
       "statsPassedDemo": "68/70 Biletlar o'zlashtirildi",
       "correctBadge": "TO'G'RI ✓",
       "tryNow": "Sinab ko'rish",
-      "previewWindowLabel": "PRAVA ONLINE · WEB & DESKTOP SIMULATOR",
+      "previewWindowLabel": "Rasmiy YHXBB imtihon formati",
       "liveDemoBadge": "INTERAKTIV DEMO",
       "ticketHeader": "Bilet #14 · Savol 8/20",
       "categoryB": "Kategoriya B",
       "timeLeft": "18:42 qoldi",
-      "officialRuleTitle": "Rasmiy Qoida Izohi:",
+      "officialRuleTitle": "Rasmiy qoida izohi:",
       "weakPointDetected": "Zaif nuqta aniqlandi",
       "weakTopicTitle": "Mavzu: Chorrahalarda harakatlanish ustuvorligi",
       "weakTopicDesc": "Ushbu mavzuda noaniq javoblar qayd etildi. Tizim avtomatik tarzda shaxsiy takrorlash rejasini tuzadi.",
@@ -434,7 +434,7 @@
       "sign4Title": "5.1 Avtomagistral",
       "sign4Cat": "Axborot-ishora",
       "signDesc": "Imtihon savollarida eng ko'p uchraydigan belgilar",
-      "tryFreeExam": "Imtihonni Bepul Sinab Ko'rish"
+      "tryFreeExam": "Imtihonni bepul sinab ko'rish"
     },
     "learningFlow": {
       "badge": "O'rganish Bosqichlari",
@@ -831,7 +831,7 @@
     "telegram": "Telegram kanal",
     "instagram": "Instagram",
     "donate": "Loyihani qo'llab-quvvatlash",
-    "contact": "Aloqa",
+    "contact": "Bog'lanish",
     "copyright": "© {{year}} PravaOnline. Barcha huquqlar himoyalangan.",
     "legal": "Huquqiy ma'lumotlar",
     "pricing": "Tariflar",
@@ -841,7 +841,17 @@
     "privacy": "Maxfiylik siyosati",
     "downloads": "Ilovalar",
     "basedOnOfficial": "O'zbekiston Respublikasi YHXX rasmiy dasturi asosida",
-    "allRightsReserved": "Barcha huquqlar himoyalangan."
+    "allRightsReserved": "Barcha huquqlar himoyalangan.",
+    "brandDesc": "Haydovchilik guvohnomasi imtihoniga tayyorlanishning zamonaviy va qulay platformasi.",
+    "colProduct": "Mahsulot",
+    "colSupport": "Yordam",
+    "colLegal": "Huquqiy va Aloqa",
+    "webApp": "Web ilova",
+    "windowsApp": "Windows (.exe)",
+    "androidApp": "Android (Google Play)",
+    "iosApp": "iOS (App Store)",
+    "corporate": "Avtomaktablar va hamkorlik",
+    "telegramChannel": "Telegram rasmiy kanali"
   },
   "pwa": {
     "updateTitle": "Yangilanish mavjud",

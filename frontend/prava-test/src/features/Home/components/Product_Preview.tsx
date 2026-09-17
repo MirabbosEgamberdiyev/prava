@@ -40,36 +40,31 @@ export function Product_Preview() {
   ];
 
   return (
-    <section className={classes.previewSection} aria-label={t("home.preview.title", "Zamonaviy interfeys")}>
+    <section className={classes.previewSection} aria-label={t("home.preview.title", "Imtihon jarayoni va platforma imkoniyatlari")}>
       <Box className={classes.sectionTitle}>
         <div className={classes.sectionBadge}>
           <IconSparkles size={14} />
-          {t("home.preview.badge", "Interaktiv Ko'rinish")}
+          {t("home.preview.badge", "Imtihon jarayoni")}
         </div>
         <Title order={2}>
-          {t("home.preview.title", "Zamonaviy interfeys — o'rganish endi oson va maroqli")}
+          {t("home.preview.title", "Imtihon jarayoni va platforma imkoniyatlari")}
         </Title>
         <Text size="md" c="var(--text-muted)" mt="sm" maw={720} mx="auto" lh={1.6}>
           {t(
             "home.preview.subtitle",
-            "Platformaning real imkoniyatlarini hoziroq sinab ko'ring. Barcha asosiy bo'limlar bir joyda."
+            "Haqiqiy YHXBB imtihon muhiti, xatolar tahlili va shaxsiy statistika — barchasi bir joyda."
           )}
         </Text>
       </Box>
 
       <div className={classes.previewWindow} style={{ marginTop: 36 }}>
-        {/* Window Topbar */}
+        {/* Showcase Topbar */}
         <div className={classes.previewHeader}>
-          <div className={classes.windowDots}>
-            <span className={`${classes.windowDot} ${classes.windowDotClose}`} />
-            <span className={`${classes.windowDot} ${classes.windowDotMin}`} />
-            <span className={`${classes.windowDot} ${classes.windowDotMax}`} />
-          </div>
           <Text size="xs" fw={700} c="var(--text-muted)" style={{ letterSpacing: "0.5px" }}>
-            {t("home.preview.previewWindowLabel", "PRAVA ONLINE · WEB & DESKTOP SIMULATOR")}
+            {t("home.preview.previewWindowLabel", "Rasmiy YHXBB imtihon formati")}
           </Text>
-          <Badge size="xs" variant="light" color="blue">
-            {t("home.preview.liveDemoBadge", "INTERAKTIV DEMO")}
+          <Badge size="xs" variant="outline" color="blue">
+            2026
           </Badge>
         </div>
 

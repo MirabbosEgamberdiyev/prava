@@ -503,6 +503,20 @@
   flex-shrink: 0;
 }
 
+.header-cta-btn {
+  padding: 0 20px;
+}
+
+@media (max-width: 520px) {
+  .navbar-divider {
+    display: none;
+  }
+  .header-cta-btn {
+    padding: 0 12px;
+    font-size: 0.85rem;
+  }
+}
+
 /* Unified Navbar Dropdown Menus (Language & User Menu) */
 .mantine-Menu-dropdown {
   background-color: var(--card-bg) !important;

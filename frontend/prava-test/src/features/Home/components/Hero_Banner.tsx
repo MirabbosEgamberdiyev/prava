@@ -31,16 +31,16 @@ export function Hero_Banner() {
 
         {/* 2. Main Centered Headline */}
         <h1 className={classes.heroCenteredTitle}>
-          {t("home.hero.titleStart", "'Prava'ni")}{" "}
+          {t("home.hero.titleStart", "Haydovchilik imtihoniga")}{" "}
           <span className={classes.heroHighlightWord}>{t("home.hero.highlightWord", "oson")}</span>{" "}
-          {t("home.hero.titleEnd", "oling!")}
+          {t("home.hero.titleEnd", "tayyorlaning!")}
         </h1>
 
         {/* 3. Centered Subtitle */}
         <p className={classes.heroCenteredSubtitle}>
           {t(
             "home.hero.description",
-            "Haydovchilik guvohnomasi olishni oson qiladigan zamonaviy platforma. 1200+ rasmiy savollar, 70 ta bilet va real davlat imtihoni simulyatori orqali bir urinishda topshiring."
+            "1200+ rasmiy savollar, 70 ta bilet va IIV YHXBB davlat imtihoni simulyatori. Kompyuter yoki telefon orqali bilimlaringizni sinovdan o'tkazing va imtihondan birinchi urinishda o'ting."
           )}
         </p>
 

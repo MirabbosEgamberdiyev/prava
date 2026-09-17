@@ -101,11 +101,11 @@ export default function Header({
                   size="sm"
                   h={38}
                   variant="filled"
+                  className="header-cta-btn"
                   style={{
                     background: "var(--primary, #0284c7)",
                     color: "#ffffff",
                     fontWeight: 700,
-                    padding: "0 22px",
                     border: "none",
                   }}
                   rightSection={<IconArrowRight size={15} />}

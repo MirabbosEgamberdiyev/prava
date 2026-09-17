@@ -1402,3 +1402,52 @@
   }
 }
 
+@media (max-width: 480px) {
+  .heroCenteredSection {
+    padding: 20px 0 16px;
+  }
+
+  .heroPillBadge {
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    margin-bottom: 14px;
+    max-width: 96%;
+    line-height: 1.4;
+  }
+
+  .heroCenteredTitle {
+    font-size: clamp(1.75rem, 6.8vw, 2.25rem);
+    margin-bottom: 12px;
+    line-height: 1.22;
+  }
+
+  .heroCenteredSubtitle {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin-bottom: 22px;
+  }
+
+  .statCardMinimal {
+    padding: 16px 8px;
+    border-radius: 12px;
+  }
+
+  .statValueMinimal {
+    font-size: 1.55rem;
+    margin-bottom: 4px;
+  }
+
+  .statLabelMinimal {
+    font-size: 0.78rem;
+  }
+
+  .previewHeader {
+    padding: 10px 14px;
+  }
+
+  .finalCtaBox {
+    padding: 28px 16px;
+    border-radius: 18px;
+  }
+}
+
