@@ -75,6 +75,9 @@ export default defineConfig({
           'icons/*.svg',
         ],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        // Yangi versiyaga darhol o'tish (kutib o'tirmaydi)
+        skipWaiting: true,
+        clientsClaim: true,
         // Eski deploylardan qolgan precache'larni tozalaydi
         cleanupOutdatedCaches: true,
         navigateFallback: '/index.html',
