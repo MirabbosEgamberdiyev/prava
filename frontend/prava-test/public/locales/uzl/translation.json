@@ -697,6 +697,8 @@
     }
   },
   "examResult": {
+    "practiceMistakes": "Xatolar ustida ishlash",
+    "retryExam": "Qayta urinish",
     "title": "Imtihon natijasi",
     "passed": "O'tdingiz!",
     "failed": "O'tmadingiz",
@@ -1735,6 +1737,7 @@
     "title": "Tariflar va Paketlar"
   },
   "gamification": {
+    "solveMistakes": "Faqat xatolar bo'yicha test",
     "tierGold": "Ajoyib natija! Imtihonga deyarli tayyorsiz!",
     "tierTarget": "Yaxshi ko'rsatkich! Yana bir oz mashq qilsangiz yetarli.",
     "tierRetry": "Taslim bo'lmang! Xatolar ustida ishlab, qayta topshiring.",
@@ -1779,6 +1782,24 @@
     "confirmFinish": "Haqiqatan ham testni yakunlamoqchimisiz?"
   },
   "dashboard": {
+    "modes": {
+      "tickets": {
+        "desc": "1-dan 70-gacha rasmiy biletlar bilan mustahkamlash",
+        "title": "Biletlar"
+      },
+      "marathon": {
+        "desc": "Barcha 1200+ ta savol ketma-ket, to'xtovsiz rejimda",
+        "title": "Marafon"
+      },
+      "topics": {
+        "title": "Mavzular",
+        "desc": "Nazariya va qoidalar bo'yicha bosqichma-bosqich o'rganish"
+      },
+      "exam": {
+        "title": "Haqiqiy Imtihon",
+        "desc": "Vaqt chegaralangan rasmiy DTM test simulyatori"
+      }
+    },
     "greeting": "Xush kelibsiz",
     "subtitle": "Haydovchilik imtihoniga tayyorlanishda davom eting",
     "fallbackName": "Hurmatli haydovchi",
@@ -1795,24 +1816,6 @@
     "totalQuestionsInDb": "Jami {{total}} ta rasmiy savoldan",
     "steadyProgress": "Muntazam amaliyot bilan o'sish",
     "start": "Boshlash",
-    "modes": {
-      "topics": {
-        "title": "Mavzular",
-        "desc": "Nazariya va qoidalar bo'yicha bosqichma-bosqich o'rganish"
-      },
-      "tickets": {
-        "title": "Biletlar",
-        "desc": "1-dan 60-gacha rasmiy biletlar bilan mustahkamlash"
-      },
-      "marathon": {
-        "title": "Marafon",
-        "desc": "Barcha 1190 ta savol ketma-ket, to'xtovsiz rejimda"
-      },
-      "exam": {
-        "title": "Haqiqiy Imtihon",
-        "desc": "Vaqt chegaralangan rasmiy DTM test simulyatori"
-      }
-    },
     "smartSectionTitle": "Aqlli tavsiya va xatolar ustida ishlash",
     "smartSectionSubtitle": "Imtihon natijangizni oshirish uchun eng zaif mavzular va xatolarni tizimli bartaraf eting",
     "weakTopicsTitle": "ZAIF MAVZULAR",

@@ -308,9 +308,9 @@ export async function getTickets(): Promise<OfflineTicket[]> {
     // fallback: 70 tickets
   }
 
-  // Standalone fallback: 60 bilet
+  // Standalone fallback: 70 bilet
   const fallbackTickets: OfflineTicket[] = [];
-  for (let i = 1; i <= 60; i++) {
+  for (let i = 1; i <= 70; i++) {
     fallbackTickets.push({
       id: i,
       topic_id: null,
@@ -349,7 +349,9 @@ export async function getTopics(): Promise<OfflineTopic[]> {
   try {
     let rawList: any[] = [];
     try {
-      const res = await api.get<{ data: any[] }>("/api/v1/app/topics");
+      const res = await api.get<{ data: any[] }>("/api/v1/app/topics", {
+        headers: { "Accept-Language": getLang() },
+      });
       if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
         rawList = res.data.data;
       }

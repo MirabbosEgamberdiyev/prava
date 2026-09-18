@@ -181,7 +181,7 @@ export default function User_Page() {
   const averageQ = stats?.question_readiness?.average ?? 0;
   const weakQ = stats?.question_readiness?.weak ?? 0;
   const qPracticed = readyQ + averageQ + weakQ;
-  const qTotal = stats?.question_readiness?.total || 1190;
+  const qTotal = stats?.question_readiness?.total || 1200;
   const qPercent = qTotal > 0 ? Math.min(100, Math.round((qPracticed / qTotal) * 100)) : 0;
 
   // Overall Readiness Score
@@ -233,10 +233,16 @@ export default function User_Page() {
       .map(([tidStr, count]) => {
         const tid = Number(tidStr);
         const found = topicList.find((tp) => tp.id === tid) || OFFICIAL_TOPIC_MAP[tid];
+        const rawFallback =
+          language === "ru"
+            ? `Тема #${tid}`
+            : language === "uzc"
+            ? `Мавзу #${tid}`
+            : `Mavzu #${tid}`;
         return {
           id: tid,
           topicObj: found,
-          name: found ? localizeTopic(found) : `Mavzu #${tid}`,
+          name: found ? localizeTopic(found) : rawFallback,
           wrongCount: count,
         };
       })
@@ -297,7 +303,7 @@ export default function User_Page() {
     {
       screen: "biletlar" as AppScreen,
       title: t("dashboard.modes.tickets.title", "Biletlar"),
-      desc: t("dashboard.modes.tickets.desc", "1-dan 60-gacha rasmiy biletlar bilan mustahkamlash"),
+      desc: t("dashboard.modes.tickets.desc", "1-dan 70-gacha rasmiy biletlar bilan mustahkamlash"),
       icon: IconTicket,
       accentColor: "#0c8599",
       gradient: "linear-gradient(135deg,#38d9a9,#0c8599)",
@@ -307,7 +313,7 @@ export default function User_Page() {
     {
       screen: "marathon" as AppScreen,
       title: t("dashboard.modes.marathon.title", "Marafon"),
-      desc: t("dashboard.modes.marathon.desc", "Barcha 1190 ta savol ketma-ket, to'xtovsiz rejimda"),
+      desc: t("dashboard.modes.marathon.desc", "Barcha 1200+ ta savol ketma-ket, to'xtovsiz rejimda"),
       icon: IconRun,
       accentColor: "#8b5cf6",
       gradient: "linear-gradient(135deg,#a78bfa,#8b5cf6)",

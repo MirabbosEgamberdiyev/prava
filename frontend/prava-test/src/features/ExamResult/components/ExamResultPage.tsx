@@ -17,7 +17,7 @@ import {
   Image,
   useComputedColorScheme,
 } from "@mantine/core";
-import { IconArrowLeft, IconCheck, IconX } from "@tabler/icons-react";
+import { IconArrowLeft, IconCheck, IconX, IconRefresh, IconAlertTriangle } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
@@ -127,7 +127,7 @@ export function ExamResultPage() {
         avval kontent tagida qo'shimcha joy yo'q edi va tugma oxirgi
         javob kartasini yopib qo'yardi.
       */}
-      <Container size="xl" p={0} pb={{ base: 70, sm: 0 }}>
+      <Container size="xl" p={0} pb={{ base: 120, sm: 40 }}>
         {/* Header: Score Ring + Pass/Fail */}
         <Paper
           p="xl"
@@ -264,32 +264,97 @@ export function ExamResultPage() {
           )}
         </Stack>
 
-        {/* Back Button */}
-        <Flex justify="center" mb="xl">
+        {/* Action Buttons */}
+        <Flex
+          direction={{ base: "column", sm: "row" }}
+          justify="center"
+          align="center"
+          gap="md"
+          mb="xl"
+          visibleFrom="sm"
+        >
+          {result.incorrectCount != null && result.incorrectCount > 0 && (
+            <Button
+              size="md"
+              radius="md"
+              color="red"
+              leftSection={<IconAlertTriangle size={18} />}
+              onClick={() => navigate("/wrong-exam")}
+            >
+              {t("examResult.practiceMistakes", "Xatolar ustida ishlash")} ({result.incorrectCount})
+            </Button>
+          )}
+
           <Button
-            visibleFrom="sm"
             size="md"
             radius="md"
+            variant="light"
+            color="blue"
+            leftSection={<IconRefresh size={18} />}
+            onClick={() => navigate("/exam")}
+          >
+            {t("examResult.retryExam", "Qayta urinish")}
+          </Button>
+
+          <Button
+            size="md"
+            radius="md"
+            variant="default"
             leftSection={<IconArrowLeft size={18} />}
             onClick={() => navigate("/me")}
           >
-            {t("examResult.backToDashboard")}
+            {t("examResult.backToDashboard", "Boshqaruv paneliga qaytish")}
           </Button>
         </Flex>
-        <Button
+
+        {/* Mobile Sticky Bottom Actions */}
+        <Box
           hiddenFrom="sm"
-          size="md"
-          leftSection={<IconArrowLeft size={18} />}
-          onClick={() => navigate("/me")}
           style={{
             position: "fixed",
-            bottom: 10,
-            left: 10,
-            right: 10,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: "10px 16px",
+            background: "var(--surface)",
+            borderTop: "1px solid var(--border)",
+            zIndex: 100,
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
           }}
         >
-          {t("examResult.backToDashboard")}
-        </Button>
+          {result.incorrectCount != null && result.incorrectCount > 0 && (
+            <Button
+              fullWidth
+              size="md"
+              color="red"
+              leftSection={<IconAlertTriangle size={18} />}
+              onClick={() => navigate("/wrong-exam")}
+            >
+              {t("examResult.practiceMistakes", "Xatolar ustida ishlash")} ({result.incorrectCount})
+            </Button>
+          )}
+          <Group grow gap="xs">
+            <Button
+              size="sm"
+              variant="light"
+              color="blue"
+              leftSection={<IconRefresh size={16} />}
+              onClick={() => navigate("/exam")}
+            >
+              {t("examResult.retryExam", "Qayta")}
+            </Button>
+            <Button
+              size="sm"
+              variant="default"
+              leftSection={<IconArrowLeft size={16} />}
+              onClick={() => navigate("/me")}
+            >
+              {t("examResult.backToDashboard", "Dashboard")}
+            </Button>
+          </Group>
+        </Box>
       </Container>
     </Box>
   );

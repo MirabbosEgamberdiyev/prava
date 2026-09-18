@@ -215,40 +215,33 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   );
 
   const localizeTopic = useCallback(
-    (topic: OfflineTopic | null | undefined): string => {
+    (topic: any): string => {
       if (!topic) return "";
       const official = topic.id != null ? OFFICIAL_TOPIC_MAP[topic.id] : undefined;
+      const nameRu =
+        topic.name_ru ||
+        topic.nameRu ||
+        (typeof topic.name === "object" ? topic.name?.ru : null) ||
+        official?.name_ru;
+      const nameUzc =
+        topic.name_uzc ||
+        topic.nameUzc ||
+        (typeof topic.name === "object" ? topic.name?.uzc : null) ||
+        official?.name_uzc;
+      const nameUzl =
+        topic.name_uzl ||
+        topic.nameUzl ||
+        (typeof topic.name === "object" ? topic.name?.uzl : null) ||
+        official?.name_uzl ||
+        (typeof topic.name === "string" ? topic.name : "");
+
       if (language === "uzc") {
-        return (
-          topic.name_uzc ||
-          official?.name_uzc ||
-          topic.name_uzl ||
-          official?.name_uzl ||
-          topic.name_ru ||
-          official?.name_ru ||
-          ""
-        );
+        return nameUzc || nameUzl || nameRu || "";
       }
       if (language === "ru") {
-        return (
-          topic.name_ru ||
-          official?.name_ru ||
-          topic.name_uzl ||
-          official?.name_uzl ||
-          topic.name_uzc ||
-          official?.name_uzc ||
-          ""
-        );
+        return nameRu || nameUzl || nameUzc || "";
       }
-      return (
-        topic.name_uzl ||
-        official?.name_uzl ||
-        topic.name_uzc ||
-        official?.name_uzc ||
-        topic.name_ru ||
-        official?.name_ru ||
-        ""
-      );
+      return nameUzl || nameUzc || nameRu || "";
     },
     [language]
   );

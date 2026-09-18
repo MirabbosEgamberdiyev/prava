@@ -24,7 +24,7 @@ const PALETTE = [
   { bg: "#fff4e6", color: "#e8590c", border: "#ffa94d" },
   { bg: "#e6fcf5", color: "#099268", border: "#63e6be" },
   { bg: "#f8f0fc", color: "#9c36b5", border: "#da77f2" },
-  { bg: "#fff5f5", color: "#e03131", border: "#ffa8a8" },
+  { bg: "#fff5f5", color: "#c92a2a", border: "#ff8787" },
 ];
 
 // Dark mode palette

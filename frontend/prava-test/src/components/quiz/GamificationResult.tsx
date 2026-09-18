@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import {
   IconTrophy,
   IconTargetArrow,
@@ -11,6 +12,7 @@ import {
   IconRefresh,
   IconArrowLeft,
   IconSparkles,
+  IconAlertTriangle,
 } from "@tabler/icons-react";
 
 export interface GamificationResultProps {
@@ -47,6 +49,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
   errorMsg,
 }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const actualTotal = totalQuestions ?? total ?? correct + wrong + unanswered;
   const handleHome = onBackHome ?? onHome ?? (() => {});
 
@@ -270,6 +273,33 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
             >
               <IconSearch size={18} stroke={2.2} />
               <span>{t("gamification.reviewMistakes", "Xatolarni tahlil qilish")}</span>
+            </button>
+          )}
+
+          {/* 1.1 Direct Mistakes Practice CTA */}
+          {!errorMsg && wrong > 0 && (
+            <button
+              type="button"
+              onClick={() => navigate("/wrong-exam")}
+              style={{
+                width: "100%",
+                minHeight: "44px",
+                background: "rgba(239, 68, 68, 0.12)",
+                color: "#ef4444",
+                border: "1.5px solid rgba(239, 68, 68, 0.3)",
+                borderRadius: "12px",
+                fontSize: "14px",
+                fontWeight: 700,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+              }}
+            >
+              <IconAlertTriangle size={18} stroke={2.2} />
+              <span>{t("gamification.solveMistakes", "Faqat xatolar bo'yicha test")} ({wrong})</span>
             </button>
           )}
 
