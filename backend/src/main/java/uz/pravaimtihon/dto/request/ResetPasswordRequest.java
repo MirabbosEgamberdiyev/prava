@@ -22,7 +22,11 @@ public class ResetPasswordRequest {
     private String code;
 
     @NotBlank(message = "validation.user.password.required")
-    @Size(min = 6, max = 100, message = "validation.user.password.size")
+    @Size(min = 8, max = 100, message = "validation.user.password.size")
+    @Pattern(
+            regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+            message = "validation.user.password.complexity"
+    )
     private String newPassword;
 
     @NotNull(message = "validation.verification.type.required")

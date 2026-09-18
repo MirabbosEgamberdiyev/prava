@@ -33,6 +33,11 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
             "WHERE rt.tokenFamily = :family AND rt.isRevoked = false")
     void revokeAllByFamily(@Param("family") String family, @Param("now") LocalDateTime now);
 
+    @Query("SELECT rt FROM RefreshToken rt WHERE rt.tokenFamily = :family " +
+            "AND rt.isRevoked = false AND rt.expiresAt > :now " +
+            "ORDER BY rt.createdAt DESC")
+    List<RefreshToken> findActiveTokensByFamily(@Param("family") String family, @Param("now") LocalDateTime now);
+
     @Modifying
     @Query("DELETE FROM RefreshToken rt WHERE rt.expiresAt < :date OR " +
             "(rt.isRevoked = true AND rt.revokedAt < :date)")

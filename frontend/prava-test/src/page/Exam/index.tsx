@@ -281,7 +281,7 @@ export default function Exam_Page() {
       <>
         <SEO
           title={t("activeTest.results", "Imtihon natijasi")}
-          description="Imtihon natijalari va statistikasi"
+          description={t("activeTest.resultsDesc", "Imtihon natijalari va statistikasi")}
           canonical="/exam"
           noIndex={true}
         />

@@ -34,6 +34,7 @@ import uz.pravaimtihon.service.TelegramTokenStore;
 import uz.pravaimtihon.service.VerificationService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -85,12 +86,14 @@ public class AuthService {
     }
 
     /**
-     * вњ… Step 1 - Send verification code with language
+     * ✅ Step 1 - Send verification code with language
      */
     public VerificationSentResponse initiateRegistration(RegisterRequest request, AcceptLanguage language) {
         log.info("Initiating registration for: {} [lang={}]", maskIdentifier(request), language);
 
-        validateRegistrationIdentifier(request);
+        if (request.getPhoneNumber() != null) {
+            request.setPhoneNumber(normalizePhone(request.getPhoneNumber()));
+        }
 
         String identifier = getIdentifier(request);
         if (userRepository.findByIdentifier(identifier).isPresent()) {
@@ -115,21 +118,23 @@ public class AuthService {
     }
 
     /**
-     * вњ… Step 2 - Complete registration with language
+     * ✅ Step 2 - Verify code and create account with language
      */
+    @Transactional
     public AuthResponse completeRegistration(RegisterRequest request, String code, AcceptLanguage language) {
         log.info("Completing registration for: {} [lang={}]", maskIdentifier(request), language);
+
+        validateRegistrationIdentifier(request);
+
+        if (request.getPhoneNumber() != null) {
+            request.setPhoneNumber(normalizePhone(request.getPhoneNumber()));
+        }
 
         String recipient = request.getVerificationType().name().equals("SMS")
                 ? request.getPhoneNumber()
                 : request.getEmail();
 
-        boolean verified = verificationService.verifyCode(
-                recipient,
-                code,
-                request.getVerificationType()
-        );
-
+        boolean verified = verificationService.verifyCode(recipient, code, request.getVerificationType());
         if (!verified) {
             throw new BusinessException("error.verification.code.invalid");
         }
@@ -143,11 +148,8 @@ public class AuthService {
             );
         }
 
-        // Normalize phone number - strip + prefix
+        // Canonical phone number
         String phone = request.getPhoneNumber();
-        if (phone != null && phone.startsWith("+")) {
-            phone = phone.substring(1);
-        }
 
         User user = User.builder()
                 .firstName(request.getFirstName())
@@ -180,11 +182,21 @@ public class AuthService {
         log.info("Login attempt for identifier={} [lang={}]",
                 maskIdentifierValue(request.getIdentifier()), language);
 
-        // 1пёЏвѓЈ USER TOPISH (login fail boвЂlishi mumkin)
-        User user = userRepository.findByIdentifier(request.getIdentifier())
+        // 1️⃣ USER TOPISH (login fail bo‘lishi mumkin)
+        String rawIdentifier = request.getIdentifier() != null ? request.getIdentifier().trim() : "";
+        String normalizedIdentifier = rawIdentifier;
+        if (!rawIdentifier.contains("@")) {
+            String cleanPhone = normalizePhone(rawIdentifier);
+            if (cleanPhone != null && cleanPhone.length() >= 9) {
+                normalizedIdentifier = cleanPhone;
+            }
+        }
+
+        User user = userRepository.findByIdentifier(normalizedIdentifier)
+                .or(() -> userRepository.findByIdentifier(rawIdentifier))
                 .orElseThrow(() -> new UnauthorizedException("error.auth.invalid.credentials"));
 
-        // 2пёЏвѓЈ BUSINESS CHECKS
+        // 2️⃣ BUSINESS CHECKS
         if (!Boolean.TRUE.equals(user.getIsActive())) {
             throw new UnauthorizedException("error.user.account.inactive");
         }
@@ -193,24 +205,36 @@ public class AuthService {
             throw new UnauthorizedException("error.user.account.locked");
         }
 
-        // 3пёЏвѓЈ AUTHENTICATION (FAFAQAT SHU JOY LOGIN FAIL QILADI)
+        // 3️⃣ AUTHENTICATION (FAFAQAT SHU JOY LOGIN FAIL QILADI)
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getIdentifier(),
+                            normalizedIdentifier,
                             request.getPassword()
                     )
             );
         } catch (AuthenticationException ex) {
+            try {
+                if (!normalizedIdentifier.equals(rawIdentifier)) {
+                    authenticationManager.authenticate(
+                            new UsernamePasswordAuthenticationToken(
+                                    rawIdentifier,
+                                    request.getPassword()
+                            )
+                    );
+                } else {
+                    throw ex;
+                }
+            } catch (AuthenticationException ex2) {
+                // ❌ faqat shu holatda failedAttempt oshadi
+                user.incrementFailedLoginAttempts();
+                userRepository.save(user);
 
-            // вќ— faqat shu holatda failedAttempt oshadi
-            user.incrementFailedLoginAttempts();
-            userRepository.save(user);
+                log.warn("Authentication failed for userId={}, identifier={}",
+                        user.getId(), maskIdentifierValue(request.getIdentifier()));
 
-            log.warn("Authentication failed for userId={}, identifier={}",
-                    user.getId(), maskIdentifierValue(request.getIdentifier()));
-
-            throw new UnauthorizedException("error.auth.invalid.credentials");
+                throw new UnauthorizedException("error.auth.invalid.credentials");
+            }
         }
 
         // 4пёЏвѓЈ AUTH SUCCESS (BU YERDAN PASTGA вЂ” LOGIN MUVAFFAQIYATLI)
@@ -231,12 +255,37 @@ public class AuthService {
     public AuthResponse refreshToken(RefreshTokenRequest request, AcceptLanguage language) {
         log.info("Refreshing token [lang={}]", language);
 
-        // Check if the token was already revoked (reuse detection)
+        // Check if the token was already revoked (reuse detection with 15s grace window)
         if (refreshTokenRepository.isTokenRevoked(request.getRefreshToken())) {
-            log.warn("Revoked refresh token reuse detected! Revoking entire token family.");
-            refreshTokenRepository.findByToken(request.getRefreshToken())
-                    .ifPresent(revokedToken -> refreshTokenRepository.revokeAllByFamily(
-                            revokedToken.getTokenFamily(), LocalDateTime.now()));
+            Optional<RefreshToken> revokedOpt = refreshTokenRepository.findByToken(request.getRefreshToken());
+            if (revokedOpt.isPresent()) {
+                RefreshToken revokedToken = revokedOpt.get();
+                if (revokedToken.getRevokedAt() != null &&
+                        revokedToken.getRevokedAt().isAfter(LocalDateTime.now().minusSeconds(15))) {
+                    log.info("Refresh token rotated within 15s grace window for family={}. Returning current active session.",
+                            revokedToken.getTokenFamily());
+                    List<RefreshToken> activeTokens = refreshTokenRepository.findActiveTokensByFamily(
+                            revokedToken.getTokenFamily(), LocalDateTime.now());
+                    if (!activeTokens.isEmpty()) {
+                        RefreshToken activeToken = activeTokens.get(0);
+                        User activeUser = activeToken.getUser();
+                        if (Boolean.TRUE.equals(activeUser.getIsActive())) {
+                            CustomUserDetails userDetails = CustomUserDetails.from(activeUser);
+                            String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails);
+                            UserResponse userResponse = userMapper.toResponse(activeUser, language);
+                            return AuthResponse.builder()
+                                    .accessToken(newAccessToken)
+                                    .refreshToken(activeToken.getToken())
+                                    .tokenType("Bearer")
+                                    .expiresIn(jwtTokenProvider.getAccessTokenExpiration())
+                                    .user(userResponse)
+                                    .build();
+                        }
+                    }
+                }
+                log.warn("Revoked refresh token reuse detected outside grace window! Revoking entire token family.");
+                refreshTokenRepository.revokeAllByFamily(revokedToken.getTokenFamily(), LocalDateTime.now());
+            }
             throw new UnauthorizedException("error.token.invalid");
         }
 
@@ -307,13 +356,17 @@ public class AuthService {
         log.info("Forgot password request for: {} [lang={}]",
                 maskIdentifierValue(request.getIdentifier()), language);
 
-        // вљ пёЏ AUDIT вЂ” USER ENUMERATION: avval foydalanuvchi topilmasa 404
-        // "error.user.not.found" qaytarilardi. Bu endpoint autentifikatsiyasiz
-        // ochiq, ya'ni istalgan kishi telefon/email ro'yxatini aylanib chiqib,
-        // qaysi biri tizimda BOR ekanini aniq bilib olardi.
-        // Endi javob har doim bir xil: mavjud bo'lsa kod yuboriladi, bo'lmasa
-        // ham xuddi shunday "yuborildi" javobi qaytadi.
-        Optional<User> maybeUser = userRepository.findByIdentifier(request.getIdentifier());
+        String rawIdentifier = request.getIdentifier() != null ? request.getIdentifier().trim() : "";
+        String normalizedIdentifier = rawIdentifier;
+        if (!rawIdentifier.contains("@")) {
+            String cleanPhone = normalizePhone(rawIdentifier);
+            if (cleanPhone != null && cleanPhone.length() >= 9) {
+                normalizedIdentifier = cleanPhone;
+            }
+        }
+
+        Optional<User> maybeUser = userRepository.findByIdentifier(normalizedIdentifier)
+                .or(() -> userRepository.findByIdentifier(rawIdentifier));
 
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
@@ -330,29 +383,42 @@ public class AuthService {
             }
             log.info("Forgot password: tanlangan kanal uchun manzil yo'q, userId={}", user.getId());
         } else {
-            log.info("Forgot password: bunday foydalanuvchi yo'q вЂ” neytral javob qaytarildi");
+            log.info("Forgot password: bunday foydalanuvchi yo'q — neytral javob qaytarildi");
         }
 
-        // Neytral (enumeration'ga qarshi) javob вЂ” haqiqiy holatni oshkor qilmaydi.
+        // Neytral (enumeration'ga qarshi) javob — haqiqiy holatni oshkor qilmaydi.
         return VerificationSentResponse.builder()
                 .recipient(request.getIdentifier())
                 .maskedRecipient(maskIdentifierValue(request.getIdentifier()))
                 .expiresInMinutes(10)
                 .retryAfterSeconds(60)
                 .message(messageService.getMessage("success.verification.sent"))
-                .testMode(false)
                 .build();
     }
 
     /**
-     * вњ… UPDATED: Reset password with language
+     * ✅ Reset password with language
      */
+    @Transactional
     public void resetPassword(ResetPasswordRequest request, AcceptLanguage language) {
-        log.info("Resetting password for: {} [lang={}]",
+        log.info("Reset password request for: {} [lang={}]",
                 maskIdentifierValue(request.getRecipient()), language);
 
+        String rawRecipient = request.getRecipient() != null ? request.getRecipient().trim() : "";
+        String normalizedRecipient = rawRecipient;
+        if (!rawRecipient.contains("@")) {
+            String cleanPhone = normalizePhone(rawRecipient);
+            if (cleanPhone != null && cleanPhone.length() >= 9) {
+                normalizedRecipient = cleanPhone;
+            }
+        }
+
         boolean verified = verificationService.verifyCode(
-                request.getRecipient(),
+                normalizedRecipient,
+                request.getCode(),
+                request.getVerificationType()
+        ) || verificationService.verifyCode(
+                rawRecipient,
                 request.getCode(),
                 request.getVerificationType()
         );
@@ -361,7 +427,8 @@ public class AuthService {
             throw new BusinessException("error.verification.code.invalid");
         }
 
-        User user = userRepository.findByIdentifier(request.getRecipient())
+        User user = userRepository.findByIdentifier(normalizedRecipient)
+                .or(() -> userRepository.findByIdentifier(rawRecipient))
                 .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
 
         validatePasswordStrength(request.getNewPassword());
@@ -715,9 +782,26 @@ public class AuthService {
                 : request.getEmail();
     }
 
+    public static String normalizePhone(String phone) {
+        if (phone == null || phone.isBlank()) {
+            return null;
+        }
+        String digits = phone.replaceAll("\\D", "");
+        if (digits.length() == 9) {
+            return "998" + digits;
+        }
+        if (digits.length() == 12 && digits.startsWith("998")) {
+            return digits;
+        }
+        return digits;
+    }
+
     private void validatePasswordStrength(String password) {
-        if (password == null || password.length() < 6) {
+        if (password == null || password.length() < 8) {
             throw new ValidationException("validation.user.password.size");
+        }
+        if (!password.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
+            throw new ValidationException("validation.user.password.complexity");
         }
     }
 

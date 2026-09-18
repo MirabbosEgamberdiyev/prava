@@ -282,7 +282,7 @@ export default function WrongExam_Page() {
       <>
         <SEO
           title={t("wrongAnswers.title", "Xatolar ustida ishlash")}
-          description="Xatolar ustida ishlash natijalari"
+          description={t("seo.wrongExam.desc", "Xatolar ustida ishlash natijalari")}
           canonical="/wrong-exam"
           noIndex={true}
         />

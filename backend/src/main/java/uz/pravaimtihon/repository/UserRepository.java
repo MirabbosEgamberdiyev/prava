@@ -21,7 +21,10 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     Optional<User> findByEmailAndDeletedFalse(String email);
 
     @Query("SELECT u FROM User u WHERE u.deleted = false AND " +
-            "(u.phoneNumber = :identifier OR u.email = :identifier " +
+            "(u.phoneNumber = :identifier " +
+            "OR (LENGTH(:identifier) > 1 AND SUBSTRING(:identifier, 1, 1) = '+' AND u.phoneNumber = SUBSTRING(:identifier, 2)) " +
+            "OR (LENGTH(:identifier) = 9 AND u.phoneNumber = CONCAT('998', :identifier)) " +
+            "OR LOWER(u.email) = LOWER(:identifier) " +
             "OR u.telegramId = :identifier OR u.googleId = :identifier)")
     Optional<User> findByIdentifier(@Param("identifier") String identifier);
     Optional<User> findByGoogleIdAndDeletedFalse(String googleId);

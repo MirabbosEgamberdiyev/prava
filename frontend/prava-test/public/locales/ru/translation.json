@@ -1773,6 +1773,7 @@
     "next": "Вперед",
     "explanation": "Пояснение ПДД",
     "results": "Результаты",
+    "resultsDesc": "Результаты экзамена и подробный анализ",
     "questionsCount": "Количество вопросов",
     "continueTest": "Продолжить тест",
     "confirmFinish": "Вы действительно хотите завершить тест?"
@@ -1786,7 +1787,7 @@
     "overallReadiness": "Общая готовность",
     "beginnerLevel": "Начальный",
     "questionsUnit": "вопросов",
-    "totalUnit": "",
+    "totalUnit": "вопр.",
     "recommended": "РЕКОМЕНДУЕТСЯ",
     "mainModesTitle": "Основные режимы обучения",
     "selectFormat": "Выберите режим в порядке обучения",

@@ -14,6 +14,7 @@ import { IconCheck, IconX } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import type { UserResponse } from "../../../types/auth";
+import { formatAppDate } from "../../../utils/date";
 
 export function ProfileInfoCard() {
   const { t } = useTranslation();
@@ -36,14 +37,7 @@ export function ProfileInfoCard() {
 
   const initials = `${user.firstName?.charAt(0) || ""}${user.lastName?.charAt(0) || ""}`.toUpperCase();
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleDateString(undefined, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
+  const formatDate = (dateStr?: string) => formatAppDate(dateStr);
 
   return (
     <Paper p="lg" radius="md" withBorder shadow="sm">

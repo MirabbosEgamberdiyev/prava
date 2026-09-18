@@ -243,6 +243,39 @@ public class ExamControllerV2 {
     }
 
     // ============================================
+    // 5.1. OFFLINE IMTIHON NATIJASINI YOZISH
+    // ============================================
+
+    /**
+     * Bu endpoint offline bajarilgan imtihon javoblarini serverga sinxronizatsiya qiladi.
+     */
+    @PostMapping("/record-offline")
+    @Operation(
+            summary = "Offline imtihon natijasini yozish",
+            description = "Mijoz oflayn bajargan imtihon natijalarini serverga sinxronizatsiya qilish."
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Offline imtihon muvaffaqiyatli saqlandi"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Autentifikatsiya talab qilinadi"
+            )
+    })
+    public ResponseEntity<ApiResponse<ExamResultResponse>> recordOfflineExam(
+            @Valid @RequestBody OfflineExamRecordRequest request,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+
+        ExamResultResponse response = examService.recordOfflineExam(request);
+        return ResponseEntity.ok(ApiResponse.success(
+                messageService.getMessage("success.exam.submitted", language),
+                response
+        ));
+    }
+
+    // ============================================
     // 6. JAVOBNI TEKSHIRISH (INSTANT)
     // ============================================
 

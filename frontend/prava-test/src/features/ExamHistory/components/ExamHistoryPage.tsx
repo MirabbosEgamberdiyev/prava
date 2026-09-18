@@ -21,6 +21,7 @@ import { useLanguage } from "../../../hooks/useLanguage";
 import { EmptyState } from "../../../components/common/EmptyState";
 import type { ExamHistoryResponse, ExamHistoryItem, HistoryFilterStatus } from "../types";
 import { getApiStatus } from "../types";
+import { formatAppDateTime } from "../../../utils/date";
 
 export function ExamHistoryPage() {
   const { t } = useTranslation();
@@ -87,16 +88,7 @@ export function ExamHistoryPage() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const formatDate = (dateStr: string) => formatAppDateTime(dateStr);
 
   const getStatusColor = (item: ExamHistoryItem) => {
     if (item.status === "IN_PROGRESS") return "blue";

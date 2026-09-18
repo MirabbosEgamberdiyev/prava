@@ -1773,6 +1773,7 @@
     "next": "Keyingisi",
     "explanation": "YHQ tushuntirishi",
     "results": "Natijalar",
+    "resultsDesc": "Imtihon natijalari va batafsil tahlili",
     "questionsCount": "Savollar soni",
     "continueTest": "Testni davom ettirish",
     "confirmFinish": "Haqiqatan ham testni yakunlamoqchimisiz?"

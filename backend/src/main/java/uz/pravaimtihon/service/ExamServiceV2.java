@@ -45,6 +45,7 @@ public class ExamServiceV2 {
     private final UserRepository userRepository;
     private final UserStatisticsRepository statisticsRepository;
     private final TopicRepository topicRepository;
+    private final TicketRepository ticketRepository;
     private final ExamResponseMapper mapper;
     private final ExamProperties examProperties;
     private final uz.pravaimtihon.payment.service.PaymentAccessService paymentAccessService;
@@ -394,6 +395,148 @@ public class ExamServiceV2 {
 
         log.info("Imtihon topshirildi: sessionId={}, score={}/{}",
                 session.getId(), session.getCorrectCount(), session.getTotalQuestions());
+
+        return buildResultResponse(session, examAnswers);
+    }
+
+    /**
+     * Offline imtihon natijasini qabul qilish va saqlash.
+     * Mobile ilovadan tarmoq qayta ulanganda yuboriladi.
+     */
+    @Transactional
+    public ExamResultResponse recordOfflineExam(OfflineExamRecordRequest request) {
+        Long userId = getCurrentUserIdRequired();
+
+        log.info("Offline imtihon yozilmoqda: user={}, clientSessionId={}, examType={}, answersCount={}",
+                userId, request.getClientSessionId(), request.getExamType(),
+                request.getAnswers() != null ? request.getAnswers().size() : 0);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
+
+        ExamPackage examPackage = null;
+        Ticket ticket = null;
+
+        if (request.getTargetId() != null) {
+            if ("ticket".equalsIgnoreCase(request.getExamType())) {
+                ticket = ticketRepository.findByIdAndDeletedFalse(request.getTargetId()).orElse(null);
+                if (ticket != null) {
+                    examPackage = ticket.getExamPackage();
+                }
+            } else if ("package".equalsIgnoreCase(request.getExamType())) {
+                examPackage = packageRepository.findById(request.getTargetId()).orElse(null);
+            }
+        }
+
+        LocalDateTime finishedAt = request.getCompletedAt() != null
+                ? LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(request.getCompletedAt()), java.time.ZoneId.systemDefault())
+                : LocalDateTime.now();
+
+        long durSeconds = request.getDurationSeconds() != null && request.getDurationSeconds() > 0
+                ? request.getDurationSeconds()
+                : (request.getAnswers() != null ? request.getAnswers().size() * 30L : 600L);
+
+        LocalDateTime startedAt = finishedAt.minusSeconds(durSeconds);
+        int durationMinutes = (int) Math.max(1, Math.ceil(durSeconds / 60.0));
+
+        int totalQuestions = request.getAnswers() != null ? request.getAnswers().size() : 0;
+
+        ExamSession session = ExamSession.builder()
+                .user(user)
+                .examPackage(examPackage)
+                .ticket(ticket)
+                .status(ExamStatus.COMPLETED)
+                .language(AcceptLanguage.UZL)
+                .durationMinutes(durationMinutes)
+                .totalQuestions(totalQuestions)
+                .startedAt(startedAt)
+                .finishedAt(finishedAt)
+                .expiresAt(finishedAt)
+                .build();
+
+        session = sessionRepository.save(session);
+
+        List<ExamAnswer> examAnswers = new ArrayList<>();
+        if (request.getAnswers() != null && !request.getAnswers().isEmpty()) {
+            List<Long> questionIds = request.getAnswers().stream()
+                    .map(AnswerSubmitRequest::getQuestionId)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            Map<Long, Question> questionMap = questionRepository.findAllById(questionIds).stream()
+                    .collect(Collectors.toMap(Question::getId, q -> q));
+
+            int order = 0;
+            for (AnswerSubmitRequest a : request.getAnswers()) {
+                Question question = questionMap.get(a.getQuestionId());
+                if (question == null) continue;
+
+                int correctIndex = question.getCorrectAnswerIndex() != null ? question.getCorrectAnswerIndex() : 0;
+                boolean isCorrect = a.getSelectedOptionIndex() != null &&
+                        a.getSelectedOptionIndex().equals(correctIndex);
+
+                ExamAnswer answer = ExamAnswer.builder()
+                        .examSession(session)
+                        .question(question)
+                        .questionOrder(order++)
+                        .selectedOptionIndex(a.getSelectedOptionIndex())
+                        .correctOptionIndex(correctIndex)
+                        .isCorrect(isCorrect)
+                        .timeSpentSeconds(a.getTimeSpentSeconds() != null ? a.getTimeSpentSeconds() : 0L)
+                        .answeredAt(finishedAt)
+                        .build();
+
+                examAnswers.add(answer);
+                question.recordAnswer(isCorrect);
+            }
+
+            if (!examAnswers.isEmpty()) {
+                examAnswers = answerRepository.saveAll(examAnswers);
+            }
+        }
+
+        session.setAnswers(examAnswers);
+
+        int answeredCount = (int) examAnswers.stream()
+                .filter(a -> a.getSelectedOptionIndex() != null)
+                .count();
+        int correctCount = (int) examAnswers.stream()
+                .filter(a -> Boolean.TRUE.equals(a.getIsCorrect()))
+                .count();
+        int wrongCount = answeredCount - correctCount;
+        double percentage = totalQuestions > 0 ? (correctCount * 100.0) / totalQuestions : 0.0;
+        int score = correctCount;
+
+        int passingScore = DEFAULT_PASSING_SCORE;
+        if (examPackage != null) {
+            passingScore = examPackage.getPassingScore();
+        } else if (ticket != null) {
+            passingScore = ticket.getPassingScore();
+        }
+
+        boolean isPassed;
+        if ("real".equalsIgnoreCase(request.getExamType())) {
+            int incorrectAndUnanswered = totalQuestions - correctCount;
+            isPassed = incorrectAndUnanswered <= 2;
+        } else {
+            isPassed = percentage >= passingScore;
+        }
+
+        session.setAnsweredCount(answeredCount);
+        session.setCorrectCount(correctCount);
+        session.setWrongCount(wrongCount);
+        session.setScore(score);
+        session.setPercentage(percentage);
+        session.setIsPassed(isPassed);
+
+        session = sessionRepository.save(session);
+
+        // Update statistics
+        updateUserStatisticsSafe(session);
+
+        log.info("Offline imtihon saqlandi: sessionId={}, score={}/{}, passed={}",
+                session.getId(), correctCount, totalQuestions, isPassed);
 
         return buildResultResponse(session, examAnswers);
     }
