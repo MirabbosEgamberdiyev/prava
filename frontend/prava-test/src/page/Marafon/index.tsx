@@ -257,6 +257,20 @@ export default function Marafon_Page() {
         e.preventDefault();
         handleSelect(map[e.key]);
       }
+      if (e.key === " " || e.code === "Space") {
+        if (answers[current] !== undefined) {
+          e.preventDefault();
+          setShowExp((prev) => !prev);
+          return;
+        }
+      }
+      if (e.key === "Enter") {
+        if (answers[current] !== undefined && current < (questions.length || 1) - 1) {
+          e.preventDefault();
+          setCurrent((c) => Math.min((questions.length || 1) - 1, c + 1));
+          return;
+        }
+      }
       if (e.key === "ArrowLeft") setCurrent((c) => Math.max(0, c - 1));
       if (e.key === "ArrowRight")
         setCurrent((c) => Math.min((questions.length || 1) - 1, c + 1));

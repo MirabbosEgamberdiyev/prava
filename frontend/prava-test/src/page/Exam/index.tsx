@@ -222,6 +222,13 @@ export default function Exam_Page() {
         e.preventDefault();
         handleSelect(map[e.key]);
       }
+      if (e.key === "Enter") {
+        if (answers[current] !== undefined && current < (questions.length || 1) - 1) {
+          e.preventDefault();
+          setCurrent((c) => Math.min((questions.length || 1) - 1, c + 1));
+          return;
+        }
+      }
       if (e.key === "ArrowLeft") setCurrent((c) => Math.max(0, c - 1));
       if (e.key === "ArrowRight")
         setCurrent((c) => Math.min((questions.length || 1) - 1, c + 1));
@@ -382,7 +389,7 @@ export default function Exam_Page() {
           {/* Left: options */}
           <div className="exam-col-options">
             {options.map((opt, idx) => {
-              let cls = "exam-opt-btn";
+              let cls = "exam-option";
               if (answered) {
                 if (idx === q.correct_option) cls += " correct";
                 else if (idx === answered.selected) cls += " wrong";
@@ -395,8 +402,8 @@ export default function Exam_Page() {
                   disabled={answered !== undefined}
                   type="button"
                 >
-                  <span className="opt-key">F{idx + 1}</span>
-                  <span className="opt-text">{localizeOpt(opt)}</span>
+                  <span className="exam-option-key">F{idx + 1}</span>
+                  <span className="exam-option-text">{localizeOpt(opt)}</span>
                   {answered && idx === q.correct_option && (
                     <IconCheck size={15} className="opt-icon correct" />
                   )}

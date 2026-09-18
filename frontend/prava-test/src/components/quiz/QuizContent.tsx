@@ -250,19 +250,70 @@ export function QuizContent({
     if (idx !== -1) setActiveQuiz(idx);
   };
 
-  // Keyboard shortcuts
+  // Full Keyboard Navigation (F1-F5, 1-5, Arrows, Space, Enter, Escape)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (["F1", "F2", "F3", "F4", "F5"].includes(e.key)) {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+      // If a modal is open, ignore quiz hotkeys
+      if (imageModalOpened || resultModalOpened) return;
+
+      // Escape: close explanation if open
+      if (e.key === "Escape" && explanationOpen) {
         e.preventDefault();
-        const optionIndex = parseInt(e.key.replace("F", "")) - 1;
+        setExplanationOpen(false);
+        return;
+      }
+
+      // Space: toggle explanation if answered and allowed
+      if (e.key === " " || e.code === "Space") {
+        if (
+          showExplanation &&
+          !isSecureMode &&
+          selectedAnswers[activeQuiz] !== undefined &&
+          currentQuestion?.explanation
+        ) {
+          e.preventDefault();
+          setExplanationOpen((prev) => !prev);
+          return;
+        }
+      }
+
+      // Enter: advance to next question if answered
+      if (e.key === "Enter") {
+        if (selectedAnswers[activeQuiz] !== undefined && !isLastQuestion) {
+          e.preventDefault();
+          goToNextQuestion();
+          return;
+        }
+      }
+
+      // Option selection: F1-F5 and 1-5
+      const map: Record<string, number> = {
+        F1: 0, F2: 1, F3: 2, F4: 3, F5: 4,
+        "1": 0, "2": 1, "3": 2, "4": 3, "5": 4,
+      };
+
+      if (e.key in map) {
+        e.preventDefault();
+        const optionIndex = map[e.key];
         const options = currentQuestion?.options || [];
         if (optionIndex < options.length) {
           handleSelectAnswer(activeQuiz, optionIndex);
         }
+        return;
       }
-      if (e.key === "ArrowLeft" && !isFirstQuestion) goToPrevQuestion();
-      if (e.key === "ArrowRight" && !isLastQuestion) goToNextQuestion();
+
+      // Arrows navigation
+      if (e.key === "ArrowLeft" && !isFirstQuestion) {
+        e.preventDefault();
+        goToPrevQuestion();
+      }
+      if (e.key === "ArrowRight" && !isLastQuestion) {
+        e.preventDefault();
+        goToNextQuestion();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -275,6 +326,11 @@ export function QuizContent({
     isLastQuestion,
     goToNextQuestion,
     goToPrevQuestion,
+    imageModalOpened,
+    resultModalOpened,
+    explanationOpen,
+    showExplanation,
+    isSecureMode,
   ]);
 
   const handleSelectAnswer = (questionIndex: number, optionIndex: number) => {
@@ -606,18 +662,17 @@ export function QuizContent({
                       size="md"
                       variant={iconProps.variant}
                       color={iconProps.color}
+                      style={{ fontWeight: 700, fontSize: 12, flexShrink: 0 }}
                     >
-                      {isSecureMode ? (
-                        "F" + (option.index + 1)
-                      ) : isAnswered && isThisCorrect ? (
-                        <IconCheck size={16} />
-                      ) : isAnswered && isThisSelected && !isThisCorrect ? (
-                        <IconX size={16} />
-                      ) : (
-                        "F" + (option.index + 1)
-                      )}
+                      {"F" + (option.index + 1)}
                     </ActionIcon>
                     <Text fw={500} size="sm" style={{ flex: 1 }}>{localize(option.text)}</Text>
+                    {!isSecureMode && isAnswered && isThisCorrect && (
+                      <IconCheck size={18} color="var(--mantine-color-green-6)" style={{ flexShrink: 0 }} />
+                    )}
+                    {!isSecureMode && isAnswered && isThisSelected && !isThisCorrect && (
+                      <IconX size={18} color="var(--mantine-color-red-6)" style={{ flexShrink: 0 }} />
+                    )}
                   </Flex>
                 </Paper>
               );

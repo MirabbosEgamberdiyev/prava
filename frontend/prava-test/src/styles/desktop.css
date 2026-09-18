@@ -4025,7 +4025,8 @@ body:has(.app) {
 }
 
 /* ── Options ── */
-.exam-option {
+.exam-option,
+.exam-opt-btn {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -4041,33 +4042,42 @@ body:has(.app) {
   transition: all 0.15s;
   width: 100%;
 }
-.exam-option:hover:not(:disabled) {
+.exam-option:hover:not(:disabled),
+.exam-opt-btn:hover:not(:disabled) {
   border-color: var(--primary);
   background: var(--primary-light);
 }
-.exam-option:disabled {
+.exam-option:disabled,
+.exam-opt-btn:disabled {
   cursor: default;
 }
-.exam-option.correct {
+.exam-option.correct,
+.exam-opt-btn.correct {
   border-color: #2f9e44;
   background: #ebfbee;
   color: #2f9e44;
 }
-.exam-option.wrong {
+.exam-option.wrong,
+.exam-opt-btn.wrong {
   border-color: var(--danger);
   background: #fff5f5;
   color: var(--danger);
 }
 [data-theme="dark"] .exam-option.correct,
-[data-mantine-color-scheme="dark"] .exam-option.correct {
+[data-mantine-color-scheme="dark"] .exam-option.correct,
+[data-theme="dark"] .exam-opt-btn.correct,
+[data-mantine-color-scheme="dark"] .exam-opt-btn.correct {
   background: #2f9e4420;
 }
 [data-theme="dark"] .exam-option.wrong,
-[data-mantine-color-scheme="dark"] .exam-option.wrong {
+[data-mantine-color-scheme="dark"] .exam-option.wrong,
+[data-theme="dark"] .exam-opt-btn.wrong,
+[data-mantine-color-scheme="dark"] .exam-opt-btn.wrong {
   background: #e0313120;
 }
 
-.exam-option-key {
+.exam-option-key,
+.opt-key {
   width: 30px;
   height: 30px;
   border-radius: 7px;
@@ -4081,17 +4091,20 @@ body:has(.app) {
   background: var(--bg);
   color: var(--text-muted);
 }
-.exam-option.correct .exam-option-key {
+.exam-option.correct .exam-option-key,
+.exam-opt-btn.correct .opt-key {
   background: #2f9e44;
   border-color: #2f9e44;
   color: #fff;
 }
-.exam-option.wrong .exam-option-key {
+.exam-option.wrong .exam-option-key,
+.exam-opt-btn.wrong .opt-key {
   background: var(--danger);
   border-color: var(--danger);
   color: #fff;
 }
-.exam-option-text {
+.exam-option-text,
+.opt-text {
   flex: 1;
   line-height: 1.4;
 }
