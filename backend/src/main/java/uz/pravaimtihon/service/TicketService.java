@@ -324,13 +324,8 @@ public class TicketService {
             throw new BusinessException("error.ticket.not.active");
         }
 
-        // Agar foydalanuvchida faol sessiya bo'lsa — abandon qilamiz (har qanday tur)
-        sessionRepository.findActiveSession(userId, LocalDateTime.now())
-                .ifPresent(existing -> {
-                    existing.abandon();
-                    sessionRepository.save(existing);
-                    log.info("Mavjud faol sessiya abandon qilindi: sessionId={}", existing.getId());
-                });
+        // Agar foydalanuvchida faol sessiyalar bo'lsa — barchasini abandon qilamiz (atomic UPDATE, no optimistic lock collision)
+        sessionRepository.abandonActiveSessions(userId, LocalDateTime.now());
 
         // Null savollarni filtrlash
         List<Question> validQuestions = ticket.getQuestions().stream()

@@ -4,14 +4,16 @@ import { useNavigate } from "react-router-dom";
 import type { OfflineTopic } from "../../types/desktop";
 import { getTopics } from "../../services/desktopAdapter";
 import { useDesktopTheme } from "../../context/DesktopThemeContext";
+import { useLanguage } from "../../context/LanguageContext";
 import SEO from "../../components/common/SEO";
 import {
-  IconArrowLeft,
   IconSearch,
   IconBook2,
   IconPlayerPlay,
   IconListNumbers,
+  IconX,
 } from "@tabler/icons-react";
+import styles from "../../components/dashboard/Dashboard.module.css";
 
 // Light mode palette
 const PALETTE = [
@@ -41,8 +43,6 @@ const PALETTE_DARK = [
   { bg: "#e0313122", color: "#ffa8a8", border: "#e0313140" },
 ];
 
-import { useLanguage } from "../../context/LanguageContext";
-
 export default function Topics_Page() {
   const { t } = useTranslation();
   const { localizeTopic } = useLanguage();
@@ -61,8 +61,6 @@ export default function Topics_Page() {
   const { theme } = useDesktopTheme();
   const isDark = theme === "dark";
 
-  const onBack = () => navigate("/me");
-
   const onStartTopicTest = (topicId: number) => {
     navigate(`/marafon?topicId=${topicId}`);
   };
@@ -73,49 +71,132 @@ export default function Topics_Page() {
 
   return (
     <>
-      <SEO title={t("seo.topics.title", "Mavzular — YHQ Qoidalari bo'yicha Testlar")} description={t("seo.topics.desc", "Yo'l harakati qoidalari mavzulari bo'yicha testlar.")}
+      <SEO
+        title={t("seo.topics.title", "Mavzular — YHQ Qoidalari bo'yicha Testlar")}
+        description={t("seo.topics.desc", "Yo'l harakati qoidalari mavzulari bo'yicha testlar.")}
         canonical="/topics"
         noIndex={true}
       />
-      <div className="topics-screen">
-        {/* ── Header ── */}
-        <div className="topics-header">
-          <button className="quiz-back-btn" onClick={onBack} type="button">
-            <IconArrowLeft size={18} />
-          </button>
-          <h2 className="topics-title">{t("topics.title", "Mavzular")}</h2>
-          {!loading && <span className="topics-count-chip">{topics.length}</span>}
+      {/* Page Header */}
+        <div className={styles.innerPageHeader}>
+          <div className={styles.innerPageHeaderLeft}>
+            <div className={styles.innerPageTitleRow}>
+              <h2 className={styles.innerPageTitle}>
+                {t("topics.title", "Mavzular")}
+              </h2>
+              {!loading && (
+                <span className={styles.innerPageCountChip}>
+                  {topics.length} {t("topics.unit", "ta mavzu")}
+                </span>
+              )}
+            </div>
+            <p className={styles.innerPageSubtitle}>
+              {t(
+                "topics.subtitle",
+                "Yo'l harakati qoidalarini mavzulashtirilgan tarzda tizimli o'rganing va testdan o'ting."
+              )}
+            </p>
+          </div>
 
           {/* Search */}
-          <div className="topics-search-wrap">
-            <IconSearch size={15} className="topics-search-icon" />
-            <input
-              className="topics-search-input"
-              placeholder={t("topics.search", "Mavzuni qidirish...")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div className={styles.innerPageActions}>
+            <div className={styles.innerSearchWrap}>
+              <IconSearch size={16} className={styles.innerSearchIcon} />
+              <input
+                className={styles.innerSearchInput}
+                placeholder={t("topics.search", "Mavzuni qidirish...")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label={t("topics.search", "Mavzuni qidirish")}
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  style={{
+                    position: "absolute",
+                    right: 10,
+                    background: "none",
+                    border: "none",
+                    color: "var(--text-muted)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  aria-label={t("common.clear", "Tozalash")}
+                >
+                  <IconX size={15} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* ── Content ── */}
+        {/* Content */}
         {loading ? (
-          <div className="loading-screen">
+          <div className="loading-screen" style={{ minHeight: 320 }}>
             <div className="spinner" />
+            <p style={{ marginTop: 12, color: "var(--text-muted)", fontSize: 14 }}>
+              {t("common.loading", "Mavzular yuklanmoqda...")}
+            </p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="empty-state" style={{ marginTop: 80 }}>
-            <div className="empty-state-icon">
-              <IconBook2 size={48} stroke={1} color="var(--text-muted)" />
+          <div
+            className="empty-state"
+            style={{
+              padding: "60px 20px",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: "50%",
+                backgroundColor: "var(--surface-muted)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <IconBook2 size={32} stroke={1.5} color="var(--text-muted)" />
             </div>
-            <p className="empty-state-text">
+            <h4 style={{ fontSize: 17, fontWeight: 700, margin: "8px 0 0", color: "var(--text)" }}>
               {search
                 ? t("topics.notFound", "Mavzu topilmadi")
                 : t("topics.noTopics", "Mavzular mavjud emas")}
+            </h4>
+            <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: 0, maxWidth: 360 }}>
+              {search
+                ? t("topics.tryAnotherSearch", "Qidiruv so'zini o'zgartirib ko'ring yoki tozalang.")
+                : t("topics.noTopicsDesc", "Hozircha tizimda mavzular mavjud emas.")}
             </p>
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                style={{
+                  marginTop: 8,
+                  padding: "8px 18px",
+                  borderRadius: 8,
+                  background: "var(--primary)",
+                  color: "#fff",
+                  border: "none",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  cursor: "pointer",
+                }}
+              >
+                {t("common.clearSearch", "Qidiruvni tozalash")}
+              </button>
+            )}
           </div>
         ) : (
-          <div className="topics-grid">
+          <div className={styles.topicsInnerGrid}>
             {filtered.map((topic, idx) => {
               const pal = isDark
                 ? PALETTE_DARK[idx % PALETTE_DARK.length]
@@ -162,7 +243,6 @@ export default function Topics_Page() {
             })}
           </div>
         )}
-      </div>
     </>
   );
 }

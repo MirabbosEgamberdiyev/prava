@@ -41,7 +41,7 @@ public class GuestExamController {
     private final ExamResponseMapper mapper;
 
     private static final int GUEST_QUESTION_COUNT = 20;
-    private static final int GUEST_DURATION_MINUTES = 20;
+    private static final int GUEST_DURATION_MINUTES = 25;
     private static final int GUEST_PASSING_SCORE = 90;
 
     /**

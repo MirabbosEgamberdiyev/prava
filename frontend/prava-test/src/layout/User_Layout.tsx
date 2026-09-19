@@ -1,22 +1,20 @@
 import { Suspense } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { UserRouteFallback } from "../components/common/RouteContentFallback";
+import { DashboardLayout } from "../components/dashboard/DashboardLayout";
 
+/**
+ * Enterprise Dashboard AppShell Layout.
+ * Persists DashboardHeader, Sticky Sidebar, and Global Persistent Footer
+ * across all dashboard route transitions without unmounting or flicker.
+ */
 const User_Layout = () => {
-  const location = useLocation();
-
   return (
-    <div className="app">
-      <div
-        className="page-transition-wrapper"
-        key={location.pathname}
-        style={{ height: "100%", display: "flex", flexDirection: "column" }}
-      >
-        <Suspense fallback={<UserRouteFallback />}>
-          <Outlet />
-        </Suspense>
-      </div>
-    </div>
+    <DashboardLayout>
+      <Suspense fallback={<UserRouteFallback />}>
+        <Outlet />
+      </Suspense>
+    </DashboardLayout>
   );
 };
 

@@ -12,7 +12,6 @@ import {
   localizeExp,
 } from "../../services/desktopAdapter";
 import {
-  IconArrowLeft,
   IconTrash,
   IconAlertTriangle,
   IconCheck,
@@ -22,6 +21,7 @@ import {
 } from "@tabler/icons-react";
 import ImageZoomModal, { ZoomableImage } from "../../components/common/ImageZoomModal";
 import SEO from "../../components/common/SEO";
+import styles from "../../components/dashboard/Dashboard.module.css";
 
 export default function WrongAnswers_Page() {
   const { t } = useTranslation();
@@ -53,60 +53,93 @@ export default function WrongAnswers_Page() {
     setEntries((prev) => prev.filter((e) => e?.question?.id !== questionId));
   };
 
-  const onBack = () => navigate("/me");
   const onStartPractice = () => navigate("/wrong-exam");
 
   return (
     <>
-      <SEO title={t("seo.wrongAnswers.title", "Xatolar ustida ishlash")} description={t("seo.wrongAnswers.desc", "Xato qilingan savollarni qayta ko'rish va amaliyot.")}
+      <SEO
+        title={t("seo.wrongAnswers.title", "Xatolar ustida ishlash — PravaOnline")}
+        description={t("seo.wrongAnswers.desc", "Xato qilingan savollarni qayta ko'rish va amaliyot.")}
         canonical="/wrong-answers"
         noIndex={true}
       />
-      <div className="review-screen">
-        <header className="review-header">
-          <button className="review-back-btn" onClick={onBack} type="button">
-            <IconArrowLeft size={18} stroke={2} />
-            {t("common.back", "Orqaga")}
-          </button>
-          <div className="review-header-title">
-            <IconAlertTriangle size={20} stroke={2} color="#e03131" />
-            <span>{t("wrongAnswers.title", "Xatolar ustida ishlash")}</span>
+      {/* Page Header */}
+        <div className={styles.innerPageHeader}>
+          <div className={styles.innerPageHeaderLeft}>
+            <div className={styles.innerPageTitleRow}>
+              <h2 className={styles.innerPageTitle}>
+                <IconAlertTriangle
+                  size={24}
+                  stroke={2}
+                  style={{ color: "#e03131", verticalAlign: "middle", marginRight: 8 }}
+                />
+                {t("wrongAnswers.title", "Xatolar ustida ishlash")}
+              </h2>
+              {!loading && entries.length > 0 && (
+                <span
+                  className={styles.innerPageCountChip}
+                  style={{ background: "rgba(224, 49, 49, 0.12)", color: "#e03131" }}
+                >
+                  {entries.length} {t("common.questions", "savol")}
+                </span>
+              )}
+            </div>
+            <p className={styles.innerPageSubtitle}>
+              {t(
+                "wrongAnswers.subtitle",
+                "Test yoki imtihon davomida yo'l qo'yilgan xatolaringizni chuqur tahlil qiling va qayta mustahkamlang."
+              )}
+            </p>
           </div>
-          <div className="review-header-count">
-            {entries.length} {t("common.questions", "savol")}
-          </div>
-          {entries.length > 0 && (
-            <button
-              className="review-practice-btn"
-              onClick={onStartPractice}
-              type="button"
-            >
-              <IconPlayerPlay size={16} stroke={2} />
-              {t("wrongAnswers.practice", "Amaliyot")}
-            </button>
-          )}
-        </header>
 
-        <main className="review-content">
+          {entries.length > 0 && (
+            <div className={styles.innerPageActions}>
+              <button
+                className="saas-btn-primary"
+                onClick={onStartPractice}
+                type="button"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "10px 20px",
+                  borderRadius: 10,
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                <IconPlayerPlay size={16} stroke={2.2} />
+                {t("wrongAnswers.practice", "Amaliyotni boshlash")}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Content Container */}
+        <div style={{ maxWidth: 960, width: "100%", margin: "0 auto" }}>
           {loading ? (
-            <div className="loading-screen">
+            <div className="loading-screen" style={{ minHeight: 320 }}>
               <div className="spinner" />
+              <p style={{ marginTop: 12, color: "var(--text-muted)", fontSize: 14 }}>
+                {t("common.loading", "Savollar yuklanmoqda...")}
+              </p>
             </div>
           ) : entries.length === 0 ? (
-            <div className="review-empty">
+            <div className="review-empty" style={{ padding: "60px 20px" }}>
               <IconCheck size={56} stroke={1.5} color="#2f9e44" />
-              <h3>{t("wrongAnswers.emptyTitle", "Xatolar yo'q!")}</h3>
-              <p>
+              <h3 style={{ marginTop: 16 }}>{t("wrongAnswers.emptyTitle", "Xatolar yo'q!")}</h3>
+              <p style={{ maxWidth: 460, margin: "8px auto 0", color: "var(--text-muted)", fontSize: 14 }}>
                 {t(
                   "wrongAnswers.emptySub",
-                  "Test yoki imtihon davomida qilgan xatolaringiz shu yerda to'planadi."
+                  "Ajoyib natija! Test yoki imtihon davomida qilgan xatolaringiz avtomatik tarzda shu yerda to'planadi."
                 )}
               </p>
               <button
                 type="button"
                 className="saas-btn-primary"
                 onClick={() => navigate("/tickets")}
-                style={{ marginTop: 12 }}
+                style={{ marginTop: 20 }}
               >
                 {t("home.biletlar", "Biletlarni yechish")}
               </button>
@@ -122,6 +155,14 @@ export default function WrongAnswers_Page() {
                     <div
                       className="review-card-top"
                       onClick={() => setExpanded(isOpen ? null : q.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setExpanded(isOpen ? null : q.id);
+                        }
+                      }}
                     >
                       <div className="review-card-badge wrong-badge">
                         {entry.wrong_count}✕
@@ -135,6 +176,7 @@ export default function WrongAnswers_Page() {
                         }}
                         title={t("wrongAnswers.remove", "O'chirish")}
                         type="button"
+                        aria-label={t("wrongAnswers.remove", "O'chirish")}
                       >
                         <IconTrash size={14} stroke={2} />
                       </button>
@@ -185,9 +227,8 @@ export default function WrongAnswers_Page() {
               })}
             </div>
           )}
-        </main>
+        </div>
         {zoomSrc && <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />}
-      </div>
     </>
   );
 }

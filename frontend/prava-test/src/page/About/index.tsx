@@ -85,7 +85,7 @@ export default function About_Page() {
       title: t("about.reason2Title", "Haqiqiy YHXX imtihon muhiti"),
       desc: t(
         "about.reason2Desc",
-        "Davlat markazlaridagi kabi 20 ta savol, 20 daqiqa vaqt nazorati, maksimal 2 tagacha xato chegarasi va F1–F5 klaviatura tezkor tugmalari orqali mashq qilasiz."
+        "Davlat markazlaridagi kabi 20 ta savol, 25 daqiqa vaqt nazorati, maksimal 2 tagacha xato chegarasi va F1–F5 klaviatura tezkor tugmalari orqali mashq qilasiz."
       ),
     },
     {
@@ -166,7 +166,7 @@ export default function About_Page() {
               <Text size="md" c="dimmed" lh={1.7}>
                 {t(
                   "about.storyP2",
-                  "Platformamiz IIV YHXXning 2026-yilgi eng so'nggi talablariga to'liq javob beradi: haqiqiy imtihondagi kabi 20 daqiqa vaqt chegarasi, 20 ta tasodifiy savollar, ruxsat etilgan xatolar me'yori va F1–F5 klaviatura tezkor tugmalari orqali xuddi imtihon xonasida o'tirgandek amaliyot qilasiz."
+                  "Platformamiz IIV YHXXning 2026-yilgi eng so'nggi talablariga to'liq javob beradi: haqiqiy imtihondagi kabi 25 daqiqa vaqt chegarasi, 20 ta tasodifiy savollar, ruxsat etilgan xatolar me'yori va F1–F5 klaviatura tezkor tugmalari orqali xuddi imtihon xonasida o'tirgandek amaliyot qilasiz."
                 )}
               </Text>
             </Stack>

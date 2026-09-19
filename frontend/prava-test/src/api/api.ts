@@ -68,7 +68,11 @@ let isProactiveRefreshing = false;
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     // 1. Tokenni olish
-    const token = Cookies.get(ACCESS_TOKEN_KEY);
+    const token =
+      Cookies.get(ACCESS_TOKEN_KEY) ||
+      (typeof localStorage !== "undefined"
+        ? localStorage.getItem(ACCESS_TOKEN_KEY)
+        : null);
 
     // 2. Tilni cookiedan olish
     const language = Cookies.get("i18next") || "uzl";

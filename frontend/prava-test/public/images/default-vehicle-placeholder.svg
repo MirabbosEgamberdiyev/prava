@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Background subtle ambient glow -->
+    <radialGradient id="ambientGlow" cx="50%" cy="55%" r="48%">
+      <stop offset="0%" stop-color="#1D9BF0" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#1D9BF0" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Metallic Body Gradients (Chevrolet Executive Styling) -->
+    <linearGradient id="bodyMetallic" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="25%" stop-color="#1E293B"/>
+      <stop offset="70%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+
+    <linearGradient id="hoodHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#475569" stop-opacity="0.2"/>
+      <stop offset="50%" stop-color="#94A3B8" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#475569" stop-opacity="0.2"/>
+    </linearGradient>
+
+    <!-- Windshield Reflection -->
+    <linearGradient id="glassReflection" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#0EA5E9" stop-opacity="0.35"/>
+      <stop offset="40%" stop-color="#38BDF8" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#0369A1" stop-opacity="0.05"/>
+    </linearGradient>
+
+    <!-- LED Headlight Beam / DRL -->
+    <linearGradient id="ledGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="50%" stop-color="#F0F9FF"/>
+      <stop offset="100%" stop-color="#38BDF8"/>
+    </linearGradient>
+
+    <filter id="lightGlowFilter" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="subtleShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- Ambient Backdrop -->
+  <rect x="0" y="0" width="640" height="400" fill="url(#ambientGlow)"/>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="320" cy="360" rx="230" ry="24" fill="#000" opacity="0.35" filter="blur(8px)"/>
+  <ellipse cx="320" cy="362" rx="180" ry="12" fill="#000" opacity="0.5" filter="blur(4px)"/>
+
+  <!-- CAR MAIN GROUP -->
+  <g filter="url(#subtleShadow)">
+    <!-- Cabin Roof & Greenhouse Structure -->
+    <path d="M 215 152 
+             C 240 108, 275 92, 320 92 
+             C 365 92, 400 108, 425 152 
+             Z" 
+          fill="#0F172A" stroke="#334155" stroke-width="2"/>
+
+    <!-- Windshield -->
+    <path d="M 222 150 
+             C 245 114, 278 100, 320 100 
+             C 362 100, 395 114, 418 150 
+             Z" 
+          fill="url(#glassReflection)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+
+    <!-- Windshield wipers & interior mirror silhouette -->
+    <rect x="314" y="105" width="12" height="7" rx="2" fill="#334155"/>
+    <path d="M 250 148 L 310 144" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M 330 144 L 390 148" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Aerodynamic Side Mirrors -->
+    <!-- Left Mirror -->
+    <path d="M 188 162 C 172 160, 165 170, 172 178 C 180 184, 202 180, 206 172 Z" fill="#1E293B" stroke="#475569" stroke-width="1.5"/>
+    <ellipse cx="185" cy="170" rx="8" ry="4" fill="#38BDF8" opacity="0.4"/>
+    <!-- Right Mirror -->
+    <path d="M 452 162 C 468 160, 475 170, 468 178 C 460 184, 438 180, 434 172 Z" fill="#1E293B" stroke="#475569" stroke-width="1.5"/>
+    <ellipse cx="455" cy="170" rx="8" ry="4" fill="#38BDF8" opacity="0.4"/>
+
+    <!-- Main Car Body & Hood Structure (Malibu/Tahoe aggressive shoulder lines) -->
+    <path d="M 148 248 
+             C 142 225, 155 195, 185 186 
+             C 205 180, 218 158, 224 152 
+             L 416 152 
+             C 422 158, 435 180, 455 186 
+             C 485 195, 498 225, 492 248 
+             C 488 266, 482 292, 474 322 
+             C 470 334, 458 342, 444 342 
+             L 196 342 
+             C 182 342, 170 334, 166 322 
+             C 158 292, 152 266, 148 248 
+             Z" 
+          fill="url(#bodyMetallic)" stroke="#475569" stroke-width="2"/>
+
+    <!-- Hood Creases & Aerodynamic Sculpting -->
+    <path d="M 232 156 Q 260 215 264 235" stroke="url(#hoodHighlight)" stroke-width="2.5" fill="none"/>
+    <path d="M 408 156 Q 380 215 376 235" stroke="url(#hoodHighlight)" stroke-width="2.5" fill="none"/>
+    <path d="M 288 154 L 292 232" stroke="#334155" stroke-width="1.5" stroke-opacity="0.7"/>
+    <path d="M 352 154 L 348 232" stroke="#334155" stroke-width="1.5" stroke-opacity="0.7"/>
+
+    <!-- Wheels & Tires (Front lower corners) -->
+    <rect x="156" y="300" width="34" height="48" rx="8" fill="#020617" stroke="#1E293B" stroke-width="2"/>
+    <rect x="450" y="300" width="34" height="48" rx="8" fill="#020617" stroke="#1E293B" stroke-width="2"/>
+    <line x1="173" y1="310" x2="173" y2="340" stroke="#334155" stroke-width="2"/>
+    <line x1="467" y1="310" x2="467" y2="340" stroke="#334155" stroke-width="2"/>
+
+    <!-- Front Honeycomb Grille -->
+    <path d="M 226 236 
+             L 414 236 
+             L 404 292 
+             L 236 292 
+             Z" 
+          fill="#0B1220" stroke="#1D9BF0" stroke-width="1.5"/>
+
+    <!-- Grille Mesh Accents -->
+    <line x1="240" y1="250" x2="400" y2="250" stroke="#1E293B" stroke-width="1.5"/>
+    <line x1="244" y1="264" x2="396" y2="264" stroke="#1E293B" stroke-width="1.5"/>
+    <line x1="248" y1="278" x2="392" y2="278" stroke="#1E293B" stroke-width="1.5"/>
+
+    <!-- Sleek LED Headlights (Dual projectors with cyan DRL brow) -->
+    <!-- Left Headlight -->
+    <g filter="url(#lightGlowFilter)">
+      <path d="M 160 216 
+               C 185 212, 222 220, 234 234 
+               C 215 238, 178 234, 160 226 
+               Z" 
+            fill="#0F172A" stroke="#38BDF8" stroke-width="2"/>
+      <!-- LED DRL Brow -->
+      <path d="M 164 218 Q 198 214 230 230" stroke="url(#ledGlow)" stroke-width="3" stroke-linecap="round"/>
+      <!-- Projector Lens -->
+      <circle cx="188" cy="226" r="6" fill="#F0F9FF"/>
+      <circle cx="188" cy="226" r="3" fill="#38BDF8"/>
+      <circle cx="210" cy="230" r="4.5" fill="#E0F2FE"/>
+    </g>
+
+    <!-- Right Headlight -->
+    <g filter="url(#lightGlowFilter)">
+      <path d="M 480 216 
+               C 455 212, 418 220, 406 234 
+               C 425 238, 462 234, 480 226 
+               Z" 
+            fill="#0F172A" stroke="#38BDF8" stroke-width="2"/>
+      <!-- LED DRL Brow -->
+      <path d="M 476 218 Q 442 214 410 230" stroke="url(#ledGlow)" stroke-width="3" stroke-linecap="round"/>
+      <!-- Projector Lens -->
+      <circle cx="452" cy="226" r="6" fill="#F0F9FF"/>
+      <circle cx="452" cy="226" r="3" fill="#38BDF8"/>
+      <circle cx="430" cy="230" r="4.5" fill="#E0F2FE"/>
+    </g>
+
+    <!-- Lower Bumper, Air Intakes & Fog Lights -->
+    <path d="M 194 304 L 224 304 L 220 334 L 198 334 Z" fill="#0B1220" stroke="#334155"/>
+    <path d="M 446 304 L 416 304 L 420 334 L 442 334 Z" fill="#0B1220" stroke="#334155"/>
+    <circle cx="210" cy="318" r="4" fill="#38BDF8" opacity="0.8"/>
+    <circle cx="430" cy="318" r="4" fill="#38BDF8" opacity="0.8"/>
+
+    <!-- Lower Chin Lip / Splitter -->
+    <path d="M 210 342 L 430 342 L 424 348 L 216 348 Z" fill="#1D9BF0" opacity="0.8"/>
+
+    <!-- ============================================ -->
+    <!-- LICENSE PLATE: PRAVAONLINE                   -->
+    <!-- ============================================ -->
+    <!-- Plate Holder Shadow & Frame -->
+    <rect x="250" y="278" width="140" height="34" rx="5" fill="#090D16" stroke="#475569" stroke-width="1.5"/>
+    <!-- Plate Inner White Base -->
+    <rect x="253" y="281" width="134" height="28" rx="3.5" fill="#FFFFFF"/>
+
+    <!-- Uzbekistan Flag / Blue Bar Strip on the Left -->
+    <rect x="253" y="281" width="16" height="28" rx="2" fill="#0284C7"/>
+    <text x="261" y="298" font-family="'Inter', sans-serif" font-size="9" font-weight="900" fill="#FFFFFF" text-anchor="middle">UZ</text>
+
+    <!-- State License Text: PRAVAONLINE -->
+    <text x="328" y="300" font-family="'Inter', -apple-system, sans-serif" font-size="14" font-weight="900" letter-spacing="1.8" fill="#0F172A" text-anchor="middle">
+      PRAVAONLINE
+    </text>
+  </g>
+</svg>

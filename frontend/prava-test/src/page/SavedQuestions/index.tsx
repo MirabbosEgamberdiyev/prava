@@ -12,7 +12,6 @@ import {
   localizeExp,
 } from "../../services/desktopAdapter";
 import {
-  IconArrowLeft,
   IconBookmark,
   IconBookmarkOff,
   IconCheck,
@@ -21,6 +20,7 @@ import {
 } from "@tabler/icons-react";
 import ImageZoomModal, { ZoomableImage } from "../../components/common/ImageZoomModal";
 import SEO from "../../components/common/SEO";
+import styles from "../../components/dashboard/Dashboard.module.css";
 
 export default function SavedQuestions_Page() {
   const { t } = useTranslation();
@@ -52,53 +52,59 @@ export default function SavedQuestions_Page() {
     setEntries((prev) => prev.filter((e) => e?.question?.id !== questionId));
   };
 
-
-
-  const onBack = () => navigate("/me");
-
   return (
     <>
-      <SEO title={t("seo.savedQuestions.title", "Saqlangan savollar")} description={t("seo.savedQuestions.desc", "Belgilangan muhim savollar ro'yxati.")}
+      <SEO
+        title={t("seo.savedQuestions.title", "Saqlangan savollar")}
+        description={t("seo.savedQuestions.desc", "Belgilangan muhim savollar ro'yxati.")}
         canonical="/saved-questions"
         noIndex={true}
       />
-      <div className="review-screen">
-        <header className="review-header">
-          <button className="review-back-btn" onClick={onBack} type="button">
-            <IconArrowLeft size={18} stroke={2} />
-            {t("common.back", "Orqaga")}
-          </button>
-          <div className="review-header-title">
-            <IconBookmark size={20} stroke={2} color="#1971c2" />
-            <span>{t("saved.title", "Saqlangan savollar")}</span>
+      {/* Page Header */}
+        <div className={styles.innerPageHeader}>
+          <div className={styles.innerPageHeaderLeft}>
+            <div className={styles.innerPageTitleRow}>
+              <h2 className={styles.innerPageTitle}>{t("saved.title", "Saqlangan savollar")}</h2>
+              {!loading && entries.length > 0 && (
+                <span className={styles.innerPageCountChip}>
+                  {entries.length} {t("common.questions", "savol")}
+                </span>
+              )}
+            </div>
+            <p className={styles.innerPageSubtitle}>
+              {t(
+                "saved.subtitle",
+                "O'rganish davomida xatcho'p qo'yilgan muhim va takrorlash kerak bo'lgan savollar."
+              )}
+            </p>
           </div>
-          <div className="review-header-count">
-            {entries.length} {t("common.questions", "savol")}
-          </div>
-        </header>
+        </div>
 
-        <main className="review-content">
+        <div style={{ maxWidth: 960, width: "100%", margin: "0 auto" }}>
           {loading ? (
-            <div className="loading-screen">
+            <div className="loading-screen" style={{ minHeight: 320 }}>
               <div className="spinner" />
+              <p style={{ marginTop: 12, color: "var(--text-muted)", fontSize: 14 }}>
+                {t("common.loading", "Savollar yuklanmoqda...")}
+              </p>
             </div>
           ) : entries.length === 0 ? (
-            <div className="review-empty">
+            <div className="review-empty" style={{ padding: "60px 20px" }}>
               <IconBookmark size={56} stroke={1.5} color="var(--primary)" />
               <h3>{t("saved.emptyTitle", "Saqlangan savollar yo'q")}</h3>
-              <p>
+              <p style={{ maxWidth: 420, margin: "0 auto", color: "var(--text-muted)", fontSize: 14 }}>
                 {t(
-                  "saved.emptySub",
-                  "Test yoki imtihon davomida muhim savollarni saqlab qo'yishingiz mumkin."
+                  "saved.emptyDesc",
+                  "Testlar yoki biletlarni yechayotganda eslab qolish kerak bo'lgan savollarni xatcho'p orqali saqlang."
                 )}
               </p>
               <button
                 type="button"
                 className="saas-btn-primary"
                 onClick={() => navigate("/tickets")}
-                style={{ marginTop: 12 }}
+                style={{ marginTop: 16 }}
               >
-                {t("home.biletlar", "Biletlarni yechish")}
+                {t("nav.tickets", "Biletlarni ko'rish")}
               </button>
             </div>
           ) : (
@@ -175,9 +181,8 @@ export default function SavedQuestions_Page() {
               })}
             </div>
           )}
-        </main>
+        </div>
         {zoomSrc && <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />}
-      </div>
     </>
   );
 }

@@ -1,0 +1,270 @@
+/* ==========================================================================
+   AuthLayout.module.css — Professional SaaS Auth Layout System
+   Optimized for Single Viewport Desktop (1920x1080 & 1366x768) + Mobile Accordion
+   ========================================================================== */
+
+.authLayoutRoot {
+  min-height: calc(100dvh - 58px - 48px);
+  width: 100%;
+  position: relative;
+  background-color: var(--bg, #f8fafc);
+  background-image: 
+    radial-gradient(ellipse 65% 55% at 50% -10%, rgba(33, 150, 243, 0.07) 0%, rgba(240, 247, 255, 0.5) 45%, transparent 75%),
+    radial-gradient(circle 400px at 15% 20%, rgba(33, 150, 243, 0.03) 0%, transparent 60%),
+    radial-gradient(circle 400px at 85% 25%, rgba(56, 189, 248, 0.03) 0%, transparent 60%);
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+:global([data-mantine-color-scheme="dark"]) .authLayoutRoot,
+:global([data-theme="dark"]) .authLayoutRoot {
+  background-color: #0A0F14;
+  background-image: 
+    radial-gradient(ellipse 65% 55% at 50% -10%, rgba(33, 150, 243, 0.1) 0%, rgba(17, 24, 39, 0.6) 45%, transparent 75%),
+    radial-gradient(circle 400px at 15% 20%, rgba(33, 150, 243, 0.04) 0%, transparent 60%),
+    radial-gradient(circle 400px at 85% 25%, rgba(56, 189, 248, 0.04) 0%, transparent 60%);
+}
+
+.authContainer {
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: clamp(6px, 1.2vh, 12px) clamp(14px, 2vw, 24px);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Sub-header navigation row (Breadcrumbs or Back link + Step indicator) */
+.subHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: clamp(4px, 0.8vh, 8px);
+  min-height: 22px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary, #2196F3);
+  text-decoration: none;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.backLink:hover {
+  transform: translateX(-3px);
+  color: #1976d2;
+}
+
+.stepIndicatorBadge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  background: rgba(100, 116, 139, 0.08);
+  padding: 2px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border, rgba(226, 232, 240, 0.8));
+}
+
+.breadcrumbRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+}
+
+.breadcrumbLink {
+  color: var(--text-muted, #64748b);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumbLink:hover {
+  color: var(--primary, #2196F3);
+}
+
+.breadcrumbCurrent {
+  color: var(--text, #1e293b);
+  font-weight: 600;
+}
+
+/* 3-Column Grid Composition on Desktop */
+.threeColGrid {
+  display: grid;
+  grid-template-columns: minmax(260px, 310px) minmax(350px, 440px) minmax(260px, 310px);
+  gap: clamp(14px, 2vw, 28px);
+  align-items: center;
+  justify-content: center;
+  margin-top: 0;
+  flex: 1;
+}
+
+/* Left Column */
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.1vh, 12px);
+}
+
+/* Center Column */
+.centerCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Right Column */
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.1vh, 12px);
+}
+
+/* Pill badge on top of Left Column */
+.leftPillBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--primary, #2196F3);
+  background: rgba(33, 150, 243, 0.08);
+  border: 1px solid rgba(33, 150, 243, 0.2);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  width: fit-content;
+}
+
+/* Left Hero Headline */
+.leftHeadline {
+  font-size: clamp(1.3rem, 1.7vw, 1.85rem);
+  font-weight: 800;
+  line-height: 1.18;
+  color: var(--text, #0f172a);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+:global([data-mantine-color-scheme="dark"]) .leftHeadline {
+  color: #f8fafc;
+}
+
+.headlineAccent {
+  color: var(--primary, #2196F3);
+  background: linear-gradient(135deg, #2196F3 0%, #38BDF8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Left Hero Description */
+.leftDescription {
+  font-size: clamp(0.78rem, 0.9vw, 0.86rem);
+  line-height: 1.45;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+:global([data-mantine-color-scheme="dark"]) .leftDescription {
+  color: #94a3b8;
+}
+
+/* Mobile Accordion Wrapper */
+.mobileAccordionWrapper {
+  display: none;
+  width: 100%;
+  max-width: 440px;
+  margin: 16px auto 0;
+}
+
+.mobileAccordionTitle {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text, #1e293b);
+}
+
+:global([data-mantine-color-scheme="dark"]) .mobileAccordionTitle {
+  color: #f8fafc;
+}
+
+.mobilePanelContent {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 6px;
+}
+
+/* Responsive Breakpoints */
+
+/* Tablet (Laptop & iPad: 768px - 1100px) */
+@media (max-width: 1100px) {
+  .threeColGrid {
+    grid-template-columns: 1fr minmax(340px, 440px);
+    gap: 20px;
+  }
+
+  /* When 2-column: Right features move below or wrap */
+  .rightCol {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+}
+
+/* Mobile & Small Tablet (max-width: 880px) */
+@media (max-width: 880px) {
+  .authLayoutRoot {
+    min-height: calc(100dvh - 58px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 12px;
+    padding-bottom: 20px;
+  }
+
+  .authContainer {
+    padding: 6px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .threeColGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+  }
+
+  /* Form is centered and focused */
+  .centerCol {
+    width: 100%;
+  }
+
+  /* Hide raw side columns and accordion on mobile for 100% focused experience */
+  .leftCol,
+  .rightCol,
+  .mobileAccordionWrapper {
+    display: none !important;
+  }
+
+  .subHeaderRow {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .authContainer {
+    padding: 4px 12px 14px;
+  }
+}

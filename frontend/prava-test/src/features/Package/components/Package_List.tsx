@@ -19,7 +19,7 @@ import type { PackageResponse, Package } from "../types";
 
 const PAGE_SIZE = 20;
 
-const Package_List = () => {
+const Package_List = ({ hideTitle = true }: { hideTitle?: boolean } = {}) => {
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const rawPage = Number(searchParams.get("page") ?? 0);
@@ -68,8 +68,8 @@ const Package_List = () => {
   if (isLoading) {
     return (
       <>
-        <Group justify="space-between" mb="md" wrap="wrap">
-          <Title order={3}>{t("package.title")}</Title>
+        <Group justify={hideTitle ? "flex-end" : "space-between"} mb="md" wrap="wrap">
+          {!hideTitle && <Title order={3}>{t("package.title")}</Title>}
           <TopicFilter
             value={selectedTopicCode}
             onChange={handleTopicChange}
@@ -112,8 +112,8 @@ const Package_List = () => {
 
   return (
     <>
-      <Group justify="space-between" mb="md" wrap="wrap">
-        <Title order={3}>{t("package.title")}</Title>
+      <Group justify={hideTitle ? "flex-end" : "space-between"} mb="md" wrap="wrap">
+        {!hideTitle && <Title order={3}>{t("package.title")}</Title>}
         <TopicFilter
           value={selectedTopicCode}
           onChange={handleTopicChange}

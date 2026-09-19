@@ -115,7 +115,7 @@ export default function WeakTopicsWidget({ userId }: Props) {
   // If user has 0 mistakes, show Variant B (Dynamic Welcome & Topic 1 Focus)
   if (totalWrongs === 0) {
     return (
-      <section className="next-best-action-wrapper" aria-label="Keyingi tavsiya">
+      <section className="next-best-action-wrapper" aria-label={t("dashboard.weakTopics.nextRecommendation", "Keyingi tavsiya")}>
         <div className="next-best-action-card variant-newbie">
           <div className="nba-newbie-content">
             <div className="nba-newbie-icon">
@@ -152,7 +152,7 @@ export default function WeakTopicsWidget({ userId }: Props) {
 
   // Variant A: Mistakes exist - Unified Focus Block
   return (
-    <section className="next-best-action-wrapper" aria-label="Asosiy fokus bloki">
+    <section className="next-best-action-wrapper" aria-label={t("dashboard.weakTopics.mainFocusBlock", "Asosiy fokus bloki")}>
       <div className="next-best-action-card variant-focus">
         {/* Left Column: Topics Requiring Attention */}
         <div className="nba-focus-col nba-col-topics">

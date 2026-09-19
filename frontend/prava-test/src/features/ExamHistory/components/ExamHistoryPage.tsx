@@ -1,5 +1,6 @@
 import {
   Badge,
+  Button,
   Flex,
   Group,
   Pagination,
@@ -23,7 +24,7 @@ import type { ExamHistoryResponse, ExamHistoryItem, HistoryFilterStatus } from "
 import { getApiStatus } from "../types";
 import { formatAppDateTime } from "../../../utils/date";
 
-export function ExamHistoryPage() {
+export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { lang, localize } = useLanguage();
@@ -116,11 +117,13 @@ export function ExamHistoryPage() {
 
   return (
     <>
-      <Title order={2} mb="md">
-        {t("history.title")}
-      </Title>
+      {!hideTitle && (
+        <Title order={2} mb="md">
+          {t("history.title")}
+        </Title>
+      )}
 
-      <ScrollArea type="auto">
+      <ScrollArea type="auto" offsetScrollbars={false}>
         <SegmentedControl
           value={filter}
           onChange={handleFilterChange}
@@ -129,6 +132,7 @@ export function ExamHistoryPage() {
           fullWidth
           size="sm"
           radius="md"
+          miw={460}
         />
       </ScrollArea>
 
@@ -157,8 +161,23 @@ export function ExamHistoryPage() {
 
       {!isLoading && filteredContent.length === 0 && (
         <EmptyState
-          icon={<IconHistory size={48} color="gray" style={{ opacity: 0.5 }} />}
-          title={t("history.empty")}
+          icon={<IconHistory size={48} color="var(--primary)" style={{ opacity: 0.75 }} />}
+          title={t("history.emptyTitle", "Imtihonlar tarixi bo'sh")}
+          description={t(
+            "history.emptyDesc",
+            "Siz hali birorta ham imtihon topshirmadingiz. Bilimingizni sinash uchun birinchi imtihonni topshiring."
+          )}
+          action={
+            <Button
+              variant="filled"
+              color="blue"
+              radius="md"
+              onClick={() => navigate("/exam")}
+              mt="xs"
+            >
+              {t("exam.startBtn", "Imtihonni boshlash")}
+            </Button>
+          }
         />
       )}
 
@@ -235,7 +254,9 @@ export function ExamHistoryPage() {
                 value={page + 1}
                 onChange={(p) => setPage(p - 1)}
                 total={totalPages}
-                withEdges
+                size="sm"
+                siblings={1}
+                boundaries={0}
               />
             </Flex>
           )}

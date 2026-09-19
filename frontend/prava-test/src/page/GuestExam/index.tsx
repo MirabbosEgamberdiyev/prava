@@ -8,10 +8,8 @@ import {
   Title,
   Button,
   Group,
-  Paper,
   Stack,
   ThemeIcon,
-  Container,
   Alert,
   Modal,
   SimpleGrid,
@@ -42,7 +40,7 @@ const GuestExamPage = () => {
   const navigate = useNavigate();
 
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [durationMinutes, setDurationMinutes] = useState(20);
+  const [durationMinutes, setDurationMinutes] = useState(25);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [limitReached, setLimitReached] = useState(false);
@@ -76,7 +74,7 @@ const GuestExamPage = () => {
         const exam = res.data?.data;
         if (!exam?.questions?.length) throw new Error("No questions");
         setQuestions(exam.questions);
-        setDurationMinutes(exam.durationMinutes ?? 20);
+        setDurationMinutes(exam.durationMinutes ?? 25);
         // Limit hisoblagichi FAQAT imtihon muvaffaqiyatli yuklangandan keyin
         // oshiriladi (avval ham shunday edi) — tarmoq xatosi foydalanuvchining
         // yagona bepul urinishini yeb qo'ymasin.
@@ -98,7 +96,7 @@ const GuestExamPage = () => {
         const exam = res.data?.data;
         if (!exam?.questions?.length) throw new Error("No questions");
         setQuestions(exam.questions);
-        setDurationMinutes(exam.durationMinutes ?? 20);
+        setDurationMinutes(exam.durationMinutes ?? 25);
         setAnswers({});
         setGuestResultOpened(false);
         localStorage.setItem(GUEST_EXAM_KEY, "1");
@@ -179,8 +177,8 @@ const GuestExamPage = () => {
       <>
         {seoElement}
         <Center h="100vh" style={{ background: "var(--bg)", padding: 16 }}>
-          <Container size="xs">
-            <Paper p="xl" radius="lg" withBorder shadow="sm" ta="center" style={{ background: "var(--surface)" }}>
+          <div style={{ maxWidth: 460, width: "100%" }}>
+            <div className="saas-card" style={{ padding: "36px 28px", textAlign: "center" }}>
               <ThemeIcon size={56} radius="xl" color="blue" variant="light" mb="md" mx="auto">
                 <IconSparkles size={28} />
               </ThemeIcon>
@@ -197,7 +195,8 @@ const GuestExamPage = () => {
                 <Button
                   size="md"
                   radius="md"
-                  h={44}
+                  h={46}
+                  className="saas-interactive-btn"
                   leftSection={<IconUserPlus size={18} />}
                   onClick={() => navigate("/auth/register")}
                 >
@@ -231,8 +230,8 @@ const GuestExamPage = () => {
                   </Button>
                 </Group>
               </Stack>
-            </Paper>
-          </Container>
+            </div>
+          </div>
         </Center>
       </>
     );

@@ -58,9 +58,19 @@ public interface ExamSessionRepository extends JpaRepository<ExamSession, Long> 
             Pageable pageable);
 
     @Query("SELECT es FROM ExamSession es WHERE es.user.id = :userId " +
-            "AND es.status = 'IN_PROGRESS' AND es.expiresAt > :now")
-    Optional<ExamSession> findActiveSession(@Param("userId") Long userId,
-                                            @Param("now") LocalDateTime now);
+            "AND es.status = 'IN_PROGRESS' AND es.expiresAt > :now ORDER BY es.startedAt DESC")
+    List<ExamSession> findActiveSessionsList(@Param("userId") Long userId,
+                                             @Param("now") LocalDateTime now);
+
+    default Optional<ExamSession> findActiveSession(Long userId, LocalDateTime now) {
+        List<ExamSession> list = findActiveSessionsList(userId, now);
+        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+    }
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE ExamSession es SET es.status = 'ABANDONED', es.updatedAt = :now " +
+            "WHERE es.user.id = :userId AND es.status = 'IN_PROGRESS' AND es.expiresAt > :now")
+    int abandonActiveSessions(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
     @Query("SELECT COUNT(es) FROM ExamSession es WHERE es.user.id = :userId " +
             "AND es.status = 'COMPLETED'")
@@ -143,11 +153,17 @@ public interface ExamSessionRepository extends JpaRepository<ExamSession, Long> 
 
     @Query("SELECT es FROM ExamSession es " +
             "WHERE es.user.id = :userId AND es.ticket.id = :ticketId " +
-            "AND es.status = 'IN_PROGRESS' AND es.expiresAt > :now")
-    Optional<ExamSession> findActiveSessionByUserIdAndTicketId(
+            "AND es.status = 'IN_PROGRESS' AND es.expiresAt > :now ORDER BY es.startedAt DESC")
+    List<ExamSession> findActiveSessionsListByUserIdAndTicketId(
             @Param("userId") Long userId,
             @Param("ticketId") Long ticketId,
             @Param("now") LocalDateTime now);
+
+    default Optional<ExamSession> findActiveSessionByUserIdAndTicketId(
+            Long userId, Long ticketId, LocalDateTime now) {
+        List<ExamSession> list = findActiveSessionsListByUserIdAndTicketId(userId, ticketId, now);
+        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+    }
 
     // ============================================
     // ✅ NEW: Package statistikasi uchun

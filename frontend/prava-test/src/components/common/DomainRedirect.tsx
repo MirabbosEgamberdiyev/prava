@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { redirectToWebApp, redirectToLanding } from "../../utils/domain";
 
 interface DomainRedirectProps {
@@ -16,6 +17,7 @@ export function DomainRedirectToWebApp({
   preserveQuery = true,
 }: DomainRedirectProps) {
   const location = useLocation();
+  const { t } = useTranslation();
   const path = targetPath || location.pathname;
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export function DomainRedirectToWebApp({
     >
       <div className="spinner" />
       <span style={{ fontSize: "14px", opacity: 0.8 }}>
-        Ilovaga yo'naltirilmoqda...
+        {t("common.redirectingToApp", "Ilovaga yo'naltirilmoqda...")}
       </span>
     </div>
   );
@@ -51,6 +53,7 @@ export function DomainRedirectToLanding({
   preserveQuery = false,
 }: DomainRedirectProps) {
   const location = useLocation();
+  const { t } = useTranslation();
   const path = targetPath || location.pathname;
 
   useEffect(() => {
@@ -72,7 +75,7 @@ export function DomainRedirectToLanding({
     >
       <div className="spinner" />
       <span style={{ fontSize: "14px", opacity: 0.8 }}>
-        Bosh sahifaga yo'naltirilmoqda...
+        {t("common.redirectingToLanding", "Bosh sahifaga yo'naltirilmoqda...")}
       </span>
     </div>
   );

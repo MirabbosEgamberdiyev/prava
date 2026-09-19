@@ -96,16 +96,16 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
  * 5. Fallback: "uzl"
  */
 function resolveInitialLanguage(userPreferred?: string | null): AppLanguage {
-  if (userPreferred) {
-    return normalizeLanguage(userPreferred);
-  }
-
   try {
     const fromLocal =
       localStorage.getItem("prava_lang") || localStorage.getItem("i18nextLng");
     if (fromLocal) return normalizeLanguage(fromLocal);
   } catch {
     // ignore
+  }
+
+  if (userPreferred) {
+    return normalizeLanguage(userPreferred);
   }
 
   const fromCookie = Cookies.get("i18next");
@@ -126,12 +126,15 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     return initial;
   });
 
-  // Sync with user's preferred language when user loads
+  // Sync with user's preferred language on initial login ONLY if localStorage doesn't have an explicit user choice
   useEffect(() => {
     if (user?.preferredLanguage) {
-      const userLang = normalizeLanguage(user.preferredLanguage);
-      if (userLang !== language) {
-        setLanguage(userLang);
+      const explicitChoice = localStorage.getItem("prava_lang") || localStorage.getItem("i18nextLng");
+      if (!explicitChoice) {
+        const userLang = normalizeLanguage(user.preferredLanguage);
+        if (userLang !== language) {
+          setLanguage(userLang);
+        }
       }
     }
   }, [user?.preferredLanguage]);
@@ -153,10 +156,22 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     // 1. Sync i18next instance
     await i18n.changeLanguage(normalized);
 
-    // 2. Persist to localStorage
+    // 2. Persist to localStorage and sync user object if present
     try {
       localStorage.setItem("prava_lang", normalized);
       localStorage.setItem("i18nextLng", normalized);
+      const rawUser = localStorage.getItem("userData");
+      if (rawUser) {
+        try {
+          const parsed = JSON.parse(rawUser);
+          if (parsed && typeof parsed === "object") {
+            parsed.preferredLanguage = normalized;
+            localStorage.setItem("userData", JSON.stringify(parsed));
+          }
+        } catch {
+          // ignore
+        }
+      }
     } catch {
       // ignore
     }

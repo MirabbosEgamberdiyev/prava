@@ -1,9 +1,34 @@
 <!doctype html>
-<html lang="uz" dir="ltr">
+<html lang="uz" dir="ltr" data-theme="dark" data-mantine-color-scheme="dark" style="color-scheme: dark; background-color: #0A0F14; color: #F8FAFC;">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Instant Dark Mode / Tri-Theme Zero-Flicker Initialization -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('prava-theme') || localStorage.getItem('mantine-color-scheme-value');
+          var theme = saved;
+          if (!saved || saved === 'system') {
+            var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            theme = prefersDark ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+          document.documentElement.setAttribute('data-mantine-color-scheme', theme);
+          document.documentElement.style.colorScheme = theme;
+          if (theme === 'dark') {
+            document.documentElement.style.backgroundColor = '#0B1220';
+            document.documentElement.style.color = '#F8FAFC';
+          } else {
+            document.documentElement.style.backgroundColor = '#F8FAFC';
+            document.documentElement.style.color = '#0F172A';
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(regs) {
@@ -19,30 +44,21 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
 
-    <!--
-      Shriftlar: avval `src/index.css` ichida `@import url(fonts.googleapis.com)`
-      orqali yuklanardi. `@import` CSS parse qilingandan KEYIN ishga tushadi,
-      ya'ni zanjirli (chained) render-blocking so'rov hosil qilardi.
-      Bu yerda `media="print" + onload` naqshi bilan bloklamasdan yuklaymiz.
-      Faqat 400/500/600/700 og'irliklari — avval 100..900 to'liq variable
-      diapazon (normal + italic, 2 fayl) so'ralardi, ammo kodda italic
-      umuman ishlatilmaydi.
-    -->
     <link
       rel="preload"
       as="style"
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap"
     />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap"
       media="print"
       onload="this.media='all'"
     />
     <noscript>
       <link
         rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap"
       />
     </noscript>
 
@@ -96,9 +112,10 @@
     <meta name="twitter:image" content="https://pravaonline.uz/og-image.png" />
     <meta name="twitter:image:alt" content="Prava Online — Haydovchilik guvohnomasi imtihoni" />
 
-    <!-- PWA -->
-    <meta name="theme-color" content="#228be6" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1b1e" />
+    <!-- PWA Theme Color -->
+    <meta name="theme-color" content="#0A0F14" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0A0F14" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8f9fa" />
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

@@ -6,7 +6,6 @@ import type { OfflineTicket, TicketStat } from "../../types/desktop";
 import { getTickets, getTicketStats, getLang } from "../../services/desktopAdapter";
 import SEO from "../../components/common/SEO";
 import {
-  IconArrowLeft,
   IconTicket,
   IconClock,
   IconListNumbers,
@@ -14,6 +13,7 @@ import {
   IconPlayerPlay,
   IconLock,
 } from "@tabler/icons-react";
+import styles from "../../components/dashboard/Dashboard.module.css";
 
 export default function Tickets_Page() {
   const { t } = useTranslation();
@@ -57,57 +57,90 @@ export default function Tickets_Page() {
     return () => window.removeEventListener("prava-storage-changed", onStorage);
   }, [loadData]);
 
-  const onBack = () => navigate("/me");
-
   const onStartTicket = (ticket: OfflineTicket) => {
     navigate(`/tickets/${ticket.id}`);
   };
 
   return (
     <>
-      <SEO title={t("seo.tickets.title", "Biletlar — 70 ta Rasmiy YHXX Biletlari")} description={t("seo.tickets.desc", "YHXBB imtihon biletlarini yeching.")}
+      <SEO
+        title={t("seo.tickets.title", "Biletlar — 70 ta Rasmiy YHXX Biletlari")}
+        description={t("seo.tickets.desc", "YHXBB imtihon biletlarini yeching.")}
         canonical="/tickets"
         noIndex={true}
       />
-      <div className="topics-screen">
-        {/* ── Header ── */}
-        <div className="topics-header">
-          <button className="quiz-back-btn" onClick={onBack} type="button">
-            <IconArrowLeft size={18} />
-          </button>
-          <h2 className="topics-title">{t("home.biletlar", "Biletlar")}</h2>
-          {!loading && tickets.length > 0 && (
-            <span className="topics-count-chip">{tickets.length}</span>
-          )}
+      {/* Page Header */}
+        <div className={styles.innerPageHeader}>
+          <div className={styles.innerPageHeaderLeft}>
+            <div className={styles.innerPageTitleRow}>
+              <h2 className={styles.innerPageTitle}>
+                {t("home.biletlar", "Biletlar")}
+              </h2>
+              {!loading && tickets.length > 0 && (
+                <span className={styles.innerPageCountChip}>
+                  {tickets.length} {t("tickets.unit", "ta rasmiy bilet")}
+                </span>
+              )}
+            </div>
+            <p className={styles.innerPageSubtitle}>
+              {t(
+                "tickets.subtitle",
+                "YHXBB rasmiy 70 ta bilet to'plami. Har bir bilet 20 ta savoldan iborat."
+              )}
+            </p>
+          </div>
         </div>
 
         {loading && (
-          <div className="loading-screen">
+          <div className="loading-screen" style={{ minHeight: 320 }}>
             <div className="spinner" />
+            <p style={{ marginTop: 12, color: "var(--text-muted)", fontSize: 14 }}>
+              {t("common.loading", "Biletlar yuklanmoqda...")}
+            </p>
           </div>
         )}
 
         {!loading && tickets.length === 0 && (
-          <div className="empty-state" style={{ marginTop: 80, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-            <div className="empty-state-icon">
-              <IconTicket size={48} stroke={1.2} color="var(--text-muted)" />
+          <div
+            className="empty-state"
+            style={{
+              padding: "60px 20px",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: "50%",
+                backgroundColor: "var(--surface-muted)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <IconTicket size={32} stroke={1.5} color="var(--text-muted)" />
             </div>
-            <p className="empty-state-text" style={{ fontSize: 15, fontWeight: 600, color: "var(--text)" }}>
+            <h4 style={{ fontSize: 17, fontWeight: 700, margin: "8px 0 0", color: "var(--text)" }}>
               {t("common.noData", "Hozircha biletlar yuklanmadi")}
-            </p>
+            </h4>
             <button
               type="button"
               className="saas-btn-primary"
-              onClick={() => navigate("/me")}
+              onClick={loadData}
               style={{ marginTop: 8 }}
             >
-              {t("nav.home", "Bosh sahifaga qaytish")}
+              {t("common.retry", "Qayta yuklash")}
             </button>
           </div>
         )}
 
         {!loading && tickets.length > 0 && (
-          <div className="tc-grid">
+          <div className={styles.ticketsInnerGrid}>
             {tickets.map((ticket) => {
               const stat = statsMap[ticket.id];
               const done = stat?.times_done ?? 0;
@@ -245,7 +278,6 @@ export default function Tickets_Page() {
             })}
           </div>
         )}
-      </div>
     </>
   );
 }

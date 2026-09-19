@@ -683,7 +683,7 @@ export default function Partners_Page() {
                           <Text size="xs" fw={600}>{city.trim() || t("partners.notSpecified", "Ko‘rsatilmagan")}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">Telegram:</Text>
+                          <Text size="xs" c="dimmed">{t("contact.telegramLabel", "Telegram:")}</Text>
                           <Text size="xs" fw={600}>{telegram.trim() || t("partners.notSpecified", "Ko‘rsatilmagan")}</Text>
                         </Group>
                         <Group justify="space-between">

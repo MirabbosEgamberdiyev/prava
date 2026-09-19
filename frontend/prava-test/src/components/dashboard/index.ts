@@ -1,0 +1,12 @@
+export { DashboardLayout, DashboardContext, useDashboard, type DashboardContextValue } from "./DashboardLayout";
+export { DashboardHeader } from "./DashboardHeader";
+export { DashboardSidebar } from "./DashboardSidebar";
+export { DashboardSearchModal } from "./DashboardSearchModal";
+export { WelcomeBanner } from "./WelcomeBanner";
+export { ProgressStats } from "./ProgressStats";
+export { LearningModesSection } from "./LearningModesSection";
+export { SmartRecommendationSection } from "./SmartRecommendationSection";
+export { AnalyticsToolsSection } from "./AnalyticsToolsSection";
+export { MotivationalBanner } from "./MotivationalBanner";
+export { DashboardFooter } from "./DashboardFooter";
+export { default as NotificationCenter } from "./NotificationCenter";

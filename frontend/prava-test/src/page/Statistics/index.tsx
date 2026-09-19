@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import type {
   ExamResult,
@@ -15,8 +14,8 @@ import {
   resetAllStats,
 } from "../../services/desktopAdapter";
 import SEO from "../../components/common/SEO";
+import styles from "../../components/dashboard/Dashboard.module.css";
 import {
-  IconArrowLeft,
   IconTrophy,
   IconCheck,
   IconX,
@@ -162,7 +161,6 @@ function DotProgress({ count, max }: { count: number; max: number }) {
 
 export default function Statistics_Page() {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const userId = user?.id ? Number(user.id) : 1;
 
@@ -181,8 +179,6 @@ export default function Statistics_Page() {
   // Reset all stats
   const [resetConfirm, setResetConfirm] = useState(false);
   const [resetting, setResetting] = useState(false);
-
-  const onBack = () => navigate("/me");
 
   const getLang = () => {
     const l = i18n.language;
@@ -330,8 +326,7 @@ export default function Statistics_Page() {
         canonical="/statistics"
         noIndex={true}
       />
-      <div className="stats-screen">
-        {/* ── Reset confirm modal ── */}
+      {/* ── Reset confirm modal ── */}
         {resetConfirm && (
           <div
             className="reset-overlay"
@@ -373,25 +368,33 @@ export default function Statistics_Page() {
           </div>
         )}
 
-        <header className="stats-header">
-          <button
-            className="quiz-back-btn"
-            style={{ position: "static" }}
-            onClick={onBack}
-            type="button"
-          >
-            <IconArrowLeft size={18} />
-          </button>
-          <h2 className="stats-header-title">{t("stats.title", "Statistika")}</h2>
-          <button
-            className="stats-reset-btn"
-            onClick={() => setResetConfirm(true)}
-            title={t("stats.resetAll", "Barcha statistikani tozalash")}
-            type="button"
-          >
-            <IconTrash size={15} />
-          </button>
-        </header>
+        {/* Page Header */}
+        <div className={styles.innerPageHeader}>
+          <div className={styles.innerPageHeaderLeft}>
+            <div className={styles.innerPageTitleRow}>
+              <h2 className={styles.innerPageTitle}>{t("stats.title", "Statistika")}</h2>
+            </div>
+            <p className={styles.innerPageSubtitle}>
+              {t(
+                "stats.subtitle",
+                "O'rganish darajangiz, savollar aniqligi va biletlar bo'yicha tayyorgarlik monitoringi."
+              )}
+            </p>
+          </div>
+
+          <div className={styles.innerPageActions}>
+            <button
+              className="stats-reset-btn"
+              onClick={() => setResetConfirm(true)}
+              title={t("stats.resetAll", "Barcha statistikani tozalash")}
+              aria-label={t("stats.resetAll", "Barcha statistikani tozalash")}
+              type="button"
+            >
+              <IconTrash size={15} />
+              <span>{t("stats.resetAll", "Barcha statistikani tozalash")}</span>
+            </button>
+          </div>
+        </div>
 
         {/* ── Tab bar ── */}
         <div className="stats-tabs">
@@ -800,7 +803,6 @@ export default function Statistics_Page() {
             </div>
           </div>
         )}
-      </div>
     </>
   );
 }

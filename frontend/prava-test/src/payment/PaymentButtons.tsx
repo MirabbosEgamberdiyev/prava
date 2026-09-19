@@ -1,5 +1,6 @@
 import { Button, Card, Group, Stack, Text, Title } from '@mantine/core';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { paymentApi } from './paymentApi';
 
 export interface PaymentButtonsProps {
@@ -16,6 +17,7 @@ export function PaymentButtons({
   priceSum,
   openInNewTab = false,
 }: PaymentButtonsProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState<'click' | 'payme' | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -31,7 +33,7 @@ export function PaymentButtons({
       const r = await paymentApi.createClickInvoice(packageId);
       go(r.redirectUrl);
     } catch (e: any) {
-      setErr(e?.response?.data?.error ?? 'Click xatosi');
+      setErr(e?.response?.data?.error ?? t('errors.serverError', 'Click xatosi'));
     } finally {
       setLoading(null);
     }
@@ -44,7 +46,7 @@ export function PaymentButtons({
       const r = await paymentApi.createPaymeInvoice(packageId);
       go(r.redirectUrl);
     } catch (e: any) {
-      setErr(e?.response?.data?.error ?? 'Payme xatosi');
+      setErr(e?.response?.data?.error ?? t('errors.serverError', 'Payme xatosi'));
     } finally {
       setLoading(null);
     }
@@ -55,7 +57,7 @@ export function PaymentButtons({
       <Stack gap="xs">
         <Title order={4}>{packageName}</Title>
         <Text fw={600} size="lg">
-          {priceSum.toLocaleString('uz-UZ')} so'm
+          {priceSum.toLocaleString('uz-UZ')} {t('common.currency', "so'm")}
         </Text>
         <Group grow mt="sm">
           <Button
@@ -64,7 +66,7 @@ export function PaymentButtons({
             disabled={!!loading}
             onClick={payClick}
           >
-            Click orqali to'lash
+            {t('payment.payWithClick', "Click orqali to'lash")}
           </Button>
           <Button
             color="teal"
@@ -72,7 +74,7 @@ export function PaymentButtons({
             disabled={!!loading}
             onClick={payPayme}
           >
-            Payme orqali to'lash
+            {t('payment.payWithPayme', "Payme orqali to'lash")}
           </Button>
         </Group>
         {err && (

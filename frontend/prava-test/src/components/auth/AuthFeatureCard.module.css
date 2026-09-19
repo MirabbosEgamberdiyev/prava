@@ -1,0 +1,84 @@
+.featureCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 16px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+:global([data-theme="dark"]) .featureCard,
+:global([data-mantine-color-scheme="dark"]) .featureCard {
+  background: #111827;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+.featureCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(33, 150, 243, 0.08);
+  border-color: rgba(33, 150, 243, 0.35);
+}
+
+:global([data-theme="dark"]) .featureCard:hover,
+:global([data-mantine-color-scheme="dark"]) .featureCard:hover {
+  background: #1E293B;
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.iconBox {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(33, 150, 243, 0.1);
+  color: var(--primary, #2196F3);
+  border: 1px solid rgba(33, 150, 243, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+:global([data-theme="dark"]) .iconBox,
+:global([data-mantine-color-scheme="dark"]) .iconBox {
+  background: rgba(33, 150, 243, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.2);
+}
+
+.contentBox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text, #0f172a);
+  margin: 0;
+  line-height: 1.25;
+}
+
+:global([data-theme="dark"]) .title,
+:global([data-mantine-color-scheme="dark"]) .title {
+  color: #f8fafc;
+}
+
+.description {
+  font-size: 0.76rem;
+  line-height: 1.35;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+:global([data-theme="dark"]) .description,
+:global([data-mantine-color-scheme="dark"]) .description {
+  color: #94a3b8;
+}

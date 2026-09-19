@@ -300,7 +300,7 @@ export default function WrongExam_Page() {
           canonical="/wrong-exam"
           noIndex={true}
         />
-        <div className="min-h-[85vh] flex items-center justify-center p-4">
+        <div style={{ height: "100vh", maxHeight: "100dvh", overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
           <GamificationResult
             score={score}
             correct={correct}

@@ -1,0 +1,47 @@
+.securityNoticeRoot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: clamp(6px, 1vh, 12px);
+  padding-top: clamp(6px, 1vh, 10px);
+  border-top: 1px solid var(--border, #f1f5f9);
+  text-align: center;
+}
+
+:global([data-theme="dark"]) .securityNoticeRoot,
+:global([data-mantine-color-scheme="dark"]) .securityNoticeRoot {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.securityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #059669;
+}
+
+:global([data-theme="dark"]) .securityBadge,
+:global([data-mantine-color-scheme="dark"]) .securityBadge {
+  color: #34d399;
+}
+
+.termsText {
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--text-muted, #94a3b8);
+  margin: 0;
+  max-width: 400px;
+}
+
+.termsLink {
+  color: var(--primary, #0b84f3);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.termsLink:hover {
+  color: #0066cc;
+}

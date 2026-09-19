@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Image, Skeleton, Text, useComputedColorScheme } from "@mantine/core";
+import { Box, Image, Skeleton, useComputedColorScheme } from "@mantine/core";
 
 interface ImagePlaceholderProps {
   src?: string | null;
@@ -87,25 +87,31 @@ export function ImagePlaceholder({
           />
         </>
       ) : (
-        <>
-          <Image
-            src="/logo.svg"
-            alt="Prava Online"
-            w={64}
-            h={64}
-            fit="contain"
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+            padding: "12px",
+          }}
+        >
+          <img
+            src="/images/default-vehicle-placeholder.svg"
+            alt="Prava Online Vehicle"
             loading="lazy"
-            style={{ opacity: isDark ? 0.7 : 0.5 }}
+            style={{
+              width: "86%",
+              maxHeight: "88%",
+              objectFit: "contain",
+              filter: isDark
+                ? "drop-shadow(0 4px 14px rgba(0, 0, 0, 0.6))"
+                : "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08))",
+            }}
           />
-          <Text
-            size="lg"
-            fw={700}
-            c={isDark ? "dark.1" : "gray.5"}
-            style={{ letterSpacing: 1, userSelect: "none" }}
-          >
-            pravaonline.uz
-          </Text>
-        </>
+        </div>
       )}
     </Box>
   );

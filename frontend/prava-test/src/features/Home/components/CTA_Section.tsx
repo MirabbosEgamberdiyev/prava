@@ -1,5 +1,5 @@
 import React from "react";
-import { IconArrowRight } from "@tabler/icons-react";
+import { IconArrowRight, IconCheck, IconRocket, IconPlayerPlay } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { prefetchRoute } from "@/utils/routePrefetch";
 import classes from "./Home.module.css";
@@ -11,21 +11,44 @@ export const CTA_Section = React.memo(() => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
 
+  const ctaBadges = [
+    { key: "home.cta.badge1", defaultText: "Tez va oson" },
+    { key: "home.cta.badge2", defaultText: "Hech qanday majburiyat yo'q" },
+    { key: "home.cta.badge3", defaultText: "Rasmiy savollar" },
+  ];
+
   return (
-    <section className={classes.finalCtaSectionMinimal} aria-label="Final CTA">
-      <div className={classes.finalCtaBox}>
-        <h2 className={classes.sectionHeaderTitle} style={{ marginBottom: 12 }}>
+    <section className={classes.finalCtaSectionModern} aria-label={t("home.cta.ariaLabel", "Harakatga chaqiruv")}>
+      <div className={classes.finalCtaCard}>
+        {/* Top Glow Icon */}
+        <div className={classes.finalCtaIconRing}>
+          <IconRocket size={32} color="#0b84f3" />
+        </div>
+
+        {/* Title & Description */}
+        <h2 className={classes.finalCtaTitle}>
           {t("home.cta.title", "Haydovchilik imtihoniga tayyorgarlikni hoziroq boshlang!")}
         </h2>
 
-        <p className={classes.heroCenteredSubtitle} style={{ marginBottom: 28, maxWidth: 640 }}>
+        <p className={classes.finalCtaSubtitle}>
           {t(
-            "home.cta.description",
-            "Ro'yxatdan o'ting va to'liq imkoniyatlardan foydalaning yoki bepul sinov imtihoni orqali bilimlaringizni sinab ko'ring."
+            "home.cta.subtitle",
+            "Ro'yxatdan o'ting va bepul sinov imtihoni orqali bilimlaringizni sinab ko'ring."
           )}
         </p>
 
-        <div className={classes.heroActionsGroup}>
+        {/* Trust Badges */}
+        <div className={classes.finalCtaBadgesRow}>
+          {ctaBadges.map((badge, idx) => (
+            <div key={idx} className={classes.finalCtaBadgeItem}>
+              <IconCheck size={16} stroke={2.5} color="#10b981" />
+              <span>{t(badge.key, badge.defaultText)}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Dual CTA Buttons */}
+        <div className={classes.finalCtaActionsGroup}>
           <DomainLink
             href={getWebAppUrl(isAuthenticated ? "/me" : "/auth/login")}
             onMouseEnter={() => prefetchRoute(isAuthenticated ? "/me" : "/auth/login")}
@@ -35,12 +58,12 @@ export const CTA_Section = React.memo(() => {
             <button
               type="button"
               className={classes.heroPrimaryBtn}
-              style={{ height: 48, padding: "0 32px", fontSize: "0.95rem" }}
+              style={{ height: 48, padding: "0 28px", fontSize: "0.95rem" }}
             >
               <span>
                 {isAuthenticated
                   ? t("nav.dashboard", "Boshqaruv paneliga o'tish")
-                  : t("home.hero.openWebApp", "Web ilovani ochish")}
+                  : t("home.cta.primaryBtn", "Web ilovani ochish")}
               </span>
               <IconArrowRight size={18} />
             </button>
@@ -55,9 +78,10 @@ export const CTA_Section = React.memo(() => {
             <button
               type="button"
               className={classes.heroSecondaryBtn}
-              style={{ height: 48, padding: "0 26px", fontSize: "0.95rem" }}
+              style={{ height: 48, padding: "0 24px", fontSize: "0.95rem" }}
             >
-              <span>{t("guestExam.tryFree", "Bepul sinov imtihoni")}</span>
+              <IconPlayerPlay size={16} style={{ fill: "currentColor" }} />
+              <span>{t("home.cta.secondaryBtn", "Bepul sinov imtihoni")}</span>
             </button>
           </DomainLink>
         </div>
@@ -67,4 +91,3 @@ export const CTA_Section = React.memo(() => {
 });
 
 CTA_Section.displayName = "CTA_Section";
-

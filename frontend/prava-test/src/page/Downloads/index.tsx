@@ -26,11 +26,9 @@ import {
   IconCheck,
   IconCopy,
   IconDownload,
-  IconTerminal2,
   IconBrandGooglePlay,
   IconBrandAndroid,
   IconExternalLink,
-  IconDeviceDesktop,
   IconShieldCheck,
   IconQrcode,
   IconSparkles,
@@ -177,60 +175,6 @@ export default function Downloads_Page() {
         t("dl.iosF3", "Barcha biletlar va statistika doimiy sinxron"),
       ],
     },
-    {
-      id: "macos",
-      title: "macOS",
-      tag: "Apple Silicon & Intel",
-      badgeColor: "gray",
-      icon: IconDeviceDesktop,
-      version: "v2.4.0",
-      type: "Universal Binary (.dmg)",
-      desc: t(
-        "dl.macosDesc",
-        "Apple Silicon (M1/M2/M3/M4) va Intel Mac kompyuterlari uchun to'liq optimallashgan mustaqil ishchi ilova."
-      ),
-      primaryAction: {
-        label: t("dl.downloadDmg", "macOS uchun yuklab olish (.dmg)"),
-        url: "/api/v1/files/installers/prava-online-mac.dmg",
-        isExternal: false,
-      },
-      secondaryAction: {
-        label: t("dl.macGuide", "O'rnatish yo'riqnomasi"),
-        url: "https://t.me/pravaonlineuz",
-      },
-      features: [
-        t("dl.macF1", "macOS Sonoma va Sequoia to'liq qo'llab-quvvatlanadi"),
-        t("dl.macF2", "Trekpad imo-ishoralari va klaviatura boshqaruvi"),
-        t("dl.macF3", "M1/M2/M3/M4 chiplari uchun maksimal tezlik"),
-      ],
-    },
-    {
-      id: "linux",
-      title: "Linux",
-      tag: ".AppImage & .deb",
-      badgeColor: "orange",
-      icon: IconTerminal2,
-      version: "v2.4.0",
-      type: "x86_64 AppImage",
-      desc: t(
-        "dl.linuxDesc",
-        "Ubuntu, Debian, Fedora, Arch va boshqa ommabop Linux distributivlari uchun AppImage to'plami."
-      ),
-      primaryAction: {
-        label: t("dl.downloadAppImage", "AppImage yuklab olish"),
-        url: "/api/v1/files/installers/prava-online-linux.AppImage",
-        isExternal: false,
-      },
-      secondaryAction: {
-        label: t("dl.linuxGuide", "Chmod +x yo'riqnomasi"),
-        url: "https://t.me/pravaonlineuz",
-      },
-      features: [
-        t("dl.linF1", "Standart glibc va Wayland / X11 mosligi"),
-        t("dl.linF2", "Minimal resurs sarfi va tezkor yuklanish"),
-        t("dl.linF3", "Lokal ma'lumotlar bazasi va offline rejim"),
-      ],
-    },
   ];
 
   const systemRequirements = [
@@ -254,13 +198,6 @@ export default function Downloads_Page() {
       ram: "2 GB RAM",
       disk: "100 MB",
       extra: "Safari PWA yoki App Store",
-    },
-    {
-      platform: "macOS",
-      minOs: "macOS 11.0 (Big Sur) va undan yuqori",
-      ram: "4 GB RAM",
-      disk: "300 MB",
-      extra: "Apple Silicon yoki Intel x64",
     },
   ];
 
@@ -432,7 +369,7 @@ export default function Downloads_Page() {
               </div>
             </Group>
             <Badge size="lg" color="teal" variant="outline">
-              VirusTotal Verified
+              {t("downloads.virusTotalVerified", "VirusTotal Verified")}
             </Badge>
           </Group>
         </div>
@@ -566,14 +503,14 @@ export default function Downloads_Page() {
             </Group>
             {selectedRelease.checksum && (
               <Box>
-                <Text size="xs" c="dimmed" mb={4}>SHA-256 Checksum:</Text>
+                <Text size="xs" c="dimmed" mb={4}>{t("dl.sha256", "SHA-256 Nazorat summasi:")}</Text>
                 <Group gap="xs" wrap="nowrap">
                   <Code style={{ fontSize: 10, wordBreak: "break-all", flex: 1 }}>
                     {selectedRelease.checksum}
                   </Code>
                   <CopyButton value={selectedRelease.checksum} timeout={2000}>
                     {({ copied, copy }) => (
-                      <Tooltip label={copied ? "Nusxalandi!" : "Nusxalash"}>
+                      <Tooltip label={copied ? t("common.copied", "Nusxalandi!") : t("common.copy", "Nusxalash")}>
                         <ActionIcon variant={copied ? "filled" : "default"} color={copied ? "green" : "gray"} size="sm" onClick={copy}>
                           {copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
                         </ActionIcon>

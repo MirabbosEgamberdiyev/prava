@@ -107,7 +107,11 @@ export default function TicketExamPage() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [phase]);
 
+  const loadingRef = useRef(false);
+
   const loadQuestions = useCallback(() => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setPhase("loading");
     setAnswers({});
     answersRef.current = {};
@@ -130,6 +134,9 @@ export default function TicketExamPage() {
       .catch((e) => {
         setErrorMsg(String(e));
         setPhase("result");
+      })
+      .finally(() => {
+        loadingRef.current = false;
       });
   }, [ticket.id, ticket.question_count, t]);
 
@@ -347,7 +354,7 @@ export default function TicketExamPage() {
           canonical={`/tickets/${ticket.id}`}
           noIndex={true}
         />
-        <div className="min-h-[85vh] flex items-center justify-center p-4">
+        <div style={{ height: "100vh", maxHeight: "100dvh", overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
           <GamificationResult
             score={score}
             correct={correct}

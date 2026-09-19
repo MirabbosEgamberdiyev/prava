@@ -35,7 +35,7 @@ export default function QRCodeModal({ item, onClose }: Props) {
             fgColor="currentColor"
             level="M"
             imageSettings={{
-              src: "/logo.png",
+              src: "/logo.svg",
               width: 36,
               height: 36,
               excavate: true,

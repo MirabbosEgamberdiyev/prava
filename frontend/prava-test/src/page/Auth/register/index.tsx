@@ -1,60 +1,63 @@
+import React, { useState, useEffect, useRef } from "react";
 import {
   Alert,
   Anchor,
   Box,
   Button,
   Center,
-  Container,
-  Divider,
   Flex,
   Group,
-  Image,
-  Paper,
   PasswordInput,
   PinInput,
-  SegmentedControl,
-  SimpleGrid,
   Stack,
   Text,
   TextInput,
-  Title,
 } from "@mantine/core";
+import { useNavigate, useLocation, useSearchParams, Navigate } from "react-router-dom";
 import { useForm } from "@mantine/form";
-import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useLocation, Navigate } from "react-router-dom";
-import api from "../../../api/api";
-import { useAuth } from "../../../auth/AuthContext";
-import { notifications } from "@mantine/notifications";
+import { useTranslation } from "react-i18next";
 import {
   IconAlertCircle,
   IconArrowLeft,
-  IconDeviceMobile,
+  IconArrowRight,
+  IconBook,
+  IconChartBar,
+  IconCheck,
+  IconDeviceDesktop,
   IconExternalLink,
   IconLock,
   IconMail,
-  IconMailShare,
-  IconMessageShare,
+  IconSchool,
   IconUser,
 } from "@tabler/icons-react";
-import { useTranslation } from "react-i18next";
-import GoogleLoginButton from "../../../components/auth/GoogleLoginButton";
-import TelegramLoginButton from "../../../components/auth/TelegramLoginButton";
-import SEO from "../../../components/common/SEO";
-import { getErrorMessage } from "../../../types/errors";
-import { useCapsLock } from "../../../hooks/useCapsLock";
-import CapsLockWarning from "../../../components/auth/CapsLockWarning";
-import AuthSecurityBadge from "../../../components/auth/AuthSecurityBadge";
-import PasswordStrengthMeter, {
-  checkPasswordRules,
-} from "../../../components/auth/PasswordStrengthMeter";
-import {
-  formatUzPhone,
-  isValidUzPhone,
-  normalizeUzPhone,
-} from "../../../utils/phoneUtils";
+import { useAuth } from "@/auth/AuthContext";
+import api from "@/api/api";
+import { notifications } from "@mantine/notifications";
+import { getErrorMessage } from "@/types/errors";
+import { useCapsLock } from "@/hooks/useCapsLock";
+import CapsLockWarning from "@/components/auth/CapsLockWarning";
+import AuthLayout from "@/components/auth/AuthLayout";
+import AuthCard from "@/components/auth/AuthCard";
+import AuthChecklist from "@/components/auth/AuthChecklist";
+import AuthFeatureCard from "@/components/auth/AuthFeatureCard";
+import SocialAuthGroup from "@/components/auth/SocialAuthGroup";
+import AuthSecurityNotice from "@/components/auth/AuthSecurityNotice";
+import layoutClasses from "@/components/auth/AuthLayout.module.css";
 
-const Register_Page = () => {
+// Real-time password validation helper
+export const isPasswordSecure = (val: string): boolean => {
+  if (!val || val.length < 8) return false;
+  const hasUpper = /[A-Z]/.test(val);
+  const hasLower = /[a-z]/.test(val);
+  const hasNumber = /\d/.test(val);
+  const hasSpecial = /[@$!%*?&]/.test(val);
+  return hasUpper && hasLower && hasNumber && hasSpecial;
+};
+
+const Register_Page: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { register: authRegister, isAuthenticated } = useAuth();
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -62,13 +65,13 @@ const Register_Page = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [countdown, setCountdown] = useState(60);
-  const [verificationType, setVerificationType] = useState<"EMAIL" | "SMS">("EMAIL");
   const isCapsLock = useCapsLock();
   const navigate = useNavigate();
   const location = useLocation();
-  const { t, i18n } = useTranslation();
 
-  const locationState = location.state as { from?: string | { pathname: string; search?: string } } | undefined;
+  const locationState = location.state as
+    | { from?: string | { pathname: string; search?: string } }
+    | undefined;
   let from = "/me";
   if (typeof locationState?.from === "string") {
     from = locationState.from;
@@ -80,8 +83,17 @@ const Register_Page = () => {
     return <Navigate to={from} replace />;
   }
 
-  // Countdown timer for OTP resend
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const codeParam = searchParams.get("code") || searchParams.get("token");
+    const emailParam = searchParams.get("email");
+    if (emailParam) form.setFieldValue("email", emailParam);
+    if (codeParam) {
+      setCode(codeParam);
+      setStep(2);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (step === 2 && countdown > 0) {
@@ -98,61 +110,50 @@ const Register_Page = () => {
     initialValues: {
       firstName: "",
       lastName: "",
-      phoneNumber: "",
       email: "",
       password: "",
-      verificationType: "EMAIL",
-      preferredLanguage: "uzl",
     },
-
     validate: {
       firstName: (value) =>
-        value.trim().length < 2 ? t("validation.nameTooShort") : null,
+        value.trim().length < 2
+          ? t("validation.nameTooShort", "Ism kamida 2 ta belgidan iborat bo'lishi kerak")
+          : null,
       lastName: (value) =>
-        value.trim().length < 2 ? t("validation.nameTooShort") : null,
-      email: (value, values) => {
-        if (values.verificationType === "SMS") return null;
+        value.trim().length < 2
+          ? t("validation.nameTooShort", "Familiya kamida 2 ta belgidan iborat bo'lishi kerak")
+          : null,
+      email: (value) => {
         if (!value || value.trim().length === 0)
-          return t("validation.invalidEmail");
+          return t("validation.invalidEmail", "Email manzilini kiriting");
         return /^\S+@\S+\.\S+$/.test(value.trim())
           ? null
-          : t("validation.invalidEmail");
-      },
-      phoneNumber: (value, values) => {
-        if (values.verificationType === "EMAIL") return null;
-        if (!value || value.trim().length === 0)
-          return t("validation.invalidPhone");
-        return isValidUzPhone(value) ? null : t("validation.phoneLength");
+          : t("validation.invalidEmail", "Email manzili noto'g'ri formatda");
       },
       password: (value) => {
-        const rules = checkPasswordRules(value);
-        if (!rules.allValid) {
-          return t("validation.passwordComplexity");
+        if (!isPasswordSecure(value)) {
+          return t(
+            "authV2.register.passwordComplexity",
+            "Parol kamida 8 ta belgi, katta-kichik harf, raqam va maxsus belgidan (@$!%*?&) iborat bo'lishi kerak"
+          );
         }
         return null;
       },
     },
   });
 
-  // Agar foydalanuvchi allaqachon tizimga kirgan bo'lsa — /me ga redirect
-  if (isAuthenticated) {
-    return <Navigate to="/me" replace />;
-  }
-
-  // Step 1: Init registration — send form data + get OTP
+  // Step 1: Send registration data & initiate Email OTP
   const handleInit = async (values: typeof form.values) => {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const isEmail = values.verificationType === "EMAIL";
       const payload = {
         firstName: values.firstName.trim(),
         lastName: values.lastName.trim(),
+        email: values.email.trim(),
+        phoneNumber: null,
         password: values.password,
-        verificationType: values.verificationType,
+        verificationType: "EMAIL",
         preferredLanguage: i18n.language || "uzl",
-        email: isEmail ? values.email.trim() : null,
-        phoneNumber: !isEmail ? normalizeUzPhone(values.phoneNumber) : null,
       };
 
       await api.post("/api/v1/auth/register/init", payload);
@@ -160,10 +161,13 @@ const Register_Page = () => {
       setCountdown(60);
       setCode("");
     } catch (error: unknown) {
-      const msg = getErrorMessage(error, t("register.errorMessage"));
+      const msg = getErrorMessage(
+        error,
+        t("register.errorMessage", "Ro'yxatdan o'tishda xatolik yuz berdi")
+      );
       setErrorMessage(msg);
       notifications.show({
-        title: t("register.errorTitle"),
+        title: t("register.errorTitle", "Xatolik"),
         message: msg,
         color: "red",
         withBorder: true,
@@ -173,33 +177,35 @@ const Register_Page = () => {
     }
   };
 
-  // Resend OTP
+  // Step 2: Resend Email OTP code
   const handleResendCode = async () => {
     if (countdown > 0) return;
     setResending(true);
     setErrorMessage(null);
     try {
-      const isEmail = form.values.verificationType === "EMAIL";
       const payload = {
         firstName: form.values.firstName.trim(),
         lastName: form.values.lastName.trim(),
+        email: form.values.email.trim(),
+        phoneNumber: null,
         password: form.values.password,
-        verificationType: form.values.verificationType,
+        verificationType: "EMAIL",
         preferredLanguage: i18n.language || "uzl",
-        email: isEmail ? form.values.email.trim() : null,
-        phoneNumber: !isEmail ? normalizeUzPhone(form.values.phoneNumber) : null,
       };
 
       await api.post("/api/v1/auth/register/init", payload);
       setCountdown(60);
       notifications.show({
-        title: t("common.success"),
-        message: t("register.otpSentTo"),
+        title: t("common.success", "Muvaffaqiyatli"),
+        message: t("register.otpSentTo", "Tasdiqlash kodi qayta yuborildi"),
         color: "teal",
         withBorder: true,
       });
     } catch (error: unknown) {
-      const msg = getErrorMessage(error, t("register.errorMessage"));
+      const msg = getErrorMessage(
+        error,
+        t("register.errorMessage", "Kodni qayta yuborishda xatolik yuz berdi")
+      );
       setErrorMessage(msg);
     } finally {
       setResending(false);
@@ -213,15 +219,14 @@ const Register_Page = () => {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const isEmail = form.values.verificationType === "EMAIL";
       const payload = {
         firstName: form.values.firstName.trim(),
         lastName: form.values.lastName.trim(),
+        email: form.values.email.trim(),
+        phoneNumber: null,
         password: form.values.password,
-        verificationType: form.values.verificationType,
+        verificationType: "EMAIL",
         preferredLanguage: i18n.language || "uzl",
-        email: isEmail ? form.values.email.trim() : null,
-        phoneNumber: !isEmail ? normalizeUzPhone(form.values.phoneNumber) : null,
       };
 
       const res = await api.post(
@@ -232,18 +237,21 @@ const Register_Page = () => {
       if (res.data) {
         authRegister(res.data.data);
         notifications.show({
-          title: t("register.successTitle"),
-          message: t("register.successMessage"),
+          title: t("register.successTitle", "Tabriklaymiz!"),
+          message: t("register.successMessage", "Hisobingiz muvaffaqiyatli yaratildi"),
           color: "teal",
           withBorder: true,
         });
         navigate(from, { replace: true });
       }
     } catch (error: unknown) {
-      const msg = getErrorMessage(error, t("register.codeError"));
+      const msg = getErrorMessage(
+        error,
+        t("register.codeError", "Tasdiqlash kodi noto'g'ri yoki muddati o'tgan")
+      );
       setErrorMessage(msg);
       notifications.show({
-        title: t("register.errorTitle"),
+        title: t("register.errorTitle", "Xatolik"),
         message: msg,
         color: "red",
         withBorder: true,
@@ -256,471 +264,514 @@ const Register_Page = () => {
   const getInboxLink = (email: string) => {
     if (!email || !email.includes("@")) return "#";
     const domain = email.split("@")[1].toLowerCase();
-
     if (domain === "gmail.com") return "https://mail.google.com";
-    if (domain === "mail.ru" || domain === "inbox.ru" || domain === "bk.ru")
-      return "https://e.mail.ru/inbox";
-    if (domain === "outlook.com" || domain === "hotmail.com")
-      return "https://outlook.live.com/mail/0/inbox";
-    if (domain === "yandex.ru" || domain === "yandex.com" || domain === "ya.ru")
-      return "https://mail.yandex.ru";
-
+    if (domain === "yandex.ru" || domain === "ya.ru") return "https://mail.yandex.ru";
+    if (domain === "mail.ru") return "https://e.mail.ru";
+    if (domain === "outlook.com" || domain === "hotmail.com") return "https://outlook.live.com";
     return `https://${domain}`;
   };
 
-  const handleVerificationTypeChange = (value: string) => {
-    const type = value as "EMAIL" | "SMS";
-    setVerificationType(type);
-    form.setFieldValue("verificationType", type);
+  // Left Column Content
+  const leftColumnContent = (
+    <>
+      <div className={layoutClasses.leftPillBadge}>
+        <IconSchool size={16} />
+        <span>{t("authV2.badge.examPrep", "Haydovchilik imtihoniga ishonchli tayyorgarlik")}</span>
+      </div>
 
-    if (type === "SMS" && !form.values.phoneNumber) {
-      form.setFieldValue("phoneNumber", "+998 ");
-    }
+      <h1 className={layoutClasses.leftHeadline}>
+        {t("authV2.register.headlineMain", "Bugungi qadam —")}{" "}
+        <span className={layoutClasses.headlineAccent}>
+          {t("authV2.register.headlineAccent", "ertangi ishonch")}
+        </span>
+      </h1>
 
-    form.clearFieldError("email");
-    form.clearFieldError("phoneNumber");
-    setErrorMessage(null);
-  };
+      <p className={layoutClasses.leftDescription}>
+        {t(
+          "authV2.register.description",
+          "Ro'yxatdan o'ting va 1200+ rasmiy savollar, 70 ta bilet va davlat imtihoni simulyatori bilan bilimlaringizni mustahkamlang."
+        )}
+      </p>
 
-  const isEmailMode = verificationType === "EMAIL";
+      <AuthChecklist
+        items={[
+          {
+            id: "r1",
+            text: t("authV2.register.check1", "Tez va oson ro'yxatdan o'tish"),
+          },
+          {
+            id: "r2",
+            text: t("authV2.register.check2", "Barcha qurilmalarda foydalanish"),
+          },
+          {
+            id: "r3",
+            text: t("authV2.register.check3", "Shaxsiy yutuqlar va statistika"),
+          },
+          {
+            id: "r4",
+            text: t("authV2.register.check4", "Real imtihon formatida testlar"),
+          },
+        ]}
+      />
+    </>
+  );
 
-  return (
-    <Box className="auth-page-container">
-      <Container size={480} maw={480} p={{ base: "xs", sm: 0 }} className="auth-page-inner">
-        <SEO title={t("seo.register.title", "Ro'yxatdan o'tish")} description={t("seo.register.desc", "Prava Online platformasida bepul hisob oching.")}
-          keywords="prava online ro'yxat, haydovchilik imtihoni, bepul tayyorlanish, prava online registratsiya, регистрация prava online, YHXBB ro'yxat"
-          canonical="/auth/register"
-          noIndex={true}
-        />
+  // Right Column Content
+  const rightColumnContent = (
+    <>
+      <h3
+        style={{
+          fontSize: "0.95rem",
+          fontWeight: 700,
+          color: "var(--text, #0f172a)",
+          margin: "0 0 2px",
+          lineHeight: 1.3,
+        }}
+      >
+        {t(
+          "authV2.register.benefitsTitle",
+          "Ro'yxatdan o'tganingizdan so'ng nimalarga ega bo'lasiz?"
+        )}
+      </h3>
 
-        {/* Header section with brand mark */}
-        <Stack gap={4} align="center" mb={{ base: 10, sm: 14 }}>
-          <Center
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: "var(--radius-sm, 10px)",
-              border: "1px solid var(--border)",
-              background: "var(--surface)",
-              boxShadow: "var(--card-shadow-sm)",
-            }}
-          >
-            <Image
-              src="/favicon.svg"
-              fallbackSrc="/logo.svg"
-              alt="Prava Online Logo"
-              w={22}
-              h={22}
-              fit="contain"
-            />
-          </Center>
+      <AuthFeatureCard
+        icon={<IconBook size={20} />}
+        iconBg="rgba(33, 150, 243, 0.1)"
+        iconColor="#2196F3"
+        title={t("authV2.register.b1Title", "To'liq testlar bazasi")}
+        description={t(
+          "authV2.register.b1Desc",
+          "1200+ rasmiy savollar va 70 ta bilet."
+        )}
+      />
 
-          <Title order={2} ta="center" size="1.35rem" fw={800} style={{ letterSpacing: "-0.02em", lineHeight: 1.25 }}>
-            {step === 1 ? t("register.title") : t("register.otpTitle")}
-          </Title>
+      <AuthFeatureCard
+        icon={<IconDeviceDesktop size={20} />}
+        iconBg="rgba(56, 189, 248, 0.1)"
+        iconColor="#38BDF8"
+        title={t("authV2.register.b2Title", "Davlat imtihoni simulyatori")}
+        description={t(
+          "authV2.register.b2Desc",
+          "Real imtihon muhitiga o'xshash testlar."
+        )}
+      />
 
-          <Text size="xs" c="dimmed" ta="center" maw={380} style={{ lineHeight: 1.4 }}>
-            {step === 1
-              ? t("register.registerSubtitle")
-              : t("register.enterCodeSubtitle")}
-          </Text>
+      <AuthFeatureCard
+        icon={<IconChartBar size={20} />}
+        iconBg="rgba(16, 185, 129, 0.1)"
+        iconColor="#10B981"
+        title={t("authV2.register.b3Title", "Shaxsiy statistika")}
+        description={t(
+          "authV2.register.b3Desc",
+          "Natijalaringizni tahlil qiling, xatolar ustida ishlang."
+        )}
+      />
 
-          {step === 1 && (
-            <Group gap={6} justify="center">
-              <Text size="xs" c="dimmed">
-                {t("register.alreadyHaveAccount")}
-              </Text>
-              <Anchor component={Link} to="/auth/login" size="xs" fw={700} c="brand">
-                {t("register.login")}
-              </Anchor>
-            </Group>
-          )}
-        </Stack>
-
-        <Paper
-          withBorder
-          shadow="sm"
-          p={{ base: 18, sm: 24 }}
-          radius="lg"
+      {/* Trust social proof badge */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "6px 12px",
+          background: "var(--surface, #ffffff)",
+          border: "1px solid var(--border, #e2e8f0)",
+          borderRadius: 12,
+        }}
+      >
+        <div style={{ display: "flex", marginLeft: 2 }}>
+          {["#2196F3", "#38BDF8", "#10B981", "#F59E0B"].map((color, i) => (
+            <div
+              key={color}
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: "50%",
+                background: color,
+                border: "2px solid var(--surface, #ffffff)",
+                marginLeft: i > 0 ? -6 : 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#ffffff",
+                fontSize: 10,
+                fontWeight: 700,
+              }}
+            >
+              {String.fromCharCode(65 + i)}
+            </div>
+          ))}
+        </div>
+        <span
           style={{
-            background: "var(--surface)",
-            borderColor: "var(--border)",
-            boxShadow: "var(--card-shadow-md)",
+            fontSize: "0.78rem",
+            fontWeight: 600,
+            color: "var(--text, #1e293b)",
           }}
         >
-          {errorMessage && (
-            <Alert
-              icon={<IconAlertCircle size={16} />}
-              color="red"
-              variant="light"
-              radius="md"
-              mb="md"
-              withCloseButton
-              onClose={() => setErrorMessage(null)}
-            >
-              {errorMessage}
-            </Alert>
-          )}
+          {t("authV2.register.socialProof", "Foydalanuvchilarimiz bizga ishonadi")} 💙
+        </span>
+      </div>
+    </>
+  );
 
-          {step === 1 ? (
-            <form
-              onSubmit={form.onSubmit(handleInit)}
-              onChange={() => errorMessage && setErrorMessage(null)}
-              aria-label={t("register.title")}
-            >
-              <Stack gap="sm">
-                {/* Names row - 1 col on mobile, 2 cols on tablet+ */}
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                  <TextInput
-                    label={t("register.firstName")}
-                    placeholder={t("register.firstNamePlaceholder", "Ali")}
-                    required
-                    size="md"
-                    radius="md"
-                    leftSection={<IconUser size={18} />}
-                    styles={{
-                      input: {
-                        height: 46,
-                        fontSize: "14px",
-                        backgroundColor: "var(--bg-input)",
-                        borderColor: "var(--border)",
-                      },
-                      label: {
-                        fontWeight: 600,
-                        fontSize: "12px",
-                        marginBottom: 4,
-                      },
-                    }}
-                    {...form.getInputProps("firstName")}
-                  />
-                  <TextInput
-                    label={t("register.lastName")}
-                    placeholder={t("register.lastNamePlaceholder", "Valiyev")}
-                    required
-                    size="md"
-                    radius="md"
-                    styles={{
-                      input: {
-                        height: 46,
-                        fontSize: "14px",
-                        backgroundColor: "var(--bg-input)",
-                        borderColor: "var(--border)",
-                      },
-                      label: {
-                        fontWeight: 600,
-                        fontSize: "12px",
-                        marginBottom: 4,
-                      },
-                    }}
-                    {...form.getInputProps("lastName")}
-                  />
-                </SimpleGrid>
+  const passwordValid = isPasswordSecure(form.values.password);
 
-                {/* Verification channel switcher */}
-                <Box>
-                  <Text size="xs" fw={600} mb={6} c="dimmed">
-                    {t("register.verificationChannel", "Tasdiqlash usuli")}
-                  </Text>
-                  <SegmentedControl
-                    value={verificationType}
-                    onChange={handleVerificationTypeChange}
-                    fullWidth
-                    size="sm"
-                    radius="md"
-                    className="auth-segmented-control"
-                    data={[
-                      {
-                        label: (
-                          <Flex align="center" gap={6} justify="center">
-                            <IconMail size={16} />
-                            <span>{t("register.verifyByEmail")}</span>
-                          </Flex>
-                        ),
-                        value: "EMAIL",
-                      },
-                      {
-                        label: (
-                          <Flex align="center" gap={6} justify="center">
-                            <IconDeviceMobile size={16} />
-                            <span>{t("register.verifyBySms")}</span>
-                          </Flex>
-                        ),
-                        value: "SMS",
-                      },
-                    ]}
-                  />
-                </Box>
+  return (
+    <AuthLayout
+      seoTitle={t("seo.register.title", "Ro'yxatdan o'tish")}
+      seoDescription={t("seo.register.desc", "Bepul ro'yxatdan o'ting va testlarni boshlang.")}
+      canonicalUrl="/auth/register"
+      breadcrumbs={[
+        { label: t("nav.home", "Bosh sahifa"), href: "/" },
+        { label: t("authV2.register.title", "Ro'yxatdan o'tish") },
+      ]}
+      leftColumn={leftColumnContent}
+      rightColumn={rightColumnContent}
+    >
+      <AuthCard
+        icon={<img src="/logo.svg" alt="Prava Online" width={28} height={28} style={{ objectFit: "contain" }} />}
+        title={t("authV2.register.title", "Ro'yxatdan o'tish")}
+        subtitle={t(
+          "authV2.register.subtitle",
+          "Bepul hisob yarating va imtihonga tayyorlanishni boshlang."
+        )}
+        switchPrompt={t("authV2.register.hasAccount", "Allaqachon akkauntingiz bormi?")}
+        switchLinkText={t("authV2.register.loginLink", "Tizimga kirish")}
+        switchLinkHref="/auth/login"
+      >
+        {errorMessage && (
+          <Alert
+            icon={<IconAlertCircle size={18} />}
+            color="red"
+            variant="light"
+            radius="md"
+            mb="md"
+            withCloseButton
+            onClose={() => setErrorMessage(null)}
+            role="alert"
+          >
+            {errorMessage}
+          </Alert>
+        )}
 
-                {/* Contact field based on mode */}
-                {isEmailMode ? (
-                  <TextInput
-                    label={t("register.email")}
-                    placeholder="example@mail.com"
-                    required
-                    size="md"
-                    radius="md"
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    leftSection={<IconMail size={18} />}
-                    styles={{
-                      input: {
-                        height: 46,
-                        fontSize: "14px",
-                        backgroundColor: "var(--bg-input)",
-                        borderColor: "var(--border)",
-                      },
-                      label: {
-                        fontWeight: 600,
-                        fontSize: "12px",
-                        marginBottom: 4,
-                      },
-                    }}
-                    {...form.getInputProps("email")}
-                  />
-                ) : (
-                  <TextInput
-                    label={t("register.phoneNumber")}
-                    placeholder="+998 90 123 45 67"
-                    required
-                    size="md"
-                    radius="md"
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    maxLength={17}
-                    leftSection={<IconDeviceMobile size={18} />}
-                    styles={{
-                      input: {
-                        height: 46,
-                        fontSize: "14px",
-                        backgroundColor: "var(--bg-input)",
-                        borderColor: "var(--border)",
-                      },
-                      label: {
-                        fontWeight: 600,
-                        fontSize: "12px",
-                        marginBottom: 4,
-                      },
-                    }}
-                    value={form.values.phoneNumber}
-                    onChange={(e) => {
-                      const formatted = formatUzPhone(e.currentTarget.value);
-                      form.setFieldValue("phoneNumber", formatted);
-                    }}
-                    error={form.errors.phoneNumber}
-                  />
-                )}
-
-                {/* Password field with Caps Lock & Strength meter */}
-                <Box>
-                  <PasswordInput
-                    label={t("register.password")}
-                    placeholder={t("auth.passwordPlaceholder")}
-                    required
-                    size="md"
-                    radius="md"
-                    autoComplete="new-password"
-                    leftSection={<IconLock size={18} />}
-                    styles={{
-                      input: {
-                        height: 46,
-                        fontSize: "14px",
-                        backgroundColor: "var(--bg-input)",
-                        borderColor: "var(--border)",
-                      },
-                      label: {
-                        fontWeight: 600,
-                        fontSize: "12px",
-                        marginBottom: 4,
-                      },
-                    }}
-                    onFocus={() => setPasswordFocused(true)}
-                    onBlur={() => setPasswordFocused(false)}
-                    {...form.getInputProps("password")}
-                  />
-                  <CapsLockWarning active={isCapsLock && passwordFocused} />
-                  <PasswordStrengthMeter password={form.values.password} />
-                </Box>
-
-                <Button
-                  type="submit"
-                  fullWidth
-                  radius="md"
-                  size="md"
-                  loading={loading}
-                  h={48}
-                  fw={700}
-                  fz="sm"
-                  mt={2}
-                  style={{
-                    backgroundColor: "#0284c7",
-                    boxShadow: "0 4px 14px rgba(2, 132, 199, 0.35)",
-                  }}
-                >
-                  {t("register.register")}
-                </Button>
-
-                <Divider
-                  label={t("auth.orContinueWith")}
-                  labelPosition="center"
-                  my="xs"
-                />
-
-                <SimpleGrid cols={2} spacing="xs">
-                  <GoogleLoginButton mode="register" compact />
-                  <TelegramLoginButton mode="register" compact />
-                </SimpleGrid>
-
-                <Text size="xs" c="dimmed" ta="center" mt={2}>
-                  {t("auth.telegramDirectHint", "Telegram bot orqali tezkor kirish:")}{" "}
-                  <Anchor
-                    href="https://t.me/pravaonlineuzbot?start=login"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    size="xs"
-                    fw={600}
-                    c="#0088cc"
-                  >
-                    @pravaonlineuzbot
-                  </Anchor>
-                </Text>
-              </Stack>
-            </form>
-          ) : (
-            /* Step 2: OTP Verification */
-            <Box>
-              <Stack align="center" gap="xs">
-                <Center
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    background: isEmailMode
-                      ? "var(--mantine-color-blue-light)"
-                      : "var(--mantine-color-teal-light)",
-                    color: isEmailMode
-                      ? "var(--mantine-color-blue-7)"
-                      : "var(--mantine-color-teal-7)",
-                  }}
-                >
-                  {isEmailMode ? (
-                    <IconMailShare size={20} />
-                  ) : (
-                    <IconMessageShare size={20} />
+        {step === 1 ? (
+          <form
+            onSubmit={form.onSubmit(handleInit)}
+            onChange={() => errorMessage && setErrorMessage(null)}
+            noValidate
+          >
+            <Stack gap={8}>
+              {/* First Name & Last Name 2-column grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", width: "100%" }}>
+                <TextInput
+                  id="register-firstName"
+                  label={t("authV2.register.firstName", "Ism")}
+                  placeholder={t(
+                    "authV2.register.firstNamePlaceholder",
+                    "Masalan: Ali"
                   )}
-                </Center>
-
-                <Text size="xs" c="dimmed" ta="center">
-                  {isEmailMode
-                    ? t("register.otpSentTo")
-                    : t("register.codeSentToPhone")}
-                </Text>
-
-                <Text fw={600} size="sm" ta="center">
-                  {isEmailMode ? form.values.email : form.values.phoneNumber}
-                </Text>
-
-                {isEmailMode && (
-                  <Button
-                    component="a"
-                    href={getInboxLink(form.values.email)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    variant="light"
-                    size="xs"
-                    radius="md"
-                    rightSection={<IconExternalLink size={14} />}
-                  >
-                    {t("register.openEmailInbox")}
-                  </Button>
-                )}
-              </Stack>
-
-              <Center mt="md" mb="xs" style={{ maxWidth: "100%", overflowX: "hidden" }}>
-                <PinInput
-                  length={6}
+                  required
                   size="sm"
-                  gap={6}
-                  value={code}
-                  onChange={setCode}
-                  type="number"
-                  autoFocus
-                  placeholder="○"
+                  radius="md"
+                  autoComplete="given-name"
+                  leftSection={<IconUser size={15} />}
                   styles={{
                     input: {
-                      width: "clamp(28px, 9vw, 44px)",
-                      height: "clamp(34px, 10vw, 48px)",
-                      fontSize: "clamp(13px, 3.5vw, 18px)",
-                      backgroundColor: "var(--bg-input)",
-                      borderColor: "var(--border)",
-                      padding: 0,
+                      height: 38,
+                      fontSize: "13.5px",
+                      borderRadius: "10px",
+                      color: "var(--text, #0f172a)",
+                      backgroundColor: "var(--bg-input, #f8fafc)",
+                      borderColor: "var(--border, #e2e8f0)",
+                    },
+                    label: {
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      marginBottom: 2,
+                      color: "var(--text, #0f172a)",
                     },
                   }}
+                  aria-required="true"
+                  aria-invalid={!!form.errors.firstName}
+                  {...form.getInputProps("firstName")}
                 />
-              </Center>
 
-              <Group justify="center" mt="xs" mb="sm">
-                {countdown > 0 ? (
-                  <Text size="xs" c="dimmed">
-                    {t("register.resendCodeIn", { seconds: countdown })}
-                  </Text>
-                ) : (
-                  <Anchor
-                    component="button"
-                    type="button"
-                    size="xs"
-                    fw={600}
-                    c="brand"
-                    onClick={handleResendCode}
-                    disabled={resending}
-                  >
-                    {resending ? "..." : t("register.resendCode")}
-                  </Anchor>
+                <TextInput
+                  id="register-lastName"
+                  label={t("authV2.register.lastName", "Familiya")}
+                  placeholder={t(
+                    "authV2.register.lastNamePlaceholder",
+                    "Masalan: Valiyev"
+                  )}
+                  required
+                  size="sm"
+                  radius="md"
+                  autoComplete="family-name"
+                  leftSection={<IconUser size={15} />}
+                  styles={{
+                    input: {
+                      height: 38,
+                      fontSize: "13.5px",
+                      borderRadius: "10px",
+                      color: "var(--text, #0f172a)",
+                      backgroundColor: "var(--bg-input, #f8fafc)",
+                      borderColor: "var(--border, #e2e8f0)",
+                    },
+                    label: {
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      marginBottom: 2,
+                      color: "var(--text, #0f172a)",
+                    },
+                  }}
+                  aria-required="true"
+                  aria-invalid={!!form.errors.lastName}
+                  {...form.getInputProps("lastName")}
+                />
+              </div>
+
+              {/* Email Address Input */}
+              <TextInput
+                id="register-email"
+                type="email"
+                label={t("authV2.register.emailLabel", "Email manzil")}
+                placeholder={t(
+                  "authV2.register.emailPlaceholder",
+                  "example@mail.com"
                 )}
-              </Group>
-
-              <Button
-                fullWidth
-                loading={loading}
-                disabled={code.length < 6}
-                onClick={handleComplete}
+                required
+                size="sm"
                 radius="md"
-                size="md"
-                h={48}
-                fw={700}
-                fz="sm"
+                autoComplete="email"
+                leftSection={<IconMail size={15} />}
+                styles={{
+                  input: {
+                    height: 38,
+                    fontSize: "13.5px",
+                    borderRadius: "10px",
+                    color: "var(--text, #0f172a)",
+                    backgroundColor: "var(--bg-input, #f8fafc)",
+                    borderColor: "var(--border, #e2e8f0)",
+                  },
+                  label: {
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    marginBottom: 2,
+                    color: "var(--text, #0f172a)",
+                  },
+                }}
+                aria-required="true"
+                aria-invalid={!!form.errors.email}
+                {...form.getInputProps("email")}
+              />
+
+              {/* Password Input with Real-time Indicator in Label */}
+              <Box>
+                <Box mb={2}>
+                  <Group justify="space-between" align="center" wrap="nowrap">
+                    <Text
+                      component="label"
+                      htmlFor="register-password"
+                      size="xs"
+                      fw={600}
+                      style={{ color: "var(--text, #0f172a)", display: "inline-flex", gap: 2 }}
+                    >
+                      <span>{t("authV2.register.passwordLabel", "Parol")}</span>
+                      <span style={{ color: "#ef4444" }}>*</span>
+                    </Text>
+                    {form.values.password.length > 0 && (
+                      <Text
+                        size="xs"
+                        fw={600}
+                        style={{
+                          color: passwordValid ? "#10b981" : "var(--text-muted, #94a3b8)",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          fontSize: "11px",
+                          transition: "color 0.2s ease",
+                        }}
+                      >
+                        {passwordValid ? (
+                          <>
+                            <IconCheck size={14} stroke={2.5} />
+                            <span>{t("authV2.register.passwordValid", "Parol talablarga mos")}</span>
+                          </>
+                        ) : (
+                          <span>{t("authV2.register.passwordHint", "8+ belgi, A-Z, 0-9, @$!")}</span>
+                        )}
+                      </Text>
+                    )}
+                  </Group>
+                </Box>
+
+                <PasswordInput
+                  id="register-password"
+                  placeholder={t(
+                    "authV2.register.passwordPlaceholder",
+                    "Kamida 8 ta belgi"
+                  )}
+                  required
+                  size="sm"
+                  radius="md"
+                  autoComplete="new-password"
+                  leftSection={<IconLock size={15} />}
+                  styles={{
+                    input: {
+                      height: 38,
+                      fontSize: "13.5px",
+                      borderRadius: "10px",
+                      color: "var(--text, #0f172a)",
+                      backgroundColor: "var(--bg-input, #f8fafc)",
+                      borderColor: passwordValid
+                        ? "#10b981"
+                        : "var(--border, #e2e8f0)",
+                    },
+                  }}
+                  aria-required="true"
+                  aria-invalid={!!form.errors.password}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
+                  {...form.getInputProps("password")}
+                />
+                <CapsLockWarning active={isCapsLock && passwordFocused} />
+              </Box>
+
+              {/* Submit Button */}
+              <Button
+                size="sm"
+                fullWidth
+                radius="md"
+                type="submit"
+                loading={loading}
+                h={40}
+                rightSection={<IconArrowRight size={16} />}
                 style={{
-                  backgroundColor: "#0284c7",
-                  boxShadow: "0 4px 14px rgba(2, 132, 199, 0.35)",
+                  fontSize: "13.5px",
+                  fontWeight: 700,
+                  backgroundColor: "var(--primary, #2196F3)",
+                  boxShadow: "0 4px 12px rgba(33, 150, 243, 0.25)",
                 }}
               >
-                {t("register.confirm")}
+                {loading
+                  ? t("authV2.register.submitting", "Ro'yxatdan o'tilmoqda...")
+                  : t("authV2.register.submit", "Ro'yxatdan o'tish")}
               </Button>
 
-              <Center mt="xs">
-                <Anchor
-                  component="button"
-                  type="button"
-                  size="xs"
-                  c="dimmed"
-                  onClick={() => {
-                    setStep(1);
-                    setErrorMessage(null);
-                  }}
-                  style={{ display: "flex", alignItems: "center", gap: 4 }}
-                >
-                  <IconArrowLeft size={14} />
-                  {t("register.editInfo")}
-                </Anchor>
+              <SocialAuthGroup mode="register" />
+
+              <AuthSecurityNotice />
+            </Stack>
+          </form>
+        ) : (
+          /* Step 2: Email OTP Verification */
+          <Stack gap={12}>
+            <Alert
+              icon={<IconMail size={16} />}
+              color="blue"
+              variant="light"
+              radius="md"
+              p="xs"
+            >
+              <Text size="xs">
+                {t(
+                  "authV2.forgot.otpPrompt",
+                  "Biz {{recipient}} manziliga 6 xonali tasdiqlash kodini yubordik."
+                ).replace("{{recipient}}", form.values.email)}
+              </Text>
+            </Alert>
+
+            <Center>
+              <Button
+                component="a"
+                href={getInboxLink(form.values.email)}
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="light"
+                size="xs"
+                color="blue"
+                radius="md"
+                rightSection={<IconExternalLink size={14} />}
+              >
+                {t("register.openMailApp", "Pochtani ochish")}
+              </Button>
+            </Center>
+
+            <Box>
+              <Text size="xs" fw={600} mb={4} ta="center">
+                {t("authV2.forgot.otpLabel", "Tasdiqlash kodini kiriting")}
+              </Text>
+              <Center>
+                <PinInput
+                  length={6}
+                  size="md"
+                  type="number"
+                  placeholder="○"
+                  value={code}
+                  onChange={setCode}
+                  autoFocus
+                  radius="md"
+                  aria-label={t("authV2.forgot.otpLabel", "Tasdiqlash kodi")}
+                />
               </Center>
             </Box>
-          )}
 
-          <AuthSecurityBadge compact />
-        </Paper>
-      </Container>
-    </Box>
+            <Group justify="center" gap={6}>
+              <Text size="xs" c="dimmed">
+                {t("register.didntReceive", "Kod kelmadimi?")}
+              </Text>
+              <Button
+                variant="subtle"
+                size="compact-xs"
+                onClick={handleResendCode}
+                disabled={countdown > 0 || resending}
+                loading={resending}
+              >
+                {countdown > 0
+                  ? t("authV2.forgot.resendIn", { seconds: countdown })
+                  : t("authV2.forgot.resendPrompt", "Kodni qayta yuborish")}
+              </Button>
+            </Group>
+
+            <Button
+              size="sm"
+              fullWidth
+              radius="md"
+              onClick={handleComplete}
+              loading={loading}
+              disabled={code.length < 6}
+              h={40}
+              rightSection={<IconArrowRight size={16} />}
+              style={{
+                fontSize: "13.5px",
+                fontWeight: 700,
+                backgroundColor: "var(--primary, #2196F3)",
+                boxShadow: "0 4px 12px rgba(33, 150, 243, 0.25)",
+              }}
+            >
+              {loading
+                ? t("authV2.forgot.verifying", "Tasdiqlanmoqda...")
+                : t("authV2.forgot.verifyBtn", "Kodni tasdiqlash")}
+            </Button>
+
+            <Flex justify="center" mt={2}>
+              <Anchor
+                component="button"
+                type="button"
+                size="xs"
+                c="dimmed"
+                onClick={() => setStep(1)}
+                style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+              >
+                <IconArrowLeft size={14} />
+                <span>{t("common.back", "Orqaga")}</span>
+              </Anchor>
+            </Flex>
+          </Stack>
+        )}
+      </AuthCard>
+    </AuthLayout>
   );
 };
 

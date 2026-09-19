@@ -22,7 +22,7 @@ import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import type { LeaderboardResponse, TopicsResponse } from "../types";
 
-export function LeaderboardPage() {
+export function LeaderboardPage({ hideTitle = true }: { hideTitle?: boolean } = {}) {
   const { t, i18n } = useTranslation();
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
@@ -96,9 +96,11 @@ export function LeaderboardPage() {
 
   return (
     <>
-      <Title order={2} mb="md">
-        {t("leaderboard.title")}
-      </Title>
+      {!hideTitle && (
+        <Title order={2} mb="md">
+          {t("leaderboard.title")}
+        </Title>
+      )}
 
       <Select
         data={topicOptions}
@@ -298,12 +300,14 @@ export function LeaderboardPage() {
           )}
 
           {totalPages > 1 && (
-            <Flex justify="center">
+            <Flex justify="center" mt="md">
               <Pagination
                 value={page + 1}
                 onChange={(p) => setPage(p - 1)}
                 total={totalPages}
-                withEdges
+                size="sm"
+                siblings={1}
+                boundaries={0}
               />
             </Flex>
           )}

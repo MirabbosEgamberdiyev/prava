@@ -23,7 +23,7 @@
 html {
   scroll-behavior: smooth;
   /* Mantine theme.fontFamily bilan bir xil — kaskad orqali meros bo'ladi */
-  font-family: "Montserrat", sans-serif;
+  font-family: "Inter", "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   /* Mobil brauzerlarda landscape'ga burilganda matn o'z-o'zidan kattalashmasin */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;

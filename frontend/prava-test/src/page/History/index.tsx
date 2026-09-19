@@ -1,40 +1,45 @@
 import { ExamHistoryPage } from "../../features/ExamHistory";
 import SEO from "../../components/common/SEO";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { IconArrowLeft, IconHistory } from "@tabler/icons-react";
-import { Container } from "@mantine/core";
+import { IconHistory } from "@tabler/icons-react";
+import styles from "../../components/dashboard/Dashboard.module.css";
 
 const History_Page = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
 
   return (
     <>
-      <SEO title={t("seo.history.title", "Imtihonlar Tarixi")} description={t("seo.history.desc", "O'tgan imtihonlaringiz natijalarini ko'ring.")}
+      <SEO
+        title={t("seo.history.title", "Imtihonlar Tarixi — PravaOnline")}
+        description={t("seo.history.desc", "O'tgan imtihonlaringiz natijalarini ko'ring.")}
         canonical="/history"
         noIndex={true}
       />
-      <div className="review-screen">
-        <header className="review-header">
-          <button
-            className="review-back-btn"
-            onClick={() => navigate("/me")}
-            type="button"
-          >
-            <IconArrowLeft size={18} stroke={2} />
-            {t("common.back", "Orqaga")}
-          </button>
-          <div className="review-header-title">
-            <IconHistory size={20} stroke={2} color="var(--mantine-color-blue-5)" />
-            <span>{t("history.title", "Imtihonlar tarixi")}</span>
+      {/* Page Header */}
+      <div className={styles.innerPageHeader}>
+        <div className={styles.innerPageHeaderLeft}>
+          <div className={styles.innerPageTitleRow}>
+            <h2 className={styles.innerPageTitle}>
+              <IconHistory
+                size={24}
+                stroke={2}
+                style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }}
+              />
+              {t("history.title", "Imtihonlar tarixi")}
+            </h2>
           </div>
-        </header>
-        <main style={{ flex: 1, overflowY: "auto", padding: "14px 16px 32px" }}>
-          <Container size="lg">
-            <ExamHistoryPage />
-          </Container>
-        </main>
+          <p className={styles.innerPageSubtitle}>
+            {t(
+              "history.subtitle",
+              "O'tkazilgan barcha imtihonlar, sarflangan vaqt va to'plangan ballar arxivi."
+            )}
+          </p>
+        </div>
+      </div>
+
+      {/* Content Container */}
+      <div style={{ maxWidth: 1080, width: "100%", margin: "0 auto" }}>
+        <ExamHistoryPage hideTitle={true} />
       </div>
     </>
   );

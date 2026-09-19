@@ -560,6 +560,14 @@
     border-radius: 36px;
   }
 
+  @media (max-width: 360px) {
+    .phoneMockup {
+      width: min(220px, calc(100vw - 24px));
+      height: 390px;
+      border-radius: 28px;
+    }
+  }
+
   .statValue {
     font-size: 1.75rem;
   }
@@ -1133,4 +1141,1199 @@
     border-radius: 18px;
   }
 }
+
+/* ==================== 2-COLUMN HERO SECTION ==================== */
+.heroTwoColSection {
+  padding: clamp(24px, 4vh, 48px) 0 clamp(32px, 5vh, 60px);
+  position: relative;
+  overflow: hidden;
+}
+
+.heroGridContainer {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  align-items: center;
+  gap: clamp(24px, 4vw, 56px);
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1440px) {
+  .heroGridContainer {
+    max-width: 1440px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .heroGridContainer {
+    max-width: 1600px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .heroGridContainer {
+    max-width: 1920px;
+  }
+}
+
+.heroLeftCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.heroRightCol {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.heroPillBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: rgba(11, 132, 243, 0.08);
+  border: 1px solid rgba(11, 132, 243, 0.22);
+  color: var(--primary);
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(11, 132, 243, 0.06);
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+}
+
+.heroPillIcon {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+:global([data-mantine-color-scheme="dark"]) .heroPillBadge {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.28);
+  color: #38bdf8;
+}
+
+.heroTwoColTitle {
+  font-size: clamp(2.2rem, 3.4vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  margin: 0 0 16px;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.heroHighlightWord {
+  color: var(--primary);
+  position: relative;
+  display: inline-block;
+}
+
+.heroTwoColSubtitle {
+  font-size: clamp(0.98rem, 1.15vw, 1.12rem);
+  line-height: 1.62;
+  color: var(--text-muted);
+  max-width: 580px;
+  margin: 0 0 28px;
+  overflow-wrap: break-word;
+}
+
+.heroTrustChecklist {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 20px;
+  margin-top: 24px;
+  width: 100%;
+}
+
+.trustCheckItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.checkIconCircle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ==================== HERO MOCKUPS (LAPTOP & PHONE) ==================== */
+.heroMockupContainer {
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.laptopWrapper {
+  width: 100%;
+  max-width: 470px;
+  position: relative;
+  z-index: 2;
+  perspective: 1000px;
+}
+
+.laptopScreen {
+  background: #1e293b;
+  border: 10px solid #0f172a;
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.laptopBrowserHeader {
+  height: 26px;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 12px;
+}
+
+.laptopDots {
+  display: flex;
+  gap: 6px;
+}
+
+.dotRed, .dotYellow, .dotGreen {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.dotRed { background: #ef4444; }
+.dotYellow { background: #f59e0b; }
+.dotGreen { background: #10b981; }
+
+.laptopAddressBar {
+  background: #1e293b;
+  border-radius: 4px;
+  padding: 2px 10px;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+.examInterface {
+  padding: 12px;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.examTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.examQuestionCount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.examQBadge {
+  background: #0b84f3;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.examTicketLabel {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.examTimer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.examGraphicWrapper {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.crossroadsSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.examQuestionText {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.examOptionsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.examOptionBtn {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.examOptionActive {
+  background: rgba(11, 132, 243, 0.2);
+  border-color: #0b84f3;
+  color: #fff;
+}
+
+.examKeyBadge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.examOptionActive .examKeyBadge {
+  background: #0b84f3;
+  color: #fff;
+}
+
+.examOptionText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.laptopBase {
+  height: 14px;
+  background: #334155;
+  border-radius: 0 0 16px 16px;
+  position: relative;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+.laptopNotch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 4px;
+  background: #1e293b;
+  border-radius: 0 0 4px 4px;
+}
+
+/* Smartphone Overlapping */
+.heroPhoneWrapper {
+  position: absolute;
+  right: -24px;
+  bottom: -28px;
+  width: 175px;
+  z-index: 3;
+  filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.28));
+  animation: float 5s ease-in-out infinite;
+}
+
+.phoneBezel {
+  background: #0f172a;
+  border: 4px solid #334155;
+  border-radius: 26px;
+  padding: 6px;
+  position: relative;
+}
+
+.phoneSpeaker {
+  width: 32px;
+  height: 3px;
+  background: #475569;
+  border-radius: 2px;
+  margin: 2px auto 6px;
+}
+
+.phoneScreenInner {
+  background: #1e293b;
+  border-radius: 20px;
+  padding: 10px;
+  color: #f8fafc;
+}
+
+.phoneHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.phoneUserCard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.phoneAvatarRing {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(11, 132, 243, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.phoneUserName {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.phoneUserScore {
+  font-size: 0.65rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.phoneProgressWrapper {
+  margin-bottom: 8px;
+}
+
+.phoneProgressBar {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.phoneProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #0b84f3, #10b981);
+  border-radius: 999px;
+}
+
+.phoneProgressMeta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: #94a3b8;
+}
+
+.phoneActionBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(16, 185, 129, 0.15);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #34d399;
+}
+
+/* Floating Glassmorphism Badges */
+.heroFloatingBadge {
+  position: absolute;
+  z-index: 4;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  border-radius: 14px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s ease;
+}
+
+:global([data-mantine-color-scheme="dark"]) .heroFloatingBadge {
+  background: rgba(30, 41, 59, 0.88);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.floatingBadgeTop {
+  top: -16px;
+  right: -10px;
+  animation: float 6s ease-in-out infinite 0.5s;
+}
+
+.floatingBadgeBottom {
+  bottom: 8px;
+  left: -20px;
+  animation: float 6s ease-in-out infinite 2s;
+}
+
+.floatingBadgeIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.floatingBadgeTitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.floatingBadgeSub {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+/* ==================== MODERN STATS SECTION ==================== */
+.statsModernSection {
+  padding: clamp(24px, 4vh, 48px) 0;
+  position: relative;
+}
+
+.statCardModern {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s ease;
+}
+
+.statCardModern:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary);
+}
+
+.statIconCircle {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  transition: transform 0.2s ease;
+}
+
+.statCardModern:hover .statIconCircle {
+  transform: scale(1.08);
+}
+
+.statValueModern {
+  font-size: clamp(1.85rem, 2.5vw, 2.4rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.statLabelModern {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.statSubModern {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ==================== COMMON SECTION HEADERS ==================== */
+.sectionCategoryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(11, 132, 243, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(11, 132, 243, 0.2);
+  margin-bottom: 12px;
+}
+
+/* ==================== BENEFITS SECTION MODERN ==================== */
+.benefitsSectionModern {
+  padding: clamp(36px, 6vh, 64px) 0;
+}
+
+.benefitCardModern {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: clamp(22px, 3vw, 32px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s ease;
+}
+
+.benefitCardModern:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.08);
+}
+
+.benefitTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.benefitPillBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.benefitTitleModern {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px;
+}
+
+.benefitDescModern {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ==================== LEARNING FLOW / TIMELINE ==================== */
+.howItWorksSectionModern {
+  padding: clamp(36px, 6vh, 64px) 0;
+}
+
+.timelineContainer {
+  position: relative;
+  margin-top: 36px;
+}
+
+.stepCardModern {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 26px 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s ease;
+  height: 100%;
+}
+
+.stepCardModern:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.07);
+}
+
+.stepHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.stepIconBox {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepNumberTag {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.stepTitleModern {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.stepDescModern {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ==================== DEVICE PLATFORMS MODERN ==================== */
+.devicePlatformsModernSection {
+  padding: clamp(36px, 6vh, 64px) 0;
+}
+
+.platformCardModern {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 26px 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s ease;
+  height: 100%;
+}
+
+.platformCardModern:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.platformCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.platformIconBox {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.platformPillBadge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.03em;
+}
+
+.pillWeb {
+  background: rgba(11, 132, 243, 0.12);
+  color: #0b84f3;
+}
+.pillWindows {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+}
+.pillMobile {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+.pillTelegram {
+  background: rgba(0, 136, 204, 0.12);
+  color: #0088cc;
+}
+
+.platformTitleModern {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.platformDescModern {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0 0 20px;
+  flex: 1;
+}
+
+.platformActionRow {
+  margin-top: auto;
+  width: 100%;
+}
+
+.platformActionBtn {
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.mobileStoreButtonsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+}
+
+.storeSmallBtn {
+  font-size: 0.72rem;
+  padding: 0 6px;
+  height: 34px;
+}
+
+/* ==================== FAQ MODERN ==================== */
+.faqSectionModern {
+  padding: clamp(36px, 6vh, 64px) 0;
+}
+
+.faqHeaderWrapper {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  max-width: 900px;
+  margin: 0 auto 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.faqHeaderLeft {
+  flex: 1;
+  min-width: 280px;
+}
+
+.faqHeaderRight {
+  flex-shrink: 0;
+}
+
+.faqViewAllLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: gap 0.2s ease;
+}
+
+.faqViewAllLink:hover {
+  gap: 10px;
+}
+
+.faqContainerModern {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.faqItemModern {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  margin-bottom: 12px !important;
+  transition: all 0.2s ease !important;
+  overflow: hidden;
+}
+
+.faqItemModern:hover {
+  border-color: var(--primary) !important;
+}
+
+.faqControlModern {
+  padding: 18px 20px !important;
+}
+
+.faqPanelModern {
+  padding: 0 20px 18px !important;
+}
+
+.faqQuestionText {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+}
+
+.faqAnswerText {
+  font-size: 0.9rem !important;
+  line-height: 1.65 !important;
+}
+
+/* ==================== FINAL CTA MODERN ==================== */
+.finalCtaSectionModern {
+  padding: clamp(36px, 6vh, 64px) 0 clamp(48px, 8vh, 80px);
+}
+
+.finalCtaCard {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: clamp(36px, 6vh, 56px) clamp(20px, 4vw, 48px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.finalCtaIconRing {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: rgba(11, 132, 243, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  box-shadow: 0 0 24px rgba(11, 132, 243, 0.2);
+}
+
+.finalCtaTitle {
+  font-size: clamp(1.6rem, 2.5vw, 2.25rem);
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.25;
+  margin: 0 0 12px;
+  max-width: 720px;
+}
+
+.finalCtaSubtitle {
+  font-size: clamp(0.92rem, 1.1vw, 1.05rem);
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 620px;
+  margin: 0 0 24px;
+}
+
+.finalCtaBadgesRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.finalCtaBadgeItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.finalCtaActionsGroup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ==================== RESPONSIVE BREAKPOINTS ==================== */
+@media (max-width: 1024px) {
+  .heroGridContainer {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .heroLeftCol {
+    align-items: center;
+    text-align: center;
+  }
+
+  .heroTwoColTitle {
+    max-width: 720px;
+  }
+
+  .heroTwoColSubtitle {
+    max-width: 640px;
+  }
+
+  .heroTrustChecklist {
+    max-width: 480px;
+  }
+
+  .heroPhoneWrapper {
+    right: 0;
+    bottom: -20px;
+    width: 155px;
+  }
+}
+
+@media (max-width: 768px) {
+  .heroPhoneWrapper {
+    display: none !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .storeBadgesRow {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .storeBadgeLink {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroTrustChecklist {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .heroPhoneWrapper {
+    display: none !important;
+  }
+
+  .storeBadgesRow {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .storeBadgeLink {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
+    box-sizing: border-box;
+    font-size: 0.85rem;
+  }
+
+  .floatingBadgeTop {
+    top: -10px;
+    right: 0;
+  }
+
+  .floatingBadgeBottom {
+    bottom: -10px;
+    left: 0;
+  }
+
+  .mobileStoreButtonsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .finalCtaActionsGroup {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .finalCtaActionsGroup button {
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .finalCtaBadgesRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroTwoColSection {
+    padding: 16px 0 32px;
+  }
+
+  .heroTwoColTitle {
+    font-size: clamp(1.65rem, 7.5vw, 2.3rem);
+    margin-bottom: 12px;
+  }
+
+  .heroTwoColSubtitle {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin-bottom: 20px;
+  }
+
+  .heroPillBadge {
+    white-space: normal;
+    text-align: center;
+    max-width: 100%;
+    font-size: 0.74rem;
+    line-height: 1.35;
+    padding: 6px 12px;
+  }
+
+  .examOptionsGrid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .examOptionBtn {
+    padding: 7px 10px;
+    font-size: 0.75rem;
+  }
+
+  .laptopScreen {
+    border-width: 6px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .laptopBase {
+    height: 10px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .floatingBadgeTop {
+    display: none;
+  }
+
+  .floatingBadgeBottom {
+    position: static;
+    margin-top: 14px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .floatingBadgeTitle {
+    font-size: 0.8rem;
+  }
+
+  .floatingBadgeSub {
+    font-size: 0.7rem;
+  }
+
+  .storeBadgesRow {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .storeBadgeLink {
+    min-height: 46px;
+    font-size: 0.82rem;
+    padding: 0 12px;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .heroTwoColTitle {
+    font-size: clamp(1.45rem, 7vw, 1.85rem);
+  }
+
+  .heroActionsGroup button,
+  .heroPrimaryBtn,
+  .heroSecondaryBtn {
+    font-size: 0.82rem;
+    padding: 10px 12px;
+    min-height: 46px;
+    width: 100%;
+  }
+
+  .storeBadgesRow {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+
+  .storeBadgeLink {
+    min-height: 44px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .finalCtaBox,
+  .finalCtaCard {
+    padding: 24px 12px;
+    border-radius: 16px;
+  }
+
+  .finalCtaTitle {
+    font-size: 1.35rem;
+  }
+}
+
+@media (max-width: 300px) {
+  .heroTwoColTitle {
+    font-size: 1.35rem;
+  }
+
+  .heroPillBadge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  .heroPrimaryBtn,
+  .heroSecondaryBtn {
+    font-size: 0.78rem;
+    padding: 8px 10px;
+  }
+
+  .trustCheckItem {
+    font-size: 0.78rem;
+  }
+
+  .laptopScreen {
+    border-width: 4px;
+  }
+}
+
+
 

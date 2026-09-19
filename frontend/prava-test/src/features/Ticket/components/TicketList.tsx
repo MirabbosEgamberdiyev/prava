@@ -2,6 +2,7 @@ import {
   Alert,
   Button,
   Center,
+  Flex,
   Grid,
   Group,
   Pagination,
@@ -138,8 +139,16 @@ export function TicketList() {
 
       {tickets.length === 0 ? (
         <EmptyState
-          icon={<IconTicket size={48} color="gray" style={{ opacity: 0.5 }} />}
+          icon={<IconTicket size={48} color="var(--primary)" style={{ opacity: 0.75 }} />}
           title={t("ticket.notFound")}
+          description={t("ticket.emptyDesc", "Tanlangan filtr bo'yicha biletlar topilmadi. Barcha biletlarni ko'rish uchun filtrni tozalang.")}
+          action={
+            selectedTopicId ? (
+              <Button variant="light" onClick={() => setSelectedTopicId(null)} mt="xs">
+                {t("common.resetFilter", "Filtrni tozalash")}
+              </Button>
+            ) : undefined
+          }
         />
       ) : (
         <>
@@ -157,12 +166,18 @@ export function TicketList() {
               </Grid.Col>
             ))}
           </Grid>
-          <Pagination
-            mt="md"
-            value={page + 1}
-            onChange={(p) => setPage(p - 1)}
-            total={totalPages}
-          />
+          {totalPages > 1 && (
+            <Flex justify="center" mt="lg">
+              <Pagination
+                value={page + 1}
+                onChange={(p) => setPage(p - 1)}
+                total={totalPages}
+                size="sm"
+                siblings={1}
+                boundaries={0}
+              />
+            </Flex>
+          )}
         </>
       )}
     </>

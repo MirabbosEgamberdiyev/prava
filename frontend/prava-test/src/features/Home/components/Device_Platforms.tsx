@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, SimpleGrid, Text, Title, Badge, Button, Group } from "@mantine/core";
+import { SimpleGrid, Button } from "@mantine/core";
 import {
   IconBrandWindows,
   IconDeviceMobile,
@@ -25,46 +25,50 @@ export const Device_Platforms = React.memo(() => {
   const { t } = useTranslation();
 
   return (
-    <section className={classes.appShowcaseSection} aria-label={t("home.devices.title", "Istalgan qurilmada qulay o'rganing")}>
-      <Box className={classes.sectionTitle}>
-        <div className={classes.sectionBadge}>
+    <section className={classes.devicePlatformsModernSection} id="devices" aria-label={t("home.devices.ariaLabel", "Mavjud qurilmalar")}>
+      <div className={classes.sectionHeaderCentered}>
+        <div className={classes.sectionCategoryBadge}>
           <IconDevices size={14} />
-          {t("home.devices.badge", "Barcha Qurilmalarda")}
+          <span>{t("home.devices.badge", "Barcha Qurilmalarda")}</span>
         </div>
-        <Title order={2}>
+        <h2 className={classes.sectionHeaderTitle}>
           {t("home.devices.title", "Istalgan qurilmada qulay o'rganing")}
-        </Title>
-        <Text size="md" c="var(--text-muted)" mt="sm" maw={720} mx="auto" lh={1.6}>
+        </h2>
+        <p className={classes.sectionHeaderSubtitle}>
           {t(
             "home.devices.subtitle",
             "Brauzerda, kompyuterda internetsiz yoki mobil telefonda — barcha qulay formatlar mavjud."
           )}
-        </Text>
-      </Box>
+        </p>
+      </div>
 
-      <SimpleGrid cols={{ base: 1, md: 3 }} spacing="xl" mt={36}>
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing={{ base: "md", md: "lg" }} mt={32}>
         {/* 1. Web Application Card */}
-        <div className={classes.appDeviceCard}>
-          <div
-            className={classes.trustIcon}
-            style={{ backgroundColor: "rgba(2, 132, 199, 0.12)", color: "#0284c7" }}
-          >
-            <IconBrowser size={28} stroke={1.8} />
+        <div className={classes.platformCardModern}>
+          <div className={classes.platformCardHeader}>
+            <div
+              className={classes.platformIconBox}
+              style={{ backgroundColor: "rgba(11, 132, 243, 0.1)", color: "#0b84f3" }}
+            >
+              <IconBrowser size={26} stroke={1.9} />
+            </div>
+            <span className={`${classes.platformPillBadge} ${classes.pillWeb}`}>
+              {t("home.devices.webBadge", "BRAUZERDA")}
+            </span>
           </div>
-          <Box style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-            <Badge size="xs" color="blue" variant="light" mb={6}>
-              {t("home.devices.webCardBadge", "O'rnatish shart emas")}
-            </Badge>
-            <Text fw={700} size="md" c="var(--text)" lh={1.3} mb={6}>
-              {t("home.devices.webCardTitle", "Web Ilova")}
-            </Text>
-            <Text size="sm" c="var(--text-muted)" lh={1.5} mb="lg" style={{ flex: 1 }}>
-              {t(
-                "home.devices.webCardDesc",
-                "Zamonaviy kompyuter yoki telefon brauzerida to'liq ishlaydi. Ro'yxatdan o'ting va darhol boshlang."
-              )}
-            </Text>
-            <DomainLink href={getWebAppUrl("/auth/login")} style={{ textDecoration: "none" }}>
+
+          <h3 className={classes.platformTitleModern}>
+            {t("home.devices.webTitle", "Web ilova")}
+          </h3>
+          <p className={classes.platformDescModern}>
+            {t(
+              "home.devices.webDesc",
+              "Hech narsa yuklab olmasdan brauzerda darhol ishlaydi."
+            )}
+          </p>
+
+          <div className={classes.platformActionRow}>
+            <DomainLink href={getWebAppUrl("/auth/login")} style={{ textDecoration: "none", width: "100%" }}>
               <Button
                 variant="light"
                 color="blue"
@@ -72,34 +76,39 @@ export const Device_Platforms = React.memo(() => {
                 radius="md"
                 size="sm"
                 rightSection={<IconExternalLink size={16} />}
+                className={classes.platformActionBtn}
               >
-                {t("home.devices.webCardAction", "Web ilovaga o'tish")}
+                {t("home.devices.webAction", "Web ilovaga o'tish")}
               </Button>
             </DomainLink>
-          </Box>
+          </div>
         </div>
 
         {/* 2. Windows Desktop Card */}
-        <div className={classes.appDeviceCard}>
-          <div
-            className={classes.trustIcon}
-            style={{ backgroundColor: "rgba(37, 99, 235, 0.12)", color: "#2563eb" }}
-          >
-            <IconBrandWindows size={28} stroke={1.8} />
+        <div className={classes.platformCardModern}>
+          <div className={classes.platformCardHeader}>
+            <div
+              className={classes.platformIconBox}
+              style={{ backgroundColor: "rgba(37, 99, 235, 0.1)", color: "#2563eb" }}
+            >
+              <IconBrandWindows size={26} stroke={1.9} />
+            </div>
+            <span className={`${classes.platformPillBadge} ${classes.pillWindows}`}>
+              {t("home.devices.windowsBadge", "INTERNETSIZ")}
+            </span>
           </div>
-          <Box style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-            <Badge size="xs" color="indigo" variant="light" mb={6}>
-              {t("home.devices.windowsCardBadge", "Internetsiz (Offline)")}
-            </Badge>
-            <Text fw={700} size="md" c="var(--text)" lh={1.3} mb={6}>
-              {t("home.devices.windowsCardTitle", "Windows Desktop")}
-            </Text>
-            <Text size="sm" c="var(--text-muted)" lh={1.5} mb="lg" style={{ flex: 1 }}>
-              {t(
-                "home.devices.windowsCardDesc",
-                "Kompyuter uchun mustaqil dastur (.exe). Barcha 70 ta bilet va 1200+ savollar internetsiz to'liq ishlaydi."
-              )}
-            </Text>
+
+          <h3 className={classes.platformTitleModern}>
+            {t("home.devices.windowsTitle", "Windows Desktop")}
+          </h3>
+          <p className={classes.platformDescModern}>
+            {t(
+              "home.devices.windowsDesc",
+              "To'liq offline ishlaydigan ilova (.exe). Barcha savollar va izohlar mavjud."
+            )}
+          </p>
+
+          <div className={classes.platformActionRow}>
             <Button
               component="a"
               href={WINDOWS_DIRECT_URL}
@@ -110,40 +119,39 @@ export const Device_Platforms = React.memo(() => {
               radius="md"
               size="sm"
               leftSection={<IconDownload size={16} />}
+              className={classes.platformActionBtn}
             >
-              {t("home.devices.windowsCardAction", "Yuklab olish (.exe)")}
+              {t("home.devices.windowsAction", "Yuklab olish (.exe)")}
             </Button>
-          </Box>
+          </div>
         </div>
 
         {/* 3. Mobile Apps Card */}
-        <div className={classes.appDeviceCard}>
-          <div
-            className={classes.trustIcon}
-            style={{ backgroundColor: "rgba(16, 185, 129, 0.12)", color: "#10b981" }}
-          >
-            <IconDeviceMobile size={28} stroke={1.8} />
-          </div>
-          <Box style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-            <Badge size="xs" color="green" variant="light" mb={6}>
-              {t("home.devices.mobileCardBadge", "Android & iOS")}
-            </Badge>
-            <Text fw={700} size="md" c="var(--text)" lh={1.3} mb={6}>
-              {t("home.devices.mobileCardTitle", "Mobil Ilova")}
-            </Text>
-            <Text size="sm" c="var(--text-muted)" lh={1.5} mb="lg" style={{ flex: 1 }}>
-              {t(
-                "home.devices.mobileCardDesc",
-                "Jamoat transportida, navbatda yoki yo'lda har kuni telefoningizda qulay mashq qiling."
-              )}
-            </Text>
+        <div className={classes.platformCardModern}>
+          <div className={classes.platformCardHeader}>
             <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(115px, 1fr))",
-                gap: 8,
-              }}
+              className={classes.platformIconBox}
+              style={{ backgroundColor: "rgba(16, 185, 129, 0.1)", color: "#10b981" }}
             >
+              <IconDeviceMobile size={26} stroke={1.9} />
+            </div>
+            <span className={`${classes.platformPillBadge} ${classes.pillMobile}`}>
+              {t("home.devices.mobileBadge", "MOBIL ILOVA")}
+            </span>
+          </div>
+
+          <h3 className={classes.platformTitleModern}>
+            {t("home.devices.mobileTitle", "Android va iOS")}
+          </h3>
+          <p className={classes.platformDescModern}>
+            {t(
+              "home.devices.mobileDesc",
+              "Telefoningizda istalgan vaqtda o'rganing."
+            )}
+          </p>
+
+          <div className={classes.platformActionRow}>
+            <div className={classes.mobileStoreButtonsGrid}>
               <Button
                 component="a"
                 href={PLAY_STORE_URL}
@@ -151,9 +159,9 @@ export const Device_Platforms = React.memo(() => {
                 rel="noopener noreferrer"
                 variant="default"
                 radius="md"
-                size="sm"
-                px={8}
-                leftSection={<IconBrandGooglePlay size={16} color="#00e676" />}
+                size="xs"
+                className={classes.storeSmallBtn}
+                leftSection={<IconBrandGooglePlay size={15} color="#00e676" />}
               >
                 Google Play
               </Button>
@@ -164,73 +172,59 @@ export const Device_Platforms = React.memo(() => {
                 rel="noopener noreferrer"
                 variant="default"
                 radius="md"
-                size="sm"
-                px={8}
-                leftSection={<IconBrandApple size={16} />}
+                size="xs"
+                className={classes.storeSmallBtn}
+                leftSection={<IconBrandApple size={15} />}
               >
                 App Store
               </Button>
             </div>
-          </Box>
+          </div>
+        </div>
+
+        {/* 4. Telegram Bot Card */}
+        <div className={classes.platformCardModern}>
+          <div className={classes.platformCardHeader}>
+            <div
+              className={classes.platformIconBox}
+              style={{ backgroundColor: "rgba(0, 136, 204, 0.1)", color: "#0088cc" }}
+            >
+              <IconBrandTelegram size={26} stroke={1.9} />
+            </div>
+            <span className={`${classes.platformPillBadge} ${classes.pillTelegram}`}>
+              {t("home.devices.telegramBadge", "TELEGRAM")}
+            </span>
+          </div>
+
+          <h3 className={classes.platformTitleModern}>
+            {t("home.devices.telegramTitle", "Telegram Bot")}
+          </h3>
+          <p className={classes.platformDescModern}>
+            {t(
+              "home.devices.telegramDesc",
+              "Rasmiy bot orqali tezkor bildirishnomalar va mini testlar."
+            )}
+          </p>
+
+          <div className={classes.platformActionRow}>
+            <Button
+              component="a"
+              href={TELEGRAM_BOT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="light"
+              color="cyan"
+              fullWidth
+              radius="md"
+              size="sm"
+              rightSection={<IconExternalLink size={16} />}
+              className={classes.platformActionBtn}
+            >
+              {t("home.devices.telegramAction", "Telegramda ochish")}
+            </Button>
+          </div>
         </div>
       </SimpleGrid>
-
-      {/* Secondary Telegram Assistant Banner */}
-      <Box
-        mt="lg"
-        p="md"
-        style={{
-          borderRadius: 14,
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
-        <Group gap="sm">
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: "rgba(0, 136, 204, 0.12)",
-              color: "#0088cc",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <IconBrandTelegram size={20} />
-          </div>
-          <div>
-            <Text size="sm" fw={700} c="var(--text)">
-              {t("home.devices.telegramCardTitle", "Telegram Bot")}
-            </Text>
-            <Text size="xs" c="var(--text-muted)">
-              {t(
-                "home.devices.telegramCardDesc",
-                "Rasmiy bot orqali tezkor bildirishnomalar va qo'shimcha testlardan foydalaning."
-              )}
-            </Text>
-          </div>
-        </Group>
-        <Button
-          component="a"
-          href={TELEGRAM_BOT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          variant="subtle"
-          color="blue"
-          size="xs"
-          radius="md"
-          rightSection={<IconExternalLink size={14} />}
-        >
-          {t("home.devices.telegramCardAction", "Telegramda ochish")}
-        </Button>
-      </Box>
     </section>
   );
 });

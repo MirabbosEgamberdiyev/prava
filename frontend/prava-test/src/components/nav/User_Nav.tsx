@@ -178,7 +178,7 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
           {isSuperAdmin && (
             <Box mt="xs">
               <Divider
-                label={<Text size="xs" c="dimmed" fw={600}>SUPER ADMIN</Text>}
+                label={<Text size="xs" c="dimmed" fw={600}>{t("nav.superAdmin", "SUPER ADMIN")}</Text>}
                 my="xs"
               />
               <NavLink

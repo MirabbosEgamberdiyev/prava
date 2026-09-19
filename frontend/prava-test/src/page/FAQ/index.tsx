@@ -97,7 +97,7 @@ export default function FAQ_Page() {
         question: t("faq.q2", "Imtihondan o'tish shartlari qanday?"),
         answer: t(
           "faq.a2",
-          "Haqiqiy imtihondagi kabi 20 ta savolga 20 daqiqa vaqt beriladi. O'tish uchun kamida 18 ta savolga (90%) to'g'ri javob berishingiz kerak, ya'ni maksimal 2 tagacha xatoga yo'l qo'yiladi."
+          "Haqiqiy imtihondagi kabi 20 ta savolga 25 daqiqa vaqt beriladi. O'tish uchun kamida 18 ta savolga (90%) to'g'ri javob berishingiz kerak, ya'ni maksimal 2 tagacha xatoga yo'l qo'yiladi."
         ),
       },
       {
@@ -246,7 +246,7 @@ export default function FAQ_Page() {
           </p>
 
           {/* Search Input */}
-          <Box w="100%" maw={520} mt="sm">
+          <Box w="100%" maw={{ base: "100%", sm: 560, md: 680 }} mt="sm">
             <TextInput
               placeholder={t("faq.searchPlaceholder", "Savolingizni qidiring...")}
               size="md"
@@ -290,7 +290,7 @@ export default function FAQ_Page() {
         </Tabs>
 
         {/* Questions Accordion */}
-        <Box maw={860} mx="auto" mb={64}>
+        <Box maw={{ base: "100%", md: 1080, xl: 1240 }} mx="auto" mb={64}>
           {filteredFaqs.length === 0 ? (
             <Center py={64}>
               <Stack align="center" gap="xs">
@@ -341,7 +341,7 @@ export default function FAQ_Page() {
         <div
           className="saas-card"
           style={{
-            maxWidth: 860,
+            maxWidth: 1240,
             margin: "0 auto",
             textAlign: "center",
             padding: "40px 24px",

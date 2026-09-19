@@ -5,6 +5,7 @@ import {
   IconDeviceDesktopAnalytics,
   IconBrain,
   IconDevices,
+  IconSparkles,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import classes from "./Home.module.css";
@@ -18,30 +19,33 @@ export const Key_Benefits = React.memo(() => {
       title: t("home.benefits.card1Title", "70 ta rasmiy bilet"),
       desc: t(
         "home.benefits.card1Desc",
-        "IIV YHXBB bazasidagi barcha 70 ta rasmiy bilet va 1200+ savollar to'liq jamlangan."
+        "IIV YHXBB bazasidagi barcha 70 ta rasmiy bilet va 1,190+ savollar to'liq jamlangan."
       ),
-      color: "#0284c7",
-      bg: "rgba(2, 132, 199, 0.1)",
+      badge: t("home.benefits.card1Badge", "Rasmiy baza"),
+      color: "#0b84f3",
+      bg: "rgba(11, 132, 243, 0.1)",
     },
     {
       icon: IconDeviceDesktopAnalytics,
       title: t("home.benefits.card2Title", "Davlat imtihoni simulyatori"),
       desc: t(
         "home.benefits.card2Desc",
-        "20 ta savol, 25 daqiqa vaqt va YHXX kompyuter markazidagi kabi haqiqiy imtihon muhiti."
+        "20 ta savol, 25 daqiqa vaqt va YHXK kompyuter markazidagi kabi haqiqiy imtihon muhiti."
       ),
-      color: "#4f46e5",
-      bg: "rgba(79, 70, 229, 0.1)",
+      badge: t("home.benefits.card2Badge", "20 savol / 25 daqiqa"),
+      color: "#6366f1",
+      bg: "rgba(99, 102, 241, 0.1)",
     },
     {
       icon: IconBrain,
       title: t("home.benefits.card3Title", "Xatolar ustida ishlash"),
       desc: t(
         "home.benefits.card3Desc",
-        "Siz adashgan savollar avtomatik saqlanadi va to'liq o'zlashtirilgunga qadar qayta mashq qildiriladi."
+        "Siz adashgan savollar avtomatik saqlanadi va to'g'ri o'zlashtirilguncha qayta mashq qilinadi."
       ),
-      color: "#059669",
-      bg: "rgba(5, 150, 105, 0.1)",
+      badge: t("home.benefits.card3Badge", "Aqlli tahlil"),
+      color: "#10b981",
+      bg: "rgba(16, 185, 129, 0.1)",
     },
     {
       icon: IconDevices,
@@ -50,14 +54,19 @@ export const Key_Benefits = React.memo(() => {
         "home.benefits.card4Desc",
         "Windows kompyuter uchun ilova internetsiz to'liq ishlaydi, shuningdek mobil telefon va vebda mavjud."
       ),
-      color: "#d97706",
-      bg: "rgba(217, 119, 6, 0.1)",
+      badge: t("home.benefits.card4Badge", "Internetsiz (.exe)"),
+      color: "#f59e0b",
+      bg: "rgba(245, 158, 11, 0.1)",
     },
   ];
 
   return (
-    <section className={classes.benefitsSectionMinimal} aria-label="Key Benefits">
+    <section className={classes.benefitsSectionModern} id="benefits" aria-label={t("home.benefits.ariaLabel", "Asosiy afzalliklar")}>
       <div className={classes.sectionHeaderCentered}>
+        <div className={classes.sectionCategoryBadge}>
+          <IconSparkles size={14} />
+          <span>{t("home.benefits.badge", "Asosiy afzalliklar")}</span>
+        </div>
         <h2 className={classes.sectionHeaderTitle}>
           {t("home.benefits.heading", "Nima uchun Prava Online?")}
         </h2>
@@ -69,23 +78,37 @@ export const Key_Benefits = React.memo(() => {
         </p>
       </div>
 
-      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
-        {benefits.map((benefit, idx) => (
-          <div key={idx} className={classes.benefitCardClean}>
-            <div
-              className={classes.benefitIconSquare}
-              style={{ backgroundColor: benefit.bg, color: benefit.color }}
-            >
-              <benefit.icon size={24} stroke={1.8} />
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={{ base: "md", md: "xl" }}>
+        {benefits.map((benefit, idx) => {
+          const IconComp = benefit.icon;
+          return (
+            <div key={idx} className={classes.benefitCardModern}>
+              <div className={classes.benefitTopRow}>
+                <div
+                  className={classes.benefitIconSquare}
+                  style={{ backgroundColor: benefit.bg, color: benefit.color }}
+                >
+                  <IconComp size={26} stroke={1.9} />
+                </div>
+                <span
+                  className={classes.benefitPillBadge}
+                  style={{
+                    backgroundColor: benefit.bg,
+                    color: benefit.color,
+                    borderColor: benefit.color + "33",
+                  }}
+                >
+                  {benefit.badge}
+                </span>
+              </div>
+              <h3 className={classes.benefitTitleModern}>{benefit.title}</h3>
+              <p className={classes.benefitDescModern}>{benefit.desc}</p>
             </div>
-            <h3 className={classes.benefitTitleClean}>{benefit.title}</h3>
-            <p className={classes.benefitDescClean}>{benefit.desc}</p>
-          </div>
-        ))}
+          );
+        })}
       </SimpleGrid>
     </section>
   );
 });
 
 Key_Benefits.displayName = "Key_Benefits";
-

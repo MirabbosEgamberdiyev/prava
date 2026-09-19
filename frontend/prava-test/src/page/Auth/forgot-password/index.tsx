@@ -1,70 +1,130 @@
+import React, { useState, useEffect, useRef } from "react";
 import {
+  Alert,
   Anchor,
   Box,
   Button,
   Center,
-  Container,
   Flex,
-  Paper,
+  Group,
   PasswordInput,
   PinInput,
   SegmentedControl,
   Stack,
-  Stepper,
   Text,
   TextInput,
-  Title,
-  ActionIcon,
 } from "@mantine/core";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "@mantine/form";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import api from "../../../api/api";
-import { notifications } from "@mantine/notifications";
-import {
-  IconArrowLeft,
-  IconAt,
-  IconDeviceMobile,
-  IconLock,
-  IconMailShare,
-  IconMessageShare,
-  IconUser,
-} from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import SEO from "../../../components/common/SEO";
+import {
+  IconAlertCircle,
+  IconArrowLeft,
+  IconArrowRight,
+  IconCheck,
+  IconClock,
+  IconDeviceMobile,
+  IconInfoCircle,
+  IconLock,
+  IconMail,
+  IconMessageDots,
+  IconShieldCheck,
+  IconUser,
+  IconUserCheck,
+} from "@tabler/icons-react";
+import api from "@/api/api";
+import { notifications } from "@mantine/notifications";
+import { getErrorMessage } from "@/types/errors";
+import { useCapsLock } from "@/hooks/useCapsLock";
+import CapsLockWarning from "@/components/auth/CapsLockWarning";
+import { formatUzPhone, isValidUzPhone, normalizeUzPhone } from "@/utils/phoneUtils";
+import AuthLayout from "@/components/auth/AuthLayout";
+import AuthCard from "@/components/auth/AuthCard";
+import AuthChecklist from "@/components/auth/AuthChecklist";
+import AuthFeatureCard from "@/components/auth/AuthFeatureCard";
+import AuthQuoteCard from "@/components/auth/AuthQuoteCard";
+import AuthStepper from "@/components/auth/AuthStepper";
+import layoutClasses from "@/components/auth/AuthLayout.module.css";
+import { isPasswordSecure } from "@/page/Auth/register";
 
-const ForgotPassword_Page = () => {
+const ForgotPassword_Page: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [code, setCode] = useState("");
-  const [verificationType, setVerificationType] = useState<"EMAIL" | "SMS">(
-    "EMAIL"
-  );
-  const navigate = useNavigate();
-  const { t } = useTranslation();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+  const isCapsLock = useCapsLock();
+
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const codeParam = searchParams.get("code") || searchParams.get("token");
+    const recipientParam =
+      searchParams.get("recipient") ||
+      searchParams.get("identifier") ||
+      searchParams.get("email");
+    if (codeParam) {
+      setCode(codeParam);
+      if (recipientParam) {
+        form.setFieldValue("identifier", recipientParam);
+      }
+      setStep(3);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (step === 2 && countdown > 0) {
+      timerRef.current = setTimeout(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [step, countdown]);
 
   const form = useForm({
     initialValues: {
       identifier: "",
+      verificationType: "EMAIL" as "EMAIL" | "SMS",
       newPassword: "",
       confirmPassword: "",
     },
     validate: {
-      identifier: (value) =>
-        value.trim().length < 5
-          ? t("validation.minChars", { count: 5 })
-          : null,
+      identifier: (value, values) => {
+        if (!value || value.trim().length === 0) {
+          return t("validation.required", "Ushbu maydon to'ldirilishi shart");
+        }
+        if (values.verificationType === "EMAIL") {
+          return /^\S+@\S+\.\S+$/.test(value.trim())
+            ? null
+            : t("validation.invalidEmail", "Email manzili noto'g'ri formatda");
+        }
+        return isValidUzPhone(value)
+          ? null
+          : t("validation.phoneLength", "Telefon raqami noto'g'ri formatda (+998...)");
+      },
       newPassword: (value) => {
         if (step !== 3) return null;
-        return value.length < 8
-          ? t("validation.minChars", { count: 8 })
-          : null;
+        if (!isPasswordSecure(value)) {
+          return t(
+            "validation.passwordComplexity",
+            "Parol barcha xavfsizlik talablariga javob berishi kerak"
+          );
+        }
+        return null;
       },
       confirmPassword: (value, values) => {
         if (step !== 3) return null;
-        return value !== values.newPassword
-          ? t("forgotPassword.passwordMismatch")
-          : null;
+        if (value !== values.newPassword) {
+          return t("forgotPassword.passwordMismatch", "Parollar mos kelmadi");
+        }
+        return null;
       },
     },
   });
@@ -75,18 +135,37 @@ const ForgotPassword_Page = () => {
     if (validation.hasError) return;
 
     setLoading(true);
+    setErrorMessage(null);
+
+    let cleanRecipient = form.values.identifier.trim();
+    if (form.values.verificationType === "SMS") {
+      cleanRecipient = normalizeUzPhone(cleanRecipient);
+    }
+
     try {
       await api.post("/api/v1/auth/forgot-password", {
-        identifier: form.values.identifier.trim(),
-        verificationType,
+        identifier: cleanRecipient,
+        verificationType: form.values.verificationType,
       });
+
       setStep(2);
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
+      setCountdown(60);
+      setCode("");
       notifications.show({
-        title: t("forgotPassword.errorTitle"),
-        message:
-          err?.response?.data?.message || t("forgotPassword.errorMessage"),
+        title: t("common.success", "Muvaffaqiyatli"),
+        message: t("authV2.forgot.otpPrompt", "Tasdiqlash kodi yuborildi"),
+        color: "teal",
+        withBorder: true,
+      });
+    } catch (error: unknown) {
+      const msg = getErrorMessage(
+        error,
+        t("forgotPassword.errorMessage", "Foydalanuvchi topilmadi yoki xatolik yuz berdi")
+      );
+      setErrorMessage(msg);
+      notifications.show({
+        title: t("forgotPassword.errorTitle", "Xatolik"),
+        message: msg,
         color: "red",
         withBorder: true,
       });
@@ -95,8 +174,43 @@ const ForgotPassword_Page = () => {
     }
   };
 
-  // Step 2: Code entered -> go to step 3
-  const handleCodeEntered = () => {
+  // Step 2: Resend verification code
+  const handleResendCode = async () => {
+    if (countdown > 0) return;
+    setResending(true);
+    setErrorMessage(null);
+
+    let cleanRecipient = form.values.identifier.trim();
+    if (form.values.verificationType === "SMS") {
+      cleanRecipient = normalizeUzPhone(cleanRecipient);
+    }
+
+    try {
+      await api.post("/api/v1/auth/forgot-password", {
+        identifier: cleanRecipient,
+        verificationType: form.values.verificationType,
+      });
+
+      setCountdown(60);
+      notifications.show({
+        title: t("common.success", "Muvaffaqiyatli"),
+        message: t("authV2.forgot.otpPrompt", "Tasdiqlash kodi qayta yuborildi"),
+        color: "teal",
+        withBorder: true,
+      });
+    } catch (error: unknown) {
+      const msg = getErrorMessage(
+        error,
+        t("forgotPassword.errorMessage", "Kodni qayta yuborishda xatolik yuz berdi")
+      );
+      setErrorMessage(msg);
+    } finally {
+      setResending(false);
+    }
+  };
+
+  // Step 2: Verify code and proceed to step 3
+  const handleVerifyCode = () => {
     if (code.length < 6) return;
     setStep(3);
   };
@@ -107,27 +221,40 @@ const ForgotPassword_Page = () => {
     if (validation.hasErrors) return;
 
     setLoading(true);
+    setErrorMessage(null);
+
+    let cleanRecipient = form.values.identifier.trim();
+    if (form.values.verificationType === "SMS") {
+      cleanRecipient = normalizeUzPhone(cleanRecipient);
+    }
+
     try {
       await api.post("/api/v1/auth/reset-password", {
-        recipient: form.values.identifier.trim(),
-        code,
+        recipient: cleanRecipient,
+        code: code.trim(),
         newPassword: form.values.newPassword,
-        verificationType,
+        verificationType: form.values.verificationType,
       });
 
       notifications.show({
-        title: t("forgotPassword.successTitle"),
-        message: t("forgotPassword.successMessage"),
-        color: "green",
+        title: t("forgotPassword.successTitle", "Muvaffaqiyatli"),
+        message: t(
+          "forgotPassword.successMessage",
+          "Parolingiz muvaffaqiyatli yangilandi. Yangi parol bilan kirishingiz mumkin."
+        ),
+        color: "teal",
         withBorder: true,
       });
       navigate("/auth/login");
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
+      const msg = getErrorMessage(
+        error,
+        t("forgotPassword.resetError", "Parolni yangilashda xatolik yuz berdi")
+      );
+      setErrorMessage(msg);
       notifications.show({
-        title: t("forgotPassword.errorTitle"),
-        message:
-          err?.response?.data?.message || t("forgotPassword.resetError"),
+        title: t("forgotPassword.errorTitle", "Xatolik"),
+        message: msg,
         color: "red",
         withBorder: true,
       });
@@ -136,246 +263,494 @@ const ForgotPassword_Page = () => {
     }
   };
 
-  // Stepper active index (0-based)
-  const stepperActive = step - 1;
+  // Left Column Content
+  const leftColumnContent = (
+    <>
+      <div className={layoutClasses.leftPillBadge}>
+        <IconLock size={16} />
+        <span>
+          {t("authV2.badge.accountSecurity", "Hisobingiz xavfsizligi biz uchun muhim")}
+        </span>
+      </div>
 
-  return (
-    <Box className="auth-page-container">
-      <Container size={440} p={0} className="auth-page-inner">
-        <SEO title={t("seo.forgotPassword.title", "Parolni tiklash")} description={t("seo.forgotPassword.desc", "Hisobingiz parolini tiklash va yangilash.")}
-          canonical="/auth/forgot-password"
-          noIndex={true}
-        />
-        <Flex gap="sm" justify="space-between" align="center" mb={{ base: 10, sm: "md" }}>
-          <Title order={3} size="1.2rem">{t("forgotPassword.title")}</Title>
-          <Anchor component={Link} to="/auth/login">
-            <Button
-              leftSection={<IconArrowLeft size={16} />}
-              variant="subtle"
-              size="xs"
-            >
-              {t("forgotPassword.backToLogin")}
-            </Button>
-          </Anchor>
-        </Flex>
+      <h1 className={layoutClasses.leftHeadline}>
+        {t("authV2.forgot.headlineMain", "Parolni tiklash —")}{" "}
+        <span className={layoutClasses.headlineAccent}>
+          {t("authV2.forgot.headlineAccent", "oson va xavfsiz")}
+        </span>
+      </h1>
 
-        <Stepper
-          active={stepperActive}
-          size="xs"
-          mb={{ base: 10, sm: 14 }}
-        >
-          <Stepper.Step icon={<IconUser size={16} />} />
-          <Stepper.Step icon={<IconMailShare size={16} />} />
-          <Stepper.Step icon={<IconLock size={16} />} />
-        </Stepper>
+      <p className={layoutClasses.leftDescription}>
+        {t(
+          "authV2.forgot.description",
+          "Akkauntingizga qayta kirish uchun email yoki telefon raqamingizni kiriting. Biz sizga tasdiqlash kodini yuboramiz."
+        )}
+      </p>
 
-        <Paper
-          withBorder
-          shadow="sm"
-          p={{ base: 16, sm: 24 }}
-          radius="lg"
+      <AuthChecklist
+        items={[
+          {
+            id: "fp1",
+            text: t("authV2.forgot.check1", "Ma'lumotlaringiz himoyalangan"),
+            icon: <IconShieldCheck size={14} stroke={2.5} />,
+            iconBg: "#10b981",
+          },
+          {
+            id: "fp2",
+            text: t("authV2.forgot.check2", "Tez va qulay tiklash jarayoni"),
+            icon: <IconUserCheck size={14} stroke={2.5} />,
+            iconBg: "#9333ea",
+          },
+          {
+            id: "fp3",
+            text: t("authV2.forgot.check3", "24/7 qo'llab-quvvatlash"),
+            icon: <IconUser size={14} stroke={2.5} />,
+            iconBg: "#0b84f3",
+          },
+        ]}
+      />
+
+      <AuthQuoteCard
+        quote={t(
+          "authV2.forgot.quoteText",
+          "Xavfsiz haydovchi — har doim oldinda!"
+        )}
+      />
+    </>
+  );
+
+  // Right Column Content
+  const rightColumnContent = (
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <IconInfoCircle size={20} color="#0b84f3" />
+        <h3
           style={{
-            background: "var(--surface)",
-            borderColor: "var(--border)",
+            fontSize: "1.05rem",
+            fontWeight: 700,
+            color: "var(--text, #0f172a)",
+            margin: 0,
           }}
         >
-          {step === 1 && (
-            <Stack gap="sm">
-              <Text size="xs" c="dimmed">
-                {t("forgotPassword.description")}
-              </Text>
-              <TextInput
-                label={t("forgotPassword.identifier")}
-                placeholder="email@example.com"
-                required
-                size="sm"
-                radius="md"
-                leftSection={<IconUser size={16} />}
-                styles={{
-                  input: {
-                    height: 46,
-                    fontSize: "14px",
-                    backgroundColor: "var(--bg-input)",
-                    borderColor: "var(--border)",
-                  },
-                  label: { fontSize: "13px", fontWeight: 600, marginBottom: 4 }
-                }}
-                {...form.getInputProps("identifier")}
-              />
+          {t("authV2.forgot.remindersTitle", "Eslatmalar")}
+        </h3>
+      </div>
+
+      <AuthFeatureCard
+        icon={<IconMail size={22} />}
+        iconBg="rgba(11, 132, 243, 0.1)"
+        iconColor="#0b84f3"
+        title={t("authV2.forgot.rem1", "Kodni spam papkangizda ham tekshirib ko'ring.")}
+        description=""
+      />
+
+      <AuthFeatureCard
+        icon={<IconClock size={22} />}
+        iconBg="rgba(6, 182, 212, 0.1)"
+        iconColor="#06b6d4"
+        title={t("authV2.forgot.rem2", "Tasdiqlash kodi 10 daqiqa mobaynida amal qiladi.")}
+        description=""
+      />
+
+      <AuthFeatureCard
+        icon={<IconShieldCheck size={22} />}
+        iconBg="rgba(16, 185, 129, 0.1)"
+        iconColor="#10b981"
+        title={t("authV2.forgot.rem3", "Hech kimga tasdiqlash kodingizni bermang.")}
+        description=""
+      />
+    </>
+  );
+
+  const stepLabels: [string, string, string] = [
+    t("authV2.forgot.step1Title", "Hisobni tekshirish"),
+    t("authV2.forgot.step2Title", "Kodni tasdiqlash"),
+    t("authV2.forgot.step3Title", "Yangi parol"),
+  ];
+
+  return (
+    <AuthLayout
+      seoTitle={t("forgotPassword.title", "Parolni tiklash")}
+      seoDescription={t("seo.login.desc", "Akkaunt parolini tiklash.")}
+      canonicalUrl="/auth/forgot-password"
+      backLink={{
+        href: "/auth/login",
+        label: t("authV2.forgot.backToLogin", "Kirishga qaytish"),
+      }}
+      stepIndicator={t("authV2.forgot.stepIndicator", { current: step, total: 3 })}
+      leftColumn={leftColumnContent}
+      rightColumn={rightColumnContent}
+    >
+      <AuthCard
+        title={t("authV2.forgot.title", "Parolni tiklash")}
+        subtitle={t(
+          "authV2.forgot.subtitle",
+          "Email yoki telefon raqamingizni kiriting, biz sizga tasdiqlash kodini yuboramiz."
+        )}
+      >
+        {/* 3-Step Interactive Stepper */}
+        <AuthStepper currentStep={step} steps={stepLabels} />
+
+        {errorMessage && (
+          <Alert
+            icon={<IconAlertCircle size={18} />}
+            color="red"
+            variant="light"
+            radius="md"
+            mb="md"
+            withCloseButton
+            onClose={() => setErrorMessage(null)}
+            role="alert"
+          >
+            {errorMessage}
+          </Alert>
+        )}
+
+        {/* STEP 1: Account Identifier */}
+        {step === 1 && (
+          <Stack gap={10}>
+            <TextInput
+              label={t("authV2.login.identifierLabel", "Email yoki Telefon raqam")}
+              placeholder={
+                form.values.verificationType === "EMAIL"
+                  ? "example@mail.com"
+                  : "+998 90 123 45 67"
+              }
+              required
+              size="sm"
+              radius="md"
+              leftSection={
+                form.values.verificationType === "EMAIL" ? (
+                  <IconMail size={16} />
+                ) : (
+                  <IconDeviceMobile size={16} />
+                )
+              }
+              styles={{
+                input: {
+                  height: 38,
+                  fontSize: "13.5px",
+                  borderRadius: "10px",
+                  backgroundColor: "var(--bg-input, #f8fafc)",
+                  borderColor: "var(--border, #e2e8f0)",
+                },
+                label: { fontSize: "12px", fontWeight: 600, marginBottom: 2 },
+              }}
+              aria-required="true"
+              aria-invalid={!!form.errors.identifier}
+              value={form.values.identifier}
+              onChange={(e) => {
+                let val = e.target.value;
+                if (form.values.verificationType === "SMS") {
+                  val = formatUzPhone(val);
+                }
+                form.setFieldValue("identifier", val);
+                if (errorMessage) setErrorMessage(null);
+              }}
+            />
+
+            <div>
               <SegmentedControl
-                value={verificationType}
-                onChange={(v) => setVerificationType(v as "EMAIL" | "SMS")}
                 fullWidth
-                size="sm"
+                size="xs"
                 radius="md"
-                className="auth-segmented-control"
+                color="blue"
                 data={[
                   {
                     label: (
-                      <Flex align="center" gap={6} justify="center">
-                        <IconAt size={16} />
-                        <span>{t("forgotPassword.verifyByEmail")}</span>
-                      </Flex>
+                      <Center style={{ gap: 6 }}>
+                        <IconMail size={14} />
+                        <span>{t("authV2.register.methodEmail", "Email orqali")}</span>
+                      </Center>
                     ),
                     value: "EMAIL",
                   },
                   {
                     label: (
-                      <Flex align="center" gap={6} justify="center">
-                        <IconDeviceMobile size={16} />
-                        <span>{t("forgotPassword.verifyBySms")}</span>
-                      </Flex>
+                      <Center style={{ gap: 6 }}>
+                        <IconMessageDots size={14} />
+                        <span>{t("authV2.register.methodSms", "SMS orqali")}</span>
+                      </Center>
                     ),
                     value: "SMS",
                   },
                 ]}
-              />
-              <Button
-                fullWidth
-                mt={4}
-                loading={loading}
-                radius="md"
-                size="md"
-                h={46}
-                fw={700}
-                style={{
-                  backgroundColor: "#0284c7",
-                  boxShadow: "0 4px 14px rgba(2, 132, 199, 0.35)",
+                value={form.values.verificationType}
+                onChange={(val) => {
+                  form.setFieldValue("verificationType", val as "EMAIL" | "SMS");
+                  form.setFieldValue("identifier", "");
+                  setErrorMessage(null);
                 }}
-                onClick={handleSendCode}
-              >
-                {t("forgotPassword.sendCode")}
-              </Button>
-            </Stack>
-          )}
+              />
+            </div>
 
-          {step === 2 && (
+            <Button
+              size="sm"
+              fullWidth
+              radius="md"
+              onClick={handleSendCode}
+              loading={loading}
+              h={40}
+              rightSection={<IconArrowRight size={16} />}
+              style={{
+                fontSize: "13.5px",
+                fontWeight: 700,
+                backgroundColor: "var(--primary, #2196F3)",
+                boxShadow: "0 4px 12px rgba(33, 150, 243, 0.25)",
+              }}
+            >
+              {loading
+                ? t("authV2.forgot.sendingCode", "Kod yuborilmoqda...")
+                : t("authV2.forgot.sendCodeBtn", "Tasdiqlash kodini yuborish")}
+            </Button>
+
+            <Alert
+              icon={<IconInfoCircle size={16} />}
+              color="blue"
+              variant="light"
+              radius="md"
+              p="xs"
+              mt={2}
+            >
+              <Text size="xs" lh={1.4}>
+                {t(
+                  "authV2.forgot.infoAlert",
+                  "Tizimda ro'yxatdan o'tgan email yoki telefon raqamingizni kiriting. Tasdiqlash kodi bir necha daqiqa ichida yuboriladi."
+                )}
+              </Text>
+            </Alert>
+          </Stack>
+        )}
+
+        {/* STEP 2: Code Verification (OTP) */}
+        {step === 2 && (
+          <Stack gap={12}>
+            <Alert
+              icon={<IconMail size={16} />}
+              color="blue"
+              variant="light"
+              radius="md"
+              p="xs"
+            >
+              <Text size="xs">
+                {t(
+                  "authV2.forgot.otpPrompt",
+                  "Biz {{recipient}} manziliga 6 xonali tasdiqlash kodini yubordik."
+                ).replace("{{recipient}}", form.values.identifier)}
+              </Text>
+            </Alert>
+
             <Box>
-              <Center>
-                <ActionIcon
-                  size={54}
-                  variant="light"
-                  radius="xl"
-                  color={verificationType === "EMAIL" ? "blue" : "green"}
-                >
-                  {verificationType === "SMS" ? (
-                    <IconMessageShare size={24} />
-                  ) : (
-                    <IconMailShare size={24} />
-                  )}
-                </ActionIcon>
-              </Center>
-              <Text ta="center" fw={500} size="sm" mt="xs">
-                {verificationType === "SMS"
-                  ? t("forgotPassword.codeSentToPhone")
-                  : t("forgotPassword.codeSent")}
+              <Text size="xs" fw={600} mb={4} ta="center">
+                {t("authV2.forgot.otpLabel", "Tasdiqlash kodini kiriting")}
               </Text>
               <Center>
-                <Text ta="center" fw={600} size="sm" c="blue">
-                  {form.values.identifier}
-                </Text>
-              </Center>
-              <Center mt="md">
                 <PinInput
                   length={6}
-                  size="sm"
-                  gap={6}
-                  value={code}
-                  onChange={setCode}
+                  size="md"
                   type="number"
-                  autoFocus
                   placeholder="○"
-                  styles={{
-                    input: {
-                      width: "clamp(28px, 9vw, 44px)",
-                      height: "clamp(34px, 10vw, 48px)",
-                      fontSize: "clamp(13px, 3.5vw, 18px)",
-                      backgroundColor: "var(--bg-input)",
-                      borderColor: "var(--border)",
-                      padding: 0,
-                    },
+                  value={code}
+                  onChange={(val) => {
+                    setCode(val);
+                    if (val.length === 6) setErrorMessage(null);
                   }}
+                  autoFocus
+                  radius="md"
+                  aria-label={t("authV2.forgot.otpLabel", "Tasdiqlash kodi")}
                 />
               </Center>
-              <Button
-                fullWidth
-                loading={loading}
-                disabled={code.length < 6}
-                onClick={handleCodeEntered}
-                radius="md"
-                mt="md"
-                size="md"
-                h={46}
-                fw={700}
-                style={{
-                  backgroundColor: "#0284c7",
-                  boxShadow: "0 4px 14px rgba(2, 132, 199, 0.35)",
-                }}
-              >
-                {t("forgotPassword.enterCode")}
-              </Button>
             </Box>
-          )}
 
-          {step === 3 && (
-            <Stack gap="sm">
+            <Group justify="center" gap={6}>
+              <Text size="xs" c="dimmed">
+                {t("register.didntReceive", "Kod kelmadimi?")}
+              </Text>
+              <Button
+                variant="subtle"
+                size="compact-xs"
+                onClick={handleResendCode}
+                disabled={countdown > 0 || resending}
+                loading={resending}
+              >
+                {countdown > 0
+                  ? t("authV2.forgot.resendIn", { seconds: countdown })
+                  : t("authV2.forgot.resendPrompt", "Kodni qayta yuborish")}
+              </Button>
+            </Group>
+
+            <Button
+              size="sm"
+              fullWidth
+              radius="md"
+              onClick={handleVerifyCode}
+              disabled={code.length < 6}
+              h={40}
+              rightSection={<IconArrowRight size={16} />}
+              style={{
+                fontSize: "13.5px",
+                fontWeight: 700,
+                backgroundColor: "var(--primary, #2196F3)",
+                boxShadow: "0 4px 12px rgba(33, 150, 243, 0.25)",
+              }}
+            >
+              {t("authV2.forgot.verifyBtn", "Kodni tasdiqlash")}
+            </Button>
+
+            <Flex justify="center" mt={2}>
+              <Anchor
+                component="button"
+                type="button"
+                size="xs"
+                c="dimmed"
+                onClick={() => setStep(1)}
+                style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+              >
+                <IconArrowLeft size={14} />
+                <span>{t("common.back", "Orqaga")}</span>
+              </Anchor>
+            </Flex>
+          </Stack>
+        )}
+
+        {/* STEP 3: Create New Password */}
+        {step === 3 && (
+          <form
+            onSubmit={form.onSubmit(handleResetPassword)}
+            onChange={() => errorMessage && setErrorMessage(null)}
+            noValidate
+          >
+            <Stack gap={8}>
+              <Box>
+                <Box mb={2}>
+                  <Group justify="space-between" align="center" wrap="nowrap">
+                    <Text
+                      component="label"
+                      htmlFor="forgot-newPassword"
+                      size="xs"
+                      fw={600}
+                      style={{ color: "var(--text, #0f172a)", display: "inline-flex", gap: 2 }}
+                    >
+                      <span>{t("authV2.forgot.newPassLabel", "Yangi parol")}</span>
+                      <span style={{ color: "#ef4444" }}>*</span>
+                    </Text>
+                    {form.values.newPassword.length > 0 && (
+                      <Text
+                        size="xs"
+                        fw={600}
+                        style={{
+                          color: isPasswordSecure(form.values.newPassword)
+                            ? "#10b981"
+                            : "var(--text-muted, #94a3b8)",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          fontSize: "11px",
+                          transition: "color 0.2s ease",
+                        }}
+                      >
+                        {isPasswordSecure(form.values.newPassword) ? (
+                          <>
+                            <IconCheck size={14} stroke={2.5} />
+                            <span>{t("authV2.register.passwordValid", "Parol talablarga mos")}</span>
+                          </>
+                        ) : (
+                          <span>{t("authV2.register.passwordHint", "8+ belgi, A-Z, 0-9, @$!")}</span>
+                        )}
+                      </Text>
+                    )}
+                  </Group>
+                </Box>
+
+                <PasswordInput
+                  id="forgot-newPassword"
+                  placeholder={t(
+                    "authV2.forgot.newPassPlaceholder",
+                    "Yangi parolingizni kiriting"
+                  )}
+                  required
+                  size="sm"
+                  radius="md"
+                  autoComplete="new-password"
+                  leftSection={<IconLock size={15} />}
+                  styles={{
+                    input: {
+                      height: 38,
+                      fontSize: "13.5px",
+                      borderRadius: "10px",
+                      color: "var(--text, #0f172a)",
+                      backgroundColor: "var(--bg-input, #f8fafc)",
+                      borderColor: isPasswordSecure(form.values.newPassword)
+                        ? "#10b981"
+                        : "var(--border, #e2e8f0)",
+                    },
+                  }}
+                  aria-required="true"
+                  aria-invalid={!!form.errors.newPassword}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
+                  {...form.getInputProps("newPassword")}
+                />
+                <CapsLockWarning active={isCapsLock && passwordFocused} />
+              </Box>
+
               <PasswordInput
-                label={t("forgotPassword.newPassword")}
-                placeholder={t("auth.passwordPlaceholder")}
+                id="forgot-confirmPassword"
+                label={t("authV2.forgot.confirmPassLabel", "Yangi parolni tasdiqlang")}
+                placeholder={t(
+                  "authV2.forgot.confirmPassPlaceholder",
+                  "Parolni qayta kiriting"
+                )}
                 required
                 size="sm"
                 radius="md"
-                leftSection={<IconLock size={16} />}
+                autoComplete="new-password"
+                leftSection={<IconLock size={15} />}
                 styles={{
                   input: {
-                    height: 46,
-                    fontSize: "14px",
-                    backgroundColor: "var(--bg-input)",
-                    borderColor: "var(--border)",
+                    height: 38,
+                    fontSize: "13.5px",
+                    borderRadius: "10px",
+                    color: "var(--text, #0f172a)",
+                    backgroundColor: "var(--bg-input, #f8fafc)",
+                    borderColor: "var(--border, #e2e8f0)",
                   },
-                  label: { fontSize: "13px", fontWeight: 600, marginBottom: 4 }
-                }}
-                {...form.getInputProps("newPassword")}
-              />
-              <PasswordInput
-                label={t("forgotPassword.confirmPassword")}
-                placeholder={t("auth.passwordPlaceholder")}
-                required
-                size="sm"
-                radius="md"
-                leftSection={<IconLock size={16} />}
-                styles={{
-                  input: {
-                    height: 46,
-                    fontSize: "14px",
-                    backgroundColor: "var(--bg-input)",
-                    borderColor: "var(--border)",
+                  label: {
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    marginBottom: 2,
+                    color: "var(--text, #0f172a)",
                   },
-                  label: { fontSize: "13px", fontWeight: 600, marginBottom: 4 }
                 }}
+                aria-required="true"
+                aria-invalid={!!form.errors.confirmPassword}
                 {...form.getInputProps("confirmPassword")}
               />
+
               <Button
+                size="sm"
                 fullWidth
-                mt={4}
-                loading={loading}
                 radius="md"
-                size="md"
-                h={46}
-                fw={700}
+                type="submit"
+                loading={loading}
+                h={40}
+                rightSection={<IconArrowRight size={16} />}
                 style={{
-                  backgroundColor: "#0284c7",
-                  boxShadow: "0 4px 14px rgba(2, 132, 199, 0.35)",
+                  fontSize: "13.5px",
+                  fontWeight: 700,
+                  backgroundColor: "var(--primary, #2196F3)",
+                  boxShadow: "0 4px 12px rgba(33, 150, 243, 0.25)",
                 }}
-                onClick={handleResetPassword}
               >
-                {t("forgotPassword.resetPassword")}
+                {loading
+                  ? t("authV2.forgot.resetting", "Parol yangilanmoqda...")
+                  : t("authV2.forgot.resetBtn", "Parolni yangilash")}
               </Button>
             </Stack>
-          )}
-        </Paper>
-      </Container>
-    </Box>
+          </form>
+        )}
+      </AuthCard>
+    </AuthLayout>
   );
 };
 

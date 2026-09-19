@@ -5,6 +5,7 @@ import ProtectedRoute from "../auth/ProtectedRoute";
 import AdminRoute from "../auth/AdminRoute";
 import App_Layout from "../layout/App_Layout";
 import User_Layout from "../layout/User_Layout";
+import Exam_Layout from "../layout/Exam_Layout";
 import { isLandingDomain } from "../utils/domain";
 import {
   DomainRedirectToWebApp,
@@ -43,6 +44,8 @@ const Contact_Page        = lazy(() => import("../page/Contact"));
 const FAQ_Page            = lazy(() => import("../page/FAQ"));
 const Terms_Page          = lazy(() => import("../page/Legal/Terms"));
 const Privacy_Page        = lazy(() => import("../page/Legal/Privacy"));
+const Offer_Page          = lazy(() => import("../page/Legal/Offer"));
+// const Pricing_Page        = lazy(() => import("../page/Pricing")); // Temporarily disabled per user request
 const WrongAnswers_Page   = lazy(() => import("../page/WrongAnswers"));
 const WrongExam_Page      = lazy(() => import("../page/WrongExam"));
 const SavedQuestions_Page = lazy(() => import("../page/SavedQuestions"));
@@ -102,12 +105,14 @@ export default function AppRoutes() {
               <Route index element={<Home_Page />} />
               <Route path="partners" element={<Partners_Page />} />
               <Route path="pricing" element={<Navigate to="/partners" replace />} />
+              <Route path="tariffs" element={<Navigate to="/partners" replace />} />
               <Route path="downloads" element={<Downloads_Page />} />
               <Route path="about" element={<About_Page />} />
               <Route path="contact" element={<Contact_Page />} />
               <Route path="faq" element={<FAQ_Page />} />
               <Route path="terms" element={<Terms_Page />} />
               <Route path="privacy" element={<Privacy_Page />} />
+              <Route path="offer" element={<Offer_Page />} />
             </Route>
 
             {/* Public Free Guest Trial Exam */}
@@ -156,6 +161,7 @@ export default function AppRoutes() {
             {/* Marketing Routes Redirect to Official Landing -> https://pravaonline.uz */}
             <Route path="/partners" element={<DomainRedirectToLanding targetPath="/partners" />} />
             <Route path="/pricing" element={<DomainRedirectToLanding targetPath="/partners" />} />
+            <Route path="/tariffs" element={<DomainRedirectToLanding targetPath="/partners" />} />
             <Route path="/downloads" element={<DomainRedirectToLanding targetPath="/downloads" />} />
             <Route path="/about" element={<DomainRedirectToLanding targetPath="/about" />} />
             <Route path="/contact" element={<DomainRedirectToLanding targetPath="/contact" />} />
@@ -165,6 +171,7 @@ export default function AppRoutes() {
             <Route element={<App_Layout />}>
               <Route path="/terms" element={<Terms_Page />} />
               <Route path="/privacy" element={<Privacy_Page />} />
+              <Route path="/offer" element={<Offer_Page />} />
             </Route>
 
             {/* Auth Routes */}
@@ -172,12 +179,23 @@ export default function AppRoutes() {
               <Route path="login" element={<Login_Page />} />
               <Route path="register" element={<Register_Page />} />
               <Route path="forgot-password" element={<ForgotPassword_Page />} />
+              <Route path="reset-password" element={<ForgotPassword_Page />} />
+              <Route path="verify-email" element={<Register_Page />} />
+              <Route path="verify-sms" element={<Register_Page />} />
               <Route path="telegram-callback" element={<TelegramCallback_Page />} />
               <Route path="pair" element={<Pair_Page />} />
             </Route>
 
+            {/* Direct Auth Aliases */}
+            <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+            <Route path="/register" element={<Navigate to="/auth/register" replace />} />
+            <Route path="/forgot-password" element={<Navigate to="/auth/forgot-password" replace />} />
+            <Route path="/verify-email" element={<Navigate to="/auth/register" replace />} />
+            <Route path="/verify-sms" element={<Navigate to="/auth/register" replace />} />
+
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
+              {/* Dashboard AppShell Layout */}
               <Route element={<User_Layout />}>
                 <Route path="/me" element={<User_Page />} />
                 <Route path="/packages" element={<Packages_Page />} />
@@ -188,14 +206,36 @@ export default function AppRoutes() {
                 <Route path="/settings" element={<Settings_Page />} />
                 <Route path="/wrong-answers" element={<WrongAnswers_Page />} />
                 <Route path="/saved-questions" element={<SavedQuestions_Page />} />
-                <Route path="/exam/result/:sessionId" element={<ExamResult_Page />} />
                 <Route path="/topics" element={<Topics_Page />} />
                 <Route path="/topics/:topicCode" element={<TopicDetail_Page />} />
+
+                {/* Sub-route aliases under /me */}
+                <Route path="/me/topics" element={<Navigate to="/topics" replace />} />
+                <Route path="/me/tickets" element={<Navigate to="/tickets" replace />} />
+                <Route path="/me/marafon" element={<Navigate to="/marafon" replace />} />
+                <Route path="/me/marathon" element={<Navigate to="/marafon" replace />} />
+                <Route path="/me/exam" element={<Navigate to="/exam" replace />} />
+                <Route path="/me/statistics" element={<Navigate to="/statistics" replace />} />
+                <Route path="/me/history" element={<Navigate to="/history" replace />} />
+                <Route path="/me/leaderboard" element={<Navigate to="/leaderboard" replace />} />
+                <Route path="/me/ranking" element={<Navigate to="/leaderboard" replace />} />
+                <Route path="/me/saved-questions" element={<Navigate to="/saved-questions" replace />} />
+                <Route path="/me/saved" element={<Navigate to="/saved-questions" replace />} />
+                <Route path="/me/bookmarks" element={<Navigate to="/saved-questions" replace />} />
+                <Route path="/me/wrong-answers" element={<Navigate to="/wrong-answers" replace />} />
+                <Route path="/me/errors" element={<Navigate to="/wrong-answers" replace />} />
+                <Route path="/me/settings" element={<Navigate to="/settings" replace />} />
+                <Route path="/me/packages" element={<Navigate to="/packages" replace />} />
+              </Route>
+
+              {/* Distraction-Free Exam Simulation Layout */}
+              <Route element={<Exam_Layout />}>
                 <Route path="/tickets/:id" element={<TicketExamPage />} />
                 <Route path="/packages/:id" element={<PackageExamPage />} />
                 <Route path="/marafon" element={<Marafon_Page />} />
                 <Route path="/exam" element={<Exam_Page />} />
                 <Route path="/wrong-exam" element={<WrongExam_Page />} />
+                <Route path="/exam/result/:sessionId" element={<ExamResult_Page />} />
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />
               </Route>
             </Route>
@@ -225,12 +265,14 @@ export default function AppRoutes() {
               <Route index element={<Home_Page />} />
               <Route path="partners" element={<Partners_Page />} />
               <Route path="pricing" element={<Navigate to="/partners" replace />} />
+              <Route path="tariffs" element={<Navigate to="/partners" replace />} />
               <Route path="downloads" element={<Downloads_Page />} />
               <Route path="about" element={<About_Page />} />
               <Route path="contact" element={<Contact_Page />} />
               <Route path="faq" element={<FAQ_Page />} />
               <Route path="terms" element={<Terms_Page />} />
               <Route path="privacy" element={<Privacy_Page />} />
+              <Route path="offer" element={<Offer_Page />} />
             </Route>
 
             <Route path="/try-exam" element={<GuestExam_Page />} />
@@ -240,12 +282,23 @@ export default function AppRoutes() {
               <Route path="login" element={<Login_Page />} />
               <Route path="register" element={<Register_Page />} />
               <Route path="forgot-password" element={<ForgotPassword_Page />} />
+              <Route path="reset-password" element={<ForgotPassword_Page />} />
+              <Route path="verify-email" element={<Register_Page />} />
+              <Route path="verify-sms" element={<Register_Page />} />
               <Route path="telegram-callback" element={<TelegramCallback_Page />} />
               <Route path="pair" element={<Pair_Page />} />
             </Route>
 
+            {/* Direct Auth Aliases */}
+            <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+            <Route path="/register" element={<Navigate to="/auth/register" replace />} />
+            <Route path="/forgot-password" element={<Navigate to="/auth/forgot-password" replace />} />
+            <Route path="/verify-email" element={<Navigate to="/auth/register" replace />} />
+            <Route path="/verify-sms" element={<Navigate to="/auth/register" replace />} />
+
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
+              {/* Dashboard AppShell Layout */}
               <Route element={<User_Layout />}>
                 <Route path="/me" element={<User_Page />} />
                 <Route path="/packages" element={<Packages_Page />} />
@@ -256,14 +309,36 @@ export default function AppRoutes() {
                 <Route path="/settings" element={<Settings_Page />} />
                 <Route path="/wrong-answers" element={<WrongAnswers_Page />} />
                 <Route path="/saved-questions" element={<SavedQuestions_Page />} />
-                <Route path="/exam/result/:sessionId" element={<ExamResult_Page />} />
                 <Route path="/topics" element={<Topics_Page />} />
                 <Route path="/topics/:topicCode" element={<TopicDetail_Page />} />
+
+                {/* Sub-route aliases under /me */}
+                <Route path="/me/topics" element={<Navigate to="/topics" replace />} />
+                <Route path="/me/tickets" element={<Navigate to="/tickets" replace />} />
+                <Route path="/me/marafon" element={<Navigate to="/marafon" replace />} />
+                <Route path="/me/marathon" element={<Navigate to="/marafon" replace />} />
+                <Route path="/me/exam" element={<Navigate to="/exam" replace />} />
+                <Route path="/me/statistics" element={<Navigate to="/statistics" replace />} />
+                <Route path="/me/history" element={<Navigate to="/history" replace />} />
+                <Route path="/me/leaderboard" element={<Navigate to="/leaderboard" replace />} />
+                <Route path="/me/ranking" element={<Navigate to="/leaderboard" replace />} />
+                <Route path="/me/saved-questions" element={<Navigate to="/saved-questions" replace />} />
+                <Route path="/me/saved" element={<Navigate to="/saved-questions" replace />} />
+                <Route path="/me/bookmarks" element={<Navigate to="/saved-questions" replace />} />
+                <Route path="/me/wrong-answers" element={<Navigate to="/wrong-answers" replace />} />
+                <Route path="/me/errors" element={<Navigate to="/wrong-answers" replace />} />
+                <Route path="/me/settings" element={<Navigate to="/settings" replace />} />
+                <Route path="/me/packages" element={<Navigate to="/packages" replace />} />
+              </Route>
+
+              {/* Distraction-Free Exam Simulation Layout */}
+              <Route element={<Exam_Layout />}>
                 <Route path="/tickets/:id" element={<TicketExamPage />} />
                 <Route path="/packages/:id" element={<PackageExamPage />} />
                 <Route path="/marafon" element={<Marafon_Page />} />
                 <Route path="/exam" element={<Exam_Page />} />
                 <Route path="/wrong-exam" element={<WrongExam_Page />} />
+                <Route path="/exam/result/:sessionId" element={<ExamResult_Page />} />
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />
               </Route>
             </Route>

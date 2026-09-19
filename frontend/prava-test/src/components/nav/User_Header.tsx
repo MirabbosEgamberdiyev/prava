@@ -35,7 +35,8 @@ const User_Header = ({
           {/* Left: Burger + Logo */}
           <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Link to="/" style={{ textDecoration: "none" }}>
+            <Link to="/" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <img src="/logo.svg" alt="Prava Online" width={30} height={30} />
               <Text fw={800} fz={{ base: "md", sm: "xl" }} tt="uppercase" c="blue" truncate="end">
                 PravaOnline
               </Text>

@@ -36,6 +36,9 @@ import {
   IconBookmark,
   IconBookmarkFilled,
   IconAlertTriangle,
+  IconPlayerPlay,
+  IconTrash,
+  IconRotateClockwise,
 } from "@tabler/icons-react";
 
 type Phase = "setup" | "loading" | "exam" | "result";
@@ -63,6 +66,8 @@ export default function Marafon_Page() {
   const [selTopic, setSelTopic] = useState<number | null>(initialTopicId);
   const [countIdx, setCountIdx] = useState(0);
 
+  const MARATHON_STORAGE_KEY = `prava_marathon_active_session_${userId}`;
+
   // Exam state
   const [phase, setPhase] = useState<Phase>("setup");
   const [questions, setQuestions] = useState<OfflineQuestion[]>([]);
@@ -74,11 +79,55 @@ export default function Marafon_Page() {
   const [zoomSrc, setZoomSrc] = useState<string | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [confirmFinishOpen, setConfirmFinishOpen] = useState(false);
+  const [savedSession, setSavedSession] = useState<{
+    questions: OfflineQuestion[];
+    current: number;
+    answers: Record<number, Answer>;
+    selTopic: number | null;
+    countIdx: number;
+    timestamp: number;
+  } | null>(null);
 
   const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const answersRef = useRef(answers);
   const activeQnumRef = useRef<HTMLButtonElement | null>(null);
   answersRef.current = answers;
+
+  // Check for saved uncompleted marathon session on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(MARATHON_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (
+          Array.isArray(parsed.questions) &&
+          parsed.questions.length > 0 &&
+          parsed.answers &&
+          Object.keys(parsed.answers).length > 0
+        ) {
+          setSavedSession(parsed);
+        }
+      }
+    } catch {}
+  }, [MARATHON_STORAGE_KEY]);
+
+  const handleResumeMarathon = () => {
+    if (!savedSession) return;
+    setQuestions(savedSession.questions);
+    setAnswers(savedSession.answers);
+    answersRef.current = savedSession.answers;
+    setCurrent(Math.min(savedSession.current || 0, savedSession.questions.length - 1));
+    setSelTopic(savedSession.selTopic ?? null);
+    setCountIdx(savedSession.countIdx || 0);
+    setPhase("exam");
+  };
+
+  const handleDiscardSavedMarathon = () => {
+    try {
+      localStorage.removeItem(MARATHON_STORAGE_KEY);
+    } catch {}
+    setSavedSession(null);
+  };
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -186,7 +235,12 @@ export default function Marafon_Page() {
       }));
       submitExamSession(activeId, submitList).catch(() => {});
     }
-  }, [questions, userId]);
+
+    try {
+      localStorage.removeItem(MARATHON_STORAGE_KEY);
+    } catch {}
+    setSavedSession(null);
+  }, [questions, userId, MARATHON_STORAGE_KEY]);
 
   const handleSelect = (optIdx: number) => {
     if (answers[current] !== undefined) return;
@@ -209,6 +263,21 @@ export default function Marafon_Page() {
     };
     setAnswers(newAns);
     answersRef.current = newAns;
+
+    const nextQ = current < questions.length - 1 ? current + 1 : current;
+    try {
+      localStorage.setItem(
+        MARATHON_STORAGE_KEY,
+        JSON.stringify({
+          questions,
+          current: nextQ,
+          answers: newAns,
+          selTopic,
+          countIdx,
+          timestamp: Date.now(),
+        })
+      );
+    } catch {}
 
     if (current < questions.length - 1) {
       autoRef.current = setTimeout(() => setCurrent((c) => c + 1), 800);
@@ -287,32 +356,169 @@ export default function Marafon_Page() {
       : t("testSetup.marathonTitle", "Katta Marafon");
 
     return (
-      <>
+      <div className="marathon-setup-wrapper" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         <SEO
           title={`${pageTitle} — ${t("seo.marathon.title", "Marafon")}`}
           description={t("seo.marathon.desc", "Barcha 1190 ta savoldan iborat marafon.")}
           canonical="/marafon"
           noIndex={true}
         />
-        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
-          <header className="home-header">
-            <div className="home-header-inner">
-              <div
-                className="home-header-logo"
-                style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
-                onClick={() => navigate("/me")}
-              >
-                <img src="/logo.png" width={32} height={32} alt="Prava" onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }} />
-                <span className="home-header-brand">PRAVA<span className="brand-accent">ONLINE</span></span>
-              </div>
-              <div className="home-header-right">
-                <LanguagePicker />
-                <ColorMode />
-              </div>
-            </div>
-          </header>
+        {/* Top Minimal Bar */}
+        <header
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "14px 24px",
+            borderBottom: "1px solid var(--border)",
+            background: "var(--surface)",
+          }}
+        >
+          <button
+            onClick={onBack}
+            type="button"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              background: "transparent",
+              border: "none",
+              color: "var(--text)",
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            <IconChevronLeft size={20} />
+            <span>{t("common.back", "Orqaga")}</span>
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <ColorMode />
+            <LanguagePicker />
+          </div>
+        </header>
 
-          <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 12px" }}>
+        <main style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "28px 16px" }}>
+          <div style={{ maxWidth: 840, width: "100%", margin: "0 auto" }}>
+            {savedSession && (
+              <div
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--primary)",
+                  borderRadius: 16,
+                  padding: "20px 24px",
+                  marginBottom: 24,
+                  boxShadow: "0 8px 24px -4px rgba(37, 99, 235, 0.15)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 14,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 12,
+                        background: "rgba(37, 99, 235, 0.12)",
+                        color: "var(--primary)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <IconRotateClockwise size={24} />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "var(--text)" }}>
+                        {t("marathon.resumeTitle", "Tugallanmagan sessiya topildi")}
+                      </h3>
+                      <p style={{ margin: "3px 0 0", fontSize: 13, color: "var(--text-secondary)" }}>
+                        {t(
+                          "marathon.resumeDesc",
+                          "Siz avvalgi marafoningizda {{answered}} / {{total}} ta savolga javob bergansiz.",
+                          {
+                            answered: Object.keys(savedSession.answers || {}).length,
+                            total: savedSession.questions?.length || 0,
+                          }
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <button
+                      type="button"
+                      onClick={handleDiscardSavedMarathon}
+                      style={{
+                        padding: "9px 16px",
+                        borderRadius: 10,
+                        border: "1px solid var(--border)",
+                        background: "var(--surface)",
+                        color: "var(--text-secondary)",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <IconTrash size={16} />
+                      <span>{t("marathon.discardResume", "Yangi boshlash")}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleResumeMarathon}
+                      style={{
+                        padding: "10px 20px",
+                        borderRadius: 10,
+                        border: "none",
+                        background: "var(--primary)",
+                        color: "#fff",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 8,
+                        boxShadow: "0 4px 14px rgba(37, 99, 235, 0.35)",
+                      }}
+                    >
+                      <IconPlayerPlay size={18} />
+                      <span>{t("marathon.resumeButton", "Davom ettirish")}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Progress bar */}
+                <div style={{ width: "100%", height: 6, background: "var(--border)", borderRadius: 99, overflow: "hidden" }}>
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${
+                        savedSession.questions?.length > 0
+                          ? Math.min(
+                              100,
+                              Math.round(
+                                (Object.keys(savedSession.answers || {}).length /
+                                  savedSession.questions.length) *
+                                  100
+                              )
+                            )
+                          : 0
+                      }%`,
+                      background: "var(--primary)",
+                      borderRadius: 99,
+                      transition: "width 0.3s ease",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             <TestSetupCard
               topics={topics}
               selectedTopicId={selTopic}
@@ -324,9 +530,9 @@ export default function Marafon_Page() {
               onBack={onBack}
               localizeTopic={localizeTopic}
             />
-          </main>
-        </div>
-      </>
+          </div>
+        </main>
+      </div>
     );
   }
 
@@ -362,7 +568,7 @@ export default function Marafon_Page() {
           canonical="/marafon"
           noIndex={true}
         />
-        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
+        <div style={{ height: "100vh", maxHeight: "100dvh", overflowY: "auto", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
           <header className="home-header">
             <div className="home-header-inner">
               <div
@@ -370,7 +576,7 @@ export default function Marafon_Page() {
                 style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
                 onClick={() => navigate("/me")}
               >
-                <img src="/logo.png" width={32} height={32} alt="Prava" onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }} />
+                <img src="/logo.svg" width={32} height={32} alt="Prava" />
                 <span className="home-header-brand">PRAVA<span className="brand-accent">ONLINE</span></span>
               </div>
               <div className="home-header-right">

@@ -17,6 +17,7 @@ import {
   IconBrandTelegram,
   IconArrowRight,
 } from "@tabler/icons-react";
+import { useLocation } from "react-router-dom";
 import { prefetchRoute } from "../../utils/routePrefetch";
 import { DomainLink } from "../common/DomainLink";
 import { getLandingUrl, getWebAppUrl } from "../../utils/domain";
@@ -30,6 +31,24 @@ export default function Header({
 }) {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  const isRegisterOrForgot =
+    location.pathname.includes("register") ||
+    location.pathname.includes("forgot-password");
+  const isLogin = location.pathname.includes("login");
+
+  const authCtaText = isRegisterOrForgot
+    ? t("auth.login", "Kirish")
+    : isLogin
+    ? t("home.hero.startNow", "Boshlash")
+    : t("home.hero.startNow", "Boshlash");
+
+  const authCtaHref = isRegisterOrForgot
+    ? "/auth/login"
+    : isLogin
+    ? "/auth/register"
+    : "/auth/login";
 
   return (
     <AppShell.Header className="saas-header">
@@ -40,7 +59,7 @@ export default function Header({
             <Burger
               opened={opened}
               onClick={toggle}
-              hiddenFrom="sm"
+              hiddenFrom="md"
               size="sm"
               aria-label={opened ? t("nav.close_menu", "Menyuni yopish") : t("nav.open_menu", "Menyuni ochish")}
             />
@@ -52,19 +71,38 @@ export default function Header({
               onFocus={() => prefetchRoute("/")}
             >
               <img
-                src="/logo.png"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/logo.svg";
-                }}
+                src="/logo.svg"
                 alt="Prava Online"
-                width={30}
-                height={30}
+                width={32}
+                height={32}
               />
               <span className="saas-brand-text">
                 PRAVA<span className="brand-accent">ONLINE</span>
               </span>
             </DomainLink>
           </Group>
+
+          {/* Center: Desktop Navigation Links */}
+          <Box visibleFrom="md" className="saas-nav-container">
+            <DomainLink href={getLandingUrl("/")} className="saas-nav-link">
+              {t("nav.home", "Bosh sahifa")}
+            </DomainLink>
+            <a href="#benefits" className="saas-nav-link">
+              {t("nav.features", "Imkoniyatlar")}
+            </a>
+            <DomainLink href={getLandingUrl("/partners")} className="saas-nav-link">
+              {t("nav.partners", "Avtomaktablar")}
+            </DomainLink>
+            <a href="#faq" className="saas-nav-link">
+              {t("nav.faq", "FAQ")}
+            </a>
+            <DomainLink href={getLandingUrl("/about")} className="saas-nav-link">
+              {t("nav.about", "Biz haqimizda")}
+            </DomainLink>
+            <DomainLink href={getLandingUrl("/contact")} className="saas-nav-link">
+              {t("nav.contact", "Bog'lanish")}
+            </DomainLink>
+          </Box>
 
           {/* Right: Telegram + Theme + Language + Single CTA button (OsonPrava Style) */}
           <Group gap={8} wrap="nowrap" align="center" style={{ flexShrink: 0 }} className="saas-header-right">
@@ -85,34 +123,36 @@ export default function Header({
             <ColorMode />
             <LanguagePicker />
 
-            <div className="navbar-divider" aria-hidden="true" />
+            <Box visibleFrom="sm" className="navbar-divider" aria-hidden="true" />
 
             {isAuthenticated ? (
               <UserMenuButton />
             ) : (
-              <DomainLink
-                href={getWebAppUrl("/auth/login")}
-                style={{ textDecoration: "none" }}
-                onMouseEnter={() => prefetchRoute("/auth/login")}
-                onFocus={() => prefetchRoute("/auth/login")}
-              >
-                <Button
-                  radius="md"
-                  size="sm"
-                  h={38}
-                  variant="filled"
-                  className="header-cta-btn"
-                  style={{
-                    background: "var(--primary, #0284c7)",
-                    color: "#ffffff",
-                    fontWeight: 700,
-                    border: "none",
-                  }}
-                  rightSection={<IconArrowRight size={15} />}
+              <Box visibleFrom="sm">
+                <DomainLink
+                  href={getWebAppUrl(authCtaHref)}
+                  style={{ textDecoration: "none" }}
+                  onMouseEnter={() => prefetchRoute(authCtaHref)}
+                  onFocus={() => prefetchRoute(authCtaHref)}
                 >
-                  {t("home.hero.startNow", "Boshlash")}
-                </Button>
-              </DomainLink>
+                  <Button
+                    radius="md"
+                    size="sm"
+                    h={38}
+                    variant="filled"
+                    className="header-cta-btn"
+                    style={{
+                      background: "var(--primary, #0284c7)",
+                      color: "#ffffff",
+                      fontWeight: 700,
+                      border: "none",
+                    }}
+                    rightSection={<IconArrowRight size={15} />}
+                  >
+                    {authCtaText}
+                  </Button>
+                </DomainLink>
+              </Box>
             )}
           </Group>
         </div>

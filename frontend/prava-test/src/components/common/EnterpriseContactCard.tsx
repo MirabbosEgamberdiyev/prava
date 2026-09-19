@@ -37,7 +37,7 @@ export default function EnterpriseContactCard({
       </ThemeIcon>
 
       <Box style={{ flex: 1, minWidth: 0 }}>
-        <Group justify="space-between" align="center" gap={8} wrap="nowrap">
+        <Group justify="space-between" align="center" gap={6} wrap="wrap">
           <Text size="xs" c="dimmed" fw={500} style={{ lineHeight: 1.2 }}>
             {label}
           </Text>

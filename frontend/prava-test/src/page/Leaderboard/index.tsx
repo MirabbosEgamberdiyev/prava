@@ -1,40 +1,45 @@
 import { LeaderboardPage } from "../../features/Leaderboard";
 import SEO from "../../components/common/SEO";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { IconArrowLeft, IconTrophy } from "@tabler/icons-react";
-import { Container } from "@mantine/core";
+import { IconTrophy } from "@tabler/icons-react";
+import styles from "../../components/dashboard/Dashboard.module.css";
 
 const Leaderboard_Page = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
 
   return (
     <>
-      <SEO title={t("seo.leaderboard.title", "Foydalanuvchilar Reytingi")} description={t("seo.leaderboard.desc", "Eng yaxshi natijalar reytingi.")}
+      <SEO
+        title={t("seo.leaderboard.title", "Peshqadamlar Reytingi — PravaOnline")}
+        description={t("seo.leaderboard.desc", "Eng yaxshi natijalar va o'quvchilar reytingi.")}
         canonical="/leaderboard"
         noIndex={true}
       />
-      <div className="review-screen">
-        <header className="review-header">
-          <button
-            className="review-back-btn"
-            onClick={() => navigate("/me")}
-            type="button"
-          >
-            <IconArrowLeft size={18} stroke={2} />
-            {t("common.back", "Orqaga")}
-          </button>
-          <div className="review-header-title">
-            <IconTrophy size={20} stroke={2} color="var(--mantine-color-yellow-5)" />
-            <span>{t("leaderboard.title", "Peshqadamlar reytingi")}</span>
+      {/* Page Header */}
+      <div className={styles.innerPageHeader}>
+        <div className={styles.innerPageHeaderLeft}>
+          <div className={styles.innerPageTitleRow}>
+            <h2 className={styles.innerPageTitle}>
+              <IconTrophy
+                size={24}
+                stroke={2}
+                style={{ color: "#f59f00", verticalAlign: "middle", marginRight: 8 }}
+              />
+              {t("leaderboard.title", "Peshqadamlar reytingi")}
+            </h2>
           </div>
-        </header>
-        <main style={{ flex: 1, overflowY: "auto", padding: "14px 16px 32px" }}>
-          <Container size="lg">
-            <LeaderboardPage />
-          </Container>
-        </main>
+          <p className={styles.innerPageSubtitle}>
+            {t(
+              "leaderboard.subtitle",
+              "Eng yuqori natija ko'rsatgan o'quvchilar va mavzular bo'yicha umumiy reyting."
+            )}
+          </p>
+        </div>
+      </div>
+
+      {/* Content Container */}
+      <div style={{ maxWidth: 1080, width: "100%", margin: "0 auto" }}>
+        <LeaderboardPage hideTitle={true} />
       </div>
     </>
   );

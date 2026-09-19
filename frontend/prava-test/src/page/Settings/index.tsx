@@ -8,7 +8,6 @@ import {
   Center,
   Loader,
   SimpleGrid,
-  Container,
 } from "@mantine/core";
 import {
   IconUser,
@@ -16,15 +15,15 @@ import {
   IconDevices,
   IconDeviceMobile,
   IconDeviceDesktop,
-  IconArrowLeft,
   IconSettings,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { ProfileInfoCard } from "../../features/me/components/ProfileInfoCard";
 import { ChangePasswordForm } from "../../features/me/components/ChangePasswordForm";
 import SEO from "../../components/common/SEO";
+
+import styles from "../../components/dashboard/Dashboard.module.css";
 
 interface DeviceInfo {
   currentDevices: number;
@@ -39,7 +38,6 @@ interface DeviceInfo {
 
 const Settings_Page = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   const { data: deviceResponse, isLoading: devicesLoading } = useSWR<{
     data: DeviceInfo;
@@ -49,39 +47,57 @@ const Settings_Page = () => {
 
   return (
     <>
-      <SEO title={t("seo.settings.title", "Sozlamalar va Profil")} description={t("seo.settings.desc", "Profil sozlamalari va xavfsizlik.")}
+      <SEO
+        title={t("seo.settings.title", "Sozlamalar va Profil — PravaOnline")}
+        description={t("seo.settings.desc", "Profil sozlamalari, xavfsizlik va ulangan qurilmalar.")}
         canonical="/settings"
         noIndex={true}
       />
-      <div className="review-screen">
-        <header className="review-header">
-          <button
-            className="review-back-btn"
-            onClick={() => navigate("/me")}
-            type="button"
-          >
-            <IconArrowLeft size={18} stroke={2} />
-            {t("common.back", "Orqaga")}
-          </button>
-          <div className="review-header-title">
-            <IconSettings size={20} stroke={2} color="var(--mantine-color-blue-5)" />
-            <span>{t("settings.title", "Sozlamalar va Profil")}</span>
+      {/* Page Header */}
+        <div className={styles.innerPageHeader}>
+          <div className={styles.innerPageHeaderLeft}>
+            <div className={styles.innerPageTitleRow}>
+              <h2 className={styles.innerPageTitle}>
+                <IconSettings
+                  size={24}
+                  stroke={2}
+                  style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }}
+                />
+                {t("settings.title", "Sozlamalar va Profil")}
+              </h2>
+            </div>
+            <p className={styles.innerPageSubtitle}>
+              {t(
+                "settings.subtitle",
+                "Hisob ma'lumotlari, xavfsizlik paroli va tizimga ulangan qurilmalarni boshqaring."
+              )}
+            </p>
           </div>
-        </header>
-        <main style={{ flex: 1, overflowY: "auto", padding: "14px 16px 32px" }}>
-          <Container size="md">
-            <Tabs defaultValue="profile">
-              <Tabs.List mb="md">
+        </div>
+
+        {/* Content Container */}
+        <div style={{ maxWidth: 1200, width: "100%", margin: "0" }}>
+          <Tabs defaultValue="profile">
+            <div
+              style={{
+                overflowX: "auto",
+                WebkitOverflowScrolling: "touch",
+                scrollbarWidth: "none",
+                marginBottom: 16,
+              }}
+            >
+              <Tabs.List style={{ flexWrap: "nowrap", minWidth: "max-content" }}>
                 <Tabs.Tab value="profile" leftSection={<IconUser size={16} />}>
-            {t("settings.profile")}
-          </Tabs.Tab>
-          <Tabs.Tab value="security" leftSection={<IconLock size={16} />}>
-            {t("settings.security")}
-          </Tabs.Tab>
-          <Tabs.Tab value="devices" leftSection={<IconDevices size={16} />}>
-            {t("settings.devices")}
-          </Tabs.Tab>
-        </Tabs.List>
+                  {t("settings.profile")}
+                </Tabs.Tab>
+                <Tabs.Tab value="security" leftSection={<IconLock size={16} />}>
+                  {t("settings.security")}
+                </Tabs.Tab>
+                <Tabs.Tab value="devices" leftSection={<IconDevices size={16} />}>
+                  {t("settings.devices")}
+                </Tabs.Tab>
+              </Tabs.List>
+            </div>
 
         <Tabs.Panel value="profile">
           <Stack gap="lg">
@@ -118,7 +134,7 @@ const Settings_Page = () => {
                 </Paper>
 
                 {deviceInfo.devices && deviceInfo.devices.length > 0 && (
-                  <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                  <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
                     {deviceInfo.devices.map((device) => (
                       <Paper
                         key={device.deviceId}
@@ -165,10 +181,8 @@ const Settings_Page = () => {
           </Stack>
         </Tabs.Panel>
       </Tabs>
-          </Container>
-        </main>
-      </div>
-    </>
+    </div>
+  </>
   );
 };
 

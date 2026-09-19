@@ -336,11 +336,11 @@ export async function getQuestionsByTicket(ticketId: number): Promise<OfflineQue
     if (res.data?.data?.sessionId) {
       activeTicketSessionId = res.data.data.sessionId;
     }
-    if (res.data?.data?.questions) {
+    if (res.data?.data?.questions && res.data.data.questions.length > 0) {
       return res.data.data.questions.map(normalizeQuestion);
     }
-  } catch {
-    // fallback
+  } catch (err: any) {
+    console.warn("getQuestionsByTicket start-visible error:", err?.response?.data || err?.message || err);
   }
   return [];
 }
@@ -416,7 +416,7 @@ export async function getTopics(): Promise<OfflineTopic[]> {
 export async function getFullStats(_userId?: number): Promise<FullStats> {
   const storedTicketStats = storageService.getTicketStats();
   const ticketStats: TicketReadinessStat[] = [];
-  const totalTickets = 60;
+  const totalTickets = 70;
 
   // Try fetching live statistics from backend
   let serverStats: any = null;
@@ -505,23 +505,21 @@ export async function getFullStats(_userId?: number): Promise<FullStats> {
   for (const qId of attemptKeys) {
     const att = attempts[Number(qId)];
     if (att && att.total > 0) {
-      if (att.correct >= 5) readyQ++;
-      else if (att.correct >= 3) averageQ++;
-      else weakQ++; // Questions attempted with low or 0 correct count
+      if (att.correct >= 3) readyQ++;
+      else if (att.correct >= 1) averageQ++;
+      else weakQ++;
     }
   }
 
   const totalQ = 1190;
 
-  // If local questions attempts are empty, reflect questions answered on server
+  // Accurately reflect questions answered from live server stats
   if (readyQ + averageQ + weakQ === 0 && serverStats?.summary) {
     const correctAns = Number(serverStats.summary.correctAnswers || 0);
     const wrongAns = Number(serverStats.summary.wrongAnswers || 0);
-    if (correctAns > 0 || wrongAns > 0) {
-      readyQ = Math.min(Math.floor(correctAns * 0.4), Math.floor(totalQ * 0.7));
-      averageQ = Math.min(Math.floor(correctAns * 0.6), totalQ - readyQ);
-      weakQ = Math.min(wrongAns, totalQ - (readyQ + averageQ));
-    }
+    readyQ = Math.min(correctAns, totalQ);
+    weakQ = Math.min(wrongAns, totalQ - readyQ);
+    averageQ = 0;
   }
 
   const untouchedQ = Math.max(0, totalQ - (readyQ + averageQ + weakQ));

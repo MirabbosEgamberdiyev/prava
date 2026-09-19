@@ -613,7 +613,7 @@ export default function Contact_Page() {
                           <Text size="xs" fw={600}>{getRegionName(region)}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">Telegram:</Text>
+                          <Text size="xs" c="dimmed">{t("contact.telegramLabel", "Telegram:")}</Text>
                           <Text size="xs" fw={600}>{telegram.trim() || t("contact.notSpecified", "Ko‘rsatilmagan")}</Text>
                         </Group>
                         <Group justify="space-between">

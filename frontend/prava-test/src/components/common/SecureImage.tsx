@@ -10,8 +10,28 @@ interface Props {
 }
 
 export default function SecureImage({ path, alt = "", className, style, onOpen }: Props) {
-  if (!path) {
-    return <div className="secure-img-placeholder" style={style} />;
+  const [hasError, setHasError] = React.useState(false);
+
+  React.useEffect(() => {
+    setHasError(false);
+  }, [path]);
+
+  if (!path || hasError) {
+    return (
+      <img
+        src="/images/default-vehicle-placeholder.svg"
+        alt={alt || "Prava Online Vehicle"}
+        className={className}
+        loading="lazy"
+        draggable={false}
+        style={{
+          ...style,
+          objectFit: "contain",
+          maxHeight: style?.maxHeight || "280px",
+          width: style?.width || "100%",
+        }}
+      />
+    );
   }
 
   const src = getImageUrl(path) || path;
@@ -21,9 +41,11 @@ export default function SecureImage({ path, alt = "", className, style, onOpen }
       src={src}
       alt={alt}
       className={className}
+      loading="lazy"
       draggable={false}
       onContextMenu={(e) => e.preventDefault()}
       onClick={onOpen ? () => onOpen(src) : undefined}
+      onError={() => setHasError(true)}
       style={{ ...style, ...(onOpen ? { cursor: "zoom-in" } : {}) }}
     />
   );

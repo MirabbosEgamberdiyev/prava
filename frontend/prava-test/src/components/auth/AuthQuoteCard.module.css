@@ -1,0 +1,50 @@
+.quoteCard {
+  background: rgba(11, 132, 243, 0.05);
+  border: 1px solid rgba(11, 132, 243, 0.15);
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+:global([data-theme="dark"]) .quoteCard,
+:global([data-mantine-color-scheme="dark"]) .quoteCard {
+  background: rgba(11, 132, 243, 0.08);
+  border-color: rgba(11, 132, 243, 0.25);
+}
+
+.quoteMark {
+  font-size: 2.4rem;
+  line-height: 1;
+  font-family: Georgia, serif;
+  color: var(--primary, #0b84f3);
+  opacity: 0.85;
+  margin-bottom: -10px;
+}
+
+.quoteText {
+  font-size: 0.95rem;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--primary, #0b84f3);
+  margin: 0;
+}
+
+:global([data-theme="dark"]) .quoteText,
+:global([data-mantine-color-scheme="dark"]) .quoteText {
+  color: #38bdf8;
+}
+
+.author {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--primary, #0b84f3);
+  opacity: 0.8;
+  margin-top: 4px;
+  text-align: right;
+}

@@ -58,7 +58,9 @@
     "codeError": "Invalid code!",
     "verifyByEmail": "Via Email",
     "verifyBySms": "Via SMS",
-    "codeSentToPhone": "Code sent to"
+    "codeSentToPhone": "Code sent to",
+    "openMailApp": "Open Email App",
+    "didntReceive": "Didn't receive the code?"
   },
   "forgotPassword": {
     "title": "Reset password",
@@ -85,7 +87,10 @@
     "minChars": "At least {{count}} characters required",
     "invalidEmail": "Invalid email",
     "invalidPhone": "Invalid phone number",
-    "nameTooShort": "Too short"
+    "nameTooShort": "Name must be at least 2 characters",
+    "passwordComplexity": "Password must be at least 8 characters, with uppercase, lowercase, number, and special character (@$!%*?&)",
+    "required": "This field is required",
+    "phoneLength": "Invalid phone number format (+998...)"
   },
   "me": {
     "one": "Real Exam",
@@ -303,7 +308,8 @@
     "contact": "Contact",
     "faq": "FAQ",
     "terms": "Terms of Service",
-    "privacy": "Privacy Policy"
+    "privacy": "Privacy Policy",
+    "footerNav": "Footer navigation"
   },
   "exam": {
     "finish": "Finish",
@@ -390,7 +396,8 @@
     "min": "min",
     "yes": "Yes",
     "times": "times",
-    "logout": "Log out"
+    "logout": "Log out",
+    "breadcrumbs": "Breadcrumb navigation"
   },
   "notification": {
     "examFinished": "Exam completed!",
@@ -1009,5 +1016,149 @@
     "statePending": "Pending",
     "startLearning": "Start Learning",
     "retry": "Try Again"
+  },
+  "authV2": {
+    "mobileFeaturesToggle": "Platform features and advantages",
+    "badge": {
+      "examPrep": "Reliable preparation for the driving exam",
+      "accountSecurity": "Account security is our top priority"
+    },
+    "login": {
+      "headlineMain": "Knowledgeable driver —",
+      "headlineAccent": "safe roads!",
+      "description": "Prepare easily and reliably for the driving exam with official questions, exam simulator, and in-depth analytics.",
+      "check1": "Official questions database",
+      "check2": "Realistic exam simulation tests",
+      "check3": "Available across all devices",
+      "carBadge": "Safe driver — bright future!",
+      "title": "Welcome back!",
+      "subtitle": "Enter your credentials to access your account.",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Sign up",
+      "identifierLabel": "Email address or phone number",
+      "identifierPlaceholder": "Email or +998 90 123 45 67",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "forgotPassword": "Forgot password?",
+      "submit": "Log in",
+      "submitting": "Logging in...",
+      "or": "or",
+      "google": "Continue with Google",
+      "telegram": "Continue with Telegram",
+      "botHint": "Fast login via Telegram bot:",
+      "securityNote": "Your data is securely encrypted and protected",
+      "termsNotice": "By continuing, you agree to our {{terms}} and {{privacy}}.",
+      "termsLink": "Terms of Service",
+      "privacyLink": "Privacy Policy",
+      "featTitle": "Features",
+      "feat1Title": "Official Questions",
+      "feat1Desc": "All questions from official traffic inspection database kept regularly up to date.",
+      "feat2Title": "Exam Simulator",
+      "feat2Desc": "Practice in real-world exam conditions with strict timer and scoring.",
+      "feat3Title": "Detailed Analytics",
+      "feat3Desc": "Analyze your progress and focus on recurring mistakes.",
+      "feat4Title": "Multi-Device Sync",
+      "feat4Desc": "Seamless access 24/7 on desktop, tablet, and smartphone.",
+      "goalNote": "Goal is closer than ever!",
+      "termsPrefix": "By continuing, you agree to our ",
+      "termsAnd": " and ",
+      "termsSuffix": "."
+    },
+    "register": {
+      "headlineMain": "Today's preparation —",
+      "headlineAccent": "tomorrow's confidence",
+      "description": "Sign up to master 1,200+ official questions, 70 tickets, and state traffic exam simulator.",
+      "check1": "Fast and effortless registration",
+      "check2": "Seamless multi-device access",
+      "check3": "Personal achievements and analytics",
+      "check4": "Realistic exam simulation format",
+      "carBadge": "Your driving license is one step closer!",
+      "title": "Create an account",
+      "subtitle": "Sign up for free and start your driving exam preparation.",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log in",
+      "firstName": "First name",
+      "firstNamePlaceholder": "e.g. John",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "e.g. Doe",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "example@mail.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "passwordComplexity": "Password must be at least 8 characters, with uppercase, lowercase, number, and special character (@$!%*?&)",
+      "passwordValid": "Password meets all security criteria",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "google": "Sign up with Google",
+      "telegram": "Sign up with Telegram",
+      "botHint": "Fast registration via Telegram bot:",
+      "benefitsTitle": "What do you get after signing up?",
+      "b1Title": "Complete Questions Database",
+      "b1Desc": "1,200+ official questions and 70 official tickets.",
+      "b2Title": "State Exam Simulator",
+      "b2Desc": "Practice tests matching the exact real exam environment.",
+      "b3Title": "Personalized Analytics",
+      "b3Desc": "Track performance stats and review tricky mistakes.",
+      "b4Title": "Available on All Devices",
+      "b4Desc": "Access 24/7 on computer, phone, or tablet.",
+      "quoteText": "Preparation and knowledge are the keys to safe driving.",
+      "socialProof": "Over 50,000 students trust Prava Online",
+      "methodEmail": "Via Email",
+      "methodSms": "Via SMS",
+      "passwordHint": "8+ chars, A-Z, 0-9, @$!"
+    },
+    "forgot": {
+      "backToLogin": "Back to login",
+      "stepIndicator": "Step {{current}} / {{total}}",
+      "headlineMain": "Password reset —",
+      "headlineAccent": "easy and secure",
+      "description": "Enter your email address or phone number to regain access. We will send you a verification code.",
+      "check1": "Your account data is secure",
+      "check2": "Quick and simple reset process",
+      "check3": "24/7 support assistance",
+      "quoteText": "A safe driver is always ahead!",
+      "carBadge": "Knowledgeable driver — safe future!",
+      "title": "Reset Password",
+      "subtitle": "Enter your email or phone number to receive a verification code.",
+      "step1Title": "Identify Account",
+      "step2Title": "Verify Code",
+      "step3Title": "New Password",
+      "infoAlert": "Enter the registered email or phone number. A verification code will be sent within seconds.",
+      "sendCodeBtn": "Send verification code",
+      "sendingCode": "Sending code...",
+      "otpPrompt": "We sent a 6-digit verification code to {{recipient}}.",
+      "otpLabel": "Enter verification code",
+      "verifyBtn": "Verify Code",
+      "verifying": "Verifying...",
+      "resendPrompt": "Resend code",
+      "resendIn": "Resend available in {{seconds}}s",
+      "newPassLabel": "New password",
+      "newPassPlaceholder": "Enter new password",
+      "confirmPassLabel": "Confirm new password",
+      "confirmPassPlaceholder": "Re-enter new password",
+      "resetBtn": "Update password",
+      "resetting": "Updating password...",
+      "remindersTitle": "Security Tips",
+      "rem1": "Check your spam or junk folder if the email does not appear.",
+      "rem2": "The verification code expires in 10 minutes.",
+      "rem3": "Never share your verification code with anyone."
+    },
+    "carGraphicAlt": "Prava Online white Malibu car with Tashkent TV Tower background",
+    "stepper": {
+      "stepAria": "Step {{current}} of {{total}}"
+    },
+    "footer": {
+      "slogan": "Your trusted platform for driver's license preparation."
+    }
+  },
+  "seo": {
+    "login": {
+      "title": "Log in — Prava Online",
+      "desc": "Log in to your Prava Online account to practice tests and track exam preparation."
+    },
+    "register": {
+      "title": "Sign up — Prava Online",
+      "desc": "Sign up for free and start preparing for your driver's license examination."
+    }
   }
 }

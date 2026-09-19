@@ -165,7 +165,7 @@ const Navbar = ({ close }: { close: () => void }) => {
           <Stack gap={4}>
             <Button
               component={Link}
-              to="/downloads"
+              to="/"
               onClick={close}
               fullWidth
               size="sm"
@@ -174,7 +174,20 @@ const Navbar = ({ close }: { close: () => void }) => {
               justify="flex-start"
               styles={{ root: { fontWeight: 500 } }}
             >
-              {t("nav.downloads", "Ilovalar (Windows, Mobile)")}
+              {t("nav.home", "Bosh sahifa")}
+            </Button>
+            <Button
+              component="a"
+              href="#benefits"
+              onClick={close}
+              fullWidth
+              size="sm"
+              variant="subtle"
+              color="gray"
+              justify="flex-start"
+              styles={{ root: { fontWeight: 500 } }}
+            >
+              {t("nav.features", "Imkoniyatlar")}
             </Button>
             <Button
               component={Link}
@@ -187,7 +200,20 @@ const Navbar = ({ close }: { close: () => void }) => {
               justify="flex-start"
               styles={{ root: { fontWeight: 500 } }}
             >
-              {t("nav.corporate", "Avtomaktablar va Hamkorlik")}
+              {t("nav.partners", "Avtomaktablar")}
+            </Button>
+            <Button
+              component={Link}
+              to="/downloads"
+              onClick={close}
+              fullWidth
+              size="sm"
+              variant="subtle"
+              color="gray"
+              justify="flex-start"
+              styles={{ root: { fontWeight: 500 } }}
+            >
+              {t("nav.downloads", "Ilovalar (Windows, Mobile)")}
             </Button>
             <Button
               component={Link}

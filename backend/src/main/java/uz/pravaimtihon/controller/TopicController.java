@@ -30,7 +30,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin/topics")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'USER')")
 @Tag(name = "Topic Management", description = "Mavzularni yaratish, tahrirlash, o'chirish")
 public class TopicController {
 
@@ -43,6 +43,7 @@ public class TopicController {
      * Headers: Accept-Language: uzl|uzc|en|ru
      */
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(
             summary = "Mavzu yaratish",
             description = "Yangi mavzu. Majburiy: nameUzl, code (unikal)."
@@ -115,6 +116,7 @@ public class TopicController {
      * Headers: Accept-Language: uzl|uzc|en|ru
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(
             summary = "Update topic",
             description = "Update topic fields in any language. Response language depends on Accept-Language header"
@@ -134,6 +136,7 @@ public class TopicController {
      * DELETE /api/v1/admin/topics/{id}
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(
             summary = "Delete topic",
             description = "Soft delete topic. Only works if topic has no questions"
@@ -191,6 +194,7 @@ public class TopicController {
      * Headers: Accept-Language: uzl|uzc|en|ru
      */
     @GetMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(
             summary = "Get all topics (paginated)",
             description = "Returns paginated topics. Names and descriptions are localized based on Accept-Language"
@@ -317,6 +321,7 @@ public class TopicController {
      * Switches isActive: true ↔ false
      */
     @PatchMapping("/{id}/toggle")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(
             summary = "Toggle topic active status",
             description = "Switches isActive between true and false. Clears cache"
@@ -334,6 +339,7 @@ public class TopicController {
      * Headers: Accept-Language: uzl|uzc|en|ru
      */
     @PostMapping("/bulk")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @Operation(
             summary = "Create multiple topics at once",
             description = "Bulk create topics. Validates all topics before creating. Returns created topics in specified language"
