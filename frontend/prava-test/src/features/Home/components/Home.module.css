@@ -849,6 +849,16 @@
   transform: translateY(-1px);
 }
 
+.heroCenteredTrustChecklist {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px 24px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  width: 100%;
+}
+
 /* Minimal Stats */
 .statsMinimalSection {
   padding: clamp(24px, 4vh, 48px) 0;
