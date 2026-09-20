@@ -18,6 +18,7 @@ import SecureImage from "../../components/common/SecureImage";
 import ImageZoomModal from "../../components/common/ImageZoomModal";
 import ColorMode from "../../components/other/ColorMode";
 import LanguagePicker from "../../components/language/LanguagePicker";
+import AccessibilityButton from "../../components/common/AccessibilityButton";
 import SEO from "../../components/common/SEO";
 import GamificationResult from "../../components/quiz/GamificationResult";
 import QuizReviewModal from "../../components/quiz/QuizReviewModal";
@@ -38,6 +39,8 @@ interface Answer {
   correct: number;
 }
 
+const ALLOWED_EXAM_COUNTS = [20, 40, 50, 60, 80, 100];
+
 export default function Exam_Page() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -46,7 +49,7 @@ export default function Exam_Page() {
   const userId = user?.id ? Number(user.id) : 1;
 
   const countParam = Number(searchParams.get("count"));
-  const questionCount = countParam && countParam > 0 ? countParam : 20;
+  const questionCount = ALLOWED_EXAM_COUNTS.includes(countParam) ? countParam : 20;
   const MAX_WRONG = Math.floor(questionCount / 10); // 20→2, 40→4, 50→5, 60→6, 80→8, 100→10
 
   const [phase, setPhase] = useState<Phase>("loading");
@@ -374,6 +377,7 @@ export default function Exam_Page() {
             <span className="exam-score-chip red">
               <IconX size={13} /> {wrong} / {MAX_WRONG}
             </span>
+            <AccessibilityButton />
             <ColorMode />
             <LanguagePicker />
           </div>

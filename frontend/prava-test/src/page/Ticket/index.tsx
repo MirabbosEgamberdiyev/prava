@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import type { OfflineTicket, TicketStat } from "../../types/desktop";
-import { getTickets, getTicketStats, getLang } from "../../services/desktopAdapter";
+import { getTickets, getTicketStats, getLang, getCachedTotalTickets } from "../../services/desktopAdapter";
 import SEO from "../../components/common/SEO";
 import {
   IconTicket,
@@ -64,8 +64,16 @@ export default function Tickets_Page() {
   return (
     <>
       <SEO
-        title={t("seo.tickets.title", "Biletlar — 70 ta Rasmiy YHXX Biletlari")}
-        description={t("seo.tickets.desc", "YHXBB imtihon biletlarini yeching.")}
+        title={t("seo.tickets.title", "Biletlar — {{count}} ta Rasmiy YHXX Biletlari", {
+          count: tickets.length || getCachedTotalTickets() || 63,
+        })}
+        description={t(
+          "seo.tickets.desc",
+          "Barcha {{count}} ta rasmiy biletni yeching va har bir bilet bo'yicha bilimingizni tekshiring.",
+          {
+            count: tickets.length || getCachedTotalTickets() || 63,
+          }
+        )}
         canonical="/tickets"
         noIndex={true}
       />
@@ -85,7 +93,10 @@ export default function Tickets_Page() {
             <p className={styles.innerPageSubtitle}>
               {t(
                 "tickets.subtitle",
-                "YHXBB rasmiy 70 ta bilet to'plami. Har bir bilet 20 ta savoldan iborat."
+                "YHXBB rasmiy {{count}} ta bilet to'plami. Har bir bilet 20 ta savoldan iborat.",
+                {
+                  count: tickets.length || getCachedTotalTickets() || 63,
+                }
               )}
             </p>
           </div>

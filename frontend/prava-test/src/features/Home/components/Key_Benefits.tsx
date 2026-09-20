@@ -8,6 +8,7 @@ import {
   IconSparkles,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { getCachedTotalTickets, getCachedTotalQuestions } from "../../../services/desktopAdapter";
 import classes from "./Home.module.css";
 
 export const Key_Benefits = React.memo(() => {
@@ -16,10 +17,16 @@ export const Key_Benefits = React.memo(() => {
   const benefits = [
     {
       icon: IconTicket,
-      title: t("home.benefits.card1Title", "70 ta rasmiy bilet"),
+      title: t("home.benefits.card1Title", "{{count}} ta rasmiy bilet", {
+        count: getCachedTotalTickets(),
+      }),
       desc: t(
         "home.benefits.card1Desc",
-        "IIV YHXBB bazasidagi barcha 70 ta rasmiy bilet va 1,190+ savollar to'liq jamlangan."
+        "IIV YHXBB bazasidagi barcha {{ticketsCount}} ta rasmiy bilet va {{questionsCount}} ta savollar to'liq jamlangan.",
+        {
+          ticketsCount: getCachedTotalTickets(),
+          questionsCount: getCachedTotalQuestions().toLocaleString(),
+        }
       ),
       badge: t("home.benefits.card1Badge", "Rasmiy baza"),
       color: "#0b84f3",

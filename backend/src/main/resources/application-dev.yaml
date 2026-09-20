@@ -19,6 +19,9 @@ app:
     test-mode:
       log-only: false            # ✅ Send real emails (optional)
 
+  jwt:
+    secret: "LocalDevSecretKeyForTestingPravaOnline2026SecureRandomString9876543210="
+
 logging:
   level:
     uz.pravaimtihon: DEBUG       # ✅ Batafsil log

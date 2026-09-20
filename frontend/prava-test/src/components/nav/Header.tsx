@@ -11,6 +11,7 @@ import {
 import { useTranslation } from "react-i18next";
 import LanguagePicker from "../language/LanguagePicker";
 import ColorMode from "../other/ColorMode";
+import AccessibilityButton from "../common/AccessibilityButton";
 import UserMenuButton from "./UserMenuButton";
 import { useAuth } from "../../auth/AuthContext";
 import {
@@ -87,13 +88,13 @@ export default function Header({
             <DomainLink href={getLandingUrl("/")} className="saas-nav-link">
               {t("nav.home", "Bosh sahifa")}
             </DomainLink>
-            <a href="#benefits" className="saas-nav-link">
+            <a href={getLandingUrl("/#benefits")} className="saas-nav-link">
               {t("nav.features", "Imkoniyatlar")}
             </a>
             <DomainLink href={getLandingUrl("/partners")} className="saas-nav-link">
               {t("nav.partners", "Avtomaktablar")}
             </DomainLink>
-            <a href="#faq" className="saas-nav-link">
+            <a href={getLandingUrl("/#faq")} className="saas-nav-link">
               {t("nav.faq", "FAQ")}
             </a>
             <DomainLink href={getLandingUrl("/about")} className="saas-nav-link">
@@ -122,6 +123,7 @@ export default function Header({
 
             <ColorMode />
             <LanguagePicker />
+            <AccessibilityButton />
 
             <Box visibleFrom="sm" className="navbar-divider" aria-hidden="true" />
 

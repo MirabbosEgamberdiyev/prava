@@ -8,6 +8,7 @@ import {
   IconListNumbers,
 } from "@tabler/icons-react";
 import type { OfflineTopic } from "../../types/desktop";
+import { getCachedTotalQuestions } from "../../services/desktopAdapter";
 
 export interface TestSetupCardProps {
   topics: OfflineTopic[];
@@ -37,7 +38,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
   const currentTopic =
     selectedTopicId != null ? topics.find((t) => t.id === selectedTopicId) : null;
 
-  const totalAllQuestions = topics.reduce((s, tp) => s + (tp.question_count || 0), 0) || 1190;
+  const totalAllQuestions = getCachedTotalQuestions();
   const maxQ = currentTopic ? currentTopic.question_count : totalAllQuestions;
 
   // Strict Terminology Separation:

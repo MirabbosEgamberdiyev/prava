@@ -15,7 +15,24 @@ import { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP } from "../constants/topics";
 export { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP };
 import storageService, { type StoredQuestion } from "./storageService";
 import api from "../api/api";
+import { curriculumApi } from "./curriculumApi";
 import { normalizeLanguage, type AppLanguage } from "../context/LanguageContext";
+
+let cachedTotalQuestions = 1234;
+let cachedTotalTickets = 63;
+
+curriculumApi.getStats().then((s) => {
+  if (s?.totalQuestions) cachedTotalQuestions = s.totalQuestions;
+  if (s?.totalTickets) cachedTotalTickets = s.totalTickets;
+}).catch(() => {});
+
+export function getCachedTotalQuestions(): number {
+  return cachedTotalQuestions;
+}
+
+export function getCachedTotalTickets(): number {
+  return cachedTotalTickets;
+}
 
 export function getLang(): AppLanguage {
   const l = i18n.resolvedLanguage || i18n.language;
@@ -262,7 +279,7 @@ export async function getExamQuestions(count = 20): Promise<OfflineQuestion[]> {
 }
 
 export async function getMarathonQuestions(topicId?: number, count = 100): Promise<OfflineQuestion[]> {
-  const actualCount = count && count > 0 ? count : 1190;
+  const actualCount = count && count > 0 ? count : cachedTotalQuestions;
   try {
     const res = await api.post<{
       data: { sessionId?: number; questions: any[] };
@@ -305,12 +322,12 @@ export async function getTickets(): Promise<OfflineTicket[]> {
       }));
     }
   } catch {
-    // fallback: 70 tickets
+    // fallback: 63 official tickets
   }
 
-  // Standalone fallback: 70 bilet
+  // Standalone fallback: 63 bilet (1234 savol, 63 rasmiy bilet)
   const fallbackTickets: OfflineTicket[] = [];
-  for (let i = 1; i <= 70; i++) {
+  for (let i = 1; i <= 63; i++) {
     fallbackTickets.push({
       id: i,
       topic_id: null,
@@ -416,7 +433,7 @@ export async function getTopics(): Promise<OfflineTopic[]> {
 export async function getFullStats(_userId?: number): Promise<FullStats> {
   const storedTicketStats = storageService.getTicketStats();
   const ticketStats: TicketReadinessStat[] = [];
-  const totalTickets = 70;
+  const totalTickets = cachedTotalTickets;
 
   // Try fetching live statistics from backend
   let serverStats: any = null;
@@ -511,14 +528,14 @@ export async function getFullStats(_userId?: number): Promise<FullStats> {
     }
   }
 
-  const totalQ = 1190;
+  const totalQ = cachedTotalQuestions;
 
   // Accurately reflect questions answered from live server stats
   if (readyQ + averageQ + weakQ === 0 && serverStats?.summary) {
     const correctAns = Number(serverStats.summary.correctAnswers || 0);
     const wrongAns = Number(serverStats.summary.wrongAnswers || 0);
     readyQ = Math.min(correctAns, totalQ);
-    weakQ = Math.min(wrongAns, totalQ - readyQ);
+    weakQ = Math.min(wrongAns, Math.max(0, totalQ - readyQ));
     averageQ = 0;
   }
 
@@ -704,7 +721,7 @@ export async function toggleSavedQuestion(_userId: number, question: OfflineQues
     saved = storageService.toggleSavedQuestion(toStoredQuestion(question));
   }
   try {
-    await api.post(`/api/v1/app/saved-questions/${qId}`);
+    await api.post(`/api/v1/app/saved-questions/${qId}?toggle=true`);
   } catch {
     // offline
   }

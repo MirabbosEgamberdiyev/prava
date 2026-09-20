@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { IconBook2, IconCheck, IconChartBar } from "@tabler/icons-react";
+import { getCachedTotalQuestions } from "../../services/desktopAdapter";
 import styles from "./Dashboard.module.css";
 
 interface ProgressStatsProps {
@@ -71,11 +72,29 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
         </div>
 
         <div className={styles.progressCardBottom}>
-          <span style={{ color: "#ea580c", fontWeight: 700 }}>
-            {dailyPercent >= 100
-              ? `🔥 ${t("dashboard.stats.dailyPlanDone", "Ajoyib! Bugungi rejangiz to'liq bajarildi.")}`
-              : `🔥 ${t("dashboard.stats.streakDays", { count: streakDays, defaultValue: `${streakDays} kunlik seriya` })}`}
-          </span>
+          {dailyDone > dailyTarget ? (
+            <span style={{ color: "#ea580c", fontWeight: 700 }}>
+              🎉 {t("dashboard.stats.dailyPlanOverflow", {
+                count: dailyDone - dailyTarget,
+                defaultValue: `+${dailyDone - dailyTarget} ta reja ortig'i bilan!`,
+              })}
+            </span>
+          ) : dailyPercent >= 100 ? (
+            <span style={{ color: "#ea580c", fontWeight: 700 }}>
+              🎉 {t("dashboard.stats.dailyPlanDone", "Ajoyib! Bugungi rejangiz to'liq bajarildi.")}
+            </span>
+          ) : streakDays > 0 ? (
+            <span style={{ color: "#ea580c", fontWeight: 700 }}>
+              🔥 {t("dashboard.stats.streakDays", {
+                count: streakDays,
+                defaultValue: `${streakDays} kunlik seriya`,
+              })}
+            </span>
+          ) : (
+            <span style={{ color: "#ea580c", fontWeight: 600 }}>
+              ✨ {t("dashboard.stats.startStreakToday", "Bugun test ishlab seriyani boshlang!")}
+            </span>
+          )}
         </div>
       </article>
 
@@ -119,7 +138,13 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
 
         <div className={styles.progressCardBottom}>
           <span>
-            {t("dashboard.stats.solvedQuestionsFootnote", "Jami 1 190 ta rasmiy savoldan")}
+            {t(
+              "dashboard.stats.solvedQuestionsFootnote",
+              "Jami {{count}} ta rasmiy savoldan",
+              {
+                count: qTotal || getCachedTotalQuestions() || 1234,
+              }
+            )}
           </span>
         </div>
       </article>
@@ -167,10 +192,10 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
         </div>
 
         <div className={styles.progressCardBottom}>
-          <span>
+          <span title={t("dashboard.stats.readinessExplanation", "To'liq o'zlashtirilgan savollar va test aniqligi asosida hisoblangan")}>
             {t(
               "dashboard.stats.readinessFootnote",
-              "Muntazam amaliyot bilan natija yanada yaxshi bo'ladi."
+              "O'zlashtirilgan savollar va test aniqligi asosida"
             )}
           </span>
         </div>

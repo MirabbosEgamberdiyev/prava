@@ -8,6 +8,7 @@ import {
   IconLanguage,
 } from "@tabler/icons-react";
 import useSWR from "swr";
+import { getCachedTotalQuestions, getCachedTotalTickets } from "../../../services/desktopAdapter";
 import classes from "./Home.module.css";
 
 // Counter animation hook
@@ -118,8 +119,9 @@ export function Stats_Section() {
   );
 
   const statsObj = publicStatsData?.data;
-  // Rasmiy savollar soni: 1,190+ yoki API'dan olingan aniq son
-  const totalQuestions = statsObj?.totalQuestions && statsObj.totalQuestions > 0 ? statsObj.totalQuestions : 1190;
+  // Rasmiy savollar soni: API'dan olingan aniq son yoki bazadan
+  const totalQuestions = statsObj?.totalQuestions && statsObj.totalQuestions > 0 ? statsObj.totalQuestions : getCachedTotalQuestions();
+  const totalTickets = (statsObj as any)?.totalTickets || getCachedTotalTickets();
 
   const stats: StatItem[] = [
     {
@@ -134,7 +136,7 @@ export function Stats_Section() {
       bg: "rgba(11, 132, 243, 0.1)",
     },
     {
-      value: 70,
+      value: totalTickets,
       suffix: "",
       labelKey: "home.landingStats.tickets",
       defaultLabel: "Rasmiy biletlar",

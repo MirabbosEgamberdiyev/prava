@@ -23,16 +23,16 @@ public class QuestionOption extends BaseEntity {
     private Integer optionIndex; // 0, 1, 2, 3...
 
     // Multi-language option texts
-    @Column(name = "text_uzl", length = 500)
+    @Column(name = "text_uzl", columnDefinition = "TEXT")
     private String textUzl;
 
-    @Column(name = "text_uzc", length = 500)
+    @Column(name = "text_uzc", columnDefinition = "TEXT")
     private String textUzc;
 
-    @Column(name = "text_en", length = 500)
+    @Column(name = "text_en", columnDefinition = "TEXT")
     private String textEn;
 
-    @Column(name = "text_ru", length = 500)
+    @Column(name = "text_ru", columnDefinition = "TEXT")
     private String textRu;
 
     public String getText(AcceptLanguage language) {

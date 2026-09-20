@@ -10,7 +10,15 @@ import {
 } from "@tabler/icons-react";
 import styles from "./Dashboard.module.css";
 
-export const AnalyticsToolsSection: React.FC = () => {
+interface AnalyticsToolsSectionProps {
+  savedCount?: number;
+  lastExamScore?: number | null;
+}
+
+export const AnalyticsToolsSection: React.FC<AnalyticsToolsSectionProps> = ({
+  savedCount,
+  lastExamScore,
+}) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -22,6 +30,13 @@ export const AnalyticsToolsSection: React.FC = () => {
       icon: IconBookmark,
       gradient: "linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)",
       route: "/saved-questions",
+      badge:
+        savedCount != null && savedCount > 0
+          ? t("dashboard.tools.savedCount", {
+              count: savedCount,
+              defaultValue: `${savedCount} ta`,
+            })
+          : undefined,
     },
     {
       id: "stats",
@@ -46,6 +61,13 @@ export const AnalyticsToolsSection: React.FC = () => {
       icon: IconCalendarEvent,
       gradient: "linear-gradient(135deg, #fbbf24 0%, #d97706 100%)",
       route: "/history",
+      badge:
+        lastExamScore != null
+          ? t("dashboard.tools.lastScore", {
+              score: lastExamScore,
+              defaultValue: `Oxirgi: ${lastExamScore}%`,
+            })
+          : undefined,
     },
   ];
 
@@ -82,7 +104,10 @@ export const AnalyticsToolsSection: React.FC = () => {
                 <Icon size={22} stroke={2} />
               </div>
               <div className={styles.toolInfo}>
-                <h5 className={styles.toolTitle}>{tool.title}</h5>
+                <h5 className={styles.toolTitle}>
+                  <span>{tool.title}</span>
+                  {tool.badge && <span className={styles.toolStatBadge}>{tool.badge}</span>}
+                </h5>
                 <p className={styles.toolDesc}>{tool.desc}</p>
               </div>
               <IconChevronRight size={18} className={styles.toolChevron} />

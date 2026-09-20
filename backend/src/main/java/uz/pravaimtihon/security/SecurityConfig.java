@@ -89,7 +89,10 @@ public class SecurityConfig {
                                 // Actuator
                                 "/actuator/health",
                                 "/actuator/info",
-                                "/error"
+                                "/error",
+
+                                // ✅ Curriculum Public Endpoints
+                                "/api/v1/curriculum/**"
                         ).permitAll()
 
                         // Packages - PUBLIC READ (biletlar ro'yxati va soni)
@@ -120,12 +123,22 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/files/questions/**")
                         .permitAll()
 
+                        // 4️⃣ Default vehicles, signs, markings - PUBLIC
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/files/defaults/**",
+                                "/api/v1/files/signs/**",
+                                "/api/v1/files/markings/**"
+                        ).permitAll()
+
                         // HEAD requests for all public file endpoints
                         .requestMatchers(HttpMethod.HEAD,
                                 "/api/v1/files/profiles/**",
                                 "/api/v1/files/general/**",
                                 "/api/v1/files/installers/**",
-                                "/api/v1/files/questions/**"
+                                "/api/v1/files/questions/**",
+                                "/api/v1/files/defaults/**",
+                                "/api/v1/files/signs/**",
+                                "/api/v1/files/markings/**"
                         ).permitAll()
 
                         // 5️⃣ File metadata, utilities, downloads - ADMIN ONLY

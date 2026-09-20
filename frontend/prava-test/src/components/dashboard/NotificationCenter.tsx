@@ -12,6 +12,7 @@ import {
   IconTarget,
   IconInfoCircle,
 } from "@tabler/icons-react";
+import { getCachedTotalTickets } from "../../services/desktopAdapter";
 import styles from "./Dashboard.module.css";
 
 export interface InAppNotification {
@@ -29,7 +30,7 @@ const DEFAULT_NOTIFICATIONS: InAppNotification[] = [
   {
     id: "notif-welcome",
     title: "🎉 PravaOnline ga xush kelibsiz!",
-    description: "Davlat YHXX imtihonlariga tayyorlanish uchun 70 ta bilet va barcha mavzular sizga taqdim etildi.",
+    description: `Davlat YHXX imtihonlariga tayyorlanish uchun ${getCachedTotalTickets()} ta bilet va barcha mavzular sizga taqdim etildi.`,
     time: "Bugun",
     read: false,
     type: "info",

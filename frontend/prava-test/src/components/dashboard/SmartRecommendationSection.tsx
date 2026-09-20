@@ -7,6 +7,7 @@ import {
   IconArrowRight,
   IconChevronRight,
   IconTargetArrow,
+  IconCheck,
 } from "@tabler/icons-react";
 import styles from "./Dashboard.module.css";
 
@@ -19,26 +20,16 @@ interface WeakTopic {
 interface SmartRecommendationSectionProps {
   weakTopics: WeakTopic[];
   totalWrongs: number;
+  practicedCount?: number;
 }
 
 export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProps> = ({
   weakTopics,
   totalWrongs,
+  practicedCount = 0,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-
-  // Fallback defaults for visual parity if user is brand new with 0 history
-  const displayTopics =
-    weakTopics.length > 0
-      ? weakTopics.slice(0, 5)
-      : [
-          { id: 3, name: t("dashboard.fallbackTopic1", "Yo'l belgilari"), wrongCount: 0 },
-          { id: 1, name: t("dashboard.fallbackTopic2", "Umumiy qoidalar"), wrongCount: 0 },
-          { id: 18, name: t("dashboard.fallbackTopic3", "Transport vositasi texnik holati"), wrongCount: 0 },
-          { id: 13, name: t("dashboard.fallbackTopic4", "Chorrahada harakatlanish"), wrongCount: 0 },
-          { id: 22, name: t("dashboard.fallbackTopic5", "Yo'lovchilar tashish qoidalari"), wrongCount: 0 },
-        ];
 
   const handleFixMistakes = () => {
     if (totalWrongs > 0) {
@@ -47,6 +38,8 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
       navigate("/exam");
     }
   };
+
+  const hasWeakTopics = weakTopics.length > 0;
 
   return (
     <section
@@ -66,7 +59,7 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
       </div>
 
       <div className={styles.smartSectionGrid}>
-        {/* Left Column: Weak Topics List */}
+        {/* Left Column: Weak Topics List or Honest Empty/Mastery State */}
         <div className={styles.weakTopicsCard}>
           <div className={styles.weakTopicsHeader}>
             <span className={styles.weakBadge}>
@@ -88,39 +81,78 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
             {t("dashboard.recommendation.weakTopicsTitle", "Eng ko'p xato tushgan yo'nalishlar")}
           </h4>
 
-          <div className={styles.weakTopicList}>
-            {displayTopics.map((topic, index) => (
-              <button
-                key={topic.id}
-                type="button"
-                className={styles.weakTopicItem}
-                onClick={() => navigate(`/marafon?topicId=${topic.id}`)}
-              >
-                <span className={styles.weakTopicNum}>{index + 1}</span>
-                <span className={styles.weakTopicName}>{topic.name}</span>
-                {topic.wrongCount > 0 ? (
+          {hasWeakTopics ? (
+            <div className={styles.weakTopicList}>
+              {weakTopics.slice(0, 5).map((topic, index) => (
+                <button
+                  key={topic.id}
+                  type="button"
+                  className={styles.weakTopicItem}
+                  onClick={() => navigate(`/marafon?topicId=${topic.id}`)}
+                >
+                  <span className={styles.weakTopicNum}>{index + 1}</span>
+                  <span className={styles.weakTopicName}>{topic.name}</span>
                   <span className={styles.weakTopicMistakes}>
                     {t("dashboard.recommendation.mistakesCount", {
                       count: topic.wrongCount,
                       defaultValue: `${topic.wrongCount} ta xato`,
                     })}
                   </span>
-                ) : (
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      color: "var(--text-muted)",
-                      padding: "2px 8px",
-                      borderRadius: 6,
-                    }}
-                  >
-                    {t("dashboard.recommendation.noMistakesYet", "Mashq qilish")}
-                  </span>
+                  <IconChevronRight size={15} className={styles.weakTopicArrow} />
+                </button>
+              ))}
+            </div>
+          ) : practicedCount === 0 ? (
+            /* New user with 0 practice - honest diagnostic onboarding */
+            <div className={styles.weakEmptyBox}>
+              <div className={styles.weakEmptyIcon}>
+                <IconTargetArrow size={24} stroke={2} />
+              </div>
+              <h5 className={styles.weakEmptyTitle}>
+                {t("dashboard.recommendation.diagnosticEmptyTitle", "Hozircha xatolar mavjud emas")}
+              </h5>
+              <p className={styles.weakEmptyDesc}>
+                {t(
+                  "dashboard.recommendation.diagnosticEmptyDesc",
+                  "Zaif mavzularni aniqlash va o'quv rejangizni shakllantirish uchun dastlabki sinov testini topshiring."
                 )}
-                <IconChevronRight size={15} className={styles.weakTopicArrow} />
+              </p>
+              <button
+                type="button"
+                className={styles.weakEmptyBtn}
+                onClick={() => navigate("/exam")}
+              >
+                <span>{t("dashboard.recommendation.startDiagnosticBtn", "Sinov testini boshlash →")}</span>
               </button>
-            ))}
-          </div>
+            </div>
+          ) : (
+            /* Experienced user with 0 mistakes - Mastery celebration */
+            <div className={styles.weakEmptyBox}>
+              <div
+                className={styles.weakEmptyIcon}
+                style={{ background: "rgba(16, 185, 129, 0.12)", color: "#059669" }}
+              >
+                <IconCheck size={24} stroke={2.5} />
+              </div>
+              <h5 className={styles.weakEmptyTitle}>
+                {t("dashboard.recommendation.masteryTitle", "Barcha mavzular o'zlashtirildi!")}
+              </h5>
+              <p className={styles.weakEmptyDesc}>
+                {t(
+                  "dashboard.recommendation.masteryDesc",
+                  "Sizda qayta ishlashni talab qiluvchi xatolar yo'q. Haqiqiy davlat imtihoni simulyatorida bilimingizni sinang."
+                )}
+              </p>
+              <button
+                type="button"
+                className={styles.weakEmptyBtn}
+                style={{ background: "#059669" }}
+                onClick={() => navigate("/exam")}
+              >
+                <span>{t("dashboard.recommendation.startMockExamBtn", "Haqiqiy imtihon topshirish →")}</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Stacked Cards */}
@@ -151,7 +183,7 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
                 </p>
               </div>
 
-              {/* Exam document with red cross illustration */}
+              {/* Exam document graphic */}
               <div className={styles.errorDocGraphic}>
                 <div className={styles.errorCrossCircle}>✕</div>
                 <div

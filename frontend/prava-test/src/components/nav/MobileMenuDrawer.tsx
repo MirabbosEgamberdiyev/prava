@@ -34,7 +34,7 @@ import LanguagePicker from "../language/LanguagePicker";
 import ColorMode from "../other/ColorMode";
 import { useAuth } from "../../auth/AuthContext";
 import { prefetchRoute } from "../../utils/routePrefetch";
-import { getWebAppUrl } from "../../utils/domain";
+import { getWebAppUrl, getLandingUrl } from "../../utils/domain";
 
 interface MobileMenuDrawerProps {
   opened: boolean;
@@ -64,7 +64,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
       isHash: false,
     },
     {
-      to: "#benefits",
+      to: getLandingUrl("/#benefits"),
       label: t("nav.features", "Imkoniyatlar"),
       icon: IconSparkles,
       isHash: true,

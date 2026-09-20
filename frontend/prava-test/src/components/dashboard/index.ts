@@ -3,6 +3,7 @@ export { DashboardHeader } from "./DashboardHeader";
 export { DashboardSidebar } from "./DashboardSidebar";
 export { DashboardSearchModal } from "./DashboardSearchModal";
 export { WelcomeBanner } from "./WelcomeBanner";
+export { NextBestActionCard, type NextBestActionProps } from "./NextBestActionCard";
 export { ProgressStats } from "./ProgressStats";
 export { LearningModesSection } from "./LearningModesSection";
 export { SmartRecommendationSection } from "./SmartRecommendationSection";

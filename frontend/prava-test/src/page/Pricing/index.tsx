@@ -28,6 +28,7 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { getCachedTotalTickets, getCachedTotalQuestions } from "../../services/desktopAdapter";
 import SEO from "../../components/common/SEO";
 import { getWebAppUrl } from "../../utils/domain";
 
@@ -41,14 +42,14 @@ export default function Pricing_Page() {
     {
       name: t("pricing.feat1", "Rasmiy IIV YHXX savollari"),
       free: t("pricing.feat1Free", "20 ta savol (1 bilet)"),
-      standard: t("pricing.feat1Full", "Barcha 1,190+ savol"),
-      premium: t("pricing.feat1Full", "Barcha 1,190+ savol"),
+      standard: t("pricing.feat1Full", "Barcha {{count}}+ savol", { count: getCachedTotalQuestions() }),
+      premium: t("pricing.feat1Full", "Barcha {{count}}+ savol", { count: getCachedTotalQuestions() }),
     },
     {
       name: t("pricing.feat2", "Rasmiy biletlar soni"),
       free: t("pricing.feat2Free", "1 ta sinov bileti"),
-      standard: t("pricing.feat2Full", "Barcha 70 ta bilet"),
-      premium: t("pricing.feat2Full", "Barcha 70 ta bilet"),
+      standard: t("pricing.feat2Full", "Barcha {{count}} ta bilet", { count: getCachedTotalTickets() }),
+      premium: t("pricing.feat2Full", "Barcha {{count}} ta bilet", { count: getCachedTotalTickets() }),
     },
     {
       name: t("pricing.feat3", "Davlat imtihoni simulyatori (25 daqiqa)"),
@@ -257,7 +258,7 @@ export default function Pricing_Page() {
                   <IconX size={12} />
                 </ThemeIcon>
                 <Text size="xs" c="dimmed" lh={1.4}>
-                  {t("pricing.freeF4Locked", "70 ta bilet (yopiq)")}
+                  {t("pricing.freeF4Locked", "{{count}} ta bilet (yopiq)", { count: getCachedTotalTickets() })}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -328,7 +329,10 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4} fw={600}>
-                  {t("pricing.stdF1", "Barcha 70 ta rasmiy bilet (1190+ savol)")}
+                  {t("pricing.stdF1", "Barcha {{ticketsCount}} ta rasmiy bilet ({{questionsCount}}+ savol)", {
+                    ticketsCount: getCachedTotalTickets(),
+                    questionsCount: getCachedTotalQuestions(),
+                  })}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">

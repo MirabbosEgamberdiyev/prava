@@ -1,3 +1,5 @@
+import Cookies from "js-cookie";
+
 export interface StoredOption {
   uzl: string;
   uzc?: string;
@@ -49,18 +51,46 @@ const STORAGE_KEYS = {
   QUESTION_ATTEMPTS: "prava_question_attempts_v1",
 };
 
-function safeGet<T>(key: string, defaultValue: T): T {
+function getActiveUserId(): string {
   try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : defaultValue;
+    const raw = Cookies.get("userData");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.id) return String(parsed.id);
+    }
+  } catch {}
+  return "guest";
+}
+
+function getScopedKey(baseKey: string): string {
+  const uid = getActiveUserId();
+  return `${baseKey}_${uid}`;
+}
+
+function safeGet<T>(baseKey: string, defaultValue: T): T {
+  try {
+    const scopedKey = getScopedKey(baseKey);
+    const raw = localStorage.getItem(scopedKey);
+    if (raw) return JSON.parse(raw);
+
+    // Backward compatibility: migrate from legacy un-scoped key
+    const legacy = localStorage.getItem(baseKey);
+    if (legacy) {
+      try {
+        localStorage.setItem(scopedKey, legacy);
+        return JSON.parse(legacy);
+      } catch {}
+    }
+    return defaultValue;
   } catch {
     return defaultValue;
   }
 }
 
-function safeSet(key: string, value: unknown): void {
+function safeSet(baseKey: string, value: unknown): void {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    const scopedKey = getScopedKey(baseKey);
+    localStorage.setItem(scopedKey, JSON.stringify(value));
     window.dispatchEvent(new Event("prava-storage-changed"));
   } catch {
     // ignore

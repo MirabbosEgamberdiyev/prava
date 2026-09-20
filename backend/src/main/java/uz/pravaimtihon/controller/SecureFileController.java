@@ -390,6 +390,33 @@ public class SecureFileController {
         return getPublicFile("general", filename, language);
     }
 
+    @GetMapping("/defaults/{filename:.+}")
+    @Operation(summary = "Get default vehicle image (public)")
+    public ResponseEntity<Resource> getDefaultVehicleImage(
+            @PathVariable String filename,
+            @Parameter(description = "uzl|uzc|en|ru")
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        return getPublicFile("defaults", filename, language);
+    }
+
+    @GetMapping("/signs/{filename:.+}")
+    @Operation(summary = "Get road sign image (public)")
+    public ResponseEntity<Resource> getRoadSignImage(
+            @PathVariable String filename,
+            @Parameter(description = "uzl|uzc|en|ru")
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        return getPublicFile("signs", filename, language);
+    }
+
+    @GetMapping("/markings/{filename:.+}")
+    @Operation(summary = "Get road marking image (public)")
+    public ResponseEntity<Resource> getRoadMarkingImage(
+            @PathVariable String filename,
+            @Parameter(description = "uzl|uzc|en|ru")
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        return getPublicFile("markings", filename, language);
+    }
+
     /**
      * Installer faylini to'g'ridan-to'g'ri STREAMING bilan yuboradi.
      *
@@ -509,7 +536,7 @@ public class SecureFileController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
 
-            List<String> allowedFolders = Arrays.asList("profiles", "general", "questions");
+            List<String> allowedFolders = Arrays.asList("profiles", "general", "questions", "defaults", "signs", "markings");
             if (!allowedFolders.contains(folder)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }

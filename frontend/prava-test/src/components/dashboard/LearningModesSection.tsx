@@ -9,17 +9,34 @@ import {
   IconArrowRight,
   IconSparkles,
 } from "@tabler/icons-react";
+import { getCachedTotalTickets, getCachedTotalQuestions } from "../../services/desktopAdapter";
 import styles from "./Dashboard.module.css";
 
 interface LearningModesSectionProps {
   onOpenExamPicker: () => void;
+  totalTickets?: number;
+  totalQuestions?: number;
+  ticketsSolvedCount?: number;
+  topicsLearnedCount?: number;
+  totalTopicsCount?: number;
+  marathonCurrentIndex?: number;
+  lastExamScore?: number | null;
 }
 
 export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
   onOpenExamPicker,
+  totalTickets,
+  totalQuestions,
+  ticketsSolvedCount = 0,
+  topicsLearnedCount = 0,
+  totalTopicsCount = 44,
+  marathonCurrentIndex = 0,
+  lastExamScore,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const ticketsCount = totalTickets || getCachedTotalTickets() || 63;
+  const questionsCount = totalQuestions || getCachedTotalQuestions() || 1234;
 
   return (
     <section
@@ -39,7 +56,7 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
       </div>
 
       <div className={styles.modesGrid}>
-        {/* Mode 1: Mavzular (Recommended) */}
+        {/* Mode 1: Mavzular */}
         <article
           className={styles.modeCard}
           style={{ "--mode-accent": "#0284c7" } as React.CSSProperties}
@@ -48,10 +65,20 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
           tabIndex={0}
           onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/topics")}
         >
-          <span className={styles.modeBadgeRecommended}>
-            <IconSparkles size={11} stroke={2.5} />
-            {t("dashboard.modes.recommended", "TAVSIYA ETILADI")}
-          </span>
+          {topicsLearnedCount > 0 ? (
+            <span className={styles.modeProgressChip}>
+              {t("dashboard.modes.topicsChip", {
+                done: topicsLearnedCount,
+                total: totalTopicsCount,
+                defaultValue: `${topicsLearnedCount}/${totalTopicsCount} mavzu`,
+              })}
+            </span>
+          ) : (
+            <span className={styles.modeBadgeRecommended}>
+              <IconSparkles size={11} stroke={2.5} />
+              {t("dashboard.modes.recommended", "TAVSIYA ETILADI")}
+            </span>
+          )}
 
           <div>
             <div
@@ -93,6 +120,16 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
           tabIndex={0}
           onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/tickets")}
         >
+          {ticketsSolvedCount > 0 && (
+            <span className={styles.modeProgressChip}>
+              {t("dashboard.modes.ticketsChip", {
+                done: ticketsSolvedCount,
+                total: ticketsCount,
+                defaultValue: `${ticketsSolvedCount}/${ticketsCount} bilet`,
+              })}
+            </span>
+          )}
+
           <div>
             <div
               className={styles.modeIconBox}
@@ -106,7 +143,8 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
             <p className={styles.modeDesc}>
               {t(
                 "dashboard.modes.ticketsDesc",
-                "1 dan 70 gacha rasmiy biletlar bilan o'zingizni sinab ko'ring."
+                "1 dan {{count}} gacha rasmiy biletlar bilan o'zingizni sinab ko'ring.",
+                { count: ticketsCount }
               )}
             </p>
           </div>
@@ -133,6 +171,23 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
           tabIndex={0}
           onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/marafon")}
         >
+          {marathonCurrentIndex > 0 && (
+            <span
+              className={styles.modeProgressChip}
+              style={{
+                backgroundColor: "rgba(139, 92, 246, 0.2)",
+                borderColor: "#a78bfa",
+                color: "#ede9fe",
+              }}
+            >
+              {t("dashboard.modes.marathonChip", {
+                current: marathonCurrentIndex,
+                total: questionsCount,
+                defaultValue: `${marathonCurrentIndex}/${questionsCount} savol`,
+              })}
+            </span>
+          )}
+
           <div>
             <div
               className={styles.modeIconBox}
@@ -146,7 +201,8 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
             <p className={styles.modeDesc}>
               {t(
                 "dashboard.modes.marathonDesc",
-                "Barcha 1200+ savol ketma-ket. Tayyorgarligingizni maksimal darajada sinang."
+                "Barcha {{count}} ta savol ketma-ket. Tayyorgarligingizni maksimal darajada sinang.",
+                { count: questionsCount }
               )}
             </p>
           </div>
@@ -173,6 +229,15 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
           tabIndex={0}
           onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onOpenExamPicker()}
         >
+          {lastExamScore != null && (
+            <span className={styles.modeProgressChip}>
+              {t("dashboard.modes.examChip", {
+                score: lastExamScore,
+                defaultValue: `Oxirgi: ${lastExamScore}%`,
+              })}
+            </span>
+          )}
+
           <div>
             <div
               className={styles.modeIconBox}

@@ -4,9 +4,9 @@ import { useDesktopTheme } from "@/context/DesktopThemeContext";
 import { useTranslation } from "react-i18next";
 
 const ColorMode = () => {
-  const { theme, toggleTheme } = useDesktopTheme();
+  const { resolvedTheme, toggleTheme } = useDesktopTheme();
   const { t } = useTranslation();
-  const isLight = theme === "light";
+  const isLight = resolvedTheme === "light";
 
   return (
     <Tooltip

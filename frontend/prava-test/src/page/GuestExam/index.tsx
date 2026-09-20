@@ -27,6 +27,7 @@ import {
   IconClock,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import { getCachedTotalTickets } from "../../services/desktopAdapter";
 import SEO from "../../components/common/SEO";
 import { QuizContent } from "../../components/quiz/QuizContent";
 import { QuizNav } from "../../components/quiz/QuizNav";
@@ -188,7 +189,8 @@ const GuestExamPage = () => {
               <Text size="sm" c="dimmed" mb="lg" lh={1.6}>
                 {t(
                   "guestExam.registerPromptFull",
-                  "Siz bepul sinov imtihonidan foydalandingiz. Barcha 70 ta rasmiy bilet, xatolar ustida ishlash, cheksiz marafon va natijalaringizni doimiy saqlab borish uchun bepul ro'yxatdan o'ting."
+                  "Siz bepul sinov imtihonidan foydalandingiz. Barcha {{count}} ta rasmiy bilet, xatolar ustida ishlash, cheksiz marafon va natijalaringizni doimiy saqlab borish uchun bepul ro'yxatdan o'ting.",
+                  { count: getCachedTotalTickets() }
                 )}
               </Text>
               <Stack gap="sm">
@@ -347,7 +349,11 @@ const GuestExamPage = () => {
             </Text>
             <Text size="xs" c="dimmed" ta="center" maw={320}>
               {correctPercentage >= 90
-                ? t("guestExam.passedEncourage", "Ajoyib natija! Haqiqiy davlat imtihonida ham 18+ to'g'ri javob talab etiladi. Barcha 70 ta biletni to'liq o'zlashtirishni tavsiya etamiz.")
+                ? t(
+                    "guestExam.passedEncourage",
+                    "Ajoyib natija! Haqiqiy davlat imtihonida ham 18+ to'g'ri javob talab etiladi. Barcha {{count}} ta biletni to'liq o'zlashtirishni tavsiya etamiz.",
+                    { count: getCachedTotalTickets() }
+                  )
                 : t("guestExam.failedEncourage", "Davlat imtihonidan o'tish uchun kamida 18 ta to'g'ri javob kerak. Xatolar ustida ishlab, bilimingizni 100% ga chiqaring.")}
             </Text>
           </Stack>
@@ -418,7 +424,7 @@ const GuestExamPage = () => {
               color="blue"
               onClick={() => navigate("/auth/register")}
             >
-              {t("guestExam.unlockAll", "Barcha 70 ta biletni ochish")}
+              {t("guestExam.unlockAll", "Barcha {{count}} ta biletni ochish", { count: getCachedTotalTickets() })}
             </Button>
             <Button
               fullWidth

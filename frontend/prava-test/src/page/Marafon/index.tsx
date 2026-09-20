@@ -18,9 +18,11 @@ import {
   parseOptions,
   getActiveMarathonSessionId,
   submitExamSession,
+  getCachedTotalQuestions,
 } from "../../services/desktopAdapter";
 import ColorMode from "../../components/other/ColorMode";
 import LanguagePicker from "../../components/language/LanguagePicker";
+import AccessibilityButton from "../../components/common/AccessibilityButton";
 import ImageZoomModal, { ZoomableImage } from "../../components/common/ImageZoomModal";
 import GamificationResult from "../../components/quiz/GamificationResult";
 import QuizReviewModal from "../../components/quiz/QuizReviewModal";
@@ -58,7 +60,7 @@ export default function Marafon_Page() {
   const userId = user?.id ? Number(user.id) : 1;
 
   const location = useLocation();
-  const rawTopicId = searchParams.get("topicId") || (location.state as any)?.topicId;
+  const rawTopicId = searchParams.get("topicId") || (location.state as { topicId?: number | string } | null)?.topicId;
   const initialTopicId = rawTopicId ? Number(rawTopicId) : null;
 
   // Setup state
@@ -184,12 +186,12 @@ export default function Marafon_Page() {
     const maxQ =
       selTopic != null
         ? topics.find((t) => t.id === selTopic)?.question_count ?? 0
-        : topics.reduce((s, t) => s + (t.question_count || 0), 0);
+        : getCachedTotalQuestions();
 
     const chosenOption = COUNT_OPTIONS[countIdx];
     const limit =
       chosenOption === 0
-        ? (maxQ > 0 ? maxQ : 1190)
+        ? (maxQ > 0 ? maxQ : getCachedTotalQuestions())
         : (maxQ > 0 ? Math.min(chosenOption, maxQ) : chosenOption);
 
     getMarathonQuestions(selTopic ?? undefined, limit)
@@ -359,7 +361,7 @@ export default function Marafon_Page() {
       <div className="marathon-setup-wrapper" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         <SEO
           title={`${pageTitle} — ${t("seo.marathon.title", "Marafon")}`}
-          description={t("seo.marathon.desc", "Barcha 1190 ta savoldan iborat marafon.")}
+          description={t("seo.marathon.desc", "Barcha rasmiy savollardan iborat cheksiz marafon.")}
           canonical="/marafon"
           noIndex={true}
         />
@@ -393,6 +395,7 @@ export default function Marafon_Page() {
             <span>{t("common.back", "Orqaga")}</span>
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <AccessibilityButton />
             <ColorMode />
             <LanguagePicker />
           </div>
@@ -580,6 +583,7 @@ export default function Marafon_Page() {
                 <span className="home-header-brand">PRAVA<span className="brand-accent">ONLINE</span></span>
               </div>
               <div className="home-header-right">
+                <AccessibilityButton />
                 <LanguagePicker />
                 <ColorMode />
               </div>
@@ -663,6 +667,7 @@ export default function Marafon_Page() {
             <span className="exam-score-chip red">
               <IconX size={13} /> {wrong}
             </span>
+            <AccessibilityButton />
             <ColorMode />
             <LanguagePicker />
           </div>

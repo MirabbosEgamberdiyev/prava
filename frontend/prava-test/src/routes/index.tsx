@@ -6,6 +6,7 @@ import AdminRoute from "../auth/AdminRoute";
 import App_Layout from "../layout/App_Layout";
 import User_Layout from "../layout/User_Layout";
 import Exam_Layout from "../layout/Exam_Layout";
+import AdaptiveLayout from "../layout/AdaptiveLayout";
 import { isLandingDomain } from "../utils/domain";
 import {
   DomainRedirectToWebApp,
@@ -49,6 +50,12 @@ const Offer_Page          = lazy(() => import("../page/Legal/Offer"));
 const WrongAnswers_Page   = lazy(() => import("../page/WrongAnswers"));
 const WrongExam_Page      = lazy(() => import("../page/WrongExam"));
 const SavedQuestions_Page = lazy(() => import("../page/SavedQuestions"));
+const RoadSigns_Page      = lazy(() => import("../page/RoadSigns"));
+const RoadMarkings_Page   = lazy(() => import("../page/RoadMarkings"));
+const ExamCenters_Page    = lazy(() => import("../page/ExamCenters"));
+const PracticalExam_Page  = lazy(() => import("../page/PracticalExam"));
+const TrafficRules_Page   = lazy(() => import("../page/TrafficRules"));
+const Penalties_Page      = lazy(() => import("../page/Penalties"));
 
 function RootLoadingFallback() {
   useEffect(() => {
@@ -113,6 +120,12 @@ export default function AppRoutes() {
               <Route path="terms" element={<Terms_Page />} />
               <Route path="privacy" element={<Privacy_Page />} />
               <Route path="offer" element={<Offer_Page />} />
+              <Route path="signs" element={<RoadSigns_Page />} />
+              <Route path="markings" element={<RoadMarkings_Page />} />
+              <Route path="exam-centers" element={<ExamCenters_Page />} />
+              <Route path="practical-exam" element={<PracticalExam_Page />} />
+              <Route path="rules" element={<TrafficRules_Page />} />
+              <Route path="penalties" element={<Penalties_Page />} />
             </Route>
 
             {/* Public Free Guest Trial Exam */}
@@ -172,6 +185,16 @@ export default function AppRoutes() {
               <Route path="/terms" element={<Terms_Page />} />
               <Route path="/privacy" element={<Privacy_Page />} />
               <Route path="/offer" element={<Offer_Page />} />
+            </Route>
+
+            {/* Curriculum Routes with Adaptive Layout (User_Layout when authenticated, App_Layout when guest) */}
+            <Route element={<AdaptiveLayout />}>
+              <Route path="/signs" element={<RoadSigns_Page />} />
+              <Route path="/markings" element={<RoadMarkings_Page />} />
+              <Route path="/exam-centers" element={<ExamCenters_Page />} />
+              <Route path="/practical-exam" element={<PracticalExam_Page />} />
+              <Route path="/rules" element={<TrafficRules_Page />} />
+              <Route path="/penalties" element={<Penalties_Page />} />
             </Route>
 
             {/* Auth Routes */}
@@ -273,6 +296,16 @@ export default function AppRoutes() {
               <Route path="terms" element={<Terms_Page />} />
               <Route path="privacy" element={<Privacy_Page />} />
               <Route path="offer" element={<Offer_Page />} />
+            </Route>
+
+            {/* Curriculum Routes with Adaptive Layout (User_Layout when authenticated, App_Layout when guest) */}
+            <Route element={<AdaptiveLayout />}>
+              <Route path="/signs" element={<RoadSigns_Page />} />
+              <Route path="/markings" element={<RoadMarkings_Page />} />
+              <Route path="/exam-centers" element={<ExamCenters_Page />} />
+              <Route path="/practical-exam" element={<PracticalExam_Page />} />
+              <Route path="/rules" element={<TrafficRules_Page />} />
+              <Route path="/penalties" element={<Penalties_Page />} />
             </Route>
 
             <Route path="/try-exam" element={<GuestExam_Page />} />

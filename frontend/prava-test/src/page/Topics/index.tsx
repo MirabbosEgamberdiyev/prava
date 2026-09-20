@@ -58,8 +58,8 @@ export default function Topics_Page() {
       .finally(() => setLoading(false));
   }, []);
 
-  const { theme } = useDesktopTheme();
-  const isDark = theme === "dark";
+  const { resolvedTheme } = useDesktopTheme();
+  const isDark = resolvedTheme === "dark";
 
   const onStartTopicTest = (topicId: number) => {
     navigate(`/marafon?topicId=${topicId}`);

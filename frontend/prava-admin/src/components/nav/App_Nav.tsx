@@ -1,6 +1,6 @@
-import AdminNavUrlData from "../../data/AdminNavUrlData";
-import type { NavItem } from "../../data/AdminNavUrlData";
-import { NavLink, Box, ActionIcon, AppShell, ScrollArea } from "@mantine/core";
+import { AdminNavCategories } from "../../data/AdminNavUrlData";
+import type { NavItem, NavCategory } from "../../data/AdminNavUrlData";
+import { NavLink, Box, ActionIcon, AppShell, ScrollArea, Text, Divider } from "@mantine/core";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -38,8 +38,6 @@ const App_Nav = ({ close }: AppShellNavbarProps) => {
     return true;
   };
 
-  const filteredNav = AdminNavUrlData.filter((item) => hasAccess(item.role, item.roles));
-
   const isCurrentActive = (url: string) => {
     if (url === "/") {
       return location.pathname === "/";
@@ -51,46 +49,84 @@ const App_Nav = ({ close }: AppShellNavbarProps) => {
     <AppShell.Navbar p="xs" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <AppShell.Section grow component={ScrollArea} scrollbars="y" type="auto" offsetScrollbars>
         <Box pr={4} py={4}>
-          {filteredNav.map((item: NavItem, i: number) => {
-            const filteredSub = item.sub?.filter((sub) => hasAccess(sub.role));
-            const hasSub = !!filteredSub && filteredSub.length > 0;
-            const isOpened = hasSub && item.url !== "/" && location.pathname.startsWith(item.url);
+          {AdminNavCategories.map((category: NavCategory, catIdx: number) => {
+            // Category-level permission check
+            if (category.roles && !hasAccess(undefined, category.roles)) {
+              return null;
+            }
+
+            // Filter items within category
+            const accessibleItems = category.items.filter((item) =>
+              hasAccess(item.role, item.roles)
+            );
+
+            if (accessibleItems.length === 0) return null;
 
             return (
-              <NavLink
-                key={i}
-                label={t(item.name)}
-                leftSection={
-                  <ActionIcon variant="light" size="sm" radius="md">
-                    {item.icon}
-                  </ActionIcon>
-                }
-                childrenOffset={24}
-                variant="light"
-                onClick={() => {
-                  if (!hasSub) {
-                    close();
-                    navigate(item.url);
-                  }
-                }}
-                active={!hasSub && isCurrentActive(item.url)}
-                defaultOpened={isOpened}
-                style={{ borderRadius: "8px", fontWeight: "500", marginBottom: "4px" }}
-              >
-                {filteredSub?.map((sub, index) => (
-                  <NavLink
-                    key={index}
-                    label={t(sub.name)}
-                    variant="light"
-                    active={location.pathname === sub.url}
-                    onClick={() => {
-                      close();
-                      navigate(sub.url);
-                    }}
-                    style={{ borderRadius: "6px", fontWeight: "400", marginBottom: "2px" }}
-                  />
-                ))}
-              </NavLink>
+              <Box key={category.categoryKey} mb="md">
+                {catIdx > 0 && (
+                  <>
+                    <Divider my="xs" opacity={0.5} />
+                    <Text
+                      size="10px"
+                      fw={700}
+                      c="dimmed"
+                      tt="uppercase"
+                      px="xs"
+                      mb={6}
+                      style={{ letterSpacing: "0.8px" }}
+                    >
+                      {t(category.categoryName)}
+                    </Text>
+                  </>
+                )}
+
+                {accessibleItems.map((item: NavItem, i: number) => {
+                  const filteredSub = item.sub?.filter((sub) =>
+                    hasAccess(sub.role, sub.roles)
+                  );
+                  const hasSub = !!filteredSub && filteredSub.length > 0;
+                  const isOpened =
+                    hasSub && item.url !== "/" && location.pathname.startsWith(item.url);
+
+                  return (
+                    <NavLink
+                      key={`${category.categoryKey}-${i}`}
+                      label={t(item.name)}
+                      leftSection={
+                        <ActionIcon variant="light" size="sm" radius="md">
+                          {item.icon}
+                        </ActionIcon>
+                      }
+                      childrenOffset={24}
+                      variant="light"
+                      onClick={() => {
+                        if (!hasSub) {
+                          close();
+                          navigate(item.url);
+                        }
+                      }}
+                      active={!hasSub && isCurrentActive(item.url)}
+                      defaultOpened={isOpened}
+                      style={{ borderRadius: "8px", fontWeight: "500", marginBottom: "4px" }}
+                    >
+                      {filteredSub?.map((sub, index) => (
+                        <NavLink
+                          key={index}
+                          label={t(sub.name)}
+                          variant="light"
+                          active={location.pathname === sub.url}
+                          onClick={() => {
+                            close();
+                            navigate(sub.url);
+                          }}
+                          style={{ borderRadius: "6px", fontWeight: "400", marginBottom: "2px" }}
+                        />
+                      ))}
+                    </NavLink>
+                  );
+                })}
+              </Box>
             );
           })}
         </Box>

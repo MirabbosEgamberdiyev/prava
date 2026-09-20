@@ -111,7 +111,8 @@ function HBar({ label, count, total, color, icon }: HBarProps) {
 }
 
 // ── Readiness badge ────────────────────────────────────────────────────────
-function ReadinessBadge({ r, t }: { r: string; t: any }) {
+function ReadinessBadge({ r }: { r: string }) {
+  const { t } = useTranslation();
   if (r === "ready")
     return (
       <span className="rd-badge rd-ready">
@@ -306,7 +307,9 @@ export default function Statistics_Page() {
       setStats(s);
       setHistory(h);
       setQStats(null);
-    } catch (_) {}
+    } catch (err) {
+      console.warn("Failed to reset stats:", err);
+    }
     setResetting(false);
     setResetConfirm(false);
   }
@@ -538,7 +541,7 @@ export default function Statistics_Page() {
 
                             {/* Right: badge + meta */}
                             <div className="td-right">
-                              <ReadinessBadge r={tk.readiness} t={t} />
+                              <ReadinessBadge r={tk.readiness} />
                               <div className="td-meta">
                                 {tk.last_score != null && (
                                   <span className="td-score">{tk.last_score}%</span>
@@ -720,7 +723,7 @@ export default function Statistics_Page() {
                               )}
                             </div>
                             <div className="q-row-right">
-                              <ReadinessBadge r={q.readiness} t={t} />
+                              <ReadinessBadge r={q.readiness} />
                               <div className="q-row-counts">
                                 <span className="q-correct">{q.correct_count}</span>
                                 <span className="q-sep">/</span>

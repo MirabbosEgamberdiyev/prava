@@ -32,6 +32,7 @@ import {
 } from "@tabler/icons-react";
 import { useAuth } from "@/auth/AuthContext";
 import api from "@/api/api";
+import { getCachedTotalQuestions, getCachedTotalTickets } from "@/services/desktopAdapter";
 import { notifications } from "@mantine/notifications";
 import { getErrorMessage } from "@/types/errors";
 import { useCapsLock } from "@/hooks/useCapsLock";
@@ -79,33 +80,6 @@ const Register_Page: React.FC = () => {
     from = locationState.from.pathname + (locationState.from.search || "");
   }
 
-  if (isAuthenticated) {
-    return <Navigate to={from} replace />;
-  }
-
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    const codeParam = searchParams.get("code") || searchParams.get("token");
-    const emailParam = searchParams.get("email");
-    if (emailParam) form.setFieldValue("email", emailParam);
-    if (codeParam) {
-      setCode(codeParam);
-      setStep(2);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (step === 2 && countdown > 0) {
-      timerRef.current = setTimeout(() => {
-        setCountdown((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [step, countdown]);
-
   const form = useForm({
     initialValues: {
       firstName: "",
@@ -140,6 +114,33 @@ const Register_Page: React.FC = () => {
       },
     },
   });
+
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const codeParam = searchParams.get("code") || searchParams.get("token");
+    const emailParam = searchParams.get("email");
+    if (emailParam) form.setFieldValue("email", emailParam);
+    if (codeParam) {
+      setCode(codeParam);
+      setStep(2);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (step === 2 && countdown > 0) {
+      timerRef.current = setTimeout(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [step, countdown]);
+
+  if (isAuthenticated) {
+    return <Navigate to={from} replace />;
+  }
 
   // Step 1: Send registration data & initiate Email OTP
   const handleInit = async (values: typeof form.values) => {
@@ -289,7 +290,11 @@ const Register_Page: React.FC = () => {
       <p className={layoutClasses.leftDescription}>
         {t(
           "authV2.register.description",
-          "Ro'yxatdan o'ting va 1200+ rasmiy savollar, 70 ta bilet va davlat imtihoni simulyatori bilan bilimlaringizni mustahkamlang."
+          "Ro'yxatdan o'ting va {{questionsCount}} ta rasmiy savol, {{ticketsCount}} ta bilet va davlat imtihoni simulyatori bilan bilimlaringizni mustahkamlang.",
+          {
+            questionsCount: getCachedTotalQuestions().toLocaleString(),
+            ticketsCount: getCachedTotalTickets(),
+          }
         )}
       </p>
 
@@ -341,7 +346,11 @@ const Register_Page: React.FC = () => {
         title={t("authV2.register.b1Title", "To'liq testlar bazasi")}
         description={t(
           "authV2.register.b1Desc",
-          "1200+ rasmiy savollar va 70 ta bilet."
+          "{{questionsCount}} ta rasmiy savol va {{ticketsCount}} ta bilet.",
+          {
+            questionsCount: getCachedTotalQuestions().toLocaleString(),
+            ticketsCount: getCachedTotalTickets(),
+          }
         )}
       />
 

@@ -22,6 +22,7 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { getCachedTotalTickets, getCachedTotalQuestions } from "../../services/desktopAdapter";
 import SEO from "../../components/common/SEO";
 
 export default function About_Page() {
@@ -60,15 +61,16 @@ export default function About_Page() {
       title: t("about.val4Title", "Tizimli tayyorgarlik"),
       desc: t(
         "about.val4Desc",
-        "Barcha 70 ta bilet bo'yicha to'liq tayyorgarlik ko'rgan o'quvchilarimiz haqiqiy davlat imtihonida ishonch bilan o'tishmoqda."
+        "Barcha {{count}} ta bilet bo'yicha to'liq tayyorgarlik ko'rgan o'quvchilarimiz haqiqiy davlat imtihonida ishonch bilan o'tishmoqda.",
+        { count: getCachedTotalTickets() }
       ),
       color: "blue",
     },
   ];
 
   const milestones = [
-    { number: "1 200+", label: t("about.stat1", "Rasmiy savollar bazasi") },
-    { number: "70", label: t("about.stat2", "Rasmiy imtihon biletlari") },
+    { number: `${getCachedTotalQuestions().toLocaleString()}+`, label: t("about.stat1", "Rasmiy savollar bazasi") },
+    { number: `${getCachedTotalTickets()}`, label: t("about.stat2", "Rasmiy imtihon biletlari") },
     { number: "24/7", label: t("about.stat3", "Uzluksiz online tayyorgarlik") },
     { number: "3", label: t("about.stat4", "O'rganish tillari (Lotin, Kirill, Rus)") },
   ];

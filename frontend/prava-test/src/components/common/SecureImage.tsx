@@ -1,5 +1,6 @@
 import React from "react";
 import { getImageUrl } from "../../utils/imageUtils";
+import { AppImage } from "./AppImage";
 
 interface Props {
   path: string;
@@ -10,43 +11,16 @@ interface Props {
 }
 
 export default function SecureImage({ path, alt = "", className, style, onOpen }: Props) {
-  const [hasError, setHasError] = React.useState(false);
-
-  React.useEffect(() => {
-    setHasError(false);
-  }, [path]);
-
-  if (!path || hasError) {
-    return (
-      <img
-        src="/images/default-vehicle-placeholder.svg"
-        alt={alt || "Prava Online Vehicle"}
-        className={className}
-        loading="lazy"
-        draggable={false}
-        style={{
-          ...style,
-          objectFit: "contain",
-          maxHeight: style?.maxHeight || "280px",
-          width: style?.width || "100%",
-        }}
-      />
-    );
-  }
-
-  const src = getImageUrl(path) || path;
+  const src = path ? getImageUrl(path) || path : null;
 
   return (
-    <img
+    <AppImage
       src={src}
       alt={alt}
       className={className}
-      loading="lazy"
-      draggable={false}
-      onContextMenu={(e) => e.preventDefault()}
-      onClick={onOpen ? () => onOpen(src) : undefined}
-      onError={() => setHasError(true)}
-      style={{ ...style, ...(onOpen ? { cursor: "zoom-in" } : {}) }}
+      style={style}
+      fit="contain"
+      onClick={onOpen && src ? () => onOpen(src) : undefined}
     />
   );
 }

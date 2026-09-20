@@ -38,10 +38,17 @@ import {
   IconDownload,
   IconPlus,
   IconSettings,
+  IconRoadSign,
+  IconTrafficLights,
+  IconBook,
+  IconGavel,
+  IconSteeringWheel,
+  IconMapPin,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDashboardStats, useTopicStats, useRecentExams } from "../../features/dashboard";
+import { useCurriculumStats } from "../../features/curriculum";
 import { formatDate } from "../../utils/formatDate";
 import { useTranslation } from "react-i18next";
 
@@ -108,6 +115,7 @@ const Home_Page = () => {
   const { stats, isLoading: statsLoading, isError: statsError, refresh: refreshStats } =
     useDashboardStats();
   const { topics, isLoading: topicsLoading, isError: topicsError } = useTopicStats();
+  const { stats: curriculumStats } = useCurriculumStats();
   const [examPage, setExamPage] = useState(0);
   const {
     exams,
@@ -230,6 +238,60 @@ const Home_Page = () => {
             <Button
               size="xs"
               variant="light"
+              color="blue"
+              leftSection={<IconRoadSign size={14} />}
+              onClick={() => navigate("/signs")}
+            >
+              Yo'l belgilari
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="teal"
+              leftSection={<IconTrafficLights size={14} />}
+              onClick={() => navigate("/markings")}
+            >
+              Yo'l chiziqlari
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="indigo"
+              leftSection={<IconBook size={14} />}
+              onClick={() => navigate("/rules")}
+            >
+              YHQ Qoidalar
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="red"
+              leftSection={<IconGavel size={14} />}
+              onClick={() => navigate("/fines")}
+            >
+              Jarimalar
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="grape"
+              leftSection={<IconSteeringWheel size={14} />}
+              onClick={() => navigate("/autodrom")}
+            >
+              Avtodrom
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="cyan"
+              leftSection={<IconMapPin size={14} />}
+              onClick={() => navigate("/exam-centers")}
+            >
+              Imtihon markazlari
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
               color="gray"
               leftSection={<IconSettings size={14} />}
               onClick={() => navigate("/settings")}
@@ -312,6 +374,53 @@ const Home_Page = () => {
             color="yellow"
             subtitle="Tayyor to'plamlar"
             onClick={() => navigate("/packages")}
+          />
+        </SimpleGrid>
+      </Stack>
+
+      {/* Row 2.5: Ta'lim va O'quv Dasturi (Curriculum) */}
+      <Stack gap="xs">
+        <Text size="sm" fw={700} c="dimmed">TA'LIM VA O'QUV DASTURI (CURRICULUM)</Text>
+        <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 5 }}>
+          <StatCard
+            title="Yo'l Belgilari"
+            value={curriculumStats?.totalSigns ?? 0}
+            icon={<IconRoadSign size={24} />}
+            color="blue"
+            subtitle="8 ta rasmiy toifa"
+            onClick={() => navigate("/signs")}
+          />
+          <StatCard
+            title="Yo'l Chiziqlari"
+            value={curriculumStats?.totalMarkings ?? 0}
+            icon={<IconTrafficLights size={24} />}
+            color="teal"
+            subtitle="Gorizontal & Vertikal"
+            onClick={() => navigate("/markings")}
+          />
+          <StatCard
+            title="Imtihon Markazlari"
+            value={curriculumStats?.totalExamCenters ?? 0}
+            icon={<IconMapPin size={24} />}
+            color="cyan"
+            subtitle="14 ta hududiy markaz"
+            onClick={() => navigate("/exam-centers")}
+          />
+          <StatCard
+            title="Avtodrom Mashqlari"
+            value={curriculumStats?.totalPracticalExercises ?? 0}
+            icon={<IconSteeringWheel size={24} />}
+            color="grape"
+            subtitle="Davlat amaliy standarti"
+            onClick={() => navigate("/autodrom")}
+          />
+          <StatCard
+            title="Jarima Ballari"
+            value={curriculumStats?.totalPenalties ?? 0}
+            icon={<IconGavel size={24} />}
+            color="red"
+            subtitle="Qoidabuzarlik mezonlari"
+            onClick={() => navigate("/fines")}
           />
         </SimpleGrid>
       </Stack>

@@ -16,11 +16,13 @@ import {
   IconDeviceMobile,
   IconDeviceDesktop,
   IconSettings,
+  IconTypography,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { ProfileInfoCard } from "../../features/me/components/ProfileInfoCard";
 import { ChangePasswordForm } from "../../features/me/components/ChangePasswordForm";
+import { AccessibilityPanelContent } from "../../components/common/AccessibilityPanelContent";
 import SEO from "../../components/common/SEO";
 
 import styles from "../../components/dashboard/Dashboard.module.css";
@@ -95,6 +97,9 @@ const Settings_Page = () => {
                 </Tabs.Tab>
                 <Tabs.Tab value="devices" leftSection={<IconDevices size={16} />}>
                   {t("settings.devices")}
+                </Tabs.Tab>
+                <Tabs.Tab value="accessibility" leftSection={<IconTypography size={16} />}>
+                  {t("accessibility.title", "Matn va Qulaylik")}
                 </Tabs.Tab>
               </Tabs.List>
             </div>
@@ -179,6 +184,22 @@ const Settings_Page = () => {
               </Paper>
             )}
           </Stack>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="accessibility">
+          <Paper p="xl" radius="md" withBorder shadow="sm" style={{ background: "var(--card-bg)" }}>
+            <div style={{ maxWidth: 680, margin: "0 auto" }}>
+              <div style={{ marginBottom: 24 }}>
+                <Text fw={700} size="lg" mb={4}>
+                  {t("accessibility.title", "Matn va Qulaylik")}
+                </Text>
+                <Text size="sm" c="dimmed">
+                  {t("accessibility.subtitle", "O'qish qulayligi, shrift o'lchami va kontrast sozlamalari")}
+                </Text>
+              </div>
+              <AccessibilityPanelContent />
+            </div>
+          </Paper>
         </Tabs.Panel>
       </Tabs>
     </div>

@@ -16,6 +16,12 @@ import {
   IconX,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
+  IconDirections,
+  IconRoad,
+  IconBuildingSkyscraper,
+  IconSteeringWheel,
+  IconGavel,
+  IconBook,
 } from "@tabler/icons-react";
 import styles from "./Dashboard.module.css";
 
@@ -147,6 +153,60 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       action: () => {
         onClose();
         onOpenExamPicker();
+      },
+    },
+    {
+      path: "/signs",
+      label: t("dashboard.nav.signs", "Yo'l belgilari"),
+      icon: IconDirections,
+      action: () => {
+        navigate("/signs");
+        onClose();
+      },
+    },
+    {
+      path: "/markings",
+      label: t("dashboard.nav.markings", "Yo'l chiziqlari"),
+      icon: IconRoad,
+      action: () => {
+        navigate("/markings");
+        onClose();
+      },
+    },
+    {
+      path: "/practical-exam",
+      label: t("dashboard.nav.autodrom", "Avtodrom"),
+      icon: IconSteeringWheel,
+      action: () => {
+        navigate("/practical-exam");
+        onClose();
+      },
+    },
+    {
+      path: "/exam-centers",
+      label: t("dashboard.nav.examCenters", "Imtihon markazlari"),
+      icon: IconBuildingSkyscraper,
+      action: () => {
+        navigate("/exam-centers");
+        onClose();
+      },
+    },
+    {
+      path: "/rules",
+      label: t("dashboard.nav.rules", "YHQ Qoidalari"),
+      icon: IconBook,
+      action: () => {
+        navigate("/rules");
+        onClose();
+      },
+    },
+    {
+      path: "/penalties",
+      label: t("dashboard.nav.penalties", "Jarimalar"),
+      icon: IconGavel,
+      action: () => {
+        navigate("/penalties");
+        onClose();
       },
     },
     {

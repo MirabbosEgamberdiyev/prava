@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getCachedTotalQuestions } from "../../services/desktopAdapter";
 import {
   IconBook2 as BookOpen,
   IconFileText as FileText,
@@ -35,8 +37,8 @@ export const translations = {
     mainModesTitle: "Asosiy ta'lim rejimlari",
     modes: {
       topics: { title: "Mavzular", desc: "Nazariya va qoidalar bo'yicha bosqichma-bosqich o'rganish" },
-      tickets: { title: "Biletlar", desc: "1-dan 60-gacha rasmiy biletlar bilan mustahkamlash" },
-      marathon: { title: "Marafon", desc: "Barcha 1190 ta savol ketma-ket, to'xtovsiz rejimda" },
+      tickets: { title: "Biletlar", desc: "Barcha rasmiy biletlar bilan mustahkamlash" },
+      marathon: { title: "Marafon", desc: "Barcha rasmiy savollar ketma-ket, to'xtovsiz rejimda" },
       exam: { title: "Haqiqiy Imtihon", desc: "Vaqt chegaralangan rasmiy DTM test simulyatori" }
     },
     smartSectionTitle: "Aqlli tavsiya va xatolar ustida ishlash",
@@ -68,8 +70,8 @@ export const translations = {
     mainModesTitle: "Асосий таълим режимлари",
     modes: {
       topics: { title: "Мавзулар", desc: "Назария ва қоидалар бўйича босқичма-босқич ўрганиш" },
-      tickets: { title: "Билетлар", desc: "1-дан 60-гача расмий билетлар билан мустаҳкамлаш" },
-      marathon: { title: "Марафон", desc: "Барча 1190 та савол кетма-кет, тўхтовсиз режимда" },
+      tickets: { title: "Билетлар", desc: "Барча расмий билетлар билан мустаҳкамлаш" },
+      marathon: { title: "Марафон", desc: "Барча расмий саволлар кетма-кет, тўхтовсиз режимда" },
       exam: { title: "Ҳақиқий Имтиҳон", desc: "Вақт чегараланган расмий ДТМ тест симулятори" }
     },
     smartSectionTitle: "Ақлли тавсия ва хатолар устида ишлаш",
@@ -101,8 +103,8 @@ export const translations = {
     mainModesTitle: "Основные режимы обучения",
     modes: {
       topics: { title: "Темы", desc: "Поэтапное изучение правил и теоретической базы" },
-      tickets: { title: "Билеты", desc: "Закрепление по официальным билетам от 1 до 60" },
-      marathon: { title: "Марафон", desc: "Все 1190 вопросов подряд в непрерывном режиме" },
+      tickets: { title: "Билеты", desc: "Закрепление по всем официальным билетам" },
+      marathon: { title: "Марафон", desc: "Все официальные вопросы подряд в непрерывном режиме" },
       exam: { title: "Реальный Экзамен", desc: "Официальный симулятор тестирования с таймером" }
     },
     smartSectionTitle: "Умные рекомендации и работа над ошибками",
@@ -130,6 +132,7 @@ interface UserProps {
 export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" }) => {
   const [lang, setLang] = useState<Language>("uzl");
   const [darkMode, setDarkMode] = useState(false);
+  const navigate = useNavigate();
 
   const t = translations[lang];
 
@@ -241,7 +244,7 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
                   <CheckCircle2 size={22} />
                 </div>
                 <div>
-                  <div className="text-lg font-black">322 / 1190 {t.totalUnit}</div>
+                  <div className="text-lg font-black">322 / {getCachedTotalQuestions()} {t.totalUnit}</div>
                   <div className="text-xs font-medium text-slate-500 dark:text-slate-400">{t.questionsSolved}</div>
                 </div>
               </div>
@@ -281,7 +284,13 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
           <h2 className="text-lg sm:text-xl font-black tracking-tight">{t.mainModesTitle}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Mode 1: Topics (Recommended Badge) */}
-            <div className="relative p-5 rounded-2xl border border-blue-500/70 dark:border-blue-500/50 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[140px]">
+            <div
+              className="relative p-5 rounded-2xl border border-blue-500/70 dark:border-blue-500/50 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[140px]"
+              onClick={() => navigate("/topics")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/topics")}
+            >
               <div className="absolute top-3 right-3 flex items-center gap-1 bg-blue-600 text-white text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md shadow-sm">
                 <Sparkles size={11} />
                 <span>{t.recommended}</span>
@@ -302,7 +311,13 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
             </div>
 
             {/* Mode 2: Tickets */}
-            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[140px]">
+            <div
+              className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[140px]"
+              onClick={() => navigate("/tickets")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/tickets")}
+            >
               <div className="space-y-3">
                 <div className="w-11 h-11 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-md">
                   <FileText size={22} />
@@ -319,7 +334,13 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
             </div>
 
             {/* Mode 3: Marathon */}
-            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[140px]">
+            <div
+              className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[140px]"
+              onClick={() => navigate("/marafon")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/marafon")}
+            >
               <div className="space-y-3">
                 <div className="w-11 h-11 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-md">
                   <Flame size={22} />
@@ -336,7 +357,13 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
             </div>
 
             {/* Mode 4: Real Exam */}
-            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[140px]">
+            <div
+              className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between min-h-[140px]"
+              onClick={() => navigate("/exam")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/exam")}
+            >
               <div className="space-y-3">
                 <div className="w-11 h-11 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md">
                   <Award size={22} />
@@ -376,6 +403,7 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
                 <button
                   key={topic.id}
                   type="button"
+                  onClick={() => navigate(`/marafon?topicId=${topic.id}`)}
                   className="w-full p-3 rounded-xl bg-slate-50 hover:bg-amber-50/60 dark:bg-slate-800/60 dark:hover:bg-amber-950/20 border border-slate-200/70 dark:border-slate-700/60 hover:border-amber-400 flex items-center justify-between gap-3 text-left transition-all duration-150 min-h-[44px] cursor-pointer"
                 >
                   <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 leading-snug flex-1">
@@ -408,6 +436,7 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
             <div className="space-y-3">
               <button
                 type="button"
+                onClick={() => navigate("/wrong-exam")}
                 className="w-full h-12 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all duration-150 min-h-[44px] cursor-pointer"
               >
                 <span>{t.fixMistakesBtn}</span>
@@ -423,7 +452,13 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
           <h2 className="text-lg sm:text-xl font-black tracking-tight">{t.analyticsTitle}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Tool 1: Saved */}
-            <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-3 cursor-pointer min-h-[68px]">
+            <div
+              className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-3 cursor-pointer min-h-[68px]"
+              onClick={() => navigate("/saved-questions")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/saved-questions")}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                   <Bookmark size={20} />
@@ -434,7 +469,13 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
             </div>
 
             {/* Tool 2: Stats */}
-            <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-3 cursor-pointer min-h-[68px]">
+            <div
+              className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-3 cursor-pointer min-h-[68px]"
+              onClick={() => navigate("/statistics")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/statistics")}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
                   <BarChart3 size={20} />
@@ -445,7 +486,13 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
             </div>
 
             {/* Tool 3: Rating */}
-            <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-3 cursor-pointer min-h-[68px]">
+            <div
+              className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-3 cursor-pointer min-h-[68px]"
+              onClick={() => navigate("/leaderboard")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/leaderboard")}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
                   <Trophy size={20} />
@@ -456,7 +503,13 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
             </div>
 
             {/* Tool 4: History (No duplication of errors, strictly exam history) */}
-            <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-3 cursor-pointer min-h-[68px]">
+            <div
+              className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-3 cursor-pointer min-h-[68px]"
+              onClick={() => navigate("/history")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/history")}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                   <History size={20} />

@@ -25,6 +25,25 @@
             document.documentElement.style.backgroundColor = '#F8FAFC';
             document.documentElement.style.color = '#0F172A';
           }
+
+          // Instant Typography & Accessibility Preferences Restoration (Zero-Flicker)
+          var typoRaw = localStorage.getItem('prava_typography_settings') || localStorage.getItem('prava_accessibility_preferences');
+          if (typoRaw) {
+            var typo = JSON.parse(typoRaw);
+            var textSize = typo.textSize || (typo.fontScale === 'xs' || typo.fontScale === 'sm' ? 'small' : typo.fontScale === 'lg' || typo.fontScale === 'xl' || typo.fontScale === 'xxl' ? 'large' : 'normal');
+            var isBold = typo.boldText !== undefined ? Boolean(typo.boldText) : typo.fontWeight === 'bold';
+
+            document.documentElement.setAttribute('data-text-size', textSize);
+            document.documentElement.setAttribute('data-bold-text', String(isBold));
+
+            var scaleVal = textSize === 'small' ? '0.9' : textSize === 'large' ? '1.15' : '1.0';
+            document.documentElement.style.setProperty('--user-font-scale', scaleVal);
+            document.documentElement.style.setProperty('--font-scale', scaleVal);
+
+            // Backward compatibility
+            document.documentElement.setAttribute('data-font-scale', textSize === 'small' ? 'sm' : textSize === 'large' ? 'lg' : 'md');
+            document.documentElement.setAttribute('data-font-weight', isBold ? 'bold' : 'normal');
+          }
         } catch (e) {}
       })();
     </script>
@@ -78,8 +97,8 @@
     <!-- Primary Meta Tags -->
     <title>Prava Test — Haydovchilik Guvohnomasi Imtihoniga Online Tayyorgarlik | Prava Online</title>
     <meta name="title" content="Prava Test — Haydovchilik Guvohnomasi Imtihoniga Online Tayyorgarlik | Prava Online" />
-    <meta name="description" content="O'zbekistonda haydovchilik guvohnomasi imtihoni uchun online testlar: 70 ta bilet, 1200+ rasmiy YHXBB savollari, yo'l harakati qoidalari (YHQ) va davlat imtihoni simulyatori. Bepul sinov testini topshiring!" />
-    <meta name="keywords" content="prava, prava test, prava imtihon, prava imtihoni, prava olish, prava test ishlash, haydovchilik imtihoni, haydovchilik testi, haydovchilik guvohnomasi testi, imtihon testlari, yo'l harakati qoidalari testi, YHQ test, 70 ta bilet, prava savollari, YHXBB test, avtotest, avtomobil testlari, avtomaktab testlari, online prava test, prava online test, driving test uzbekistan, экзамен ПДД, тест ПДД онлайн, правила дорожного движения" />
+    <meta name="description" content="O'zbekistonda haydovchilik guvohnomasi imtihoni uchun online testlar: rasmiy biletlar, 1200+ rasmiy YHXBB savollari, yo'l harakati qoidalari (YHQ) va davlat imtihoni simulyatori. Bepul sinov testini topshiring!" />
+    <meta name="keywords" content="prava, prava test, prava imtihon, prava imtihoni, prava olish, prava test ishlash, haydovchilik imtihoni, haydovchilik testi, haydovchilik guvohnomasi testi, imtihon testlari, yo'l harakati qoidalari testi, YHQ test, biletlar, prava savollari, YHXBB test, avtotest, avtomobil testlari, avtomaktab testlari, online prava test, prava online test, driving test uzbekistan, экзамен ПДД, тест ПДД онлайн, правила дорожного движения" />
     <meta name="author" content="Prava Online" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
@@ -95,7 +114,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://pravaonline.uz/" />
     <meta property="og:title" content="Prava Test — Haydovchilik Guvohnomasi Imtihoniga Online Tayyorgarlik" />
-    <meta property="og:description" content="O'zbekistonda haydovchilik guvohnomasi imtihoni uchun online testlar: 70 ta bilet, 1200+ YHXBB savollari, real imtihon simulyatori. Bepul boshlang!" />
+    <meta property="og:description" content="O'zbekistonda haydovchilik guvohnomasi imtihoni uchun online testlar: rasmiy biletlar, 1200+ YHXBB savollari, real imtihon simulyatori. Bepul boshlang!" />
     <meta property="og:image" content="https://pravaonline.uz/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -108,7 +127,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://pravaonline.uz/" />
     <meta name="twitter:title" content="Prava Test — Haydovchilik Guvohnomasi Imtihoniga Online Tayyorgarlik" />
-    <meta name="twitter:description" content="O'zbekistonda haydovchilik guvohnomasi imtihoni uchun online testlar: 70 ta bilet, 1200+ YHXBB savollari, real imtihon formati." />
+    <meta name="twitter:description" content="O'zbekistonda haydovchilik guvohnomasi imtihoni uchun online testlar: rasmiy biletlar, 1200+ YHXBB savollari, real imtihon formati." />
     <meta name="twitter:image" content="https://pravaonline.uz/og-image.png" />
     <meta name="twitter:image:alt" content="Prava Online — Haydovchilik guvohnomasi imtihoni" />
 
@@ -185,7 +204,7 @@
       "url": "https://pravaonline.uz",
       "applicationCategory": "EducationalApplication",
       "operatingSystem": "Web, Android, iOS, Windows",
-      "description": "Haydovchilik guvohnomasi imtihoniga online tayyorgarlik tizimi: 1200+ savollar, 70 ta bilet, YHQ qoidalari va real imtihon simulyatori.",
+      "description": "Haydovchilik guvohnomasi imtihoniga online tayyorgarlik tizimi: 1200+ savollar, rasmiy biletlar, YHQ qoidalari va real imtihon simulyatori.",
       "inLanguage": ["uz", "uz-Cyrl", "ru"],
       "offers": {
         "@type": "Offer",
@@ -202,7 +221,7 @@
       },
       "featureList": [
         "1200+ rasmiy savollar bazasi",
-        "70 ta imtihon bileti",
+        "Rasmiy imtihon biletlari",
         "Real IIV YHXBB davlat imtihoni simulyatori",
         "Yo'l harakati qoidalari (YHQ) mavzulari bo'yicha testlar",
         "Xatolar ustida ishlash va batafsil tushuntirishlar",

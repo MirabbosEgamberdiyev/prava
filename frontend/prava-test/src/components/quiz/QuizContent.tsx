@@ -36,7 +36,8 @@ import { notifications } from "@mantine/notifications";
 import { useLanguage } from "../../hooks/useLanguage";
 import { useAuth } from "../../auth/AuthContext";
 import type { Question, Option, AnswersMap } from "../../types";
-import { ImagePlaceholder } from "../common/ImagePlaceholder";
+import { AppImage } from "../common/AppImage";
+import { FormattedExplanation } from "../common/FormattedExplanation";
 import { getImageUrl } from "../../utils/imageUtils";
 import api from "../../api/api";
 import classes from "./QuizContent.module.css";
@@ -598,10 +599,13 @@ export function QuizContent({
         </Flex>
       </Box>
 
-      <Container fluid px={{ base: "xs", sm: "md", md: "lg" }}>
-        <Grid gutter={{ base: "sm", md: "xl" }}>
-          {/* Options - left side */}
-          <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 2, md: 1 }}>
+      {/* Options and Image Area */}
+      {(() => {
+        const questionImageUrl = getImageUrl(currentQuestion?.imageUrl);
+        const hasQuestionImage = Boolean(questionImageUrl && questionImageUrl.trim().length > 0);
+
+        const optionsContent = (
+          <>
             {currentQuestion?.options?.map((option: Option) => {
               const style = getOptionStyle(option);
               const iconProps = getActionIconProps(option);
@@ -609,17 +613,6 @@ export function QuizContent({
               const isThisCorrect =
                 option.index === currentQuestion.correctOptionIndex;
 
-              /*
-               * A11Y TUZATISHLARI:
-               *  1. Avval `aria-label={`${t("exam.prev")} F${index+1}`}` edi —
-               *     ekran o'quvchi variant matnini emas, "Oldingi F1" deb
-               *     o'qirdi (noto'g'ri kalit). Endi haqiqiy variant matni +
-               *     javob berilgan bo'lsa to'g'ri/noto'g'ri holati o'qiladi.
-               *  2. `role="button"` bor edi, lekin `tabIndex` va klaviatura
-               *     ishlov beruvchisi YO'Q edi — variantlarni Tab bilan
-               *     tanlab bo'lmasdi (WCAG 2.1.1 buzilishi).
-               *  3. `aria-disabled` javob berilgandan keyin holatni bildiradi.
-               */
               const optionLabel = localize(option.text);
               const stateLabel =
                 !isAnswered || isSecureMode
@@ -694,14 +687,12 @@ export function QuizContent({
                       setExplanationOpen((o) => !o);
 
                       if (!wasOpen) {
-                        // Izoh ochilmoqda → auto-advance timerni bekor qil
                         if (autoAdvanceTimer.current) {
                           clearTimeout(autoAdvanceTimer.current);
                           autoAdvanceTimer.current = null;
                         }
                       }
 
-                      // Izoh yopilmoqda → 500ms keyin keyingi savolga o'tsin
                       if (wasOpen && !isLastQuestion) {
                         if (autoAdvanceTimer.current) {
                           clearTimeout(autoAdvanceTimer.current);
@@ -726,24 +717,46 @@ export function QuizContent({
                         borderColor: "var(--mantine-color-blue-3)",
                       }}
                     >
-                      <Text size="sm">
-                        {localize(currentQuestion?.explanation)}
-                      </Text>
+                      <FormattedExplanation
+                        text={localize(currentQuestion?.explanation)}
+                      />
                     </Paper>
                   </Collapse>
                 </>
               )}
-          </Grid.Col>
+          </>
+        );
 
-          {/* Image - right side */}
-          <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 1, md: 2 }}>
-            <ImagePlaceholder
-              src={getImageUrl(currentQuestion?.imageUrl)}
-              onClick={() => setImageModalOpened(true)}
-            />
-          </Grid.Col>
-        </Grid>
-      </Container>
+        return (
+          <Container fluid px={{ base: "xs", sm: "md", md: "lg" }}>
+            {hasQuestionImage ? (
+              <Grid gutter={{ base: "sm", md: "xl" }}>
+                {/* Options - left side */}
+                <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 2, md: 1 }}>
+                  {optionsContent}
+                </Grid.Col>
+
+                {/* Image - right side */}
+                <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 1, md: 2 }}>
+                  <AppImage
+                    src={questionImageUrl}
+                    alt={localize(currentQuestion?.text)}
+                    aspectRatio="16 / 9"
+                    fit="contain"
+                    radius="md"
+                    onClick={() => setImageModalOpened(true)}
+                  />
+                </Grid.Col>
+              </Grid>
+            ) : (
+              /* Text-only question: Full readable width without empty void or fake images */
+              <Box maw={860} mx="auto" w="100%">
+                {optionsContent}
+              </Box>
+            )}
+          </Container>
+        );
+      })()}
 
       {/* Image zoom modal */}
       {currentQuestion?.imageUrl && (

@@ -43,6 +43,14 @@ const News_Page = lazy(() => import("./page/News"));
 const Faq_Page = lazy(() => import("./page/Faq"));
 const Audit_Page = lazy(() => import("./page/Audit"));
 
+// Curriculum Pages (YHQ, Yo'l belgilari, chiziqlar, jarimalar, avtodrom, imtihon markazlari)
+const Signs_Page = lazy(() => import("./page/Curriculum/SignsPage"));
+const Markings_Page = lazy(() => import("./page/Curriculum/MarkingsPage"));
+const Rules_Page = lazy(() => import("./page/Curriculum/RulesPage"));
+const Fines_Page = lazy(() => import("./page/Curriculum/FinesPage"));
+const Autodrom_Page = lazy(() => import("./page/Curriculum/AutodromPage"));
+const ExamCenters_Page = lazy(() => import("./page/Curriculum/ExamCentersPage"));
+
 function App() {
   return (
     <>
@@ -156,6 +164,66 @@ function App() {
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Edit_Ticket_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Yo'l belgilari - ADMIN, SUPER_ADMIN va CONTENT_MANAGER */}
+                <Route
+                  path="/signs"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
+                      <Signs_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Yo'l chiziqlari - ADMIN, SUPER_ADMIN va CONTENT_MANAGER */}
+                <Route
+                  path="/markings"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
+                      <Markings_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Yo'l harakati qoidalari - ADMIN, SUPER_ADMIN va CONTENT_MANAGER */}
+                <Route
+                  path="/rules"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
+                      <Rules_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Jarimalar & Qoidabuzarliklar - ADMIN, SUPER_ADMIN va CONTENT_MANAGER */}
+                <Route
+                  path="/fines"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
+                      <Fines_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Avtodrom & Amaliy mashqlar - ADMIN, SUPER_ADMIN va CONTENT_MANAGER */}
+                <Route
+                  path="/autodrom"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
+                      <Autodrom_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Imtihon markazlari - ADMIN va SUPER_ADMIN */}
+                <Route
+                  path="/exam-centers"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                      <ExamCenters_Page />
                     </RoleGuard>
                   }
                 />
