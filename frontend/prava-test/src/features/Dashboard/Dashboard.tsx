@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getCachedTotalQuestions } from "../../services/desktopAdapter";
 import {
   IconBook2 as BookOpen,
@@ -130,7 +131,9 @@ interface UserProps {
 }
 
 export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" }) => {
-  const [lang, setLang] = useState<Language>("uzl");
+  const { i18n } = useTranslation();
+  const rawLang = i18n.language || "uzl";
+  const lang: Language = (rawLang === "ru" ? "ru" : rawLang === "uzc" ? "uzc" : "uzl");
   const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
 
@@ -189,7 +192,7 @@ export const Dashboard: React.FC<UserProps> = ({ name = "Mirabbos Egamberdiyev" 
                 <button
                   key={l}
                   type="button"
-                  onClick={() => setLang(l)}
+                  onClick={() => i18n.changeLanguage(l)}
                   className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
                     lang === l
                       ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm"

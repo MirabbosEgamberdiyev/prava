@@ -26,10 +26,12 @@ import {
 } from "@tabler/icons-react";
 import { curriculumApi, type ExamCenter } from "../../services/curriculumApi";
 import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 
 export default function ExamCenters_Page() {
   const { lang } = useLanguage();
+  const { t } = useTranslation();
 
   const [centers, setCenters] = useState<ExamCenter[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,14 +88,14 @@ export default function ExamCenters_Page() {
         <Group justify="space-between" align="flex-start">
           <div>
             <Title order={1} fw={900} style={{ letterSpacing: "-0.5px" }}>
-              Yagona Imtihon Markazlari
+              {t("curriculum.centersTitle")}
             </Title>
             <Text c="dimmed" size="sm" mt={4}>
-              O'zbekiston bo'yicha 14 ta rasmiy hududiy davlat imtihon markazlari
+              {t("curriculum.centersSubtitle")}
             </Text>
           </div>
           <Badge size="lg" variant="filled" color="indigo" leftSection={<IconBuildingSkyscraper size={14} />}>
-            {safeCenters.length} ta markaz
+            {safeCenters.length} {t("curriculum.centersCount")}
           </Badge>
         </Group>
 
@@ -137,7 +139,7 @@ export default function ExamCenters_Page() {
           <Center py={60}>
             <Stack align="center" gap="xs">
               <IconAlertTriangle size={40} color="gray" />
-              <Text c="dimmed">Imtihon markazlari topilmadi</Text>
+              <Text c="dimmed">{t("curriculum.emptyCenters")}</Text>
               <Button size="xs" variant="subtle" onClick={fetchCenters}>
                 Qayta urinish
               </Button>

@@ -243,7 +243,9 @@
     "loadError": "Ma'lumotlarni yuklashda xato",
     "clearFilters": "Filtrlarni tozalash",
     "total": "Jami",
-    "page": "Sahifa"
+    "page": "Sahifa",
+    "retry": "Qayta urinish",
+    "clear": "Tozalash"
   },
   "dashboard": {
     "title": "Boshqaruv paneli",
@@ -284,7 +286,8 @@
     "exams": "Imtihonlar",
     "popularPackages": "Mashhur to'plamlar",
     "popularTickets": "Mashhur biletlar",
-    "ticket": "Bilet"
+    "ticket": "Bilet",
+    "totalTopics": "Jami Mavzular"
   },
   "users": {
     "title": "Foydalanuvchilar",
@@ -350,7 +353,8 @@
     "userBlocked": "Foydalanuvchi bloklandi",
     "statusChangeError": "Status o'zgartirishda xatolik",
     "userDeleted": "Foydalanuvchi o'chirildi",
-    "deleteError": "O'chirishda xatolik"
+    "deleteError": "O'chirishda xatolik",
+    "subtitle": "Tizim foydalanuvchilarini boshqarish va nazorat qilish"
   },
   "questions": {
     "title": "Savollar",
@@ -1290,5 +1294,258 @@
     "onlinePlaceholder": "Prava Online",
     "offlinePlaceholder": "Prava Offline",
     "extensions": ".exe · .msi · .deb · .rpm · .AppImage · .dmg · .pkg"
+  },
+  "audit": {
+    "title": "Xavfsizlik va Admin Harakatlari Jurnali (Audit Logs)",
+    "subtitle": "Barcha ma'muriy amallar, kim, qachon, qaysi IP dan o'zgartirgani to'liq qayd etiladi",
+    "searchAdmin": "Admin foydalanuvchi nomi...",
+    "actionTypePlaceholder": "Amal turi (Action)",
+    "refresh": "Yangilash",
+    "retry": "Qayta urinish",
+    "errorLoad": "Audit loglarini yuklab bo'lmadi",
+    "empty": "Hozircha audit loglari yozilmagan",
+    "colId": "ID",
+    "colAdmin": "Admin",
+    "colAction": "Amal",
+    "colModule": "Modul / Ob'ekt",
+    "colTargetId": "Ob'ekt ID",
+    "colIp": "IP Manzil",
+    "colDate": "Sana",
+    "colDetails": "Tafsilotlar",
+    "detailsModalTitle": "Audit Log Tafsilotlari",
+    "close": "Yopish",
+    "actions": {
+      "CREATE": "CREATE (Yaratish)",
+      "UPDATE": "UPDATE (Yangilash)",
+      "DELETE": "DELETE (O'chirish)",
+      "STATUS_CHANGE": "STATUS_CHANGE (Holat o'zgartirish)",
+      "RESET_PASSWORD": "RESET_PASSWORD (Parol tiklash)",
+      "FORCE_LOGOUT": "FORCE_LOGOUT (Majburiy chiqarish)",
+      "EXPORT": "EXPORT (Eksport)",
+      "IMPORT": "IMPORT (Import)"
+    }
+  },
+  "contact": {
+    "title": "Murojaatlar va Bog'lanishlar (Contact Leads)",
+    "subtitle": "Foydalanuvchilar va tashkilotlardan kelgan so'rovlar",
+    "refresh": "Yangilash",
+    "retry": "Qayta urinish",
+    "searchPlaceholder": "Tashkilot, ism, telefon yoki Ticket ID bo'yicha qidirish...",
+    "errorLoad": "Ma'lumotlarni yuklab bo'lmadi",
+    "empty": "Hech qanday murojaat topilmadi",
+    "tabs": {
+      "all": "Barchasi",
+      "new": "Yangi",
+      "inProgress": "Jarayonda",
+      "answered": "Javob berildi",
+      "closed": "Yopildi"
+    },
+    "table": {
+      "ticketId": "Ticket ID",
+      "org": "Tashkilot",
+      "contactPerson": "Mas'ul shaxs",
+      "phone": "Telefon",
+      "telegram": "Telegram",
+      "region": "Hudud",
+      "status": "Holat",
+      "date": "Sana",
+      "actions": "Amallar"
+    },
+    "modal": {
+      "viewTitle": "Murojaat Tafsilotlari",
+      "detailsSection": "Murojaat Ma'lumotlari",
+      "messageSection": "Xabar Mazmuni",
+      "statusSection": "Murojaat Holatini O'zgartirish",
+      "deleteConfirm": "Haqiqatan ham bu murojaatni o'chirib tashlamoqchimisiz?",
+      "cancel": "Bekor qilish",
+      "delete": "O'chirish",
+      "close": "Yopish"
+    },
+    "notifications": {
+      "statusSuccess": "Murojaat holati muvaffaqiyatli yangilandi",
+      "deleteSuccess": "Murojaat muvaffaqiyatli o'chirildi",
+      "error": "Xatolik yuz berdi"
+    }
+  },
+  "partners": {
+    "title": "Hamkorlik va Avtomaktablar Arizalari (Partnership Leads)",
+    "subtitle": "Tizimga ulanish va avtomaktab hamkorligi uchun kelib tushgan arizalar",
+    "refresh": "Yangilash",
+    "retry": "Qayta urinish",
+    "searchPlaceholder": "Tashkilot, mas'ul shaxs, telefon bo'yicha qidirish...",
+    "errorLoad": "Ma'lumotlarni yuklab bo'lmadi",
+    "empty": "Hech qanday hamkorlik arizasi mavjud emas",
+    "tabs": {
+      "all": "Barchasi",
+      "new": "Yangi",
+      "contacted": "Bog'lanildi",
+      "negotiation": "Muzokarada",
+      "converted": "Muvaffaqiyatli",
+      "rejected": "Rad etildi"
+    },
+    "table": {
+      "id": "ID",
+      "org": "Avtomaktab / Tashkilot",
+      "contactPerson": "Mas'ul shaxs",
+      "phone": "Telefon",
+      "email": "Email",
+      "computers": "Kompyuterlar",
+      "region": "Hudud",
+      "status": "Holat",
+      "date": "Sana",
+      "actions": "Amallar"
+    },
+    "modal": {
+      "viewTitle": "Hamkorlik Arizasi",
+      "detailsSection": "Ariza Ma'lumotlari",
+      "statusSection": "Ariza Holatini O'zgartirish",
+      "deleteConfirm": "Haqiqatan ham bu hamkorlik arizasini o'chirib tashlamoqchimisiz?",
+      "cancel": "Bekor qilish",
+      "delete": "O'chirish",
+      "close": "Yopish"
+    },
+    "notifications": {
+      "statusSuccess": "Hamkorlik holati muvaffaqiyatli yangilandi",
+      "deleteSuccess": "Ariza muvaffaqiyatli o'chirildi",
+      "error": "Xatolik yuz berdi"
+    }
+  },
+  "faqAdmin": {
+    "title": "Ko'p Beriladigan Savollar (FAQ CMS)",
+    "subtitle": "Foydalanuvchilar va avtomaktablar uchun ko'p tilli qo'llanma savollari",
+    "addBtn": "Yangi savol qo'shish",
+    "refresh": "Yangilash",
+    "retry": "Qayta urinish",
+    "searchPlaceholder": "Savol yoki javob bo'yicha qidirish...",
+    "errorLoad": "FAQ ma'lumotlarini yuklab bo'lmadi",
+    "empty": "Hozircha FAQ elementlari yo'q",
+    "table": {
+      "order": "Tartib",
+      "question": "Savol (Lotin)",
+      "category": "Kategoriya",
+      "status": "Holat",
+      "actions": "Amallar"
+    },
+    "modal": {
+      "createTitle": "Yangi FAQ Savoli Yaratish",
+      "editTitle": "FAQ Savolini Tahrirlash",
+      "tabUzl": "O'zbekcha (Lotin)",
+      "tabUzc": "Кирилл (uz_cyrl)",
+      "tabRu": "Русский (ru)",
+      "questionLabel": "Savol",
+      "answerLabel": "Javob",
+      "categoryLabel": "Kategoriya",
+      "orderLabel": "Tartib raqami",
+      "activeLabel": "Saytda ko'rinsin (Faol)",
+      "save": "Saqlash",
+      "cancel": "Bekor qilish",
+      "deleteConfirm": "Haqiqatan ham bu savolni butunlay o'chirib tashlamoqchimisiz?",
+      "delete": "O'chirish"
+    },
+    "notifications": {
+      "requiredLotin": "Lotin tilidagi savol va javob maydonlari majburiy",
+      "createSuccess": "Yangi FAQ muvaffaqiyatli yaratildi",
+      "updateSuccess": "FAQ muvaffaqiyatli yangilandi",
+      "deleteSuccess": "FAQ muvaffaqiyatli o'chirildi",
+      "error": "Xatolik yuz berdi"
+    }
+  },
+  "newsAdmin": {
+    "title": "Yangiliklar va E'lonlar (News CMS)",
+    "subtitle": "Platforma yangiliklari, qoidalar o'zgarishi va rasmiy e'lonlar boshqaruvi",
+    "addBtn": "Yangi yangilik qo'shish",
+    "refresh": "Yangilash",
+    "retry": "Qayta urinish",
+    "searchPlaceholder": "Yangilik sarlavhasi yoki matni bo'yicha qidirish...",
+    "errorLoad": "Yangiliklarni yuklab bo'lmadi",
+    "empty": "Hozircha yangiliklar yo'q",
+    "table": {
+      "id": "ID",
+      "title": "Sarlavha (Lotin)",
+      "slug": "Slug (SEO URL)",
+      "views": "Ko'rishlar",
+      "status": "Nashr holati",
+      "date": "Sana",
+      "actions": "Amallar"
+    },
+    "statusPublished": "Nashr qilingan",
+    "statusDraft": "Qoralama",
+    "modal": {
+      "createTitle": "Yangi Yangilik Yaratish",
+      "editTitle": "Yangilikni Tahrirlash",
+      "tabUzl": "O'zbekcha (Lotin)",
+      "tabUzc": "Ўзбекча (Кирилл)",
+      "tabRu": "Русский",
+      "titleLabel": "Sarlavha",
+      "slugLabel": "Slug (URL identifier)",
+      "summaryLabel": "Qisqacha mazmuni (Summary)",
+      "contentLabel": "To'liq matn (HTML / Matn)",
+      "imageUrlLabel": "Rasm URL",
+      "publishSwitch": "Darhol nashr etilsin (Published)",
+      "save": "Saqlash",
+      "cancel": "Bekor qilish",
+      "deleteConfirm": "Haqiqatan ham bu maqolani butunlay o'chirib tashlamoqchimisiz?",
+      "delete": "O'chirish"
+    },
+    "notifications": {
+      "requiredLotin": "Lotin tilidagi sarlavha va matn maydonlari majburiy",
+      "createSuccess": "Yangilik muvaffaqiyatli yaratildi",
+      "updateSuccess": "Yangilik muvaffaqiyatli yangilandi",
+      "deleteSuccess": "Yangilik muvaffaqiyatli o'chirildi",
+      "publishSuccess": "Nashr holati muvaffaqiyatli o'zgartirildi",
+      "error": "Xatolik yuz berdi"
+    }
+  },
+  "examsAdmin": {
+    "title": "Imtihon Sessiyalari va Test Natijalari (Exams)",
+    "subtitle": "Foydalanuvchilar tomonidan topshirilgan haqiqiy va mashq imtihonlari monitoringi",
+    "refresh": "Yangilash",
+    "retry": "Qayta urinish",
+    "searchUser": "Foydalanuvchi ID bo'yicha...",
+    "statusFilter": "Holat",
+    "errorLoad": "Imtihonlarni yuklab bo'lmadi",
+    "empty": "Hozircha imtihon natijalari mavjud emas",
+    "table": {
+      "sessionId": "Sessiya ID",
+      "userId": "Foydalanuvchi ID",
+      "status": "Holat",
+      "result": "Natija",
+      "passFail": "O'tdi / Qoldi",
+      "duration": "Sarflangan vaqt",
+      "startDate": "Boshlangan sana",
+      "audit": "Savollar auditi"
+    },
+    "passed": "O'tdi",
+    "failed": "Qoldi",
+    "modal": {
+      "title": "Imtihon Savollari va Javoblari",
+      "correctAnswers": "To'g'ri javoblar",
+      "answersList": "Berilgan Javoblar Ro'yxati",
+      "colQuestionId": "Savol ID",
+      "colSelected": "Tanlangan javob",
+      "colCorrect": "To'g'ri javob",
+      "colResult": "Natija",
+      "correct": "To'g'ri",
+      "wrong": "Noto'g'ri",
+      "close": "Yopish"
+    }
+  },
+  "downloadsAdmin": {
+    "title": "Yuklab Olishlar Statistikasi (Downloads Analytics)",
+    "subtitle": "Desktop va mobil ilovalar yuklab olinishi tahlili",
+    "platformDist": "Operatsion Tizimlar Taqsimoti",
+    "errorLoad": "Statistikani yuklab bo'lmadi",
+    "retry": "Qayta urinish",
+    "totalDownloads": "Jami yuklab olishlar",
+    "releaseDownloads": "Versiya bo'yicha yuklab olishlar"
+  },
+  "settingsAdmin": {
+    "subtitle": "Tizim parametrlari, sayt sozlamalari va shaxsiy profil",
+    "tabSystem": "Tizim Sozlamalari",
+    "tabProfile": "Mening Profilim",
+    "tabDevices": "Ulangan Qurilmalar",
+    "tabSecurity": "Xavfsizlik Siyosati",
+    "tabStatus": "Tizim Holati",
+    "securitySectionTitle": "Xavfsizlik va Kirish Cheklovlari (Security)"
   }
 }

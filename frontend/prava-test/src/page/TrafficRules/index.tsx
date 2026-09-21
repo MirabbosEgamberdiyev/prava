@@ -15,10 +15,12 @@ import {
 import { IconBook2, IconAlertTriangle, IconRefresh } from "@tabler/icons-react";
 import { curriculumApi, type TrafficRule } from "../../services/curriculumApi";
 import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 
 export default function TrafficRules_Page() {
   const { lang } = useLanguage();
+  const { t } = useTranslation();
 
   const [rules, setRules] = useState<TrafficRule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,14 +67,14 @@ export default function TrafficRules_Page() {
         <Group justify="space-between" align="flex-start">
           <div>
             <Title order={1} fw={900} style={{ letterSpacing: "-0.5px" }}>
-              Yo'l Harakati Qoidalari
+              {t("curriculum.rulesTitle")}
             </Title>
             <Text c="dimmed" size="sm" mt={4}>
-              O'zbekiston Respublikasining rasmiy amaldagi YHQ qonun hujjatlari matni
+              {t("curriculum.rulesSubtitle")}
             </Text>
           </div>
           <Badge size="lg" variant="filled" color="blue" leftSection={<IconBook2 size={14} />}>
-            Rasmiy Matn (VM 172)
+            {t("curriculum.officialText")}
           </Badge>
         </Group>
 
@@ -125,7 +127,7 @@ export default function TrafficRules_Page() {
               <Center py={40}>
                 <Stack align="center" gap="xs">
                   <IconAlertTriangle size={40} color="gray" />
-                  <Text c="dimmed">Qoidalar yuklanmadi</Text>
+                  <Text c="dimmed">{t("curriculum.rulesNotLoaded")}</Text>
                   <Button size="xs" variant="subtle" onClick={fetchRules}>
                     Qayta urinish
                   </Button>

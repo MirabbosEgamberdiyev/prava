@@ -243,7 +243,9 @@
     "loadError": "Failed to load data",
     "clearFilters": "Clear filters",
     "total": "Total",
-    "page": "Page"
+    "page": "Page",
+    "retry": "Retry",
+    "clear": "Clear"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -284,7 +286,8 @@
     "exams": "Exams",
     "popularPackages": "Popular packages",
     "popularTickets": "Popular tickets",
-    "ticket": "Ticket"
+    "ticket": "Ticket",
+    "totalTopics": "Jami Mavzular"
   },
   "users": {
     "title": "Users",
@@ -350,7 +353,8 @@
     "userBlocked": "User blocked",
     "statusChangeError": "Error changing status",
     "userDeleted": "User deleted",
-    "deleteError": "Error deleting user"
+    "deleteError": "Error deleting user",
+    "subtitle": "Tizim foydalanuvchilarini boshqarish va nazorat qilish"
   },
   "questions": {
     "title": "Questions",
@@ -1290,5 +1294,258 @@
     "onlinePlaceholder": "Prava Online",
     "offlinePlaceholder": "Prava Offline",
     "extensions": ".exe · .msi · .deb · .rpm · .AppImage · .dmg · .pkg"
+  },
+  "audit": {
+    "title": "Security & Administrative Audit Logs",
+    "subtitle": "Complete log of all administrative actions: who, when, and from which IP",
+    "searchAdmin": "Admin username...",
+    "actionTypePlaceholder": "Action type",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "errorLoad": "Failed to load audit logs",
+    "empty": "No audit logs recorded yet",
+    "colId": "ID",
+    "colAdmin": "Admin",
+    "colAction": "Action",
+    "colModule": "Module / Object",
+    "colTargetId": "Object ID",
+    "colIp": "IP Address",
+    "colDate": "Date",
+    "colDetails": "Details",
+    "detailsModalTitle": "Audit Log Details",
+    "close": "Close",
+    "actions": {
+      "CREATE": "CREATE",
+      "UPDATE": "UPDATE",
+      "DELETE": "DELETE",
+      "STATUS_CHANGE": "STATUS_CHANGE",
+      "RESET_PASSWORD": "RESET_PASSWORD",
+      "FORCE_LOGOUT": "FORCE_LOGOUT",
+      "EXPORT": "EXPORT",
+      "IMPORT": "IMPORT"
+    }
+  },
+  "contact": {
+    "title": "Inquiries & Contact Leads",
+    "subtitle": "Requests from users and driving schools",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "searchPlaceholder": "Search by organization, name, phone or Ticket ID...",
+    "errorLoad": "Failed to load data",
+    "empty": "No inquiries found",
+    "tabs": {
+      "all": "All",
+      "new": "New",
+      "inProgress": "In Progress",
+      "answered": "Answered",
+      "closed": "Closed"
+    },
+    "table": {
+      "ticketId": "Ticket ID",
+      "org": "Organization",
+      "contactPerson": "Contact Person",
+      "phone": "Phone",
+      "telegram": "Telegram",
+      "region": "Region",
+      "status": "Status",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "modal": {
+      "viewTitle": "Inquiry Details",
+      "detailsSection": "Inquiry Information",
+      "messageSection": "Message Content",
+      "statusSection": "Change Status",
+      "deleteConfirm": "Are you sure you want to delete this inquiry?",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "close": "Close"
+    },
+    "notifications": {
+      "statusSuccess": "Inquiry status updated successfully",
+      "deleteSuccess": "Inquiry deleted successfully",
+      "error": "An error occurred"
+    }
+  },
+  "partners": {
+    "title": "Partnership & Driving School Leads",
+    "subtitle": "Applications for platform partnership from driving schools",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "searchPlaceholder": "Search by organization, contact person, phone...",
+    "errorLoad": "Failed to load data",
+    "empty": "No partnership applications found",
+    "tabs": {
+      "all": "All",
+      "new": "New",
+      "contacted": "Contacted",
+      "negotiation": "Negotiation",
+      "converted": "Converted",
+      "rejected": "Rejected"
+    },
+    "table": {
+      "id": "ID",
+      "org": "School / Organization",
+      "contactPerson": "Contact Person",
+      "phone": "Phone",
+      "email": "Email",
+      "computers": "Computers",
+      "region": "Region",
+      "status": "Status",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "modal": {
+      "viewTitle": "Partnership Application",
+      "detailsSection": "Application Information",
+      "statusSection": "Change Status",
+      "deleteConfirm": "Are you sure you want to delete this application?",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "close": "Close"
+    },
+    "notifications": {
+      "statusSuccess": "Partnership status updated successfully",
+      "deleteSuccess": "Application deleted successfully",
+      "error": "An error occurred"
+    }
+  },
+  "faqAdmin": {
+    "title": "Frequently Asked Questions (FAQ CMS)",
+    "subtitle": "Multi-language guide questions for users and driving schools",
+    "addBtn": "Add FAQ Question",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "searchPlaceholder": "Search by question or answer...",
+    "errorLoad": "Failed to load FAQ data",
+    "empty": "No FAQ items found",
+    "table": {
+      "order": "Order",
+      "question": "Question (Latin)",
+      "category": "Category",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "modal": {
+      "createTitle": "Create New FAQ Question",
+      "editTitle": "Edit FAQ Question",
+      "tabUzl": "Uzbek (Latin)",
+      "tabUzc": "Cyrillic (uz_cyrl)",
+      "tabRu": "Russian (ru)",
+      "questionLabel": "Question",
+      "answerLabel": "Answer",
+      "categoryLabel": "Category",
+      "orderLabel": "Order Number",
+      "activeLabel": "Visible on site (Active)",
+      "save": "Save",
+      "cancel": "Cancel",
+      "deleteConfirm": "Are you sure you want to delete this question?",
+      "delete": "Delete"
+    },
+    "notifications": {
+      "requiredLotin": "Latin question and answer fields are required",
+      "createSuccess": "FAQ created successfully",
+      "updateSuccess": "FAQ updated successfully",
+      "deleteSuccess": "FAQ deleted successfully",
+      "error": "An error occurred"
+    }
+  },
+  "newsAdmin": {
+    "title": "News & Announcements (News CMS)",
+    "subtitle": "Platform news, road safety regulation changes, and public announcements",
+    "addBtn": "Add News Article",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "searchPlaceholder": "Search by title or content...",
+    "errorLoad": "Failed to load news",
+    "empty": "No news articles found",
+    "table": {
+      "id": "ID",
+      "title": "Title (Latin)",
+      "slug": "Slug (SEO URL)",
+      "views": "Views",
+      "status": "Publish Status",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "statusPublished": "Published",
+    "statusDraft": "Draft",
+    "modal": {
+      "createTitle": "Create News Article",
+      "editTitle": "Edit News Article",
+      "tabUzl": "Uzbek (Latin)",
+      "tabUzc": "Uzbek (Cyrillic)",
+      "tabRu": "Russian",
+      "titleLabel": "Title",
+      "slugLabel": "Slug (URL identifier)",
+      "summaryLabel": "Summary",
+      "contentLabel": "Full Content (HTML / Text)",
+      "imageUrlLabel": "Image URL",
+      "publishSwitch": "Publish immediately",
+      "save": "Save",
+      "cancel": "Cancel",
+      "deleteConfirm": "Are you sure you want to delete this article?",
+      "delete": "Delete"
+    },
+    "notifications": {
+      "requiredLotin": "Latin title and content fields are required",
+      "createSuccess": "News created successfully",
+      "updateSuccess": "News updated successfully",
+      "deleteSuccess": "News deleted successfully",
+      "publishSuccess": "Publish status updated successfully",
+      "error": "An error occurred"
+    }
+  },
+  "examsAdmin": {
+    "title": "Exam Sessions & Test Results",
+    "subtitle": "Monitoring of real and mock exams taken by users",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "searchUser": "Filter by User ID...",
+    "statusFilter": "Status",
+    "errorLoad": "Failed to load exams",
+    "empty": "No exam results found yet",
+    "table": {
+      "sessionId": "Session ID",
+      "userId": "User ID",
+      "status": "Status",
+      "result": "Result",
+      "passFail": "Passed / Failed",
+      "duration": "Duration",
+      "startDate": "Start Date",
+      "audit": "Questions Audit"
+    },
+    "passed": "Passed",
+    "failed": "Failed",
+    "modal": {
+      "title": "Exam Questions & Answers",
+      "correctAnswers": "Correct answers",
+      "answersList": "Answers Given List",
+      "colQuestionId": "Question ID",
+      "colSelected": "Selected Answer",
+      "colCorrect": "Correct Answer",
+      "colResult": "Result",
+      "correct": "Correct",
+      "wrong": "Incorrect",
+      "close": "Close"
+    }
+  },
+  "downloadsAdmin": {
+    "title": "Downloads Analytics",
+    "subtitle": "Desktop and mobile application download analytics",
+    "platformDist": "Operating System Distribution",
+    "errorLoad": "Failed to load statistics",
+    "retry": "Retry",
+    "totalDownloads": "Total downloads",
+    "releaseDownloads": "Downloads by release"
+  },
+  "settingsAdmin": {
+    "subtitle": "System parameters, site configuration, and personal profile",
+    "tabSystem": "System Settings",
+    "tabProfile": "My Profile",
+    "tabDevices": "Connected Devices",
+    "tabSecurity": "Security Policy",
+    "tabStatus": "System Status",
+    "securitySectionTitle": "Security & Access Controls"
   }
 }

@@ -26,6 +26,7 @@ import {
 import useSWR from "swr";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 interface PlatformStatItem {
   platform: string;
@@ -58,6 +59,7 @@ const platformColors: Record<string, string> = {
 };
 
 export default function DownloadsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data, error, mutate, isValidating } = useSWR<DownloadStatsResponse>(
     "/api/v1/admin/downloads/stats",
@@ -68,9 +70,9 @@ export default function DownloadsPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>Ilovalarni Yuklab Olish Statistikasi</Title>
+          <Title order={2} fw={700}>{t("downloadsAdmin.title")}</Title>
           <Text c="dimmed" size="sm">
-            Barcha platformalar (Desktop va Mobil) bo'yicha real-vaqt distribyutiv ko'rsatkichlari
+            {t("downloadsAdmin.subtitle")}
           </Text>
         </div>
         <Group>
@@ -87,7 +89,7 @@ export default function DownloadsPage() {
             onClick={() => mutate()}
             loading={isValidating}
           >
-            Yangilash
+            {t("common.refresh")}
           </Button>
         </Group>
       </Group>
@@ -99,7 +101,7 @@ export default function DownloadsPage() {
             <Group justify="space-between">
               <div>
                 <Text size="xs" tt="uppercase" fw={700} c="dimmed">
-                  Jami Yuklab Olishlar
+                  {t("downloadsAdmin.totalDownloads")}
                 </Text>
                 <Title order={1} fw={800} mt="xs">
                   {isValidating && !data ? <Skeleton height={36} width={120} /> : data?.totalDownloads?.toLocaleString() || "0"}
@@ -132,7 +134,7 @@ export default function DownloadsPage() {
       </Grid>
 
       {/* Platformalar Bo'yicha Kartalar */}
-      <Title order={3} fw={600} mt="sm">Operatsion Tizimlar Taqsimoti</Title>
+      <Title order={3} fw={600} mt="sm">{t("downloadsAdmin.platformDist")}</Title>
 
       {isValidating && !data ? (
         <Grid>
@@ -144,8 +146,8 @@ export default function DownloadsPage() {
         </Grid>
       ) : error ? (
         <Paper p="xl" withBorder style={{ textAlign: "center" }}>
-          <Text c="red">Statistikani yuklab bo'lmadi</Text>
-          <Button mt="sm" variant="subtle" onClick={() => mutate()}>Qayta urinish</Button>
+          <Text c="red">{t("downloadsAdmin.errorLoad")}</Text>
+          <Button mt="sm" variant="subtle" onClick={() => mutate()}>{t("downloadsAdmin.retry")}</Button>
         </Paper>
       ) : (
         <Grid>

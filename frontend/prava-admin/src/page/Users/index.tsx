@@ -231,7 +231,7 @@ const Users_Page = () => {
       <Group justify="space-between" align="center" wrap="wrap">
         <div>
           <Title order={1} fz="h3">{t("users.title")}</Title>
-          <Text size="sm" c="dimmed">Tizim foydalanuvchilarini boshqarish va nazorat qilish</Text>
+          <Text size="sm" c="dimmed">{t("users.subtitle")}</Text>
         </div>
         <Group gap="xs">
           <Button

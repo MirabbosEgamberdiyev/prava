@@ -31,6 +31,7 @@ import useSWR from "swr";
 import { notifications } from "@mantine/notifications";
 import { useDisclosure } from "@mantine/hooks";
 import api from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 interface PartnerLead {
   id: number;
@@ -64,6 +65,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function PartnersPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(15);
   const [activeTab, setActiveTab] = useState<string>("ALL");
@@ -108,16 +110,16 @@ export default function PartnersPage() {
         adminNote: adminNote.trim(),
       });
       notifications.show({
-        title: "Muvaffaqiyatli",
-        message: "Hamkorlik statusi yangilandi",
+        title: t("common.success"),
+        message: t("partners.notifications.statusSuccess"),
         color: "green",
       });
       closeModal();
       mutate();
     } catch (e: any) {
       notifications.show({
-        title: "Xatolik",
-        message: e?.response?.data?.message || "Statusni yangilab bo'lmadi",
+        title: t("common.error"),
+        message: e?.response?.data?.message || t("partners.notifications.error"),
         color: "red",
       });
     } finally {
@@ -130,16 +132,16 @@ export default function PartnersPage() {
     try {
       await api.delete(`/api/v1/admin/partner-leads/${deletingId}`);
       notifications.show({
-        title: "O'chirildi",
-        message: "Arizani o'chirildi",
+        title: t("common.success"),
+        message: t("partners.notifications.deleteSuccess"),
         color: "green",
       });
       closeDeleteModal();
       mutate();
     } catch (e: any) {
       notifications.show({
-        title: "Xatolik",
-        message: e?.response?.data?.message || "O'chirib bo'lmadi",
+        title: t("common.error"),
+        message: e?.response?.data?.message || t("partners.notifications.error"),
         color: "red",
       });
     }
@@ -149,9 +151,9 @@ export default function PartnersPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>Hamkorlik Arizalari (B2B Leads)</Title>
+          <Title order={2} fw={700}>{t("partners.title")}</Title>
           <Text c="dimmed" size="sm">
-            Avtomaktablar va korporativ mijozlardan kelgan litsenziya so'rovlari
+            {t("partners.subtitle")}
           </Text>
         </div>
         <Button
@@ -160,7 +162,7 @@ export default function PartnersPage() {
           onClick={() => mutate()}
           loading={isValidating}
         >
-          Yangilash
+          {t("partners.refresh")}
         </Button>
       </Group>
 
@@ -168,18 +170,18 @@ export default function PartnersPage() {
         <Stack gap="md">
           <Tabs value={activeTab} onChange={(val) => { setActiveTab(val || "ALL"); setPage(1); }}>
             <Tabs.List>
-              <Tabs.Tab value="ALL">Barchasi</Tabs.Tab>
-              <Tabs.Tab value="NEW" color="blue">Yangi</Tabs.Tab>
-              <Tabs.Tab value="CONTACTED" color="cyan">Bog'lanildi</Tabs.Tab>
-              <Tabs.Tab value="NEGOTIATION" color="yellow">Muzokarada</Tabs.Tab>
-              <Tabs.Tab value="CONVERTED" color="green">Muvaffaqiyatli</Tabs.Tab>
-              <Tabs.Tab value="REJECTED" color="red">Rad etildi</Tabs.Tab>
+              <Tabs.Tab value="ALL">{t("partners.tabs.all")}</Tabs.Tab>
+              <Tabs.Tab value="NEW" color="blue">{t("partners.tabs.new")}</Tabs.Tab>
+              <Tabs.Tab value="CONTACTED" color="cyan">{t("partners.tabs.contacted")}</Tabs.Tab>
+              <Tabs.Tab value="NEGOTIATION" color="yellow">{t("partners.tabs.negotiation")}</Tabs.Tab>
+              <Tabs.Tab value="CONVERTED" color="green">{t("partners.tabs.converted")}</Tabs.Tab>
+              <Tabs.Tab value="REJECTED" color="red">{t("partners.tabs.rejected")}</Tabs.Tab>
             </Tabs.List>
           </Tabs>
 
           <Group justify="space-between">
             <TextInput
-              placeholder="Tashkilot, mas'ul shaxs, telefon bo'yicha qidirish..."
+              placeholder={t("partners.searchPlaceholder")}
               leftSection={<IconSearch size={16} />}
               value={search}
               onChange={(e) => { setSearch(e.currentTarget.value); setPage(1); }}
@@ -195,28 +197,28 @@ export default function PartnersPage() {
             </Stack>
           ) : error ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
-              <Text c="red" fw={500}>Ma'lumotlarni yuklab bo'lmadi</Text>
-              <Button mt="sm" variant="subtle" onClick={() => mutate()}>Qayta urinish</Button>
+              <Text c="red" fw={500}>{t("partners.errorLoad")}</Text>
+              <Button mt="sm" variant="subtle" onClick={() => mutate()}>{t("partners.retry")}</Button>
             </Paper>
           ) : leads.length === 0 ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
               <IconHeartHandshake size={48} color="var(--mantine-color-gray-5)" />
-              <Text c="dimmed" mt="xs">Hech qanday hamkorlik arizasi mavjud emas</Text>
+              <Text c="dimmed" mt="xs">{t("partners.empty")}</Text>
             </Paper>
           ) : (
             <Table striped highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>ID</Table.Th>
-                  <Table.Th>Avtomaktab / Tashkilot</Table.Th>
-                  <Table.Th>Mas'ul shaxs</Table.Th>
-                  <Table.Th>Telefon</Table.Th>
-                  <Table.Th>Email</Table.Th>
-                  <Table.Th>Kompyuterlar</Table.Th>
-                  <Table.Th>Hudud</Table.Th>
-                  <Table.Th>Holat</Table.Th>
-                  <Table.Th>Sana</Table.Th>
-                  <Table.Th style={{ textAlign: "right" }}>Amallar</Table.Th>
+                  <Table.Th>{t("partners.table.id")}</Table.Th>
+                  <Table.Th>{t("partners.table.org")}</Table.Th>
+                  <Table.Th>{t("partners.table.contactPerson")}</Table.Th>
+                  <Table.Th>{t("partners.table.phone")}</Table.Th>
+                  <Table.Th>{t("partners.table.email")}</Table.Th>
+                  <Table.Th>{t("partners.table.computers")}</Table.Th>
+                  <Table.Th>{t("partners.table.region")}</Table.Th>
+                  <Table.Th>{t("partners.table.status")}</Table.Th>
+                  <Table.Th>{t("partners.table.date")}</Table.Th>
+                  <Table.Th style={{ textAlign: "right" }}>{t("partners.table.actions")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -284,53 +286,53 @@ export default function PartnersPage() {
       <Modal
         opened={modalOpened}
         onClose={closeModal}
-        title={<Text fw={700} size="lg">Hamkorlik so'rovi #{selectedLead?.id} — {selectedLead?.companyName}</Text>}
+        title={<Text fw={700} size="lg">{t("partners.modal.viewTitle")} #{selectedLead?.id} — {selectedLead?.companyName}</Text>}
         size="lg"
       >
         {selectedLead && (
           <Stack gap="md">
             <Group grow>
               <div>
-                <Text size="xs" c="dimmed">Tashkilot nomi</Text>
+                <Text size="xs" c="dimmed">{t("partners.table.org")}</Text>
                 <Text fw={600}>{selectedLead.companyName}</Text>
               </div>
               <div>
-                <Text size="xs" c="dimmed">Mas'ul shaxs</Text>
+                <Text size="xs" c="dimmed">{t("partners.table.contactPerson")}</Text>
                 <Text fw={600}>{selectedLead.contactPerson}</Text>
               </div>
             </Group>
 
             <Group grow>
               <div>
-                <Text size="xs" c="dimmed">Telefon</Text>
+                <Text size="xs" c="dimmed">{t("partners.table.phone")}</Text>
                 <Text fw={600} c="blue">{selectedLead.phone}</Text>
               </div>
               <div>
-                <Text size="xs" c="dimmed">Email</Text>
+                <Text size="xs" c="dimmed">{t("partners.table.email")}</Text>
                 <Text fw={500}>{selectedLead.email || "-"}</Text>
               </div>
             </Group>
 
             <Group grow>
               <div>
-                <Text size="xs" c="dimmed">Hudud</Text>
+                <Text size="xs" c="dimmed">{t("partners.table.region")}</Text>
                 <Text>{selectedLead.region || "-"}</Text>
               </div>
               <div>
-                <Text size="xs" c="dimmed">Kompyuterlar soni</Text>
+                <Text size="xs" c="dimmed">{t("partners.table.computers")}</Text>
                 <Text>{selectedLead.computerCount || "-"}</Text>
               </div>
             </Group>
 
             <div>
-              <Text size="xs" c="dimmed">Mijozning arizadagi izohi</Text>
+              <Text size="xs" c="dimmed">{t("partners.modal.detailsSection")}</Text>
               <Paper withBorder p="xs" bg="gray.0">
                 <Text size="sm">{selectedLead.comment || "Izoh ko'rsatilmagan"}</Text>
               </Paper>
             </div>
 
             <Select
-              label="Hamkorlik bosqichi (Lead Status)"
+              label={t("partners.modal.statusSection")}
               data={[
                 { value: "NEW", label: "Yangi (NEW)" },
                 { value: "CONTACTED", label: "Bog'lanildi (CONTACTED)" },
@@ -351,14 +353,14 @@ export default function PartnersPage() {
             />
 
             <Group justify="flex-end" mt="md">
-              <Button variant="default" onClick={closeModal}>Yopish</Button>
+              <Button variant="default" onClick={closeModal}>{t("partners.modal.close")}</Button>
               <Button
                 leftSection={<IconDeviceFloppy size={16} />}
                 color="blue"
                 onClick={handleSaveStatus}
                 loading={saving}
               >
-                Saqlash
+                {t("common.save")}
               </Button>
             </Group>
           </Stack>
@@ -366,11 +368,11 @@ export default function PartnersPage() {
       </Modal>
 
       {/* O'chirish modali */}
-      <Modal opened={deleteModalOpened} onClose={closeDeleteModal} title="Arizani o'chirish">
-        <Text size="sm">Haqiqatan ham bu hamkorlik arizasini o'chirib tashlamoqchimisiz?</Text>
+      <Modal opened={deleteModalOpened} onClose={closeDeleteModal} title={t("partners.modal.delete")}>
+        <Text size="sm">{t("partners.modal.deleteConfirm")}</Text>
         <Group justify="flex-end" mt="lg">
-          <Button variant="default" onClick={closeDeleteModal}>Bekor qilish</Button>
-          <Button color="red" onClick={handleDelete}>O'chirish</Button>
+          <Button variant="default" onClick={closeDeleteModal}>{t("partners.modal.cancel")}</Button>
+          <Button color="red" onClick={handleDelete}>{t("partners.modal.delete")}</Button>
         </Group>
       </Modal>
     </Stack>

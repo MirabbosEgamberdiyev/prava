@@ -179,7 +179,7 @@ const Home_Page = () => {
               leftSection={<IconPlus size={14} />}
               onClick={() => navigate("/questions/add")}
             >
-              Yangi savol
+              {t("nav.questionsAdd")}
             </Button>
             <Button
               size="xs"
@@ -188,7 +188,7 @@ const Home_Page = () => {
               leftSection={<IconPlus size={14} />}
               onClick={() => navigate("/tickets/add")}
             >
-              Yangi bilet
+              {t("nav.ticketsAdd")}
             </Button>
             <Button
               size="xs"
@@ -197,7 +197,7 @@ const Home_Page = () => {
               leftSection={<IconPlus size={14} />}
               onClick={() => navigate("/topics/add")}
             >
-              Yangi mavzu
+              {t("nav.topicsAdd")}
             </Button>
             <Button
               size="xs"
@@ -206,7 +206,7 @@ const Home_Page = () => {
               leftSection={<IconUsers size={14} />}
               onClick={() => navigate("/users")}
             >
-              Foydalanuvchilar
+              {t("nav.users")}
             </Button>
             <Button
               size="xs"
@@ -215,7 +215,7 @@ const Home_Page = () => {
               leftSection={<IconMail size={14} />}
               onClick={() => navigate("/contact")}
             >
-              Murojaatlar
+              {t("nav.contact")}
             </Button>
             <Button
               size="xs"
@@ -224,7 +224,7 @@ const Home_Page = () => {
               leftSection={<IconHeartHandshake size={14} />}
               onClick={() => navigate("/partners")}
             >
-              Hamkorlar
+              {t("nav.partners")}
             </Button>
             <Button
               size="xs"
@@ -233,7 +233,7 @@ const Home_Page = () => {
               leftSection={<IconDownload size={14} />}
               onClick={() => navigate("/downloads")}
             >
-              Yuklab olishlar
+              {t("nav.downloads")}
             </Button>
             <Button
               size="xs"
@@ -242,7 +242,7 @@ const Home_Page = () => {
               leftSection={<IconRoadSign size={14} />}
               onClick={() => navigate("/signs")}
             >
-              Yo'l belgilari
+              {t("nav.signs")}
             </Button>
             <Button
               size="xs"
@@ -251,7 +251,7 @@ const Home_Page = () => {
               leftSection={<IconTrafficLights size={14} />}
               onClick={() => navigate("/markings")}
             >
-              Yo'l chiziqlari
+              {t("nav.markings")}
             </Button>
             <Button
               size="xs"
@@ -260,7 +260,7 @@ const Home_Page = () => {
               leftSection={<IconBook size={14} />}
               onClick={() => navigate("/rules")}
             >
-              YHQ Qoidalar
+              {t("nav.rules")}
             </Button>
             <Button
               size="xs"
@@ -269,7 +269,7 @@ const Home_Page = () => {
               leftSection={<IconGavel size={14} />}
               onClick={() => navigate("/fines")}
             >
-              Jarimalar
+              {t("nav.fines")}
             </Button>
             <Button
               size="xs"
@@ -278,7 +278,7 @@ const Home_Page = () => {
               leftSection={<IconSteeringWheel size={14} />}
               onClick={() => navigate("/autodrom")}
             >
-              Avtodrom
+              {t("nav.autodrom")}
             </Button>
             <Button
               size="xs"
@@ -287,7 +287,7 @@ const Home_Page = () => {
               leftSection={<IconMapPin size={14} />}
               onClick={() => navigate("/exam-centers")}
             >
-              Imtihon markazlari
+              {t("nav.examCenters")}
             </Button>
             <Button
               size="xs"
@@ -296,7 +296,7 @@ const Home_Page = () => {
               leftSection={<IconSettings size={14} />}
               onClick={() => navigate("/settings")}
             >
-              Sozlamalar
+              {t("nav.settings")}
             </Button>
           </Group>
         </Stack>
@@ -341,7 +341,7 @@ const Home_Page = () => {
 
       {/* Row 2: Kontent va Savollar Bazasi (4 Metrika) */}
       <Stack gap="xs">
-        <Text size="sm" fw={700} c="dimmed">KONTENT VA SAVOLLAR BAZASI</Text>
+        <Text size="sm" fw={700} c="dimmed">{t("nav.categoryContent")}</Text>
         <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
           <StatCard
             title={t("dashboard.totalQuestions")}
@@ -352,11 +352,11 @@ const Home_Page = () => {
             onClick={() => navigate("/questions")}
           />
           <StatCard
-            title="Jami Mavzular"
+            title={t("dashboard.totalTopics")}
             value={stats.totalTopics ?? 0}
             icon={<IconAlignBoxLeftTop size={24} />}
             color="grape"
-            subtitle="Yo'l harakati qoidalari"
+            subtitle={t("nav.rules")}
             onClick={() => navigate("/topics")}
           />
           <StatCard
@@ -364,7 +364,7 @@ const Home_Page = () => {
             value={stats.totalTickets}
             icon={<IconTicket size={24} />}
             color="orange"
-            subtitle="Rasmiy biletlar"
+            subtitle={t("nav.tickets")}
             onClick={() => navigate("/tickets")}
           />
           <StatCard
@@ -372,7 +372,7 @@ const Home_Page = () => {
             value={stats.totalPackages}
             icon={<IconFolder size={24} />}
             color="yellow"
-            subtitle="Tayyor to'plamlar"
+            subtitle={t("nav.packages")}
             onClick={() => navigate("/packages")}
           />
         </SimpleGrid>
@@ -380,10 +380,10 @@ const Home_Page = () => {
 
       {/* Row 2.5: Ta'lim va O'quv Dasturi (Curriculum) */}
       <Stack gap="xs">
-        <Text size="sm" fw={700} c="dimmed">TA'LIM VA O'QUV DASTURI (CURRICULUM)</Text>
+        <Text size="sm" fw={700} c="dimmed">{t("nav.curriculum || nav.categoryContent")}</Text>
         <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 5 }}>
           <StatCard
-            title="Yo'l Belgilari"
+            title={t("nav.signs")}
             value={curriculumStats?.totalSigns ?? 0}
             icon={<IconRoadSign size={24} />}
             color="blue"
@@ -391,7 +391,7 @@ const Home_Page = () => {
             onClick={() => navigate("/signs")}
           />
           <StatCard
-            title="Yo'l Chiziqlari"
+            title={t("nav.markings")}
             value={curriculumStats?.totalMarkings ?? 0}
             icon={<IconTrafficLights size={24} />}
             color="teal"
@@ -399,7 +399,7 @@ const Home_Page = () => {
             onClick={() => navigate("/markings")}
           />
           <StatCard
-            title="Imtihon Markazlari"
+            title={t("nav.examCenters")}
             value={curriculumStats?.totalExamCenters ?? 0}
             icon={<IconMapPin size={24} />}
             color="cyan"
@@ -407,7 +407,7 @@ const Home_Page = () => {
             onClick={() => navigate("/exam-centers")}
           />
           <StatCard
-            title="Avtodrom Mashqlari"
+            title={t("nav.autodrom")}
             value={curriculumStats?.totalPracticalExercises ?? 0}
             icon={<IconSteeringWheel size={24} />}
             color="grape"
@@ -415,7 +415,7 @@ const Home_Page = () => {
             onClick={() => navigate("/autodrom")}
           />
           <StatCard
-            title="Jarima Ballari"
+            title={t("nav.fines")}
             value={curriculumStats?.totalPenalties ?? 0}
             icon={<IconGavel size={24} />}
             color="red"
@@ -427,7 +427,7 @@ const Home_Page = () => {
 
       {/* Row 3: Imtihonlar va Natijalar (4 Metrika) */}
       <Stack gap="xs">
-        <Text size="sm" fw={700} c="dimmed">IMTIHONLAR VA NATIJALAR</Text>
+        <Text size="sm" fw={700} c="dimmed">{t("nav.exams")}</Text>
         <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
           <StatCard
             title="Jami Imtihonlar"

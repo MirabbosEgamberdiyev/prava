@@ -29,10 +29,12 @@ import {
   type PracticalPenalty,
 } from "../../services/curriculumApi";
 import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 
 export default function PracticalExam_Page() {
   const { lang } = useLanguage();
+  const { t } = useTranslation();
 
   const [exercises, setExercises] = useState<PracticalExercise[]>([]);
   const [penalties, setPenalties] = useState<PracticalPenalty[]>([]);
@@ -93,14 +95,14 @@ export default function PracticalExam_Page() {
         <Group justify="space-between" align="flex-start">
           <div>
             <Title order={1} fw={900} style={{ letterSpacing: "-0.5px" }}>
-              Avtodrom Amaliy Imtihoni
+              {t("curriculum.autodromTitle")}
             </Title>
             <Text c="dimmed" size="sm" mt={4}>
-              12 ta majburiy avtodrom mashqlari va 32 ta rasmiy jarima ballari tizimi
+              {t("curriculum.autodromSubtitle")}
             </Text>
           </div>
           <Badge size="lg" variant="filled" color="teal" leftSection={<IconSteeringWheel size={14} />}>
-            {safeExercises.length} mashq / {safePenalties.length} jarima
+            {safeExercises.length} / {safePenalties.length}
           </Badge>
         </Group>
 
@@ -108,7 +110,7 @@ export default function PracticalExam_Page() {
         {error && (
           <Alert
             icon={<IconAlertTriangle size={18} />}
-            title="Xatolik"
+            title={t("common.error")}
             color="red"
             variant="light"
             radius="md"
@@ -122,7 +124,7 @@ export default function PracticalExam_Page() {
                 leftSection={<IconRefresh size={14} />}
                 onClick={fetchData}
               >
-                Qayta yuklash
+                {t("common.refresh")}
               </Button>
             </Group>
           </Alert>
@@ -131,10 +133,10 @@ export default function PracticalExam_Page() {
         <Tabs defaultValue="exercises">
           <Tabs.List mb="lg">
             <Tabs.Tab value="exercises" leftSection={<IconChecklist size={16} />} style={{ fontWeight: 600 }}>
-              12 ta Mashq (Avtodrom)
+              {t("curriculum.tabExercises")}
             </Tabs.Tab>
             <Tabs.Tab value="penalties" leftSection={<IconAlertOctagon size={16} />} style={{ fontWeight: 600 }}>
-              32 ta Jarima Ballari
+              {t("curriculum.tabPenalties")}
             </Tabs.Tab>
           </Tabs.List>
 
@@ -154,9 +156,9 @@ export default function PracticalExam_Page() {
               <Center py={60}>
                 <Stack align="center" gap="xs">
                   <IconAlertTriangle size={40} color="gray" />
-                  <Text c="dimmed">Mashqlar topilmadi</Text>
+                  <Text c="dimmed">{t("curriculum.emptyPenalties")}</Text>
                   <Button size="xs" variant="subtle" onClick={fetchData}>
-                    Qayta yuklash
+                    {t("common.refresh")}
                   </Button>
                 </Stack>
               </Center>
@@ -169,7 +171,7 @@ export default function PracticalExam_Page() {
                         {ex.exercise_number}
                       </Badge>
                       <Text size="xs" c="dimmed">
-                        Mashq #{ex.exercise_number}
+                        {t("curriculum.colNumber")} {ex.exercise_number}
                       </Text>
                     </Group>
 
@@ -208,9 +210,9 @@ export default function PracticalExam_Page() {
               <Center py={60}>
                 <Stack align="center" gap="xs">
                   <IconAlertTriangle size={40} color="gray" />
-                  <Text c="dimmed">Jarima ma'lumotlari topilmadi</Text>
+                  <Text c="dimmed">{t("curriculum.emptyPenalties")}</Text>
                   <Button size="xs" variant="subtle" onClick={fetchData}>
-                    Qayta yuklash
+                    {t("common.refresh")}
                   </Button>
                 </Stack>
               </Center>
@@ -219,9 +221,9 @@ export default function PracticalExam_Page() {
                 <Table striped highlightOnHover verticalSpacing="sm">
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th style={{ width: 60 }}>#</Table.Th>
-                      <Table.Th>Qoidabuzarlik tavsifi</Table.Th>
-                      <Table.Th style={{ width: 220 }}>Jarima bali</Table.Th>
+                      <Table.Th style={{ width: 60 }}>{t("curriculum.colNumber")}</Table.Th>
+                      <Table.Th>{t("curriculum.colViolation")}</Table.Th>
+                      <Table.Th style={{ width: 220 }}>{t("curriculum.colPoints")}</Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>

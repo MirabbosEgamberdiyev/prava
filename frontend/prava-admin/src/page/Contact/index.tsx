@@ -31,6 +31,7 @@ import useSWR from "swr";
 import { notifications } from "@mantine/notifications";
 import { useDisclosure } from "@mantine/hooks";
 import api from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 interface ContactInquiry {
   id: number;
@@ -64,6 +65,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function ContactInquiriesPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(15);
   const [activeTab, setActiveTab] = useState<string>("ALL");
@@ -108,16 +110,16 @@ export default function ContactInquiriesPage() {
         adminNote: adminNote.trim(),
       });
       notifications.show({
-        title: "Muvaffaqiyatli",
-        message: "Murojaat holati yangilandi",
+        title: t("common.success"),
+        message: t("contact.notifications.statusSuccess"),
         color: "green",
       });
       closeModal();
       mutate();
     } catch (e: any) {
       notifications.show({
-        title: "Xatolik",
-        message: e?.response?.data?.message || "Holatni yangilab bo'lmadi",
+        title: t("common.error"),
+        message: e?.response?.data?.message || t("contact.notifications.error"),
         color: "red",
       });
     } finally {
@@ -130,16 +132,16 @@ export default function ContactInquiriesPage() {
     try {
       await api.delete(`/api/v1/admin/contact-inquiries/${deletingId}`);
       notifications.show({
-        title: "O'chirildi",
-        message: "Murojaat o'chirildi",
+        title: t("common.success"),
+        message: t("contact.notifications.deleteSuccess"),
         color: "green",
       });
       closeDeleteModal();
       mutate();
     } catch (e: any) {
       notifications.show({
-        title: "Xatolik",
-        message: e?.response?.data?.message || "O'chirib bo'lmadi",
+        title: t("common.error"),
+        message: e?.response?.data?.message || t("contact.notifications.error"),
         color: "red",
       });
     }
@@ -149,9 +151,9 @@ export default function ContactInquiriesPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>Murojaatlar Boshqaruvi (CRM)</Title>
+          <Title order={2} fw={700}>{t("contact.title")}</Title>
           <Text c="dimmed" size="sm">
-            Saytning /contact va boshqa kanallardan kelgan so'rovlar jurnali
+            {t("contact.subtitle")}
           </Text>
         </div>
         <Button
@@ -160,7 +162,7 @@ export default function ContactInquiriesPage() {
           onClick={() => mutate()}
           loading={isValidating}
         >
-          Yangilash
+          {t("contact.refresh")}
         </Button>
       </Group>
 
@@ -168,17 +170,17 @@ export default function ContactInquiriesPage() {
         <Stack gap="md">
           <Tabs value={activeTab} onChange={(val) => { setActiveTab(val || "ALL"); setPage(1); }}>
             <Tabs.List>
-              <Tabs.Tab value="ALL">Barchasi</Tabs.Tab>
-              <Tabs.Tab value="NEW" color="blue">Yangi</Tabs.Tab>
-              <Tabs.Tab value="IN_PROGRESS" color="yellow">Jarayonda</Tabs.Tab>
-              <Tabs.Tab value="ANSWERED" color="green">Javob berildi</Tabs.Tab>
-              <Tabs.Tab value="CLOSED" color="gray">Yopildi</Tabs.Tab>
+              <Tabs.Tab value="ALL">{t("contact.tabs.all")}</Tabs.Tab>
+              <Tabs.Tab value="NEW" color="blue">{t("contact.tabs.new")}</Tabs.Tab>
+              <Tabs.Tab value="IN_PROGRESS" color="yellow">{t("contact.tabs.inProgress")}</Tabs.Tab>
+              <Tabs.Tab value="ANSWERED" color="green">{t("contact.tabs.answered")}</Tabs.Tab>
+              <Tabs.Tab value="CLOSED" color="gray">{t("contact.tabs.closed")}</Tabs.Tab>
             </Tabs.List>
           </Tabs>
 
           <Group justify="space-between">
             <TextInput
-              placeholder="Tashkilot, ism, telefon yoki Ticket ID bo'yicha qidirish..."
+              placeholder={t("contact.searchPlaceholder")}
               leftSection={<IconSearch size={16} />}
               value={search}
               onChange={(e) => { setSearch(e.currentTarget.value); setPage(1); }}
@@ -194,27 +196,27 @@ export default function ContactInquiriesPage() {
             </Stack>
           ) : error ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
-              <Text c="red" fw={500}>Ma'lumotlarni yuklab bo'lmadi</Text>
-              <Button mt="sm" variant="subtle" onClick={() => mutate()}>Qayta urinish</Button>
+              <Text c="red" fw={500}>{t("contact.errorLoad")}</Text>
+              <Button mt="sm" variant="subtle" onClick={() => mutate()}>{t("contact.retry")}</Button>
             </Paper>
           ) : inquiries.length === 0 ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
               <IconMail size={48} color="var(--mantine-color-gray-5)" />
-              <Text c="dimmed" mt="xs">Hech qanday murojaat topilmadi</Text>
+              <Text c="dimmed" mt="xs">{t("contact.empty")}</Text>
             </Paper>
           ) : (
             <Table striped highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Ticket ID</Table.Th>
-                  <Table.Th>Tashkilot</Table.Th>
-                  <Table.Th>Mas'ul shaxs</Table.Th>
-                  <Table.Th>Telefon</Table.Th>
-                  <Table.Th>Telegram</Table.Th>
-                  <Table.Th>Hudud</Table.Th>
-                  <Table.Th>Holat</Table.Th>
-                  <Table.Th>Sana</Table.Th>
-                  <Table.Th style={{ textAlign: "right" }}>Amallar</Table.Th>
+                  <Table.Th>{t("contact.table.ticketId")}</Table.Th>
+                  <Table.Th>{t("contact.table.org")}</Table.Th>
+                  <Table.Th>{t("contact.table.contactPerson")}</Table.Th>
+                  <Table.Th>{t("contact.table.phone")}</Table.Th>
+                  <Table.Th>{t("contact.table.telegram")}</Table.Th>
+                  <Table.Th>{t("contact.table.region")}</Table.Th>
+                  <Table.Th>{t("contact.table.status")}</Table.Th>
+                  <Table.Th>{t("contact.table.date")}</Table.Th>
+                  <Table.Th style={{ textAlign: "right" }}>{t("contact.table.actions")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -285,36 +287,36 @@ export default function ContactInquiriesPage() {
       <Modal
         opened={modalOpened}
         onClose={closeModal}
-        title={<Text fw={700} size="lg">Murojaat tafsilotlari #{selectedInquiry?.ticketId}</Text>}
+        title={<Text fw={700} size="lg">{t("contact.modal.viewTitle")} #{selectedInquiry?.ticketId}</Text>}
         size="lg"
       >
         {selectedInquiry && (
           <Stack gap="md">
             <Group grow>
               <div>
-                <Text size="xs" c="dimmed">Tashkilot</Text>
+                <Text size="xs" c="dimmed">{t("contact.table.org")}</Text>
                 <Text fw={600}>{selectedInquiry.organization}</Text>
               </div>
               <div>
-                <Text size="xs" c="dimmed">Mas'ul shaxs</Text>
+                <Text size="xs" c="dimmed">{t("contact.table.contactPerson")}</Text>
                 <Text fw={600}>{selectedInquiry.fullName}</Text>
               </div>
             </Group>
 
             <Group grow>
               <div>
-                <Text size="xs" c="dimmed">Telefon</Text>
+                <Text size="xs" c="dimmed">{t("contact.table.phone")}</Text>
                 <Text fw={600} c="blue">{selectedInquiry.phone}</Text>
               </div>
               <div>
-                <Text size="xs" c="dimmed">Telegram</Text>
+                <Text size="xs" c="dimmed">{t("contact.table.telegram")}</Text>
                 <Text fw={500}>{selectedInquiry.telegram || "-"}</Text>
               </div>
             </Group>
 
             <Group grow>
               <div>
-                <Text size="xs" c="dimmed">Hudud</Text>
+                <Text size="xs" c="dimmed">{t("contact.table.region")}</Text>
                 <Text>{selectedInquiry.region || "-"}</Text>
               </div>
               <div>
@@ -335,7 +337,7 @@ export default function ContactInquiriesPage() {
             </div>
 
             <Select
-              label="Murojaat holati"
+              label={t("contact.modal.statusSection")}
               data={[
                 { value: "NEW", label: "Yangi (NEW)" },
                 { value: "IN_PROGRESS", label: "Jarayonda (IN_PROGRESS)" },
@@ -355,14 +357,14 @@ export default function ContactInquiriesPage() {
             />
 
             <Group justify="flex-end" mt="md">
-              <Button variant="default" onClick={closeModal}>Yopish</Button>
+              <Button variant="default" onClick={closeModal}>{t("contact.modal.close")}</Button>
               <Button
                 leftSection={<IconDeviceFloppy size={16} />}
                 color="blue"
                 onClick={handleSaveStatus}
                 loading={saving}
               >
-                Saqlash
+                {t("common.save")}
               </Button>
             </Group>
           </Stack>
@@ -370,11 +372,11 @@ export default function ContactInquiriesPage() {
       </Modal>
 
       {/* O'chirishni tasdiqlash modali */}
-      <Modal opened={deleteModalOpened} onClose={closeDeleteModal} title="O'chirishni tasdiqlash">
-        <Text size="sm">Haqiqatan ham bu murojaatni o'chirib tashlamoqchimisiz?</Text>
+      <Modal opened={deleteModalOpened} onClose={closeDeleteModal} title={t("contact.modal.delete")}>
+        <Text size="sm">{t("contact.modal.deleteConfirm")}</Text>
         <Group justify="flex-end" mt="lg">
-          <Button variant="default" onClick={closeDeleteModal}>Bekor qilish</Button>
-          <Button color="red" onClick={handleDelete}>O'chirish</Button>
+          <Button variant="default" onClick={closeDeleteModal}>{t("contact.modal.cancel")}</Button>
+          <Button color="red" onClick={handleDelete}>{t("contact.modal.delete")}</Button>
         </Group>
       </Modal>
     </Stack>

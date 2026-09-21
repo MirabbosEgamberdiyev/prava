@@ -243,7 +243,9 @@
     "loadError": "Маълумотларни юклашда хато",
     "clearFilters": "Филтрларни тозалаш",
     "total": "Жами",
-    "page": "Саҳифа"
+    "page": "Саҳифа",
+    "retry": "Қайта уриниш",
+    "clear": "Тозалаш"
   },
   "dashboard": {
     "title": "Бошқарув панели",
@@ -284,7 +286,8 @@
     "exams": "Имтиҳонлар",
     "popularPackages": "Машҳур тўпламлар",
     "popularTickets": "Машҳур билетлар",
-    "ticket": "Билет"
+    "ticket": "Билет",
+    "totalTopics": "Жами Мавзулар"
   },
   "users": {
     "title": "Фойдаланувчилар",
@@ -350,7 +353,8 @@
     "userBlocked": "Фойдаланувчи блокланди",
     "statusChangeError": "Статус ўзгартиришда хатолик",
     "userDeleted": "Фойдаланувчи ўчирилди",
-    "deleteError": "Ўчиришда хатолик"
+    "deleteError": "Ўчиришда хатолик",
+    "subtitle": "Тизим фойдаланувчиларини бошқариш ва назорат қилиш"
   },
   "questions": {
     "title": "Саволлар",
@@ -1290,5 +1294,258 @@
     "onlinePlaceholder": "Prava Online",
     "offlinePlaceholder": "Prava Offline",
     "extensions": ".exe · .msi · .deb · .rpm · .AppImage · .dmg · .pkg"
+  },
+  "audit": {
+    "title": "Хавфсизлик ва Админ Ҳаракатлари Журнали (Audit Logs)",
+    "subtitle": "Барча маъмурий амаллар, ким, қачон, қайси IP дан ўзгартиргани тўлиқ қайд этилади",
+    "searchAdmin": "Админ фойдаланувчи номи...",
+    "actionTypePlaceholder": "Амал тури (Action)",
+    "refresh": "Янгилаш",
+    "retry": "Қайта уриниш",
+    "errorLoad": "Аудит логларини юклаб бўлмади",
+    "empty": "Ҳозирча аудит логлари ёзилмаган",
+    "colId": "ID",
+    "colAdmin": "Админ",
+    "colAction": "Амал",
+    "colModule": "Модул / Объект",
+    "colTargetId": "Объект ID",
+    "colIp": "IP Манзил",
+    "colDate": "Сана",
+    "colDetails": "Тафсилотлар",
+    "detailsModalTitle": "Аудит Лог Тафсилотлари",
+    "close": "Ёпиш",
+    "actions": {
+      "CREATE": "CREATE (Яратиш)",
+      "UPDATE": "UPDATE (Янгилаш)",
+      "DELETE": "DELETE (Ўчириш)",
+      "STATUS_CHANGE": "STATUS_CHANGE (Ҳолат ўзгартириш)",
+      "RESET_PASSWORD": "RESET_PASSWORD (Парол тиклаш)",
+      "FORCE_LOGOUT": "FORCE_LOGOUT (Мажбурий чиқариш)",
+      "EXPORT": "EXPORT (Экспорт)",
+      "IMPORT": "IMPORT (Импорт)"
+    }
+  },
+  "contact": {
+    "title": "Мурожаатлар ва Боғланишлар (Contact Leads)",
+    "subtitle": "Фойдаланувчилар ва ташкилотлардан келган сўровлар",
+    "refresh": "Янгилаш",
+    "retry": "Қайта уриниш",
+    "searchPlaceholder": "Ташкилот, исм, телефон ёки Ticket ID бўйича қидириш...",
+    "errorLoad": "Маълумотларни юклаб бўлмади",
+    "empty": "Ҳеч қандай мурожаат топилмади",
+    "tabs": {
+      "all": "Барчаси",
+      "new": "Янги",
+      "inProgress": "Жараёнда",
+      "answered": "Жавоб берилди",
+      "closed": "Ёпилди"
+    },
+    "table": {
+      "ticketId": "Ticket ID",
+      "org": "Ташкилот",
+      "contactPerson": "Масъул шахс",
+      "phone": "Телефон",
+      "telegram": "Телеграм",
+      "region": "Ҳудуд",
+      "status": "Ҳолат",
+      "date": "Сана",
+      "actions": "Амаллар"
+    },
+    "modal": {
+      "viewTitle": "Мурожаат Тафсилотлари",
+      "detailsSection": "Мурожаат Маълумотлари",
+      "messageSection": "Хабар Мазмуни",
+      "statusSection": "Мурожаат Ҳолатини Ўзгартириш",
+      "deleteConfirm": "Ҳақиқатан ҳам бу мурожаатни ўчириб ташламоқчимисиз?",
+      "cancel": "Бекор қилиш",
+      "delete": "Ўчириш",
+      "close": "Ёпиш"
+    },
+    "notifications": {
+      "statusSuccess": "Мурожаат ҳолати муваффақиятли янгиланди",
+      "deleteSuccess": "Мурожаат муваффақиятли ўчирилди",
+      "error": "Хатолик юз берди"
+    }
+  },
+  "partners": {
+    "title": "Ҳамкорлик ва Автомактаблар Аризалари (Partnership Leads)",
+    "subtitle": "Тизимга уланиш ва автомактаб ҳамкорлиги учун келиб тушган аризалар",
+    "refresh": "Янгилаш",
+    "retry": "Қайта уриниш",
+    "searchPlaceholder": "Ташкилот, масъул шахс, телефон бўйича қидириш...",
+    "errorLoad": "Маълумотларни юклаб бўлмади",
+    "empty": "Ҳеч қандай ҳамкорлик аризаси мавжуд эмас",
+    "tabs": {
+      "all": "Барчаси",
+      "new": "Янги",
+      "contacted": "Боғланилди",
+      "negotiation": "Музокарада",
+      "converted": "Муваффақиятли",
+      "rejected": "Рад этилди"
+    },
+    "table": {
+      "id": "ID",
+      "org": "Автомактаб / Ташкилот",
+      "contactPerson": "Масъул шахс",
+      "phone": "Телефон",
+      "email": "Email",
+      "computers": "Компьютерлар",
+      "region": "Ҳудуд",
+      "status": "Ҳолат",
+      "date": "Сана",
+      "actions": "Амаллар"
+    },
+    "modal": {
+      "viewTitle": "Ҳамкорлик Аризаси",
+      "detailsSection": "Ариза Маълумотлари",
+      "statusSection": "Ариза Ҳолатини Ўзгартириш",
+      "deleteConfirm": "Ҳақиқатан ҳам бу ҳамкорлик аризасини ўчириб ташламоқчимисиз?",
+      "cancel": "Бекор қилиш",
+      "delete": "Ўчириш",
+      "close": "Ёпиш"
+    },
+    "notifications": {
+      "statusSuccess": "Ҳамкорлик ҳолати муваффақиятли янгиланди",
+      "deleteSuccess": "Ариза муваффақиятли ўчирилди",
+      "error": "Хатолик юз берди"
+    }
+  },
+  "faqAdmin": {
+    "title": "Кўп Бериладиган Саволлар (FAQ CMS)",
+    "subtitle": "Фойдаланувчилар ва автомактаблар учун кўп тилли қўлланма саволлари",
+    "addBtn": "Янги савол қўшиш",
+    "refresh": "Янгилаш",
+    "retry": "Қайта уриниш",
+    "searchPlaceholder": "Савол ёки жавоб бўйича қидириш...",
+    "errorLoad": "FAQ маълумотларини юклаб бўлмади",
+    "empty": "Ҳозирча FAQ элементлари йўқ",
+    "table": {
+      "order": "Тартиб",
+      "question": "Савол (Лотин)",
+      "category": "Категория",
+      "status": "Ҳолат",
+      "actions": "Амаллар"
+    },
+    "modal": {
+      "createTitle": "Янги FAQ Саволи Яратиш",
+      "editTitle": "FAQ Саволини Таҳрирлаш",
+      "tabUzl": "Ўзбекча (Лотин)",
+      "tabUzc": "Кирилл (uz_cyrl)",
+      "tabRu": "Русский (ru)",
+      "questionLabel": "Савол",
+      "answerLabel": "Жавоб",
+      "categoryLabel": "Категория",
+      "orderLabel": "Тартиб рақами",
+      "activeLabel": "Сайтда кўринсин (Фаол)",
+      "save": "Сақлаш",
+      "cancel": "Бекор қилиш",
+      "deleteConfirm": "Ҳақиқатан ҳам бу саволни бутунлай ўчириб ташламоқчимисиз?",
+      "delete": "Ўчириш"
+    },
+    "notifications": {
+      "requiredLotin": "Лотин тилидаги савол ва жавоб майдонлари мажбурий",
+      "createSuccess": "Янги FAQ муваффақиятли яратилди",
+      "updateSuccess": "FAQ муваффақиятли янгиланди",
+      "deleteSuccess": "FAQ муваффақиятли ўчирилди",
+      "error": "Хатолик юз берди"
+    }
+  },
+  "newsAdmin": {
+    "title": "Янгиликлар ва Эълонлар (News CMS)",
+    "subtitle": "Платформа янгиликлари, қоидалар ўзгариши ва расмий эълонлар бошқаруви",
+    "addBtn": "Янги янгилик қўшиш",
+    "refresh": "Янгилаш",
+    "retry": "Қайта уриниш",
+    "searchPlaceholder": "Янгилик сарлавҳаси ёки матни бўйича қидириш...",
+    "errorLoad": "Янгиликларни юклаб бўлмади",
+    "empty": "Ҳозирча янгиликлар йўқ",
+    "table": {
+      "id": "ID",
+      "title": "Сарлавҳа (Лотин)",
+      "slug": "Slug (SEO URL)",
+      "views": "Кўришлар",
+      "status": "Нашр ҳолати",
+      "date": "Сана",
+      "actions": "Амаллар"
+    },
+    "statusPublished": "Нашр қилинган",
+    "statusDraft": "Қоралама",
+    "modal": {
+      "createTitle": "Янги Янгилик Яратиш",
+      "editTitle": "Янгиликни Таҳрирлаш",
+      "tabUzl": "Ўзбекча (Лотин)",
+      "tabUzc": "Ўзбекча (Кирилл)",
+      "tabRu": "Русский",
+      "titleLabel": "Сарлавҳа",
+      "slugLabel": "Slug (URL identifier)",
+      "summaryLabel": "Қисқача мазмуни (Summary)",
+      "contentLabel": "Тўлиқ матн (HTML / Матн)",
+      "imageUrlLabel": "Расм URL",
+      "publishSwitch": "Дарҳол нашр этилсин (Published)",
+      "save": "Сақлаш",
+      "cancel": "Бекор қилиш",
+      "deleteConfirm": "Ҳақиқатан ҳам бу мақолани бутунлай ўчириб ташламоқчимисиз?",
+      "delete": "Ўчириш"
+    },
+    "notifications": {
+      "requiredLotin": "Лотин тилидаги сарлавҳа ва матн майдонлари мажбурий",
+      "createSuccess": "Янгилик муваффақиятли яратилди",
+      "updateSuccess": "Янгилик муваффақиятли янгиланди",
+      "deleteSuccess": "Янгилик муваффақиятли ўчирилди",
+      "publishSuccess": "Нашр ҳолати муваффақиятли ўзгартирилди",
+      "error": "Хатолик юз берди"
+    }
+  },
+  "examsAdmin": {
+    "title": "Имтиҳон Сессиялари ва Тест Натижалари (Exams)",
+    "subtitle": "Фойдаланувчилар томонидан топширилган ҳақиқий ва машқ имтиҳонлари мониторинги",
+    "refresh": "Янгилаш",
+    "retry": "Қайта уриниш",
+    "searchUser": "Фойдаланувчи ID бўйича...",
+    "statusFilter": "Ҳолат",
+    "errorLoad": "Имтиҳонларни юклаб бўлмади",
+    "empty": "Ҳозирча имтиҳон натижалари мавжуд эмас",
+    "table": {
+      "sessionId": "Сессия ID",
+      "userId": "Фойдаланувчи ID",
+      "status": "Ҳолат",
+      "result": "Натижа",
+      "passFail": "Ўтди / Қолди",
+      "duration": "Сарфланган вақт",
+      "startDate": "Бошланган сана",
+      "audit": "Саволлар аудити"
+    },
+    "passed": "Ўтди",
+    "failed": "Қолди",
+    "modal": {
+      "title": "Имтиҳон Саволлари ва Жавоблари",
+      "correctAnswers": "Тўғри жавоблар",
+      "answersList": "Берилган Жавоблар Рўйхати",
+      "colQuestionId": "Савол ID",
+      "colSelected": "Танланган жавоб",
+      "colCorrect": "Тўғри жавоб",
+      "colResult": "Натижа",
+      "correct": "Тўғри",
+      "wrong": "Нотўғри",
+      "close": "Ёпиш"
+    }
+  },
+  "downloadsAdmin": {
+    "title": "Юклаб Олишлар Статистикаси (Downloads Analytics)",
+    "subtitle": "Desktop ва мобил иловалар юклаб олиниши таҳлили",
+    "platformDist": "Операцион Тизимлар Тақсимоти",
+    "errorLoad": "Статистикани юклаб бўлмади",
+    "retry": "Қайта уриниш",
+    "totalDownloads": "Жами юклаб олишлар",
+    "releaseDownloads": "Версия бўйича юклаб олишлар"
+  },
+  "settingsAdmin": {
+    "subtitle": "Тизим параметрлари, сайт созламалари ва шахсий профил",
+    "tabSystem": "Тизим Созламалари",
+    "tabProfile": "Менинг Профилим",
+    "tabDevices": "Уланган Қурилмалар",
+    "tabSecurity": "Хавфсизлик Сиёсати",
+    "tabStatus": "Тизим Ҳолати",
+    "securitySectionTitle": "Хавфсизлик ва Кириш Чекловлари (Security)"
   }
 }

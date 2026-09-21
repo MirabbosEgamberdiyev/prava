@@ -28,6 +28,7 @@ import {
 import useSWR from "swr";
 import { useDisclosure } from "@mantine/hooks";
 import api from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 interface AuditLog {
   id: number;
@@ -53,6 +54,7 @@ const actionColors: Record<string, string> = {
 };
 
 export default function AuditLogsPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [action, setAction] = useState<string>("");
@@ -85,11 +87,11 @@ export default function AuditLogsPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>Xavfsizlik va Admin Harakatlari Jurnali (Audit Logs)</Title>
-          <Text c="dimmed" size="sm">Barcha ma'muriy amallar, kim, qachon, qaysi IP dan o'zgartirgani to'liq qayd etiladi</Text>
+          <Title order={2} fw={700}>{t("audit.title")}</Title>
+          <Text c="dimmed" size="sm">{t("audit.subtitle")}</Text>
         </div>
         <Button leftSection={<IconRefresh size={16} />} variant="light" onClick={() => mutate()} loading={isValidating}>
-          Yangilash
+          {t("audit.refresh")}
         </Button>
       </Group>
 
@@ -97,24 +99,24 @@ export default function AuditLogsPage() {
         <Stack gap="md">
           <Group>
             <TextInput
-              placeholder="Admin foydalanuvchi nomi..."
+              placeholder={t("audit.searchAdmin")}
               leftSection={<IconSearch size={16} />}
               value={searchAdmin}
               onChange={(e) => { setSearchAdmin(e.currentTarget.value); setPage(1); }}
               style={{ flex: 1 }}
             />
             <Select
-              placeholder="Amal turi (Action)"
+              placeholder={t("audit.actionTypePlaceholder")}
               clearable
               data={[
-                { value: "CREATE", label: "CREATE (Yaratish)" },
-                { value: "UPDATE", label: "UPDATE (Yangilash)" },
-                { value: "DELETE", label: "DELETE (O'chirish)" },
-                { value: "STATUS_CHANGE", label: "STATUS_CHANGE (Holat o'zgartirish)" },
-                { value: "RESET_PASSWORD", label: "RESET_PASSWORD (Parol tiklash)" },
-                { value: "FORCE_LOGOUT", label: "FORCE_LOGOUT (Majburiy chiqarish)" },
-                { value: "EXPORT", label: "EXPORT (Eksport)" },
-                { value: "IMPORT", label: "IMPORT (Import)" },
+                { value: "CREATE", label: t("audit.actions.CREATE") },
+                { value: "UPDATE", label: t("audit.actions.UPDATE") },
+                { value: "DELETE", label: t("audit.actions.DELETE") },
+                { value: "STATUS_CHANGE", label: t("audit.actions.STATUS_CHANGE") },
+                { value: "RESET_PASSWORD", label: t("audit.actions.RESET_PASSWORD") },
+                { value: "FORCE_LOGOUT", label: t("audit.actions.FORCE_LOGOUT") },
+                { value: "EXPORT", label: t("audit.actions.EXPORT") },
+                { value: "IMPORT", label: t("audit.actions.IMPORT") },
               ]}
               value={action}
               onChange={(val) => { setAction(val || ""); setPage(1); }}
@@ -130,26 +132,26 @@ export default function AuditLogsPage() {
             </Stack>
           ) : error ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
-              <Text c="red">Audit loglarini yuklab bo'lmadi</Text>
-              <Button mt="sm" variant="subtle" onClick={() => mutate()}>Qayta urinish</Button>
+              <Text c="red">{t("audit.errorLoad")}</Text>
+              <Button mt="sm" variant="subtle" onClick={() => mutate()}>{t("audit.retry")}</Button>
             </Paper>
           ) : logs.length === 0 ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
               <IconHistory size={48} color="gray" />
-              <Text c="dimmed" mt="xs">Hozircha audit loglari yozilmagan</Text>
+              <Text c="dimmed" mt="xs">{t("audit.empty")}</Text>
             </Paper>
           ) : (
             <Table striped highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>ID</Table.Th>
-                  <Table.Th>Admin</Table.Th>
-                  <Table.Th>Amal</Table.Th>
-                  <Table.Th>Modul / Entity</Table.Th>
-                  <Table.Th>Entity ID</Table.Th>
-                  <Table.Th>Mijoz IP</Table.Th>
-                  <Table.Th>Sana & Vaqt</Table.Th>
-                  <Table.Th style={{ textAlign: "right" }}>Tafsilotlar</Table.Th>
+                  <Table.Th>{t("audit.colId")}</Table.Th>
+                  <Table.Th>{t("audit.colAdmin")}</Table.Th>
+                  <Table.Th>{t("audit.colAction")}</Table.Th>
+                  <Table.Th>{t("audit.colModule")}</Table.Th>
+                  <Table.Th>{t("audit.colTargetId")}</Table.Th>
+                  <Table.Th>{t("audit.colIp")}</Table.Th>
+                  <Table.Th>{t("audit.colDate")}</Table.Th>
+                  <Table.Th style={{ textAlign: "right" }}>{t("audit.colDetails")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -203,44 +205,44 @@ export default function AuditLogsPage() {
       <Modal
         opened={detailModalOpened}
         onClose={closeDetailModal}
-        title={<Text fw={700} size="lg">Harakat tafsilotlari #{selectedLog?.id}</Text>}
+        title={<Text fw={700} size="lg">{t("audit.detailsModalTitle")} #{selectedLog?.id}</Text>}
         size="md"
       >
         {selectedLog && (
           <Stack gap="md">
             <Group grow>
               <div>
-                <Text size="xs" c="dimmed">Admin foydalanuvchi</Text>
+                <Text size="xs" c="dimmed">{t("audit.colAdmin")}</Text>
                 <Text fw={600}>{selectedLog.adminUsername}</Text>
               </div>
               <div>
-                <Text size="xs" c="dimmed">Amal turi</Text>
+                <Text size="xs" c="dimmed">{t("audit.colAction")}</Text>
                 <Badge color={actionColors[selectedLog.action] || "gray"}>{selectedLog.action}</Badge>
               </div>
             </Group>
 
             <Group grow>
               <div>
-                <Text size="xs" c="dimmed">Modul / Ob'ekt</Text>
+                <Text size="xs" c="dimmed">{t("audit.colModule")}</Text>
                 <Text fw={500}>{selectedLog.entityName || "-"} (ID: {selectedLog.entityId || "-"})</Text>
               </div>
               <div>
-                <Text size="xs" c="dimmed">IP manzil</Text>
+                <Text size="xs" c="dimmed">{t("audit.colIp")}</Text>
                 <Text ff="monospace">{selectedLog.clientIp || "127.0.0.1"}</Text>
               </div>
             </Group>
 
             <div>
-              <Text size="xs" c="dimmed" mb="xs">Amal tafsilotlari / Parametrlar</Text>
+              <Text size="xs" c="dimmed" mb="xs">{t("audit.colDetails")}</Text>
               <Paper withBorder p="sm" bg="gray.0">
                 <Code block style={{ whiteSpace: "pre-wrap" }}>
-                  {selectedLog.details || "Tafsilotlar yozilmagan"}
+                  {selectedLog.details || t("audit.empty")}
                 </Code>
               </Paper>
             </div>
 
             <Group justify="flex-end" mt="md">
-              <Button variant="default" onClick={closeDetailModal}>Yopish</Button>
+              <Button variant="default" onClick={closeDetailModal}>{t("audit.close")}</Button>
             </Group>
           </Stack>
         )}

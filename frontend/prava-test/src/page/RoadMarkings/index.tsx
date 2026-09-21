@@ -20,11 +20,13 @@ import {
 import { IconAlertTriangle, IconRoad, IconRefresh } from "@tabler/icons-react";
 import { curriculumApi, type RoadMarking } from "../../services/curriculumApi";
 import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 import { AppImage } from "../../components/common/AppImage";
 
 export default function RoadMarkings_Page() {
   const { lang } = useLanguage();
+  const { t } = useTranslation();
 
   const [markings, setMarkings] = useState<RoadMarking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,14 +90,14 @@ export default function RoadMarkings_Page() {
         <Group justify="space-between" align="flex-start">
           <div>
             <Title order={1} fw={900} style={{ letterSpacing: "-0.5px" }}>
-              Yo'l chiziqlari
+              {t("curriculum.markingsTitle")}
             </Title>
             <Text c="dimmed" size="sm" mt={4}>
-              Gorizontal va vertikal yo'l chiziqlari va ularning qo'llanilishi
+              {t("curriculum.markingsSubtitle")}
             </Text>
           </div>
           <Badge size="lg" variant="filled" color="teal" leftSection={<IconRoad size={14} />}>
-            {filteredMarkings.length} ta chiziq
+            {filteredMarkings.length} {t("curriculum.markingsCount")}
           </Badge>
         </Group>
 
@@ -103,13 +105,13 @@ export default function RoadMarkings_Page() {
         <Tabs value={activeTab} onChange={(val) => setActiveTab(val || "all")}>
           <Tabs.List>
             <Tabs.Tab value="all" style={{ fontWeight: 600 }}>
-              Barchasi ({safeMarkings.length})
+              {t("curriculum.all")} ({safeMarkings.length})
             </Tabs.Tab>
             <Tabs.Tab value="horizontal" style={{ fontWeight: 600 }}>
-              Gorizontal chiziqlar (1-guruh)
+              {t("curriculum.horizontal")}
             </Tabs.Tab>
             <Tabs.Tab value="vertical" style={{ fontWeight: 600 }}>
-              Vertikal chiziqlar (2-guruh)
+              {t("curriculum.vertical")}
             </Tabs.Tab>
           </Tabs.List>
         </Tabs>

@@ -243,7 +243,9 @@
     "loadError": "Ошибка загрузки данных",
     "clearFilters": "Сбросить фильтры",
     "total": "Всего",
-    "page": "Страница"
+    "page": "Страница",
+    "retry": "Повторить",
+    "clear": "Очистить"
   },
   "dashboard": {
     "title": "Панель управления",
@@ -284,7 +286,8 @@
     "exams": "Экзамены",
     "popularPackages": "Популярные пакеты",
     "popularTickets": "Популярные билеты",
-    "ticket": "Билет"
+    "ticket": "Билет",
+    "totalTopics": "Всего Темы"
   },
   "users": {
     "title": "Пользователи",
@@ -350,7 +353,8 @@
     "userBlocked": "Пользователь заблокирован",
     "statusChangeError": "Ошибка изменения статуса",
     "userDeleted": "Пользователь удалён",
-    "deleteError": "Ошибка удаления"
+    "deleteError": "Ошибка удаления",
+    "subtitle": "Управление и контроль пользователей системы"
   },
   "questions": {
     "title": "Вопросы",
@@ -1290,5 +1294,258 @@
     "onlinePlaceholder": "Prava Online",
     "offlinePlaceholder": "Prava Offline",
     "extensions": ".exe · .msi · .deb · .rpm · .AppImage · .dmg · .pkg"
+  },
+  "audit": {
+    "title": "Журнал Аудита и Действий Администраторов (Audit Logs)",
+    "subtitle": "Полная фиксация всех административных действий: кто, когда и с какого IP внес изменения",
+    "searchAdmin": "Имя администратора...",
+    "actionTypePlaceholder": "Тип действия (Action)",
+    "refresh": "Обновить",
+    "retry": "Повторить",
+    "errorLoad": "Не удалось загрузить журнал аудита",
+    "empty": "Журнал аудита пока пуст",
+    "colId": "ID",
+    "colAdmin": "Администратор",
+    "colAction": "Действие",
+    "colModule": "Модуль / Объект",
+    "colTargetId": "ID Объекта",
+    "colIp": "IP Адрес",
+    "colDate": "Дата",
+    "colDetails": "Детали",
+    "detailsModalTitle": "Детали Записи Аудита",
+    "close": "Закрыть",
+    "actions": {
+      "CREATE": "CREATE (Создание)",
+      "UPDATE": "UPDATE (Обновление)",
+      "DELETE": "DELETE (Удаление)",
+      "STATUS_CHANGE": "STATUS_CHANGE (Смена статуса)",
+      "RESET_PASSWORD": "RESET_PASSWORD (Сброс пароля)",
+      "FORCE_LOGOUT": "FORCE_LOGOUT (Принудительный выход)",
+      "EXPORT": "EXPORT (Экспорт)",
+      "IMPORT": "IMPORT (Импорт)"
+    }
+  },
+  "contact": {
+    "title": "Обращения и Контакты (Contact Leads)",
+    "subtitle": "Запросы от пользователей и автошкол",
+    "refresh": "Обновить",
+    "retry": "Повторить",
+    "searchPlaceholder": "Поиск по организации, имени, телефону или Ticket ID...",
+    "errorLoad": "Не удалось загрузить данные",
+    "empty": "Обращений не найдено",
+    "tabs": {
+      "all": "Все",
+      "new": "Новые",
+      "inProgress": "В процессе",
+      "answered": "Отвечено",
+      "closed": "Закрыто"
+    },
+    "table": {
+      "ticketId": "Ticket ID",
+      "org": "Организация",
+      "contactPerson": "Контактное лицо",
+      "phone": "Телефон",
+      "telegram": "Telegram",
+      "region": "Регион",
+      "status": "Статус",
+      "date": "Дата",
+      "actions": "Действия"
+    },
+    "modal": {
+      "viewTitle": "Детали Обращения",
+      "detailsSection": "Информация об Обращении",
+      "messageSection": "Текст Сообщения",
+      "statusSection": "Изменение Статуса Обращения",
+      "deleteConfirm": "Вы уверены, что хотите удалить это обращение?",
+      "cancel": "Отмена",
+      "delete": "Удалить",
+      "close": "Закрыть"
+    },
+    "notifications": {
+      "statusSuccess": "Статус обращения успешно обновлен",
+      "deleteSuccess": "Обращение успешно удалено",
+      "error": "Произошла ошибка"
+    }
+  },
+  "partners": {
+    "title": "Партнерство и Заявки Автошкол (Partnership Leads)",
+    "subtitle": "Заявки на подключение к платформе и сотрудничество от автошкол",
+    "refresh": "Обновить",
+    "retry": "Повторить",
+    "searchPlaceholder": "Поиск по организации, контактному лицу, телефону...",
+    "errorLoad": "Не удалось загрузить данные",
+    "empty": "Заявок на партнерство пока нет",
+    "tabs": {
+      "all": "Все",
+      "new": "Новые",
+      "contacted": "Связались",
+      "negotiation": "Переговоры",
+      "converted": "Успешно",
+      "rejected": "Отклонено"
+    },
+    "table": {
+      "id": "ID",
+      "org": "Автошкола / Организация",
+      "contactPerson": "Контактное лицо",
+      "phone": "Телефон",
+      "email": "Email",
+      "computers": "Компьютеры",
+      "region": "Регион",
+      "status": "Статус",
+      "date": "Дата",
+      "actions": "Действия"
+    },
+    "modal": {
+      "viewTitle": "Заявка на Партнерство",
+      "detailsSection": "Данные Заявки",
+      "statusSection": "Изменение Статуса Заявки",
+      "deleteConfirm": "Вы уверены, что хотите удалить эту заявку на партнерство?",
+      "cancel": "Отмена",
+      "delete": "Удалить",
+      "close": "Закрыть"
+    },
+    "notifications": {
+      "statusSuccess": "Статус заявки успешно обновлен",
+      "deleteSuccess": "Заявка успешно удалена",
+      "error": "Произошла ошибка"
+    }
+  },
+  "faqAdmin": {
+    "title": "Часто Задаваемые Вопросы (FAQ CMS)",
+    "subtitle": "Многоязычные справочные вопросы для пользователей и автошкол",
+    "addBtn": "Добавить новый вопрос",
+    "refresh": "Обновить",
+    "retry": "Повторить",
+    "searchPlaceholder": "Поиск по вопросу или ответу...",
+    "errorLoad": "Не удалось загрузить данные FAQ",
+    "empty": "Элементов FAQ пока нет",
+    "table": {
+      "order": "Порядок",
+      "question": "Вопрос (Латиница)",
+      "category": "Категория",
+      "status": "Статус",
+      "actions": "Действия"
+    },
+    "modal": {
+      "createTitle": "Создание Нового Вопроса FAQ",
+      "editTitle": "Редактирование Вопроса FAQ",
+      "tabUzl": "Узбекский (Латиница)",
+      "tabUzc": "Кириллица (uz_cyrl)",
+      "tabRu": "Русский (ru)",
+      "questionLabel": "Вопрос",
+      "answerLabel": "Ответ",
+      "categoryLabel": "Категория",
+      "orderLabel": "Порядковый номер",
+      "activeLabel": "Отображать на сайте (Активен)",
+      "save": "Сохранить",
+      "cancel": "Отмена",
+      "deleteConfirm": "Вы уверены, что хотите полностью удалить этот вопрос?",
+      "delete": "Удалить"
+    },
+    "notifications": {
+      "requiredLotin": "Поля вопроса и ответа на латинице обязательны",
+      "createSuccess": "Новый вопрос FAQ успешно создан",
+      "updateSuccess": "FAQ успешно обновлен",
+      "deleteSuccess": "FAQ успешно удален",
+      "error": "Произошла ошибка"
+    }
+  },
+  "newsAdmin": {
+    "title": "Новости и Объявления (News CMS)",
+    "subtitle": "Управление новостями платформы, изменениями ПДД и официальными релизами",
+    "addBtn": "Добавить новость",
+    "refresh": "Обновить",
+    "retry": "Повторить",
+    "searchPlaceholder": "Поиск по заголовку или тексту...",
+    "errorLoad": "Не удалось загрузить новости",
+    "empty": "Новостей пока нет",
+    "table": {
+      "id": "ID",
+      "title": "Заголовок (Латиница)",
+      "slug": "Slug (SEO URL)",
+      "views": "Просмотры",
+      "status": "Статус публикации",
+      "date": "Дата",
+      "actions": "Действия"
+    },
+    "statusPublished": "Опубликовано",
+    "statusDraft": "Черновик",
+    "modal": {
+      "createTitle": "Создание Новости",
+      "editTitle": "Редактирование Новости",
+      "tabUzl": "Узбекский (Латиница)",
+      "tabUzc": "Узбекский (Кириллица)",
+      "tabRu": "Русский",
+      "titleLabel": "Заголовок",
+      "slugLabel": "Slug (URL идентификатор)",
+      "summaryLabel": "Краткое содержание (Summary)",
+      "contentLabel": "Полный текст (HTML / Текст)",
+      "imageUrlLabel": "URL Изображения",
+      "publishSwitch": "Опубликовать сразу (Published)",
+      "save": "Сохранить",
+      "cancel": "Отмена",
+      "deleteConfirm": "Вы уверены, что хотите удалить эту статью?",
+      "delete": "Удалить"
+    },
+    "notifications": {
+      "requiredLotin": "Поля заголовка и текста на латинице обязательны",
+      "createSuccess": "Новость успешно создана",
+      "updateSuccess": "Новость успешно обновлена",
+      "deleteSuccess": "Новость успешно удалена",
+      "publishSuccess": "Статус публикации успешно изменен",
+      "error": "Произошла ошибка"
+    }
+  },
+  "examsAdmin": {
+    "title": "Экзаменационные Сессии и Результаты Тестов (Exams)",
+    "subtitle": "Мониторинг реальных и тренировочных экзаменов, сданных пользователями",
+    "refresh": "Обновить",
+    "retry": "Повторить",
+    "searchUser": "Поиск по ID пользователя...",
+    "statusFilter": "Статус",
+    "errorLoad": "Не удалось загрузить экзамены",
+    "empty": "Результатов экзаменов пока нет",
+    "table": {
+      "sessionId": "ID Сессии",
+      "userId": "ID Пользователя",
+      "status": "Статус",
+      "result": "Результат",
+      "passFail": "Сдан / Не сдан",
+      "duration": "Затраченное время",
+      "startDate": "Дата начала",
+      "audit": "Аудит вопросов"
+    },
+    "passed": "Сдан",
+    "failed": "Не сдан",
+    "modal": {
+      "title": "Вопросы и Ответы Экзамена",
+      "correctAnswers": "Правильные ответы",
+      "answersList": "Список Данных Ответов",
+      "colQuestionId": "ID Вопроса",
+      "colSelected": "Выбранный ответ",
+      "colCorrect": "Правильный ответ",
+      "colResult": "Результат",
+      "correct": "Верно",
+      "wrong": "Неверно",
+      "close": "Закрыть"
+    }
+  },
+  "downloadsAdmin": {
+    "title": "Статистика Загрузок (Downloads Analytics)",
+    "subtitle": "Аналитика скачиваний настольных и мобильных приложений",
+    "platformDist": "Распределение по Операционным Системам",
+    "errorLoad": "Не удалось загрузить статистику",
+    "retry": "Повторить",
+    "totalDownloads": "Всего скачиваний",
+    "releaseDownloads": "Скачиваний по версии"
+  },
+  "settingsAdmin": {
+    "subtitle": "Параметры системы, настройки сайта и персональный профиль",
+    "tabSystem": "Настройки Системы",
+    "tabProfile": "Мой Профиль",
+    "tabDevices": "Подключенные Устройства",
+    "tabSecurity": "Политика Безопасности",
+    "tabStatus": "Статус Системы",
+    "securitySectionTitle": "Безопасность и Ограничения Доступа (Security)"
   }
 }

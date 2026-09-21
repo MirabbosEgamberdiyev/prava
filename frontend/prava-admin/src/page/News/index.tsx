@@ -31,6 +31,7 @@ import useSWR from "swr";
 import { notifications } from "@mantine/notifications";
 import { useDisclosure } from "@mantine/hooks";
 import api from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 interface NewsArticle {
   id?: number;
@@ -66,6 +67,7 @@ const emptyArticle: NewsArticle = {
 };
 
 export default function NewsPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [search, setSearch] = useState("");
@@ -106,8 +108,8 @@ export default function NewsPage() {
   const handleSave = async () => {
     if (!editingArticle.titleUzl.trim()) {
       notifications.show({
-        title: "Xatolik",
-        message: "Lotin tilida sarlavha kiritilishi shart",
+        title: t("common.error"),
+        message: t("newsAdmin.notifications.requiredLotin"),
         color: "red",
       });
       return;
@@ -117,17 +119,17 @@ export default function NewsPage() {
     try {
       if (editingArticle.id) {
         await api.put(`/api/v1/admin/news/${editingArticle.id}`, editingArticle);
-        notifications.show({ title: "Muvaffaqiyatli", message: "Yangilik tahrirlandi", color: "green" });
+        notifications.show({ title: t("common.success"), message: t("newsAdmin.notifications.updateSuccess"), color: "green" });
       } else {
         await api.post("/api/v1/admin/news", editingArticle);
-        notifications.show({ title: "Muvaffaqiyatli", message: "Yangi yangilik yaratildi", color: "green" });
+        notifications.show({ title: t("common.success"), message: t("newsAdmin.notifications.createSuccess"), color: "green" });
       }
       closeForm();
       mutate();
     } catch (e: any) {
       notifications.show({
-        title: "Xatolik",
-        message: e?.response?.data?.message || "Saqlab bo'lmadi",
+        title: t("common.error"),
+        message: e?.response?.data?.message || t("newsAdmin.notifications.error"),
         color: "red",
       });
     } finally {
@@ -148,8 +150,8 @@ export default function NewsPage() {
       mutate();
     } catch (e: any) {
       notifications.show({
-        title: "Xatolik",
-        message: "Nashr holatini o'zgartirib bo'lmadi",
+        title: t("common.error"),
+        message: t("newsAdmin.notifications.error"),
         color: "red",
       });
     }
@@ -159,11 +161,11 @@ export default function NewsPage() {
     if (!deletingId) return;
     try {
       await api.delete(`/api/v1/admin/news/${deletingId}`);
-      notifications.show({ title: "O'chirildi", message: "Yangilik o'chirildi", color: "green" });
+      notifications.show({ title: t("common.success"), message: t("newsAdmin.notifications.deleteSuccess"), color: "green" });
       closeDeleteModal();
       mutate();
     } catch (e: any) {
-      notifications.show({ title: "Xatolik", message: "O'chirib bo'lmadi", color: "red" });
+      notifications.show({ title: t("common.error"), message: t("newsAdmin.notifications.error"), color: "red" });
     }
   };
 
@@ -171,15 +173,15 @@ export default function NewsPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>Yangiliklar va Maqolalar CMS</Title>
-          <Text c="dimmed" size="sm">Saytdagi barcha yangiliklarni 3 tilda boshqarish va nashr qilish</Text>
+          <Title order={2} fw={700}>{t("newsAdmin.title")}</Title>
+          <Text c="dimmed" size="sm">{t("newsAdmin.subtitle")}</Text>
         </div>
         <Group>
           <Button leftSection={<IconPlus size={16} />} onClick={handleOpenCreate}>
-            Yangi maqola qo'shish
+            {t("newsAdmin.addBtn")}
           </Button>
           <Button leftSection={<IconRefresh size={16} />} variant="light" onClick={() => mutate()} loading={isValidating}>
-            Yangilash
+            {t("newsAdmin.refresh")}
           </Button>
         </Group>
       </Group>
@@ -187,7 +189,7 @@ export default function NewsPage() {
       <Card withBorder radius="md" p="md">
         <Stack gap="md">
           <TextInput
-            placeholder="Sarlavha yoki slug bo'yicha qidirish..."
+            placeholder={t("newsAdmin.searchPlaceholder")}
             leftSection={<IconSearch size={16} />}
             value={search}
             onChange={(e) => { setSearch(e.currentTarget.value); setPage(1); }}
@@ -201,25 +203,25 @@ export default function NewsPage() {
             </Stack>
           ) : error ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
-              <Text c="red">Yangiliklarni yuklab bo'lmadi</Text>
-              <Button mt="sm" variant="subtle" onClick={() => mutate()}>Qayta urinish</Button>
+              <Text c="red">{t("newsAdmin.errorLoad")}</Text>
+              <Button mt="sm" variant="subtle" onClick={() => mutate()}>{t("newsAdmin.retry")}</Button>
             </Paper>
           ) : articles.length === 0 ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
               <IconNews size={48} color="gray" />
-              <Text c="dimmed" mt="xs">Hozircha yangiliklar yo'q</Text>
+              <Text c="dimmed" mt="xs">{t("newsAdmin.empty")}</Text>
             </Paper>
           ) : (
             <Table striped highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>ID</Table.Th>
-                  <Table.Th>Sarlavha (Lotin)</Table.Th>
-                  <Table.Th>Slug (SEO URL)</Table.Th>
-                  <Table.Th>Ko'rishlar</Table.Th>
-                  <Table.Th>Nashr holati</Table.Th>
-                  <Table.Th>Sana</Table.Th>
-                  <Table.Th style={{ textAlign: "right" }}>Amallar</Table.Th>
+                  <Table.Th>{t("newsAdmin.table.id")}</Table.Th>
+                  <Table.Th>{t("newsAdmin.table.title")}</Table.Th>
+                  <Table.Th>{t("newsAdmin.table.slug")}</Table.Th>
+                  <Table.Th>{t("newsAdmin.table.views")}</Table.Th>
+                  <Table.Th>{t("newsAdmin.table.status")}</Table.Th>
+                  <Table.Th>{t("newsAdmin.table.date")}</Table.Th>
+                  <Table.Th style={{ textAlign: "right" }}>{t("newsAdmin.table.actions")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -279,7 +281,7 @@ export default function NewsPage() {
       <Modal
         opened={formOpened}
         onClose={closeForm}
-        title={<Text fw={700} size="lg">{editingArticle.id ? "Maqolani tahrirlash" : "Yangi maqola yaratish"}</Text>}
+        title={<Text fw={700} size="lg">{editingArticle.id ? t("newsAdmin.modal.editTitle") : t("newsAdmin.modal.createTitle")}</Text>}
         size="xl"
       >
         <Stack gap="md">
@@ -389,20 +391,20 @@ export default function NewsPage() {
           </Tabs>
 
           <Group justify="flex-end" mt="lg">
-            <Button variant="default" onClick={closeForm}>Bekor qilish</Button>
+            <Button variant="default" onClick={closeForm}>{t("newsAdmin.modal.cancel")}</Button>
             <Button color="blue" onClick={handleSave} loading={saving}>
-              Saqlash
+              {t("newsAdmin.modal.save")}
             </Button>
           </Group>
         </Stack>
       </Modal>
 
       {/* O'chirish modali */}
-      <Modal opened={deleteModalOpened} onClose={closeDeleteModal} title="Yangilikni o'chirish">
-        <Text size="sm">Haqiqatan ham bu maqolani butunlay o'chirib tashlamoqchimisiz?</Text>
+      <Modal opened={deleteModalOpened} onClose={closeDeleteModal} title={t("newsAdmin.modal.delete")}>
+        <Text size="sm">{t("newsAdmin.modal.deleteConfirm")}</Text>
         <Group justify="flex-end" mt="lg">
-          <Button variant="default" onClick={closeDeleteModal}>Bekor qilish</Button>
-          <Button color="red" onClick={handleDelete}>O'chirish</Button>
+          <Button variant="default" onClick={closeDeleteModal}>{t("newsAdmin.modal.cancel")}</Button>
+          <Button color="red" onClick={handleDelete}>{t("newsAdmin.modal.delete")}</Button>
         </Group>
       </Modal>
     </Stack>

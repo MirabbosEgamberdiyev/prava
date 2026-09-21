@@ -26,6 +26,7 @@ import {
 import useSWR from "swr";
 import { useDisclosure } from "@mantine/hooks";
 import api from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 interface ExamSession {
   id: number;
@@ -54,6 +55,7 @@ interface ExamAnswer {
 }
 
 export default function ExamsAuditPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(15);
   const [status, setStatus] = useState<string>("");
@@ -95,11 +97,11 @@ export default function ExamsAuditPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>Imtihonlar va Natijalar Auditi</Title>
-          <Text c="dimmed" size="sm">Foydalanuvchilar topshirgan barcha testlar va ularning javoblari tekshiruvi</Text>
+          <Title order={2} fw={700}>{t("examsAdmin.title")}</Title>
+          <Text c="dimmed" size="sm">{t("examsAdmin.subtitle")}</Text>
         </div>
         <Button leftSection={<IconRefresh size={16} />} variant="light" onClick={() => mutate()} loading={isValidating}>
-          Yangilash
+          {t("examsAdmin.refresh")}
         </Button>
       </Group>
 
@@ -107,7 +109,7 @@ export default function ExamsAuditPage() {
         <Stack gap="md">
           <Group>
             <Select
-              placeholder="Holat bo'yicha saralash"
+              placeholder={t("examsAdmin.statusFilter")}
               clearable
               data={[
                 { value: "COMPLETED", label: "Tugallangan (COMPLETED)" },
@@ -129,26 +131,26 @@ export default function ExamsAuditPage() {
             </Stack>
           ) : error ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
-              <Text c="red">Imtihonlarni yuklab bo'lmadi</Text>
-              <Button mt="sm" variant="subtle" onClick={() => mutate()}>Qayta urinish</Button>
+              <Text c="red">{t("examsAdmin.errorLoad")}</Text>
+              <Button mt="sm" variant="subtle" onClick={() => mutate()}>{t("examsAdmin.retry")}</Button>
             </Paper>
           ) : sessions.length === 0 ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
               <IconCertificate size={48} color="gray" />
-              <Text c="dimmed" mt="xs">Hozircha imtihon natijalari mavjud emas</Text>
+              <Text c="dimmed" mt="xs">{t("examsAdmin.empty")}</Text>
             </Paper>
           ) : (
             <Table striped highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Sessiya ID</Table.Th>
-                  <Table.Th>Foydalanuvchi ID</Table.Th>
-                  <Table.Th>Holat</Table.Th>
-                  <Table.Th>Natija</Table.Th>
-                  <Table.Th>O'tdi / Qoldi</Table.Th>
-                  <Table.Th>Sarflangan vaqt</Table.Th>
-                  <Table.Th>Boshlangan sana</Table.Th>
-                  <Table.Th style={{ textAlign: "right" }}>Savollar auditi</Table.Th>
+                  <Table.Th>{t("examsAdmin.table.sessionId")}</Table.Th>
+                  <Table.Th>{t("examsAdmin.table.userId")}</Table.Th>
+                  <Table.Th>{t("examsAdmin.table.status")}</Table.Th>
+                  <Table.Th>{t("examsAdmin.table.result")}</Table.Th>
+                  <Table.Th>{t("examsAdmin.table.passFail")}</Table.Th>
+                  <Table.Th>{t("examsAdmin.table.duration")}</Table.Th>
+                  <Table.Th>{t("examsAdmin.table.startDate")}</Table.Th>
+                  <Table.Th style={{ textAlign: "right" }}>{t("examsAdmin.table.audit")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -176,7 +178,7 @@ export default function ExamsAuditPage() {
                     <Table.Td>
                       {s.percentage !== undefined && (
                         <Badge color={(s.percentage ?? 0) >= 90 ? "teal" : "red"} variant="light">
-                          {(s.percentage ?? 0) >= 90 ? "O'TDİ" : "YIQILDI"}
+                          {(s.percentage ?? 0) >= 90 ? t("examsAdmin.passed") : t("examsAdmin.failed")}
                         </Badge>
                       )}
                     </Table.Td>
@@ -216,7 +218,7 @@ export default function ExamsAuditPage() {
       <Modal
         opened={detailModalOpened}
         onClose={closeDetailModal}
-        title={<Text fw={700} size="lg">Imtihon sessiyasi auditi #{selectedSessionId}</Text>}
+        title={<Text fw={700} size="lg">{t("examsAdmin.modal.title")} #{selectedSessionId}</Text>}
         size="xl"
       >
         {loadingDetail ? (
@@ -234,7 +236,7 @@ export default function ExamsAuditPage() {
                   <Text fw={700} size="lg">{Math.round(sessionDetail.session.percentage ?? 0)}%</Text>
                 </div>
                 <div>
-                  <Text size="xs" c="dimmed">To'g'ri javoblar</Text>
+                  <Text size="xs" c="dimmed">{t("examsAdmin.modal.correctAnswers")}</Text>
                   <Text fw={700} size="lg" c="green">{sessionDetail.session.correctAnswersCount ?? 0} ta</Text>
                 </div>
                 <div>
@@ -246,7 +248,7 @@ export default function ExamsAuditPage() {
               </Group>
             </Paper>
 
-            <Title order={4} fw={600}>Berilgan Javoblar Ro'yxati</Title>
+            <Title order={4} fw={600}>{t("examsAdmin.modal.answersList")}</Title>
 
             {sessionDetail.answers.length === 0 ? (
               <Text c="dimmed" ta="center" py="md">Ushbu sessiyada hali birorta javob topshirilmagan</Text>
@@ -255,10 +257,10 @@ export default function ExamsAuditPage() {
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>#</Table.Th>
-                    <Table.Th>Savol ID</Table.Th>
-                    <Table.Th>Tanlangan javob</Table.Th>
-                    <Table.Th>To'g'ri javob</Table.Th>
-                    <Table.Th>Natija</Table.Th>
+                    <Table.Th>{t("examsAdmin.modal.colQuestionId")}</Table.Th>
+                    <Table.Th>{t("examsAdmin.modal.colSelected")}</Table.Th>
+                    <Table.Th>{t("examsAdmin.modal.colCorrect")}</Table.Th>
+                    <Table.Th>{t("examsAdmin.modal.colResult")}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -270,9 +272,9 @@ export default function ExamsAuditPage() {
                       <Table.Td>Variant {ans.correctOptionIndex}</Table.Td>
                       <Table.Td>
                         {ans.isCorrect ? (
-                          <Badge color="green" leftSection={<IconCheck size={12} />}>To'g'ri</Badge>
+                          <Badge color="green" leftSection={<IconCheck size={12} />}>{t("examsAdmin.modal.correct")}</Badge>
                         ) : (
-                          <Badge color="red" leftSection={<IconX size={12} />}>Xato</Badge>
+                          <Badge color="red" leftSection={<IconX size={12} />}>{t("examsAdmin.modal.wrong")}</Badge>
                         )}
                       </Table.Td>
                     </Table.Tr>
@@ -282,7 +284,7 @@ export default function ExamsAuditPage() {
             )}
 
             <Group justify="flex-end" mt="md">
-              <Button variant="default" onClick={closeDetailModal}>Yopish</Button>
+              <Button variant="default" onClick={closeDetailModal}>{t("examsAdmin.modal.close")}</Button>
             </Group>
           </Stack>
         ) : null}

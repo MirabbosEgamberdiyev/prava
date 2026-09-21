@@ -31,6 +31,7 @@ import useSWR from "swr";
 import { notifications } from "@mantine/notifications";
 import { useDisclosure } from "@mantine/hooks";
 import api from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 interface FaqItem {
   id?: number;
@@ -58,6 +59,7 @@ const emptyFaq: FaqItem = {
 };
 
 export default function FaqPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [search, setSearch] = useState("");
@@ -98,8 +100,8 @@ export default function FaqPage() {
   const handleSave = async () => {
     if (!editingFaq.questionUzl.trim() || !editingFaq.answerUzl.trim()) {
       notifications.show({
-        title: "Xatolik",
-        message: "Lotin tilidagi savol va javob maydonlari majburiy",
+        title: t("common.error"),
+        message: t("faqAdmin.notifications.requiredLotin"),
         color: "red",
       });
       return;
@@ -109,17 +111,17 @@ export default function FaqPage() {
     try {
       if (editingFaq.id) {
         await api.put(`/api/v1/admin/faqs/${editingFaq.id}`, editingFaq);
-        notifications.show({ title: "Muvaffaqiyatli", message: "FAQ yangilandi", color: "green" });
+        notifications.show({ title: t("common.success"), message: t("faqAdmin.notifications.updateSuccess"), color: "green" });
       } else {
         await api.post("/api/v1/admin/faqs", editingFaq);
-        notifications.show({ title: "Muvaffaqiyatli", message: "Yangi FAQ yaratildi", color: "green" });
+        notifications.show({ title: t("common.success"), message: t("faqAdmin.notifications.createSuccess"), color: "green" });
       }
       closeForm();
       mutate();
     } catch (e: any) {
       notifications.show({
-        title: "Xatolik",
-        message: e?.response?.data?.message || "Saqlab bo'lmadi",
+        title: t("common.error"),
+        message: e?.response?.data?.message || t("faqAdmin.notifications.error"),
         color: "red",
       });
     } finally {
@@ -131,11 +133,11 @@ export default function FaqPage() {
     if (!deletingId) return;
     try {
       await api.delete(`/api/v1/admin/faqs/${deletingId}`);
-      notifications.show({ title: "O'chirildi", message: "FAQ o'chirildi", color: "green" });
+      notifications.show({ title: t("common.success"), message: t("faqAdmin.notifications.deleteSuccess"), color: "green" });
       closeDeleteModal();
       mutate();
     } catch (e: any) {
-      notifications.show({ title: "Xatolik", message: "O'chirib bo'lmadi", color: "red" });
+      notifications.show({ title: t("common.error"), message: t("faqAdmin.notifications.error"), color: "red" });
     }
   };
 
@@ -143,15 +145,15 @@ export default function FaqPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>Ko'p Beriladigan Savollar (FAQ CMS)</Title>
-          <Text c="dimmed" size="sm">Foydalanuvchilar va avtomaktablar uchun ko'p tilli qo'llanma savollari</Text>
+          <Title order={2} fw={700}>{t("faqAdmin.title")}</Title>
+          <Text c="dimmed" size="sm">{t("faqAdmin.subtitle")}</Text>
         </div>
         <Group>
           <Button leftSection={<IconPlus size={16} />} onClick={handleOpenCreate}>
-            Yangi savol qo'shish
+            {t("faqAdmin.addBtn")}
           </Button>
           <Button leftSection={<IconRefresh size={16} />} variant="light" onClick={() => mutate()} loading={isValidating}>
-            Yangilash
+            {t("faqAdmin.refresh")}
           </Button>
         </Group>
       </Group>
@@ -159,7 +161,7 @@ export default function FaqPage() {
       <Card withBorder radius="md" p="md">
         <Stack gap="md">
           <TextInput
-            placeholder="Savol yoki javob bo'yicha qidirish..."
+            placeholder={t("faqAdmin.searchPlaceholder")}
             leftSection={<IconSearch size={16} />}
             value={search}
             onChange={(e) => { setSearch(e.currentTarget.value); setPage(1); }}
@@ -173,23 +175,23 @@ export default function FaqPage() {
             </Stack>
           ) : error ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
-              <Text c="red">FAQ ma'lumotlarini yuklab bo'lmadi</Text>
-              <Button mt="sm" variant="subtle" onClick={() => mutate()}>Qayta urinish</Button>
+              <Text c="red">{t("faqAdmin.errorLoad")}</Text>
+              <Button mt="sm" variant="subtle" onClick={() => mutate()}>{t("faqAdmin.retry")}</Button>
             </Paper>
           ) : faqs.length === 0 ? (
             <Paper p="xl" withBorder style={{ textAlign: "center" }}>
               <IconHelp size={48} color="gray" />
-              <Text c="dimmed" mt="xs">Hozircha FAQ elementlari yo'q</Text>
+              <Text c="dimmed" mt="xs">{t("faqAdmin.empty")}</Text>
             </Paper>
           ) : (
             <Table striped highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Tartib</Table.Th>
-                  <Table.Th>Savol (Lotin)</Table.Th>
-                  <Table.Th>Kategoriya</Table.Th>
-                  <Table.Th>Holat</Table.Th>
-                  <Table.Th style={{ textAlign: "right" }}>Amallar</Table.Th>
+                  <Table.Th>{t("faqAdmin.table.order")}</Table.Th>
+                  <Table.Th>{t("faqAdmin.table.question")}</Table.Th>
+                  <Table.Th>{t("faqAdmin.table.category")}</Table.Th>
+                  <Table.Th>{t("faqAdmin.table.status")}</Table.Th>
+                  <Table.Th style={{ textAlign: "right" }}>{t("faqAdmin.table.actions")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -235,7 +237,7 @@ export default function FaqPage() {
       <Modal
         opened={formOpened}
         onClose={closeForm}
-        title={<Text fw={700} size="lg">{editingFaq.id ? "Savolni tahrirlash" : "Yangi FAQ savol"}</Text>}
+        title={<Text fw={700} size="lg">{editingFaq.id ? t("faqAdmin.modal.editTitle") : t("faqAdmin.modal.createTitle")}</Text>}
         size="lg"
       >
         <Stack gap="md">
@@ -324,20 +326,20 @@ export default function FaqPage() {
           </Tabs>
 
           <Group justify="flex-end" mt="lg">
-            <Button variant="default" onClick={closeForm}>Bekor qilish</Button>
+            <Button variant="default" onClick={closeForm}>{t("faqAdmin.modal.cancel")}</Button>
             <Button color="blue" onClick={handleSave} loading={saving}>
-              Saqlash
+              {t("faqAdmin.modal.save")}
             </Button>
           </Group>
         </Stack>
       </Modal>
 
       {/* O'chirish modali */}
-      <Modal opened={deleteModalOpened} onClose={closeDeleteModal} title="FAQ ni o'chirish">
-        <Text size="sm">Haqiqatan ham bu savolni butunlay o'chirib tashlamoqchimisiz?</Text>
+      <Modal opened={deleteModalOpened} onClose={closeDeleteModal} title={t("faqAdmin.modal.delete")}>
+        <Text size="sm">{t("faqAdmin.modal.deleteConfirm")}</Text>
         <Group justify="flex-end" mt="lg">
-          <Button variant="default" onClick={closeDeleteModal}>Bekor qilish</Button>
-          <Button color="red" onClick={handleDelete}>O'chirish</Button>
+          <Button variant="default" onClick={closeDeleteModal}>{t("faqAdmin.modal.cancel")}</Button>
+          <Button color="red" onClick={handleDelete}>{t("faqAdmin.modal.delete")}</Button>
         </Group>
       </Modal>
     </Stack>

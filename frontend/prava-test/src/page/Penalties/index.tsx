@@ -18,10 +18,12 @@ import {
 import { IconGavel, IconSearch, IconX, IconAlertTriangle, IconRefresh } from "@tabler/icons-react";
 import { curriculumApi, type PracticalPenalty } from "../../services/curriculumApi";
 import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 
 export default function Penalties_Page() {
   const { lang } = useLanguage();
+  const { t } = useTranslation();
 
   const [penalties, setPenalties] = useState<PracticalPenalty[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,25 +81,25 @@ export default function Penalties_Page() {
         <Group justify="space-between" align="flex-start">
           <div>
             <Title order={1} fw={900} style={{ letterSpacing: "-0.5px" }}>
-              Jarimalar va Qoidabuzarliklar
+              {t("curriculum.finesTitle")}
             </Title>
             <Text c="dimmed" size="sm" mt={4}>
-              Davlat imtihonida belgilangan 32 ta asosiy jarima ballari nizomi
+              {t("curriculum.finesSubtitle")}
             </Text>
           </div>
           <Badge size="lg" variant="filled" color="red" leftSection={<IconGavel size={14} />}>
-            {filtered.length} ta qoida
+            {filtered.length} {t("curriculum.finesCount")}
           </Badge>
         </Group>
 
         <TextInput
-          placeholder="Qoidabuzarlik turi bo'yicha qidiring..."
+          placeholder={t("curriculum.searchFines")}
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
           leftSection={<IconSearch size={18} />}
           rightSection={
             search ? (
-              <ActionIcon variant="subtle" color="gray" onClick={() => setSearch("")} aria-label="Tozalash">
+              <ActionIcon variant="subtle" color="gray" onClick={() => setSearch("")} aria-label={t("curriculum.clean")}>
                 <IconX size={16} />
               </ActionIcon>
             ) : null
@@ -140,10 +142,10 @@ export default function Penalties_Page() {
           <Center py={60}>
             <Stack align="center" gap="xs">
               <IconAlertTriangle size={40} color="gray" />
-              <Text c="dimmed">Mos keluvchi jarimalar topilmadi</Text>
+              <Text c="dimmed">{t("curriculum.emptyFines")}</Text>
               {search && (
                 <Button size="xs" variant="subtle" onClick={() => setSearch("")}>
-                  Qidiruvni tozalash
+                  {t("curriculum.clearSearch")}
                 </Button>
               )}
             </Stack>
@@ -153,9 +155,9 @@ export default function Penalties_Page() {
             <Table striped highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th style={{ width: 60 }}>#</Table.Th>
-                  <Table.Th>Qoidabuzarlik holati</Table.Th>
-                  <Table.Th style={{ width: 220 }}>Jarima balli</Table.Th>
+                  <Table.Th style={{ width: 60 }}>{t("curriculum.colNumber")}</Table.Th>
+                  <Table.Th>{t("curriculum.colViolation")}</Table.Th>
+                  <Table.Th style={{ width: 220 }}>{t("curriculum.colPoints")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -166,7 +168,7 @@ export default function Penalties_Page() {
                     <Table.Td>
                       {p.points >= 100 ? (
                         <Badge color="red" variant="filled">
-                          Yiqitish (100 ball)
+                          {t("curriculum.fail100")}
                         </Badge>
                       ) : p.points >= 20 ? (
                         <Badge color="orange" variant="filled">

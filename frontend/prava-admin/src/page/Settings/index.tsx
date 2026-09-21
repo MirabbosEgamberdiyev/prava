@@ -267,7 +267,7 @@ const Settings_Page = () => {
       <Group justify="space-between" align="center" wrap="wrap">
         <div>
           <Title order={1} fz="h3">{t("settings.title")}</Title>
-          <Text size="sm" c="dimmed">Tizim parametrlari, sayt sozlamalari va shaxsiy profil</Text>
+          <Text size="sm" c="dimmed">{t("settingsAdmin.subtitle")}</Text>
         </div>
       </Group>
 
@@ -275,15 +275,15 @@ const Settings_Page = () => {
         <Tabs.List mb="md">
           {isAdminOrSuper && (
             <Tabs.Tab value="system" leftSection={<IconSettings size={16} />}>
-              Tizim Sozlamalari
+              {t("settingsAdmin.tabSystem")}
             </Tabs.Tab>
           )}
           <Tabs.Tab value="profile" leftSection={<IconUser size={16} />}>
-            Mening Profilim
+            {t("settingsAdmin.tabProfile")}
           </Tabs.Tab>
           {isSuperAdmin && (
             <Tabs.Tab value="devices" leftSection={<IconDevices size={16} />}>
-              Qurilma Limitlari
+              {t("settingsAdmin.tabDevices")}
             </Tabs.Tab>
           )}
         </Tabs.List>
@@ -445,7 +445,7 @@ const Settings_Page = () => {
                 <Card shadow="sm" padding="lg" radius="md" withBorder>
                   <Group mb="md">
                     <IconShield size={20} color="var(--mantine-color-orange-6)" />
-                    <Text fw={600} size="lg">Xavfsizlik va Kirish Cheklovlari (Security)</Text>
+                    <Text fw={600} size="lg">{t("settingsAdmin.securitySectionTitle")}</Text>
                   </Group>
                   <Grid>
                     <Grid.Col span={{ base: 12, sm: 4 }}>

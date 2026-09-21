@@ -28,22 +28,24 @@ import {
 } from "@tabler/icons-react";
 import { curriculumApi, type RoadSign } from "../../services/curriculumApi";
 import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 import { AppImage } from "../../components/common/AppImage";
 
 const CATEGORIES = [
-  { id: "all", label: "Barchasi" },
-  { id: "Ogohlantiruvchi belgilar", label: "Ogohlantiruvchi" },
-  { id: "Imtiyozli belgilar", label: "Imtiyozli" },
-  { id: "Taqiqlovchi belgilar", label: "Taqiqlovchi" },
-  { id: "Buyuruvchi belgilar", label: "Buyuruvchi" },
-  { id: "Axborot-ishora belgilari", label: "Axborot-ishora" },
-  { id: "Servis belgilari", label: "Servis" },
-  { id: "Qo'shimcha axborot belgilari", label: "Qo'shimcha" },
+  { id: "all", key: "curriculum.all" },
+  { id: "Ogohlantiruvchi belgilar", key: "curriculum.warning" },
+  { id: "Imtiyozli belgilar", key: "curriculum.priority" },
+  { id: "Taqiqlovchi belgilar", key: "curriculum.prohibitory" },
+  { id: "Buyuruvchi belgilar", key: "curriculum.mandatory" },
+  { id: "Axborot-ishora belgilari", key: "curriculum.informative" },
+  { id: "Servis belgilari", key: "curriculum.service" },
+  { id: "Qo'shimcha axborot belgilari", key: "curriculum.additional" },
 ];
 
 export default function RoadSigns_Page() {
   const { lang } = useLanguage();
+  const { t } = useTranslation();
 
   const [signs, setSigns] = useState<RoadSign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,27 +117,27 @@ export default function RoadSigns_Page() {
           <Group justify="space-between" align="flex-start">
             <div>
               <Title order={1} fw={900} style={{ letterSpacing: "-0.5px" }}>
-                Yo'l belgilari
+                {t("curriculum.signsTitle")}
               </Title>
               <Text c="dimmed" size="sm" mt={4}>
-                Barcha {safeSigns.length > 0 ? safeSigns.length : 297} ta rasmiy yo'l belgilari va ularning qoidaviy ta'riflari
+                {t("curriculum.signsSubtitle")}
               </Text>
             </div>
             <Badge size="lg" variant="filled" color="blue" leftSection={<IconDirections size={14} />}>
-              {filteredSigns.length} ta belgi
+              {filteredSigns.length} {t("curriculum.signsCount")}
             </Badge>
           </Group>
         </div>
 
         {/* Search Input */}
         <TextInput
-          placeholder="Belgi kodi (masalan, 3.24) yoki nomini qidiring..."
+          placeholder={t("curriculum.searchSigns")}
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
           leftSection={<IconSearch size={18} />}
           rightSection={
             search ? (
-              <ActionIcon variant="subtle" color="gray" onClick={() => setSearch("")} aria-label="Tozalash">
+              <ActionIcon variant="subtle" color="gray" onClick={() => setSearch("")} aria-label={t("curriculum.clean")}>
                 <IconX size={16} />
               </ActionIcon>
             ) : null
@@ -149,7 +151,7 @@ export default function RoadSigns_Page() {
           <Tabs.List>
             {CATEGORIES.map((cat) => (
               <Tabs.Tab key={cat.id} value={cat.id} style={{ fontWeight: 600 }}>
-                {cat.label}
+                {t(cat.key)}
               </Tabs.Tab>
             ))}
           </Tabs.List>
@@ -159,7 +161,7 @@ export default function RoadSigns_Page() {
         {error && (
           <Alert
             icon={<IconAlertTriangle size={18} />}
-            title="Xatolik"
+            title={t("common.error")}
             color="red"
             variant="light"
             radius="md"
@@ -173,7 +175,7 @@ export default function RoadSigns_Page() {
                 leftSection={<IconRefresh size={14} />}
                 onClick={fetchSigns}
               >
-                Qayta yuklash
+                {t("common.refresh")}
               </Button>
             </Group>
           </Alert>
