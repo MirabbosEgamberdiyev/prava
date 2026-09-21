@@ -16,7 +16,6 @@ import {
 } from "@tabler/icons-react";
 import LanguagePicker from "../language/LanguagePicker";
 import ColorMode from "../other/ColorMode";
-import AccessibilityButton from "../common/AccessibilityButton";
 import NotificationCenter from "./NotificationCenter";
 import type { User } from "../../types";
 import styles from "./Dashboard.module.css";
@@ -135,7 +134,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         </button>
 
         <LanguagePicker />
-        <AccessibilityButton />
         <ColorMode />
 
         {/* Notifications Center */}

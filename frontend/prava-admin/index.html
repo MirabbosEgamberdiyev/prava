@@ -40,29 +40,6 @@
               ? "dark"
               : "light";
         document.documentElement.setAttribute("data-mantine-color-scheme", computedColorScheme);
-
-        // Pre-render Universal Accessibility & Typography attributes (Zero-Flicker)
-        var typoRaw = window.localStorage.getItem("prava_typography_settings") || window.localStorage.getItem("prava_accessibility_preferences");
-        if (typoRaw) {
-          var typo = JSON.parse(typoRaw);
-          var textSize = typo.textSize || (typo.fontScale === "xs" || typo.fontScale === "sm" ? "small" : typo.fontScale === "lg" || typo.fontScale === "xl" || typo.fontScale === "xxl" ? "large" : "normal");
-          var isBold = typo.boldText !== undefined ? Boolean(typo.boldText) : typo.fontWeight === "bold";
-
-          document.documentElement.setAttribute("data-text-size", textSize);
-          document.documentElement.setAttribute("data-bold-text", String(isBold));
-
-          var scaleVal = textSize === "small" ? "0.9" : textSize === "large" ? "1.15" : "1.0";
-          document.documentElement.style.setProperty("--user-font-scale", scaleVal);
-          document.documentElement.style.setProperty("--font-scale", scaleVal);
-
-          // Backward compatibility
-          document.documentElement.setAttribute("data-font-scale", textSize === "small" ? "sm" : textSize === "large" ? "lg" : "md");
-          document.documentElement.setAttribute("data-font-weight", isBold ? "bold" : "normal");
-          if (typo.lineHeight) document.documentElement.setAttribute("data-line-height", typo.lineHeight);
-          if (typo.letterSpacing) document.documentElement.setAttribute("data-letter-spacing", typo.letterSpacing);
-          if (typo.fontFamily) document.documentElement.setAttribute("data-font-family", typo.fontFamily);
-          if (typo.contrast) document.documentElement.setAttribute("data-contrast", typo.contrast);
-        }
       } catch (e) {}
     </script>
   </head>

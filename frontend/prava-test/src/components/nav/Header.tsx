@@ -11,7 +11,6 @@ import {
 import { useTranslation } from "react-i18next";
 import LanguagePicker from "../language/LanguagePicker";
 import ColorMode from "../other/ColorMode";
-import AccessibilityButton from "../common/AccessibilityButton";
 import UserMenuButton from "./UserMenuButton";
 import { useAuth } from "../../auth/AuthContext";
 import {
@@ -123,7 +122,6 @@ export default function Header({
 
             <ColorMode />
             <LanguagePicker />
-            <AccessibilityButton />
 
             <Box visibleFrom="sm" className="navbar-divider" aria-hidden="true" />
 

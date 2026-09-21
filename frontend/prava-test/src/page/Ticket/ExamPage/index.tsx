@@ -21,7 +21,6 @@ import {
 } from "../../../services/desktopAdapter";
 import ColorMode from "../../../components/other/ColorMode";
 import LanguagePicker from "../../../components/language/LanguagePicker";
-import AccessibilityButton from "../../../components/common/AccessibilityButton";
 import ImageZoomModal, { ZoomableImage } from "../../../components/common/ImageZoomModal";
 import SEO from "../../../components/common/SEO";
 import GamificationResult from "../../../components/quiz/GamificationResult";
@@ -442,7 +441,6 @@ export default function TicketExamPage() {
             <span className="exam-score-chip red">
               <IconX size={13} /> {wrong}
             </span>
-            <AccessibilityButton />
             <ColorMode />
             <LanguagePicker />
           </div>

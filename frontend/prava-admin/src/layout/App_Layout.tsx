@@ -5,7 +5,6 @@ import { Outlet } from "react-router-dom";
 import App_Header from "../components/nav/App_Header";
 import App_Nav from "../components/nav/App_Nav";
 import AppBreadcrumbs from "../components/nav/AppBreadcrumbs";
-import AccessibilityDrawer from "../components/common/AccessibilityDrawer";
 
 const App_Layout = () => {
   const [opened, { toggle, close }] = useDisclosure();
@@ -52,7 +51,6 @@ const App_Layout = () => {
           </Suspense>
         </AppShell.Main>
       </AppShell>
-      <AccessibilityDrawer />
     </>
   );
 };

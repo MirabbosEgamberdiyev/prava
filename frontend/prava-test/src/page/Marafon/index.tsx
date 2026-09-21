@@ -22,7 +22,6 @@ import {
 } from "../../services/desktopAdapter";
 import ColorMode from "../../components/other/ColorMode";
 import LanguagePicker from "../../components/language/LanguagePicker";
-import AccessibilityButton from "../../components/common/AccessibilityButton";
 import ImageZoomModal, { ZoomableImage } from "../../components/common/ImageZoomModal";
 import GamificationResult from "../../components/quiz/GamificationResult";
 import QuizReviewModal from "../../components/quiz/QuizReviewModal";
@@ -395,7 +394,6 @@ export default function Marafon_Page() {
             <span>{t("common.back", "Orqaga")}</span>
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <AccessibilityButton />
             <ColorMode />
             <LanguagePicker />
           </div>
@@ -583,7 +581,6 @@ export default function Marafon_Page() {
                 <span className="home-header-brand">PRAVA<span className="brand-accent">ONLINE</span></span>
               </div>
               <div className="home-header-right">
-                <AccessibilityButton />
                 <LanguagePicker />
                 <ColorMode />
               </div>
@@ -667,7 +664,6 @@ export default function Marafon_Page() {
             <span className="exam-score-chip red">
               <IconX size={13} /> {wrong}
             </span>
-            <AccessibilityButton />
             <ColorMode />
             <LanguagePicker />
           </div>

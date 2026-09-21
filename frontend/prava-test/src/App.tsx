@@ -10,8 +10,6 @@ import { isGoogleOneTapAllowed } from "./utils/domain";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import { ScrollManager } from "./components/common/ScrollManager";
-import { AccessibilityProvider } from "./context/AccessibilityContext";
-import AccessibilityDrawer from "./components/common/AccessibilityDrawer";
 
 /**
  * Global API error listener with deduplication cooldown.
@@ -81,15 +79,12 @@ function AppInner() {
     <DesktopThemeProvider>
       <AuthProvider>
         <LanguageProvider>
-          <AccessibilityProvider>
-            <ApiErrorListener />
-            {allowGoogleOneTap && <GoogleOneTap />}
-            <ScrollManager />
-            <AccessibilityDrawer />
-            <ErrorBoundary resetKey={location.pathname}>
-              <AppRoutes />
-            </ErrorBoundary>
-          </AccessibilityProvider>
+          <ApiErrorListener />
+          {allowGoogleOneTap && <GoogleOneTap />}
+          <ScrollManager />
+          <ErrorBoundary resetKey={location.pathname}>
+            <AppRoutes />
+          </ErrorBoundary>
         </LanguageProvider>
       </AuthProvider>
     </DesktopThemeProvider>

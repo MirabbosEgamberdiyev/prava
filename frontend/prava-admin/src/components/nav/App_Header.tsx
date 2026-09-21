@@ -15,7 +15,6 @@ import LanguagePicker from "../language/LanguagePicker";
 import { useAuth } from "../../hooks/auth/AuthContext";
 import UserMenuButton from "./UserMenuButton";
 import { useTranslation } from "react-i18next";
-import AccessibilityButton from "../common/AccessibilityButton";
 
 const App_Header = ({
   opened,
@@ -50,9 +49,8 @@ const App_Header = ({
             </Link>
           </Group>
 
-          {/* Right: Accessibility + Theme + Language + Profile */}
+          {/* Right: Theme + Language + Profile */}
           <Group gap={8} wrap="nowrap" style={{ flexShrink: 1, minWidth: 0 }}>
-            <AccessibilityButton />
             <ActionIcon
               onClick={() =>
                 setColorScheme(

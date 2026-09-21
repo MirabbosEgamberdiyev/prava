@@ -18,7 +18,6 @@ import SecureImage from "../../components/common/SecureImage";
 import ImageZoomModal from "../../components/common/ImageZoomModal";
 import ColorMode from "../../components/other/ColorMode";
 import LanguagePicker from "../../components/language/LanguagePicker";
-import AccessibilityButton from "../../components/common/AccessibilityButton";
 import SEO from "../../components/common/SEO";
 import GamificationResult from "../../components/quiz/GamificationResult";
 import QuizReviewModal from "../../components/quiz/QuizReviewModal";
@@ -377,7 +376,6 @@ export default function Exam_Page() {
             <span className="exam-score-chip red">
               <IconX size={13} /> {wrong} / {MAX_WRONG}
             </span>
-            <AccessibilityButton />
             <ColorMode />
             <LanguagePicker />
           </div>

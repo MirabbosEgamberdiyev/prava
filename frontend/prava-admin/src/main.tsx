@@ -15,7 +15,6 @@ import { SWRConfig } from "swr";
 import api from "./services/api.ts";
 import { ModalsProvider } from "@mantine/modals";
 import i18n from "./utils/i18n.ts";
-import { AccessibilityProvider } from "./context/AccessibilityContext.tsx";
 
 // Global API error handler for 403/500
 window.addEventListener("api-error", ((e: CustomEvent) => {
@@ -55,9 +54,7 @@ createRoot(document.getElementById("root")!).render(
             }}
           >
             <Notifications />
-            <AccessibilityProvider>
-              <App />
-            </AccessibilityProvider>
+            <App />
           </SWRConfig>
         </ModalsProvider>
       </MantineProvider>
