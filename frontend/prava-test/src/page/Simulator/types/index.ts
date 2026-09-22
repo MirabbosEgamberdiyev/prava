@@ -72,6 +72,16 @@ export interface VehicleConfig {
   color: string;
 }
 
+export type ExamFSMState =
+  | "ENGINE_OFF"
+  | "PRE_CHECK"
+  | "READY_TO_DEPART"
+  | "DRIVING"
+  | "ESTAKADA_HOLD"
+  | "STATION_COMPLETED"
+  | "EXAM_PASSED"
+  | "EXAM_FAILED";
+
 export interface VehicleTelemetry {
   speed: number; // km/h
   rpm: number;
@@ -80,6 +90,7 @@ export interface VehicleTelemetry {
   handbrake: boolean;
   throttle: number; // 0 to 1
   brake: number; // 0 to 1
+  engineStarted?: boolean;
   seatbeltFastened: boolean;
   lowBeamsOn: boolean;
   turnSignal: "left" | "right" | "none" | "hazard";
@@ -87,6 +98,11 @@ export interface VehicleTelemetry {
   posY: number;
   rotation: number; // radians
   rollbackDistance: number; // in meters, for estakada
+  pitch?: number; // radians, weight transfer longitudinal
+  roll?: number; // radians, lateral body roll
+  wheelHeights?: [number, number, number, number]; // FL, FR, RL, RR compression offsets
+  estakadaHoldSeconds?: number;
+  examState?: ExamFSMState;
 }
 
 export interface PenaltyEvent {

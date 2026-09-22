@@ -121,6 +121,14 @@ export default function FloatingControlsTiles() {
         </Text>
         <Stack gap={4}>
           <Group gap={6}>
+            <Badge size="xs" variant="filled" color="teal" style={{ minWidth: "20px", padding: "0 4px" }}>
+              I
+            </Badge>
+            <Text size="10px" c="#e2e8f0" fw={600}>
+              {lang === "ru" ? "Запуск" : "Zavod"}
+            </Text>
+          </Group>
+          <Group gap={6}>
             <Badge size="xs" variant="filled" color="blue" style={{ minWidth: "20px", padding: "0 4px" }}>
               B
             </Badge>

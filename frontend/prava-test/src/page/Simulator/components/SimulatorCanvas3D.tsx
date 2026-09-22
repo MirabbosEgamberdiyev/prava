@@ -268,6 +268,7 @@ export default function SimulatorCanvas3D({
   const reverseLightMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const turnLeftLightMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const turnRightLightMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const steeringWheelMeshRef = useRef<THREE.Mesh | null>(null);
 
   // Traffic light dynamic lenses
   const trafficGreenMatRef = useRef<THREE.MeshStandardMaterial | null>(null);
@@ -338,7 +339,7 @@ export default function SimulatorCanvas3D({
     const freeCam = new THREE.PerspectiveCamera(50, aspect, 0.1, 1000);
     freeCameraRef.current = freeCam;
 
-    const frustumSize = 160;
+    const frustumSize = 36;
     const topDownCam = new THREE.OrthographicCamera(
       (frustumSize * aspect) / -2,
       (frustumSize * aspect) / 2,
@@ -347,7 +348,7 @@ export default function SimulatorCanvas3D({
       0.1,
       1000
     );
-    topDownCam.position.set(0, 180, 0);
+    topDownCam.position.set(0, 40, 0);
     topDownCam.lookAt(0, 0, 0);
     topDownCameraRef.current = topDownCam;
 
@@ -458,6 +459,35 @@ export default function SimulatorCanvas3D({
     createRoadSegment(30, 30, 42, -50);
     createRoadSegment(30, 30, -82, -50);
     createRoadSegment(30, 30, -82, 66);
+
+    // 10cm Yellow Sensor Boundary Markings
+    const yellowSensorMat = new THREE.MeshStandardMaterial({
+      color: 0xfacc15,
+      emissive: 0xfacc15,
+      emissiveIntensity: 0.35,
+      roughness: 0.4,
+    });
+
+    const createYellowSensorLine = (w: number, d: number, px: number, pz: number) => {
+      const geo = new THREE.PlaneGeometry(w, d);
+      const mesh = new THREE.Mesh(geo, yellowSensorMat);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.set(px, 0.02, pz);
+      scene.add(mesh);
+    };
+
+    // South Straight Sensor Boundaries (10cm borders)
+    createYellowSensorLine(200, 0.1, -20, 69.2);
+    createYellowSensorLine(200, 0.1, -20, 82.8);
+    // East Straight Sensor Boundaries
+    createYellowSensorLine(0.1, 150, 45.2, 6);
+    createYellowSensorLine(0.1, 150, 58.8, 6);
+    // North Straight Sensor Boundaries
+    createYellowSensorLine(180, 0.1, -20, -53.2);
+    createYellowSensorLine(180, 0.1, -20, -66.8);
+    // West Straight Sensor Boundaries
+    createYellowSensorLine(0.1, 150, -85.2, 8);
+    createYellowSensorLine(0.1, 150, -98.8, 8);
 
     // =========================================================================
     // 8. PHYSICAL 3D OBJECTS FOR ALL 12 EXERCISE STATIONS                       //
@@ -894,6 +924,33 @@ export default function SimulatorCanvas3D({
     rearWindshield.rotation.x = -0.35;
     vehicleGroup.add(rearWindshield);
 
+    // Interior Dashboard & Animated 3D Steering Wheel for Cockpit View
+    const dashMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+    const dashboard = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.45, 1.4), dashMat);
+    dashboard.position.set(0.65, 1.15, 0);
+    vehicleGroup.add(dashboard);
+
+    // 3D Rotating Steering Wheel
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6 });
+    const wheelRim = new THREE.Mesh(new THREE.TorusGeometry(0.20, 0.024, 8, 24), wheelMat);
+    const wheelSpoke1 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.38, 8), wheelMat);
+    wheelSpoke1.rotation.z = Math.PI / 2;
+    wheelRim.add(wheelSpoke1);
+    const wheelSpoke2 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.20, 8), wheelMat);
+    wheelSpoke2.position.y = -0.09;
+    wheelRim.add(wheelSpoke2);
+    const wheelCenter = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.04, 16), wheelMat);
+    wheelCenter.rotation.x = Math.PI / 2;
+    wheelRim.add(wheelCenter);
+
+    const steerGroup = new THREE.Group();
+    steerGroup.position.set(0.28, 1.25, 0.35);
+    steerGroup.rotation.y = -Math.PI / 2;
+    steerGroup.rotation.x = 0.28;
+    steerGroup.add(wheelRim);
+    vehicleGroup.add(steerGroup);
+    steeringWheelMeshRef.current = wheelRim;
+
     // Golden Chevrolet Bowtie & Chrome "COBALT" script
     const bowtieMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.9, roughness: 0.2 });
     const rearBowtie = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.26), bowtieMat);
@@ -1151,12 +1208,26 @@ export default function SimulatorCanvas3D({
 
     vehicle.position.set(worldX, elevationY, worldZ);
     vehicle.rotation.y = yaw;
-    vehicle.rotation.z = pitch;
+    vehicle.rotation.z = pitch + (telemetry.pitch || 0);
+    vehicle.rotation.x = telemetry.roll || 0;
+
+    // Independent 4-Wheel Raycast Suspension Offsets
+    if (telemetry.wheelHeights) {
+      if (frontLeftSteerRef.current) frontLeftSteerRef.current.position.y = 0.42 + telemetry.wheelHeights[0];
+      if (frontRightSteerRef.current) frontRightSteerRef.current.position.y = 0.42 + telemetry.wheelHeights[1];
+      if (rearLeftWheelMeshRef.current) rearLeftWheelMeshRef.current.position.y = 0.42 + telemetry.wheelHeights[2];
+      if (rearRightWheelMeshRef.current) rearRightWheelMeshRef.current.position.y = 0.42 + telemetry.wheelHeights[3];
+    }
 
     // Ackermann Front Wheels Steering Angle Pivot
     const steerRad = (telemetry.steeringAngle * Math.PI) / 180;
     if (frontLeftSteerRef.current) frontLeftSteerRef.current.rotation.y = steerRad;
     if (frontRightSteerRef.current) frontRightSteerRef.current.rotation.y = steerRad;
+
+    // Cockpit 3D Steering Wheel Rotation with Ackermann ratio
+    if (steeringWheelMeshRef.current) {
+      steeringWheelMeshRef.current.rotation.z = steerRad * 2.8;
+    }
 
     // Wheels Rolling Rotation with Speed
     const wheelRotDelta = telemetry.speed * 0.04;
@@ -1222,9 +1293,10 @@ export default function SimulatorCanvas3D({
       cockpitCameraRef.current.lookAt(lookX, elevationY + 1.15, lookZ);
     }
 
-    // 3. Top-Down Camera
+    // 3. Top-Down Camera (Orthographic high precision parking view)
     if (topDownCameraRef.current) {
-      topDownCameraRef.current.position.set(worldX, 160, worldZ);
+      topDownCameraRef.current.up.set(0, 0, -1);
+      topDownCameraRef.current.position.set(worldX, 40, worldZ);
       topDownCameraRef.current.lookAt(worldX, 0, worldZ);
     }
   }, [telemetry, exercise, showHelpers]);

@@ -346,6 +346,28 @@ class SimulatorAudioEngine {
       });
     } catch {}
   }
+
+  // -------------------------------------------------------------
+  // Voice Warning Announcements (SpeechSynthesis API + Buzzer)
+  // -------------------------------------------------------------
+  public playVoiceAlert(text?: string, langCode: string = "uz-UZ"): void {
+    if (this.isMuted) return;
+    this.playPenaltyBuzzer();
+
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.cancel(); // cancel previous alert
+        const utterance = new SpeechSynthesisUtterance(text || "Jarima balingiz hisoblandi!");
+        utterance.lang = langCode === "ru" ? "ru-RU" : "uz-UZ";
+        utterance.rate = 1.05;
+        utterance.pitch = 1.0;
+        utterance.volume = this.masterVolume;
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        console.warn("[AudioEngine] Voice alert playback error", e);
+      }
+    }
+  }
 }
 
 export const audioEngine = new SimulatorAudioEngine();
