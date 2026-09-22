@@ -1,0 +1,141 @@
+export type SimulatorMode = "training" | "practice" | "exam";
+
+export type SimulatorSessionStatus =
+  | "CREATED"
+  | "READY"
+  | "RUNNING"
+  | "PAUSED"
+  | "COMPLETED"
+  | "FAILED"
+  | "ABORTED";
+
+export type GearMode = "P" | "R" | "N" | "D";
+
+export type CameraView = "first_person" | "chase" | "top_down";
+
+export type PenaltySeverity = "MINOR" | "MEDIUM" | "MAJOR" | "CRITICAL";
+
+export interface LocalizedString {
+  uzl: string;
+  uzc: string;
+  ru: string;
+}
+
+export interface ExerciseZone {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
+export interface ExerciseDefinition {
+  number: number;
+  code: string;
+  title: LocalizedString;
+  description: LocalizedString;
+  instructorGuide: LocalizedString;
+  timeLimitSeconds: number;
+  maxSpeedKmh: number;
+  maxPenaltyAllowed: number;
+  startX: number;
+  startY: number;
+  startRotation: number;
+  targetX: number;
+  targetY: number;
+  sensorZone: ExerciseZone;
+  helperPath?: Array<{ x: number; y: number }>;
+  cones?: Array<{ x: number; y: number; radius: number }>;
+  stopLines?: Array<{ x1: number; y1: number; x2: number; y2: number }>;
+  hasIncline?: boolean; // For Estakada
+  hasTrafficLight?: boolean; // For Intersection
+  hasBarrier?: boolean; // For Railway crossing
+}
+
+export interface PenaltyRule {
+  code: string;
+  title: LocalizedString;
+  points: number;
+  severity: PenaltySeverity;
+  isInstantFail: boolean;
+  explanation: LocalizedString;
+}
+
+export interface VehicleConfig {
+  modelName: string;
+  massKg: number;
+  maxSpeedKmh: number;
+  accelerationPower: number;
+  brakingPower: number;
+  steeringAngleMax: number; // degrees
+  wheelbaseMeters: number;
+  trackWidthMeters: number;
+  color: string;
+}
+
+export interface VehicleTelemetry {
+  speed: number; // km/h
+  rpm: number;
+  gear: GearMode;
+  steeringAngle: number; // -35 to +35 deg
+  handbrake: boolean;
+  throttle: number; // 0 to 1
+  brake: number; // 0 to 1
+  seatbeltFastened: boolean;
+  lowBeamsOn: boolean;
+  turnSignal: "left" | "right" | "none" | "hazard";
+  posX: number;
+  posY: number;
+  rotation: number; // radians
+  rollbackDistance: number; // in meters, for estakada
+}
+
+export interface PenaltyEvent {
+  id: string;
+  exerciseNumber: number;
+  ruleCode: string;
+  points: number;
+  title: LocalizedString;
+  explanation: LocalizedString;
+  occurredAtSeconds: number;
+  posX: number;
+  posY: number;
+}
+
+export interface ExerciseAttemptResult {
+  exerciseNumber: number;
+  isPassed: boolean;
+  penaltyPoints: number;
+  timeSpentSeconds: number;
+  penalties: PenaltyEvent[];
+}
+
+export interface SimulatorSessionData {
+  sessionId: string;
+  mode: SimulatorMode;
+  status: SimulatorSessionStatus;
+  currentExerciseNumber: number;
+  totalPenaltyPoints: number;
+  isPassed: boolean;
+  timeSpentSeconds: number;
+  startedAt: string;
+  finishedAt?: string;
+  vehicleModel: string;
+  exerciseResults: Record<number, ExerciseAttemptResult>;
+  penalties: PenaltyEvent[];
+}
+
+export interface UserSimulatorStats {
+  totalSessions: number;
+  passedSessions: number;
+  failedSessions: number;
+  passRate: number;
+  averageScore: number;
+  bestScore: number;
+  averageTimeSeconds: number;
+  weakExercises: Array<{
+    exerciseNumber: number;
+    exerciseCode: string;
+    title: LocalizedString;
+    failCount: number;
+  }>;
+}

@@ -20,6 +20,7 @@ import {
   IconRoad,
   IconBuildingSkyscraper,
   IconSteeringWheel,
+  IconDeviceGamepad2,
   IconGavel,
   IconBook,
 } from "@tabler/icons-react";
@@ -179,6 +180,15 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       icon: IconSteeringWheel,
       action: () => {
         navigate("/practical-exam");
+        onClose();
+      },
+    },
+    {
+      path: "/simulator",
+      label: t("dashboard.nav.simulator", "Avtodrom Simulyatori 3D"),
+      icon: IconDeviceGamepad2,
+      action: () => {
+        navigate("/simulator");
         onClose();
       },
     },

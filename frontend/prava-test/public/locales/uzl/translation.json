@@ -2724,5 +2724,35 @@
     "expired": "⚠️ Litsenziya muddati tugagan!",
     "dates": "Litsenziya: {{from}} — {{to}}",
     "renew": "🔑 Litsenziyani yangilash"
+  },
+  "dashboard": {
+    "nav": {
+      "simulator": "Avtodrom Simulyatori 3D",
+      "autodrom": "Avtodrom",
+      "examCenters": "Imtihon markazlari",
+      "rules": "YHQ Qoidalari",
+      "penalties": "Jarimalar",
+      "stats": "Statistika"
+    }
+  },
+  "simulator": {
+    "title": "Avtodrom Simulyatori 3D",
+    "subtitle": "IIV YHXX davlat standarti bo'yicha 12 ta amaliy mashq, professional 3D avtomobil fizikasi va audio instruktor",
+    "training": "Mashg'ulot rejimi",
+    "practice": "Mashqlar katalogi",
+    "exam": "Imtihon simulyatori",
+    "statistics": "Statistika va tahlil",
+    "launch": "Simulyatorni boshlash",
+    "passed": "Imtihon topshirildi",
+    "failed": "Imtihondan yiqildi",
+    "speed": "Tezlik",
+    "rpm": "Aylanishlar soni",
+    "gear": "Uzatma",
+    "handbrake": "Qo'l tormozi",
+    "penaltyPoints": "Jarima ballari",
+    "timeRemaining": "Qolgan vaqt",
+    "retry": "Qayta urinish",
+    "viewMistakes": "Xatolarni ko'rish",
+    "viewResults": "Natijalarni ko'rish"
   }
 }

@@ -50,6 +50,7 @@ const Markings_Page = lazy(() => import("./page/Curriculum/MarkingsPage"));
 const Rules_Page = lazy(() => import("./page/Curriculum/RulesPage"));
 const Fines_Page = lazy(() => import("./page/Curriculum/FinesPage"));
 const Autodrom_Page = lazy(() => import("./page/Curriculum/AutodromPage"));
+const Simulator_Page = lazy(() => import("./page/Simulator"));
 const ExamCenters_Page = lazy(() => import("./page/Curriculum/ExamCentersPage"));
 
 function App() {
@@ -216,6 +217,16 @@ function App() {
                   element={
                     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                       <Autodrom_Page />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* Avtodrom Simulyatori 3D - ADMIN, SUPER_ADMIN va CONTENT_MANAGER */}
+                <Route
+                  path="/simulator"
+                  element={
+                    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
+                      <Simulator_Page />
                     </RoleGuard>
                   }
                 />

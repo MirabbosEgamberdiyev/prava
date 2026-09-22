@@ -54,7 +54,14 @@ const RoadSigns_Page      = lazy(() => import("../page/RoadSigns"));
 const RoadMarkings_Page   = lazy(() => import("../page/RoadMarkings"));
 const ExamCenters_Page    = lazy(() => import("../page/ExamCenters"));
 const PracticalExam_Page  = lazy(() => import("../page/PracticalExam"));
-const AvtodromSimulator_Page = lazy(() => import("../page/PracticalExam/Simulator"));
+const SimulatorDashboard_Page = lazy(() => import("../page/Simulator"));
+const SimulatorTraining_Page = lazy(() => import("../page/Simulator/Training"));
+const SimulatorPractice_Page = lazy(() => import("../page/Simulator/Practice"));
+const SimulatorExercisePractice_Page = lazy(() => import("../page/Simulator/Practice/ExercisePractice"));
+const SimulatorExam_Page = lazy(() => import("../page/Simulator/Exam"));
+const SimulatorResult_Page = lazy(() => import("../page/Simulator/Result"));
+const SimulatorMistakes_Page = lazy(() => import("../page/Simulator/Mistakes"));
+const SimulatorStatistics_Page = lazy(() => import("../page/Simulator/Statistics"));
 const TrafficRules_Page   = lazy(() => import("../page/TrafficRules"));
 const Penalties_Page      = lazy(() => import("../page/Penalties"));
 
@@ -125,8 +132,15 @@ export default function AppRoutes() {
               <Route path="markings" element={<RoadMarkings_Page />} />
               <Route path="exam-centers" element={<ExamCenters_Page />} />
               <Route path="practical-exam" element={<PracticalExam_Page />} />
-              <Route path="practical-exam/simulator" element={<AvtodromSimulator_Page />} />
-              <Route path="simulator" element={<Navigate to="/practical-exam/simulator" replace />} />
+              <Route path="practical-exam/simulator" element={<Navigate to="/simulator" replace />} />
+              <Route path="simulator" element={<SimulatorDashboard_Page />} />
+              <Route path="simulator/training" element={<SimulatorTraining_Page />} />
+              <Route path="simulator/practice" element={<SimulatorPractice_Page />} />
+              <Route path="simulator/practice/:exerciseId" element={<SimulatorExercisePractice_Page />} />
+              <Route path="simulator/exam" element={<SimulatorExam_Page />} />
+              <Route path="simulator/result/:sessionId" element={<SimulatorResult_Page />} />
+              <Route path="simulator/mistakes/:sessionId" element={<SimulatorMistakes_Page />} />
+              <Route path="simulator/statistics" element={<SimulatorStatistics_Page />} />
               <Route path="rules" element={<TrafficRules_Page />} />
               <Route path="penalties" element={<Penalties_Page />} />
             </Route>
@@ -196,8 +210,15 @@ export default function AppRoutes() {
               <Route path="/markings" element={<RoadMarkings_Page />} />
               <Route path="/exam-centers" element={<ExamCenters_Page />} />
               <Route path="/practical-exam" element={<PracticalExam_Page />} />
-              <Route path="/practical-exam/simulator" element={<AvtodromSimulator_Page />} />
-              <Route path="/simulator" element={<Navigate to="/practical-exam/simulator" replace />} />
+              <Route path="/practical-exam/simulator" element={<Navigate to="/simulator" replace />} />
+              <Route path="/simulator" element={<SimulatorDashboard_Page />} />
+              <Route path="/simulator/training" element={<SimulatorTraining_Page />} />
+              <Route path="/simulator/practice" element={<SimulatorPractice_Page />} />
+              <Route path="/simulator/practice/:exerciseId" element={<SimulatorExercisePractice_Page />} />
+              <Route path="/simulator/exam" element={<SimulatorExam_Page />} />
+              <Route path="/simulator/result/:sessionId" element={<SimulatorResult_Page />} />
+              <Route path="/simulator/mistakes/:sessionId" element={<SimulatorMistakes_Page />} />
+              <Route path="/simulator/statistics" element={<SimulatorStatistics_Page />} />
               <Route path="/rules" element={<TrafficRules_Page />} />
               <Route path="/penalties" element={<Penalties_Page />} />
             </Route>
@@ -254,6 +275,8 @@ export default function AppRoutes() {
                 <Route path="/me/errors" element={<Navigate to="/wrong-answers" replace />} />
                 <Route path="/me/settings" element={<Navigate to="/settings" replace />} />
                 <Route path="/me/packages" element={<Navigate to="/packages" replace />} />
+                <Route path="/me/simulator" element={<Navigate to="/simulator" replace />} />
+                <Route path="/me/simulator/statistics" element={<Navigate to="/simulator/statistics" replace />} />
               </Route>
 
               {/* Distraction-Free Exam Simulation Layout */}
@@ -309,8 +332,15 @@ export default function AppRoutes() {
               <Route path="/markings" element={<RoadMarkings_Page />} />
               <Route path="/exam-centers" element={<ExamCenters_Page />} />
               <Route path="/practical-exam" element={<PracticalExam_Page />} />
-              <Route path="/practical-exam/simulator" element={<AvtodromSimulator_Page />} />
-              <Route path="/simulator" element={<Navigate to="/practical-exam/simulator" replace />} />
+              <Route path="/practical-exam/simulator" element={<Navigate to="/simulator" replace />} />
+              <Route path="/simulator" element={<SimulatorDashboard_Page />} />
+              <Route path="/simulator/training" element={<SimulatorTraining_Page />} />
+              <Route path="/simulator/practice" element={<SimulatorPractice_Page />} />
+              <Route path="/simulator/practice/:exerciseId" element={<SimulatorExercisePractice_Page />} />
+              <Route path="/simulator/exam" element={<SimulatorExam_Page />} />
+              <Route path="/simulator/result/:sessionId" element={<SimulatorResult_Page />} />
+              <Route path="/simulator/mistakes/:sessionId" element={<SimulatorMistakes_Page />} />
+              <Route path="/simulator/statistics" element={<SimulatorStatistics_Page />} />
               <Route path="/rules" element={<TrafficRules_Page />} />
               <Route path="/penalties" element={<Penalties_Page />} />
             </Route>
@@ -369,6 +399,8 @@ export default function AppRoutes() {
                 <Route path="/me/errors" element={<Navigate to="/wrong-answers" replace />} />
                 <Route path="/me/settings" element={<Navigate to="/settings" replace />} />
                 <Route path="/me/packages" element={<Navigate to="/packages" replace />} />
+                <Route path="/me/simulator" element={<Navigate to="/simulator" replace />} />
+                <Route path="/me/simulator/statistics" element={<Navigate to="/simulator/statistics" replace />} />
               </Route>
 
               {/* Distraction-Free Exam Simulation Layout */}

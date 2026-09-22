@@ -2724,5 +2724,35 @@
     "severityMedium": "Major Violation",
     "severityMinor": "Minor Violation",
     "ball": "points"
+  },
+  "dashboard": {
+    "nav": {
+      "simulator": "Autodrome 3D Simulator",
+      "autodrom": "Autodrome",
+      "examCenters": "Exam Centers",
+      "rules": "Traffic Rules",
+      "penalties": "Penalties",
+      "stats": "Statistics"
+    }
+  },
+  "simulator": {
+    "title": "Autodrome 3D Simulator",
+    "subtitle": "12 official practical exercises according to State Traffic Safety Service standards, realistic 3D vehicle physics and voice instructor",
+    "training": "Training Mode",
+    "practice": "Exercise Catalog",
+    "exam": "Exam Simulator",
+    "statistics": "Statistics & Analytics",
+    "launch": "Start Simulator",
+    "passed": "Exam Passed",
+    "failed": "Exam Failed",
+    "speed": "Speed",
+    "rpm": "RPM",
+    "gear": "Gear",
+    "handbrake": "Handbrake",
+    "penaltyPoints": "Penalty Points",
+    "timeRemaining": "Time Remaining",
+    "retry": "Try Again",
+    "viewMistakes": "View Mistakes",
+    "viewResults": "View Results"
   }
 }

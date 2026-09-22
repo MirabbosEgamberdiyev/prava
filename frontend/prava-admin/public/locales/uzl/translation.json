@@ -102,6 +102,7 @@
     "rules": "Yo'l harakati qoidalari",
     "fines": "Jarimalar & Qoidabuzarliklar",
     "autodrom": "Avtodrom & Mashqlar",
+    "simulator": "Avtodrom Simulyatori 3D",
     "examCenters": "Imtihon markazlari"
   },
   "curriculum": {
@@ -1606,5 +1607,9 @@
     "securitySectionTitle": "Xavfsizlik va Kirish Cheklovlari (Security)",
     "saveSuccess": "Barcha tizim sozlamalari muvaffaqiyatli saqlandi",
     "saveError": "Sozlamalarni saqlashda xatolik yuz berdi"
+  },
+  "simulator": {
+    "adminTitle": "Avtodrom Simulyatori boshqaruv paneli",
+    "adminSubtitle": "12 ta amaliy mashq, jarima qoidalari, avtomobil parametrlari va imtihon sessiyalarini boshqarish"
   }
 }

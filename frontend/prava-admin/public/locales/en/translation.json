@@ -102,6 +102,7 @@
     "rules": "Traffic Rules",
     "fines": "Fines & Penalties",
     "autodrom": "Autodrom & Exercises",
+    "simulator": "Autodrome 3D Simulator",
     "examCenters": "Exam Centers"
   },
   "curriculum": {
@@ -1606,5 +1607,9 @@
     "securitySectionTitle": "Security & Access Controls",
     "saveSuccess": "All system settings saved successfully",
     "saveError": "Error saving settings"
+  },
+  "simulator": {
+    "adminTitle": "Autodrome Simulator Management Console",
+    "adminSubtitle": "Manage 12 practical exercises, penalty rules, vehicle configurations, and exam sessions"
   }
 }

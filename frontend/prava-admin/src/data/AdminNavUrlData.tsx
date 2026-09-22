@@ -26,6 +26,7 @@ import {
   IconRoadSign,
   IconGavel,
   IconSteeringWheel,
+  IconDeviceGamepad2,
   IconMapPin,
   IconBook,
 } from "@tabler/icons-react";
@@ -131,6 +132,12 @@ export const AdminNavCategories: NavCategory[] = [
         name: "nav.autodrom",
         url: "/autodrom",
         icon: <IconSteeringWheel size="16px" />,
+        roles: ["SUPER_ADMIN", "ADMIN", "CONTENT_MANAGER"],
+      },
+      {
+        name: "nav.simulator",
+        url: "/simulator",
+        icon: <IconDeviceGamepad2 size="16px" />,
         roles: ["SUPER_ADMIN", "ADMIN", "CONTENT_MANAGER"],
       },
     ],
