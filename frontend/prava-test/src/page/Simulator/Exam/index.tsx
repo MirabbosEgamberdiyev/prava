@@ -353,6 +353,7 @@ export default function SimulatorExam_Page() {
                     turnSignal: prev.turnSignal === sig ? "none" : sig,
                   }))
                 }
+                onNextExercise={handleExerciseCompleted}
               />
 
               <MobileControls

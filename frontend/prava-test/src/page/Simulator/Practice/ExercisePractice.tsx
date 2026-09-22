@@ -318,6 +318,7 @@ export default function ExercisePractice_Page() {
                     turnSignal: prev.turnSignal === sig ? "none" : sig,
                   }))
                 }
+                onNextExercise={restartAttempt}
               />
 
               <MobileControls

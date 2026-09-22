@@ -310,6 +310,7 @@ export default function SimulatorTraining_Page() {
                     turnSignal: prev.turnSignal === sig ? "none" : sig,
                   }))
                 }
+                onNextExercise={() => resetExercise((currentExerciseIndex + 1) % EXERCISE_REGISTRY.length)}
               />
 
               {/* Mobile controls overlay */}

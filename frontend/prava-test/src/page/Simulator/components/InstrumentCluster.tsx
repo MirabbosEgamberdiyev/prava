@@ -1,17 +1,16 @@
 import { useState, useEffect } from "react";
-import { Paper, Group, Stack, Text, Badge, Box, Progress } from "@mantine/core";
+import { Paper, Group, Stack, Text, Box } from "@mantine/core";
 import {
-  IconAlertTriangle,
   IconArrowLeft,
   IconArrowRight,
   IconBulb,
+  IconBatteryCharging,
 } from "@tabler/icons-react";
-import type { VehicleTelemetry, GearMode } from "../types";
+import type { VehicleTelemetry } from "../types";
 import { useLanguage } from "../../../context/LanguageContext";
 
 interface Props {
   telemetry: VehicleTelemetry;
-  onGearSelect?: (gear: GearMode) => void;
   onHandbrakeToggle?: () => void;
   onSeatbeltToggle?: () => void;
   onLightsToggle?: () => void;
@@ -20,7 +19,6 @@ interface Props {
 
 export default function InstrumentCluster({
   telemetry,
-  onGearSelect,
   onHandbrakeToggle,
   onSeatbeltToggle,
   onLightsToggle,
@@ -46,9 +44,6 @@ export default function InstrumentCluster({
   const rpmClamped = Math.min(8000, Math.max(0, telemetry.rpm));
   const tachometerAngle = -120 + (rpmClamped / 8000) * 240;
 
-  const throttlePercent = Math.round(telemetry.throttle * 100);
-  const brakePercent = Math.round(telemetry.brake * 100);
-
   return (
     <Paper
       radius="xl"
@@ -59,35 +54,27 @@ export default function InstrumentCluster({
         backdropFilter: "blur(14px)",
         borderColor: "rgba(255, 255, 255, 0.16)",
         boxShadow: "0 12px 40px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.1)",
-        padding: "10px 18px",
+        padding: "8px 18px",
         userSelect: "none",
-        maxWidth: "860px",
+        maxWidth: "480px",
         margin: "0 auto",
       }}
     >
-      <Group justify="space-between" align="center" wrap="nowrap" gap="md">
+      <Group justify="space-between" align="center" wrap="nowrap" gap="sm">
         {/* ========================================================= */}
         {/* 1. LEFT DIAL: TACHOMETER (RPM x 1000)                     */}
         {/* ========================================================= */}
         <Box
           style={{
             position: "relative",
-            width: "115px",
-            height: "115px",
+            width: "95px",
+            height: "95px",
             flexShrink: 0,
           }}
         >
           <svg viewBox="0 0 120 120" style={{ width: "100%", height: "100%" }}>
-            {/* Outer metallic bezel */}
-            <circle
-              cx="60"
-              cy="60"
-              r="56"
-              fill="#0f172a"
-              stroke="#334155"
-              strokeWidth="2.5"
-            />
-            {/* Inner background dial */}
+            {/* Outer bezel */}
+            <circle cx="60" cy="60" r="56" fill="#0f172a" stroke="#334155" strokeWidth="2.5" />
             <circle cx="60" cy="60" r="50" fill="#090d16" />
 
             {/* Tachometer background arc (0 to 6000 RPM) */}
@@ -129,23 +116,15 @@ export default function InstrumentCluster({
               );
             })}
 
-            {/* Dial Labels */}
-            <text
-              x="60"
-              y="48"
-              fontSize="6"
-              fill="#64748b"
-              textAnchor="middle"
-              fontWeight="600"
-            >
-              RPM x1000
+            <text x="60" y="48" fontSize="6" fill="#64748b" textAnchor="middle" fontWeight="600">
+              x1000 rpm
             </text>
 
             {/* Center Digital RPM Value */}
             <text
               x="60"
               y="74"
-              fontSize="9"
+              fontSize="8.5"
               fontWeight="bold"
               fill="#38bdf8"
               textAnchor="middle"
@@ -154,131 +133,97 @@ export default function InstrumentCluster({
               {Math.round(rpmClamped)}
             </text>
 
-            {/* Needle Pivot Center Pin */}
-            <circle cx="60" cy="60" r="5" fill="#e2e8f0" stroke="#0f172a" strokeWidth="1.5" />
+            <circle cx="60" cy="60" r="4.5" fill="#e2e8f0" stroke="#0f172a" strokeWidth="1.5" />
 
             {/* Tachometer Needle */}
             <g
               transform={`rotate(${tachometerAngle}, 60, 60)`}
               style={{ transition: "transform 0.08s linear" }}
             >
-              {/* Needle shaft */}
-              <line
-                x1="60"
-                y1="60"
-                x2="60"
-                y2="18"
-                stroke="#ef4444"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
+              <line x1="60" y1="60" x2="60" y2="18" stroke="#ef4444" strokeWidth="2.2" strokeLinecap="round" />
               <circle cx="60" cy="18" r="1.2" fill="#ffffff" />
             </g>
           </svg>
         </Box>
 
         {/* ========================================================= */}
-        {/* 2. CENTER CLUSTER: SPEEDOMETER, PRND, PEDALS & WARNINGS    */}
+        {/* 2. CENTER CLUSTER: SPEEDOMETER, GEAR & STATUS INDICATORS  */}
         {/* ========================================================= */}
-        <Stack gap={6} align="center" style={{ flex: 1 }}>
-          {/* Top Row: Turn Signals and Tell-Tale Warning Icons */}
-          <Group gap="sm" align="center">
+        <Stack gap={2} align="center" style={{ flex: 1 }}>
+          {/* Big Digital Speedometer */}
+          <Text
+            fw={900}
+            c="white"
+            style={{
+              fontSize: "36px",
+              lineHeight: 1,
+              fontFamily: "'Segoe UI', Roboto, monospace",
+              letterSpacing: "-1px",
+              textShadow: "0 0 16px rgba(56, 189, 248, 0.6)",
+            }}
+          >
+            {Math.round(telemetry.speed)}
+          </Text>
+          <Text size="9px" fw={700} c="#94a3b8" style={{ textTransform: "uppercase" }}>
+            {lang === "ru" ? "км/ч" : "km/soat"}
+          </Text>
+
+          {/* Active Gear Highlight */}
+          <Text
+            size="lg"
+            fw={900}
+            c="#38bdf8"
+            style={{
+              fontFamily: "monospace",
+              textShadow: "0 0 12px #38bdf8",
+              lineHeight: 1.1,
+            }}
+          >
+            {telemetry.gear}
+          </Text>
+
+          {/* Tell-Tale Warning & Signal Icons Strip matching screenshot */}
+          <Group gap={8} align="center" mt={2}>
             {/* Left Turn Indicator */}
-            <Box
-              style={{
-                cursor: "pointer",
-                transform: "scale(1.1)",
-                transition: "all 0.15s ease",
-              }}
-              onClick={() => onTurnSignalToggle?.("left")}
-            >
+            <Box style={{ cursor: "pointer" }} onClick={() => onTurnSignalToggle?.("left")}>
               <IconArrowLeft
-                size={22}
-                color={isLeftTurnBlinking ? "#22c55e" : "#1e293b"}
-                style={{
-                  filter: isLeftTurnBlinking ? "drop-shadow(0 0 6px #22c55e)" : "none",
-                }}
+                size={16}
+                color={isLeftTurnBlinking ? "#22c55e" : "#334155"}
+                style={{ filter: isLeftTurnBlinking ? "drop-shadow(0 0 6px #22c55e)" : "none" }}
               />
             </Box>
 
-            {/* Seatbelt Warning Tell-Tale Icon */}
-            <Box
-              style={{
-                cursor: "pointer",
-                padding: "2px 6px",
-                borderRadius: "6px",
-                backgroundColor: !telemetry.seatbeltFastened
-                  ? "rgba(239, 68, 68, 0.2)"
-                  : "transparent",
-              }}
-              onClick={onSeatbeltToggle}
-              title={
-                telemetry.seatbeltFastened
-                  ? "Xavfsizlik kamari taqilgan"
-                  : "Xavfsizlik kamarini taqing (B)"
-              }
-            >
+            {/* Headlights */}
+            <Box style={{ cursor: "pointer" }} onClick={onLightsToggle}>
+              <IconBulb
+                size={15}
+                color={telemetry.lowBeamsOn ? "#22c55e" : "#334155"}
+                style={{ filter: telemetry.lowBeamsOn ? "drop-shadow(0 0 6px #22c55e)" : "none" }}
+              />
+            </Box>
+
+            {/* Battery / Engine Icon */}
+            <IconBatteryCharging size={15} color="#22c55e" />
+
+            {/* Seatbelt Icon */}
+            <Box style={{ cursor: "pointer" }} onClick={onSeatbeltToggle}>
               <Text
-                size="xs"
+                size="10px"
                 fw={800}
-                c={!telemetry.seatbeltFastened ? "#ef4444" : "#334155"}
+                c={!telemetry.seatbeltFastened ? "#ef4444" : "#22c55e"}
                 style={{
                   fontFamily: "monospace",
-                  letterSpacing: "0.5px",
-                  filter: !telemetry.seatbeltFastened
-                    ? "drop-shadow(0 0 6px #ef4444)"
-                    : "none",
+                  filter: !telemetry.seatbeltFastened ? "drop-shadow(0 0 6px #ef4444)" : "none",
                 }}
               >
                 BELT
               </Text>
             </Box>
 
-            {/* Low-Beams Headlight Tell-Tale Icon */}
-            <Box
-              style={{
-                cursor: "pointer",
-                padding: "2px 6px",
-                borderRadius: "6px",
-                backgroundColor: telemetry.lowBeamsOn
-                  ? "rgba(34, 197, 94, 0.2)"
-                  : "transparent",
-              }}
-              onClick={onLightsToggle}
-              title={
-                telemetry.lowBeamsOn
-                  ? "Yaqin chiroqlar yoqilgan (L)"
-                  : "Chiroqlarni yoqing (L)"
-              }
-            >
-              <IconBulb
-                size={18}
-                color={telemetry.lowBeamsOn ? "#22c55e" : "#334155"}
-                style={{
-                  filter: telemetry.lowBeamsOn ? "drop-shadow(0 0 6px #22c55e)" : "none",
-                }}
-              />
-            </Box>
-
-            {/* Handbrake (P) Tell-Tale Icon */}
-            <Box
-              style={{
-                cursor: "pointer",
-                padding: "2px 6px",
-                borderRadius: "6px",
-                backgroundColor: telemetry.handbrake
-                  ? "rgba(239, 68, 68, 0.25)"
-                  : "transparent",
-              }}
-              onClick={onHandbrakeToggle}
-              title={
-                telemetry.handbrake
-                  ? "Qo'l tormozi tortilgan (Space)"
-                  : "Qo'l tormozini tortish (Space)"
-              }
-            >
+            {/* Handbrake Icon */}
+            <Box style={{ cursor: "pointer" }} onClick={onHandbrakeToggle}>
               <Text
-                size="xs"
+                size="10px"
                 fw={800}
                 c={telemetry.handbrake ? "#ef4444" : "#334155"}
                 style={{
@@ -290,131 +235,12 @@ export default function InstrumentCluster({
               </Text>
             </Box>
 
-            {/* Hazard Warning Icon */}
-            <Box
-              style={{ cursor: "pointer" }}
-              onClick={() => onTurnSignalToggle?.("hazard")}
-              title="Avariya chiroqlari (H)"
-            >
-              <IconAlertTriangle
-                size={18}
-                color={
-                  telemetry.turnSignal === "hazard" && blinkState ? "#f59e0b" : "#334155"
-                }
-              />
-            </Box>
-
             {/* Right Turn Indicator */}
-            <Box
-              style={{
-                cursor: "pointer",
-                transform: "scale(1.1)",
-                transition: "all 0.15s ease",
-              }}
-              onClick={() => onTurnSignalToggle?.("right")}
-            >
+            <Box style={{ cursor: "pointer" }} onClick={() => onTurnSignalToggle?.("right")}>
               <IconArrowRight
-                size={22}
-                color={isRightTurnBlinking ? "#22c55e" : "#1e293b"}
-                style={{
-                  filter: isRightTurnBlinking ? "drop-shadow(0 0 6px #22c55e)" : "none",
-                }}
-              />
-            </Box>
-          </Group>
-
-          {/* Large Digital Speedometer Display */}
-          <Group gap={6} align="baseline">
-            <Text
-              fw={900}
-              c="white"
-              style={{
-                fontSize: "42px",
-                lineHeight: 1,
-                fontFamily: "'Segoe UI', Roboto, monospace",
-                letterSpacing: "-1px",
-                textShadow: "0 0 16px rgba(56, 189, 248, 0.6)",
-              }}
-            >
-              {Math.round(telemetry.speed)}
-            </Text>
-            <Text size="xs" fw={700} c="#94a3b8" style={{ textTransform: "uppercase" }}>
-              {lang === "ru" ? "км/ч" : "km/soat"}
-            </Text>
-          </Group>
-
-          {/* Automatic Gear Selector Strip (P - R - N - D) */}
-          <Group
-            gap={4}
-            p={3}
-            style={{
-              backgroundColor: "rgba(15, 23, 42, 0.85)",
-              borderRadius: "8px",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-            }}
-          >
-            {(["P", "R", "N", "D"] as const).map((g) => {
-              const isActive = telemetry.gear === g;
-              return (
-                <Box
-                  key={g}
-                  onClick={() => onGearSelect?.(g)}
-                  style={{
-                    cursor: "pointer",
-                    padding: "3px 12px",
-                    borderRadius: "6px",
-                    backgroundColor: isActive ? "#0284c7" : "transparent",
-                    color: isActive ? "#ffffff" : "#64748b",
-                    fontWeight: 800,
-                    fontSize: "13px",
-                    fontFamily: "monospace",
-                    boxShadow: isActive ? "0 0 12px rgba(2, 132, 199, 0.8)" : "none",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  {g}
-                </Box>
-              );
-            })}
-          </Group>
-
-          {/* Dual Pedals Pressure Meters (Brake & Throttle) */}
-          <Group gap="xs" style={{ width: "100%", maxWidth: "320px" }}>
-            {/* Brake Pedal Bar */}
-            <Box style={{ flex: 1 }}>
-              <Group justify="space-between" mb={2}>
-                <Text size="9px" c="#f87171" fw={700}>
-                  {lang === "ru" ? "ТОРМОЗ (S)" : "TORMOZ (S)"}
-                </Text>
-                <Text size="9px" c="#f87171" fw={700} style={{ fontFamily: "monospace" }}>
-                  {brakePercent}%
-                </Text>
-              </Group>
-              <Progress
-                value={brakePercent}
-                color="red"
-                size="sm"
-                radius="xl"
-                styles={{ root: { backgroundColor: "#1e293b" } }}
-              />
-            </Box>
-
-            {/* Accelerator/Gas Pedal Bar */}
-            <Box style={{ flex: 1 }}>
-              <Group justify="space-between" mb={2}>
-                <Text size="9px" c="#38bdf8" fw={700}>
-                  {lang === "ru" ? "ГАЗ (W)" : "GAZ (W)"}
-                </Text>
-                <Text size="9px" c="#38bdf8" fw={700} style={{ fontFamily: "monospace" }}>
-                  {throttlePercent}%
-                </Text>
-              </Group>
-              <Progress
-                value={throttlePercent}
-                color="blue"
-                size="sm"
-                radius="xl"
-                styles={{ root: { backgroundColor: "#1e293b" } }}
+                size={16}
+                color={isRightTurnBlinking ? "#22c55e" : "#334155"}
+                style={{ filter: isRightTurnBlinking ? "drop-shadow(0 0 6px #22c55e)" : "none" }}
               />
             </Box>
           </Group>
@@ -426,133 +252,31 @@ export default function InstrumentCluster({
         <Box
           style={{
             position: "relative",
-            width: "115px",
-            height: "115px",
+            width: "95px",
+            height: "95px",
             flexShrink: 0,
           }}
         >
           <svg viewBox="0 0 120 120" style={{ width: "100%", height: "100%" }}>
-            {/* Outer bezel */}
-            <circle
-              cx="60"
-              cy="60"
-              r="56"
-              fill="#0f172a"
-              stroke="#334155"
-              strokeWidth="2.5"
-            />
+            <circle cx="60" cy="60" r="56" fill="#0f172a" stroke="#334155" strokeWidth="2.5" />
             <circle cx="60" cy="60" r="50" fill="#090d16" />
 
             {/* Top Half: Fuel Gauge (E to F) */}
-            <path
-              d="M 26 50 A 42 42 0 0 1 94 50"
-              fill="none"
-              stroke="#1e293b"
-              strokeWidth="4"
-              strokeLinecap="round"
-            />
-            {/* Fuel Active Arc */}
-            <path
-              d="M 26 50 A 42 42 0 0 1 80 25"
-              fill="none"
-              stroke="#0284c7"
-              strokeWidth="4"
-              strokeLinecap="round"
-            />
-            <text x="22" y="58" fontSize="7" fontWeight="bold" fill="#ef4444">
-              E
-            </text>
-            <text x="96" y="58" fontSize="7" fontWeight="bold" fill="#38bdf8">
-              F
-            </text>
-            {/* Fuel Icon representation */}
-            <text x="60" y="38" fontSize="7" fill="#94a3b8" textAnchor="middle">
-              FUEL
-            </text>
+            <path d="M 26 50 A 42 42 0 0 1 94 50" fill="none" stroke="#1e293b" strokeWidth="4" strokeLinecap="round" />
+            <path d="M 26 50 A 42 42 0 0 1 80 25" fill="none" stroke="#0284c7" strokeWidth="4" strokeLinecap="round" />
+            <text x="22" y="58" fontSize="7" fontWeight="bold" fill="#ef4444">E</text>
+            <text x="96" y="58" fontSize="7" fontWeight="bold" fill="#38bdf8">F</text>
+            <text x="60" y="38" fontSize="6.5" fill="#94a3b8" textAnchor="middle">FUEL</text>
 
             {/* Bottom Half: Coolant Temperature (C to H) */}
-            <path
-              d="M 26 70 A 42 42 0 0 0 94 70"
-              fill="none"
-              stroke="#1e293b"
-              strokeWidth="4"
-              strokeLinecap="round"
-            />
-            {/* Temp Active Arc */}
-            <path
-              d="M 26 70 A 42 42 0 0 0 64 102"
-              fill="none"
-              stroke="#22c55e"
-              strokeWidth="4"
-              strokeLinecap="round"
-            />
-            <text x="22" y="70" fontSize="7" fontWeight="bold" fill="#38bdf8">
-              C
-            </text>
-            <text x="96" y="70" fontSize="7" fontWeight="bold" fill="#ef4444">
-              H
-            </text>
-            <text x="60" y="88" fontSize="7" fill="#94a3b8" textAnchor="middle">
-              TEMP
-            </text>
+            <path d="M 26 70 A 42 42 0 0 0 94 70" fill="none" stroke="#1e293b" strokeWidth="4" strokeLinecap="round" />
+            <path d="M 26 70 A 42 42 0 0 0 64 102" fill="none" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" />
+            <text x="22" y="70" fontSize="7" fontWeight="bold" fill="#38bdf8">C</text>
+            <text x="96" y="70" fontSize="7" fontWeight="bold" fill="#ef4444">H</text>
+            <text x="60" y="88" fontSize="6.5" fill="#94a3b8" textAnchor="middle">TEMP</text>
           </svg>
         </Box>
       </Group>
-
-      {/* Bottom Row: Controls Legend */}
-      <Box
-        mt={6}
-        pt={4}
-        style={{
-          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-          textAlign: "center",
-        }}
-      >
-        <Group justify="center" gap={8} wrap="wrap">
-          <Badge size="xs" variant="outline" color="gray">
-            <Text span fw={700} c="blue">
-              W/S
-            </Text>{" "}
-            {lang === "ru" ? "Газ / Тормоз" : "Gaz / Tormoz"}
-          </Badge>
-          <Badge size="xs" variant="outline" color="gray">
-            <Text span fw={700} c="blue">
-              A/D
-            </Text>{" "}
-            {lang === "ru" ? "Руль" : "Rul"}
-          </Badge>
-          <Badge size="xs" variant="outline" color="gray">
-            <Text span fw={700} c="blue">
-              Space
-            </Text>{" "}
-            {lang === "ru" ? "Ручник" : "Qo'l tormozi"}
-          </Badge>
-          <Badge size="xs" variant="outline" color="gray">
-            <Text span fw={700} c="blue">
-              B
-            </Text>{" "}
-            {lang === "ru" ? "Ремень" : "Kamar"}
-          </Badge>
-          <Badge size="xs" variant="outline" color="gray">
-            <Text span fw={700} c="blue">
-              L
-            </Text>{" "}
-            {lang === "ru" ? "Фары" : "Chiroq"}
-          </Badge>
-          <Badge size="xs" variant="outline" color="gray">
-            <Text span fw={700} c="blue">
-              Q/E
-            </Text>{" "}
-            {lang === "ru" ? "Поворотники" : "Burilish"}
-          </Badge>
-          <Badge size="xs" variant="outline" color="gray">
-            <Text span fw={700} c="blue">
-              C
-            </Text>{" "}
-            {lang === "ru" ? "Камера" : "Kamera"}
-          </Badge>
-        </Group>
-      </Box>
     </Paper>
   );
 }

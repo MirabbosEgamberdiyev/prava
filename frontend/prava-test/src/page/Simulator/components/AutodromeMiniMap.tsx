@@ -1,5 +1,5 @@
-import { Paper, Group, Text, Badge, ActionIcon, Tooltip, Box } from "@mantine/core";
-import { IconCamera, IconVolume, IconVolumeOff, IconFocusCentered } from "@tabler/icons-react";
+import { Paper, Group, Text, ActionIcon, Tooltip, Box } from "@mantine/core";
+import { IconCamera, IconVolume, IconVolumeOff } from "@tabler/icons-react";
 import type { VehicleTelemetry, ExerciseDefinition, CameraView } from "../types";
 import { EXERCISE_REGISTRY } from "../registry/exerciseRegistry";
 import { useLanguage } from "../../../context/LanguageContext";
@@ -33,14 +33,14 @@ export default function AutodromeMiniMap({
       style={{
         pointerEvents: "auto",
         backgroundColor: "rgba(15, 23, 42, 0.88)",
-        backdropFilter: "blur(10px)",
-        borderColor: "rgba(255, 255, 255, 0.18)",
+        backdropFilter: "blur(12px)",
+        borderColor: "rgba(255, 255, 255, 0.16)",
         boxShadow: "0 8px 32px rgba(0, 0, 0, 0.45)",
-        width: "240px",
+        width: "235px",
         overflow: "hidden",
       }}
     >
-      {/* Top Header Bar */}
+      {/* Top Header Bar matching screenshot */}
       <Box
         px="xs"
         py={6}
@@ -51,13 +51,21 @@ export default function AutodromeMiniMap({
       >
         <Group justify="space-between" align="center" wrap="nowrap">
           <Group gap={6} align="center">
-            <IconFocusCentered size={14} color="#38bdf8" />
-            <Text size="xs" fw={700} c="white" style={{ letterSpacing: "0.5px" }}>
-              {lang === "ru" ? "АВТОДРОМ КАРТА" : "AVTODROM XARITASI"}
+            <ActionIcon
+              size="xs"
+              variant="transparent"
+              color={soundEnabled ? "blue" : "gray"}
+              onClick={onSoundToggle}
+              aria-label="Sound toggle"
+            >
+              {soundEnabled ? <IconVolume size={15} color="#38bdf8" /> : <IconVolumeOff size={15} />}
+            </ActionIcon>
+            <Text size="xs" fw={700} c="white" style={{ letterSpacing: "0.4px" }}>
+              {lang === "ru" ? "Карта автодрома" : "Avtodrom xaritasi"}
             </Text>
           </Group>
 
-          <Group gap={4}>
+          <Group gap={2}>
             {/* Camera View Switcher */}
             <Tooltip
               label={
@@ -84,25 +92,12 @@ export default function AutodromeMiniMap({
                 <IconCamera size={13} />
               </ActionIcon>
             </Tooltip>
-
-            {/* Sound Switcher */}
-            <Tooltip label={soundEnabled ? (lang === "ru" ? "Без звука" : "Ovozsiz") : (lang === "ru" ? "Включить звук" : "Ovozni yoqish")}>
-              <ActionIcon
-                size="xs"
-                variant="subtle"
-                color={soundEnabled ? "blue" : "gray"}
-                onClick={onSoundToggle}
-                aria-label="Sound toggle"
-              >
-                {soundEnabled ? <IconVolume size={13} /> : <IconVolumeOff size={13} />}
-              </ActionIcon>
-            </Tooltip>
           </Group>
         </Group>
       </Box>
 
-      {/* SVG Circuit Radar */}
-      <Box style={{ position: "relative", width: "100%", height: "160px", padding: "4px" }}>
+      {/* SVG Circuit Radar matching screenshot layout */}
+      <Box style={{ position: "relative", width: "100%", height: "165px", padding: "4px" }}>
         <svg
           viewBox="0 0 600 500"
           style={{
@@ -110,123 +105,93 @@ export default function AutodromeMiniMap({
             height: "100%",
             display: "block",
             borderRadius: "4px",
-            backgroundColor: "#0b1329",
+            backgroundColor: "#070e1e",
           }}
         >
-          {/* Grid lines background */}
           <defs>
-            <pattern id="miniGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+            <pattern id="radarGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+              <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
             </pattern>
             <filter id="beaconGlow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="3" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
-            <linearGradient id="trackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#1e293b" />
-              <stop offset="100%" stopColor="#0f172a" />
-            </linearGradient>
           </defs>
 
-          <rect width="600" height="500" fill="url(#miniGrid)" />
+          <rect width="600" height="500" fill="url(#radarGrid)" />
 
           {/* Autodrome Outer Boundary Walls */}
           <rect
-            x="20"
-            y="20"
-            width="560"
-            height="460"
-            rx="16"
-            fill="none"
-            stroke="#334155"
-            strokeWidth="3"
-            strokeDasharray="6 4"
-          />
-
-          {/* Autodrome Road Track Ribbon */}
-          {/* Main Loop: START -> PEDESTRIAN -> ESTAKADA -> CORRIDOR -> SLALOM -> INTERSECTION -> GARAGE -> RAILWAY -> ACCEL -> EMERGENCY -> PARALLEL -> FINISH */}
-          <path
-            d="M 50,440 L 360,440 L 370,440 L 370,380 L 430,380 L 430,340 L 520,210 L 520,85 L 180,85 L 180,120 L 120,200 L 110,210 L 110,280 L 70,340 L 70,440 Z"
+            x="25"
+            y="25"
+            width="550"
+            height="450"
+            rx="14"
             fill="none"
             stroke="#1e293b"
-            strokeWidth="34"
+            strokeWidth="2.5"
+          />
+
+          {/* Green Grass Lawn Center Islands */}
+          <rect x="130" y="115" width="220" height="240" rx="10" fill="#0f291e" stroke="#166534" strokeWidth="1" />
+          <rect x="380" y="115" width="100" height="240" rx="10" fill="#0f291e" stroke="#166534" strokeWidth="1" />
+
+          {/* Road Asphalt Ribbons */}
+          <path
+            d="M 60,440 L 360,440 L 370,440 L 370,380 L 430,380 L 430,340 L 520,210 L 520,75 L 80,75 L 80,440 Z"
+            fill="none"
+            stroke="#1e293b"
+            strokeWidth="32"
             strokeLinejoin="round"
             strokeLinecap="round"
           />
-          {/* Asphalt Surface */}
           <path
-            d="M 50,440 L 360,440 L 370,440 L 370,380 L 430,380 L 430,340 L 520,210 L 520,85 L 180,85 L 180,120 L 120,200 L 110,210 L 110,280 L 70,340 L 70,440 Z"
+            d="M 60,440 L 360,440 L 370,440 L 370,380 L 430,380 L 430,340 L 520,210 L 520,75 L 80,75 L 80,440 Z"
             fill="none"
             stroke="#334155"
-            strokeWidth="28"
+            strokeWidth="26"
             strokeLinejoin="round"
             strokeLinecap="round"
           />
-          {/* Track Centerline (Dashed Yellow) */}
+          {/* Centerline Dashed Yellow */}
           <path
-            d="M 50,440 L 360,440 L 370,440 L 370,380 L 430,380 L 430,340 L 520,210 L 520,85 L 180,85 L 180,120 L 120,200 L 110,210 L 110,280 L 70,340 L 70,440 Z"
+            d="M 60,440 L 360,440 L 370,440 L 370,380 L 430,380 L 430,340 L 520,210 L 520,75 L 80,75 L 80,440 Z"
             fill="none"
-            stroke="#eab308"
+            stroke="#facc15"
             strokeWidth="2"
-            strokeDasharray="8 6"
+            strokeDasharray="6 4"
             strokeLinejoin="round"
             strokeLinecap="round"
           />
 
-          {/* Exercise Specific Zones */}
-          {/* #3 Estakada Ramp Highlight */}
-          <rect x="250" y="426" width="100" height="28" rx="3" fill="rgba(245, 158, 11, 0.3)" stroke="#f59e0b" strokeWidth="1.5" />
-          <text x="300" y="444" fill="#fbbf24" fontSize="10" fontWeight="bold" textAnchor="middle">16%</text>
+          {/* Middle Connecting Road */}
+          <line x1="240" y1="75" x2="240" y2="440" stroke="#334155" strokeWidth="22" />
+          <line x1="240" y1="75" x2="240" y2="440" stroke="#facc15" strokeWidth="1.5" strokeDasharray="6 4" />
 
-          {/* #6 Intersection Highlight */}
-          <circle cx="520" cy="150" r="16" fill="rgba(34, 197, 94, 0.2)" stroke="#22c55e" strokeWidth="1.5" />
-
-          {/* #8 Railway Crossing Tracks */}
-          <line x1="345" y1="70" x2="375" y2="100" stroke="#ef4444" strokeWidth="3" />
-          <line x1="375" y1="70" x2="345" y2="100" stroke="#ef4444" strokeWidth="3" />
-
-          {/* All 12 Exercise Station Badges */}
+          {/* 12 Exercise Stations Badges with Blue Numbers */}
           {EXERCISE_REGISTRY.map((ex) => {
             const isActive = ex.number === currentExercise.number;
             return (
               <g key={ex.number} transform={`translate(${ex.startX}, ${ex.startY})`}>
                 {isActive && (
-                  <circle
-                    cx="0"
-                    cy="0"
-                    r="15"
-                    fill="none"
-                    stroke="#38bdf8"
-                    strokeWidth="2.5"
-                    opacity="0.8"
-                  >
-                    <animate
-                      attributeName="r"
-                      values="10;18;10"
-                      dur="1.8s"
-                      repeatCount="indefinite"
-                    />
-                    <animate
-                      attributeName="opacity"
-                      values="0.9;0.2;0.9"
-                      dur="1.8s"
-                      repeatCount="indefinite"
-                    />
+                  <circle cx="0" cy="0" r="14" fill="none" stroke="#38bdf8" strokeWidth="2" opacity="0.8">
+                    <animate attributeName="r" values="9;16;9" dur="1.8s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.8s" repeatCount="indefinite" />
                   </circle>
                 )}
                 <circle
                   cx="0"
                   cy="0"
                   r="9"
-                  fill={isActive ? "#0284c7" : "#1e293b"}
-                  stroke={isActive ? "#38bdf8" : "#64748b"}
+                  fill={isActive ? "#0284c7" : "#0f172a"}
+                  stroke={isActive ? "#38bdf8" : "#475569"}
                   strokeWidth="1.5"
                 />
                 <text
                   x="0"
                   y="3.5"
                   fill="#ffffff"
-                  fontSize="8.5"
+                  fontSize="8"
                   fontWeight="bold"
                   textAnchor="middle"
                 >
@@ -236,36 +201,17 @@ export default function AutodromeMiniMap({
             );
           })}
 
-          {/* Player Vehicle Beacon */}
+          {/* Player Vehicle Beacon matching screenshot */}
           <g
             transform={`translate(${telemetry.posX}, ${telemetry.posY}) rotate(${headingDeg})`}
             filter="url(#beaconGlow)"
           >
-            {/* Direction Beam */}
-            <polygon points="0,-16 -7,8 7,8" fill="#38bdf8" opacity="0.9" />
-            {/* Vehicle Dot */}
-            <circle cx="0" cy="0" r="4.5" fill="#ffffff" stroke="#0284c7" strokeWidth="2" />
+            {/* Direction triangle beam */}
+            <polygon points="0,-16 -7,7 7,7" fill="#38bdf8" opacity="0.9" />
+            {/* Car Center Dot */}
+            <circle cx="0" cy="0" r="5" fill="#ffffff" stroke="#0284c7" strokeWidth="2" />
           </g>
         </svg>
-      </Box>
-
-      {/* Footer Info: Exercise Name and Coordinates */}
-      <Box
-        px="xs"
-        py={4}
-        style={{
-          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-          backgroundColor: "rgba(15, 23, 42, 0.9)",
-        }}
-      >
-        <Group justify="space-between" align="center" wrap="nowrap">
-          <Badge size="xs" color="blue" variant="filled">
-            #{currentExercise.number} {currentExercise.code}
-          </Badge>
-          <Text size="9px" c="dimmed" style={{ fontFamily: "monospace" }}>
-            X:{Math.round(telemetry.posX)} Y:{Math.round(telemetry.posY)}
-          </Text>
-        </Group>
       </Box>
     </Paper>
   );
