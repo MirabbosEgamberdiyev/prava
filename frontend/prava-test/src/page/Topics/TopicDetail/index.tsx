@@ -26,6 +26,7 @@ import SEO from "../../../components/common/SEO";
 import { Package_Card } from "../../../features/Package/components/Package_Card";
 import { TicketCard } from "../../../features/Ticket/components/TicketCard";
 import styles from "../../../components/dashboard/Dashboard.module.css";
+import { findOfficialTopic } from "../../../constants/topics";
 import type { Ticket } from "../../../types";
 import type { Package } from "../../../features/Package/types";
 
@@ -60,7 +61,7 @@ interface TicketsResponse {
 const TopicDetail_Page = () => {
   const { topicCode } = useParams<{ topicCode: string }>();
   const { t, i18n } = useTranslation();
-  const { localize } = useLanguage();
+  const { localize, localizeTopic } = useLanguage();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string | null>("packages");
 
@@ -94,7 +95,8 @@ const TopicDetail_Page = () => {
     navigate(`/tickets/${ticket.id}`);
   };
 
-  const topicName = topic ? localize(topic.name) : "";
+  const officialFallback = findOfficialTopic({ code: topicCode, id: topic?.id, name: topic?.name });
+  const topicName = (topic ? localize(topic.name) : "") || (officialFallback ? localizeTopic(officialFallback) : "");
 
   return (
     <>
@@ -137,14 +139,14 @@ const TopicDetail_Page = () => {
                   />
                 </div>
                 <div className={styles.innerPageTitleRow}>
-                  <h2 className={styles.innerPageTitle}>
+                  <h1 className={styles.innerPageTitle}>
                     <IconBook2
                       size={24}
                       stroke={2}
                       style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }}
                     />
                     {topicName}
-                  </h2>
+                  </h1>
                   {topic.questionCount > 0 && (
                     <span className={styles.innerPageCountChip}>
                       {topic.questionCount} {t("common.questions", "savol")}

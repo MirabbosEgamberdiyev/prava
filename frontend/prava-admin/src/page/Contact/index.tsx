@@ -151,7 +151,7 @@ export default function ContactInquiriesPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>{t("contact.title")}</Title>
+          <Title order={1} fz="h3" fw={700}>{t("contact.title")}</Title>
           <Text c="dimmed" size="sm">
             {t("contact.subtitle")}
           </Text>
@@ -349,8 +349,8 @@ export default function ContactInquiriesPage() {
             />
 
             <Textarea
-              label="Admin ichki izohi / Qaydlar"
-              placeholder="Masalan: 12-sentyabrda qo'ng'iroq qilindi, shartnoma yuborildi..."
+              label={t("contact.modal.adminNotes")}
+              placeholder={t("contact.modal.adminNotesPlaceholder")}
               rows={3}
               value={adminNote}
               onChange={(e) => setAdminNote(e.currentTarget.value)}

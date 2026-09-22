@@ -287,7 +287,19 @@
     "popularPackages": "Mashhur to'plamlar",
     "popularTickets": "Mashhur biletlar",
     "ticket": "Bilet",
-    "totalTopics": "Jami Mavzular"
+    "totalTopics": "Jami Mavzular",
+    "totalExams": "Jami Imtihonlar",
+    "passRateDesc": "o'tish ko'rsatkichi",
+    "needRetake": "Qayta topshirish kerak",
+    "avgCorrectAnswers": "O'rtacha to'g'ri javoblar",
+    "crmStatsTitle": "CRM VA ILOVA STATISTIKASI",
+    "siteInquiries": "Sayt Murojaatlari",
+    "userMessages": "Foydalanuvchi xabarlari",
+    "partnerApplications": "Hamkorlik Arizalari",
+    "drivingSchoolApplications": "Avtomaktab arizalari",
+    "appDownloads": "Ilova Yuklab Olishlar",
+    "desktopMobilePlatforms": "Desktop & Mobil platformalar",
+    "currentlyTesting": "Ayni paytda test ishlayotganlar"
   },
   "users": {
     "title": "Foydalanuvchilar",
@@ -354,7 +366,20 @@
     "statusChangeError": "Status o'zgartirishda xatolik",
     "userDeleted": "Foydalanuvchi o'chirildi",
     "deleteError": "O'chirishda xatolik",
-    "subtitle": "Tizim foydalanuvchilarini boshqarish va nazorat qilish"
+    "subtitle": "Tizim foydalanuvchilarini boshqarish va nazorat qilish",
+    "resetPasswordTitle": "Foydalanuvchi parolini tiklash",
+    "resetPasswordAlertTitle": "Parol almashtirish",
+    "resetPasswordDesc": "uchun yangi parol o'rnating yoki bo'sh qoldirsangiz tizim avtomatik yangi xavfsiz parol generatsiya qiladi.",
+    "newPasswordOptional": "Yangi parol (ixtiyoriy)",
+    "autoPasswordPlaceholder": "Kiritilmasa, tizim avtomatik yaratadi",
+    "updatePassword": "Parolni yangilash",
+    "forceLogoutTitle": "Sessiyani majburiy yakunlash",
+    "forceLogoutAlertTitle": "Majburiy chiqish",
+    "forceLogoutDesc": "ning barcha qurilmalardagi faol JWT tokenlari bekor qilinadi va u qaytadan login qilishi talab etiladi.",
+    "confirmForceLogout": "Majburiy logout qilish",
+    "bulkDeleteTitle": "Ommaviy o'chirish",
+    "bulkDeletePrompt": "ta foydalanuvchini o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi!",
+    "confirmBulkDelete": "Barchasini o'chirish"
   },
   "questions": {
     "title": "Savollar",
@@ -374,7 +399,7 @@
     "explanationTexts": "Tushuntirish (Explanation)",
     "settingsSection": "Sozlamalar",
     "topicId": "Topic ID",
-    "difficulty": "Qiyinchilik",
+    "difficulty": "Qiyinlik darajasi",
     "imageUrl": "Rasm URL",
     "uploadImage": "Rasm yuklash",
     "imagePreview": "Rasm ko'rinishi",
@@ -418,7 +443,23 @@
     "jsonFormatError": "JSON formatida 'questions' massivi bo'lishi shart!",
     "bulkUploaded": "{{count}} ta savol yuklandi",
     "addTitle": "Savol qo'shish",
-    "formMode": "Forma"
+    "formMode": "Forma",
+    "subtitle": "Avtomaktab imtihon savollari va variantlari banki",
+    "exportSuccess": "Savollar CSV fayli yuklab olindi",
+    "exportError": "CSV faylni eksport qilishda xatolik yuz berdi",
+    "importSuccess": "Savollar muvaffaqiyatli import qilindi",
+    "importError": "Import qilishda xatolik",
+    "easy": "Oson",
+    "medium": "O'rtacha",
+    "hard": "Qiyin",
+    "importModalTitle": "Savollarni import qilish (JSON / CSV)",
+    "fileFormat": "Fayl formati",
+    "fileFormatDesc": "Savollarni ommaviy yuklash uchun JSON yoki CSV formatidagi faylni tanlang. Fayl ichida savol matni, variantlari va to'g'ri javob ko'rsatilgan bo'lishi kerak.",
+    "selectFile": "Faylni tanlang",
+    "selectFilePlaceholder": "JSON yoki CSV faylni tanlang",
+    "uploadAndImport": "Yuklash va Import qilish",
+    "cloneSuccess": "Savoldan muvaffaqiyatli nusxa olindi",
+    "cloneError": "Nusxa olishda xatolik yuz berdi"
   },
   "topics": {
     "title": "Mavzular",
@@ -581,7 +622,8 @@
     "createSuccess": "Bilet muvaffaqiyatli yaratildi",
     "createError": "Bilet yaratishda xatolik",
     "deletedSuccess": "Bilet muvaffaqiyatli o'chirildi",
-    "deleteError": "Bilet o'chirishda xatolik"
+    "deleteError": "Bilet o'chirishda xatolik",
+    "selectQuestion": "Savol tanlash"
   },
   "statistics": {
     "title": "Statistika",
@@ -675,7 +717,18 @@
     "globalLimitSuccess": "Global qurilma limiti yangilandi",
     "globalLimitError": "Global limitni yangilashda xatolik",
     "globalLimitConfirmTitle": "Global limitni o'zgartirish",
-    "globalLimitConfirm": "Qurilma limiti barcha foydalanuvchilar uchun {{count}} taga o'zgartiriladi. Davom etasizmi?"
+    "globalLimitConfirm": "Qurilma limiti barcha foydalanuvchilar uchun {{count}} taga o'zgartiriladi. Davom etasizmi?",
+    "appearance": "Ko'rinish",
+    "typographyTitle": "Matn ko'rinishi va o'lchami",
+    "typographySubtitle": "Ilova bo'ylab matn o'lchami va qalinligini sozlang",
+    "textSize": "Matn o'lchami",
+    "textSmall": "Kichik",
+    "textStandard": "Standart",
+    "textLarge": "Katta",
+    "boldText": "Qalin matn",
+    "boldTextDesc": "Barcha matn va sarlavhalarni aniqroq va qalinroq ko'rsatish",
+    "previewLabel": "Jonli ko'rinish:",
+    "previewText": "Bu yerda matn o'lchami va qalinligi qanday ko'rinishi namoyish etilmoqda."
   },
   "system": {
     "title": "Tizim Monitoring",
@@ -1359,7 +1412,9 @@
       "deleteConfirm": "Haqiqatan ham bu murojaatni o'chirib tashlamoqchimisiz?",
       "cancel": "Bekor qilish",
       "delete": "O'chirish",
-      "close": "Yopish"
+      "close": "Yopish",
+      "adminNotes": "Admin ichki izohi / Qaydlar",
+      "adminNotesPlaceholder": "Masalan: 12-sentyabrda qo'ng'iroq qilindi, shartnoma yuborildi..."
     },
     "notifications": {
       "statusSuccess": "Murojaat holati muvaffaqiyatli yangilandi",
@@ -1402,7 +1457,9 @@
       "deleteConfirm": "Haqiqatan ham bu hamkorlik arizasini o'chirib tashlamoqchimisiz?",
       "cancel": "Bekor qilish",
       "delete": "O'chirish",
-      "close": "Yopish"
+      "close": "Yopish",
+      "adminNotes": "Admin izohi (Ichki yozuvlar)",
+      "adminNotesPlaceholder": "Masalan: Direktor bilan gaplashildi, 15 ta kompyuter uchun demo versiya o'rnatildi..."
     },
     "notifications": {
       "statusSuccess": "Hamkorlik holati muvaffaqiyatli yangilandi",
@@ -1546,6 +1603,8 @@
     "tabDevices": "Ulangan Qurilmalar",
     "tabSecurity": "Xavfsizlik Siyosati",
     "tabStatus": "Tizim Holati",
-    "securitySectionTitle": "Xavfsizlik va Kirish Cheklovlari (Security)"
+    "securitySectionTitle": "Xavfsizlik va Kirish Cheklovlari (Security)",
+    "saveSuccess": "Barcha tizim sozlamalari muvaffaqiyatli saqlandi",
+    "saveError": "Sozlamalarni saqlashda xatolik yuz berdi"
   }
 }

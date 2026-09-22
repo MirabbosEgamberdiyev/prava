@@ -199,7 +199,7 @@ api.interceptors.response.use(
         if (!isSelfHandled) {
           window.dispatchEvent(
             new CustomEvent("api-error", {
-              detail: { status: 403, message: i18n.t("errors.accessDenied"), url: requestUrl },
+              detail: { status: 403, message: i18n.t("errors.accessDenied", "Ruxsat etilmagan amal"), url: requestUrl },
             }),
           );
         }
@@ -209,7 +209,7 @@ api.interceptors.response.use(
         if (!isSelfHandled) {
           window.dispatchEvent(
             new CustomEvent("api-error", {
-              detail: { status, message: i18n.t("errors.serverError"), url: requestUrl },
+              detail: { status, message: i18n.t("errors.serverError", "Serverda nosozlik yuz berdi. Iltimos keyinroq qayta urinib ko'ring."), url: requestUrl },
             }),
           );
         }
@@ -217,7 +217,7 @@ api.interceptors.response.use(
     } else if (!isCanceled && !isSelfHandled && (error.code === "ERR_NETWORK" || !error.response)) {
       window.dispatchEvent(
         new CustomEvent("api-error", {
-          detail: { status: 0, message: i18n.t("errors.networkError"), url: requestUrl },
+          detail: { status: 0, message: i18n.t("errors.networkError", "Internet tarmog'iga ulanishda xatolik yuz berdi."), url: requestUrl },
         }),
       );
     }

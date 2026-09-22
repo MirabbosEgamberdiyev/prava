@@ -56,11 +56,11 @@ export function isLandingDomain(): boolean {
   if (envMode === "landing") return true;
   if (envMode === "web") return false;
 
-  // 3. Port convention: 5174 -> web, 5173 -> landing
-  if (window.location.port === "5174") {
+  // 3. Port convention: 5174/4174 -> web, 5173/4173 -> landing
+  if (window.location.port === "5174" || window.location.port === "4174") {
     return false;
   }
-  if (window.location.port === "5173") {
+  if (window.location.port === "5173" || window.location.port === "4173") {
     return true;
   }
 

@@ -125,6 +125,40 @@ textarea {
 }
 
 /* ==========================================================================
+   SIMPLE GLOBAL TYPOGRAPHY SYSTEM (V5 ULTIMATE)
+   ========================================================================== */
+
+/* 1. Root Text Size Scaling (Small 92%, Standard 100%, Large 112%) */
+html[data-text-size="small"] { font-size: 92% !important; }
+html[data-text-size="standard"] { font-size: 100% !important; }
+html[data-text-size="large"] { font-size: 112% !important; }
+
+/* 2. Bold Text Mode (OFF / ON) */
+[data-bold-text="true"] body,
+[data-bold-text="true"] p,
+[data-bold-text="true"] span,
+[data-bold-text="true"] a,
+[data-bold-text="true"] button,
+[data-bold-text="true"] label,
+[data-bold-text="true"] input,
+[data-bold-text="true"] textarea,
+[data-bold-text="true"] .mantine-Text-root,
+[data-bold-text="true"] .exam-question-text,
+[data-bold-text="true"] .exam-option-text {
+  font-weight: 600 !important;
+}
+
+[data-bold-text="true"] h1,
+[data-bold-text="true"] h2,
+[data-bold-text="true"] h3,
+[data-bold-text="true"] h4,
+[data-bold-text="true"] strong,
+[data-bold-text="true"] b,
+[data-bold-text="true"] .mantine-Title-root {
+  font-weight: 800 !important;
+}
+
+/* ==========================================================================
    GLOBAL DESIGN TOKENS (LIGHT & DARK MODE)
    ========================================================================== */
 

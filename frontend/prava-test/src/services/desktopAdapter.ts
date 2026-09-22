@@ -11,8 +11,8 @@ import type {
   WrongAnswerEntry,
   SavedQuestionEntry,
 } from "../types/desktop";
-import { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP } from "../constants/topics";
-export { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP };
+import { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP, findOfficialTopic } from "../constants/topics";
+export { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP, findOfficialTopic };
 import storageService, { type StoredQuestion } from "./storageService";
 import api from "../api/api";
 import { curriculumApi } from "./curriculumApi";
@@ -45,7 +45,7 @@ export function localizeTopic(
 ): string {
   if (!tp) return "";
   const lang = overrideLang || getLang();
-  const official = tp.id != null ? OFFICIAL_TOPIC_MAP[tp.id] : undefined;
+  const official = findOfficialTopic(tp);
 
   if (lang === "uzc") {
     return (
@@ -378,7 +378,9 @@ export async function getTopics(): Promise<OfflineTopic[]> {
 
     if (rawList.length === 0) {
       try {
-        const res = await api.get<{ data: any[] }>("/api/v1/admin/topics/active");
+        const res = await api.get<{ data: any[] }>("/api/v1/admin/topics/active", {
+          headers: { "Accept-Language": getLang() },
+        });
         if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
           rawList = res.data.data;
         }
@@ -389,7 +391,7 @@ export async function getTopics(): Promise<OfflineTopic[]> {
 
     if (rawList.length > 0) {
       return rawList.map((tp: any) => {
-        const official = tp.id != null ? OFFICIAL_TOPIC_MAP[tp.id] : undefined;
+        const official = findOfficialTopic(tp);
         return {
           id: tp.id,
           code: tp.code || official?.code || null,

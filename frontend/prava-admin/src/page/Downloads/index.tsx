@@ -70,7 +70,7 @@ export default function DownloadsPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>{t("downloadsAdmin.title")}</Title>
+          <Title order={1} fz="h3" fw={700}>{t("downloadsAdmin.title")}</Title>
           <Text c="dimmed" size="sm">
             {t("downloadsAdmin.subtitle")}
           </Text>
@@ -103,9 +103,9 @@ export default function DownloadsPage() {
                 <Text size="xs" tt="uppercase" fw={700} c="dimmed">
                   {t("downloadsAdmin.totalDownloads")}
                 </Text>
-                <Title order={1} fw={800} mt="xs">
+                <Text fw={800} fz={28} mt="xs">
                   {isValidating && !data ? <Skeleton height={36} width={120} /> : data?.totalDownloads?.toLocaleString() || "0"}
-                </Title>
+                </Text>
               </div>
               <ThemeIcon size={52} radius="md" color="blue" variant="light">
                 <IconDownload size={28} />
@@ -121,9 +121,9 @@ export default function DownloadsPage() {
                 <Text size="xs" tt="uppercase" fw={700} c="dimmed">
                   Unikal Foydalanuvchilar (IP/Qurilma)
                 </Text>
-                <Title order={1} fw={800} mt="xs">
+                <Text fw={800} fz={28} mt="xs">
                   {isValidating && !data ? <Skeleton height={36} width={120} /> : data?.totalUniqueUsers?.toLocaleString() || "0"}
-                </Title>
+                </Text>
               </div>
               <ThemeIcon size={52} radius="md" color="teal" variant="light">
                 <IconUsers size={28} />

@@ -430,27 +430,27 @@ const Home_Page = () => {
         <Text size="sm" fw={700} c="dimmed">{t("nav.exams")}</Text>
         <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
           <StatCard
-            title="Jami Imtihonlar"
+            title={t("dashboard.totalExams")}
             value={stats.totalExams}
             icon={<IconClipboardCheck size={24} />}
             color="blue"
-            subtitle={`Bugun: ${stats.examsToday}`}
+            subtitle={`${t("dashboard.today")}: ${stats.examsToday}`}
             onClick={() => navigate("/exams")}
           />
           <StatCard
-            title="Muvaffaqiyatli"
+            title={t("dashboard.passed")}
             value={stats.passedExams}
             icon={<IconCircleCheck size={24} />}
             color="green"
-            subtitle={`${(stats.passRate ?? 0).toFixed(1)}% o'tish ko'rsatkichi`}
+            subtitle={`${(stats.passRate ?? 0).toFixed(1)}% ${t("dashboard.passRateDesc")}`}
             onClick={() => navigate("/exams")}
           />
           <StatCard
-            title="Yiqilganlar"
+            title={t("dashboard.failed")}
             value={stats.failedExams}
             icon={<IconCircleX size={24} />}
             color="red"
-            subtitle="Qayta topshirish kerak"
+            subtitle={t("dashboard.needRetake")}
             onClick={() => navigate("/exams")}
           />
           <StatCard
@@ -458,37 +458,37 @@ const Home_Page = () => {
             value={(stats.averageScore ?? 0).toFixed(1)}
             icon={<IconTarget size={24} />}
             color="lime"
-            subtitle="O'rtacha to'g'ri javoblar"
+            subtitle={t("dashboard.avgCorrectAnswers")}
           />
         </SimpleGrid>
       </Stack>
 
       {/* Row 4: CRM va Tarqatish (3 Metrika + Faol Imtihonlar) */}
       <Stack gap="xs">
-        <Text size="sm" fw={700} c="dimmed">CRM VA ILOVA STATISTIKASI</Text>
+        <Text size="sm" fw={700} c="dimmed">{t("dashboard.crmStatsTitle")}</Text>
         <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
           <StatCard
-            title="Sayt Murojaatlari"
+            title={t("dashboard.siteInquiries")}
             value={stats.contactInquiriesCount ?? 0}
             icon={<IconMail size={24} />}
             color="pink"
-            subtitle="Foydalanuvchi xabarlari"
+            subtitle={t("dashboard.userMessages")}
             onClick={() => navigate("/contact")}
           />
           <StatCard
-            title="Hamkorlik Arizalari"
+            title={t("dashboard.partnerApplications")}
             value={stats.partnerLeadsCount ?? 0}
             icon={<IconHeartHandshake size={24} />}
             color="teal"
-            subtitle="Avtomaktab arizalari"
+            subtitle={t("dashboard.drivingSchoolApplications")}
             onClick={() => navigate("/partners")}
           />
           <StatCard
-            title="Ilova Yuklab Olishlar"
+            title={t("dashboard.appDownloads")}
             value={stats.totalDownloads ?? 0}
             icon={<IconDownload size={24} />}
             color="cyan"
-            subtitle="Desktop & Mobil platformalar"
+            subtitle={t("dashboard.desktopMobilePlatforms")}
             onClick={() => navigate("/downloads")}
           />
           <StatCard
@@ -496,7 +496,7 @@ const Home_Page = () => {
             value={stats.activeExams}
             icon={<IconPlayerPlay size={24} />}
             color="indigo"
-            subtitle="Ayni paytda test ishlayotganlar"
+            subtitle={t("dashboard.currentlyTesting")}
           />
         </SimpleGrid>
       </Stack>

@@ -21,7 +21,7 @@ import {
   getCachedTotalTickets,
 } from "../../services/desktopAdapter";
 import { storageService } from "../../services/storageService";
-import { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP } from "../../constants/topics";
+import { OFFICIAL_TOPICS, findOfficialTopic } from "../../constants/topics";
 import type {
   FullStats,
   WrongAnswerEntry,
@@ -207,7 +207,7 @@ export default function User_Page() {
     return Object.entries(topicCountMap)
       .map(([tidStr, count]) => {
         const tid = Number(tidStr);
-        const found = topicList.find((tp) => tp.id === tid) || OFFICIAL_TOPIC_MAP[tid];
+        const found = topicList.find((tp) => tp.id === tid) || findOfficialTopic(tid);
         const rawFallback =
           language === "ru"
             ? `Тема #${tid}`

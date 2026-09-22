@@ -82,7 +82,7 @@ const GuestExamPage = () => {
         localStorage.setItem(GUEST_EXAM_KEY, String(count + 1));
       })
       .catch(() => {
-        setError(t("exam.loadError"));
+        setError(t("exam.loadError", "Imtihon savollarini yuklashda xatolik yuz berdi"));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -103,7 +103,7 @@ const GuestExamPage = () => {
         localStorage.setItem(GUEST_EXAM_KEY, "1");
       })
       .catch(() => {
-        setError(t("exam.loadError"));
+        setError(t("exam.loadError", "Imtihon savollarini yuklashda xatolik yuz berdi"));
       })
       .finally(() => setLoading(false));
   };
@@ -183,7 +183,7 @@ const GuestExamPage = () => {
               <ThemeIcon size={56} radius="xl" color="blue" variant="light" mb="md" mx="auto">
                 <IconSparkles size={28} />
               </ThemeIcon>
-              <Title order={2} size="h3" mb="xs">
+              <Title order={1} size="h3" mb="xs">
                 {t("guestExam.completedTitle", "Sinov imtihoni yakunlandi")}
               </Title>
               <Text size="sm" c="dimmed" mb="lg" lh={1.6}>
@@ -243,14 +243,25 @@ const GuestExamPage = () => {
     return (
       <>
         {seoElement}
-        <Center h="100vh">
-          <Box ta="center">
-            <Title order={3} mb="md" c="red">
-              {error}
+        <Center h="100vh" style={{ background: "var(--bg)", padding: 16 }}>
+          <Box ta="center" maw={440}>
+            <ThemeIcon size={56} radius="xl" color="red" variant="light" mb="md" mx="auto">
+              <IconAlertCircle size={28} />
+            </ThemeIcon>
+            <Title order={1} size="h3" mb="xs" c="red">
+              {t("common.error", "Xatolik")}
             </Title>
-            <Button onClick={() => navigate("/")}>
-              {t("notFound.backHome")}
-            </Button>
+            <Text size="sm" c="dimmed" mb="lg" lh={1.6}>
+              {error}
+            </Text>
+            <Group justify="center" gap="sm">
+              <Button onClick={() => window.location.reload()} variant="filled">
+                {t("common.retry", "Qayta urinish")}
+              </Button>
+              <Button onClick={() => navigate("/")} variant="light">
+                {t("notFound.backHome", "Bosh sahifa")}
+              </Button>
+            </Group>
           </Box>
         </Center>
       </>
@@ -261,13 +272,13 @@ const GuestExamPage = () => {
     return (
       <>
         {seoElement}
-        <Center h="100vh">
-          <Box ta="center">
-            <Title order={3} mb="md">
-              {t("exam.notFound")}
+        <Center h="100vh" style={{ background: "var(--bg)", padding: 16 }}>
+          <Box ta="center" maw={440}>
+            <Title order={1} size="h3" mb="md">
+              {t("exam.notFound", "Savollar topilmadi")}
             </Title>
             <Button onClick={() => navigate("/")}>
-              {t("notFound.backHome")}
+              {t("notFound.backHome", "Bosh sahifa")}
             </Button>
           </Box>
         </Center>

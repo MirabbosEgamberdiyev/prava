@@ -14,6 +14,7 @@ import {
   Loader,
   Button,
   Paper,
+  Box,
 } from "@mantine/core";
 import {
   IconSearch,
@@ -80,7 +81,7 @@ export default function SignsPage() {
       </Group>
 
       {/* Filter and Search Controls */}
-      <Paper p="md" radius="md" withBorder>
+      <Paper p={{ base: "xs", sm: "md" }} radius="md" withBorder>
         <Stack gap="sm">
           <Group justify="space-between" wrap="wrap">
             <TextInput
@@ -88,24 +89,25 @@ export default function SignsPage() {
               leftSection={<IconSearch size={16} />}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.currentTarget.value)}
-              style={{ flexGrow: 1, minWidth: 260 }}
+              style={{ flexGrow: 1, minWidth: 180 }}
             />
             <Badge size="lg" variant="light" color="blue">
               {t("common.total", "Jami")}: {signs.length}
             </Badge>
           </Group>
 
-          <SegmentedControl
-            value={selectedCategory}
-            onChange={setSelectedCategory}
-            data={SIGN_CATEGORIES.map((c) => ({
-              value: c.value,
-              label: t(c.labelKey, c.value || "Barchasi"),
-            }))}
-            fullWidth
-            radius="md"
-            size="xs"
-          />
+          <Box style={{ overflowX: "auto", maxWidth: "100%", paddingBottom: 4 }}>
+            <SegmentedControl
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+              data={SIGN_CATEGORIES.map((c) => ({
+                value: c.value,
+                label: t(c.labelKey, c.value || "Barchasi"),
+              }))}
+              radius="md"
+              size="xs"
+            />
+          </Box>
         </Stack>
       </Paper>
 

@@ -287,7 +287,19 @@
     "popularPackages": "Машҳур тўпламлар",
     "popularTickets": "Машҳур билетлар",
     "ticket": "Билет",
-    "totalTopics": "Жами Мавзулар"
+    "totalTopics": "Жами Мавзулар",
+    "totalExams": "Жами Имтиҳонлар",
+    "passRateDesc": "ўтиш кўрсаткичи",
+    "needRetake": "Қайта топшириш керак",
+    "avgCorrectAnswers": "Ўртача тўғри жавоблар",
+    "crmStatsTitle": "CRM ВА ИЛОВА СТАТИСТИКАСИ",
+    "siteInquiries": "Сайт Мурожаатлари",
+    "userMessages": "Фойдаланувчи хабарлари",
+    "partnerApplications": "Ҳамкорлик Аризалари",
+    "drivingSchoolApplications": "Автомактаб аризалари",
+    "appDownloads": "Илова Юклаб Олишлар",
+    "desktopMobilePlatforms": "Desktop & Мобил платформалар",
+    "currentlyTesting": "Айни пайтда тест ишлаётганлар"
   },
   "users": {
     "title": "Фойдаланувчилар",
@@ -354,7 +366,20 @@
     "statusChangeError": "Статус ўзгартиришда хатолик",
     "userDeleted": "Фойдаланувчи ўчирилди",
     "deleteError": "Ўчиришда хатолик",
-    "subtitle": "Тизим фойдаланувчиларини бошқариш ва назорат қилиш"
+    "subtitle": "Тизим фойдаланувчиларини бошқариш ва назорат қилиш",
+    "resetPasswordTitle": "Фойдаланувчи паролини тиклаш",
+    "resetPasswordAlertTitle": "Парол алмаштириш",
+    "resetPasswordDesc": "учун янги парол ўрнатинг ёки бўш қолдирсангиз тизим автоматик янги хавфсиз парол генерация қилади.",
+    "newPasswordOptional": "Янги парол (ихтиёрий)",
+    "autoPasswordPlaceholder": "Киритилмаса, тизим автоматик яратади",
+    "updatePassword": "Паролни янгилаш",
+    "forceLogoutTitle": "Сессияни мажбурий якунлаш",
+    "forceLogoutAlertTitle": "Мажбурий чиқиш",
+    "forceLogoutDesc": "нинг барча қурилмалардаги фаол JWT токенлари бекор қилинади ва у қайтадан логин қилиши талаб этилади.",
+    "confirmForceLogout": "Мажбурий logout қилиш",
+    "bulkDeleteTitle": "Оммавий ўчириш",
+    "bulkDeletePrompt": "та фойдаланувчини ўчиришни тасдиқлайсизми? Бу амални қайтариб бўлмайди!",
+    "confirmBulkDelete": "Барчасини ўчириш"
   },
   "questions": {
     "title": "Саволлар",
@@ -376,7 +401,7 @@
     "explanationTexts": "Тушунтириш",
     "settingsSection": "Созламалар",
     "topicId": "Мавзу ID",
-    "difficulty": "Қийинчилик",
+    "difficulty": "Қийинлик даражаси",
     "imageUrl": "Расм URL",
     "uploadImage": "Расм юклаш",
     "imagePreview": "Расм кўриниши",
@@ -418,7 +443,23 @@
     "statusChanged": "Статус ўзгартирилди",
     "statusChangeError": "Статус ўзгартиришда хатолик",
     "jsonFormatError": "JSON форматида 'questions' массиви бўлиши шарт!",
-    "bulkUploaded": "{{count}} та савол юкланди"
+    "bulkUploaded": "{{count}} та савол юкланди",
+    "subtitle": "Автомактаб имтиҳон саволлари ва вариантлари банки",
+    "exportSuccess": "Саволлар CSV файли юклаб олинди",
+    "exportError": "CSV файлни экспорт қилишда хатолик юз берди",
+    "importSuccess": "Саволлар муваффақиятли импорт қилинди",
+    "importError": "Импорт қилишда хатолик",
+    "easy": "Осон",
+    "medium": "Ўртача",
+    "hard": "Қийин",
+    "importModalTitle": "Саволларни импорт қилиш (JSON / CSV)",
+    "fileFormat": "Файл формати",
+    "fileFormatDesc": "Саволларни оммавий юклаш учун JSON ёки CSV форматидаги файлни танланг. Файл ичида савол матни, вариантлари ва тўғри жавоб кўрсатилган бўлиши керак.",
+    "selectFile": "Файлни танланг",
+    "selectFilePlaceholder": "JSON ёки CSV файлни танланг",
+    "uploadAndImport": "Юклаш ва Импорт қилиш",
+    "cloneSuccess": "Саволдан муваффақиятли нусха олинди",
+    "cloneError": "Нусха олишда хатолик юз берди"
   },
   "topics": {
     "title": "Мавзулар",
@@ -581,7 +622,8 @@
     "createSuccess": "Билет муваффақиятли яратилди",
     "createError": "Билет яратишда хатолик",
     "deletedSuccess": "Билет муваффақиятли ўчирилди",
-    "deleteError": "Билет ўчиришда хатолик"
+    "deleteError": "Билет ўчиришда хатолик",
+    "selectQuestion": "Савол танлаш"
   },
   "statistics": {
     "title": "Статистика",
@@ -675,7 +717,18 @@
     "globalLimitSuccess": "Глобал қурилма лимити янгиланди",
     "globalLimitError": "Глобал лимитни янгилашда хатолик",
     "globalLimitConfirmTitle": "Глобал лимитни ўзгартириш",
-    "globalLimitConfirm": "Қурилма лимити барча фойдаланувчилар учун {{count}} тага ўзгартирилади. Давом этасизми?"
+    "globalLimitConfirm": "Қурилма лимити барча фойдаланувчилар учун {{count}} тага ўзгартирилади. Давом этасизми?",
+    "appearance": "Кўриниш",
+    "typographyTitle": "Матн кўриниши ва ўлчами",
+    "typographySubtitle": "Илова бўйлаб матн ўлчами ва қалинлигини созланг",
+    "textSize": "Матн ўлчами",
+    "textSmall": "Кичик",
+    "textStandard": "Стандарт",
+    "textLarge": "Катта",
+    "boldText": "Қалин матн",
+    "boldTextDesc": "Барча матн ва сарлавҳаларни аниқроқ ва қалинроқ кўрсатиш",
+    "previewLabel": "Жонли кўриниш:",
+    "previewText": "Бу ерда матн ўлчами ва қалинлиги қандай кўриниши намойиш этилмоқда."
   },
   "system": {
     "title": "Тизим Мониторинг",
@@ -1359,7 +1412,9 @@
       "deleteConfirm": "Ҳақиқатан ҳам бу мурожаатни ўчириб ташламоқчимисиз?",
       "cancel": "Бекор қилиш",
       "delete": "Ўчириш",
-      "close": "Ёпиш"
+      "close": "Ёпиш",
+      "adminNotes": "Админ ички изоҳи / Қайдлар",
+      "adminNotesPlaceholder": "Масалан: 12-сентябрда қўнғироқ қилинди, шартнома юборилди..."
     },
     "notifications": {
       "statusSuccess": "Мурожаат ҳолати муваффақиятли янгиланди",
@@ -1402,7 +1457,9 @@
       "deleteConfirm": "Ҳақиқатан ҳам бу ҳамкорлик аризасини ўчириб ташламоқчимисиз?",
       "cancel": "Бекор қилиш",
       "delete": "Ўчириш",
-      "close": "Ёпиш"
+      "close": "Ёпиш",
+      "adminNotes": "Админ изоҳи (Ички ёзувлар)",
+      "adminNotesPlaceholder": "Масалан: Директор билан гаплашилди, 15 та компьютер учун демо версия ўрнатилди..."
     },
     "notifications": {
       "statusSuccess": "Ҳамкорлик ҳолати муваффақиятли янгиланди",
@@ -1546,6 +1603,8 @@
     "tabDevices": "Уланган Қурилмалар",
     "tabSecurity": "Хавфсизлик Сиёсати",
     "tabStatus": "Тизим Ҳолати",
-    "securitySectionTitle": "Хавфсизлик ва Кириш Чекловлари (Security)"
+    "securitySectionTitle": "Хавфсизлик ва Кириш Чекловлари (Security)",
+    "saveSuccess": "Барча тизим созламалари муваффақиятли сақланди",
+    "saveError": "Созламаларни сақлашда хатолик юз берди"
   }
 }

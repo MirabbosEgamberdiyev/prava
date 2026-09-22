@@ -31,11 +31,13 @@ import {
   IconCertificate,
   IconShield,
   IconSearch,
+  IconTypography,
 } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/auth/AuthContext";
+import { SimpleTypographyControl } from "../../components/SimpleTypographyControl";
 import api from "../../services/api";
 
 function errMessage(e: unknown): string | undefined {
@@ -113,13 +115,13 @@ const Settings_Page = () => {
       await api.post("/api/v1/admin/settings", settings);
       notifications.show({
         title: t("common.success"),
-        message: "Barcha tizim sozlamalari muvaffaqiyatli saqlandi",
+        message: t("settingsAdmin.saveSuccess"),
         color: "green",
       });
     } catch (err) {
       notifications.show({
         title: t("common.error"),
-        message: errMessage(err) || "Sozlamalarni saqlashda xatolik yuz berdi",
+        message: errMessage(err) || t("settingsAdmin.saveError"),
         color: "red",
       });
     } finally {
@@ -280,6 +282,9 @@ const Settings_Page = () => {
           )}
           <Tabs.Tab value="profile" leftSection={<IconUser size={16} />}>
             {t("settingsAdmin.tabProfile")}
+          </Tabs.Tab>
+          <Tabs.Tab value="appearance" leftSection={<IconTypography size={16} />}>
+            {t("settings.appearance")}
           </Tabs.Tab>
           {isSuperAdmin && (
             <Tabs.Tab value="devices" leftSection={<IconDevices size={16} />}>
@@ -517,6 +522,7 @@ const Settings_Page = () => {
                     color="blue"
                     leftSection={<IconDeviceFloppy size={20} />}
                     loading={systemSettingsSaving}
+                    disabled={systemSettingsSaving}
                     onClick={handleSaveSystemSettings}
                   >
                     Barcha Tizim Sozlamalarini Saqlash
@@ -582,6 +588,7 @@ const Settings_Page = () => {
                     <Button
                       type="submit"
                       loading={profileLoading}
+                      disabled={profileLoading}
                       leftSection={<IconDeviceFloppy size={18} />}
                       w={200}
                     >
@@ -618,6 +625,7 @@ const Settings_Page = () => {
                     <Button
                       type="submit"
                       loading={passwordLoading}
+                      disabled={passwordLoading}
                       leftSection={<IconLock size={18} />}
                       color="orange"
                     >
@@ -628,6 +636,11 @@ const Settings_Page = () => {
               </Card>
             </Grid.Col>
           </Grid>
+        </Tabs.Panel>
+
+        {/* TAB: APPEARANCE (TYPOGRAPHY & DISPLAY) */}
+        <Tabs.Panel value="appearance">
+          <SimpleTypographyControl />
         </Tabs.Panel>
 
         {/* TAB 3: GLOBAL DEVICE LIMIT */}
@@ -652,6 +665,7 @@ const Settings_Page = () => {
                 />
                 <Button
                   loading={globalDeviceLoading}
+                  disabled={globalDeviceLoading}
                   onClick={handleSetGlobalDeviceLimit}
                   leftSection={<IconDeviceFloppy size={18} />}
                   mt={24}

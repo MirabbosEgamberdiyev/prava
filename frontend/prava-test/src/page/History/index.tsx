@@ -19,14 +19,14 @@ const History_Page = () => {
       <div className={styles.innerPageHeader}>
         <div className={styles.innerPageHeaderLeft}>
           <div className={styles.innerPageTitleRow}>
-            <h2 className={styles.innerPageTitle}>
+            <h1 className={styles.innerPageTitle}>
               <IconHistory
                 size={24}
                 stroke={2}
                 style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }}
               />
               {t("history.title", "Imtihonlar tarixi")}
-            </h2>
+            </h1>
           </div>
           <p className={styles.innerPageSubtitle}>
             {t(

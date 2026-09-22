@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { DesktopThemeProvider } from "./context/DesktopThemeContext";
+import { TypographyProvider } from "./context/TypographyContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import AppRoutes from "./routes";
@@ -36,24 +37,24 @@ function ApiErrorListener() {
 
       if (detail.status === 403) {
         notifications.show({
-          title: t("common.error"),
-          message: detail.message || t("errors.accessDenied"),
+          title: t("common.error", "Xatolik"),
+          message: detail.message || t("errors.accessDenied", "Ruxsat etilmagan amal"),
           color: "orange",
           autoClose: 5000,
         });
       } else if (detail.status >= 500) {
         notifications.show({
-          title: t("common.error"),
-          message: detail.message || t("errors.serverError"),
+          title: t("common.error", "Xatolik"),
+          message: detail.message || t("errors.serverError", "Serverda nosozlik yuz berdi. Iltimos keyinroq qayta urinib ko'ring."),
           color: "red",
           autoClose: 5000,
         });
       } else if (detail.status === 0) {
         const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
         notifications.show({
-          title: isOffline ? t("errors.noInternetTitle") : t("common.error"),
+          title: isOffline ? t("errors.noInternetTitle", "Internet aloqasi yo'q") : t("common.error", "Xatolik"),
           message: isOffline
-            ? (detail.message || t("errors.networkError"))
+            ? (detail.message || t("errors.networkError", "Internet tarmog'iga ulanishda xatolik yuz berdi."))
             : t("errors.serverUnreachable", "Server bilan aloqa o'rnatilmadi. Iltimos, keyinroq qayta urinib ko'ring."),
           color: "red",
           autoClose: 5000,
@@ -77,16 +78,18 @@ function AppInner() {
 
   return (
     <DesktopThemeProvider>
-      <AuthProvider>
-        <LanguageProvider>
-          <ApiErrorListener />
-          {allowGoogleOneTap && <GoogleOneTap />}
-          <ScrollManager />
-          <ErrorBoundary resetKey={location.pathname}>
-            <AppRoutes />
-          </ErrorBoundary>
-        </LanguageProvider>
-      </AuthProvider>
+      <TypographyProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <ApiErrorListener />
+            {allowGoogleOneTap && <GoogleOneTap />}
+            <ScrollManager />
+            <ErrorBoundary resetKey={location.pathname}>
+              <AppRoutes />
+            </ErrorBoundary>
+          </LanguageProvider>
+        </AuthProvider>
+      </TypographyProvider>
     </DesktopThemeProvider>
   );
 }

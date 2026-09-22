@@ -87,7 +87,7 @@ export default function AuditLogsPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>{t("audit.title")}</Title>
+          <Title order={1} fz="h3" fw={700}>{t("audit.title")}</Title>
           <Text c="dimmed" size="sm">{t("audit.subtitle")}</Text>
         </div>
         <Button leftSection={<IconRefresh size={16} />} variant="light" onClick={() => mutate()} loading={isValidating}>

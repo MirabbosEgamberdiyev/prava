@@ -67,14 +67,14 @@ export default function WrongAnswers_Page() {
         <div className={styles.innerPageHeader}>
           <div className={styles.innerPageHeaderLeft}>
             <div className={styles.innerPageTitleRow}>
-              <h2 className={styles.innerPageTitle}>
+              <h1 className={styles.innerPageTitle}>
                 <IconAlertTriangle
                   size={24}
                   stroke={2}
                   style={{ color: "#e03131", verticalAlign: "middle", marginRight: 8 }}
                 />
                 {t("wrongAnswers.title", "Xatolar ustida ishlash")}
-              </h2>
+              </h1>
               {!loading && entries.length > 0 && (
                 <span
                   className={styles.innerPageCountChip}

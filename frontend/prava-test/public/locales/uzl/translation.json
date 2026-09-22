@@ -329,7 +329,9 @@
       "badge1": "Tez va oson",
       "badge2": "Hech qanday majburiyat yo'q",
       "badge3": "Rasmiy savollar",
-      "ariaLabel": "Harakatga chaqiruv"
+      "ariaLabel": "Harakatga chaqiruv",
+      "register": "Bepul ro'yxatdan o'tish",
+      "login": "Tizimga kirish"
     },
     "welcome": "Xush kelibsiz, {{name}}!",
     "subtitle": "Haydovchilik imtihoniga tayyorlanishni davom ettiring",
@@ -576,7 +578,8 @@
       "telegramDesc": "Rasmiy bot orqali tezkor bildirishnomalar va mini testlar.",
       "telegramAction": "Telegramda ochish",
       "ariaLabel": "Mavjud qurilmalar"
-    }
+    },
+    "correctBadge": "TO'G'RI ✓"
   },
   "nav": {
     "home": "Bosh sahifa",
@@ -884,7 +887,18 @@
     "activeDevices": "Faol qurilmalar",
     "deviceLimitDesc": "Bir vaqtda tizimga kirish mumkin bo'lgan qurilmalar soni",
     "currentDevice": "Joriy",
-    "noDeviceData": "Qurilma ma'lumotlari mavjud emas"
+    "noDeviceData": "Qurilma ma'lumotlari mavjud emas",
+    "appearance": "Ko'rinish",
+    "typographyTitle": "Matn ko'rinishi va o'lchami",
+    "typographySubtitle": "Ilova bo'ylab matn o'lchami va qalinligini sozlang",
+    "textSize": "Matn o'lchami",
+    "textSmall": "Kichik",
+    "textStandard": "Standart",
+    "textLarge": "Katta",
+    "boldText": "Qalin matn",
+    "boldTextDesc": "Barcha matn va sarlavhalarni aniqroq va qalinroq ko'rsatish",
+    "previewLabel": "Jonli ko'rinish:",
+    "previewText": "Bu yerda matn o'lchami va qalinligi qanday ko'rinishi namoyish etilmoqda."
   },
   "footer": {
     "description": "O'zbekistonda haydovchilik guvohnomasi imtihoniga online tayyorlanish platformasi.",
@@ -968,7 +982,11 @@
     "startMarathon": "Marafon boshlash",
     "backToTopics": "Mavzularga qaytish",
     "noTopics": "Mavzular topilmadi",
-    "startTest": "Testni boshlash"
+    "startTest": "Testni boshlash",
+    "unit": "ta mavzu",
+    "subtitle": "Yo'l harakati qoidalarini mavzulashtirilgan tarzda tizimli o'rganing va testdan o'ting.",
+    "tryAnotherSearch": "Qidiruv so'zini o'zgartirib ko'ring yoki tozalang.",
+    "noTopicsDesc": "Hozircha tizimda mavzular mavjud emas."
   },
   "statistics": {
     "title": "Statistika",
@@ -1032,7 +1050,12 @@
     "passedEncourage": "Ajoyib natija! Haqiqiy davlat imtihonida ham 18+ to'g'ri javob talab etiladi. Barcha {{count}} ta biletni to'liq o'zlashtirishni tavsiya etamiz.",
     "resultNotSaved": "Diqqat: Sinov imtihoni natijalari mehmon rejimida saqlanmaydi. Natijalarni saqlash uchun ro'yxatdan o'ting.",
     "seoTitle": "Bepul Sinov Imtihoni — Prava Online",
-    "seoDescription": "IIV YHXX imtihon formatidagi 20 ta savolga 25 daqiqada javob bering va o'z kuchingizni bepul sinab ko'ring."
+    "seoDescription": "IIV YHXX imtihon formatidagi 20 ta savolga 25 daqiqada javob bering va o'z kuchingizni bepul sinab ko'ring.",
+    "description": "Ro'yxatdan o'tmasdan 1 marta bepul sinov imtihonini topshirib ko'ring",
+    "limitReached": "Bepul urinishdan foydalanib bo'ldingiz",
+    "registerPrompt": "Cheklovlarsiz imtihon topshirish uchun ro'yxatdan o'ting",
+    "redirecting": "{{seconds}} soniyada yo'naltirilmoqda...",
+    "examSuffix": "— Imtihon"
   },
   "admin": {
     "activationCodes": {
@@ -1272,7 +1295,28 @@
     "scanQr": "Kamerangizni QR-kodga qarating va ilovani yuklab oling",
     "securityTitle": "100% Xavfsiz va sertifikatlangan dasturiy ta'minot",
     "securityDesc": "Barcha dastur fayllari viruslarga qarshi to'liq tekshirilgan va raqamli imzo bilan himoyalangan.",
-    "sha256": "SHA-256 Nazorat summasi:"
+    "sha256": "SHA-256 Nazorat summasi:",
+    "pageTitle": "Ilovalar — Prava Online",
+    "pageDesc": "Prava Online dasturini barcha platformalar uchun yuklab oling",
+    "mobile": "Mobil ilovalar",
+    "desktop": "Desktop ilovalar",
+    "online": "Online",
+    "offline": "Offline",
+    "all": "Barchasi",
+    "date": "Sana",
+    "downloads": "Yuklanishlar",
+    "releaseNotes": "O'zgarishlar tarixi",
+    "copy": "Nusxalash",
+    "downloadBtn": "Yuklab olish",
+    "loadError": "Yuklashda xatolik",
+    "noDesktop": "Hozircha desktop ilovalar mavjud emas",
+    "androidF1": "Barcha Android qurilmalarda ishlaydi",
+    "androidF2": "Avtomatik yangilanishlar",
+    "androidF3": "Push bildirishnomalar",
+    "webDesc": "Brauzeringizda to'g'ridan-to'g'ri foydalaning",
+    "webF1": "O'rnatish talab qilinmaydi",
+    "webF2": "Har doim eng so'nggi versiya",
+    "webF3": "Barcha qurilmalarda ishlaydi"
   },
   "wrongAnswers": {
     "title": "Xatolar",
@@ -2327,12 +2371,12 @@
       "desc": "Tanlangan bilet savollarini yechish va tekshirish."
     },
     "topics": {
-      "title": "Mavzular — YHQ Qoidalari bo'yicha Testlar | Prava Online",
-      "desc": "Yo'l harakati qoidalarining barcha mavzulari bo'yicha alohida testlar."
+      "title": "Mavzular — YHQ Qoidalari bo'yicha Testlar",
+      "desc": "Yo'l harakati qoidalari mavzulari bo'yicha testlar."
     },
     "topicDetail": {
-      "title": "Mavzu Testlari — Prava Online",
-      "desc": "Tanlangan mavzu bo'yicha qoidalar va test savollari."
+      "title": "Mavzu Testlari",
+      "desc": "Tanlangan mavzu bo'yicha rasmiy imtihon savollarini yeching."
     },
     "packages": {
       "title": "Imtihon Paketlari — Prava Online",
@@ -2397,6 +2441,14 @@
     "offer": {
       "title": "Ommaviy Oferta — Prava Online",
       "desc": "Prava Online axborot-ta'lim platformasi orqali xizmatlar ko'rsatish bo'yicha rasmiy ommaviy oferta shartnomasi."
+    },
+    "markings": {
+      "title": "Yo'l chiziqlari — Rasmiy YHXX Yo'l Belgilash Chiziqlari",
+      "desc": "O'zbekiston Respublikasi Yo'l Harakati Qoidalaridagi barcha rasmiy gorizontal va vertikal yo'l chiziqlari."
+    },
+    "practical": {
+      "title": "Avtodrom Amaliy Imtihoni — 12 ta Mashq va Jarima Ballari",
+      "desc": "Haydovchilik guvohnomasi uchun avtodrom amaliy imtihonining 12 ta mashqi, bajarish ketma-ketligi va 32 ta jarima ballari nizomi."
     }
   },
   "theme": {
@@ -2631,12 +2683,21 @@
     "emptyFines": "Mos keluvchi jarimalar topilmadi",
     "clearSearch": "Qidiruvni tozalash",
     "autodromTitle": "Avtodrom & Amaliy mashqlar",
-    "autodromSubtitle": "Davlat amaliy haydash imtihonining 6 ta asosiy mashqi va talablari",
+    "autodromSubtitle": "Davlat amaliy haydash imtihonining 12 ta asosiy mashqi va talablari",
     "autodromNoticeTitle": "Amaliy imtihon qoidalari",
     "autodromNoticeText": "Nomzod avtodromdagi barcha mashqlarni ketma-ket bajarishi shart. Jarima ballari yig'indisi 99 ballgacha bo'lsa imtihon 'O'TDI', 100 ball yoki undan oshsa 'YIQILDI' deb hisoblanadi.",
     "tabExercises": "Avtodrom mashqlari",
     "tabPenalties": "Jarima ballari jadvali",
     "emptyPenalties": "Jarima ma'lumotlari topilmadi",
+    "emptyExercises": "Amaliy mashqlar topilmadi",
+    "loadPracticalError": "Amaliy imtihon ma'lumotlarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring.",
+    "simulatorBadge": "3D WebGL Simulyator",
+    "simulatorTitle": "Avtodrom 3D Simulyatori",
+    "simulatorDesc": "YHXX Davlat imtihon markazi standartidagi 12 ta amaliy mashqni interaktiv 3D WebGL simulyatorida real fizika va ovozli instruktor bilan mashq qiling!",
+    "startSimulator": "Simulyatorni boshlash",
+    "modeTraining": "O'rganish rejimi (Training)",
+    "modePractice": "Mashq rejimi (Practice)",
+    "modeExam": "Real Imtihon (Exam 100 ball)",
     "maxPenalty": "Maksimal jarima balli",
     "centersTitle": "Yagona Imtihon Markazlari",
     "centersSubtitle": "O'zbekiston bo'yicha 14 ta rasmiy hududiy davlat imtihon markazlari",
@@ -2647,6 +2708,21 @@
     "openMap": "Xaritada ochish",
     "workHours": "Ish vaqti",
     "phone": "Telefon",
-    "clean": "Tozalash"
+    "clean": "Tozalash",
+    "horizontalBadge": "Gorizontal",
+    "verticalBadge": "Vertikal",
+    "emptyMarkings": "Yo'l chiziqlari topilmadi",
+    "showAllMarkings": "Barcha chiziqlarni ko'rsatish",
+    "severityMajor": "Imtihondan yiqitish",
+    "severityMedium": "Qo'pol",
+    "severityMinor": "Kichik",
+    "ball": "ball"
+  },
+  "license": {
+    "warning": "⚠️ Litsenziya {{days}} kundan so'ng tugaydi",
+    "daysLeft": "Litsenziya muddati {{days}} kundan keyin tugaydi!",
+    "expired": "⚠️ Litsenziya muddati tugagan!",
+    "dates": "Litsenziya: {{from}} — {{to}}",
+    "renew": "🔑 Litsenziyani yangilash"
   }
 }

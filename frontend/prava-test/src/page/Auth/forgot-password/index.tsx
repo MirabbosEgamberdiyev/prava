@@ -733,6 +733,7 @@ const ForgotPassword_Page: React.FC = () => {
                 radius="md"
                 type="submit"
                 loading={loading}
+                disabled={loading}
                 h={40}
                 rightSection={<IconArrowRight size={16} />}
                 style={{

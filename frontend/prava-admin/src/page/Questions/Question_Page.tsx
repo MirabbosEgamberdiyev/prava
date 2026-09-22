@@ -60,13 +60,13 @@ const Question_Page = () => {
       window.URL.revokeObjectURL(url);
       notifications.show({
         title: t("common.success"),
-        message: "Savollar CSV fayli yuklab olindi",
+        message: t("questions.exportSuccess"),
         color: "green",
       });
     } catch {
       notifications.show({
         title: t("common.error"),
-        message: "CSV faylni eksport qilishda xatolik yuz berdi",
+        message: t("questions.exportError"),
         color: "red",
       });
     } finally {
@@ -85,7 +85,7 @@ const Question_Page = () => {
       });
       notifications.show({
         title: t("common.success"),
-        message: "Savollar muvaffaqiyatli import qilindi",
+        message: t("questions.importSuccess"),
         color: "green",
       });
       closeImport();
@@ -94,7 +94,7 @@ const Question_Page = () => {
     } catch (err: any) {
       notifications.show({
         title: t("common.error"),
-        message: err.response?.data?.message || "Import qilishda xatolik",
+        message: err.response?.data?.message || t("questions.importError"),
         color: "red",
       });
     } finally {
@@ -107,7 +107,7 @@ const Question_Page = () => {
       <Group justify="space-between" align="center" wrap="wrap">
         <div>
           <Title order={1} fz="h3">{t("questions.title")}</Title>
-          <Text size="sm" c="dimmed">Avtomaktab imtihon savollari va variantlari banki</Text>
+          <Text size="sm" c="dimmed">{t("questions.subtitle")}</Text>
         </div>
         <Group gap="xs">
           <Button
@@ -153,11 +153,11 @@ const Question_Page = () => {
           w={240}
         />
         <Select
-          placeholder="Qiyinlik darajasi"
+          placeholder={t("questions.difficulty")}
           data={[
-            { value: "EASY", label: "Oson (Easy)" },
-            { value: "MEDIUM", label: "O'rtacha (Medium)" },
-            { value: "HARD", label: "Qiyin (Hard)" },
+            { value: "EASY", label: `${t("questions.easy")} (Easy)` },
+            { value: "MEDIUM", label: `${t("questions.medium")} (Medium)` },
+            { value: "HARD", label: `${t("questions.hard")} (Hard)` },
           ]}
           value={difficulty}
           onChange={setDifficulty}
@@ -175,16 +175,16 @@ const Question_Page = () => {
       <Modal
         opened={importOpened}
         onClose={closeImport}
-        title="Savollarni import qilish (JSON / CSV)"
+        title={t("questions.importModalTitle")}
         centered
       >
         <Stack gap="md">
-          <Alert icon={<IconFileSpreadsheet size={20} />} title="Fayl formati" color="blue" variant="light">
-            Savollarni ommaviy yuklash uchun JSON yoki CSV formatidagi faylni tanlang. Fayl ichida savol matni, variantlari va to'g'ri javob ko'rsatilgan bo'lishi kerak.
+          <Alert icon={<IconFileSpreadsheet size={20} />} title={t("questions.fileFormat")} color="blue" variant="light">
+            {t("questions.fileFormatDesc")}
           </Alert>
           <FileInput
-            label="Faylni tanlang"
-            placeholder="JSON yoki CSV faylni tanlang"
+            label={t("questions.selectFile")}
+            placeholder={t("questions.selectFilePlaceholder")}
             accept=".json,.csv"
             value={importFile}
             onChange={setImportFile}
@@ -197,7 +197,7 @@ const Question_Page = () => {
               disabled={!importFile}
               onClick={handleImportSubmit}
             >
-              Yuklash va Import qilish
+              {t("questions.uploadAndImport")}
             </Button>
           </Group>
         </Stack>

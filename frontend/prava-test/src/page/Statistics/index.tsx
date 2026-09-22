@@ -375,7 +375,7 @@ export default function Statistics_Page() {
         <div className={styles.innerPageHeader}>
           <div className={styles.innerPageHeaderLeft}>
             <div className={styles.innerPageTitleRow}>
-              <h2 className={styles.innerPageTitle}>{t("stats.title", "Statistika")}</h2>
+              <h1 className={styles.innerPageTitle}>{t("stats.title", "Statistika")}</h1>
             </div>
             <p className={styles.innerPageSubtitle}>
               {t(

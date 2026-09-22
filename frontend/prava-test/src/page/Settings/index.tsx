@@ -16,11 +16,13 @@ import {
   IconDeviceMobile,
   IconDeviceDesktop,
   IconSettings,
+  IconTypography,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { ProfileInfoCard } from "../../features/me/components/ProfileInfoCard";
 import { ChangePasswordForm } from "../../features/me/components/ChangePasswordForm";
+import { SimpleTypographyControl } from "../../components/common/SimpleTypographyControl";
 import SEO from "../../components/common/SEO";
 
 import styles from "../../components/dashboard/Dashboard.module.css";
@@ -57,14 +59,14 @@ const Settings_Page = () => {
         <div className={styles.innerPageHeader}>
           <div className={styles.innerPageHeaderLeft}>
             <div className={styles.innerPageTitleRow}>
-              <h2 className={styles.innerPageTitle}>
+              <h1 className={styles.innerPageTitle}>
                 <IconSettings
                   size={24}
                   stroke={2}
                   style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }}
                 />
                 {t("settings.title", "Sozlamalar va Profil")}
-              </h2>
+              </h1>
             </div>
             <p className={styles.innerPageSubtitle}>
               {t(
@@ -90,6 +92,9 @@ const Settings_Page = () => {
                 <Tabs.Tab value="profile" leftSection={<IconUser size={16} />}>
                   {t("settings.profile")}
                 </Tabs.Tab>
+                <Tabs.Tab value="appearance" leftSection={<IconTypography size={16} />}>
+                  {t("settings.appearance")}
+                </Tabs.Tab>
                 <Tabs.Tab value="security" leftSection={<IconLock size={16} />}>
                   {t("settings.security")}
                 </Tabs.Tab>
@@ -102,6 +107,12 @@ const Settings_Page = () => {
         <Tabs.Panel value="profile">
           <Stack gap="lg">
             <ProfileInfoCard />
+          </Stack>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="appearance">
+          <Stack gap="lg">
+            <SimpleTypographyControl />
           </Stack>
         </Tabs.Panel>
 

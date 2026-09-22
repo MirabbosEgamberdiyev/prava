@@ -16,7 +16,7 @@ import type {
   OfflineTopic,
   QuestionOption,
 } from "../types";
-import { OFFICIAL_TOPIC_MAP } from "../constants/topics";
+import { OFFICIAL_TOPIC_MAP, findOfficialTopic } from "../constants/topics";
 
 export type AppLanguage = "uzl" | "uzc" | "ru";
 
@@ -232,7 +232,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const localizeTopic = useCallback(
     (topic: any): string => {
       if (!topic) return "";
-      const official = topic.id != null ? OFFICIAL_TOPIC_MAP[topic.id] : undefined;
+      const official = findOfficialTopic(topic);
       const nameRu =
         topic.name_ru ||
         topic.nameRu ||

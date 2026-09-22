@@ -54,6 +54,7 @@ const RoadSigns_Page      = lazy(() => import("../page/RoadSigns"));
 const RoadMarkings_Page   = lazy(() => import("../page/RoadMarkings"));
 const ExamCenters_Page    = lazy(() => import("../page/ExamCenters"));
 const PracticalExam_Page  = lazy(() => import("../page/PracticalExam"));
+const AvtodromSimulator_Page = lazy(() => import("../page/PracticalExam/Simulator"));
 const TrafficRules_Page   = lazy(() => import("../page/TrafficRules"));
 const Penalties_Page      = lazy(() => import("../page/Penalties"));
 
@@ -124,6 +125,8 @@ export default function AppRoutes() {
               <Route path="markings" element={<RoadMarkings_Page />} />
               <Route path="exam-centers" element={<ExamCenters_Page />} />
               <Route path="practical-exam" element={<PracticalExam_Page />} />
+              <Route path="practical-exam/simulator" element={<AvtodromSimulator_Page />} />
+              <Route path="simulator" element={<Navigate to="/practical-exam/simulator" replace />} />
               <Route path="rules" element={<TrafficRules_Page />} />
               <Route path="penalties" element={<Penalties_Page />} />
             </Route>
@@ -193,6 +196,8 @@ export default function AppRoutes() {
               <Route path="/markings" element={<RoadMarkings_Page />} />
               <Route path="/exam-centers" element={<ExamCenters_Page />} />
               <Route path="/practical-exam" element={<PracticalExam_Page />} />
+              <Route path="/practical-exam/simulator" element={<AvtodromSimulator_Page />} />
+              <Route path="/simulator" element={<Navigate to="/practical-exam/simulator" replace />} />
               <Route path="/rules" element={<TrafficRules_Page />} />
               <Route path="/penalties" element={<Penalties_Page />} />
             </Route>
@@ -304,6 +309,8 @@ export default function AppRoutes() {
               <Route path="/markings" element={<RoadMarkings_Page />} />
               <Route path="/exam-centers" element={<ExamCenters_Page />} />
               <Route path="/practical-exam" element={<PracticalExam_Page />} />
+              <Route path="/practical-exam/simulator" element={<AvtodromSimulator_Page />} />
+              <Route path="/simulator" element={<Navigate to="/practical-exam/simulator" replace />} />
               <Route path="/rules" element={<TrafficRules_Page />} />
               <Route path="/penalties" element={<Penalties_Page />} />
             </Route>

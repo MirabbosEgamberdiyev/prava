@@ -70,14 +70,14 @@ export default function RulesPage() {
       </Group>
 
       {/* Search Input */}
-      <Paper p="md" radius="md" withBorder>
-        <Group justify="space-between" wrap="wrap">
+      <Paper p={{ base: "xs", sm: "md" }} radius="md" withBorder>
+        <Group justify="space-between" wrap="wrap" gap="sm">
           <TextInput
             placeholder={t("curriculum.searchRules", "Bob nomi yoki matni bo'yicha qidirish...")}
             leftSection={<IconSearch size={16} />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
-            style={{ flexGrow: 1, minWidth: 260 }}
+            style={{ flexGrow: 1, minWidth: 180 }}
           />
           <Badge size="lg" variant="light" color="indigo">
             {t("curriculum.totalChapters", "Jami boblar")}: {rules.length}

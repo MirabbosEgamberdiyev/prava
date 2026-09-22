@@ -21,7 +21,7 @@ const App_Layout = () => {
           breakpoint: "sm",
           collapsed: { mobile: !opened },
         }}
-        padding="md"
+        padding={{ base: "xs", sm: "md" }}
       >
         <App_Header opened={opened} toggle={toggle} />
 
@@ -33,6 +33,7 @@ const App_Layout = () => {
         <App_Nav close={close} />
         <AppShell.Main
           bg={computedColorScheme === "light" ? "gray.1" : "dark.8"}
+          style={{ overflowX: "hidden", maxWidth: "100%" }}
         >
           <AppBreadcrumbs />
           {/*

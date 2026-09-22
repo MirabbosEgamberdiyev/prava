@@ -103,7 +103,7 @@ export default function ExamCenters_Page() {
         {error && (
           <Alert
             icon={<IconAlertTriangle size={18} />}
-            title="Xatolik"
+            title={t("common.error")}
             color="red"
             variant="light"
             radius="md"
@@ -113,11 +113,11 @@ export default function ExamCenters_Page() {
               <Button
                 size="xs"
                 color="red"
-                variant="light"
+                variant="subtle"
                 leftSection={<IconRefresh size={14} />}
                 onClick={fetchCenters}
               >
-                Qayta yuklash
+                {t("common.refresh")}
               </Button>
             </Group>
           </Alert>

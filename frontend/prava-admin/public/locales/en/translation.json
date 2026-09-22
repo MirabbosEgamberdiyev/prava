@@ -287,7 +287,19 @@
     "popularPackages": "Popular packages",
     "popularTickets": "Popular tickets",
     "ticket": "Ticket",
-    "totalTopics": "Jami Mavzular"
+    "totalTopics": "Jami Mavzular",
+    "totalExams": "Total Exams",
+    "passRateDesc": "pass rate",
+    "needRetake": "Retake required",
+    "avgCorrectAnswers": "Average correct answers",
+    "crmStatsTitle": "CRM & APP STATISTICS",
+    "siteInquiries": "Website Inquiries",
+    "userMessages": "User messages",
+    "partnerApplications": "Partner Applications",
+    "drivingSchoolApplications": "Driving school applications",
+    "appDownloads": "App Downloads",
+    "desktopMobilePlatforms": "Desktop & Mobile platforms",
+    "currentlyTesting": "Currently taking test"
   },
   "users": {
     "title": "Users",
@@ -354,7 +366,20 @@
     "statusChangeError": "Error changing status",
     "userDeleted": "User deleted",
     "deleteError": "Error deleting user",
-    "subtitle": "Tizim foydalanuvchilarini boshqarish va nazorat qilish"
+    "subtitle": "Tizim foydalanuvchilarini boshqarish va nazorat qilish",
+    "resetPasswordTitle": "Reset user password",
+    "resetPasswordAlertTitle": "Change password",
+    "resetPasswordDesc": "set a new password or leave blank to automatically generate a secure password.",
+    "newPasswordOptional": "New password (optional)",
+    "autoPasswordPlaceholder": "If empty, system generates automatically",
+    "updatePassword": "Update password",
+    "forceLogoutTitle": "Force end session",
+    "forceLogoutAlertTitle": "Force logout",
+    "forceLogoutDesc": "all active JWT tokens on all devices will be revoked, requiring re-login.",
+    "confirmForceLogout": "Force logout",
+    "bulkDeleteTitle": "Bulk delete",
+    "bulkDeletePrompt": "users? This action cannot be undone!",
+    "confirmBulkDelete": "Delete all"
   },
   "questions": {
     "title": "Questions",
@@ -374,7 +399,7 @@
     "explanationTexts": "Explanation",
     "settingsSection": "Settings",
     "topicId": "Topic ID",
-    "difficulty": "Difficulty",
+    "difficulty": "Difficulty level",
     "imageUrl": "Image URL",
     "uploadImage": "Upload image",
     "imagePreview": "Image preview",
@@ -418,7 +443,23 @@
     "jsonFormatError": "JSON must contain a 'questions' array!",
     "bulkUploaded": "{{count}} questions uploaded",
     "addTitle": "Add question",
-    "formMode": "Form"
+    "formMode": "Form",
+    "subtitle": "Driving school exam questions and variants bank",
+    "exportSuccess": "Questions CSV file downloaded successfully",
+    "exportError": "Error exporting CSV file",
+    "importSuccess": "Questions imported successfully",
+    "importError": "Import error",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "importModalTitle": "Import questions (JSON / CSV)",
+    "fileFormat": "File format",
+    "fileFormatDesc": "Select a JSON or CSV file for bulk question upload. The file must contain question text, options, and correct answer.",
+    "selectFile": "Select file",
+    "selectFilePlaceholder": "Select JSON or CSV file",
+    "uploadAndImport": "Upload and import",
+    "cloneSuccess": "Question cloned successfully",
+    "cloneError": "Error cloning question"
   },
   "topics": {
     "title": "Topics",
@@ -581,7 +622,8 @@
       "questionCount": "Question count",
       "duration": "Duration (min)",
       "passingScore": "Passing score"
-    }
+    },
+    "selectQuestion": "Select question"
   },
   "statistics": {
     "title": "Statistics",
@@ -675,7 +717,18 @@
     "globalLimitSuccess": "Global device limit updated",
     "globalLimitError": "Error updating global device limit",
     "globalLimitConfirmTitle": "Change global limit",
-    "globalLimitConfirm": "The device limit will be changed to {{count}} for every user. Continue?"
+    "globalLimitConfirm": "The device limit will be changed to {{count}} for every user. Continue?",
+    "appearance": "Appearance",
+    "typographyTitle": "Text Appearance and Size",
+    "typographySubtitle": "Adjust text size and font boldness across the app",
+    "textSize": "Text Size",
+    "textSmall": "Small",
+    "textStandard": "Standard",
+    "textLarge": "Large",
+    "boldText": "Bold Text",
+    "boldTextDesc": "Display all text and headings bolder and sharper",
+    "previewLabel": "Live Preview:",
+    "previewText": "This is a preview of how text size and boldness will look."
   },
   "system": {
     "title": "System Monitor",
@@ -1359,7 +1412,9 @@
       "deleteConfirm": "Are you sure you want to delete this inquiry?",
       "cancel": "Cancel",
       "delete": "Delete",
-      "close": "Close"
+      "close": "Close",
+      "adminNotes": "Admin internal notes",
+      "adminNotesPlaceholder": "For example: Called on Sept 12, contract sent..."
     },
     "notifications": {
       "statusSuccess": "Inquiry status updated successfully",
@@ -1402,7 +1457,9 @@
       "deleteConfirm": "Are you sure you want to delete this application?",
       "cancel": "Cancel",
       "delete": "Delete",
-      "close": "Close"
+      "close": "Close",
+      "adminNotes": "Admin notes (Internal records)",
+      "adminNotesPlaceholder": "For example: Spoke with director, demo installed on 15 PCs..."
     },
     "notifications": {
       "statusSuccess": "Partnership status updated successfully",
@@ -1546,6 +1603,8 @@
     "tabDevices": "Connected Devices",
     "tabSecurity": "Security Policy",
     "tabStatus": "System Status",
-    "securitySectionTitle": "Security & Access Controls"
+    "securitySectionTitle": "Security & Access Controls",
+    "saveSuccess": "All system settings saved successfully",
+    "saveError": "Error saving settings"
   }
 }

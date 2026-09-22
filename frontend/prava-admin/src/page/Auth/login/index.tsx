@@ -143,7 +143,7 @@ const Login_Page = () => {
         </Box>
 
         <Box w="100%" maw={420}>
-          <Title order={2} ta="center">
+          <Title order={1} fz="h2" ta="center">
             {t("auth.welcome")}
           </Title>
           <Text c="dimmed" size="sm" ta="center" mt={4}>

@@ -99,14 +99,14 @@ export const QuestionList = ({ searchQuery, topicId }: QuestionListProps) => {
       await api.post(`/api/v1/admin/questions/${question.id}/clone`);
       notifications.show({
         title: t("common.success"),
-        message: "Savoldan muvaffaqiyatli nusxa olindi",
+        message: t("questions.cloneSuccess"),
         color: "green",
       });
       mutate();
     } catch (err: any) {
       notifications.show({
         title: t("common.error"),
-        message: err.response?.data?.message || "Nusxa olishda xatolik yuz berdi",
+        message: err.response?.data?.message || t("questions.cloneError"),
         color: "red",
       });
     }

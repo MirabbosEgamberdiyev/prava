@@ -81,9 +81,9 @@ export default function Topics_Page() {
         <div className={styles.innerPageHeader}>
           <div className={styles.innerPageHeaderLeft}>
             <div className={styles.innerPageTitleRow}>
-              <h2 className={styles.innerPageTitle}>
+              <h1 className={styles.innerPageTitle}>
                 {t("topics.title", "Mavzular")}
-              </h2>
+              </h1>
               {!loading && (
                 <span className={styles.innerPageCountChip}>
                   {topics.length} {t("topics.unit", "ta mavzu")}

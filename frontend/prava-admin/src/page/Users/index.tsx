@@ -440,51 +440,51 @@ const Users_Page = () => {
       </Modal>
 
       {/* Parolni tiklash modali */}
-      <Modal opened={resetPwdOpened} onClose={closeResetPwd} title="Foydalanuvchi parolini tiklash" centered>
+      <Modal opened={resetPwdOpened} onClose={closeResetPwd} title={t("users.resetPasswordTitle")} centered>
         <Stack gap="md">
-          <Alert icon={<IconKey size={20} />} title="Parol almashtirish" color="blue" variant="light">
-            <strong>{selectedUser?.fullName}</strong> uchun yangi parol o'rnating yoki bo'sh qoldirsangiz tizim avtomatik yangi xavfsiz parol generatsiya qiladi.
+          <Alert icon={<IconKey size={20} />} title={t("users.resetPasswordAlertTitle")} color="blue" variant="light">
+            <strong>{selectedUser?.fullName}</strong> {t("users.resetPasswordDesc")}
           </Alert>
           <PasswordInput
-            label="Yangi parol (ixtiyoriy)"
-            placeholder="Kiritilmasa, tizim avtomatik yaratadi"
+            label={t("users.newPasswordOptional")}
+            placeholder={t("users.autoPasswordPlaceholder")}
             value={customPassword}
             onChange={(e) => setCustomPassword(e.currentTarget.value)}
           />
           <Group justify="flex-end">
             <Button variant="light" onClick={closeResetPwd}>{t("common.cancel")}</Button>
             <Button color="blue" loading={actionLoading} onClick={handleResetPasswordConfirm}>
-              Parolni yangilash
+              {t("users.updatePassword")}
             </Button>
           </Group>
         </Stack>
       </Modal>
 
       {/* Force Logout modali */}
-      <Modal opened={forceLogoutOpened} onClose={closeForceLogout} title="Sessiyani majburiy yakunlash" centered>
+      <Modal opened={forceLogoutOpened} onClose={closeForceLogout} title={t("users.forceLogoutTitle")} centered>
         <Stack gap="md">
-          <Alert icon={<IconLogout size={20} />} title="Majburiy chiqish" color="orange" variant="light">
-            Foydalanuvchi <strong>{selectedUser?.fullName}</strong> ning barcha qurilmalardagi faol JWT tokenlari bekor qilinadi va u qaytadan login qilishi talab etiladi.
+          <Alert icon={<IconLogout size={20} />} title={t("users.forceLogoutAlertTitle")} color="orange" variant="light">
+            <strong>{selectedUser?.fullName}</strong> {t("users.forceLogoutDesc")}
           </Alert>
           <Group justify="flex-end">
             <Button variant="light" onClick={closeForceLogout}>{t("common.cancel")}</Button>
             <Button color="orange" loading={actionLoading} onClick={handleForceLogoutConfirm}>
-              Majburiy logout qilish
+              {t("users.confirmForceLogout")}
             </Button>
           </Group>
         </Stack>
       </Modal>
 
       {/* Bulk Delete modali */}
-      <Modal opened={bulkDeleteOpened} onClose={closeBulkDelete} title="Ommaviy o'chirish" centered>
+      <Modal opened={bulkDeleteOpened} onClose={closeBulkDelete} title={t("users.bulkDeleteTitle")} centered>
         <Stack gap="md">
           <Alert icon={<IconAlertTriangle size={20} />} title={t("common.warning")} color="red" variant="light">
-            Tanlangan <strong>{selectedIds.length}</strong> ta foydalanuvchini o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi!
+            {t("common.areYouSure")} <strong>{selectedIds.length}</strong> {t("users.bulkDeletePrompt")}
           </Alert>
           <Group justify="flex-end">
             <Button variant="light" onClick={closeBulkDelete}>{t("common.cancel")}</Button>
             <Button color="red" loading={actionLoading} onClick={handleBulkDeleteConfirm}>
-              Barchasini o'chirish
+              {t("users.confirmBulkDelete")}
             </Button>
           </Group>
         </Stack>

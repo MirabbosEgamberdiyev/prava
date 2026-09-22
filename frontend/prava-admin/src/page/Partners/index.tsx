@@ -151,7 +151,7 @@ export default function PartnersPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>{t("partners.title")}</Title>
+          <Title order={1} fz="h3" fw={700}>{t("partners.title")}</Title>
           <Text c="dimmed" size="sm">
             {t("partners.subtitle")}
           </Text>
@@ -345,8 +345,8 @@ export default function PartnersPage() {
             />
 
             <Textarea
-              label="Admin izohi (Ichki yozuvlar)"
-              placeholder="Masalan: Direktor bilan gaplashildi, 15 ta kompyuter uchun demo versiya o'rnatildi..."
+              label={t("partners.modal.adminNotes")}
+              placeholder={t("partners.modal.adminNotesPlaceholder")}
               rows={3}
               value={adminNote}
               onChange={(e) => setAdminNote(e.currentTarget.value)}

@@ -81,9 +81,9 @@ export default function Tickets_Page() {
         <div className={styles.innerPageHeader}>
           <div className={styles.innerPageHeaderLeft}>
             <div className={styles.innerPageTitleRow}>
-              <h2 className={styles.innerPageTitle}>
+              <h1 className={styles.innerPageTitle}>
                 {t("home.biletlar", "Biletlar")}
-              </h2>
+              </h1>
               {!loading && tickets.length > 0 && (
                 <span className={styles.innerPageCountChip}>
                   {tickets.length} {t("tickets.unit", "ta rasmiy bilet")}

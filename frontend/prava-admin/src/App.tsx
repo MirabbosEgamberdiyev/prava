@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { lazy } from "react";
 import App_Layout from "./layout/App_Layout";
 import { AuthProvider } from "./hooks/auth/AuthContext";
+import { TypographyProvider } from "./context/TypographyContext";
 import Login_Page from "./page/Auth/login";
 import ProtectedRoute from "./hooks/auth/ProtectedRoute";
 import RoleGuard from "./hooks/auth/RoleGuard";
@@ -55,12 +56,13 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/auth/login" element={<Login_Page />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<App_Layout />}>
-                <Route index element={<Home_Page />} />
+        <TypographyProvider>
+          <AuthProvider>
+            <Routes>
+              <Route path="/auth/login" element={<Login_Page />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/" element={<App_Layout />}>
+                  <Route index element={<Home_Page />} />
 
                 {/* Foydalanuvchilar - ADMIN va SUPER_ADMIN (backend: /api/v1/admin/users) */}
                 <Route
@@ -393,9 +395,15 @@ function App() {
                   path="/system"
                   element={
                     <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
-                      
-                        <SystemMonitor_Page />
-                      
+                      <SystemMonitor_Page />
+                    </RoleGuard>
+                  }
+                />
+                <Route
+                  path="/system-monitor"
+                  element={
+                    <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                      <SystemMonitor_Page />
                     </RoleGuard>
                   }
                 />
@@ -403,7 +411,8 @@ function App() {
             </Route>
           </Routes>
         </AuthProvider>
-      </BrowserRouter>
+      </TypographyProvider>
+    </BrowserRouter>
     </>
   );
 }

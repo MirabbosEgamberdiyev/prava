@@ -66,7 +66,7 @@ export function QuestionPickerModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title="Savol tanlash"
+      title={t("tickets.selectQuestion")}
       size="lg"
       centered
     >
@@ -80,7 +80,7 @@ export function QuestionPickerModal({
             style={{ flex: 1 }}
           />
           <Select
-            placeholder="Mavzu"
+            placeholder={t("questions.topicFilter")}
             data={topicOptions}
             value={topicId?.toString() ?? null}
             onChange={handleTopicChange}

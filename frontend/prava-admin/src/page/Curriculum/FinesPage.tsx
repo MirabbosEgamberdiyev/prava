@@ -15,6 +15,7 @@ import {
   SimpleGrid,
   Card,
   ThemeIcon,
+  Box,
 } from "@mantine/core";
 import {
   IconGavel,
@@ -154,28 +155,30 @@ export default function FinesPage() {
       </SimpleGrid>
 
       {/* Filter and Search Controls */}
-      <Paper p="md" radius="md" withBorder>
+      <Paper p={{ base: "xs", sm: "md" }} radius="md" withBorder>
         <Stack gap="sm">
-          <Group justify="space-between" wrap="wrap">
+          <Group justify="space-between" wrap="wrap" gap="sm">
             <TextInput
               placeholder={t("curriculum.searchFines", "Qoidabuzarlik matni bo'yicha qidirish...")}
               leftSection={<IconSearch size={16} />}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.currentTarget.value)}
-              style={{ flexGrow: 1, minWidth: 260 }}
+              style={{ flexGrow: 1, minWidth: 180 }}
             />
-            <SegmentedControl
-              value={selectedSeverity}
-              onChange={setSelectedSeverity}
-              data={[
-                { value: "", label: t("common.all", "Barchasi") },
-                { value: "CRITICAL", label: t("curriculum.critical", "Qo'pol") },
-                { value: "MAJOR", label: t("curriculum.major", "O'rtacha") },
-                { value: "MINOR", label: t("curriculum.minor", "Kichik") },
-              ]}
-              radius="md"
-              size="xs"
-            />
+            <Box style={{ overflowX: "auto", maxWidth: "100%", paddingBottom: 4 }}>
+              <SegmentedControl
+                value={selectedSeverity}
+                onChange={setSelectedSeverity}
+                data={[
+                  { value: "", label: t("common.all", "Barchasi") },
+                  { value: "CRITICAL", label: t("curriculum.critical", "Qo'pol") },
+                  { value: "MAJOR", label: t("curriculum.major", "O'rtacha") },
+                  { value: "MINOR", label: t("curriculum.minor", "Kichik") },
+                ]}
+                radius="md"
+                size="xs"
+              />
+            </Box>
           </Group>
         </Stack>
       </Paper>

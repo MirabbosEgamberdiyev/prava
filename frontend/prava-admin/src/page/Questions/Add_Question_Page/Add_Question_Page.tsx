@@ -1,4 +1,4 @@
-import { Center, Flex, Paper, SegmentedControl, Text } from "@mantine/core";
+import { Center, Flex, Paper, SegmentedControl, Title } from "@mantine/core";
 import {
   JsonBulkUploadQuestion,
   QuestionForm,
@@ -14,9 +14,9 @@ const Add_Question_Page = () => {
     <>
       <Paper p={"sm"} mb={"lg"} withBorder radius={"md"}>
         <Flex wrap={"wrap"} justify={"space-between"} align="center">
-          <Text size="xl" tt={"uppercase"} fw={"600"}>
+          <Title order={1} fz="h3" tt={"uppercase"} fw={600}>
             {t("questions.addTitle")}
-          </Text>
+          </Title>
           <SegmentedControl
             value={value}
             onChange={setValue}

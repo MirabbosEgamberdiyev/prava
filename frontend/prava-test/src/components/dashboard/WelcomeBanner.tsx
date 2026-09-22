@@ -12,10 +12,10 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({ displayName }) => 
   return (
     <section className={styles.welcomeSection} aria-label={t("dashboard.welcomeAria", "Xush kelibsiz bo'limi")}>
       <div className={styles.welcomeTextWrap}>
-        <h2 className={styles.welcomeHeading}>
+        <h1 className={styles.welcomeHeading}>
           👋 {t("dashboard.greeting", "Xush kelibsiz")},{" "}
           <span className={styles.welcomeUserName}>{displayName}</span>!
-        </h2>
+        </h1>
         <p className={styles.welcomeSubtitle}>
           {t("dashboard.subtitle", "Haydovchilik imtihoniga tayyorlanishda davom eting. Maqsad yaqin!")}
         </p>

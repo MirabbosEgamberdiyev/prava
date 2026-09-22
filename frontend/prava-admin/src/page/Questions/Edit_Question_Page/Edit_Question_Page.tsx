@@ -355,7 +355,14 @@ const Edit_Question_Page = () => {
               </Group>
               {form.values.imageUrl && (
                 <Paper withBorder mt="sm" p="xs" radius="md" style={{ display: "inline-block", position: "relative" }}>
-                  <Image src={getImageUrl(form.values.imageUrl)} h={180} w="auto" fit="contain" radius="md" />
+                  <Image
+                    src={getImageUrl(form.values.imageUrl)}
+                    h={180}
+                    w="auto"
+                    fit="contain"
+                    radius="md"
+                    fallbackSrc="https://placehold.co/600x400?text=No+image"
+                  />
                   <ActionIcon
                     variant="filled"
                     color="red"

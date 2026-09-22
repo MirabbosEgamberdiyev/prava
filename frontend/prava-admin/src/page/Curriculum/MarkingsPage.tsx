@@ -13,6 +13,7 @@ import {
   Loader,
   Button,
   Paper,
+  Box,
 } from "@mantine/core";
 import {
   IconTrafficLights,
@@ -65,20 +66,21 @@ export default function MarkingsPage() {
       </Group>
 
       {/* Filter Segmented Control */}
-      <Paper p="md" radius="md" withBorder>
-        <Group justify="space-between" wrap="wrap">
-          <SegmentedControl
-            value={selectedType}
-            onChange={setSelectedType}
-            data={[
-              { value: "", label: t("common.all", "Barchasi") },
-              { value: "gorizontal", label: t("curriculum.horizontal", "Gorizontal chiziqlar") },
-              { value: "vertikal", label: t("curriculum.vertical", "Vertikal chiziqlar") },
-            ]}
-            radius="md"
-            size="sm"
-            style={{ minWidth: 320 }}
-          />
+      <Paper p={{ base: "xs", sm: "md" }} radius="md" withBorder>
+        <Group justify="space-between" wrap="wrap" gap="sm">
+          <Box style={{ overflowX: "auto", maxWidth: "100%", paddingBottom: 4 }}>
+            <SegmentedControl
+              value={selectedType}
+              onChange={setSelectedType}
+              data={[
+                { value: "", label: t("common.all", "Barchasi") },
+                { value: "gorizontal", label: t("curriculum.horizontal", "Gorizontal chiziqlar") },
+                { value: "vertikal", label: t("curriculum.vertical", "Vertikal chiziqlar") },
+              ]}
+              radius="md"
+              size="xs"
+            />
+          </Box>
           <Badge size="lg" variant="light" color="teal">
             {t("common.total", "Jami")}: {markings.length}
           </Badge>

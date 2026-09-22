@@ -145,7 +145,7 @@ export default function FaqPage() {
     <Stack gap="lg" p="md">
       <Group justify="space-between" align="center">
         <div>
-          <Title order={2} fw={700}>{t("faqAdmin.title")}</Title>
+          <Title order={1} fz="h3" fw={700}>{t("faqAdmin.title")}</Title>
           <Text c="dimmed" size="sm">{t("faqAdmin.subtitle")}</Text>
         </div>
         <Group>

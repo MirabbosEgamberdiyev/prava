@@ -64,7 +64,7 @@ export default function SavedQuestions_Page() {
         <div className={styles.innerPageHeader}>
           <div className={styles.innerPageHeaderLeft}>
             <div className={styles.innerPageTitleRow}>
-              <h2 className={styles.innerPageTitle}>{t("saved.title", "Saqlangan savollar")}</h2>
+              <h1 className={styles.innerPageTitle}>{t("saved.title", "Saqlangan savollar")}</h1>
               {!loading && entries.length > 0 && (
                 <span className={styles.innerPageCountChip}>
                   {entries.length} {t("common.questions", "savol")}

@@ -287,7 +287,19 @@
     "popularPackages": "Популярные пакеты",
     "popularTickets": "Популярные билеты",
     "ticket": "Билет",
-    "totalTopics": "Всего Темы"
+    "totalTopics": "Всего Темы",
+    "totalExams": "Всего экзаменов",
+    "passRateDesc": "показатель сдачи",
+    "needRetake": "Требуется пересдача",
+    "avgCorrectAnswers": "Среднее число правильных ответов",
+    "crmStatsTitle": "СТАТИСТИКА CRM И ПРИЛОЖЕНИЯ",
+    "siteInquiries": "Обращения с сайта",
+    "userMessages": "Сообщения пользователей",
+    "partnerApplications": "Партнерские заявки",
+    "drivingSchoolApplications": "Заявки автошкол",
+    "appDownloads": "Скачивания приложения",
+    "desktopMobilePlatforms": "Desktop и мобильные платформы",
+    "currentlyTesting": "Проходят тест в данный момент"
   },
   "users": {
     "title": "Пользователи",
@@ -354,7 +366,20 @@
     "statusChangeError": "Ошибка изменения статуса",
     "userDeleted": "Пользователь удалён",
     "deleteError": "Ошибка удаления",
-    "subtitle": "Управление и контроль пользователей системы"
+    "subtitle": "Управление и контроль пользователей системы",
+    "resetPasswordTitle": "Сброс пароля пользователя",
+    "resetPasswordAlertTitle": "Смена пароля",
+    "resetPasswordDesc": "установите новый пароль или оставьте пустым для автоматической генерации надежного пароля.",
+    "newPasswordOptional": "Новый пароль (необязательно)",
+    "autoPasswordPlaceholder": "Если не указано, система создаст автоматически",
+    "updatePassword": "Обновить пароль",
+    "forceLogoutTitle": "Принудительное завершение сессии",
+    "forceLogoutAlertTitle": "Принудительный выход",
+    "forceLogoutDesc": "все активные JWT токены на всех устройствах будут отозваны, потребуется повторный вход.",
+    "confirmForceLogout": "Принудительно разлогинить",
+    "bulkDeleteTitle": "Массовое удаление",
+    "bulkDeletePrompt": "пользователей? Это действие необратимо!",
+    "confirmBulkDelete": "Удалить все"
   },
   "questions": {
     "title": "Вопросы",
@@ -376,7 +401,7 @@
     "explanationTexts": "Объяснение",
     "settingsSection": "Настройки",
     "topicId": "ID темы",
-    "difficulty": "Сложность",
+    "difficulty": "Уровень сложности",
     "imageUrl": "URL изображения",
     "uploadImage": "Загрузить изображение",
     "imagePreview": "Предпросмотр",
@@ -418,7 +443,23 @@
     "statusChanged": "Статус изменён",
     "statusChangeError": "Ошибка изменения статуса",
     "jsonFormatError": "JSON должен содержать массив 'questions'!",
-    "bulkUploaded": "{{count}} вопросов загружено"
+    "bulkUploaded": "{{count}} вопросов загружено",
+    "subtitle": "Банк экзаменационных вопросов и вариантов автошколы",
+    "exportSuccess": "CSV файл вопросов успешно скачан",
+    "exportError": "Ошибка при экспорте CSV файла",
+    "importSuccess": "Вопросы успешно импортированы",
+    "importError": "Ошибка импорта",
+    "easy": "Легкий",
+    "medium": "Средний",
+    "hard": "Сложный",
+    "importModalTitle": "Импорт вопросов (JSON / CSV)",
+    "fileFormat": "Формат файла",
+    "fileFormatDesc": "Выберите файл формата JSON или CSV для массовой загрузки вопросов. Внутри файла должны быть текст вопроса, варианты и правильный ответ.",
+    "selectFile": "Выберите файл",
+    "selectFilePlaceholder": "Выберите JSON или CSV файл",
+    "uploadAndImport": "Загрузить и импортировать",
+    "cloneSuccess": "Вопрос успешно скопирован",
+    "cloneError": "Ошибка при копировании"
   },
   "topics": {
     "title": "Темы",
@@ -581,7 +622,8 @@
       "questionCount": "Кол-во вопросов",
       "duration": "Время (мин)",
       "passingScore": "Проходной балл"
-    }
+    },
+    "selectQuestion": "Выбор вопроса"
   },
   "statistics": {
     "title": "Статистика",
@@ -675,7 +717,18 @@
     "globalLimitSuccess": "Глобальный лимит устройств обновлён",
     "globalLimitError": "Ошибка обновления глобального лимита",
     "globalLimitConfirmTitle": "Изменение глобального лимита",
-    "globalLimitConfirm": "Лимит устройств будет изменён на {{count}} для всех пользователей. Продолжить?"
+    "globalLimitConfirm": "Лимит устройств будет изменён на {{count}} для всех пользователей. Продолжить?",
+    "appearance": "Внешний вид",
+    "typographyTitle": "Размер и начертание текста",
+    "typographySubtitle": "Настройте размер и четкость шрифта в приложении",
+    "textSize": "Размер текста",
+    "textSmall": "Маленький",
+    "textStandard": "Стандартный",
+    "textLarge": "Крупный",
+    "boldText": "Жирный текст",
+    "boldTextDesc": "Отображать весь текст и заголовки более четко и жирно",
+    "previewLabel": "Предпросмотр:",
+    "previewText": "Здесь отображается пример размера и начертания текста."
   },
   "system": {
     "title": "Мониторинг системы",
@@ -1359,7 +1412,9 @@
       "deleteConfirm": "Вы уверены, что хотите удалить это обращение?",
       "cancel": "Отмена",
       "delete": "Удалить",
-      "close": "Закрыть"
+      "close": "Закрыть",
+      "adminNotes": "Внутренняя заметка админа",
+      "adminNotesPlaceholder": "Например: 12 сентября был звонок, договор отправлен..."
     },
     "notifications": {
       "statusSuccess": "Статус обращения успешно обновлен",
@@ -1402,7 +1457,9 @@
       "deleteConfirm": "Вы уверены, что хотите удалить эту заявку на партнерство?",
       "cancel": "Отмена",
       "delete": "Удалить",
-      "close": "Закрыть"
+      "close": "Закрыть",
+      "adminNotes": "Заметка админа (Внутренние записи)",
+      "adminNotesPlaceholder": "Например: Проведены переговоры с директором, демо-версия установлена на 15 ПК..."
     },
     "notifications": {
       "statusSuccess": "Статус заявки успешно обновлен",
@@ -1546,6 +1603,8 @@
     "tabDevices": "Подключенные Устройства",
     "tabSecurity": "Политика Безопасности",
     "tabStatus": "Статус Системы",
-    "securitySectionTitle": "Безопасность и Ограничения Доступа (Security)"
+    "securitySectionTitle": "Безопасность и Ограничения Доступа (Security)",
+    "saveSuccess": "Все системные настройки успешно сохранены",
+    "saveError": "Ошибка при сохранении настроек"
   }
 }

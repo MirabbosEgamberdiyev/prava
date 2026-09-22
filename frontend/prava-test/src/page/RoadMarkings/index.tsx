@@ -82,8 +82,8 @@ export default function RoadMarkings_Page() {
   return (
     <Container size="xl" py="xl">
       <SEO
-        title="Yo'l chiziqlari — Rasmiy YHXX Yo'l Belgilash Chiziqlari"
-        description="O'zbekiston Respublikasi Yo'l Harakati Qoidalaridagi barcha rasmiy gorizontal va vertikal yo'l chiziqlari."
+        title={t("seo.markings.title", "Yo'l chiziqlari — Rasmiy YHXX Yo'l Belgilash Chiziqlari")}
+        description={t("seo.markings.desc", "O'zbekiston Respublikasi Yo'l Harakati Qoidalaridagi barcha rasmiy gorizontal va vertikal yo'l chiziqlari.")}
       />
 
       <Stack gap="lg">
@@ -120,7 +120,7 @@ export default function RoadMarkings_Page() {
         {error && (
           <Alert
             icon={<IconAlertTriangle size={18} />}
-            title="Xatolik"
+            title={t("common.error")}
             color="red"
             variant="light"
             radius="md"
@@ -134,7 +134,7 @@ export default function RoadMarkings_Page() {
                 leftSection={<IconRefresh size={14} />}
                 onClick={fetchMarkings}
               >
-                Qayta yuklash
+                {t("common.refresh")}
               </Button>
             </Group>
           </Alert>
@@ -155,10 +155,10 @@ export default function RoadMarkings_Page() {
           <Center py={60}>
             <Stack align="center" gap="xs">
               <IconAlertTriangle size={40} color="gray" />
-              <Text c="dimmed">Chiziqlar topilmadi</Text>
+              <Text c="dimmed">{t("curriculum.emptyMarkings", "Yo'l chiziqlari topilmadi")}</Text>
               {activeTab !== "all" && (
                 <Button size="xs" variant="subtle" onClick={() => setActiveTab("all")}>
-                  Barcha chiziqlarni ko'rsatish
+                  {t("curriculum.showAllMarkings", "Barcha chiziqlarni ko'rsatish")}
                 </Button>
               )}
             </Stack>
@@ -193,7 +193,7 @@ export default function RoadMarkings_Page() {
                     {m.code}
                   </Badge>
                   <Text size="xs" c="dimmed">
-                    {m.code.startsWith("2.") ? "Vertikal" : "Gorizontal"}
+                    {m.code.startsWith("2.") ? t("curriculum.verticalBadge", "Vertikal") : t("curriculum.horizontalBadge", "Gorizontal")}
                   </Text>
                 </Group>
 

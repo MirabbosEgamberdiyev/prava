@@ -19,14 +19,14 @@ const Leaderboard_Page = () => {
       <div className={styles.innerPageHeader}>
         <div className={styles.innerPageHeaderLeft}>
           <div className={styles.innerPageTitleRow}>
-            <h2 className={styles.innerPageTitle}>
+            <h1 className={styles.innerPageTitle}>
               <IconTrophy
                 size={24}
                 stroke={2}
                 style={{ color: "#f59f00", verticalAlign: "middle", marginRight: 8 }}
               />
               {t("leaderboard.title", "Peshqadamlar reytingi")}
-            </h2>
+            </h1>
           </div>
           <p className={styles.innerPageSubtitle}>
             {t(

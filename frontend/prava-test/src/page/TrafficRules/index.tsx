@@ -82,7 +82,7 @@ export default function TrafficRules_Page() {
         {error && (
           <Alert
             icon={<IconAlertTriangle size={18} />}
-            title="Xatolik"
+            title={t("common.error")}
             color="red"
             variant="light"
             radius="md"
@@ -96,7 +96,7 @@ export default function TrafficRules_Page() {
                 leftSection={<IconRefresh size={14} />}
                 onClick={fetchRules}
               >
-                Qayta yuklash
+                {t("common.refresh")}
               </Button>
             </Group>
           </Alert>
