@@ -91,8 +91,10 @@ public class SecurityConfig {
                                 "/actuator/info",
                                 "/error",
 
-                                // ✅ Curriculum Public Endpoints
-                                "/api/v1/curriculum/**"
+                                // ✅ Curriculum & Simulator Public Endpoints
+                                "/api/v1/curriculum/**",
+                                "/api/v1/simulator/**",
+                                "/api/v1/autodrom/**"
                         ).permitAll()
 
                         // Packages - PUBLIC READ (biletlar ro'yxati va soni)
