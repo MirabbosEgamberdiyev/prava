@@ -1,5 +1,5 @@
 import { Box, Group, Stack } from "@mantine/core";
-import type { VehicleTelemetry, ExerciseDefinition, CameraView, GearMode } from "../types";
+import type { VehicleTelemetry, ExerciseDefinition, CameraView, GearMode, ExerciseAttemptResult } from "../types";
 import AutodromeMiniMap from "./AutodromeMiniMap";
 import ExerciseChecklistCard from "./ExerciseChecklistCard";
 import ExamStatusCard from "./ExamStatusCard";
@@ -23,6 +23,7 @@ interface Props {
   onSeatbeltToggle?: () => void;
   onLightsToggle?: () => void;
   onTurnSignalToggle?: (sig: "left" | "right" | "hazard") => void;
+  exerciseResults?: Record<number, ExerciseAttemptResult>;
 }
 
 export default function HUDOverlay({
@@ -41,6 +42,7 @@ export default function HUDOverlay({
   onSeatbeltToggle,
   onLightsToggle,
   onTurnSignalToggle,
+  exerciseResults,
 }: Props) {
   return (
     <Box
@@ -80,6 +82,7 @@ export default function HUDOverlay({
             soundEnabled={soundEnabled}
             onCameraToggle={onCameraToggle}
             onSoundToggle={onSoundToggle}
+            exerciseResults={exerciseResults}
           />
 
           {/* Middle-Right: Exam Status Card (Penalties + Timer + Next button) */}

@@ -11,7 +11,7 @@ export type SimulatorSessionStatus =
 
 export type GearMode = "P" | "R" | "N" | "D";
 
-export type CameraView = "first_person" | "chase" | "top_down";
+export type CameraView = "first_person" | "chase" | "top_down" | "free";
 
 export type PenaltySeverity = "MINOR" | "MEDIUM" | "MAJOR" | "CRITICAL";
 

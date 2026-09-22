@@ -1,6 +1,6 @@
 import { Paper, Group, Text, ActionIcon, Tooltip, Box } from "@mantine/core";
 import { IconCamera, IconVolume, IconVolumeOff } from "@tabler/icons-react";
-import type { VehicleTelemetry, ExerciseDefinition, CameraView } from "../types";
+import type { VehicleTelemetry, ExerciseDefinition, CameraView, ExerciseAttemptResult } from "../types";
 import { EXERCISE_REGISTRY } from "../registry/exerciseRegistry";
 import { useLanguage } from "../../../context/LanguageContext";
 
@@ -11,6 +11,7 @@ interface Props {
   soundEnabled: boolean;
   onCameraToggle: () => void;
   onSoundToggle: () => void;
+  exerciseResults?: Record<number, ExerciseAttemptResult>;
 }
 
 export default function AutodromeMiniMap({
@@ -20,6 +21,7 @@ export default function AutodromeMiniMap({
   soundEnabled,
   onCameraToggle,
   onSoundToggle,
+  exerciseResults,
 }: Props) {
   const { lang } = useLanguage();
 
@@ -174,9 +176,27 @@ export default function AutodromeMiniMap({
           <line x1="240" y1="75" x2="240" y2="440" stroke="#334155" strokeWidth="22" />
           <line x1="240" y1="75" x2="240" y2="440" stroke="#facc15" strokeWidth="1.5" strokeDasharray="6 4" />
 
-          {/* 12 Exercise Stations Badges with Blue Numbers */}
+          {/* 12 Exercise Stations Badges with Dynamic Status Colors */}
           {EXERCISE_REGISTRY.map((ex) => {
             const isActive = ex.number === currentExercise.number;
+            const res = exerciseResults ? exerciseResults[ex.number] : undefined;
+            const isPassed = res?.isPassed;
+            const isFailed = res && !res.isPassed;
+
+            let strokeColor = "#475569";
+            let fillColor = "#0f172a";
+
+            if (isActive) {
+              strokeColor = "#38bdf8";
+              fillColor = "#0284c7";
+            } else if (isPassed) {
+              strokeColor = "#22c55e";
+              fillColor = "#166534";
+            } else if (isFailed) {
+              strokeColor = "#ef4444";
+              fillColor = "#991b1b";
+            }
+
             return (
               <g key={ex.number} transform={`translate(${ex.startX}, ${ex.startY})`}>
                 {isActive && (
@@ -189,8 +209,8 @@ export default function AutodromeMiniMap({
                   cx="0"
                   cy="0"
                   r="9"
-                  fill={isActive ? "#0284c7" : "#0f172a"}
-                  stroke={isActive ? "#38bdf8" : "#475569"}
+                  fill={fillColor}
+                  stroke={strokeColor}
                   strokeWidth="1.5"
                 />
                 <text

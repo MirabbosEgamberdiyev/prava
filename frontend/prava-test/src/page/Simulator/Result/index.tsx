@@ -23,6 +23,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
 import SEO from "../../../components/common/SEO";
 import { loadSessionLocally } from "../engine/sessionManager";
+import { EXERCISE_REGISTRY } from "../registry/exerciseRegistry";
 import type { SimulatorSessionData } from "../types";
 
 export default function SimulatorResult_Page() {
@@ -159,6 +160,78 @@ export default function SimulatorResult_Page() {
               </Text>
             </Paper>
           </SimpleGrid>
+
+          {/* 12 Exercises Performance Grid */}
+          <Paper p="md" radius="md" withBorder>
+            <Title order={4} fw={700} mb="sm">
+              {lang === "ru"
+                ? "Результаты по 12 упражнениям автодрома:"
+                : lang === "uzc"
+                ? "Автодромнинг 12 та машқи бўйича натижалар:"
+                : "Avtodromning 12 ta mashqi bo'yicha natijalar:"}
+            </Title>
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="xs">
+              {EXERCISE_REGISTRY.map((ex) => {
+                const exPenalties = session.penalties?.filter(
+                  (p) => p.exerciseNumber === ex.number
+                ) || [];
+                const exPenaltyPoints = exPenalties.reduce((sum, p) => sum + p.points, 0);
+                const isExPassed = exPenaltyPoints === 0;
+
+                return (
+                  <Paper
+                    key={ex.number}
+                    p="xs"
+                    radius="sm"
+                    withBorder
+                    style={{
+                      backgroundColor: isExPassed
+                        ? "rgba(34, 197, 94, 0.05)"
+                        : "rgba(239, 68, 68, 0.05)",
+                      borderColor: isExPassed
+                        ? "rgba(34, 197, 94, 0.25)"
+                        : "rgba(239, 68, 68, 0.3)",
+                    }}
+                  >
+                    <Group justify="space-between" align="center" wrap="nowrap">
+                      <Group gap="xs" wrap="nowrap" style={{ overflow: "hidden" }}>
+                        <ThemeIcon
+                          size="sm"
+                          radius="xl"
+                          color={isExPassed ? "green" : "red"}
+                          variant="light"
+                        >
+                          {isExPassed ? <IconCheck size={12} /> : <IconX size={12} />}
+                        </ThemeIcon>
+                        <Text size="xs" fw={700} lineClamp={1}>
+                          {getLoc(ex.title)}
+                        </Text>
+                      </Group>
+                      {isExPassed ? (
+                        <Badge size="xs" color="green" variant="light">
+                          {lang === "ru" ? "0 штр." : "0 ball"}
+                        </Badge>
+                      ) : (
+                        <Group gap={4} wrap="nowrap">
+                          <Badge size="xs" color="red" variant="filled">
+                            +{exPenaltyPoints}
+                          </Badge>
+                          <Button
+                            size="compact-xs"
+                            variant="subtle"
+                            color="orange"
+                            onClick={() => navigate(`/simulator/practice/${ex.number}`)}
+                          >
+                            {lang === "ru" ? "Повтор" : "Mashq"}
+                          </Button>
+                        </Group>
+                      )}
+                    </Group>
+                  </Paper>
+                );
+              })}
+            </SimpleGrid>
+          </Paper>
 
           {/* Mistakes Table if any */}
           {session.penalties && session.penalties.length > 0 && (

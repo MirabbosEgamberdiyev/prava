@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Container,
   Paper,
@@ -33,6 +33,8 @@ import { updateVehiclePhysics } from "./engine/vehiclePhysics";
 import { checkCollisions } from "./engine/collisionEngine";
 import { evaluateSensors } from "./engine/sensorEngine";
 import { createPenaltyEvent } from "./engine/penaltyEngine";
+import { audioEngine } from "./engine/audioEngine";
+import { pollGamepad } from "./engine/gamepadController";
 import { simulatorApi } from "./services/simulatorApi";
 import SimulatorCanvas3D from "./components/SimulatorCanvas3D";
 import HUDOverlay from "./components/HUDOverlay";
@@ -93,6 +95,32 @@ export default function SimulatorDashboard_Page() {
 
   const keysDownRef = useRef<Record<string, boolean>>({});
   const animFrameRef = useRef<number | null>(null);
+  const mobileSteerRef = useRef<number>(0);
+  const mobileThrottleRef = useRef<number>(0);
+  const mobileBrakeRef = useRef<number>(0);
+  const lastReverseBeepRef = useRef<number>(0);
+  const hornActiveRef = useRef<boolean>(false);
+  const audioStartedRef = useRef<boolean>(false);
+
+  // Sync mute state with AudioEngine
+  useEffect(() => {
+    audioEngine.setMuted(!soundEnabled);
+  }, [soundEnabled]);
+
+  // Clean up audio on unmount
+  useEffect(() => {
+    return () => {
+      audioEngine.stopEngine();
+      audioEngine.stopHorn();
+    };
+  }, []);
+
+  const ensureAudioStarted = useCallback(() => {
+    if (!audioStartedRef.current && soundEnabled) {
+      audioEngine.startEngine();
+      audioStartedRef.current = true;
+    }
+  }, [soundEnabled]);
 
   // Check WebGL availability & start session
   useEffect(() => {
@@ -105,6 +133,7 @@ export default function SimulatorDashboard_Page() {
   // Keyboard Handlers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      ensureAudioStarted();
       keysDownRef.current[e.key.toLowerCase()] = true;
       if (e.key === "p" || e.key === "P") setTelemetry((prev) => ({ ...prev, gear: "P" }));
       if (e.key === "r" || e.key === "R") setTelemetry((prev) => ({ ...prev, gear: "R" }));
@@ -121,22 +150,31 @@ export default function SimulatorDashboard_Page() {
         setTelemetry((prev) => ({ ...prev, lowBeamsOn: !prev.lowBeamsOn }));
       }
       if (e.key === "q" || e.key === "Q") {
-        setTelemetry((prev) => ({
-          ...prev,
-          turnSignal: prev.turnSignal === "left" ? "none" : "left",
-        }));
+        setTelemetry((prev) => {
+          const next = prev.turnSignal === "left" ? "none" : "left";
+          if (soundEnabled) audioEngine.playBlinkerClick(next === "left");
+          return { ...prev, turnSignal: next };
+        });
       }
       if (e.key === "e" || e.key === "E") {
-        setTelemetry((prev) => ({
-          ...prev,
-          turnSignal: prev.turnSignal === "right" ? "none" : "right",
-        }));
+        setTelemetry((prev) => {
+          const next = prev.turnSignal === "right" ? "none" : "right";
+          if (soundEnabled) audioEngine.playBlinkerClick(next === "right");
+          return { ...prev, turnSignal: next };
+        });
+      }
+      if (e.key === "x" || e.key === "X") {
+        setTelemetry((prev) => {
+          const next = prev.turnSignal === "hazard" ? "none" : "hazard";
+          if (soundEnabled) audioEngine.playBlinkerClick(next === "hazard");
+          return { ...prev, turnSignal: next };
+        });
       }
       if (e.key === "h" || e.key === "H") {
-        setTelemetry((prev) => ({
-          ...prev,
-          turnSignal: prev.turnSignal === "hazard" ? "none" : "hazard",
-        }));
+        if (!hornActiveRef.current) {
+          hornActiveRef.current = true;
+          if (soundEnabled) audioEngine.startHorn();
+        }
       }
       if (e.key === "c" || e.key === "C") {
         setCameraView((prev) =>
@@ -147,6 +185,10 @@ export default function SimulatorDashboard_Page() {
 
     const handleKeyUp = (e: KeyboardEvent) => {
       keysDownRef.current[e.key.toLowerCase()] = false;
+      if (e.key === "h" || e.key === "H") {
+        hornActiveRef.current = false;
+        audioEngine.stopHorn();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -155,13 +197,22 @@ export default function SimulatorDashboard_Page() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [ensureAudioStarted, soundEnabled]);
 
   // Timer loop
   useEffect(() => {
     const interval = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Map of exercise results by exercise number
+  const exerciseResultsMap = useMemo(() => {
+    const map: Record<number, ExerciseAttemptResult> = {};
+    exerciseResults.forEach((r) => {
+      map[r.exerciseNumber] = r;
+    });
+    return map;
+  }, [exerciseResults]);
 
   // Jump to specific exercise
   const selectExercise = useCallback((exNum: number) => {
@@ -202,9 +253,13 @@ export default function SimulatorDashboard_Page() {
     if (currentExerciseIndex < EXERCISE_REGISTRY.length - 1) {
       selectExercise(currentExerciseIndex + 2);
     } else {
+      const total = penalties.reduce((sum, p) => sum + p.points, 0);
+      if (soundEnabled && total < 100) {
+        audioEngine.playSuccessFanfare();
+      }
       setFinishModalOpen(true);
     }
-  }, [currentExerciseIndex, elapsedSeconds, exercise.number, selectExercise]);
+  }, [currentExerciseIndex, elapsedSeconds, exercise.number, penalties, selectExercise, soundEnabled]);
 
   // Finish exam action
   const handleFinishExam = useCallback(async () => {
@@ -220,12 +275,14 @@ export default function SimulatorDashboard_Page() {
     navigate(`/simulator/result/${saved.sessionId}`);
   }, [elapsedSeconds, exerciseResults, navigate, penalties, sessionId]);
 
-  // Physics Simulation Loop (60 FPS)
+  // Physics Simulation Loop (60 FPS) with Gamepad and Audio Synthesis
   useEffect(() => {
     let currentTelem = telemetry;
 
     const loop = () => {
       const keys = keysDownRef.current;
+      const gp = pollGamepad();
+
       let throttle = 0;
       let brake = 0;
       let steer = 0;
@@ -235,13 +292,57 @@ export default function SimulatorDashboard_Page() {
       if (keys["a"] || keys["arrowleft"]) steer = -1.0;
       if (keys["d"] || keys["arrowright"]) steer = 1.0;
 
+      // Merge mobile touch controls
+      throttle = Math.max(throttle, mobileThrottleRef.current);
+      brake = Math.max(brake, mobileBrakeRef.current);
+      if (Math.abs(mobileSteerRef.current) > 0.05) {
+        steer = mobileSteerRef.current;
+      }
+
+      // Merge HTML5 Gamepad API
+      if (gp.connected) {
+        throttle = Math.max(throttle, gp.throttle);
+        brake = Math.max(brake, gp.brake);
+        if (Math.abs(gp.steer) > 0.05) {
+          steer = gp.steer;
+        }
+        if (gp.gearChange && gp.gearChange !== currentTelem.gear) {
+          setTelemetry((prev) => ({ ...prev, gear: gp.gearChange! }));
+        }
+        if (gp.handbrake && !currentTelem.handbrake) {
+          setTelemetry((prev) => ({ ...prev, handbrake: true }));
+        }
+        if (gp.horn && !hornActiveRef.current) {
+          hornActiveRef.current = true;
+          if (soundEnabled) audioEngine.startHorn();
+        } else if (!gp.horn && hornActiveRef.current && !keys["h"]) {
+          hornActiveRef.current = false;
+          audioEngine.stopHorn();
+        }
+      }
+
+      const vehicleConfig =
+        VEHICLE_CONFIGS[selectedVehicle] || VEHICLE_CONFIGS["Chevrolet Cobalt"];
+
       const updated = updateVehiclePhysics(
         currentTelem,
         { throttle, brake, steer, handbrake: currentTelem.handbrake },
-        VEHICLE_CONFIGS["Chevrolet Cobalt"],
+        vehicleConfig,
         0.016,
         exercise.hasIncline
       );
+
+      // Web Audio Real-time Synthesis Modulation
+      if (soundEnabled) {
+        audioEngine.updateEngine(updated.rpm, throttle);
+        if (brake > 0.45 && Math.abs(updated.speed) > 7) {
+          audioEngine.triggerBrakeScreech(brake);
+        }
+        if (updated.gear === "R" && Date.now() - lastReverseBeepRef.current > 1250) {
+          lastReverseBeepRef.current = Date.now();
+          audioEngine.playReverseBeep();
+        }
+      }
 
       // Check for obstacle collisions
       const col = checkCollisions(updated, exercise);
@@ -251,6 +352,10 @@ export default function SimulatorDashboard_Page() {
             (p) => p.exerciseNumber === exercise.number && p.ruleCode === "CONE_KNOCKED"
           );
           if (exists) return prev;
+          if (soundEnabled) {
+            audioEngine.playCollisionSound();
+            audioEngine.playPenaltyBuzzer();
+          }
           const pen = createPenaltyEvent(
             "CONE_KNOCKED",
             exercise.number,
@@ -262,12 +367,13 @@ export default function SimulatorDashboard_Page() {
         });
       }
 
-      // Check sensor zones
+      // Check sensor zones & rules
       const sensor = evaluateSensors(updated, exercise);
       if (sensor.isRollbackViolated) {
         setPenalties((prev) => {
           const exists = prev.some((p) => p.ruleCode === "ROLLBACK_EXCEEDED");
           if (exists) return prev;
+          if (soundEnabled) audioEngine.playPenaltyBuzzer();
           const pen = createPenaltyEvent(
             "ROLLBACK_EXCEEDED",
             exercise.number,
@@ -279,6 +385,31 @@ export default function SimulatorDashboard_Page() {
         });
       }
 
+      if (sensor.isSpeedViolated) {
+        setPenalties((prev) => {
+          const exists = prev.some(
+            (p) => p.exerciseNumber === exercise.number && p.ruleCode === "SPEED_EXCEEDED"
+          );
+          if (exists) return prev;
+          if (soundEnabled) audioEngine.playPenaltyBuzzer();
+          const pen = createPenaltyEvent(
+            "SPEED_EXCEEDED",
+            exercise.number,
+            elapsedSeconds,
+            updated.posX,
+            updated.posY
+          );
+          return [...prev, pen];
+        });
+      }
+
+      // In Training mode, automatically acknowledge completion when stop zone reached
+      if (mode === "training" && sensor.isExerciseCompleted) {
+        setCompletedExercises((prev) =>
+          prev.includes(exercise.number) ? prev : [...prev, exercise.number]
+        );
+      }
+
       currentTelem = updated;
       setTelemetry(updated);
       animFrameRef.current = requestAnimationFrame(loop);
@@ -288,7 +419,7 @@ export default function SimulatorDashboard_Page() {
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [elapsedSeconds, exercise]);
+  }, [elapsedSeconds, exercise, mode, selectedVehicle, soundEnabled]);
 
   // Fullscreen Handler
   const toggleFullscreen = () => {
@@ -515,37 +646,53 @@ export default function SimulatorDashboard_Page() {
                       turnSignal: prev.turnSignal === sig ? "none" : sig,
                     }))
                   }
+                  exerciseResults={exerciseResultsMap}
                 />
 
                 {/* Mobile Touch Controls for small screens */}
                 <MobileControls
                   onThrottleStart={() => {
-                    keysDownRef.current["w"] = true;
+                    mobileThrottleRef.current = 1.0;
+                    ensureAudioStarted();
                   }}
                   onThrottleEnd={() => {
-                    keysDownRef.current["w"] = false;
+                    mobileThrottleRef.current = 0.0;
                   }}
                   onBrakeStart={() => {
-                    keysDownRef.current["s"] = true;
+                    mobileBrakeRef.current = 1.0;
                   }}
                   onBrakeEnd={() => {
-                    keysDownRef.current["s"] = false;
+                    mobileBrakeRef.current = 0.0;
                   }}
                   onSteerLeftStart={() => {
-                    keysDownRef.current["a"] = true;
+                    mobileSteerRef.current = -1.0;
                   }}
                   onSteerLeftEnd={() => {
-                    keysDownRef.current["a"] = false;
+                    mobileSteerRef.current = 0.0;
                   }}
                   onSteerRightStart={() => {
-                    keysDownRef.current["d"] = true;
+                    mobileSteerRef.current = 1.0;
                   }}
                   onSteerRightEnd={() => {
-                    keysDownRef.current["d"] = false;
+                    mobileSteerRef.current = 0.0;
+                  }}
+                  onSteerAnalog={(val) => {
+                    mobileSteerRef.current = val;
                   }}
                   onGearSelect={(g: GearMode) => setTelemetry((prev) => ({ ...prev, gear: g }))}
                   onHandbrakeToggle={() =>
                     setTelemetry((prev) => ({ ...prev, handbrake: !prev.handbrake }))
+                  }
+                  onHornTrigger={() => {
+                    if (soundEnabled) {
+                      audioEngine.startHorn();
+                      setTimeout(() => audioEngine.stopHorn(), 350);
+                    }
+                  }}
+                  onCameraToggle={() =>
+                    setCameraView((prev) =>
+                      prev === "chase" ? "first_person" : prev === "first_person" ? "top_down" : "chase"
+                    )
                   }
                   activeGear={telemetry.gear}
                   handbrakeActive={telemetry.handbrake}
