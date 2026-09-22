@@ -64,11 +64,11 @@ export default function RoadSigns_Page() {
       })
       .catch((err) => {
         console.error("Failed to load signs:", err);
-        setError("Yo'l belgilarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring.");
+        setError(t("curriculum.signsLoadError", "Yo'l belgilarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring."));
         setSigns([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchSigns();
@@ -108,8 +108,8 @@ export default function RoadSigns_Page() {
   return (
     <Container size="xl" py="xl">
       <SEO
-        title="Yo'l belgilari katalogi — Rasmiy YHXX Yo'l Belgilari"
-        description="O'zbekiston Respublikasi Yo'l Harakati Qoidalaridagi barcha rasmiy yo'l belgilari, ta'riflari va rasmlari."
+        title={t("seo.signsTitle", "Yo'l belgilari katalogi — Rasmiy YHXX Yo'l Belgilari")}
+        description={t("seo.signsDesc", "O'zbekiston Respublikasi Yo'l Harakati Qoidalaridagi barcha rasmiy yo'l belgilari, ta'riflari va rasmlari.")}
       />
 
       <Stack gap="lg">

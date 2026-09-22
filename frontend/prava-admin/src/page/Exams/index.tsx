@@ -112,10 +112,10 @@ export default function ExamsAuditPage() {
               placeholder={t("examsAdmin.statusFilter")}
               clearable
               data={[
-                { value: "COMPLETED", label: "Tugallangan (COMPLETED)" },
-                { value: "IN_PROGRESS", label: "Jarayonda (IN_PROGRESS)" },
-                { value: "EXPIRED", label: "Vaqti o'tgan (EXPIRED)" },
-                { value: "TERMINATED", label: "To'xtatilgan (TERMINATED)" },
+                { value: "COMPLETED", label: t("examsAdmin.statusCompleted") },
+                { value: "IN_PROGRESS", label: t("examsAdmin.statusInProgress") },
+                { value: "EXPIRED", label: t("examsAdmin.statusExpired") },
+                { value: "TERMINATED", label: t("examsAdmin.statusTerminated") },
               ]}
               value={status}
               onChange={(val) => { setStatus(val || ""); setPage(1); }}
@@ -186,7 +186,7 @@ export default function ExamsAuditPage() {
                       <Group gap={4}>
                         <IconClock size={14} color="gray" />
                         <Text size="xs" c="dimmed">
-                          {s.timeSpentSeconds ? `${Math.round(s.timeSpentSeconds / 60)} daq` : "-"}
+                          {s.timeSpentSeconds ? `${Math.round(s.timeSpentSeconds / 60)} ${t("examsAdmin.unitMinutes")}` : "-"}
                         </Text>
                       </Group>
                     </Table.Td>
@@ -232,15 +232,15 @@ export default function ExamsAuditPage() {
             <Paper p="md" withBorder bg="gray.0">
               <Group grow>
                 <div>
-                  <Text size="xs" c="dimmed">Umumiy ball</Text>
+                  <Text size="xs" c="dimmed">{t("examsAdmin.modal.overallScore")}</Text>
                   <Text fw={700} size="lg">{Math.round(sessionDetail.session.percentage ?? 0)}%</Text>
                 </div>
                 <div>
                   <Text size="xs" c="dimmed">{t("examsAdmin.modal.correctAnswers")}</Text>
-                  <Text fw={700} size="lg" c="green">{sessionDetail.session.correctAnswersCount ?? 0} ta</Text>
+                  <Text fw={700} size="lg" c="green">{sessionDetail.session.correctAnswersCount ?? 0} {t("examsAdmin.modal.unitItems")}</Text>
                 </div>
                 <div>
-                  <Text size="xs" c="dimmed">Holati</Text>
+                  <Text size="xs" c="dimmed">{t("examsAdmin.modal.status")}</Text>
                   <Badge color={sessionDetail.session.status === "COMPLETED" ? "green" : "blue"}>
                     {sessionDetail.session.status}
                   </Badge>
@@ -251,7 +251,7 @@ export default function ExamsAuditPage() {
             <Title order={4} fw={600}>{t("examsAdmin.modal.answersList")}</Title>
 
             {sessionDetail.answers.length === 0 ? (
-              <Text c="dimmed" ta="center" py="md">Ushbu sessiyada hali birorta javob topshirilmagan</Text>
+              <Text c="dimmed" ta="center" py="md">{t("examsAdmin.modal.noAnswers")}</Text>
             ) : (
               <Table striped withTableBorder>
                 <Table.Thead>
@@ -267,9 +267,9 @@ export default function ExamsAuditPage() {
                   {sessionDetail.answers.map((ans, idx) => (
                     <Table.Tr key={ans.id || idx}>
                       <Table.Td>{idx + 1}</Table.Td>
-                      <Table.Td>Savol #{ans.questionId}</Table.Td>
-                      <Table.Td>Variant {ans.selectedOptionIndex}</Table.Td>
-                      <Table.Td>Variant {ans.correctOptionIndex}</Table.Td>
+                      <Table.Td>{t("examsAdmin.modal.questionPrefix")} #{ans.questionId}</Table.Td>
+                      <Table.Td>{t("examsAdmin.modal.variantPrefix")} {ans.selectedOptionIndex}</Table.Td>
+                      <Table.Td>{t("examsAdmin.modal.variantPrefix")} {ans.correctOptionIndex}</Table.Td>
                       <Table.Td>
                         {ans.isCorrect ? (
                           <Badge color="green" leftSection={<IconCheck size={12} />}>{t("examsAdmin.modal.correct")}</Badge>

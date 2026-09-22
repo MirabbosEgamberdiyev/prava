@@ -190,6 +190,11 @@
     "reset": "Standart holatga qaytarish"
   },
   "common": {
+    "changeLanguage": "Tilni ozgartirish",
+    "toggleTheme": "Mavzuni almashtirish",
+    "itemsCount": "ta",
+    "reload": "Qayta yuklash",
+    "retry": "Qayta urinish",
     "save": "Saqlash",
     "cancel": "Bekor qilish",
     "delete": "O'chirish",
@@ -245,10 +250,23 @@
     "clearFilters": "Filtrlarni tozalash",
     "total": "Jami",
     "page": "Sahifa",
-    "retry": "Qayta urinish",
     "clear": "Tozalash"
   },
   "dashboard": {
+    "subtitle": "Avtomaktab imtihon tizimi real vaqt nazorat paneli",
+    "quickActions": "Tezkor amallar",
+    "usersAndActivity": "Foydalanuvchilar va faollik",
+    "activeUsers": "Faol foydalanuvchilar",
+    "notBlocked": "Tizimda bloklanmaganlar",
+    "joinedToday": "Bugun qoshilganlar",
+    "last24Hours": "Oxirgi 24 soatda",
+    "logins24h": "24 soatda kirganlar",
+    "activeSessions": "Faol sessiyalar",
+    "signsSubtitle": "8 ta rasmiy toifa",
+    "markingsSubtitle": "Gorizontal va vertikal",
+    "examCentersSubtitle": "14 ta hududiy markaz",
+    "autodromSubtitle": "Davlat amaliy standarti",
+    "finesSubtitle": "Qoidabuzarlik mezonlari",
     "title": "Boshqaruv paneli",
     "noData": "Ma'lumotlar topilmadi",
     "totalUsers": "Foydalanuvchilar",
@@ -303,6 +321,7 @@
     "currentlyTesting": "Ayni paytda test ishlayotganlar"
   },
   "users": {
+    "selectAll": "Barcha foydalanuvchilarni tanlash",
     "title": "Foydalanuvchilar",
     "newUser": "Yangi foydalanuvchi",
     "searchPlaceholder": "Ism, telefon, email...",
@@ -1265,6 +1284,10 @@
     }
   },
   "apps": {
+    "releaseNotesUzlPlaceholder": "Yangiliklar — ozbek tilida (lotin)",
+    "releaseNotesUzcPlaceholder": "Янгиликлар — ўзбек тилида (кирилл)",
+    "releaseNotesRuPlaceholder": "Что нового — на русском языке",
+    "releaseNotesEnPlaceholder": "Release notes — in English",
     "title": "Ilovalar",
     "addRelease": "Yangi reliz",
     "editRelease": "Relizni tahrirlash",
@@ -1469,22 +1492,10 @@
     }
   },
   "faqAdmin": {
-    "title": "Ko'p Beriladigan Savollar (FAQ CMS)",
-    "subtitle": "Foydalanuvchilar va avtomaktablar uchun ko'p tilli qo'llanma savollari",
-    "addBtn": "Yangi savol qo'shish",
-    "refresh": "Yangilash",
-    "retry": "Qayta urinish",
-    "searchPlaceholder": "Savol yoki javob bo'yicha qidirish...",
-    "errorLoad": "FAQ ma'lumotlarini yuklab bo'lmadi",
-    "empty": "Hozircha FAQ elementlari yo'q",
-    "table": {
-      "order": "Tartib",
-      "question": "Savol (Lotin)",
-      "category": "Kategoriya",
-      "status": "Holat",
-      "actions": "Amallar"
-    },
     "modal": {
+      "categoryPlaceholder": "GENERAL, PAYMENT, EXAM, DESKTOP",
+      "questionPlaceholder": "Savolni kiriting...",
+      "answerPlaceholder": "Javob matnini kiriting...",
       "createTitle": "Yangi FAQ Savoli Yaratish",
       "editTitle": "FAQ Savolini Tahrirlash",
       "tabUzl": "O'zbekcha (Lotin)",
@@ -1500,6 +1511,21 @@
       "deleteConfirm": "Haqiqatan ham bu savolni butunlay o'chirib tashlamoqchimisiz?",
       "delete": "O'chirish"
     },
+    "title": "Ko'p Beriladigan Savollar (FAQ CMS)",
+    "subtitle": "Foydalanuvchilar va avtomaktablar uchun ko'p tilli qo'llanma savollari",
+    "addBtn": "Yangi savol qo'shish",
+    "refresh": "Yangilash",
+    "retry": "Qayta urinish",
+    "searchPlaceholder": "Savol yoki javob bo'yicha qidirish...",
+    "errorLoad": "FAQ ma'lumotlarini yuklab bo'lmadi",
+    "empty": "Hozircha FAQ elementlari yo'q",
+    "table": {
+      "order": "Tartib",
+      "question": "Savol (Lotin)",
+      "category": "Kategoriya",
+      "status": "Holat",
+      "actions": "Amallar"
+    },
     "notifications": {
       "requiredLotin": "Lotin tilidagi savol va javob maydonlari majburiy",
       "createSuccess": "Yangi FAQ muvaffaqiyatli yaratildi",
@@ -1509,6 +1535,27 @@
     }
   },
   "newsAdmin": {
+    "modal": {
+      "slugPlaceholder": "masalan: yhq-yangi-qoidalari-2026",
+      "titlePlaceholder": "Maqola sarlavhasi...",
+      "summaryPlaceholder": "Qisqacha mazmuni...",
+      "contentPlaceholder": "Maqola toliq matni...",
+      "createTitle": "Yangi Yangilik Yaratish",
+      "editTitle": "Yangilikni Tahrirlash",
+      "tabUzl": "O'zbekcha (Lotin)",
+      "tabUzc": "Ўзбекча (Кирилл)",
+      "tabRu": "Русский",
+      "titleLabel": "Sarlavha",
+      "slugLabel": "Slug (URL identifier)",
+      "summaryLabel": "Qisqacha mazmuni (Summary)",
+      "contentLabel": "To'liq matn (HTML / Matn)",
+      "imageUrlLabel": "Rasm URL",
+      "publishSwitch": "Darhol nashr etilsin (Published)",
+      "save": "Saqlash",
+      "cancel": "Bekor qilish",
+      "deleteConfirm": "Haqiqatan ham bu maqolani butunlay o'chirib tashlamoqchimisiz?",
+      "delete": "O'chirish"
+    },
     "title": "Yangiliklar va E'lonlar (News CMS)",
     "subtitle": "Platforma yangiliklari, qoidalar o'zgarishi va rasmiy e'lonlar boshqaruvi",
     "addBtn": "Yangi yangilik qo'shish",
@@ -1528,23 +1575,6 @@
     },
     "statusPublished": "Nashr qilingan",
     "statusDraft": "Qoralama",
-    "modal": {
-      "createTitle": "Yangi Yangilik Yaratish",
-      "editTitle": "Yangilikni Tahrirlash",
-      "tabUzl": "O'zbekcha (Lotin)",
-      "tabUzc": "Ўзбекча (Кирилл)",
-      "tabRu": "Русский",
-      "titleLabel": "Sarlavha",
-      "slugLabel": "Slug (URL identifier)",
-      "summaryLabel": "Qisqacha mazmuni (Summary)",
-      "contentLabel": "To'liq matn (HTML / Matn)",
-      "imageUrlLabel": "Rasm URL",
-      "publishSwitch": "Darhol nashr etilsin (Published)",
-      "save": "Saqlash",
-      "cancel": "Bekor qilish",
-      "deleteConfirm": "Haqiqatan ham bu maqolani butunlay o'chirib tashlamoqchimisiz?",
-      "delete": "O'chirish"
-    },
     "notifications": {
       "requiredLotin": "Lotin tilidagi sarlavha va matn maydonlari majburiy",
       "createSuccess": "Yangilik muvaffaqiyatli yaratildi",
@@ -1555,12 +1585,35 @@
     }
   },
   "examsAdmin": {
+    "modal": {
+      "overallScore": "Umumiy ball",
+      "status": "Holati",
+      "noAnswers": "Ushbu sessiyada hali birorta javob topshirilmagan",
+      "questionPrefix": "Savol",
+      "variantPrefix": "Variant",
+      "unitItems": "ta",
+      "title": "Imtihon Savollari va Javoblari",
+      "correctAnswers": "To'g'ri javoblar",
+      "answersList": "Berilgan Javoblar Ro'yxati",
+      "colQuestionId": "Savol ID",
+      "colSelected": "Tanlangan javob",
+      "colCorrect": "To'g'ri javob",
+      "colResult": "Natija",
+      "correct": "To'g'ri",
+      "wrong": "Noto'g'ri",
+      "close": "Yopish"
+    },
     "title": "Imtihon Sessiyalari va Test Natijalari (Exams)",
     "subtitle": "Foydalanuvchilar tomonidan topshirilgan haqiqiy va mashq imtihonlari monitoringi",
     "refresh": "Yangilash",
     "retry": "Qayta urinish",
     "searchUser": "Foydalanuvchi ID bo'yicha...",
     "statusFilter": "Holat",
+    "statusCompleted": "Tugallangan (COMPLETED)",
+    "statusInProgress": "Jarayonda (IN_PROGRESS)",
+    "statusExpired": "Vaqti o'tgan (EXPIRED)",
+    "statusTerminated": "To'xtatilgan (TERMINATED)",
+    "unitMinutes": "daq",
     "errorLoad": "Imtihonlarni yuklab bo'lmadi",
     "empty": "Hozircha imtihon natijalari mavjud emas",
     "table": {
@@ -1574,19 +1627,7 @@
       "audit": "Savollar auditi"
     },
     "passed": "O'tdi",
-    "failed": "Qoldi",
-    "modal": {
-      "title": "Imtihon Savollari va Javoblari",
-      "correctAnswers": "To'g'ri javoblar",
-      "answersList": "Berilgan Javoblar Ro'yxati",
-      "colQuestionId": "Savol ID",
-      "colSelected": "Tanlangan javob",
-      "colCorrect": "To'g'ri javob",
-      "colResult": "Natija",
-      "correct": "To'g'ri",
-      "wrong": "Noto'g'ri",
-      "close": "Yopish"
-    }
+    "failed": "Qoldi"
   },
   "downloadsAdmin": {
     "title": "Yuklab Olishlar Statistikasi (Downloads Analytics)",
@@ -1611,5 +1652,83 @@
   "simulator": {
     "adminTitle": "Avtodrom Simulyatori boshqaruv paneli",
     "adminSubtitle": "12 ta amaliy mashq, jarima qoidalari, avtomobil parametrlari va imtihon sessiyalarini boshqarish"
+  },
+  "question": {
+    "clone": "Savoldan nusxa olish"
+  },
+  "simulatorAdmin": {
+    "title": "Avtodrom Simulyatori boshqaruv paneli",
+    "subtitle": "12 ta amaliy mashq, jarima qoidalari, avtomobil parametrlari va imtihon sessiyalarini boshqarish",
+    "kpiExercises": "Amaliy mashqlar",
+    "kpiExercisesActive": "Faol: {{count}} ta mashq",
+    "kpiRules": "Jarima qoidalari",
+    "kpiRulesCritical": "Kritik: {{count}} ta toxtatuvchi",
+    "kpiVehicles": "Avtomobil modellari",
+    "kpiVehiclesAllActive": "Hammasi faol holatda",
+    "kpiExams": "Jami imtihonlar",
+    "kpiExamsPassed": "Topshirdi: {{count}} nafar",
+    "tabExercises": "Mashqlar konfiguratsiyasi ({{count}})",
+    "tabRules": "Jarima qoidalari ({{count}})",
+    "tabVehicles": "Avtomobillar dinamikasi ({{count}})",
+    "tabSessions": "Imtihon sessiyalari ({{count}})",
+    "thCode": "Kod",
+    "thExerciseName": "Mashq nomi",
+    "thTimeLimit": "Vaqt chegarasi",
+    "thMaxPenalty": "Maks. jarima",
+    "thStatus": "Holati",
+    "thAction": "Amal",
+    "unitSeconds": "soniya",
+    "unitPoints": "ball",
+    "unitKmH": "km/soat",
+    "thRuleCode": "Qoida kodi",
+    "thDescription": "Tavsif",
+    "thPenaltyPoints": "Jarima bali",
+    "thSeverity": "Ogirlik darajasi",
+    "thInstantFail": "Toxtatuvchi xato",
+    "instantFailYes": "HA (Darhol toxtatish)",
+    "instantFailNo": "YOQ",
+    "thModel": "Model",
+    "thBrand": "Brend",
+    "thMaxSpeed": "Maks. tezlik",
+    "thAcceleration": "Tezlanish (m/s2)",
+    "thBraking": "Tormoz (m/s2)",
+    "thSteeringAngle": "Rul burilish burchagi",
+    "thSessionId": "Sessiya ID",
+    "thUser": "Foydalanuvchi",
+    "thMode": "Rejim",
+    "thVehicle": "Avtomobil",
+    "thTimeSpent": "Sarflangan vaqt",
+    "thResult": "Natija",
+    "passed": "OTDI",
+    "failed": "YIQILDI",
+    "noActiveSessions": "Hozircha faol sessiyalar mavjud emas",
+    "modal": {
+      "editTitle": "Mashq parametrlarini tahrirlash",
+      "code": "Kod",
+      "titleUzl": "Mashq nomi (Ozbekcha Lotin)",
+      "titleUzc": "Mashq nomi (Ўзбекча Кирилл)",
+      "titleRu": "Mashq nomi (Русский)",
+      "timeLimit": "Ajratilgan vaqt chegarasi (soniya)",
+      "maxPenalty": "Maksimal ruxsat etilgan jarima bali"
+    }
+  },
+  "contactAdmin": {
+    "viewDetail": "Korish / Holat berish",
+    "delete": "Ochirish",
+    "orgType": "Tashkilot turi",
+    "compCount": "Kompyuterlar soni",
+    "clientComment": "Mijoz izohi",
+    "noComment": "Izoh qoldirilmagan",
+    "statusNew": "Yangi (NEW)",
+    "statusInProgress": "Jarayonda (IN_PROGRESS)",
+    "statusAnswered": "Javob berildi (ANSWERED)",
+    "statusClosed": "Yopildi (CLOSED)"
+  },
+  "errorBoundary": {
+    "updateTitle": "Yangilanish mavjud",
+    "updateAvailable": "Tizimda yangilanish mavjud. Sahifani qayta yuklang.",
+    "networkTitle": "Internet aloqasi yoq",
+    "noInternet": "Internet aloqasi yoq. Tarmoqqa ulanishni tekshiring.",
+    "somethingWrong": "Kutilmagan xatolik yuz berdi."
   }
 }

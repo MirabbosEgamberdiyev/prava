@@ -59,8 +59,8 @@ export default function TrafficRules_Page() {
   return (
     <Container size="xl" py="xl">
       <SEO
-        title="Yo'l Harakati Qoidalari — Rasmiy Elektron Kitob (YHQ)"
-        description="O'zbekiston Respublikasi Vazirlar Mahkamasining 172-son qarori bilan tasdiqlangan rasmiy Yo'l Harakati Qoidalari matni."
+        title={t("seo.rulesTitle", "Yo'l Harakati Qoidalari — Rasmiy Elektron Kitob (YHQ)")}
+        description={t("seo.rulesDesc", "O'zbekiston Respublikasi Vazirlar Mahkamasining 172-son qarori bilan tasdiqlangan rasmiy Yo'l Harakati Qoidalari matni.")}
       />
 
       <Stack gap="lg">

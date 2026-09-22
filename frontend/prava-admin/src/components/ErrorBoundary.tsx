@@ -1,6 +1,7 @@
 import React from "react";
 import { Center, Stack, Text, Button, Title } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
+import i18n from "../utils/i18n";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -77,13 +78,12 @@ class ErrorBoundary extends React.Component<
           <Center h="100vh">
             <Stack align="center" gap="md" maw={400}>
               <IconAlertTriangle size={64} color="var(--mantine-color-blue-6)" />
-              <Title order={3}>Yangilanish mavjud / Update available</Title>
+              <Title order={3}>{i18n.t("errorBoundary.updateTitle")}</Title>
               <Text c="dimmed" ta="center">
-                Ilova yangilandi, sahifani qayta yuklang / The app was
-                updated, please reload.
+                {i18n.t("errorBoundary.updateAvailable")}
               </Text>
               <Button onClick={this.handleReload} variant="light">
-                Qayta yuklash / Reload
+                {i18n.t("common.refresh")}
               </Button>
             </Stack>
           </Center>
@@ -95,13 +95,12 @@ class ErrorBoundary extends React.Component<
           <Center h="100vh">
             <Stack align="center" gap="md" maw={400}>
               <IconAlertTriangle size={64} color="var(--mantine-color-yellow-6)" />
-              <Title order={3}>Internet aloqasi yo'q / No internet connection</Title>
+              <Title order={3}>{i18n.t("errorBoundary.networkTitle")}</Title>
               <Text c="dimmed" ta="center">
-                Internet aloqasini tekshirib qayta urinib ko'ring / Check your
-                connection and try again.
+                {i18n.t("errorBoundary.noInternet")}
               </Text>
               <Button onClick={this.handleSoftReset} variant="light">
-                Qayta urinish / Retry
+                {i18n.t("common.retry")}
               </Button>
             </Stack>
           </Center>
@@ -112,9 +111,9 @@ class ErrorBoundary extends React.Component<
         <Center h="100vh">
           <Stack align="center" gap="md" maw={400}>
             <IconAlertTriangle size={64} color="var(--mantine-color-red-6)" />
-            <Title order={3}>Xatolik yuz berdi / Something went wrong</Title>
+            <Title order={3}>{i18n.t("errorBoundary.somethingWrong")}</Title>
             <Text c="dimmed" ta="center">
-              Sahifani qayta yuklang / Please try refreshing the page.
+              {i18n.t("errorBoundary.updateAvailable")}
             </Text>
             {/* Texnik xato matni faqat dev'da: prodda u ichki modul/yo'l
                 nomlarini foydalanuvchiga ochib berardi */}
@@ -124,7 +123,7 @@ class ErrorBoundary extends React.Component<
               </Text>
             )}
             <Button onClick={this.handleReload} variant="light">
-              Qayta yuklash / Reload
+              {i18n.t("common.refresh")}
             </Button>
           </Stack>
         </Center>

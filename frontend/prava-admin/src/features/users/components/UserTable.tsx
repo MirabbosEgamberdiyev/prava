@@ -92,7 +92,7 @@ const UserTable = ({
                   checked={allSelected}
                   indeterminate={someSelected}
                   onChange={onToggleSelectAll}
-                  aria-label="Select all users"
+                  aria-label={t("users.selectAll", "Barcha foydalanuvchilarni tanlash")}
                 />
               </Table.Th>
             )}

@@ -243,45 +243,45 @@ export default function FaqPage() {
         <Stack gap="md">
           <Group grow>
             <TextInput
-              label="Kategoriya"
-              placeholder="GENERAL, PAYMENT, EXAM, DESKTOP"
+              label={t("faqAdmin.modal.categoryLabel")}
+              placeholder={t("faqAdmin.modal.categoryPlaceholder")}
               value={editingFaq.category || "GENERAL"}
               onChange={(e) => setEditingFaq({ ...editingFaq, category: e.currentTarget.value })}
             />
             <NumberInput
-              label="Tartib raqami"
+              label={t("faqAdmin.modal.orderLabel")}
               value={editingFaq.sortOrder ?? 0}
               onChange={(val) => setEditingFaq({ ...editingFaq, sortOrder: Number(val) || 0 })}
             />
           </Group>
 
           <Switch
-            label="Faollik holati (Saytda ko'rinadi)"
+            label={t("faqAdmin.modal.activeLabel")}
             checked={editingFaq.isActive}
             onChange={(e) => setEditingFaq({ ...editingFaq, isActive: e.currentTarget.checked })}
           />
 
           <Tabs value={langTab} onChange={(val) => setLangTab(val || "uzl")}>
             <Tabs.List>
-              <Tabs.Tab value="uzl">Lotin (uz)</Tabs.Tab>
-              <Tabs.Tab value="uzc">Кирилл (uz_cyrl)</Tabs.Tab>
-              <Tabs.Tab value="ru">Русский (ru)</Tabs.Tab>
+              <Tabs.Tab value="uzl">{t("faqAdmin.modal.tabUzl")}</Tabs.Tab>
+              <Tabs.Tab value="uzc">{t("faqAdmin.modal.tabUzc")}</Tabs.Tab>
+              <Tabs.Tab value="ru">{t("faqAdmin.modal.tabRu")}</Tabs.Tab>
             </Tabs.List>
 
             <Tabs.Panel value="uzl" pt="md">
               <Stack gap="sm">
                 <TextInput
-                  label="Savol (Lotin)"
+                  label={`${t("faqAdmin.modal.questionLabel")} (Lotin)`}
                   required
-                  placeholder="Savolni kiriting..."
+                  placeholder={t("faqAdmin.modal.questionPlaceholder")}
                   value={editingFaq.questionUzl}
                   onChange={(e) => setEditingFaq({ ...editingFaq, questionUzl: e.currentTarget.value })}
                 />
                 <Textarea
-                  label="Javob (Lotin)"
+                  label={`${t("faqAdmin.modal.answerLabel")} (Lotin)`}
                   required
                   rows={4}
-                  placeholder="Javob matnini kiriting..."
+                  placeholder={t("faqAdmin.modal.answerPlaceholder")}
                   value={editingFaq.answerUzl}
                   onChange={(e) => setEditingFaq({ ...editingFaq, answerUzl: e.currentTarget.value })}
                 />
@@ -291,15 +291,15 @@ export default function FaqPage() {
             <Tabs.Panel value="uzc" pt="md">
               <Stack gap="sm">
                 <TextInput
-                  label="Савол (Кирилл)"
-                  placeholder="Саволни киритинг..."
+                  label={`${t("faqAdmin.modal.questionLabel")} (Кирилл)`}
+                  placeholder={t("faqAdmin.modal.questionPlaceholder")}
                   value={editingFaq.questionUzc || ""}
                   onChange={(e) => setEditingFaq({ ...editingFaq, questionUzc: e.currentTarget.value })}
                 />
                 <Textarea
-                  label="Жавоб (Кирилл)"
+                  label={`${t("faqAdmin.modal.answerLabel")} (Кирилл)`}
                   rows={4}
-                  placeholder="Жавоб матнини киритинг..."
+                  placeholder={t("faqAdmin.modal.answerPlaceholder")}
                   value={editingFaq.answerUzc || ""}
                   onChange={(e) => setEditingFaq({ ...editingFaq, answerUzc: e.currentTarget.value })}
                 />
@@ -309,15 +309,15 @@ export default function FaqPage() {
             <Tabs.Panel value="ru" pt="md">
               <Stack gap="sm">
                 <TextInput
-                  label="Вопрос (Русский)"
-                  placeholder="Введите вопрос..."
+                  label={`${t("faqAdmin.modal.questionLabel")} (Русский)`}
+                  placeholder={t("faqAdmin.modal.questionPlaceholder")}
                   value={editingFaq.questionRu || ""}
                   onChange={(e) => setEditingFaq({ ...editingFaq, questionRu: e.currentTarget.value })}
                 />
                 <Textarea
-                  label="Ответ (Русский)"
+                  label={`${t("faqAdmin.modal.answerLabel")} (Русский)`}
                   rows={4}
-                  placeholder="Введите ответ..."
+                  placeholder={t("faqAdmin.modal.answerPlaceholder")}
                   value={editingFaq.answerRu || ""}
                   onChange={(e) => setEditingFaq({ ...editingFaq, answerRu: e.currentTarget.value })}
                 />

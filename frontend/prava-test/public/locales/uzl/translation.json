@@ -127,6 +127,9 @@
     "required": "Ushbu maydon to'ldirilishi shart"
   },
   "common": {
+    "appName": "Prava Online",
+    "soundToggle": "Ovozni yoqish / ochirish",
+    "cameraToggle": "Kamerani almashtirish",
     "error": "Xatolik",
     "success": "Muvaffaqiyat",
     "errorOccurred": "Xatolik yuz berdi",
@@ -901,6 +904,7 @@
     "previewText": "Bu yerda matn o'lchami va qalinligi qanday ko'rinishi namoyish etilmoqda."
   },
   "footer": {
+    "telegramBot": "Telegram Bot",
     "description": "O'zbekistonda haydovchilik guvohnomasi imtihoniga online tayyorlanish platformasi.",
     "links": {
       "terms": "Foydalanish shartlari"
@@ -932,8 +936,7 @@
     "telegramChannel": "Telegram kanal",
     "social": "Aloqa va Ijtimoiy",
     "offer": "Ommaviy oferta",
-    "independentNotice": "Mustaqil ta'lim platformasi. Rasmiy davlat organi emas.",
-    "telegramBot": "Telegram bot"
+    "independentNotice": "Mustaqil ta'lim platformasi. Rasmiy davlat organi emas."
   },
   "pwa": {
     "updateTitle": "Yangilanish mavjud",
@@ -2026,199 +2029,14 @@
     "confirmFinish": "Haqiqatan ham testni yakunlamoqchimisiz?"
   },
   "dashboard": {
-    "searchPlaceholder": "Mavzu, savol yoki qoida qidirish...",
-    "searchShortcut": "K",
-    "searchModalTitle": "Tezkor qidiruv",
-    "filterAll": "Barchasi",
-    "filterTopics": "Mavzular",
-    "filterTickets": "Biletlar",
-    "filterRules": "Qoidalar",
-    "noResultsFound": "Mos keluvchi bo'lim yoki savol topilmadi. Boshqa kalit so'z bilan izlang.",
-    "jumpToItem": "O'tish",
-    "notificationsTitle": "Bildirishnomalar",
-    "noNotifications": "Yangi bildirishnomalar yo'q",
-    "markAllAsRead": "Barchasini o'qilgan deb belgilash",
-    "greeting": "Xush kelibsiz",
-    "subtitle": "Haydovchilik imtihoniga tayyorlanishda davom eting. Maqsad yaqin!",
-    "quote": "Intizom bugungi harakat — ertangi muvaffaqiyat!",
-    "accountStatus": "Premium foydalanuvchi",
-    "freeStatus": "Oddiy foydalanuvchi",
     "nav": {
-      "home": "Bosh sahifa",
-      "topics": "Mavzular",
-      "tickets": "Biletlar",
-      "marathon": "Marafon",
-      "exam": "Haqiqiy imtihon",
-      "stats": "Statistika",
-      "saved": "Saqlanganlar",
-      "rating": "Reyting",
-      "settings": "Sozlamalar",
-      "signs": "Yo'l belgilari",
-      "markings": "Yo'l chiziqlari",
+      "simulator": "Avtodrom Simulyatori 3D",
       "autodrom": "Avtodrom",
       "examCenters": "Imtihon markazlari",
       "rules": "YHQ Qoidalari",
-      "penalties": "Jarimalar"
-    },
-    "collapse": "Panelni yig'ish",
-    "expand": "Panelni ochish",
-    "premium": {
-      "title": "Premium imkoniyatlar",
-      "desc": "Barcha funksiyalardan to'liq foydalaning!",
-      "btn": "Premium olish →",
-      "close": "Yopish",
-      "reopen": "Premium imkoniyatlar"
-    },
-    "nba": {
-      "badgeContinue": "DAVOM ETTIRISH",
-      "badgeFixMistakes": "XATOLARNI TUZATISH",
-      "badgeWeakTopic": "ZAIF MAVZU",
-      "badgeNextTicket": "NAVBATDAGI BILET",
-      "badgeDiagnostic": "DIAGNOSTIKA",
-      "badgeExamReady": "RASMIY IMTIHON",
-      "marathonResumeTitle": "Marafonni to'xtatilgan joyidan davom eting",
-      "marathonResumeDesc": "Siz {{total}} ta savoldan {{current}}-savolgacha yetib kelgansiz. To'xtab qolmang!",
-      "resumeBtn": "Davom ettirish →",
-      "mistakesTitle": "Xatolar ustida ishlash tavsiya etiladi",
-      "mistakesDesc": "Sizda {{count}} ta xato ishlangan savol to'planib qolgan. Ularni qayta ishlab mustahkamlang.",
-      "fixMistakesBtn": "Xatolarni bartaraf etish →",
-      "weakTopicTitle": "Eng zaif mavzu: {{topic}}",
-      "weakTopicDesc": "Ushbu mavzuda {{count}} ta xato qayd etildi. Imtihondan oldin bu mavzuni takrorlang.",
-      "practiceTopicBtn": "Mavzuni kuchaytirish →",
-      "nextTicketTitle": "{{ticketNumber}}-biletni yechishga tayyormisiz?",
-      "nextTicketDesc": "Biletlarni tartib bilan yechish imtihon formatiga to'liq ko'nikish beradi.",
-      "startTicketBtn": "Biletni boshlash →",
-      "diagnosticTitle": "Bilim darajangizni aniqlash uchun sinov testi",
-      "diagnosticDesc": "20 ta savoldan iborat boshlang'ich test orqali kuchli va zaif tomonlaringizni aniqlang.",
-      "startDiagnosticBtn": "Diagnostik testni boshlash →",
-      "examReadyTitle": "Bilimingiz mustahkam! Davlat imtihonida sinang",
-      "examReadyDesc": "Tayyorgarlik darajangiz yuqori ({{readiness}}%). Vaqt chegaralangan DTM simulyatorida kuchingizni sinab ko'ring.",
-      "startExamSimBtn": "Davlat imtihoni simulyatori →",
-      "mistakesCount": "{{count}} ta xato",
-      "questionsCount": "{{count}} ta savol",
-      "readyPct": "{{pct}}% tayyor"
-    },
-    "stats": {
-      "dailyPlanTitle": "Kunlik reja (savol)",
-      "dailyPlanDone": "Ajoyib! Bugungi rejangiz to'liq bajarildi.",
-      "dailyPlanOverflow": "+{{count}} ta reja ortig'i bilan!",
-      "dailyPlanProgress": "Bugungi o'quv rejangizning bajarilishi.",
-      "streakDays": "{{count}} kunlik seriya",
-      "startStreakToday": "Bugun test ishlab seriyani boshlang!",
-      "solvedQuestionsTitle": "Yechilgan savollar",
-      "solvedQuestionsFootnote": "Jami {{count}} ta rasmiy savoldan",
-      "overallReadinessTitle": "Umumiy tayyorgarlik",
-      "readinessFootnote": "O'zlashtirilgan savollar va test aniqligi asosida",
-      "readinessExplanation": "To'liq o'zlashtirilgan savollar va test aniqligi asosida hisoblangan",
-      "levelBeginner": "Boshlang'ich",
-      "levelIntermediate": "O'rta",
-      "levelAdvanced": "Yuqori",
-      "levelReady": "Tayyor"
-    },
-    "modes": {
-      "title": "Asosiy ta'lim rejimlari",
-      "subtitle": "Maqsadingizga eng mos rejimni tanlang va bilim oling",
-      "topicsTitle": "Mavzular",
-      "topicsDesc": "Nazariya va amaliy bilimlarni mavzular bo'yicha bosqichma-bosqich o'rganing.",
-      "topicsChip": "{{done}}/{{total}} mavzu",
-      "ticketsTitle": "Biletlar",
-      "ticketsDesc": "1 dan {{count}} gacha rasmiy biletlar bilan o'zingizni sinab ko'ring.",
-      "ticketsChip": "{{done}}/{{total}} bilet",
-      "marathonTitle": "Marafon",
-      "marathonDesc": "Barcha {{count}} ta savol ketma-ket. Tayyorgarligingizni maksimal darajada sinang.",
-      "marathonChip": "{{current}}/{{total}} savol",
-      "examTitle": "Haqiqiy imtihon",
-      "examDesc": "Vaqt cheklangan rasmiy DTM test simulyatori.",
-      "examChip": "Oxirgi: {{score}}%",
-      "startBtn": "Boshlash",
-      "recommended": "TAVSIYA ETILADI"
-    },
-    "recommendation": {
-      "title": "Aqlli tavsiya va xatolar ustida ishlash",
-      "subtitle": "Imtihon natijangizni oshirish uchun eng muhim mavzular va xatolarni tizimli bartaraf eting.",
-      "weakTopicsBadge": "ZAIF MAVZULAR",
-      "weakTopicsTitle": "Eng ko'p xato tushgan yo'nalishlar",
-      "viewAllLink": "Barchasini ko'rish →",
-      "mistakesCount": "{{count}} ta xato",
-      "noMistakesYet": "Xatolar mavjud emas!",
-      "noMistakesDesc": "Bilimlaringiz a'lo darajada. To'liq imtihon bilan o'zingizni sinab ko'ring.",
-      "diagnosticEmptyTitle": "Hozircha xatolar mavjud emas",
-      "diagnosticEmptyDesc": "Zaif mavzularni aniqlash va o'quv rejangizni shakllantirish uchun dastlabki sinov testini topshiring.",
-      "startDiagnosticBtn": "Sinov testini boshlash →",
-      "masteryTitle": "Barcha mavzular o'zlashtirildi!",
-      "masteryDesc": "Sizda qayta ishlashni talab qiluvchi xatolar yo'q. Haqiqiy davlat imtihoni simulyatorida bilimingizni sinang.",
-      "startMockExamBtn": "Haqiqiy imtihon topshirish →",
-      "quickFixBadge": "TEZKOR TUZATISH",
-      "mistakesTitle": "ta xato javob",
-      "mistakesDesc": "Xatolar ustida ishlash — muvaffaqiyatning eng qisqa yo'li. Quyidagi maxsus test orqali barcha xato javoblaringizni qayta takrorlang.",
-      "fixMistakesBtn": "Xatolar ustida ishlashni boshlash →",
-      "startExamBtn": "Sinov imtihonini boshlash →",
-      "goalTitle": "Sizning maqsadingiz",
-      "goalDesc": "Nazariya bo'yicha kamida 90% natijaga erishish va imtihondan muvaffaqiyatli o'tish."
-    },
-    "tools": {
-      "title": "Tahlil va shaxsiy vositalar",
-      "subtitle": "Shaxsiy o'sish, natijalar va sinovlar monitoringi",
-      "savedTitle": "Saqlanganlar",
-      "savedDesc": "Xatcho'p qo'yilgan savollar",
-      "savedCount": "{{count}} ta",
-      "statsTitle": "Statistika",
-      "statsDesc": "Batafsil o'rganish statistikasi",
-      "ratingTitle": "Reyting",
-      "ratingDesc": "O'quvchilar reytingidagi o'rningiz",
-      "historyTitle": "Imtihon tarixi",
-      "historyDesc": "Avvalgi imtihon natijalari",
-      "lastScore": "Oxirgi: {{score}}%"
-    },
-    "banner": {
-      "title": "Haydovchilik orzularingiz endilikda yanada yaqin!",
-      "subtitle": "Muntazam o'qish, to'g'ri tahlil va amaliy testlar bilan siz albatta maqsadingizga erishasiz!",
-      "continueBtn": "O'qishni davom ettirish →",
-      "benefit1": "Rasmiy savollar bazasi",
-      "benefit2": "Doimiy yangilanish",
-      "benefit3": "Tizimli tahlil va mashq",
-      "quote": "Bilim haydovchilik erkinligiga olib boradi!"
-    },
-    "footer": {
-      "slogan": "Haydovchilikka ishonchli tayyorgarlik platformasi.",
-      "product": "MAHSULOT",
-      "help": "YORDAM",
-      "social": "BIZ BILAN BOG'LANING",
-      "safety": "Xavfsiz yo'l — yorqin kelajak!",
-      "rights": "Barcha huquqlar himoyalangan.",
-      "terms": "Foydalanish shartlari"
-    },
-    "weakTopics": {
-      "nextRecommendation": "Keyingi tavsiya",
-      "mainFocusBlock": "Asosiy fokus bloki"
-    },
-    "fallbackName": "Hurmatli haydovchi",
-    "welcomeSubtitle": "Haydovchilik imtihoniga tayyorlanishda davom eting. Maqsad yaqin!",
-    "examQuestionCount": "20 ta savol",
-    "questionsUnit": "savol",
-    "minutesUnit": "daqiqa",
-    "cancel": "Bekor qilish",
-    "ticketNum": "{{num}}-bilet",
-    "searchModalLabel": "Qidiruv",
-    "noSearchResults": "Hech narsa topilmadi",
-    "navigate": "Harakatlanish",
-    "select": "Tanlash",
-    "close": "Yopish",
-    "sidebarAria": "Asosiy navigatsiya",
-    "motivationalTitle": "Motivatsion banner",
-    "metricsAria": "Foydalanuvchi ko'rsatkichlari",
-    "welcomeAria": "Xush kelibsiz bo'limi",
-    "categories": {
-      "exam": "Imtihon",
-      "practice": "Mashg'ulot",
-      "tickets": "Biletlar",
-      "topics": "Mavzular"
-    },
-    "fallbackTopic1": "Yo'l belgilari va chiziqlari",
-    "fallbackTopic2": "Chorrahalarda harakatlanish qoidalari",
-    "fallbackTopic3": "Harakat tezligi va xavfsiz oraliq",
-    "fallbackTopic4": "Quvib o'tish va to'xtash qoidalari",
-    "fallbackTopic5": "Piyodalar va velosipedchilar harakati"
+      "penalties": "Jarimalar",
+      "stats": "Statistika"
+    }
   },
   "mode": {
     "online": "Onlayn",
@@ -2298,6 +2116,18 @@
   "review": "Ko'rib chiqish",
   "results": "Natijalar",
   "seo": {
+    "practicalExamTitle": "Amaliy imtihon (Avtodrom) — Standartlar, Mashqlar va Qoidalar",
+    "practicalExamDesc": "Ozbekiston Respublikasi haydovchilik guvohnomasi uchun amaliy imtihon standarti: 12 ta rasmiy avtodrom mashqi, jarima ballari nizomi va interaktiv 3D simulyator.",
+    "signsTitle": "Yol belgilari katalogi — Rasmiy YHXX Yol Belgilari",
+    "signsDesc": "Ozbekiston Respublikasi Yol Harakati Qoidalaridagi barcha rasmiy yol belgilari, tariflari va rasmlari.",
+    "examCentersTitle": "Imtihon markazlari — Ozbekiston boylab barcha YHXX markazlari",
+    "examCentersDesc": "Ozbekiston boyicha haydovchilik guvohnomasi imtihon markazlari manzillari, telefonlari, ish vaqti va narxlari.",
+    "penaltiesTitle": "Jarimalar va Qoidabuzarliklar — Rasmiy Imtihon va YHQ Nizomi",
+    "penaltiesDesc": "Yol harakati qoidabuzarliklari uchun jarima ballari va rasmiy jarimalar kodeksi toliq royxati.",
+    "rulesTitle": "Yol harakati qoidalari — Ozbekiston Respublikasi rasmiy YHQ kitobi",
+    "rulesDesc": "Ozbekiston Respublikasi Yol Harakati Qoidalari rasmiy matni, moddalar, boblar va sharhlar.",
+    "simulatorTitle": "Avtodrom Simulyatori 3D | PravaOnline",
+    "simulatorDesc": "3D interaktiv avtodrom haydash simulyatori: Cobalt, Gentra va Malibu avtomobillarida 12 ta rasmiy mashqni mashq qiling va imtihon topshiring.",
     "home": {
       "title": "Prava Test — Haydovchilik Guvohnomasi Imtihoniga Online Tayyorgarlik | Prava Online",
       "desc": "O'zbekistonda haydovchilik guvohnomasi imtihoni uchun online testlar: {{ticketsCount}} ta bilet, {{questionsCount}} ta rasmiy YHXBB savollari, yo'l harakati qoidalari (YHQ) va davlat imtihoni simulyatori. Bepul sinov testini topshiring!"
@@ -2650,6 +2480,8 @@
     "close": "Yopish"
   },
   "curriculum": {
+    "signsLoadError": "Yol belgilarini yuklashda xatolik yuz berdi. Qayta urinib koring.",
+    "theoryPractical": "Nazariy / Amaliy",
     "signsTitle": "Yo'l belgilari",
     "signsSubtitle": "Barcha rasmiy yo'l belgilari va ularning qoidaviy ta'riflari",
     "searchSigns": "Belgi kodi (masalan, 3.24) yoki nomini qidiring...",
@@ -2725,16 +2557,6 @@
     "dates": "Litsenziya: {{from}} — {{to}}",
     "renew": "🔑 Litsenziyani yangilash"
   },
-  "dashboard": {
-    "nav": {
-      "simulator": "Avtodrom Simulyatori 3D",
-      "autodrom": "Avtodrom",
-      "examCenters": "Imtihon markazlari",
-      "rules": "YHQ Qoidalari",
-      "penalties": "Jarimalar",
-      "stats": "Statistika"
-    }
-  },
   "simulator": {
     "title": "Avtodrom Simulyatori 3D",
     "subtitle": "IIV YHXX davlat standarti bo'yicha 12 ta amaliy mashq, professional 3D avtomobil fizikasi va audio instruktor",
@@ -2754,5 +2576,14 @@
     "retry": "Qayta urinish",
     "viewMistakes": "Xatolarni ko'rish",
     "viewResults": "Natijalarni ko'rish"
+  },
+  "practicalExam": {
+    "controlsTitle": "Boshqaruv tugmalari (Klaviatura):",
+    "gas": "Gaz (Tezlanish)",
+    "brake": "Tormoz / Orqaga",
+    "steering": "Rul burilishi",
+    "handbrake": "Qol tormozi",
+    "voiceInstructor": "Ovozli instruktor: Ozbekcha / Kirill / Ruscha",
+    "loadError": "Amaliy imtihon malumotlarini yuklashda xatolik yuz berdi. Qayta urinib koring."
   }
 }

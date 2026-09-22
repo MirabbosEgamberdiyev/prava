@@ -618,24 +618,24 @@ const PRACTICAL_EXERCISES_FALLBACK: ExerciseFallback[] = [
 
           <Paper p="md" radius="md" withBorder bg="var(--surface)">
             <Text fw={600} size="sm" mb="xs">
-              Boshqaruv tugmalari (Klaviatura):
+              {t("practicalExam.controlsTitle", "Boshqaruv tugmalari (Klaviatura):")}
             </Text>
             <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
               <Paper p="xs" radius="sm" withBorder ta="center">
                 <Badge size="sm" variant="outline">W / ↑</Badge>
-                <Text size="xs" mt={4} c="dimmed">Gaz (Tezlanish)</Text>
+                <Text size="xs" mt={4} c="dimmed">{t("practicalExam.gas", "Gaz (Tezlanish)")}</Text>
               </Paper>
               <Paper p="xs" radius="sm" withBorder ta="center">
                 <Badge size="sm" variant="outline">S / ↓</Badge>
-                <Text size="xs" mt={4} c="dimmed">Tormoz / Orqaga</Text>
+                <Text size="xs" mt={4} c="dimmed">{t("practicalExam.brake", "Tormoz / Orqaga")}</Text>
               </Paper>
               <Paper p="xs" radius="sm" withBorder ta="center">
                 <Badge size="sm" variant="outline">A / D / ← →</Badge>
-                <Text size="xs" mt={4} c="dimmed">Rul burilishi</Text>
+                <Text size="xs" mt={4} c="dimmed">{t("practicalExam.steering", "Rul burilishi")}</Text>
               </Paper>
               <Paper p="xs" radius="sm" withBorder ta="center">
                 <Badge size="sm" variant="outline">SPACE</Badge>
-                <Text size="xs" mt={4} c="dimmed">Qo'l tormozi</Text>
+                <Text size="xs" mt={4} c="dimmed">{t("practicalExam.handbrake", "Qo'l tormozi")}</Text>
               </Paper>
             </SimpleGrid>
           </Paper>
@@ -646,7 +646,7 @@ const PRACTICAL_EXERCISES_FALLBACK: ExerciseFallback[] = [
                 <IconVolume size={14} />
               </ThemeIcon>
               <Text size="xs" c="dimmed">
-                Ovozli instruktor: O'zbekcha / Kirill / Ruscha
+                {t("practicalExam.voiceInstructor", "Ovozli instruktor: O'zbekcha / Kirill / Ruscha")}
               </Text>
             </Group>
             <Button

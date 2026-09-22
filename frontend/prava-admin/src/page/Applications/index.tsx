@@ -286,7 +286,7 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
           <Stack gap="xs">
             <Textarea
               label="O'zbekcha (lotin)"
-              placeholder="Yangiliklar — o'zbek tilida (lotin)"
+              placeholder={t("apps.releaseNotesUzlPlaceholder")}
               rows={2}
               value={notesUzl}
               onChange={e => setNotesUzl(e.target.value)}
@@ -294,7 +294,7 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
             />
             <Textarea
               label="Ўзбекча (кирилл)"
-              placeholder="Янгиликлар — ўзбек тилида (кирилл)"
+              placeholder={t("apps.releaseNotesUzcPlaceholder")}
               rows={2}
               value={notesUzc}
               onChange={e => setNotesUzc(e.target.value)}
@@ -302,7 +302,7 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
             />
             <Textarea
               label="Русский"
-              placeholder="Что нового — на русском языке"
+              placeholder={t("apps.releaseNotesRuPlaceholder")}
               rows={2}
               value={notesRu}
               onChange={e => setNotesRu(e.target.value)}
@@ -310,7 +310,7 @@ function UploadModal({ opened, onClose, editing, onSaved }: {
             />
             <Textarea
               label="English"
-              placeholder="Release notes — in English"
+              placeholder={t("apps.releaseNotesEnPlaceholder")}
               rows={2}
               value={notesEn}
               onChange={e => setNotesEn(e.target.value)}

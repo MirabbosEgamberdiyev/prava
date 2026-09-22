@@ -287,52 +287,52 @@ export default function NewsPage() {
         <Stack gap="md">
           <Group grow>
             <TextInput
-              label="SEO Slug (havola nomi)"
-              placeholder="masalan: yhq-yangi-qoidalari-2026"
+              label={t("newsAdmin.modal.slugLabel")}
+              placeholder={t("newsAdmin.modal.slugPlaceholder")}
               value={editingArticle.slug}
               onChange={(e) => setEditingArticle({ ...editingArticle, slug: e.currentTarget.value })}
             />
             <TextInput
-              label="Muqova rasm havolasi (Cover Image URL)"
-              placeholder="https://... yoki /static/images/..."
+              label={t("newsAdmin.modal.imageUrlLabel")}
+              placeholder="https://... /static/images/..."
               value={editingArticle.coverImageUrl || ""}
               onChange={(e) => setEditingArticle({ ...editingArticle, coverImageUrl: e.currentTarget.value })}
             />
           </Group>
 
           <Switch
-            label="Darhol nashr qilish (Publish live)"
+            label={t("newsAdmin.modal.publishSwitch")}
             checked={editingArticle.isPublished}
             onChange={(e) => setEditingArticle({ ...editingArticle, isPublished: e.currentTarget.checked })}
           />
 
           <Tabs value={langTab} onChange={(val) => setLangTab(val || "uzl")}>
             <Tabs.List>
-              <Tabs.Tab value="uzl">O'zbekcha (Lotin)</Tabs.Tab>
-              <Tabs.Tab value="uzc">Ўзбекча (Кирилл)</Tabs.Tab>
-              <Tabs.Tab value="ru">Русский</Tabs.Tab>
+              <Tabs.Tab value="uzl">{t("newsAdmin.modal.tabUzl")}</Tabs.Tab>
+              <Tabs.Tab value="uzc">{t("newsAdmin.modal.tabUzc")}</Tabs.Tab>
+              <Tabs.Tab value="ru">{t("newsAdmin.modal.tabRu")}</Tabs.Tab>
             </Tabs.List>
 
             <Tabs.Panel value="uzl" pt="md">
               <Stack gap="sm">
                 <TextInput
-                  label="Sarlavha (Lotin)"
+                  label={`${t("newsAdmin.modal.titleLabel")} (Lotin)`}
                   required
-                  placeholder="Maqola sarlavhasi..."
+                  placeholder={t("newsAdmin.modal.titlePlaceholder")}
                   value={editingArticle.titleUzl}
                   onChange={(e) => setEditingArticle({ ...editingArticle, titleUzl: e.currentTarget.value })}
                 />
                 <Textarea
-                  label="Qisqa tavsif / Anons (Lotin)"
+                  label={`${t("newsAdmin.modal.summaryLabel")} (Lotin)`}
                   rows={2}
-                  placeholder="Qisqacha mazmuni..."
+                  placeholder={t("newsAdmin.modal.summaryPlaceholder")}
                   value={editingArticle.descriptionUzl || ""}
                   onChange={(e) => setEditingArticle({ ...editingArticle, descriptionUzl: e.currentTarget.value })}
                 />
                 <Textarea
-                  label="To'liq matn (Lotin)"
+                  label={`${t("newsAdmin.modal.contentLabel")} (Lotin)`}
                   rows={6}
-                  placeholder="Maqola to'liq matni..."
+                  placeholder={t("newsAdmin.modal.contentPlaceholder")}
                   value={editingArticle.contentUzl || ""}
                   onChange={(e) => setEditingArticle({ ...editingArticle, contentUzl: e.currentTarget.value })}
                 />
@@ -342,22 +342,22 @@ export default function NewsPage() {
             <Tabs.Panel value="uzc" pt="md">
               <Stack gap="sm">
                 <TextInput
-                  label="Сарлавҳа (Кирилл)"
-                  placeholder="Мақола сарлавҳаси..."
+                  label={`${t("newsAdmin.modal.titleLabel")} (Кирилл)`}
+                  placeholder={t("newsAdmin.modal.titlePlaceholder")}
                   value={editingArticle.titleUzc || ""}
                   onChange={(e) => setEditingArticle({ ...editingArticle, titleUzc: e.currentTarget.value })}
                 />
                 <Textarea
-                  label="Қисқа тавсиф (Кирилл)"
+                  label={`${t("newsAdmin.modal.summaryLabel")} (Кирилл)`}
                   rows={2}
-                  placeholder="Қисқача мазмуни..."
+                  placeholder={t("newsAdmin.modal.summaryPlaceholder")}
                   value={editingArticle.descriptionUzc || ""}
                   onChange={(e) => setEditingArticle({ ...editingArticle, descriptionUzc: e.currentTarget.value })}
                 />
                 <Textarea
-                  label="Тўлиқ матн (Кирилл)"
+                  label={`${t("newsAdmin.modal.contentLabel")} (Кирилл)`}
                   rows={6}
-                  placeholder="Мақола тўлиқ матни..."
+                  placeholder={t("newsAdmin.modal.contentPlaceholder")}
                   value={editingArticle.contentUzc || ""}
                   onChange={(e) => setEditingArticle({ ...editingArticle, contentUzc: e.currentTarget.value })}
                 />
@@ -367,22 +367,22 @@ export default function NewsPage() {
             <Tabs.Panel value="ru" pt="md">
               <Stack gap="sm">
                 <TextInput
-                  label="Заголовок (Русский)"
-                  placeholder="Заголовок статьи..."
+                  label={`${t("newsAdmin.modal.titleLabel")} (Русский)`}
+                  placeholder={t("newsAdmin.modal.titlePlaceholder")}
                   value={editingArticle.titleRu || ""}
                   onChange={(e) => setEditingArticle({ ...editingArticle, titleRu: e.currentTarget.value })}
                 />
                 <Textarea
-                  label="Краткое описание (Русский)"
+                  label={`${t("newsAdmin.modal.summaryLabel")} (Русский)`}
                   rows={2}
-                  placeholder="Анонс статьи..."
+                  placeholder={t("newsAdmin.modal.summaryPlaceholder")}
                   value={editingArticle.descriptionRu || ""}
                   onChange={(e) => setEditingArticle({ ...editingArticle, descriptionRu: e.currentTarget.value })}
                 />
                 <Textarea
-                  label="Полный текст (Русский)"
+                  label={`${t("newsAdmin.modal.contentLabel")} (Русский)`}
                   rows={6}
-                  placeholder="Полный текст статьи..."
+                  placeholder={t("newsAdmin.modal.contentPlaceholder")}
                   value={editingArticle.contentRu || ""}
                   onChange={(e) => setEditingArticle({ ...editingArticle, contentRu: e.currentTarget.value })}
                 />

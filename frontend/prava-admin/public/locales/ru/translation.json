@@ -190,6 +190,11 @@
     "reset": "Сбросить настройки"
   },
   "common": {
+    "changeLanguage": "Сменить язык",
+    "toggleTheme": "Переключить тему",
+    "itemsCount": "шт.",
+    "reload": "Перезагрузить",
+    "retry": "Повторить попытку",
     "save": "Сохранить",
     "cancel": "Отмена",
     "delete": "Удалить",
@@ -245,10 +250,23 @@
     "clearFilters": "Сбросить фильтры",
     "total": "Всего",
     "page": "Страница",
-    "retry": "Повторить",
     "clear": "Очистить"
   },
   "dashboard": {
+    "subtitle": "Панель мониторинга системы экзаменов автошколы в реальном времени",
+    "quickActions": "Быстрые действия",
+    "usersAndActivity": "Пользователи и активность",
+    "activeUsers": "Активные пользователи",
+    "notBlocked": "Не заблокированные в системе",
+    "joinedToday": "Зарегистрировано сегодня",
+    "last24Hours": "За последние 24 часа",
+    "logins24h": "Входов за 24 часа",
+    "activeSessions": "Активные сессии",
+    "signsSubtitle": "8 официальных категорий",
+    "markingsSubtitle": "Горизонтальная и вертикальная",
+    "examCentersSubtitle": "14 региональных центров",
+    "autodromSubtitle": "Государственный практический стандарт",
+    "finesSubtitle": "Критерии нарушений",
     "title": "Панель управления",
     "noData": "Данные не найдены",
     "totalUsers": "Пользователи",
@@ -303,6 +321,7 @@
     "currentlyTesting": "Проходят тест в данный момент"
   },
   "users": {
+    "selectAll": "Выбрать всех пользователей",
     "title": "Пользователи",
     "newUser": "Новый пользователь",
     "searchPlaceholder": "Имя, телефон, email...",
@@ -1265,6 +1284,10 @@
     }
   },
   "apps": {
+    "releaseNotesUzlPlaceholder": "Yangiliklar — ozbek tilida (lotin)",
+    "releaseNotesUzcPlaceholder": "Янгиликлар — ўзбек тилида (кирилл)",
+    "releaseNotesRuPlaceholder": "Что нового — на русском языке",
+    "releaseNotesEnPlaceholder": "Release notes — in English",
     "title": "Приложения",
     "addRelease": "Новый релиз",
     "editRelease": "Редактировать релиз",
@@ -1469,22 +1492,10 @@
     }
   },
   "faqAdmin": {
-    "title": "Часто Задаваемые Вопросы (FAQ CMS)",
-    "subtitle": "Многоязычные справочные вопросы для пользователей и автошкол",
-    "addBtn": "Добавить новый вопрос",
-    "refresh": "Обновить",
-    "retry": "Повторить",
-    "searchPlaceholder": "Поиск по вопросу или ответу...",
-    "errorLoad": "Не удалось загрузить данные FAQ",
-    "empty": "Элементов FAQ пока нет",
-    "table": {
-      "order": "Порядок",
-      "question": "Вопрос (Латиница)",
-      "category": "Категория",
-      "status": "Статус",
-      "actions": "Действия"
-    },
     "modal": {
+      "categoryPlaceholder": "GENERAL, PAYMENT, EXAM, DESKTOP",
+      "questionPlaceholder": "Введите вопрос...",
+      "answerPlaceholder": "Введите ответ...",
       "createTitle": "Создание Нового Вопроса FAQ",
       "editTitle": "Редактирование Вопроса FAQ",
       "tabUzl": "Узбекский (Латиница)",
@@ -1500,6 +1511,21 @@
       "deleteConfirm": "Вы уверены, что хотите полностью удалить этот вопрос?",
       "delete": "Удалить"
     },
+    "title": "Часто Задаваемые Вопросы (FAQ CMS)",
+    "subtitle": "Многоязычные справочные вопросы для пользователей и автошкол",
+    "addBtn": "Добавить новый вопрос",
+    "refresh": "Обновить",
+    "retry": "Повторить",
+    "searchPlaceholder": "Поиск по вопросу или ответу...",
+    "errorLoad": "Не удалось загрузить данные FAQ",
+    "empty": "Элементов FAQ пока нет",
+    "table": {
+      "order": "Порядок",
+      "question": "Вопрос (Латиница)",
+      "category": "Категория",
+      "status": "Статус",
+      "actions": "Действия"
+    },
     "notifications": {
       "requiredLotin": "Поля вопроса и ответа на латинице обязательны",
       "createSuccess": "Новый вопрос FAQ успешно создан",
@@ -1509,6 +1535,27 @@
     }
   },
   "newsAdmin": {
+    "modal": {
+      "slugPlaceholder": "например: pdd-novye-pravila-2026",
+      "titlePlaceholder": "Заголовок статьи...",
+      "summaryPlaceholder": "Краткое содержание...",
+      "contentPlaceholder": "Полный текст статьи...",
+      "createTitle": "Создание Новости",
+      "editTitle": "Редактирование Новости",
+      "tabUzl": "Узбекский (Латиница)",
+      "tabUzc": "Узбекский (Кириллица)",
+      "tabRu": "Русский",
+      "titleLabel": "Заголовок",
+      "slugLabel": "Slug (URL идентификатор)",
+      "summaryLabel": "Краткое содержание (Summary)",
+      "contentLabel": "Полный текст (HTML / Текст)",
+      "imageUrlLabel": "URL Изображения",
+      "publishSwitch": "Опубликовать сразу (Published)",
+      "save": "Сохранить",
+      "cancel": "Отмена",
+      "deleteConfirm": "Вы уверены, что хотите удалить эту статью?",
+      "delete": "Удалить"
+    },
     "title": "Новости и Объявления (News CMS)",
     "subtitle": "Управление новостями платформы, изменениями ПДД и официальными релизами",
     "addBtn": "Добавить новость",
@@ -1528,23 +1575,6 @@
     },
     "statusPublished": "Опубликовано",
     "statusDraft": "Черновик",
-    "modal": {
-      "createTitle": "Создание Новости",
-      "editTitle": "Редактирование Новости",
-      "tabUzl": "Узбекский (Латиница)",
-      "tabUzc": "Узбекский (Кириллица)",
-      "tabRu": "Русский",
-      "titleLabel": "Заголовок",
-      "slugLabel": "Slug (URL идентификатор)",
-      "summaryLabel": "Краткое содержание (Summary)",
-      "contentLabel": "Полный текст (HTML / Текст)",
-      "imageUrlLabel": "URL Изображения",
-      "publishSwitch": "Опубликовать сразу (Published)",
-      "save": "Сохранить",
-      "cancel": "Отмена",
-      "deleteConfirm": "Вы уверены, что хотите удалить эту статью?",
-      "delete": "Удалить"
-    },
     "notifications": {
       "requiredLotin": "Поля заголовка и текста на латинице обязательны",
       "createSuccess": "Новость успешно создана",
@@ -1555,12 +1585,35 @@
     }
   },
   "examsAdmin": {
+    "modal": {
+      "overallScore": "Общий балл",
+      "status": "Статус",
+      "noAnswers": "В этой сессии еще не дано ни одного ответа",
+      "questionPrefix": "Вопрос",
+      "variantPrefix": "Вариант",
+      "unitItems": "шт",
+      "title": "Вопросы и Ответы Экзамена",
+      "correctAnswers": "Правильные ответы",
+      "answersList": "Список Данных Ответов",
+      "colQuestionId": "ID Вопроса",
+      "colSelected": "Выбранный ответ",
+      "colCorrect": "Правильный ответ",
+      "colResult": "Результат",
+      "correct": "Верно",
+      "wrong": "Неверно",
+      "close": "Закрыть"
+    },
     "title": "Экзаменационные Сессии и Результаты Тестов (Exams)",
     "subtitle": "Мониторинг реальных и тренировочных экзаменов, сданных пользователями",
     "refresh": "Обновить",
     "retry": "Повторить",
     "searchUser": "Поиск по ID пользователя...",
     "statusFilter": "Статус",
+    "statusCompleted": "Завершено (COMPLETED)",
+    "statusInProgress": "В процессе (IN_PROGRESS)",
+    "statusExpired": "Истекло (EXPIRED)",
+    "statusTerminated": "Прервано (TERMINATED)",
+    "unitMinutes": "мин",
     "errorLoad": "Не удалось загрузить экзамены",
     "empty": "Результатов экзаменов пока нет",
     "table": {
@@ -1574,19 +1627,7 @@
       "audit": "Аудит вопросов"
     },
     "passed": "Сдан",
-    "failed": "Не сдан",
-    "modal": {
-      "title": "Вопросы и Ответы Экзамена",
-      "correctAnswers": "Правильные ответы",
-      "answersList": "Список Данных Ответов",
-      "colQuestionId": "ID Вопроса",
-      "colSelected": "Выбранный ответ",
-      "colCorrect": "Правильный ответ",
-      "colResult": "Результат",
-      "correct": "Верно",
-      "wrong": "Неверно",
-      "close": "Закрыть"
-    }
+    "failed": "Не сдан"
   },
   "downloadsAdmin": {
     "title": "Статистика Загрузок (Downloads Analytics)",
@@ -1611,5 +1652,83 @@
   "simulator": {
     "adminTitle": "Панель управления Автодром Симулятором",
     "adminSubtitle": "Управление 12 практическими упражнениями, штрафными баллами, параметрами автомобилей и экзаменационными сессиями"
+  },
+  "question": {
+    "clone": "Клонировать вопрос"
+  },
+  "simulatorAdmin": {
+    "title": "Панель управления автодромом-симулятором",
+    "subtitle": "Управление 12 практическими упражнениями, правилами штрафов, параметрами авто и сессиями экзаменов",
+    "kpiExercises": "Практические упражнения",
+    "kpiExercisesActive": "Активно: {{count}} упражнений",
+    "kpiRules": "Правила штрафов",
+    "kpiRulesCritical": "Критических: {{count}} с немедленной остановкой",
+    "kpiVehicles": "Модели автомобилей",
+    "kpiVehiclesAllActive": "Все модели активны",
+    "kpiExams": "Всего экзаменов",
+    "kpiExamsPassed": "Сдано: {{count}} чел.",
+    "tabExercises": "Конфигурация упражнений ({{count}})",
+    "tabRules": "Правила штрафов ({{count}})",
+    "tabVehicles": "Динамика автомобилей ({{count}})",
+    "tabSessions": "Экзаменационные сессии ({{count}})",
+    "thCode": "Код",
+    "thExerciseName": "Название упражнения",
+    "thTimeLimit": "Лимит времени",
+    "thMaxPenalty": "Макс. штраф",
+    "thStatus": "Статус",
+    "thAction": "Действие",
+    "unitSeconds": "сек.",
+    "unitPoints": "баллов",
+    "unitKmH": "км/ч",
+    "thRuleCode": "Код правила",
+    "thDescription": "Описание",
+    "thPenaltyPoints": "Штрафной балл",
+    "thSeverity": "Степень тяжести",
+    "thInstantFail": "Критическая ошибка",
+    "instantFailYes": "ДА (Немедленная остановка)",
+    "instantFailNo": "НЕТ",
+    "thModel": "Модель",
+    "thBrand": "Бренд",
+    "thMaxSpeed": "Макс. скорость",
+    "thAcceleration": "Ускорение (м/с2)",
+    "thBraking": "Торможение (м/с2)",
+    "thSteeringAngle": "Угол поворота руля",
+    "thSessionId": "ID сессии",
+    "thUser": "Пользователь",
+    "thMode": "Режим",
+    "thVehicle": "Автомобиль",
+    "thTimeSpent": "Затраченное время",
+    "thResult": "Результат",
+    "passed": "СДАЛ",
+    "failed": "НЕ СДАЛ",
+    "noActiveSessions": "Активных сессий в данный момент нет",
+    "modal": {
+      "editTitle": "Редактирование параметров упражнения",
+      "code": "Код",
+      "titleUzl": "Название упражнения (Узбекский латиница)",
+      "titleUzc": "Название упражнения (Узбекский кириллица)",
+      "titleRu": "Название упражнения (Русский)",
+      "timeLimit": "Лимит выделенного времени (сек.)",
+      "maxPenalty": "Максимально допустимый штрафной балл"
+    }
+  },
+  "contactAdmin": {
+    "viewDetail": "Просмотр / Изменить статус",
+    "delete": "Удалить",
+    "orgType": "Тип организации",
+    "compCount": "Количество компьютеров",
+    "clientComment": "Комментарий клиента",
+    "noComment": "Комментарий отсутствует",
+    "statusNew": "Новый (NEW)",
+    "statusInProgress": "В процессе (IN_PROGRESS)",
+    "statusAnswered": "Отвечено (ANSWERED)",
+    "statusClosed": "Закрыто (CLOSED)"
+  },
+  "errorBoundary": {
+    "updateTitle": "Доступно обновление",
+    "updateAvailable": "Доступно обновление. Перезагрузите страницу.",
+    "networkTitle": "Нет подключения к интернету",
+    "noInternet": "Нет подключения к интернету. Проверьте сеть.",
+    "somethingWrong": "Произошла непредвиденная ошибка."
   }
 }

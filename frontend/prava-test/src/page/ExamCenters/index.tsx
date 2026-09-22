@@ -80,8 +80,8 @@ export default function ExamCenters_Page() {
   return (
     <Container size="xl" py="xl">
       <SEO
-        title="Imtihon markazlari — O'zbekiston bo'yicha Yagona Imtihon Markazlari"
-        description="O'zbekiston Respublikasi bo'yicha barcha 14 ta hududiy yagona haydovchilik imtihon markazlari manzillari, telefonlari va ish vaqtlari."
+        title={t("seo.examCentersTitle", "Imtihon markazlari — O'zbekiston bo'yicha Yagona Imtihon Markazlari")}
+        description={t("seo.examCentersDesc", "O'zbekiston Respublikasi bo'yicha barcha 14 ta hududiy yagona haydovchilik imtihon markazlari manzillari, telefonlari va ish vaqtlari.")}
       />
 
       <Stack gap="lg">
@@ -196,7 +196,7 @@ export default function ExamCenters_Page() {
 
                 <Group justify="space-between" align="center">
                   <div>
-                    <Text size="xs" c="dimmed">Nazariy / Amaliy</Text>
+                    <Text size="xs" c="dimmed">{t("curriculum.theoryPractical", "Nazariy / Amaliy")}</Text>
                     <Text size="sm" fw={700}>
                       {c.price_theory ? c.price_theory.toLocaleString() : "100 000"} / {c.price_practical ? c.price_practical.toLocaleString() : "150 000"} so'm
                     </Text>

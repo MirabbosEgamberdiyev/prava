@@ -56,12 +56,12 @@ export default function AutodromeMiniMap({
               variant="transparent"
               color={soundEnabled ? "blue" : "gray"}
               onClick={onSoundToggle}
-              aria-label="Sound toggle"
+              aria-label={lang === "ru" ? "Включить / выключить звук" : lang === "uzc" ? "Овозни ёқиш / ўчириш" : "Ovozni yoqish / o'chirish"}
             >
               {soundEnabled ? <IconVolume size={15} color="#38bdf8" /> : <IconVolumeOff size={15} />}
             </ActionIcon>
             <Text size="xs" fw={700} c="white" style={{ letterSpacing: "0.4px" }}>
-              {lang === "ru" ? "Карта автодрома" : "Avtodrom xaritasi"}
+              {lang === "ru" ? "Карта автодрома" : lang === "uzc" ? "Автодром харитаси" : "Avtodrom xaritasi"}
             </Text>
           </Group>
 
@@ -72,13 +72,19 @@ export default function AutodromeMiniMap({
                 cameraView === "chase"
                   ? lang === "ru"
                     ? "Вид сзади (3-е лицо)"
+                    : lang === "uzc"
+                    ? "Орқа кўриниш (3-шахс)"
                     : "Orqa ko'rinish (3-shaxs)"
                   : cameraView === "first_person"
                   ? lang === "ru"
                     ? "Вид из кабины (1-е лицо)"
+                    : lang === "uzc"
+                    ? "Кабина кўриниши (1-шахс)"
                     : "Kabina ko'rinishi (1-shaxs)"
                   : lang === "ru"
                   ? "Вид сверху"
+                  : lang === "uzc"
+                  ? "Юқоридан кўриниш"
                   : "Yuqoridan ko'rinish"
               }
             >
@@ -87,7 +93,7 @@ export default function AutodromeMiniMap({
                 variant="subtle"
                 color="blue"
                 onClick={onCameraToggle}
-                aria-label="Camera view toggle"
+                aria-label={lang === "ru" ? "Переключить вид камеры" : lang === "uzc" ? "Камерани алмаштириш" : "Kamerani almashtirish"}
               >
                 <IconCamera size={13} />
               </ActionIcon>

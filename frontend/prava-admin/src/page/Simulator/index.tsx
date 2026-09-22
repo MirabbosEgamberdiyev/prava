@@ -189,10 +189,10 @@ export default function SimulatorAdminPage() {
         <div>
           <Title order={1} fz="h3">
             <IconDeviceGamepad2 size={26} style={{ marginRight: 8, verticalAlign: "middle" }} />
-            {t("simulator.adminTitle", "Avtodrom Simulyatori boshqaruv paneli")}
+            {t("simulatorAdmin.title", "Avtodrom Simulyatori boshqaruv paneli")}
           </Title>
           <Text size="sm" c="dimmed">
-            {t("simulator.adminSubtitle", "12 ta amaliy mashq, jarima qoidalari, avtomobil parametrlari va imtihon sessiyalarini boshqarish")}
+            {t("simulatorAdmin.subtitle", "12 ta amaliy mashq, jarima qoidalari, avtomobil parametrlari va imtihon sessiyalarini boshqarish")}
           </Text>
         </div>
         <Button
@@ -211,7 +211,7 @@ export default function SimulatorAdminPage() {
         <Card p="md" radius="md" withBorder bg="white">
           <Group justify="space-between" mb="xs">
             <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-              Amaliy mashqlar
+              {t("simulatorAdmin.kpiExercises", "Amaliy mashqlar")}
             </Text>
             <ThemeIcon color="blue" variant="light" size="sm" radius="xl">
               <IconSteeringWheel size={14} />
@@ -221,14 +221,14 @@ export default function SimulatorAdminPage() {
             {exercises.length}
           </Title>
           <Text size="xs" c="dimmed" mt={4}>
-            Faol: {exercises.filter((e) => e.isActive).length} ta mashq
+            {t("simulatorAdmin.kpiExercisesActive", { count: exercises.filter((e) => e.isActive).length })}
           </Text>
         </Card>
 
         <Card p="md" radius="md" withBorder bg="white">
           <Group justify="space-between" mb="xs">
             <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-              Jarima qoidalari
+              {t("simulatorAdmin.kpiRules", "Jarima qoidalari")}
             </Text>
             <ThemeIcon color="red" variant="light" size="sm" radius="xl">
               <IconAlertTriangle size={14} />
@@ -238,14 +238,14 @@ export default function SimulatorAdminPage() {
             {rules.length}
           </Title>
           <Text size="xs" c="dimmed" mt={4}>
-            Kritik: {rules.filter((r) => r.isInstantFail).length} ta to'xtatuvchi
+            {t("simulatorAdmin.kpiRulesCritical", { count: rules.filter((r) => r.isInstantFail).length })}
           </Text>
         </Card>
 
         <Card p="md" radius="md" withBorder bg="white">
           <Group justify="space-between" mb="xs">
             <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-              Avtomobil modellari
+              {t("simulatorAdmin.kpiVehicles", "Avtomobil modellari")}
             </Text>
             <ThemeIcon color="teal" variant="light" size="sm" radius="xl">
               <IconCar size={14} />
@@ -255,14 +255,14 @@ export default function SimulatorAdminPage() {
             {vehicles.length}
           </Title>
           <Text size="xs" c="dimmed" mt={4}>
-            Hammasi faol holatda
+            {t("simulatorAdmin.kpiVehiclesAllActive", "Hammasi faol holatda")}
           </Text>
         </Card>
 
         <Card p="md" radius="md" withBorder bg="white">
           <Group justify="space-between" mb="xs">
             <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-              Jami imtihonlar
+              {t("simulatorAdmin.kpiExams", "Jami imtihonlar")}
             </Text>
             <ThemeIcon color="indigo" variant="light" size="sm" radius="xl">
               <IconHistory size={14} />
@@ -272,7 +272,7 @@ export default function SimulatorAdminPage() {
             {sessions.length}
           </Title>
           <Text size="xs" c="dimmed" mt={4}>
-            Topshirdi: {sessions.filter((s) => s.isPassed).length} nafar
+            {t("simulatorAdmin.kpiExamsPassed", { count: sessions.filter((s) => s.isPassed).length })}
           </Text>
         </Card>
       </SimpleGrid>
@@ -281,16 +281,16 @@ export default function SimulatorAdminPage() {
       <Tabs defaultValue="exercises" radius="md">
         <Tabs.List>
           <Tabs.Tab value="exercises" leftSection={<IconSteeringWheel size={16} />}>
-            Mashqlar konfiguratsiyasi ({exercises.length})
+            {t("simulatorAdmin.tabExercises", { count: exercises.length })}
           </Tabs.Tab>
           <Tabs.Tab value="rules" leftSection={<IconAlertTriangle size={16} />}>
-            Jarima qoidalari ({rules.length})
+            {t("simulatorAdmin.tabRules", { count: rules.length })}
           </Tabs.Tab>
           <Tabs.Tab value="vehicles" leftSection={<IconCar size={16} />}>
-            Avtomobillar dinamikasi ({vehicles.length})
+            {t("simulatorAdmin.tabVehicles", { count: vehicles.length })}
           </Tabs.Tab>
           <Tabs.Tab value="sessions" leftSection={<IconHistory size={16} />}>
-            Imtihon sessiyalari ({sessions.length})
+            {t("simulatorAdmin.tabSessions", { count: sessions.length })}
           </Tabs.Tab>
         </Tabs.List>
 
@@ -301,12 +301,12 @@ export default function SimulatorAdminPage() {
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>#</Table.Th>
-                  <Table.Th>Kod</Table.Th>
-                  <Table.Th>Mashq nomi</Table.Th>
-                  <Table.Th>Vaqt chegarasi</Table.Th>
-                  <Table.Th>Maks. jarima</Table.Th>
-                  <Table.Th>Holati</Table.Th>
-                  <Table.Th ta="right">Amal</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thCode", "Kod")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thExerciseName", "Mashq nomi")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thTimeLimit", "Vaqt chegarasi")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thMaxPenalty", "Maks. jarima")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thStatus", "Holati")}</Table.Th>
+                  <Table.Th ta="right">{t("simulatorAdmin.thAction", "Amal")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -327,12 +327,12 @@ export default function SimulatorAdminPage() {
                     </Table.Td>
                     <Table.Td>
                       <Badge variant="light" color="gray">
-                        {e.timeLimitSeconds} soniya
+                        {e.timeLimitSeconds} {t("simulatorAdmin.unitSeconds", "soniya")}
                       </Badge>
                     </Table.Td>
                     <Table.Td>
                       <Badge variant="light" color="red">
-                        {e.maxPenaltyPoints} ball
+                        {e.maxPenaltyPoints} {t("simulatorAdmin.unitPoints", "ball")}
                       </Badge>
                     </Table.Td>
                     <Table.Td>
@@ -365,11 +365,11 @@ export default function SimulatorAdminPage() {
             <Table highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Qoida kodi</Table.Th>
-                  <Table.Th>Tavsif</Table.Th>
-                  <Table.Th>Jarima bali</Table.Th>
-                  <Table.Th>Og'irlik darajasi</Table.Th>
-                  <Table.Th>To'xtatuvchi xato</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thRuleCode", "Qoida kodi")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thDescription", "Tavsif")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thPenaltyPoints", "Jarima bali")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thSeverity", "Og'irlik darajasi")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thInstantFail", "To'xtatuvchi xato")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -388,7 +388,7 @@ export default function SimulatorAdminPage() {
                         color={r.points >= 100 ? "red" : r.points >= 20 ? "orange" : "yellow"}
                         variant="filled"
                       >
-                        +{r.points} ball
+                        +{r.points} {t("simulatorAdmin.unitPoints", "ball")}
                       </Badge>
                     </Table.Td>
                     <Table.Td>
@@ -408,11 +408,11 @@ export default function SimulatorAdminPage() {
                     <Table.Td>
                       {r.isInstantFail ? (
                         <Badge color="red" variant="light" leftSection={<IconX size={12} />}>
-                          HA (Darhol to'xtatish)
+                          {t("simulatorAdmin.instantFailYes", "HA (Darhol to'xtatish)")}
                         </Badge>
                       ) : (
                         <Badge color="green" variant="light" leftSection={<IconCheck size={12} />}>
-                          YO'Q
+                          {t("simulatorAdmin.instantFailNo", "YO'Q")}
                         </Badge>
                       )}
                     </Table.Td>
@@ -429,13 +429,13 @@ export default function SimulatorAdminPage() {
             <Table highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Model</Table.Th>
-                  <Table.Th>Brend</Table.Th>
-                  <Table.Th>Maks. tezlik</Table.Th>
-                  <Table.Th>Tezlanish (m/s²)</Table.Th>
-                  <Table.Th>Tormoz (m/s²)</Table.Th>
-                  <Table.Th>Rul burilish burchagi</Table.Th>
-                  <Table.Th>Holati</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thModel")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thBrand")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thMaxSpeed")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thAcceleration")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thBraking")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thSteeringAngle")}</Table.Th>
+                  <Table.Th>{t("simulatorAdmin.thStatus")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -447,7 +447,7 @@ export default function SimulatorAdminPage() {
                       </Text>
                     </Table.Td>
                     <Table.Td>{v.brand}</Table.Td>
-                    <Table.Td>{v.maxSpeedKmh} km/soat</Table.Td>
+                    <Table.Td>{v.maxSpeedKmh} {t("simulatorAdmin.unitKmH")}</Table.Td>
                     <Table.Td>{v.acceleration}</Table.Td>
                     <Table.Td>{v.braking}</Table.Td>
                     <Table.Td>{v.maxSteerAngleDeg}°</Table.Td>
@@ -470,19 +470,19 @@ export default function SimulatorAdminPage() {
           <Paper p="md" radius="md" withBorder bg="white">
             {sessions.length === 0 ? (
               <Box py="xl" ta="center">
-                <Text c="dimmed">Hozircha faol sessiyalar mavjud emas</Text>
+                <Text c="dimmed">{t("simulatorAdmin.noActiveSessions")}</Text>
               </Box>
             ) : (
               <Table highlightOnHover verticalSpacing="sm">
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>Sessiya ID</Table.Th>
-                    <Table.Th>Foydalanuvchi</Table.Th>
-                    <Table.Th>Rejim</Table.Th>
-                    <Table.Th>Avtomobil</Table.Th>
-                    <Table.Th>Jarima bali</Table.Th>
-                    <Table.Th>Sarflangan vaqt</Table.Th>
-                    <Table.Th>Natija</Table.Th>
+                    <Table.Th>{t("simulatorAdmin.thSessionId")}</Table.Th>
+                    <Table.Th>{t("simulatorAdmin.thUser")}</Table.Th>
+                    <Table.Th>{t("simulatorAdmin.thMode")}</Table.Th>
+                    <Table.Th>{t("simulatorAdmin.thVehicle")}</Table.Th>
+                    <Table.Th>{t("simulatorAdmin.thPenaltyPoints")}</Table.Th>
+                    <Table.Th>{t("simulatorAdmin.thTimeSpent")}</Table.Th>
+                    <Table.Th>{t("simulatorAdmin.thResult")}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -505,18 +505,18 @@ export default function SimulatorAdminPage() {
                           color={s.totalPenaltyPoints >= 100 ? "red" : "orange"}
                           variant="light"
                         >
-                          {s.totalPenaltyPoints} ball
+                          {s.totalPenaltyPoints} {t("simulatorAdmin.unitPoints")}
                         </Badge>
                       </Table.Td>
-                      <Table.Td>{Math.round(s.timeSpentSeconds)} soniya</Table.Td>
+                      <Table.Td>{Math.round(s.timeSpentSeconds)} {t("simulatorAdmin.unitSeconds")}</Table.Td>
                       <Table.Td>
                         {s.isPassed ? (
                           <Badge color="green" variant="filled" leftSection={<IconCheck size={12} />}>
-                            O'TDI
+                            {t("simulatorAdmin.passed")}
                           </Badge>
                         ) : (
                           <Badge color="red" variant="filled" leftSection={<IconX size={12} />}>
-                            YIQILDI
+                            {t("simulatorAdmin.failed")}
                           </Badge>
                         )}
                       </Table.Td>
@@ -533,39 +533,39 @@ export default function SimulatorAdminPage() {
       <Modal
         opened={!!editingExercise}
         onClose={() => setEditingExercise(null)}
-        title="Mashq parametrlarini tahrirlash"
+        title={t("simulatorAdmin.modal.editTitle")}
         centered
       >
         {editingExercise && (
           <Stack gap="md">
             <TextInput
-              label="Kod"
+              label={t("simulatorAdmin.modal.code")}
               value={editingExercise.code}
               disabled
             />
             <TextInput
-              label="Mashq nomi (O'zbekcha Lotin)"
+              label={t("simulatorAdmin.modal.titleUzl")}
               value={editingExercise.titleUzl}
               onChange={(e) =>
                 setEditingExercise({ ...editingExercise, titleUzl: e.target.value })
               }
             />
             <TextInput
-              label="Mashq nomi (Русский)"
+              label={t("simulatorAdmin.modal.titleRu")}
               value={editingExercise.titleRu}
               onChange={(e) =>
                 setEditingExercise({ ...editingExercise, titleRu: e.target.value })
               }
             />
             <NumberInput
-              label="Ajratilgan vaqt chegarasi (soniya)"
+              label={t("simulatorAdmin.modal.timeLimit")}
               value={editingExercise.timeLimitSeconds}
               onChange={(v) =>
                 setEditingExercise({ ...editingExercise, timeLimitSeconds: Number(v) || 60 })
               }
             />
             <NumberInput
-              label="Maksimal ruxsat etilgan jarima bali"
+              label={t("simulatorAdmin.modal.maxPenalty")}
               value={editingExercise.maxPenaltyPoints}
               onChange={(v) =>
                 setEditingExercise({ ...editingExercise, maxPenaltyPoints: Number(v) || 20 })
@@ -573,10 +573,10 @@ export default function SimulatorAdminPage() {
             />
             <Group justify="flex-end" mt="md">
               <Button variant="default" onClick={() => setEditingExercise(null)}>
-                Bekor qilish
+                {t("common.cancel")}
               </Button>
               <Button color="blue" onClick={saveExerciseEdit}>
-                Saqlash
+                {t("common.save")}
               </Button>
             </Group>
           </Stack>

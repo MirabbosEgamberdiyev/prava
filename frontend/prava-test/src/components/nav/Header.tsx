@@ -66,7 +66,7 @@ export default function Header({
             <DomainLink
               href={getLandingUrl("/")}
               className="saas-brand"
-              aria-label="Prava Online"
+              aria-label={t("common.appName", "Prava Online")}
               onMouseEnter={() => prefetchRoute("/")}
               onFocus={() => prefetchRoute("/")}
             >

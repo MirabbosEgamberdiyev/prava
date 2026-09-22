@@ -197,12 +197,12 @@ export const QuestionList = ({ searchQuery, topicId }: QuestionListProps) => {
                           <IconEdit size={16} />
                         </ActionIcon>
                       </Tooltip>
-                      <Tooltip label="Nusxa olish (Clone)">
+                      <Tooltip label={t("question.clone", "Savoldan nusxa olish")}>
                         <ActionIcon
                           variant="light"
                           color="teal"
                           onClick={() => handleClone(q)}
-                          aria-label="Clone question">
+                          aria-label={t("question.clone", "Savoldan nusxa olish")}>
                           <IconCopy size={16} />
                         </ActionIcon>
                       </Tooltip>

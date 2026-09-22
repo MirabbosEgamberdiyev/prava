@@ -93,7 +93,7 @@ const Footer = React.memo(() => {
                   color="cyan"
                   size="sm"
                   radius="md"
-                  aria-label="Telegram Bot"
+                  aria-label={t("footer.telegramBot", "Telegram Bot")}
                 >
                   <IconBrandTelegram size={16} />
                 </ActionIcon>

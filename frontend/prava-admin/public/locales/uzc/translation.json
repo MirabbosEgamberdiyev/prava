@@ -190,6 +190,11 @@
     "reset": "Стандарт ҳолатга қайтариш"
   },
   "common": {
+    "changeLanguage": "Тилни ўзгартириш",
+    "toggleTheme": "Мавзуни алмаштириш",
+    "itemsCount": "та",
+    "reload": "Қайта юклаш",
+    "retry": "Қайта уриниш",
     "save": "Сақлаш",
     "cancel": "Бекор қилиш",
     "delete": "Ўчириш",
@@ -245,10 +250,23 @@
     "clearFilters": "Филтрларни тозалаш",
     "total": "Жами",
     "page": "Саҳифа",
-    "retry": "Қайта уриниш",
     "clear": "Тозалаш"
   },
   "dashboard": {
+    "subtitle": "Автомактаб имтиҳон тизими реал вақт назорат панели",
+    "quickActions": "Тезкор амаллар",
+    "usersAndActivity": "Фойдаланувчилар ва фаоллик",
+    "activeUsers": "Фаол фойдаланувчилар",
+    "notBlocked": "Тизимда блокланмаганлар",
+    "joinedToday": "Бугун қўшилганлар",
+    "last24Hours": "Охирги 24 соатда",
+    "logins24h": "24 соатда кирганлар",
+    "activeSessions": "Фаол сессиялар",
+    "signsSubtitle": "8 та расмий тоифа",
+    "markingsSubtitle": "Горизонтал ва вертикал",
+    "examCentersSubtitle": "14 та ҳудудий марказ",
+    "autodromSubtitle": "Давлат амалий стандарти",
+    "finesSubtitle": "Қоидабузарлик мезонлари",
     "title": "Бошқарув панели",
     "noData": "Маълумотлар топилмади",
     "totalUsers": "Фойдаланувчилар",
@@ -303,6 +321,7 @@
     "currentlyTesting": "Айни пайтда тест ишлаётганлар"
   },
   "users": {
+    "selectAll": "Барча фойдаланувчиларни танлаш",
     "title": "Фойдаланувчилар",
     "newUser": "Янги фойдаланувчи",
     "searchPlaceholder": "Исм, телефон, эмаил...",
@@ -1265,6 +1284,10 @@
     }
   },
   "apps": {
+    "releaseNotesUzlPlaceholder": "Yangiliklar — ozbek tilida (lotin)",
+    "releaseNotesUzcPlaceholder": "Янгиликлар — ўзбек тилида (кирилл)",
+    "releaseNotesRuPlaceholder": "Что нового — на русском языке",
+    "releaseNotesEnPlaceholder": "Release notes — in English",
     "title": "Иловалар",
     "addRelease": "Янги релиз",
     "editRelease": "Релизни таҳрирлаш",
@@ -1469,22 +1492,10 @@
     }
   },
   "faqAdmin": {
-    "title": "Кўп Бериладиган Саволлар (FAQ CMS)",
-    "subtitle": "Фойдаланувчилар ва автомактаблар учун кўп тилли қўлланма саволлари",
-    "addBtn": "Янги савол қўшиш",
-    "refresh": "Янгилаш",
-    "retry": "Қайта уриниш",
-    "searchPlaceholder": "Савол ёки жавоб бўйича қидириш...",
-    "errorLoad": "FAQ маълумотларини юклаб бўлмади",
-    "empty": "Ҳозирча FAQ элементлари йўқ",
-    "table": {
-      "order": "Тартиб",
-      "question": "Савол (Лотин)",
-      "category": "Категория",
-      "status": "Ҳолат",
-      "actions": "Амаллар"
-    },
     "modal": {
+      "categoryPlaceholder": "GENERAL, PAYMENT, EXAM, DESKTOP",
+      "questionPlaceholder": "Саволни киритинг...",
+      "answerPlaceholder": "Жавоб матнини киритинг...",
       "createTitle": "Янги FAQ Саволи Яратиш",
       "editTitle": "FAQ Саволини Таҳрирлаш",
       "tabUzl": "Ўзбекча (Лотин)",
@@ -1500,6 +1511,21 @@
       "deleteConfirm": "Ҳақиқатан ҳам бу саволни бутунлай ўчириб ташламоқчимисиз?",
       "delete": "Ўчириш"
     },
+    "title": "Кўп Бериладиган Саволлар (FAQ CMS)",
+    "subtitle": "Фойдаланувчилар ва автомактаблар учун кўп тилли қўлланма саволлари",
+    "addBtn": "Янги савол қўшиш",
+    "refresh": "Янгилаш",
+    "retry": "Қайта уриниш",
+    "searchPlaceholder": "Савол ёки жавоб бўйича қидириш...",
+    "errorLoad": "FAQ маълумотларини юклаб бўлмади",
+    "empty": "Ҳозирча FAQ элементлари йўқ",
+    "table": {
+      "order": "Тартиб",
+      "question": "Савол (Лотин)",
+      "category": "Категория",
+      "status": "Ҳолат",
+      "actions": "Амаллар"
+    },
     "notifications": {
       "requiredLotin": "Лотин тилидаги савол ва жавоб майдонлари мажбурий",
       "createSuccess": "Янги FAQ муваффақиятли яратилди",
@@ -1509,6 +1535,27 @@
     }
   },
   "newsAdmin": {
+    "modal": {
+      "slugPlaceholder": "масалан: yhq-yangi-qoidalari-2026",
+      "titlePlaceholder": "Мақола сарлавҳаси...",
+      "summaryPlaceholder": "Қисқача мазмуни...",
+      "contentPlaceholder": "Мақола тўлиқ матни...",
+      "createTitle": "Янги Янгилик Яратиш",
+      "editTitle": "Янгиликни Таҳрирлаш",
+      "tabUzl": "Ўзбекча (Лотин)",
+      "tabUzc": "Ўзбекча (Кирилл)",
+      "tabRu": "Русский",
+      "titleLabel": "Сарлавҳа",
+      "slugLabel": "Slug (URL identifier)",
+      "summaryLabel": "Қисқача мазмуни (Summary)",
+      "contentLabel": "Тўлиқ матн (HTML / Матн)",
+      "imageUrlLabel": "Расм URL",
+      "publishSwitch": "Дарҳол нашр этилсин (Published)",
+      "save": "Сақлаш",
+      "cancel": "Бекор қилиш",
+      "deleteConfirm": "Ҳақиқатан ҳам бу мақолани бутунлай ўчириб ташламоқчимисиз?",
+      "delete": "Ўчириш"
+    },
     "title": "Янгиликлар ва Эълонлар (News CMS)",
     "subtitle": "Платформа янгиликлари, қоидалар ўзгариши ва расмий эълонлар бошқаруви",
     "addBtn": "Янги янгилик қўшиш",
@@ -1528,23 +1575,6 @@
     },
     "statusPublished": "Нашр қилинган",
     "statusDraft": "Қоралама",
-    "modal": {
-      "createTitle": "Янги Янгилик Яратиш",
-      "editTitle": "Янгиликни Таҳрирлаш",
-      "tabUzl": "Ўзбекча (Лотин)",
-      "tabUzc": "Ўзбекча (Кирилл)",
-      "tabRu": "Русский",
-      "titleLabel": "Сарлавҳа",
-      "slugLabel": "Slug (URL identifier)",
-      "summaryLabel": "Қисқача мазмуни (Summary)",
-      "contentLabel": "Тўлиқ матн (HTML / Матн)",
-      "imageUrlLabel": "Расм URL",
-      "publishSwitch": "Дарҳол нашр этилсин (Published)",
-      "save": "Сақлаш",
-      "cancel": "Бекор қилиш",
-      "deleteConfirm": "Ҳақиқатан ҳам бу мақолани бутунлай ўчириб ташламоқчимисиз?",
-      "delete": "Ўчириш"
-    },
     "notifications": {
       "requiredLotin": "Лотин тилидаги сарлавҳа ва матн майдонлари мажбурий",
       "createSuccess": "Янгилик муваффақиятли яратилди",
@@ -1555,12 +1585,35 @@
     }
   },
   "examsAdmin": {
+    "modal": {
+      "overallScore": "Умумий балл",
+      "status": "Ҳолати",
+      "noAnswers": "Ушбу сессияда ҳали бирорта жавоб топширилмаган",
+      "questionPrefix": "Савол",
+      "variantPrefix": "Вариант",
+      "unitItems": "та",
+      "title": "Имтиҳон Саволлари ва Жавоблари",
+      "correctAnswers": "Тўғри жавоблар",
+      "answersList": "Берилган Жавоблар Рўйхати",
+      "colQuestionId": "Савол ID",
+      "colSelected": "Танланган жавоб",
+      "colCorrect": "Тўғри жавоб",
+      "colResult": "Натижа",
+      "correct": "Тўғри",
+      "wrong": "Нотўғри",
+      "close": "Ёпиш"
+    },
     "title": "Имтиҳон Сессиялари ва Тест Натижалари (Exams)",
     "subtitle": "Фойдаланувчилар томонидан топширилган ҳақиқий ва машқ имтиҳонлари мониторинги",
     "refresh": "Янгилаш",
     "retry": "Қайта уриниш",
     "searchUser": "Фойдаланувчи ID бўйича...",
     "statusFilter": "Ҳолат",
+    "statusCompleted": "Тугалланган (COMPLETED)",
+    "statusInProgress": "Жараёнда (IN_PROGRESS)",
+    "statusExpired": "Вақти ўтган (EXPIRED)",
+    "statusTerminated": "Тўхтатилган (TERMINATED)",
+    "unitMinutes": "дақ",
     "errorLoad": "Имтиҳонларни юклаб бўлмади",
     "empty": "Ҳозирча имтиҳон натижалари мавжуд эмас",
     "table": {
@@ -1574,19 +1627,7 @@
       "audit": "Саволлар аудити"
     },
     "passed": "Ўтди",
-    "failed": "Қолди",
-    "modal": {
-      "title": "Имтиҳон Саволлари ва Жавоблари",
-      "correctAnswers": "Тўғри жавоблар",
-      "answersList": "Берилган Жавоблар Рўйхати",
-      "colQuestionId": "Савол ID",
-      "colSelected": "Танланган жавоб",
-      "colCorrect": "Тўғри жавоб",
-      "colResult": "Натижа",
-      "correct": "Тўғри",
-      "wrong": "Нотўғри",
-      "close": "Ёпиш"
-    }
+    "failed": "Қолди"
   },
   "downloadsAdmin": {
     "title": "Юклаб Олишлар Статистикаси (Downloads Analytics)",
@@ -1611,5 +1652,83 @@
   "simulator": {
     "adminTitle": "Автодром Симулятори бошқарув панели",
     "adminSubtitle": "12 та амалий машқ, жарима қоидалари, автомобиль параметрлари ва имтиҳон сессияларини бошқариш"
+  },
+  "question": {
+    "clone": "Саволдан нусха олиш"
+  },
+  "simulatorAdmin": {
+    "title": "Автодром Симулятори бошқарув панели",
+    "subtitle": "12 та амалий машқ, жарима қоидалари, автомобил параметрлари ва имтиҳон сессияларини бошқариш",
+    "kpiExercises": "Амалий машқлар",
+    "kpiExercisesActive": "Фаол: {{count}} та машқ",
+    "kpiRules": "Жарима қоидалари",
+    "kpiRulesCritical": "Критик: {{count}} та тўхтатувчи",
+    "kpiVehicles": "Автомобил моделлари",
+    "kpiVehiclesAllActive": "Ҳаммаси фаол ҳолатда",
+    "kpiExams": "Жами имтиҳонлар",
+    "kpiExamsPassed": "Топширди: {{count}} нафар",
+    "tabExercises": "Машқлар конфигурацияси ({{count}})",
+    "tabRules": "Жарима қоидалари ({{count}})",
+    "tabVehicles": "Автомобиллар динамикаси ({{count}})",
+    "tabSessions": "Имтиҳон сессиялари ({{count}})",
+    "thCode": "Код",
+    "thExerciseName": "Машқ номи",
+    "thTimeLimit": "Вақт чегараси",
+    "thMaxPenalty": "Макс. жарима",
+    "thStatus": "Ҳолати",
+    "thAction": "Амал",
+    "unitSeconds": "сония",
+    "unitPoints": "балл",
+    "unitKmH": "км/соат",
+    "thRuleCode": "Қоида коди",
+    "thDescription": "Тавсиф",
+    "thPenaltyPoints": "Жарима бали",
+    "thSeverity": "Оғирлик даражаси",
+    "thInstantFail": "Тўхтатувчи хато",
+    "instantFailYes": "ҲА (Дарҳол тўхтатиш)",
+    "instantFailNo": "ЙЎҚ",
+    "thModel": "Модел",
+    "thBrand": "Бренд",
+    "thMaxSpeed": "Макс. тезлик",
+    "thAcceleration": "Тезланиш (м/с2)",
+    "thBraking": "Тормоз (м/с2)",
+    "thSteeringAngle": "Рул бурилиш бурчаги",
+    "thSessionId": "Сессия ID",
+    "thUser": "Фойдаланувчи",
+    "thMode": "Режим",
+    "thVehicle": "Автомобил",
+    "thTimeSpent": "Сарфланган вақт",
+    "thResult": "Натижа",
+    "passed": "ЎТДИ",
+    "failed": "ЙИҚИЛДИ",
+    "noActiveSessions": "Ҳозирча фаол сессиялар мавжуд эмас",
+    "modal": {
+      "editTitle": "Машқ параметрларини таҳрирлаш",
+      "code": "Код",
+      "titleUzl": "Машқ номи (Ўзбекча Лотин)",
+      "titleUzc": "Машқ номи (Ўзбекча Кирилл)",
+      "titleRu": "Машқ номи (Русский)",
+      "timeLimit": "Ажратилган вақт чегараси (сония)",
+      "maxPenalty": "Максимал рухсат этилган жарима бали"
+    }
+  },
+  "contactAdmin": {
+    "viewDetail": "Кўриш / Ҳолат бериш",
+    "delete": "Ўчириш",
+    "orgType": "Ташкилот тури",
+    "compCount": "Компьютерлар сони",
+    "clientComment": "Мижоз изоҳи",
+    "noComment": "Изоҳ қолдирилмаган",
+    "statusNew": "Янги (NEW)",
+    "statusInProgress": "Жараёнда (IN_PROGRESS)",
+    "statusAnswered": "Жавоб берилди (ANSWERED)",
+    "statusClosed": "Ёпилди (CLOSED)"
+  },
+  "errorBoundary": {
+    "updateTitle": "Янгиланиш мавжуд",
+    "updateAvailable": "Тизимда янгиланиш мавжуд. Саҳифани қайта юкланг.",
+    "networkTitle": "Интернет алоқаси йўқ",
+    "noInternet": "Интернет алоқаси йўқ. Тармоққа уланишни текширинг.",
+    "somethingWrong": "Кутилмаган хатолик юз берди."
   }
 }

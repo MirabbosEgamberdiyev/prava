@@ -158,7 +158,7 @@ const Home_Page = () => {
       <Group justify="space-between" align="center" wrap="wrap">
         <div>
           <Title order={1} fz="h3">{t("dashboard.title")}</Title>
-          <Text size="sm" c="dimmed">Avtomaktab imtihon tizimi real vaqt nazorat paneli</Text>
+          <Text size="sm" c="dimmed">{t("dashboard.subtitle")}</Text>
         </div>
         <Button variant="light" color="blue" onClick={() => refreshStats()} size="sm">
           {t("common.refresh")}
@@ -169,7 +169,7 @@ const Home_Page = () => {
       <Card shadow="xs" padding="sm" radius="md" withBorder>
         <Stack gap="xs">
           <Text size="xs" fw={700} c="dimmed" tt="uppercase">
-            Tezkor Amallar (Quick Actions)
+            {t("dashboard.quickActions")}
           </Text>
           <Group gap="xs" wrap="wrap">
             <Button
@@ -304,7 +304,7 @@ const Home_Page = () => {
 
       {/* Row 1: Foydalanuvchilar va Faollik (4 Metrika) */}
       <Stack gap="xs">
-        <Text size="sm" fw={700} c="dimmed">FOYDALANUVCHILAR VA FAOLLIK</Text>
+        <Text size="sm" fw={700} c="dimmed" tt="uppercase">{t("dashboard.usersAndActivity")}</Text>
         <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
           <StatCard
             title={t("dashboard.totalUsers")}
@@ -315,26 +315,26 @@ const Home_Page = () => {
             onClick={() => navigate("/users")}
           />
           <StatCard
-            title="Faol Foydalanuvchilar"
+            title={t("dashboard.activeUsers")}
             value={stats.activeUsers ?? stats.activeUsersToday ?? 0}
             icon={<IconUsers size={24} />}
             color="teal"
-            subtitle="Tizimda bloklanmaganlar"
+            subtitle={t("dashboard.notBlocked")}
             onClick={() => navigate("/users")}
           />
           <StatCard
-            title="Bugun Qo'shilganlar"
+            title={t("dashboard.joinedToday")}
             value={stats.todayRegistrations ?? 0}
             icon={<IconUserPlus size={24} />}
             color="cyan"
-            subtitle="Oxirgi 24 soatda"
+            subtitle={t("dashboard.last24Hours")}
           />
           <StatCard
-            title="24 Soatda Kirganlar"
+            title={t("dashboard.logins24h")}
             value={stats.loginsLast24h ?? 0}
             icon={<IconLogin size={24} />}
             color="indigo"
-            subtitle="Faol sessiyalar"
+            subtitle={t("dashboard.activeSessions")}
           />
         </SimpleGrid>
       </Stack>
@@ -380,14 +380,14 @@ const Home_Page = () => {
 
       {/* Row 2.5: Ta'lim va O'quv Dasturi (Curriculum) */}
       <Stack gap="xs">
-        <Text size="sm" fw={700} c="dimmed">{t("nav.curriculum || nav.categoryContent")}</Text>
+        <Text size="sm" fw={700} c="dimmed">{t("nav.curriculum")}</Text>
         <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 5 }}>
           <StatCard
             title={t("nav.signs")}
             value={curriculumStats?.totalSigns ?? 0}
             icon={<IconRoadSign size={24} />}
             color="blue"
-            subtitle="8 ta rasmiy toifa"
+            subtitle={t("dashboard.signsSubtitle")}
             onClick={() => navigate("/signs")}
           />
           <StatCard
@@ -395,7 +395,7 @@ const Home_Page = () => {
             value={curriculumStats?.totalMarkings ?? 0}
             icon={<IconTrafficLights size={24} />}
             color="teal"
-            subtitle="Gorizontal & Vertikal"
+            subtitle={t("dashboard.markingsSubtitle")}
             onClick={() => navigate("/markings")}
           />
           <StatCard
@@ -403,7 +403,7 @@ const Home_Page = () => {
             value={curriculumStats?.totalExamCenters ?? 0}
             icon={<IconMapPin size={24} />}
             color="cyan"
-            subtitle="14 ta hududiy markaz"
+            subtitle={t("dashboard.examCentersSubtitle")}
             onClick={() => navigate("/exam-centers")}
           />
           <StatCard
@@ -411,7 +411,7 @@ const Home_Page = () => {
             value={curriculumStats?.totalPracticalExercises ?? 0}
             icon={<IconSteeringWheel size={24} />}
             color="grape"
-            subtitle="Davlat amaliy standarti"
+            subtitle={t("dashboard.autodromSubtitle")}
             onClick={() => navigate("/autodrom")}
           />
           <StatCard
@@ -419,7 +419,7 @@ const Home_Page = () => {
             value={curriculumStats?.totalPenalties ?? 0}
             icon={<IconGavel size={24} />}
             color="red"
-            subtitle="Qoidabuzarlik mezonlari"
+            subtitle={t("dashboard.finesSubtitle")}
             onClick={() => navigate("/fines")}
           />
         </SimpleGrid>

@@ -60,7 +60,7 @@ const App_Header = ({
               variant="light"
               size="lg"
               radius="md"
-              aria-label="Toggle color scheme"
+              aria-label={t("common.toggleTheme", "Mavzuni almashtirish")}
             >
               {computedColorScheme === "light" ? (
                 <IconMoon stroke={1.5} size={18} />

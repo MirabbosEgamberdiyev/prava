@@ -25,6 +25,7 @@ import {
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 import { EXERCISE_REGISTRY } from "./registry/exerciseRegistry";
 import { VEHICLE_CONFIGS } from "./registry/vehicleConfigs";
@@ -51,6 +52,7 @@ type ModeType = "training" | "practice" | "exam";
 export default function SimulatorDashboard_Page() {
   const navigate = useNavigate();
   const { lang } = useLanguage();
+  const { t } = useTranslation();
 
   const simulatorContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -304,8 +306,8 @@ export default function SimulatorDashboard_Page() {
   return (
     <>
       <SEO
-        title="Avtodrom Simulyatori 3D | PravaOnline"
-        description="IIV YHXX Davlat amaliy imtihoni 3D simulyatori"
+        title={t("seo.simulatorTitle", "Avtodrom Simulyatori 3D | PravaOnline")}
+        description={t("seo.simulatorDesc", "IIV YHXX Davlat amaliy imtihoni 3D simulyatori")}
       />
 
       <Container size="xl" py="xs" px={{ base: "xs", sm: "sm" }}>

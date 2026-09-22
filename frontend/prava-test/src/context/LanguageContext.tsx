@@ -224,7 +224,12 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (!text) return "";
       if (typeof text === "string") return text;
       const map = text as Record<string, string>;
-      return map[language] || map["uzl"] || map["uz"] || "";
+      const direct = map[language];
+      if (direct && direct.trim() !== "") return direct;
+      if (import.meta.env.DEV) {
+        console.warn(`[i18n:localize] Missing translation for active locale "${language}"`, text);
+      }
+      return map["uzl"] || map["uz"] || map["ru"] || "";
     },
     [language]
   );
@@ -414,11 +419,17 @@ export function getLocalizedText(item: any, fieldPrefix: string, lang?: string):
       i18n.language ||
       "uzl"
   );
+  const direct = item[`${fieldPrefix}_${l}`];
+  if (direct && String(direct).trim() !== "") return String(direct);
+
+  if (import.meta.env.DEV) {
+    console.warn(`[i18n:getLocalizedText] Missing field "${fieldPrefix}_${l}" for active locale "${l}"`, item);
+  }
   if (l === "uzc") {
-    return item[`${fieldPrefix}_uzc`] || item[`${fieldPrefix}_uzl`] || item[fieldPrefix] || "";
+    return item[`${fieldPrefix}_uzl`] || item[fieldPrefix] || "";
   }
   if (l === "ru") {
-    return item[`${fieldPrefix}_ru`] || item[`${fieldPrefix}_uzl`] || item[fieldPrefix] || "";
+    return item[`${fieldPrefix}_uzl`] || item[fieldPrefix] || "";
   }
   return item[`${fieldPrefix}_uzl`] || item[fieldPrefix] || "";
 }

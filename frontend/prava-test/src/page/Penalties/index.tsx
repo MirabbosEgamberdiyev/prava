@@ -73,8 +73,8 @@ export default function Penalties_Page() {
   return (
     <Container size="xl" py="xl">
       <SEO
-        title="Jarimalar va Qoidabuzarliklar — Rasmiy Imtihon va YHQ Nizomi"
-        description="Imtihondagi jarima ballari va yo'l harakati qoidabuzarliklari bo'yicha to'liq ma'lumotlar jadvali."
+        title={t("seo.penaltiesTitle", "Jarimalar va Qoidabuzarliklar — Rasmiy Imtihon va YHQ Nizomi")}
+        description={t("seo.penaltiesDesc", "Imtihondagi jarima ballari va yo'l harakati qoidabuzarliklari bo'yicha to'liq ma'lumotlar jadvali.")}
       />
 
       <Stack gap="lg">

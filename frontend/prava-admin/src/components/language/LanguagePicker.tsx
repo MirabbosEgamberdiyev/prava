@@ -11,7 +11,7 @@ const languages = [
 ] as const;
 
 export default function LanguagePicker() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const handleLanguageChange = (value: string) => {
     i18n.changeLanguage(value);
@@ -30,7 +30,7 @@ export default function LanguagePicker() {
           variant="light"
           size="lg"
           radius="md"
-          aria-label="Change language"
+          aria-label={t("common.changeLanguage", "Tilni o'zgartirish")}
           style={{ minWidth: 40 }}
         >
           <IconLanguage size={18} />

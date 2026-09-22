@@ -57,12 +57,7 @@ const statusColors: Record<string, string> = {
   CLOSED: "gray",
 };
 
-const statusLabels: Record<string, string> = {
-  NEW: "Yangi",
-  IN_PROGRESS: "Jarayonda",
-  ANSWERED: "Javob berildi",
-  CLOSED: "Yopildi",
-};
+
 
 export default function ContactInquiriesPage() {
   const { t } = useTranslation();
@@ -238,7 +233,10 @@ export default function ContactInquiriesPage() {
                     <Table.Td>{inq.region || "-"}</Table.Td>
                     <Table.Td>
                       <Badge color={statusColors[inq.status] || "gray"} variant="filled">
-                        {statusLabels[inq.status] || inq.status}
+                        {inq.status === "NEW" ? t("contact.tabs.new") :
+                         inq.status === "IN_PROGRESS" ? t("contact.tabs.inProgress") :
+                         inq.status === "ANSWERED" ? t("contact.tabs.answered") :
+                         inq.status === "CLOSED" ? t("contact.tabs.closed") : inq.status}
                       </Badge>
                     </Table.Td>
                     <Table.Td>
@@ -254,7 +252,8 @@ export default function ContactInquiriesPage() {
                         <ActionIcon
                           variant="subtle"
                           color="blue"
-                          title="Ko'rish / Holat berish"
+                          title={t("contactAdmin.viewDetail")}
+                          aria-label={t("contactAdmin.viewDetail")}
                           onClick={() => handleOpenDetail(inq)}
                         >
                           <IconEye size={18} />
@@ -262,7 +261,8 @@ export default function ContactInquiriesPage() {
                         <ActionIcon
                           variant="subtle"
                           color="red"
-                          title="O'chirish"
+                          title={t("contactAdmin.delete")}
+                          aria-label={t("contactAdmin.delete")}
                           onClick={() => { setDeletingId(inq.id); openDeleteModal(); }}
                         >
                           <IconTrash size={18} />
@@ -320,29 +320,29 @@ export default function ContactInquiriesPage() {
                 <Text>{selectedInquiry.region || "-"}</Text>
               </div>
               <div>
-                <Text size="xs" c="dimmed">Tashkilot turi</Text>
+                <Text size="xs" c="dimmed">{t("contactAdmin.orgType")}</Text>
                 <Text>{selectedInquiry.organizationType || "-"}</Text>
               </div>
               <div>
-                <Text size="xs" c="dimmed">Kompyuterlar soni</Text>
+                <Text size="xs" c="dimmed">{t("contactAdmin.compCount")}</Text>
                 <Text>{selectedInquiry.computerCount || "-"}</Text>
               </div>
             </Group>
 
             <div>
-              <Text size="xs" c="dimmed">Mijoz izohi</Text>
+              <Text size="xs" c="dimmed">{t("contactAdmin.clientComment")}</Text>
               <Paper withBorder p="xs" bg="gray.0">
-                <Text size="sm">{selectedInquiry.comment || "Izoh qoldirilmagan"}</Text>
+                <Text size="sm">{selectedInquiry.comment || t("contactAdmin.noComment")}</Text>
               </Paper>
             </div>
 
             <Select
               label={t("contact.modal.statusSection")}
               data={[
-                { value: "NEW", label: "Yangi (NEW)" },
-                { value: "IN_PROGRESS", label: "Jarayonda (IN_PROGRESS)" },
-                { value: "ANSWERED", label: "Javob berildi (ANSWERED)" },
-                { value: "CLOSED", label: "Yopildi (CLOSED)" },
+                { value: "NEW", label: t("contactAdmin.statusNew") },
+                { value: "IN_PROGRESS", label: t("contactAdmin.statusInProgress") },
+                { value: "ANSWERED", label: t("contactAdmin.statusAnswered") },
+                { value: "CLOSED", label: t("contactAdmin.statusClosed") },
               ]}
               value={newStatus}
               onChange={(val) => setNewStatus(val || "NEW")}
