@@ -121,6 +121,35 @@ export default function ExercisePractice_Page() {
         e.preventDefault();
         setTelemetry((prev) => ({ ...prev, handbrake: !prev.handbrake }));
       }
+      if (e.key === "b" || e.key === "B") {
+        setTelemetry((prev) => ({ ...prev, seatbeltFastened: !prev.seatbeltFastened }));
+      }
+      if (e.key === "l" || e.key === "L") {
+        setTelemetry((prev) => ({ ...prev, lowBeamsOn: !prev.lowBeamsOn }));
+      }
+      if (e.key === "q" || e.key === "Q") {
+        setTelemetry((prev) => ({
+          ...prev,
+          turnSignal: prev.turnSignal === "left" ? "none" : "left",
+        }));
+      }
+      if (e.key === "e" || e.key === "E") {
+        setTelemetry((prev) => ({
+          ...prev,
+          turnSignal: prev.turnSignal === "right" ? "none" : "right",
+        }));
+      }
+      if (e.key === "h" || e.key === "H") {
+        setTelemetry((prev) => ({
+          ...prev,
+          turnSignal: prev.turnSignal === "hazard" ? "none" : "hazard",
+        }));
+      }
+      if (e.key === "c" || e.key === "C") {
+        setCameraView((prev) =>
+          prev === "chase" ? "first_person" : prev === "first_person" ? "top_down" : "chase"
+        );
+      }
     };
     const handleKeyUp = (e: KeyboardEvent) => {
       keysDownRef.current[e.key.toLowerCase()] = false;
@@ -273,6 +302,22 @@ export default function ExercisePractice_Page() {
                   )
                 }
                 onSoundToggle={() => setSoundEnabled(!soundEnabled)}
+                onGearSelect={(g: GearMode) => setTelemetry((prev) => ({ ...prev, gear: g }))}
+                onHandbrakeToggle={() =>
+                  setTelemetry((prev) => ({ ...prev, handbrake: !prev.handbrake }))
+                }
+                onSeatbeltToggle={() =>
+                  setTelemetry((prev) => ({ ...prev, seatbeltFastened: !prev.seatbeltFastened }))
+                }
+                onLightsToggle={() =>
+                  setTelemetry((prev) => ({ ...prev, lowBeamsOn: !prev.lowBeamsOn }))
+                }
+                onTurnSignalToggle={(sig) =>
+                  setTelemetry((prev) => ({
+                    ...prev,
+                    turnSignal: prev.turnSignal === sig ? "none" : sig,
+                  }))
+                }
               />
 
               <MobileControls
