@@ -40,11 +40,11 @@ export default function Penalties_Page() {
       })
       .catch((err) => {
         console.error("Failed to load penalties:", err);
-        setError("Jarimalar ma'lumotlarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring.");
+        setError(t("curriculum.loadPenaltiesError", "Jarimalar ma'lumotlarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring."));
         setPenalties([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchPenalties();

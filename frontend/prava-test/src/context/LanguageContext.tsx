@@ -17,6 +17,7 @@ import type {
   QuestionOption,
 } from "../types";
 import { OFFICIAL_TOPIC_MAP, findOfficialTopic } from "../constants/topics";
+import { latinToCyrillic, cyrillicToLatin } from "../utils/transliterate";
 
 export type AppLanguage = "uzl" | "uzc" | "ru";
 
@@ -226,8 +227,13 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       const map = text as Record<string, string>;
       const direct = map[language];
       if (direct && direct.trim() !== "") return direct;
-      if (import.meta.env.DEV) {
-        console.warn(`[i18n:localize] Missing translation for active locale "${language}"`, text);
+      if (language === "uzc") {
+        const uzlVal = map["uzl"] || map["uz"];
+        if (uzlVal) return latinToCyrillic(uzlVal);
+      }
+      if (language === "uzl") {
+        const uzcVal = map["uzc"];
+        if (uzcVal) return cyrillicToLatin(uzcVal);
       }
       return map["uzl"] || map["uz"] || map["ru"] || "";
     },
@@ -256,12 +262,22 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         (typeof topic.name === "string" ? topic.name : "");
 
       if (language === "uzc") {
-        return nameUzc || nameUzl || nameRu || "";
+        if (nameUzc && String(nameUzc).trim()) return String(nameUzc);
+        if (nameUzl && String(nameUzl).trim()) return latinToCyrillic(String(nameUzl));
+        if (nameRu && String(nameRu).trim()) return String(nameRu);
+        return "";
       }
       if (language === "ru") {
-        return nameRu || nameUzl || nameUzc || "";
+        if (nameRu && String(nameRu).trim()) return String(nameRu);
+        if (nameUzl && String(nameUzl).trim()) return String(nameUzl);
+        if (nameUzc && String(nameUzc).trim()) return cyrillicToLatin(String(nameUzc));
+        return "";
       }
-      return nameUzl || nameUzc || nameRu || "";
+      // uzl
+      if (nameUzl && String(nameUzl).trim()) return String(nameUzl);
+      if (nameUzc && String(nameUzc).trim()) return cyrillicToLatin(String(nameUzc));
+      if (nameRu && String(nameRu).trim()) return String(nameRu);
+      return "";
     },
     [language]
   );
@@ -269,9 +285,16 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const localizeQuestion = useCallback(
     (q: OfflineQuestion | null | undefined): string => {
       if (!q) return "";
-      if (language === "uzc") return q.text_uzc || q.text_uzl;
+      if (language === "uzc") {
+        if (q.text_uzc && q.text_uzc.trim()) return q.text_uzc;
+        if (q.text_uzl && q.text_uzl.trim()) return latinToCyrillic(q.text_uzl);
+        if (q.text_ru && q.text_ru.trim()) return q.text_ru;
+        return "";
+      }
       if (language === "ru") return q.text_ru || q.text_uzl;
-      return q.text_uzl;
+      if (q.text_uzl && q.text_uzl.trim()) return q.text_uzl;
+      if (q.text_uzc && q.text_uzc.trim()) return cyrillicToLatin(q.text_uzc);
+      return q.text_ru || "";
     },
     [language]
   );
@@ -279,9 +302,16 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const localizeOption = useCallback(
     (opt: QuestionOption | null | undefined): string => {
       if (!opt) return "";
-      if (language === "uzc") return opt.uzc || opt.uzl;
+      if (language === "uzc") {
+        if (opt.uzc && opt.uzc.trim()) return opt.uzc;
+        if (opt.uzl && opt.uzl.trim()) return latinToCyrillic(opt.uzl);
+        if (opt.ru && opt.ru.trim()) return opt.ru;
+        return "";
+      }
       if (language === "ru") return opt.ru || opt.uzl;
-      return opt.uzl;
+      if (opt.uzl && opt.uzl.trim()) return opt.uzl;
+      if (opt.uzc && opt.uzc.trim()) return cyrillicToLatin(opt.uzc);
+      return opt.ru || "";
     },
     [language]
   );
@@ -289,9 +319,16 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const localizeExplanation = useCallback(
     (q: OfflineQuestion | null | undefined): string | null => {
       if (!q) return null;
-      if (language === "uzc" && q.explanation_uzc) return q.explanation_uzc;
-      if (language === "ru" && q.explanation_ru) return q.explanation_ru;
-      return q.explanation_uzl ?? null;
+      if (language === "uzc") {
+        if (q.explanation_uzc && q.explanation_uzc.trim()) return q.explanation_uzc;
+        if (q.explanation_uzl && q.explanation_uzl.trim()) return latinToCyrillic(q.explanation_uzl);
+        if (q.explanation_ru && q.explanation_ru.trim()) return q.explanation_ru;
+        return null;
+      }
+      if (language === "ru") return q.explanation_ru || q.explanation_uzl || null;
+      if (q.explanation_uzl && q.explanation_uzl.trim()) return q.explanation_uzl;
+      if (q.explanation_uzc && q.explanation_uzc.trim()) return cyrillicToLatin(q.explanation_uzc);
+      return q.explanation_ru ?? null;
     },
     [language]
   );

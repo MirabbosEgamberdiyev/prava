@@ -10,6 +10,7 @@ import {
   ActionIcon,
   Tooltip,
   Modal,
+  SegmentedControl,
 } from "@mantine/core";
 import {
   IconSteeringWheel,
@@ -28,7 +29,11 @@ import { useLanguage } from "../../context/LanguageContext";
 import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 import { EXERCISE_REGISTRY } from "./registry/exerciseRegistry";
-import { VEHICLE_CONFIGS } from "./registry/vehicleConfigs";
+import {
+  VEHICLE_CONFIGS,
+  DEFAULT_VEHICLE_FOR_CATEGORY,
+  getVehiclesByCategory,
+} from "./registry/vehicleConfigs";
 import { updateVehiclePhysics } from "./engine/vehiclePhysics";
 import { checkCollisions } from "./engine/collisionEngine";
 import { evaluateSensors } from "./engine/sensorEngine";
@@ -40,14 +45,16 @@ import { simulatorApi } from "./services/simulatorApi";
 import SimulatorCanvas3D from "./components/SimulatorCanvas3D";
 import HUDOverlay from "./components/HUDOverlay";
 import ExerciseNavigatorBar from "./components/ExerciseNavigatorBar";
-import MobileControls from "./components/MobileControls";
+import { InputNormalizer } from "./engine/inputNormalizer";
 import WebGLFallback, { isWebGLAvailable } from "./components/WebGLFallback";
+import VehicleSelectorModal from "./components/VehicleSelectorModal";
 import type {
   VehicleTelemetry,
   CameraView,
   GearMode,
   PenaltyEvent,
   ExerciseAttemptResult,
+  VehicleCategory,
 } from "./types";
 
 type ModeType = "training" | "practice" | "exam";
@@ -61,13 +68,39 @@ export default function SimulatorDashboard_Page() {
 
   // Active Simulator Mode (Default: "exam" matching reference screenshot)
   const [mode, setMode] = useState<ModeType>("exam");
-  const [selectedVehicle, setSelectedVehicle] = useState<string>("Cobalt");
+  const [category, setCategory] = useState<VehicleCategory>("B");
+  const [selectedVehicle, setSelectedVehicle] = useState<string>("Chevrolet Cobalt");
+  const [vehicleModalOpen, setVehicleModalOpen] = useState<boolean>(false);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(0);
   const exercise = EXERCISE_REGISTRY[currentExerciseIndex] || EXERCISE_REGISTRY[0];
+
+  const handleCategoryChange = useCallback((newCat: VehicleCategory) => {
+    setCategory(newCat);
+    const defVehicle = DEFAULT_VEHICLE_FOR_CATEGORY[newCat] || "Chevrolet Cobalt";
+    setSelectedVehicle(defVehicle);
+    controllerRef.current?.updateVehicle(defVehicle);
+  }, []);
+
+  const handleVehicleChange = useCallback((vName: string) => {
+    setSelectedVehicle(vName);
+    controllerRef.current?.updateVehicle(vName);
+  }, []);
 
   const [cameraView, setCameraView] = useState<CameraView>("chase");
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
+  // Sync isFullscreen with native browser fullscreen changes
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFsChange);
+    };
+  }, []);
+
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [penalties, setPenalties] = useState<PenaltyEvent[]>([]);
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
@@ -81,6 +114,7 @@ export default function SimulatorDashboard_Page() {
 
   // Vehicle Telemetry
   const [telemetry, setTelemetry] = useState<VehicleTelemetry>({
+    category: "B",
     speed: 0,
     rpm: 800,
     gear: "D",
@@ -108,6 +142,8 @@ export default function SimulatorDashboard_Page() {
   const mobileSteerRef = useRef<number>(0);
   const mobileThrottleRef = useRef<number>(0);
   const mobileBrakeRef = useRef<number>(0);
+  const mobileClutchRef = useRef<number>(0);
+  const inputNormalizerRef = useRef<InputNormalizer>(new InputNormalizer());
   const lastReverseBeepRef = useRef<number>(0);
   const hornActiveRef = useRef<boolean>(false);
   const audioStartedRef = useRef<boolean>(false);
@@ -199,12 +235,12 @@ export default function SimulatorDashboard_Page() {
         setTelemetry((prev) => ({ ...prev, engineStarted: started }));
       }
 
-      // PRND Gear Selectors
+      // PRND Gear Selectors (Alt+D for Drive, or P/R/N, keeping 'D' pure for steering right)
       if (e.key === "p" || e.key === "P") {
         controllerRef.current?.setGear("P");
         setTelemetry((prev) => ({ ...prev, gear: "P" }));
       }
-      if (e.key === "r" || e.key === "R") {
+      if ((e.key === "r" || e.key === "R") && !keysDownRef.current["w"] && !keysDownRef.current["s"]) {
         controllerRef.current?.setGear("R");
         setTelemetry((prev) => ({ ...prev, gear: "R" }));
       }
@@ -212,7 +248,7 @@ export default function SimulatorDashboard_Page() {
         controllerRef.current?.setGear("N");
         setTelemetry((prev) => ({ ...prev, gear: "N" }));
       }
-      if (e.key === "d" || e.key === "D") {
+      if (e.altKey && (e.key === "d" || e.key === "D")) {
         controllerRef.current?.setGear("D");
         setTelemetry((prev) => ({ ...prev, gear: "D" }));
       }
@@ -271,10 +307,18 @@ export default function SimulatorDashboard_Page() {
         }
       }
 
-      // Multi-Camera Perspective Toggle (Key: C)
+      // Multi-Camera Perspective Toggle (Key: C: Chase -> Cockpit -> Rear -> Top-Down -> Free)
       if (e.key === "c" || e.key === "C") {
         setCameraView((prev) =>
-          prev === "chase" ? "first_person" : prev === "first_person" ? "top_down" : "chase"
+          prev === "chase"
+            ? "first_person"
+            : prev === "first_person"
+            ? "rear"
+            : prev === "rear"
+            ? "top_down"
+            : prev === "top_down"
+            ? "free"
+            : "chase"
         );
       }
     };
@@ -348,15 +392,44 @@ export default function SimulatorDashboard_Page() {
     setExerciseResults((prev) => [...prev, exResult]);
 
     if (currentExerciseIndex < EXERCISE_REGISTRY.length - 1) {
+      if (soundEnabled) {
+        audioEngine.playVoiceAlert(
+          lang === "ru"
+            ? "Упражнение выполнено! Переходите к следующему заданию."
+            : lang === "uzc"
+            ? "Машқ муваффақиятли бажарилди! Кейинги машққа ўтинг."
+            : "Mashq muvaffaqiyatli bajarildi! Keyingi mashqqa o'ting.",
+          lang === "ru" ? "ru-RU" : "uz-UZ"
+        );
+      }
       selectExercise(currentExerciseIndex + 2);
     } else {
       const total = penalties.reduce((sum, p) => sum + p.points, 0);
-      if (soundEnabled && total < 100) {
-        audioEngine.playSuccessFanfare();
+      if (soundEnabled) {
+        if (total < 100) {
+          audioEngine.playSuccessFanfare();
+          audioEngine.playVoiceAlert(
+            lang === "ru"
+              ? "Поздравляем! Вы успешно сдали практический экзамен по вождению!"
+              : lang === "uzc"
+              ? "Табриклаймиз! Сиз амалий ҳайдовchilik имтиҳонини муваффақиятли топширдингиз!"
+              : "Tabriklaymiz! Siz amaliy haydovchilik imtihonini muvaffaqiyatli topshirdingiz!",
+            lang === "ru" ? "ru-RU" : "uz-UZ"
+          );
+        } else {
+          audioEngine.playVoiceAlert(
+            lang === "ru"
+              ? "Экзамен не сдан. Лимит штрафных баллов превышен."
+              : lang === "uzc"
+              ? "Имтиҳон топширилмади. Жарима баллари чегарасидан ошди."
+              : "Imtihon topshirilmadi. Jarima ballari chegarasidan oshdi.",
+            lang === "ru" ? "ru-RU" : "uz-UZ"
+          );
+        }
       }
       setFinishModalOpen(true);
     }
-  }, [currentExerciseIndex, elapsedSeconds, exercise.number, penalties, selectExercise, soundEnabled]);
+  }, [currentExerciseIndex, elapsedSeconds, exercise.number, lang, penalties, selectExercise, soundEnabled]);
 
   // Finish exam action
   const handleFinishExam = useCallback(async () => {
@@ -380,42 +453,34 @@ export default function SimulatorDashboard_Page() {
       const keys = keysDownRef.current;
       const gp = pollGamepad();
 
-      let throttle = 0;
-      let brake = 0;
-      let steer = 0;
+      // Normalize inputs through the master InputNormalizer
+      const norm = inputNormalizerRef.current.step(
+        {
+          keysDown: keys,
+          touchThrottle: mobileThrottleRef.current,
+          touchBrake: mobileBrakeRef.current,
+          touchSteer: mobileSteerRef.current,
+          touchClutch: mobileClutchRef.current,
+          gamepad: gp.connected ? gp : undefined,
+        },
+        currentTelem.gear,
+        currentTelem.handbrake,
+        cameraView,
+        currentTelem.speed,
+        0.016
+      );
 
-      if (keys["w"] || keys["arrowup"]) throttle = 1.0;
-      if (keys["s"] || keys["arrowdown"]) brake = 1.0;
-      if (keys["a"] || keys["arrowleft"]) steer = -1.0;
-      if (keys["d"] || keys["arrowright"]) steer = 1.0;
+      const throttle = norm.throttle;
+      const brake = norm.brake;
+      const steer = norm.steer;
+      const clutch = norm.clutch;
 
-      // Merge mobile touch controls
-      throttle = Math.max(throttle, mobileThrottleRef.current);
-      brake = Math.max(brake, mobileBrakeRef.current);
-      if (Math.abs(mobileSteerRef.current) > 0.05) {
-        steer = mobileSteerRef.current;
-      }
-
-      // Merge HTML5 Gamepad API
-      if (gp.connected) {
-        throttle = Math.max(throttle, gp.throttle);
-        brake = Math.max(brake, gp.brake);
-        if (Math.abs(gp.steer) > 0.05) {
-          steer = gp.steer;
-        }
-        if (gp.gearChange && gp.gearChange !== currentTelem.gear) {
-          setTelemetry((prev) => ({ ...prev, gear: gp.gearChange! }));
-        }
-        if (gp.handbrake && !currentTelem.handbrake) {
-          setTelemetry((prev) => ({ ...prev, handbrake: true }));
-        }
-        if (gp.horn && !hornActiveRef.current) {
-          hornActiveRef.current = true;
-          if (soundEnabled) audioEngine.startHorn();
-        } else if (!gp.horn && hornActiveRef.current && !keys["h"]) {
-          hornActiveRef.current = false;
-          audioEngine.stopHorn();
-        }
+      if (norm.horn && !hornActiveRef.current) {
+        hornActiveRef.current = true;
+        if (soundEnabled) audioEngine.startHorn();
+      } else if (!norm.horn && hornActiveRef.current) {
+        hornActiveRef.current = false;
+        audioEngine.stopHorn();
       }
 
       const controller = controllerRef.current;
@@ -424,7 +489,7 @@ export default function SimulatorDashboard_Page() {
       if (controller) {
         const handbrakeActive = controller.getTelemetry().handbrake;
         updated = controller.update(
-          { throttle, brake, steer, handbrake: handbrakeActive },
+          { throttle, brake, steer, clutch, handbrake: handbrakeActive },
           0.016,
           elapsedSeconds
         );
@@ -433,7 +498,7 @@ export default function SimulatorDashboard_Page() {
           VEHICLE_CONFIGS[selectedVehicle] || VEHICLE_CONFIGS["Chevrolet Cobalt"];
         updated = updateVehiclePhysics(
           currentTelem,
-          { throttle, brake, steer, handbrake: currentTelem.handbrake },
+          { throttle, brake, steer, clutch, handbrake: currentTelem.handbrake },
           vehicleConfig,
           0.016,
           exercise.hasIncline
@@ -466,6 +531,8 @@ export default function SimulatorDashboard_Page() {
             audioEngine.playVoiceAlert(
               lang === "ru"
                 ? "Сбит конус! Начислен штраф."
+                : lang === "uzc"
+                ? "Конус уриб туширилди! Жарима балингиз ҳисобланди."
                 : "Konus urib tushirildi! Jarima balingiz hisoblandi.",
               lang === "ru" ? "ru-RU" : "uz-UZ"
             );
@@ -492,6 +559,8 @@ export default function SimulatorDashboard_Page() {
             audioEngine.playVoiceAlert(
               lang === "ru"
                 ? "Откат более двадцати сантиметров! Экзамен не сдан."
+                : lang === "uzc"
+                ? "Ортга қайтиш 20 сантиметрдан ошди! Имтиҳон топширилмади."
                 : "Ortga qaytish 20 santimetrdan oshdi! Imtihon topshirilmadi.",
               lang === "ru" ? "ru-RU" : "uz-UZ"
             );
@@ -516,7 +585,11 @@ export default function SimulatorDashboard_Page() {
           if (soundEnabled) {
             audioEngine.playPenaltyBuzzer();
             audioEngine.playVoiceAlert(
-              lang === "ru" ? "Превышение скорости!" : "Tezlik me'yordan oshirildi!",
+              lang === "ru"
+                ? "Превышение скорости!"
+                : lang === "uzc"
+                ? "Тезлик меъёрдан оширилди!"
+                : "Tezlik me'yordan oshirildi!",
               lang === "ru" ? "ru-RU" : "uz-UZ"
             );
           }
@@ -553,10 +626,8 @@ export default function SimulatorDashboard_Page() {
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       simulatorContainerRef.current?.requestFullscreen?.().catch(() => {});
-      setIsFullscreen(true);
     } else {
       document.exitFullscreen?.().catch(() => {});
-      setIsFullscreen(false);
     }
   };
 
@@ -569,7 +640,7 @@ export default function SimulatorDashboard_Page() {
         description={t("seo.simulatorDesc", "IIV YHXX Davlat amaliy imtihoni 3D simulyatori")}
       />
 
-      <Container size="xl" py="xs" px={{ base: "xs", sm: "sm" }}>
+      <Container size="xl" maw={1800} py="xs" px={{ base: "xs", sm: "sm" }}>
         <Stack gap="xs">
           {/* ========================================================= */}
           {/* TOP ACTION BAR MATCHING REFERENCE SCREENSHOT              */}
@@ -590,14 +661,15 @@ export default function SimulatorDashboard_Page() {
                   <IconSteeringWheel size={20} />
                 </ActionIcon>
                 <Text size="md" fw={800} c="white" style={{ letterSpacing: "0.3px" }}>
-                  {lang === "ru" ? "Автодром Симулятор" : "Avtodrom Simulyatori"}
+                  {t("simulator.title", "Avtodrom Simulyatori")}
                 </Text>
               </Group>
 
-              {/* Center Mode Switcher Tabs matching screenshot */}
+              {/* Center Mode Switcher Tabs */}
               <Group
                 gap={4}
                 p={3}
+                wrap="wrap"
                 style={{
                   backgroundColor: "rgba(15, 23, 42, 0.8)",
                   borderRadius: "8px",
@@ -613,7 +685,7 @@ export default function SimulatorDashboard_Page() {
                   onClick={() => setMode("training")}
                   style={{ fontWeight: 700 }}
                 >
-                  {lang === "ru" ? "Обучение" : "O'rganish"}
+                  {t("simulator.training", "O'rganish")}
                 </Button>
 
                 {/* 2. Mashq qilish (Practice) */}
@@ -625,7 +697,7 @@ export default function SimulatorDashboard_Page() {
                   onClick={() => setMode("practice")}
                   style={{ fontWeight: 700 }}
                 >
-                  {lang === "ru" ? "Тренировка" : "Mashq qilish"}
+                  {t("simulator.practice", "Mashq qilish")}
                 </Button>
 
                 {/* 3. Imtihon rejimi (Exam - active in screenshot) */}
@@ -637,18 +709,47 @@ export default function SimulatorDashboard_Page() {
                   onClick={() => setMode("exam")}
                   style={{ fontWeight: 700 }}
                 >
-                  {lang === "ru" ? "Режим экзамена" : "Imtihon rejimi"}
+                  {t("simulator.exam", "Imtihon rejimi")}
                 </Button>
               </Group>
 
-              {/* Vehicle Selector & Utility Actions */}
-              <Group gap="xs" align="center">
-                {/* Vehicle Selector Dropdown ("Cobalt v") */}
+              {/* Vehicle Category & Model Selector & Utility Actions */}
+              <Group gap="xs" align="center" wrap="wrap">
+                {/* Category Selector (B: Sedan, C: Truck, D: Bus) */}
+                <SegmentedControl
+                  size="xs"
+                  value={category}
+                  onChange={(val) => handleCategoryChange(val as VehicleCategory)}
+                  data={[
+                    { label: "B", value: "B" },
+                    { label: "C", value: "C" },
+                    { label: "D", value: "D" },
+                  ]}
+                  styles={{
+                    root: {
+                      backgroundColor: "rgba(15, 23, 42, 0.8)",
+                      border: "1px solid rgba(255, 255, 255, 0.15)",
+                    },
+                    indicator: {
+                      backgroundColor: "#0284c7",
+                    },
+                    label: {
+                      fontWeight: 700,
+                      color: "#ffffff",
+                      padding: "2px 8px",
+                    },
+                  }}
+                />
+
+                {/* Vehicle Selector Dropdown filtered by category */}
                 <Select
                   size="xs"
                   value={selectedVehicle}
-                  onChange={(v) => setSelectedVehicle(v || "Cobalt")}
-                  data={["Cobalt", "Gentra", "Nexia 3", "Malibu"]}
+                  onChange={(v) => handleVehicleChange(v || DEFAULT_VEHICLE_FOR_CATEGORY[category])}
+                  data={getVehiclesByCategory(category).map((vc) => ({
+                    value: vc.modelName,
+                    label: vc.modelName,
+                  }))}
                   leftSection={<IconCar size={15} color="#38bdf8" />}
                   styles={{
                     input: {
@@ -656,20 +757,41 @@ export default function SimulatorDashboard_Page() {
                       borderColor: "rgba(255, 255, 255, 0.15)",
                       color: "#ffffff",
                       fontWeight: 700,
-                      width: "110px",
+                      minWidth: "140px",
                     },
                   }}
                 />
 
-                {/* Camera View Toggle Icon */}
-                <Tooltip label={lang === "ru" ? "Сменить камеру (C)" : "Kamera ko'rinishi (C)"}>
+                {/* Modal View All 7 Vehicles button */}
+                <Tooltip label={lang === "ru" ? "Галерея и характеристики 7 авто" : lang === "uzc" ? "7 та машина галереяси ва параметрлар" : "7 ta mashina galereyasi va parametrlar"}>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="blue"
+                    onClick={() => setVehicleModalOpen(true)}
+                    style={{ fontWeight: 600, padding: "0 8px" }}
+                  >
+                    {lang === "ru" ? "Авто..." : lang === "uzc" ? "Машиналар..." : "Mashinalar..."}
+                  </Button>
+                </Tooltip>
+
+                {/* Camera View Toggle Icon (Chase -> Cockpit -> Rear -> Top-Down -> Free) */}
+                <Tooltip label={lang === "ru" ? "Сменить камеру (C)" : lang === "uzc" ? "Камерани алмаштириш (C)" : "Kamera ko'rinishi (C)"}>
                   <ActionIcon
                     size="md"
                     variant="subtle"
                     color="gray"
                     onClick={() =>
                       setCameraView((prev) =>
-                        prev === "chase" ? "first_person" : prev === "first_person" ? "top_down" : "chase"
+                        prev === "chase"
+                          ? "first_person"
+                          : prev === "first_person"
+                          ? "rear"
+                          : prev === "rear"
+                          ? "top_down"
+                          : prev === "top_down"
+                          ? "free"
+                          : "chase"
                       )
                     }
                   >
@@ -678,21 +800,21 @@ export default function SimulatorDashboard_Page() {
                 </Tooltip>
 
                 {/* Camera Snapshot Icon */}
-                <Tooltip label={lang === "ru" ? "Снимок экрана" : "Skrinshot olish"}>
+                <Tooltip label={lang === "ru" ? "Снимок экрана" : lang === "uzc" ? "Скриншот олиш" : "Skrinshot olish"}>
                   <ActionIcon size="md" variant="subtle" color="gray">
                     <IconDeviceFloppy size={18} />
                   </ActionIcon>
                 </Tooltip>
 
                 {/* Split Screen / PIP Icon */}
-                <Tooltip label={lang === "ru" ? "Разделенный экран" : "Bo'lingan ekran"}>
+                <Tooltip label={lang === "ru" ? "Разделенный экран" : lang === "uzc" ? "Бўлинган экран" : "Bo'lingan экран"}>
                   <ActionIcon size="md" variant="subtle" color="gray">
                     <IconLayersSubtract size={18} />
                   </ActionIcon>
                 </Tooltip>
 
                 {/* Fullscreen Toggle Icon */}
-                <Tooltip label={isFullscreen ? (lang === "ru" ? "Выйти" : "Kichraytirish") : (lang === "ru" ? "На весь экран" : "To'liq ekran")}>
+                <Tooltip label={isFullscreen ? (lang === "ru" ? "Выйти" : lang === "uzc" ? "Кичрайтириш" : "Kichraytirish") : (lang === "ru" ? "На весь экран" : lang === "uzc" ? "Тўлиқ экран" : "To'liq экран")}>
                   <ActionIcon size="md" variant="subtle" color="gray" onClick={toggleFullscreen}>
                     {isFullscreen ? <IconMinimize size={18} /> : <IconMaximize size={18} />}
                   </ActionIcon>
@@ -711,7 +833,7 @@ export default function SimulatorDashboard_Page() {
                     boxShadow: "0 4px 14px rgba(239, 68, 68, 0.4)",
                   }}
                 >
-                  {lang === "ru" ? "Завершить экзамен" : "Imtihonni yakunlash"}
+                  {lang === "ru" ? "Завершить экзамен" : lang === "uzc" ? "Имтиҳонни якунлаш" : "Imtihonni yakunlash"}
                 </Button>
               </Group>
             </Group>
@@ -722,14 +844,19 @@ export default function SimulatorDashboard_Page() {
           {/* ========================================================= */}
           <Paper
             ref={simulatorContainerRef}
-            radius="lg"
-            withBorder
+            radius={isFullscreen ? 0 : "lg"}
+            withBorder={!isFullscreen}
             style={{
               position: "relative",
               overflow: "hidden",
-              height: "560px",
+              height: isFullscreen ? "100vh" : "clamp(350px, 64vh, 720px)",
+              minHeight: isFullscreen ? "100vh" : "340px",
+              maxHeight: isFullscreen ? "100vh" : undefined,
+              width: isFullscreen ? "100vw" : "100%",
+              borderRadius: isFullscreen ? 0 : undefined,
+              border: isFullscreen ? "none" : undefined,
               backgroundColor: "#93c5fd",
-              boxShadow: "0 12px 36px rgba(0, 0, 0, 0.4)",
+              boxShadow: isFullscreen ? "none" : "0 12px 36px rgba(0, 0, 0, 0.4)",
             }}
           >
             {!webglSupported ? (
@@ -741,6 +868,8 @@ export default function SimulatorDashboard_Page() {
                   exercise={exercise}
                   cameraView={cameraView}
                   showHelpers={mode === "training"}
+                  category={category}
+                  modelName={selectedVehicle}
                 />
 
                 <HUDOverlay
@@ -751,9 +880,22 @@ export default function SimulatorDashboard_Page() {
                   maxPenaltyAllowed={100}
                   cameraView={cameraView}
                   soundEnabled={soundEnabled}
+                  penalties={penalties}
+                  category={category}
+                  onCategoryChange={handleCategoryChange}
+                  isFullscreen={isFullscreen}
+                  onToggleFullscreen={toggleFullscreen}
                   onCameraToggle={() =>
                     setCameraView((prev) =>
-                      prev === "chase" ? "first_person" : prev === "first_person" ? "top_down" : "chase"
+                      prev === "chase"
+                        ? "first_person"
+                        : prev === "first_person"
+                        ? "rear"
+                        : prev === "rear"
+                        ? "top_down"
+                        : prev === "top_down"
+                        ? "free"
+                        : "chase"
                     )
                   }
                   onSoundToggle={() => setSoundEnabled(!soundEnabled)}
@@ -781,46 +923,18 @@ export default function SimulatorDashboard_Page() {
                       turnSignal: prev.turnSignal === sig ? "none" : sig,
                     }));
                   }}
-                  exerciseResults={exerciseResultsMap}
-                />
-
-                {/* Mobile Touch Controls for small screens */}
-                <MobileControls
-                  onThrottleStart={() => {
-                    mobileThrottleRef.current = 1.0;
-                    ensureAudioStarted();
+                  onThrottleChange={(val) => {
+                    mobileThrottleRef.current = val;
+                    if (val > 0) ensureAudioStarted();
                   }}
-                  onThrottleEnd={() => {
-                    mobileThrottleRef.current = 0.0;
+                  onBrakeChange={(val) => {
+                    mobileBrakeRef.current = val;
                   }}
-                  onBrakeStart={() => {
-                    mobileBrakeRef.current = 1.0;
-                  }}
-                  onBrakeEnd={() => {
-                    mobileBrakeRef.current = 0.0;
-                  }}
-                  onSteerLeftStart={() => {
-                    mobileSteerRef.current = -1.0;
-                  }}
-                  onSteerLeftEnd={() => {
-                    mobileSteerRef.current = 0.0;
-                  }}
-                  onSteerRightStart={() => {
-                    mobileSteerRef.current = 1.0;
-                  }}
-                  onSteerRightEnd={() => {
-                    mobileSteerRef.current = 0.0;
-                  }}
-                  onSteerAnalog={(val) => {
+                  onSteerChange={(val) => {
                     mobileSteerRef.current = val;
                   }}
-                  onGearSelect={(g: GearMode) => {
-                    controllerRef.current?.setGear(g);
-                    setTelemetry((prev) => ({ ...prev, gear: g }));
-                  }}
-                  onHandbrakeToggle={() => {
-                    const hb = controllerRef.current?.toggleHandbrake();
-                    setTelemetry((prev) => ({ ...prev, handbrake: hb ?? !prev.handbrake }));
+                  onClutchChange={(val) => {
+                    mobileClutchRef.current = val;
                   }}
                   onHornTrigger={() => {
                     if (soundEnabled) {
@@ -828,13 +942,11 @@ export default function SimulatorDashboard_Page() {
                       setTimeout(() => audioEngine.stopHorn(), 350);
                     }
                   }}
-                  onCameraToggle={() =>
-                    setCameraView((prev) =>
-                      prev === "chase" ? "first_person" : prev === "first_person" ? "top_down" : "chase"
-                    )
-                  }
-                  activeGear={telemetry.gear}
-                  handbrakeActive={telemetry.handbrake}
+                  onManualGearSelect={(g) => {
+                    controllerRef.current?.setManualGear(g);
+                    setTelemetry((prev) => ({ ...prev, manualGear: g }));
+                  }}
+                  exerciseResults={exerciseResultsMap}
                 />
               </>
             )}
@@ -855,25 +967,37 @@ export default function SimulatorDashboard_Page() {
       <Modal
         opened={finishModalOpen}
         onClose={() => setFinishModalOpen(false)}
-        title={lang === "ru" ? "Завершение экзамена" : "Imtihonni yakunlash"}
+        title={lang === "ru" ? "Завершение экзамена" : lang === "uzc" ? "Имтиҳонни якунлаш" : "Imtihonni yakunlash"}
         centered
       >
         <Stack gap="md">
           <Text size="sm">
             {lang === "ru"
               ? "Вы действительно хотите завершить текущую попытку и перейти к результатам?"
+              : lang === "uzc"
+              ? "Ҳақиқатан ҳам амалий имтиҳонни якунлаб, натижаларни кўрмоқчимисиз?"
               : "Haqiqatan ham amaliy imtihonni yakunlab, natijalarni ko'rmoqchimisiz?"}
           </Text>
           <Group justify="flex-end" gap="xs">
             <Button variant="subtle" color="gray" onClick={() => setFinishModalOpen(false)}>
-              {lang === "ru" ? "Отмена" : "Bekor qilish"}
+              {t("common.cancel", "Bekor qilish")}
             </Button>
             <Button color="red" onClick={handleFinishExam}>
-              {lang === "ru" ? "Завершить" : "Yakunlash"}
+              {lang === "ru" ? "Завершить" : lang === "uzc" ? "Якунлаш" : "Yakunlash"}
             </Button>
           </Group>
         </Stack>
       </Modal>
+
+      {/* Vehicle Selector Gallery Modal */}
+      <VehicleSelectorModal
+        opened={vehicleModalOpen}
+        onClose={() => setVehicleModalOpen(false)}
+        selectedVehicle={selectedVehicle}
+        onSelectVehicle={handleVehicleChange}
+        currentCategory={category}
+        onCategoryChange={handleCategoryChange}
+      />
     </>
   );
 }

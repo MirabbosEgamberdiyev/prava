@@ -19,11 +19,16 @@ import type {
   ExamFSMState,
   GearMode,
   CameraView,
+  SimulatorMode,
+  ReplayRecording,
+  AIInstructorFeedback,
 } from "../types";
 import { EXERCISE_REGISTRY } from "../registry/exerciseRegistry";
-import { VEHICLE_CONFIGS } from "../registry/vehicleConfigs";
+import { VEHICLE_CONFIGS, getVehicleConfig } from "../registry/vehicleConfigs";
 import { createPenaltyEvent } from "./penaltyEngine";
 import { audioEngine } from "./audioEngine";
+import { ReplayRecorder, saveReplayLocally } from "./replayEngine";
+import { AIInstructorEngine } from "./aiInstructorEngine";
 
 export interface SimulationInput {
   throttle: number; // 0 to 1
@@ -31,6 +36,7 @@ export interface SimulationInput {
   steer: number; // -1 to +1
   handbrake: boolean;
   engineToggle?: boolean;
+  clutch?: number; // 0 (engaged) to 1 (pressed)
 }
 
 export interface WheelState {
@@ -62,6 +68,7 @@ export interface SimulationControllerCallbacks {
   onStationCompleted?: (stationNumber: number) => void;
   onExamFinished?: (isPassed: boolean, totalScore: number) => void;
   onVoiceAnnounce?: (message: string) => void;
+  onAIInstructorFeedback?: (feedback: AIInstructorFeedback) => void;
 }
 
 export class SimulationController {
@@ -90,6 +97,16 @@ export class SimulationController {
   private hasDepartedFromStart: boolean = false;
   private lastPenaltyTimestamp: number = 0;
   private penaltiesList: PenaltyEvent[] = [];
+
+  // Manual Gearbox & Transmission
+  private transmissionMode: "auto" | "manual" = "auto";
+  private manualGear: "R" | "N" | "1" | "2" | "3" | "4" | "5" = "N";
+  private clutchValue: number = 0; // 0 (engaged) to 1 (pressed)
+  private isStalled: boolean = false;
+
+  // Replay Recorder & AI Coach
+  private replayRecorder: ReplayRecorder | null = null;
+  private aiInstructor: AIInstructorEngine | null = null;
 
   // 10cm Yellow Sensor Boundary Segments
   private sensorBoundaries: SensorBoundarySegment[] = [];
@@ -169,6 +186,10 @@ export class SimulationController {
       speed: 0,
       rpm: 800,
       gear: "P",
+      manualGear: "N",
+      transmissionMode: "auto",
+      clutch: 0,
+      isStalled: false,
       steeringAngle: 0,
       handbrake: true,
       throttle: 0,
@@ -186,23 +207,74 @@ export class SimulationController {
       wheelHeights: [0, 0, 0, 0],
       estakadaHoldSeconds: 0,
       examState: "PRE_CHECK",
+      category: this.config.category,
     };
+
+    this.aiInstructor = new AIInstructorEngine({
+      language: this.lang,
+      onFeedback: (fb) => {
+        if (this.callbacks.onAIInstructorFeedback) {
+          this.callbacks.onAIInstructorFeedback(fb);
+        }
+      },
+      onVoiceSpeak: (msg) => {
+        this.announceVoice(msg);
+      },
+    });
 
     this.initSensorBoundaries();
   }
 
-  // Set Language for Voice Alerts
+  // Set Language for Voice Alerts & AI Coach
   public setLanguage(lang: "uzl" | "uzc" | "ru"): void {
     this.lang = lang;
+    if (this.aiInstructor) {
+      this.aiInstructor.setLanguage(lang);
+    }
+  }
+
+  // Replay Recording Lifecycle
+  public startRecording(sessionId: string, mode: SimulatorMode = "exam"): void {
+    this.replayRecorder = new ReplayRecorder(sessionId, mode, 20);
+    this.replayRecorder.start();
+  }
+
+  public stopRecording(isPassed: boolean, totalPenalties: number): ReplayRecording | null {
+    if (!this.replayRecorder) return null;
+    const rec = this.replayRecorder.stop(isPassed, totalPenalties);
+    saveReplayLocally(rec);
+    return rec;
+  }
+
+  // Manual Transmission & Clutch API
+  public setTransmissionMode(mode: "auto" | "manual"): void {
+    this.transmissionMode = mode;
+    this.telemetry.transmissionMode = mode;
+  }
+
+  public setManualGear(gear: "R" | "N" | "1" | "2" | "3" | "4" | "5"): void {
+    this.manualGear = gear;
+    this.telemetry.manualGear = gear;
+    if (gear === "R") this.telemetry.gear = "R";
+    else if (gear === "N") this.telemetry.gear = "N";
+    else this.telemetry.gear = "D";
+  }
+
+  public setClutch(clutch01: number): void {
+    this.clutchValue = Math.max(0, Math.min(1, clutch01));
+    this.telemetry.clutch = this.clutchValue;
   }
 
   // Toggle Engine (Start / Stop)
   public toggleEngine(): boolean {
     this.telemetry.engineStarted = !this.telemetry.engineStarted;
     if (this.telemetry.engineStarted) {
+      this.isStalled = false;
+      this.telemetry.isStalled = false;
       this.telemetry.rpm = 800;
       this.examFsmState = "PRE_CHECK";
-      audioEngine.startEngine();
+      audioEngine.playStarterCrank();
+      setTimeout(() => audioEngine.startEngine(), 300);
     } else {
       this.telemetry.rpm = 0;
       this.telemetry.speed = 0;
@@ -266,9 +338,84 @@ export class SimulationController {
     return this.maxRollbackRecorded;
   }
 
-  // Update vehicle configuration
+  // Update vehicle configuration and dynamically reconstruct physical parameters
+  public updateVehicle(vehicleModelName: string): VehicleConfig {
+    this.config = getVehicleConfig(vehicleModelName);
+    this.chassisMassKg = this.config.massKg;
+    this.telemetry.category = this.config.category;
+
+    const halfTrack = this.config.trackWidthMeters / 2;
+    const halfBase = this.config.wheelbaseMeters / 2;
+    const isCommercial = this.config.category === "C" || this.config.category === "D";
+    const frontRatio = isCommercial ? 0.40 : 0.55;
+    const rearRatio = 1.0 - frontRatio;
+
+    this.wheels = [
+      {
+        index: 0,
+        name: "FL",
+        localX: -halfTrack,
+        localZ: halfBase,
+        suspensionLength: 0.35,
+        springForce: 0,
+        damperForce: 0,
+        tireLoadN: (this.chassisMassKg * 9.81 * frontRatio) / 2,
+        isSteering: true,
+        isDrive: true,
+        groundContactWorld: { x: 0, y: 0, z: 0 },
+      },
+      {
+        index: 1,
+        name: "FR",
+        localX: halfTrack,
+        localZ: halfBase,
+        suspensionLength: 0.35,
+        springForce: 0,
+        damperForce: 0,
+        tireLoadN: (this.chassisMassKg * 9.81 * frontRatio) / 2,
+        isSteering: true,
+        isDrive: true,
+        groundContactWorld: { x: 0, y: 0, z: 0 },
+      },
+      {
+        index: 2,
+        name: "RL",
+        localX: -halfTrack,
+        localZ: -halfBase,
+        suspensionLength: 0.35,
+        springForce: 0,
+        damperForce: 0,
+        tireLoadN: (this.chassisMassKg * 9.81 * rearRatio) / 2,
+        isSteering: false,
+        isDrive: false,
+        groundContactWorld: { x: 0, y: 0, z: 0 },
+      },
+      {
+        index: 3,
+        name: "RR",
+        localX: halfTrack,
+        localZ: -halfBase,
+        suspensionLength: 0.35,
+        springForce: 0,
+        damperForce: 0,
+        tireLoadN: (this.chassisMassKg * 9.81 * rearRatio) / 2,
+        isSteering: false,
+        isDrive: false,
+        groundContactWorld: { x: 0, y: 0, z: 0 },
+      },
+    ];
+
+    return this.config;
+  }
+
+  // Get current active vehicle configuration
+  public getConfig(): VehicleConfig {
+    return this.config;
+  }
+
+  // Backward-compatibility alias
   public updateConfig(vehicleModelName: string): void {
-    this.config = VEHICLE_CONFIGS[vehicleModelName] || VEHICLE_CONFIGS["Chevrolet Cobalt"];
+    this.updateVehicle(vehicleModelName);
   }
 
   // Set Current Active Exercise
@@ -305,7 +452,17 @@ export class SimulationController {
     // 4. 10cm Yellow Sensor Line Tire Intersections
     this.stepSensorLineCollisions(elapsedSeconds);
 
-    // 5. Broadcast to React / UI
+    // 5. Sample into Replay Recorder
+    if (this.replayRecorder) {
+      this.replayRecorder.sample(this.telemetry);
+    }
+
+    // 6. Real-time AI Driving Coach Evaluation
+    if (this.aiInstructor) {
+      this.aiInstructor.evaluate(this.telemetry, this.currentExercise, this.examFsmState, dt);
+    }
+
+    // 7. Broadcast to React / UI
     if (this.callbacks.onTelemetryUpdate) {
       this.callbacks.onTelemetryUpdate({ ...this.telemetry });
     }
@@ -317,12 +474,48 @@ export class SimulationController {
   // 1. Raycast Vehicle Physics with Weight Transfer & 4 Wheels
   // -------------------------------------------------------------
   private stepVehiclePhysics(input: SimulationInput, dt: number): void {
+    if (input.clutch !== undefined) {
+      this.clutchValue = input.clutch;
+      this.telemetry.clutch = input.clutch;
+    }
+    if (input.handbrake !== undefined) {
+      this.telemetry.handbrake = input.handbrake;
+    }
+
     if (!this.telemetry.engineStarted) {
       // Natural rolling friction stopping if engine off
       this.linearVelocityMs *= Math.max(0, 1 - 2.5 * dt);
       this.telemetry.speed = this.linearVelocityMs * 3.6;
       this.telemetry.rpm = 0;
       return;
+    }
+
+    // Manual Transmission Stall Detection
+    if (this.transmissionMode === "manual") {
+      const isGearEngaged = this.manualGear === "1" || this.manualGear === "R";
+      if (
+        isGearEngaged &&
+        this.clutchValue < 0.25 &&
+        Math.abs(this.linearVelocityMs) < 0.25 &&
+        input.throttle < 0.12 &&
+        !this.isStalled
+      ) {
+        this.isStalled = true;
+        this.telemetry.isStalled = true;
+        this.telemetry.engineStarted = false;
+        this.telemetry.rpm = 0;
+        this.linearVelocityMs = 0;
+        this.telemetry.speed = 0;
+        audioEngine.playEngineStall();
+        this.announceVoice(
+          this.lang === "ru"
+            ? "Двигатель заглох! Слишком быстро отпущено сцепление."
+            : this.lang === "uzc"
+            ? "Двигател ўчди! Муфтани босиб қайта ўт олдиринг."
+            : "Dvigatel o'chdi! Muftani bosib qayta o't oldiring."
+        );
+        return;
+      }
     }
 
     // Steering Angle calculation with Ackermann limits (-35 to +35 deg)
@@ -333,28 +526,50 @@ export class SimulationController {
     let driveForceN = 0;
     let brakeForceN = 0;
 
-    // PRND Transmission & Handbrake Logic
+    // Transmission & Handbrake Logic
     if (this.telemetry.handbrake || gear === "P") {
       // Rear wheels locked, heavy deceleration
       brakeForceN = 14000;
-    } else if (gear === "N") {
+    } else if (gear === "N" || (this.transmissionMode === "manual" && this.manualGear === "N")) {
       // Free rolling, slight aerodynamic and tire rolling friction
       brakeForceN = 120;
+    } else if (this.transmissionMode === "manual") {
+      const clutchEngagement = Math.max(0, 1.0 - this.clutchValue);
+      let gearRatio = 1.0;
+      if (this.manualGear === "1") gearRatio = 3.6;
+      else if (this.manualGear === "2") gearRatio = 2.4;
+      else if (this.manualGear === "3") gearRatio = 1.6;
+      else if (this.manualGear === "4") gearRatio = 1.1;
+      else if (this.manualGear === "5") gearRatio = 0.85;
+
+      if (this.manualGear === "R") {
+        if (input.throttle > 0) {
+          driveForceN = -input.throttle * this.chassisMassKg * this.config.accelerationPower * 2.2 * clutchEngagement;
+        }
+      } else {
+        if (input.throttle > 0) {
+          driveForceN = input.throttle * this.chassisMassKg * this.config.accelerationPower * gearRatio * clutchEngagement;
+        }
+      }
+
+      if (input.brake > 0) {
+        brakeForceN = input.brake * this.chassisMassKg * this.config.brakingPower * 3.6;
+      }
+      if (input.throttle === 0 && input.brake === 0) {
+        brakeForceN = 200 + clutchEngagement * 180; // Engine compression braking
+      }
     } else if (gear === "D") {
       if (input.throttle > 0) {
-        // Torque curve: max acceleration power scaled by throttle
         driveForceN = input.throttle * this.chassisMassKg * this.config.accelerationPower * 2.8;
       }
       if (input.brake > 0) {
         brakeForceN = input.brake * this.chassisMassKg * this.config.brakingPower * 3.6;
       }
-      // Natural engine braking
       if (input.throttle === 0 && input.brake === 0) {
         brakeForceN = 260;
       }
     } else if (gear === "R") {
       if (input.throttle > 0) {
-        // Reverse drive force (negative)
         driveForceN = -input.throttle * this.chassisMassKg * this.config.accelerationPower * 1.8;
       }
       if (input.brake > 0) {
@@ -535,6 +750,8 @@ export class SimulationController {
         this.announceVoice(
           this.lang === "ru"
             ? "Штраф: На эстакаде необходимо выждать 3 секунды!"
+            : this.lang === "uzc"
+            ? "Жарима: Эстакадада 3 сония тўлиқ тўхташ шарти бажарилмади!"
             : "Estakadada 3 soniya to'liq to'xtash sharti bajarilmadi!"
         );
       }
@@ -555,6 +772,8 @@ export class SimulationController {
             this.announceVoice(
               this.lang === "ru"
                 ? "Экзамен не сдан! Откат назад более 20 сантиметров."
+                : this.lang === "uzc"
+                ? "Имтиҳон топширилмади! Орқага сирпаниш 20 сантиметрдан ошди."
                 : "Imtihon topshirilmadi! Orqaga sirpanish 20 santimetrdan oshdi."
             );
             if (this.callbacks.onExamFinished) {
@@ -591,7 +810,9 @@ export class SimulationController {
           this.announceVoice(
             this.lang === "ru"
               ? "Штраф: Наезд на разметку! Начислены штрафные баллы."
-              : "Chiziq bosildi! Jarima balingiz hisoblandi."
+              : this.lang === "uzc"
+              ? "Жарима: Чизиқ босилди! Жарима балингиз ҳисобланди."
+              : "Jarima: Chiziq bosildi! Jarima balingiz hisoblandi."
           );
           return;
         }
@@ -610,7 +831,7 @@ export class SimulationController {
     return Math.sqrt((px - projX) * (px - projX) + (py - projY) * (py - projY));
   }
 
-  // Trigger Penalty with callbacks and Audio Alert
+  // Trigger Penalty with callbacks, Replay Bookmark, and Audio Alert
   private triggerPenalty(ruleCode: string, _points: number = 20): void {
     const event = createPenaltyEvent(
       ruleCode,
@@ -621,6 +842,10 @@ export class SimulationController {
     );
     this.penaltiesList.push(event);
 
+    if (this.replayRecorder) {
+      this.replayRecorder.recordPenalty(event);
+    }
+
     audioEngine.playPenaltyBuzzer();
 
     if (this.callbacks.onPenaltyTriggered) {
@@ -630,9 +855,10 @@ export class SimulationController {
 
   // Voice Announcement helper
   private announceVoice(text: string): void {
-    audioEngine.playVoiceAlert(text, this.lang === "ru" ? "ru" : "uz");
     if (this.callbacks.onVoiceAnnounce) {
       this.callbacks.onVoiceAnnounce(text);
+    } else {
+      audioEngine.playVoiceAlert(text, this.lang === "ru" ? "ru-RU" : "uz-UZ");
     }
   }
 
@@ -671,15 +897,24 @@ export class SimulationController {
     const worldZ = (this.telemetry.posY - 250) * 0.4;
     const carAngle = this.telemetry.rotation;
 
+    const offsets = this.config.cameraOffsets || {
+      chaseDist: 6.2,
+      chaseHeight: 2.7,
+      cockpitEyeX: 0.15,
+      cockpitEyeY: 1.35,
+      cockpitEyeZ: 0.15,
+      rearBumperDist: 2.5,
+    };
+
     if (view === "first_person") {
       // Cockpit POV: Inside cabin at driver eye level
-      const eyeOffsetX = -0.32;
-      const eyeOffsetY = 1.15;
-      const eyeOffsetZ = -0.15;
+      const eyeOffsetX = offsets.cockpitEyeX;
+      const eyeOffsetY = offsets.cockpitEyeY;
+      const eyeOffsetZ = offsets.cockpitEyeZ;
 
       const camX = worldX + (eyeOffsetX * Math.cos(carAngle) - eyeOffsetZ * Math.sin(carAngle));
       const camZ = worldZ + (eyeOffsetX * Math.sin(carAngle) + eyeOffsetZ * Math.cos(carAngle));
-      const lookDist = 12.0;
+      const lookDist = 18.0;
 
       return {
         position: { x: camX, y: eyeOffsetY, z: camZ },
@@ -695,6 +930,20 @@ export class SimulationController {
         },
         isOrthographic: false,
       };
+    } else if (view === "rear") {
+      // Rear Bumper Backup Camera
+      const bumperDist = offsets.rearBumperDist;
+      const camX = worldX - Math.cos(carAngle) * bumperDist;
+      const camZ = worldZ - Math.sin(carAngle) * bumperDist;
+      return {
+        position: { x: camX, y: 1.25, z: camZ },
+        target: {
+          x: camX - Math.cos(carAngle) * 20,
+          y: 0.3,
+          z: camZ - Math.sin(carAngle) * 20,
+        },
+        isOrthographic: false,
+      };
     } else if (view === "top_down") {
       // True Orthographic Top View for precise parking alignment
       return {
@@ -705,15 +954,19 @@ export class SimulationController {
       };
     } else {
       // Chase Camera (3rd-person dampened follow)
-      const followDist = 6.2;
-      const followHeight = 2.7;
+      const followDist = offsets.chaseDist;
+      const followHeight = offsets.chaseHeight;
 
       const camX = worldX - Math.cos(carAngle) * followDist;
       const camZ = worldZ - Math.sin(carAngle) * followDist;
 
       return {
         position: { x: camX, y: followHeight, z: camZ },
-        target: { x: worldX, y: 1.1, z: worldZ },
+        target: {
+          x: worldX + Math.cos(carAngle) * 18.0,
+          y: 0.45,
+          z: worldZ + Math.sin(carAngle) * 18.0,
+        },
         isOrthographic: false,
       };
     }

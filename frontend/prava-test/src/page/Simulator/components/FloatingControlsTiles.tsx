@@ -4,6 +4,12 @@ import { useLanguage } from "../../../context/LanguageContext";
 export default function FloatingControlsTiles() {
   const { lang } = useLanguage();
 
+  const t3 = (uzl: string, uzc: string, ru: string) => {
+    if (lang === "ru") return ru;
+    if (lang === "uzc") return uzc;
+    return uzl;
+  };
+
   return (
     <Group gap="xs" align="flex-end" wrap="nowrap">
       {/* Tile 1: Kamera & Boshqaruv Controls */}
@@ -21,7 +27,7 @@ export default function FloatingControlsTiles() {
         }}
       >
         <Text size="10px" fw={800} c="#94a3b8" mb={6} style={{ letterSpacing: "0.5px" }}>
-          {lang === "ru" ? "УПРАВЛЕНИЕ" : "BOSHQARUV"}
+          {t3("BOSHQARUV", "БОШҚАРУВ", "УПРАВЛЕНИЕ")}
         </Text>
         <Stack gap={4}>
           <Group justify="space-between" gap="xs">
@@ -30,7 +36,7 @@ export default function FloatingControlsTiles() {
                 W
               </Badge>
               <Text size="10px" c="white" fw={600}>
-                {lang === "ru" ? "Газ" : "Gaz"}
+                {t3("Gaz", "Газ", "Газ")}
               </Text>
             </Group>
             <Group gap={4}>
@@ -38,7 +44,7 @@ export default function FloatingControlsTiles() {
                 S
               </Badge>
               <Text size="10px" c="white" fw={600}>
-                {lang === "ru" ? "Тормоз" : "Tormoz"}
+                {t3("Tormoz", "Тормоз", "Тормоз")}
               </Text>
             </Group>
           </Group>
@@ -49,7 +55,7 @@ export default function FloatingControlsTiles() {
                 A
               </Badge>
               <Text size="10px" c="white" fw={600}>
-                {lang === "ru" ? "Влево" : "Chapga"}
+                {t3("Chapga", "Чапга", "Влево")}
               </Text>
             </Group>
             <Group gap={4}>
@@ -57,7 +63,7 @@ export default function FloatingControlsTiles() {
                 D
               </Badge>
               <Text size="10px" c="white" fw={600}>
-                {lang === "ru" ? "Вправо" : "O'ngga"}
+                {t3("O'ngga", "Ўнгга", "Вправо")}
               </Text>
             </Group>
           </Group>
@@ -68,7 +74,7 @@ export default function FloatingControlsTiles() {
                 Space
               </Badge>
               <Text size="10px" c="white" fw={600}>
-                {lang === "ru" ? "Ручник" : "Ruchnik"}
+                {t3("Ruchnik", "Ручник", "Ручник")}
               </Text>
             </Group>
             <Group gap={4}>
@@ -76,7 +82,7 @@ export default function FloatingControlsTiles() {
                 R
               </Badge>
               <Text size="10px" c="white" fw={600}>
-                {lang === "ru" ? "Задний" : "Orqaga"}
+                {t3("Orqaga", "Орқага", "Задний")}
               </Text>
             </Group>
           </Group>
@@ -87,7 +93,7 @@ export default function FloatingControlsTiles() {
                 Q
               </Badge>
               <Text size="10px" c="white" fw={600}>
-                {lang === "ru" ? "Лев. повор." : "Chap signal"}
+                {t3("Chap signal", "Чап сигнал", "Лев. повор.")}
               </Text>
             </Group>
             <Group gap={4}>
@@ -95,7 +101,7 @@ export default function FloatingControlsTiles() {
                 E
               </Badge>
               <Text size="10px" c="white" fw={600}>
-                {lang === "ru" ? "Прав. повор." : "O'ng signal"}
+                {t3("O'ng signal", "Ўнг сигнал", "Прав. повор.")}
               </Text>
             </Group>
           </Group>
@@ -117,7 +123,7 @@ export default function FloatingControlsTiles() {
         }}
       >
         <Text size="10px" fw={800} c="#94a3b8" mb={6} style={{ letterSpacing: "0.5px" }}>
-          {lang === "ru" ? "СТАТИСТИКА" : "STATISTIKA"}
+          {t3("BOSHQARUV TUGMALARI", "БОШҚАРУВ ТУГМАЛАРИ", "СТАТИСТИКА")}
         </Text>
         <Stack gap={4}>
           <Group gap={6}>
@@ -125,7 +131,7 @@ export default function FloatingControlsTiles() {
               I
             </Badge>
             <Text size="10px" c="#e2e8f0" fw={600}>
-              {lang === "ru" ? "Запуск" : "Zavod"}
+              {t3("Zavod", "Завод", "Запуск")}
             </Text>
           </Group>
           <Group gap={6}>
@@ -133,7 +139,7 @@ export default function FloatingControlsTiles() {
               B
             </Badge>
             <Text size="10px" c="#e2e8f0" fw={600}>
-              {lang === "ru" ? "Ремень" : "Kamar"}
+              {t3("Kamar", "Камар", "Ремень")}
             </Text>
           </Group>
           <Group gap={6}>
@@ -141,7 +147,7 @@ export default function FloatingControlsTiles() {
               L
             </Badge>
             <Text size="10px" c="#e2e8f0" fw={600}>
-              {lang === "ru" ? "Фары" : "Chiroqlar"}
+              {t3("Chiroqlar", "Чироқлар", "Фары")}
             </Text>
           </Group>
           <Group gap={6}>
@@ -149,7 +155,7 @@ export default function FloatingControlsTiles() {
               C
             </Badge>
             <Text size="10px" c="#e2e8f0" fw={600}>
-              {lang === "ru" ? "Камера" : "Kamera"}
+              {t3("Kamera", "Камера", "Камера")}
             </Text>
           </Group>
         </Stack>

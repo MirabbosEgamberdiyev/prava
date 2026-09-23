@@ -94,11 +94,15 @@ public class SimulatorServiceImpl implements SimulatorService {
         SimulatorSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Simulator session not found with id: " + sessionId));
 
-        session.setTotalPenaltyPoints(request.getTotalPenaltyPoints());
-        session.setTimeSpentSeconds(request.getTimeSpentSeconds());
+        int totalPenalty = request.getTotalPenaltyPoints() != null ? request.getTotalPenaltyPoints() : 0;
+        session.setTotalPenaltyPoints(totalPenalty);
+        session.setTimeSpentSeconds(request.getTimeSpentSeconds() != null ? request.getTimeSpentSeconds() : 0);
         session.setFinishedAt(LocalDateTime.now());
-        session.setIsPassed(request.getIsPassed());
-        session.setStatus(request.getIsPassed() ? SimulatorSessionStatus.COMPLETED : SimulatorSessionStatus.FAILED);
+
+        // Server-side state exam integrity validation: 100-point threshold
+        boolean passed = Boolean.TRUE.equals(request.getIsPassed()) && (session.getMode() != SimulatorMode.EXAM || totalPenalty < 100);
+        session.setIsPassed(passed);
+        session.setStatus(passed ? SimulatorSessionStatus.COMPLETED : SimulatorSessionStatus.FAILED);
 
         if (request.getExerciseResults() != null && !request.getExerciseResults().isEmpty()) {
             for (SimulatorExerciseResultDto dto : request.getExerciseResults()) {

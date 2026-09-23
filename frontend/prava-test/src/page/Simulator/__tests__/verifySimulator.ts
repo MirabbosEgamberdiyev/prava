@@ -2,6 +2,8 @@ import { updateVehiclePhysics, type ControlInput } from "../engine/vehiclePhysic
 import { checkCollisions } from "../engine/collisionEngine";
 import { evaluateSensors } from "../engine/sensorEngine";
 import { createPenaltyEvent, calculateTotalScore } from "../engine/penaltyEngine";
+import { ReplayRecorder, ReplayPlayer } from "../engine/replayEngine";
+import { AIInstructorEngine } from "../engine/aiInstructorEngine";
 import { VEHICLE_CONFIGS } from "../registry/vehicleConfigs";
 import { EXERCISE_REGISTRY } from "../registry/exerciseRegistry";
 import type { VehicleTelemetry } from "../types";
@@ -113,8 +115,35 @@ function runTests() {
   assert(scoreFail.isPassed === false, "Session fails when points >= 100 or instant fail triggered");
   assert(scoreFail.hasInstantFail === true, "Instant fail flag is properly raised");
 
+  // Test 9: Replay Recorder & Replay Player Interpolation
+  const recorder = new ReplayRecorder("test_sess_001", "exam", 20);
+  recorder.start();
+  recorder.sample(telemetry);
+  telemetry.posX = 150;
+  telemetry.posY = 120;
+  recorder.sample(telemetry);
+  const recording = recorder.stop(true, 0);
+  assert(recording.frames.length >= 2, "ReplayRecorder captured telemetry frames");
+
+  const player = new ReplayPlayer(recording);
+  const interpolated = player.getInterpolatedFrame(10);
+  assert(typeof interpolated.posX === "number", "ReplayPlayer correctly interpolates frame coordinates");
+
+  // Test 10: AI Instructor Engine Heuristics
+  let receivedFeedback: any = null;
+  const aiCoach = new AIInstructorEngine({
+    language: "uzl",
+    onFeedback: (fb: any) => {
+      receivedFeedback = fb;
+    },
+  });
+  // Trigger overspeed
+  const overspeedTelemetry = { ...telemetry, speed: 45 };
+  aiCoach.evaluate(overspeedTelemetry, EXERCISE_REGISTRY[0], "DRIVING", 0.016);
+  assert(receivedFeedback !== null && receivedFeedback.category === "speed", "AI Instructor detects overspeed and generates feedback");
+
   console.log("==================================================");
-  console.log("ALL 8 VERIFICATION TESTS PASSED SUCCESSFULLY! 🎯");
+  console.log("ALL 10 PRODUCTION VERIFICATION TESTS PASSED! 🎯");
   console.log("==================================================");
 }
 

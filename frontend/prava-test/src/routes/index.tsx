@@ -98,6 +98,9 @@ function WebAppRoot() {
   return <Navigate to={isAuthenticated ? "/me" : "/auth/login"} replace />;
 }
 
+// Simulator visibility flag (temporarily set to false per user request)
+const SHOW_SIMULATOR = false;
+
 export default function AppRoutes() {
   const isLanding = isLandingDomain();
   const isLocalUnified =
@@ -132,15 +135,26 @@ export default function AppRoutes() {
               <Route path="markings" element={<RoadMarkings_Page />} />
               <Route path="exam-centers" element={<ExamCenters_Page />} />
               <Route path="practical-exam" element={<PracticalExam_Page />} />
-              <Route path="practical-exam/simulator" element={<Navigate to="/simulator" replace />} />
-              <Route path="simulator" element={<SimulatorDashboard_Page />} />
-              <Route path="simulator/training" element={<SimulatorTraining_Page />} />
-              <Route path="simulator/practice" element={<SimulatorPractice_Page />} />
-              <Route path="simulator/practice/:exerciseId" element={<SimulatorExercisePractice_Page />} />
-              <Route path="simulator/exam" element={<SimulatorExam_Page />} />
-              <Route path="simulator/result/:sessionId" element={<SimulatorResult_Page />} />
-              <Route path="simulator/mistakes/:sessionId" element={<SimulatorMistakes_Page />} />
-              <Route path="simulator/statistics" element={<SimulatorStatistics_Page />} />
+              {/* Simulator Routes - Temporarily hidden per user request */}
+              {SHOW_SIMULATOR ? (
+                <>
+                  <Route path="practical-exam/simulator" element={<Navigate to="/simulator" replace />} />
+                  <Route path="simulator" element={<SimulatorDashboard_Page />} />
+                  <Route path="simulator/training" element={<SimulatorTraining_Page />} />
+                  <Route path="simulator/practice" element={<SimulatorPractice_Page />} />
+                  <Route path="simulator/practice/:exerciseId" element={<SimulatorExercisePractice_Page />} />
+                  <Route path="simulator/exam" element={<SimulatorExam_Page />} />
+                  <Route path="simulator/result/:sessionId" element={<SimulatorResult_Page />} />
+                  <Route path="simulator/mistakes/:sessionId" element={<SimulatorMistakes_Page />} />
+                  <Route path="simulator/statistics" element={<SimulatorStatistics_Page />} />
+                </>
+              ) : (
+                <>
+                  <Route path="practical-exam/simulator" element={<Navigate to="/practical-exam" replace />} />
+                  <Route path="simulator" element={<Navigate to="/practical-exam" replace />} />
+                  <Route path="simulator/*" element={<Navigate to="/practical-exam" replace />} />
+                </>
+              )}
               <Route path="rules" element={<TrafficRules_Page />} />
               <Route path="penalties" element={<Penalties_Page />} />
             </Route>
@@ -210,15 +224,26 @@ export default function AppRoutes() {
               <Route path="/markings" element={<RoadMarkings_Page />} />
               <Route path="/exam-centers" element={<ExamCenters_Page />} />
               <Route path="/practical-exam" element={<PracticalExam_Page />} />
-              <Route path="/practical-exam/simulator" element={<Navigate to="/simulator" replace />} />
-              <Route path="/simulator" element={<SimulatorDashboard_Page />} />
-              <Route path="/simulator/training" element={<SimulatorTraining_Page />} />
-              <Route path="/simulator/practice" element={<SimulatorPractice_Page />} />
-              <Route path="/simulator/practice/:exerciseId" element={<SimulatorExercisePractice_Page />} />
-              <Route path="/simulator/exam" element={<SimulatorExam_Page />} />
-              <Route path="/simulator/result/:sessionId" element={<SimulatorResult_Page />} />
-              <Route path="/simulator/mistakes/:sessionId" element={<SimulatorMistakes_Page />} />
-              <Route path="/simulator/statistics" element={<SimulatorStatistics_Page />} />
+              {/* Simulator Routes - Temporarily hidden per user request */}
+              {SHOW_SIMULATOR ? (
+                <>
+                  <Route path="/practical-exam/simulator" element={<Navigate to="/simulator" replace />} />
+                  <Route path="/simulator" element={<SimulatorDashboard_Page />} />
+                  <Route path="/simulator/training" element={<SimulatorTraining_Page />} />
+                  <Route path="/simulator/practice" element={<SimulatorPractice_Page />} />
+                  <Route path="/simulator/practice/:exerciseId" element={<SimulatorExercisePractice_Page />} />
+                  <Route path="/simulator/exam" element={<SimulatorExam_Page />} />
+                  <Route path="/simulator/result/:sessionId" element={<SimulatorResult_Page />} />
+                  <Route path="/simulator/mistakes/:sessionId" element={<SimulatorMistakes_Page />} />
+                  <Route path="/simulator/statistics" element={<SimulatorStatistics_Page />} />
+                </>
+              ) : (
+                <>
+                  <Route path="/practical-exam/simulator" element={<Navigate to="/practical-exam" replace />} />
+                  <Route path="/simulator" element={<Navigate to="/practical-exam" replace />} />
+                  <Route path="/simulator/*" element={<Navigate to="/practical-exam" replace />} />
+                </>
+              )}
               <Route path="/rules" element={<TrafficRules_Page />} />
               <Route path="/penalties" element={<Penalties_Page />} />
             </Route>
@@ -274,9 +299,9 @@ export default function AppRoutes() {
                 <Route path="/me/wrong-answers" element={<Navigate to="/wrong-answers" replace />} />
                 <Route path="/me/errors" element={<Navigate to="/wrong-answers" replace />} />
                 <Route path="/me/settings" element={<Navigate to="/settings" replace />} />
-                <Route path="/me/packages" element={<Navigate to="/packages" replace />} />
-                <Route path="/me/simulator" element={<Navigate to="/simulator" replace />} />
-                <Route path="/me/simulator/statistics" element={<Navigate to="/simulator/statistics" replace />} />
+                <Route path="/me/simulator" element={<Navigate to={SHOW_SIMULATOR ? "/simulator" : "/practical-exam"} replace />} />
+                <Route path="/me/simulator/*" element={<Navigate to={SHOW_SIMULATOR ? "/simulator" : "/practical-exam"} replace />} />
+                <Route path="/me/simulator/statistics" element={<Navigate to={SHOW_SIMULATOR ? "/simulator/statistics" : "/practical-exam"} replace />} />
               </Route>
 
               {/* Distraction-Free Exam Simulation Layout */}
@@ -332,15 +357,26 @@ export default function AppRoutes() {
               <Route path="/markings" element={<RoadMarkings_Page />} />
               <Route path="/exam-centers" element={<ExamCenters_Page />} />
               <Route path="/practical-exam" element={<PracticalExam_Page />} />
-              <Route path="/practical-exam/simulator" element={<Navigate to="/simulator" replace />} />
-              <Route path="/simulator" element={<SimulatorDashboard_Page />} />
-              <Route path="/simulator/training" element={<SimulatorTraining_Page />} />
-              <Route path="/simulator/practice" element={<SimulatorPractice_Page />} />
-              <Route path="/simulator/practice/:exerciseId" element={<SimulatorExercisePractice_Page />} />
-              <Route path="/simulator/exam" element={<SimulatorExam_Page />} />
-              <Route path="/simulator/result/:sessionId" element={<SimulatorResult_Page />} />
-              <Route path="/simulator/mistakes/:sessionId" element={<SimulatorMistakes_Page />} />
-              <Route path="/simulator/statistics" element={<SimulatorStatistics_Page />} />
+              {/* Simulator Routes - Temporarily hidden per user request */}
+              {SHOW_SIMULATOR ? (
+                <>
+                  <Route path="/practical-exam/simulator" element={<Navigate to="/simulator" replace />} />
+                  <Route path="/simulator" element={<SimulatorDashboard_Page />} />
+                  <Route path="/simulator/training" element={<SimulatorTraining_Page />} />
+                  <Route path="/simulator/practice" element={<SimulatorPractice_Page />} />
+                  <Route path="/simulator/practice/:exerciseId" element={<SimulatorExercisePractice_Page />} />
+                  <Route path="/simulator/exam" element={<SimulatorExam_Page />} />
+                  <Route path="/simulator/result/:sessionId" element={<SimulatorResult_Page />} />
+                  <Route path="/simulator/mistakes/:sessionId" element={<SimulatorMistakes_Page />} />
+                  <Route path="/simulator/statistics" element={<SimulatorStatistics_Page />} />
+                </>
+              ) : (
+                <>
+                  <Route path="/practical-exam/simulator" element={<Navigate to="/practical-exam" replace />} />
+                  <Route path="/simulator" element={<Navigate to="/practical-exam" replace />} />
+                  <Route path="/simulator/*" element={<Navigate to="/practical-exam" replace />} />
+                </>
+              )}
               <Route path="/rules" element={<TrafficRules_Page />} />
               <Route path="/penalties" element={<Penalties_Page />} />
             </Route>
@@ -399,8 +435,9 @@ export default function AppRoutes() {
                 <Route path="/me/errors" element={<Navigate to="/wrong-answers" replace />} />
                 <Route path="/me/settings" element={<Navigate to="/settings" replace />} />
                 <Route path="/me/packages" element={<Navigate to="/packages" replace />} />
-                <Route path="/me/simulator" element={<Navigate to="/simulator" replace />} />
-                <Route path="/me/simulator/statistics" element={<Navigate to="/simulator/statistics" replace />} />
+                <Route path="/me/simulator" element={<Navigate to={SHOW_SIMULATOR ? "/simulator" : "/practical-exam"} replace />} />
+                <Route path="/me/simulator/*" element={<Navigate to={SHOW_SIMULATOR ? "/simulator" : "/practical-exam"} replace />} />
+                <Route path="/me/simulator/statistics" element={<Navigate to={SHOW_SIMULATOR ? "/simulator/statistics" : "/practical-exam"} replace />} />
               </Route>
 
               {/* Distraction-Free Exam Simulation Layout */}

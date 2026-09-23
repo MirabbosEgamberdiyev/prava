@@ -496,14 +496,14 @@ export default function AvtodromSimulator_Page() {
             </Paper>
 
             <Paper p="xs" radius="sm" withBorder ta="center">
-              <Text size="xs" c="dimmed">Vaqt</Text>
+              <Text size="xs" c="dimmed">{t("simulator.thTime", "Vaqt")}</Text>
               <Text fw={700} size="sm">
                 {Math.floor(elapsedSeconds / 60)}:{(elapsedSeconds % 60).toString().padStart(2, "0")}
               </Text>
             </Paper>
 
             <Paper p="xs" radius="sm" withBorder ta="center">
-              <Text size="xs" c="dimmed">Jarima Ballari</Text>
+              <Text size="xs" c="dimmed">{t("simulator.thPoints", "Jarima Ballari")}</Text>
               <Group justify="center" gap={4}>
                 <Text fw={700} size="sm" c={totalPenaltyPoints >= 100 ? "red" : totalPenaltyPoints > 0 ? "orange" : "green"}>
                   {totalPenaltyPoints} / 100
@@ -512,7 +512,7 @@ export default function AvtodromSimulator_Page() {
             </Paper>
 
             <Paper p="xs" radius="sm" withBorder ta="center">
-              <Text size="xs" c="dimmed">Uzatma & Spidometr</Text>
+              <Text size="xs" c="dimmed">{t("simulator.thVehicle", "Uzatma & Spidometr")}</Text>
               <Text fw={700} size="sm" c="blue">
                 [{telemetry.gear}] {telemetry.speed} km/h
               </Text>
@@ -719,7 +719,7 @@ export default function AvtodromSimulator_Page() {
         <Stack gap="md">
           <Card withBorder padding="md" radius="md">
             <Group justify="space-between" mb="xs">
-              <Text size="sm" fw={600}>Umumiy Jarima Ballari:</Text>
+              <Text size="sm" fw={600}>{t("simulator.finalPenalty", "Umumiy Jarima Ballari")}:</Text>
               <Badge size="lg" color={isFailed ? "red" : "green"}>
                 {totalPenaltyPoints} / 100 ball
               </Badge>
@@ -736,15 +736,15 @@ export default function AvtodromSimulator_Page() {
           ) : (
             <Paper withBorder radius="md" p="xs">
               <Text size="xs" fw={700} mb="xs" c="dimmed">
-                Qayd etilgan xatolar ro'yxati:
+                {t("simulator.errorList", "Qayd etilgan xatolar ro'yxati:")}
               </Text>
               <Table striped highlightOnHover verticalSpacing="xs">
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>№</Table.Th>
-                    <Table.Th>Mashq</Table.Th>
-                    <Table.Th>Qoidabuzarlik</Table.Th>
-                    <Table.Th>Ball</Table.Th>
+                    <Table.Th>{t("simulator.thExercise", "Mashq")}</Table.Th>
+                    <Table.Th>{t("simulator.thViolation", "Qoidabuzarlik")}</Table.Th>
+                    <Table.Th>{t("simulator.thPenalty", "Ball")}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>

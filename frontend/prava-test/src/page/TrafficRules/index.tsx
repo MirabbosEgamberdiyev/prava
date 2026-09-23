@@ -36,11 +36,11 @@ export default function TrafficRules_Page() {
       })
       .catch((err) => {
         console.error("Failed to load traffic rules:", err);
-        setError("Yo'l harakati qoidalarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring.");
+        setError(t("curriculum.loadRulesError", "Yo'l harakati qoidalarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring."));
         setRules([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchRules();

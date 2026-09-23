@@ -47,11 +47,11 @@ export default function ExamCenters_Page() {
       })
       .catch((err) => {
         console.error("Failed to load exam centers:", err);
-        setError("Imtihon markazlarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring.");
+        setError(t("curriculum.loadCentersError", "Imtihon markazlarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring."));
         setCenters([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchCenters();

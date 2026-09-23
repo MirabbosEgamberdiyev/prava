@@ -8,6 +8,9 @@ interface Props {
   elapsedSeconds: number;
   maxTimeSeconds?: number;
   onNextExercise?: () => void;
+  onOpenErrorJournal?: () => void;
+  penaltiesCount?: number;
+  compact?: boolean;
 }
 
 export default function ExamStatusCard({
@@ -16,6 +19,9 @@ export default function ExamStatusCard({
   elapsedSeconds,
   maxTimeSeconds = 1500, // 25:00 minutes
   onNextExercise,
+  onOpenErrorJournal,
+  penaltiesCount = 0,
+  compact = false,
 }: Props) {
   const { lang } = useLanguage();
 
@@ -28,6 +34,60 @@ export default function ExamStatusCard({
   const maxTimeFormatted = `${maxMins.toString().padStart(2, "0")}:${maxSecs.toString().padStart(2, "0")}`;
 
   const isFailed = totalPenalties >= maxPenaltyAllowed;
+
+  if (compact) {
+    return (
+      <Paper
+        radius="md"
+        withBorder
+        p="xs"
+        style={{
+          pointerEvents: "auto",
+          backgroundColor: "rgba(15, 23, 42, 0.88)",
+          backdropFilter: "blur(12px)",
+          borderColor: "rgba(255, 255, 255, 0.16)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.45)",
+          width: "220px",
+        }}
+      >
+        <Group justify="space-between" align="center" gap={6}>
+          <Group gap={4} align="center">
+            <IconAlertTriangle
+              size={15}
+              color={isFailed ? "#ef4444" : totalPenalties > 0 ? "#f59e0b" : "#eab308"}
+            />
+            <Text
+              fw={800}
+              size="xs"
+              c={isFailed ? "#ef4444" : totalPenalties > 0 ? "#f59e0b" : "white"}
+              style={{ fontFamily: "monospace" }}
+            >
+              {totalPenalties}/{maxPenaltyAllowed}
+            </Text>
+          </Group>
+
+          <Group gap={4} align="center">
+            <IconClock size={14} color="#38bdf8" />
+            <Text fw={700} size="xs" c="white" style={{ fontFamily: "monospace" }}>
+              {timeFormatted}
+            </Text>
+          </Group>
+
+          {onOpenErrorJournal && (
+            <Button
+              size="compact-xs"
+              variant="subtle"
+              color={totalPenalties > 0 ? "orange" : "gray"}
+              onClick={onOpenErrorJournal}
+              style={{ fontSize: "10px", padding: "0 4px" }}
+            >
+              {lang === "ru" ? "Журнал" : "Jurnal"} ({penaltiesCount})
+            </Button>
+          )}
+        </Group>
+      </Paper>
+    );
+  }
 
   return (
     <Paper
@@ -96,6 +156,21 @@ export default function ExamStatusCard({
         >
           {lang === "ru" ? "Следующее упражнение" : "Keyingi mashqqa o'tish"}
         </Button>
+
+        {/* Xatolar jurnali (Error Journal Modal Trigger) */}
+        {onOpenErrorJournal && (
+          <Button
+            fullWidth
+            size="xs"
+            variant="light"
+            color={totalPenalties > 0 ? "orange" : "gray"}
+            leftSection={<IconAlertTriangle size={14} />}
+            onClick={onOpenErrorJournal}
+            style={{ fontWeight: 600 }}
+          >
+            {lang === "ru" ? "Журнал ошибок" : "Xatolar jurnali"} ({penaltiesCount})
+          </Button>
+        )}
       </Stack>
     </Paper>
   );

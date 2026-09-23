@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Group, Button, Box, Paper, Stack, Text, ActionIcon } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { IconArrowLeft, IconArrowRight, IconCamera, IconVolume } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../../context/LanguageContext";
@@ -19,6 +20,9 @@ interface Props {
   onHandbrakeToggle: () => void;
   onHornTrigger?: () => void;
   onCameraToggle?: () => void;
+  onClutchStart?: () => void;
+  onClutchEnd?: () => void;
+  showClutch?: boolean;
   activeGear: GearMode;
   handbrakeActive: boolean;
 }
@@ -37,11 +41,17 @@ export default function MobileControls({
   onHandbrakeToggle,
   onHornTrigger,
   onCameraToggle,
+  onClutchStart,
+  onClutchEnd,
+  showClutch,
   activeGear,
   handbrakeActive,
 }: Props) {
   const { t } = useTranslation();
   const { lang } = useLanguage();
+  const isCompactMobile = useMediaQuery("(max-width: 420px)");
+  const isLandscape = useMediaQuery("(orientation: landscape) and (max-height: 520px)");
+
   const wheelRef = useRef<HTMLDivElement | null>(null);
   const [wheelAngle, setWheelAngle] = useState(0);
   const isDraggingWheel = useRef(false);
@@ -101,13 +111,18 @@ export default function MobileControls({
     isDraggingWheel.current = true;
   };
 
+  const wheelSize = isCompactMobile ? 74 : isLandscape ? 80 : 96;
+
   return (
     <Box
       style={{
         position: "absolute",
-        bottom: 12,
-        left: 12,
-        right: 12,
+        bottom: 8,
+        left: 8,
+        right: 8,
+        paddingLeft: "env(safe-area-inset-left, 0px)",
+        paddingRight: "env(safe-area-inset-right, 0px)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-end",
@@ -116,46 +131,48 @@ export default function MobileControls({
       }}
     >
       {/* Left side: Interactive Steering Wheel & Arrow Buttons */}
-      <Stack gap="xs" style={{ pointerEvents: "auto" }}>
-        {/* Virtual Steering Wheel Disk */}
-        <div
-          ref={wheelRef}
-          onTouchStart={handleTouchStartWheel}
-          style={{
-            width: 96,
-            height: 96,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, #334155 30%, #0f172a 80%)",
-            border: "4px solid #38bdf8",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transform: `rotate(${wheelAngle}deg)`,
-            transition: isDraggingWheel.current ? "none" : "transform 0.2s ease-out",
-            boxShadow: "0 6px 18px rgba(0,0,0,0.5)",
-            touchAction: "none",
-            cursor: "grab",
-          }}
-        >
-          {/* Wheel Spokes */}
-          <div style={{ width: 80, height: 8, backgroundColor: "#64748b", position: "absolute", borderRadius: 4 }} />
-          <div style={{ width: 8, height: 44, backgroundColor: "#64748b", position: "absolute", bottom: 10, borderRadius: 4 }} />
-          {/* Center Hub */}
+      <Stack gap={6} style={{ pointerEvents: "auto" }}>
+        {/* Virtual Steering Wheel Disk (Hidden on ultra-narrow portrait to save space) */}
+        {!isCompactMobile && (
           <div
+            ref={wheelRef}
+            onTouchStart={handleTouchStartWheel}
             style={{
-              width: 32,
-              height: 32,
+              width: wheelSize,
+              height: wheelSize,
               borderRadius: "50%",
-              backgroundColor: "#1e293b",
-              border: "2px solid #94a3b8",
-              zIndex: 2,
+              background: "radial-gradient(circle, #334155 30%, #0f172a 80%)",
+              border: "4px solid #38bdf8",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transform: `rotate(${wheelAngle}deg)`,
+              transition: isDraggingWheel.current ? "none" : "transform 0.2s ease-out",
+              boxShadow: "0 6px 18px rgba(0,0,0,0.5)",
+              touchAction: "none",
+              cursor: "grab",
             }}
-          />
-        </div>
+          >
+            {/* Wheel Spokes */}
+            <div style={{ width: wheelSize - 16, height: 6, backgroundColor: "#64748b", position: "absolute", borderRadius: 4 }} />
+            <div style={{ width: 6, height: wheelSize * 0.44, backgroundColor: "#64748b", position: "absolute", bottom: 8, borderRadius: 4 }} />
+            {/* Center Hub */}
+            <div
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: "50%",
+                backgroundColor: "#1e293b",
+                border: "2px solid #94a3b8",
+                zIndex: 2,
+              }}
+            />
+          </div>
+        )}
 
         {/* Quick Steer & Horn Buttons */}
         <Paper
-          p="xs"
+          p={4}
           radius="lg"
           withBorder
           style={{
@@ -164,7 +181,7 @@ export default function MobileControls({
             borderColor: "rgba(255, 255, 255, 0.15)",
           }}
         >
-          <Group gap="xs">
+          <Group gap={4}>
             <Button
               size="sm"
               variant="filled"
@@ -174,7 +191,7 @@ export default function MobileControls({
               onTouchStart={onSteerLeftStart}
               onTouchEnd={onSteerLeftEnd}
               aria-label={t("common.back")}
-              style={{ width: 44, height: 44, borderRadius: "50%" }}
+              style={{ width: 44, height: 44, minWidth: 44, minHeight: 44, borderRadius: "50%", padding: 0 }}
             >
               <IconArrowLeft size={20} />
             </Button>
@@ -185,7 +202,7 @@ export default function MobileControls({
                 variant="light"
                 onClick={onHornTrigger}
                 aria-label={lang === "ru" ? "Звуковой сигнал" : lang === "uzc" ? "Овозли сигнал" : "Ovozli signal"}
-                style={{ width: 44, height: 44, borderRadius: "50%" }}
+                style={{ width: 44, height: 44, minWidth: 44, minHeight: 44, borderRadius: "50%" }}
               >
                 <IconVolume size={20} />
               </ActionIcon>
@@ -199,7 +216,7 @@ export default function MobileControls({
               onTouchStart={onSteerRightStart}
               onTouchEnd={onSteerRightEnd}
               aria-label={t("common.next")}
-              style={{ width: 44, height: 44, borderRadius: "50%" }}
+              style={{ width: 44, height: 44, minWidth: 44, minHeight: 44, borderRadius: "50%", padding: 0 }}
             >
               <IconArrowRight size={20} />
             </Button>
@@ -255,7 +272,33 @@ export default function MobileControls({
         </Paper>
 
         {/* Vertical Pedals */}
-        <Group gap="sm">
+        <Group gap={isCompactMobile ? 4 : "xs"}>
+          {/* Optional Clutch Pedal */}
+          {showClutch && onClutchStart && onClutchEnd && (
+            <Button
+              size="lg"
+              color="cyan"
+              variant="filled"
+              onMouseDown={onClutchStart}
+              onMouseUp={onClutchEnd}
+              onTouchStart={onClutchStart}
+              onTouchEnd={onClutchEnd}
+              style={{
+                width: isCompactMobile ? 44 : 58,
+                height: isCompactMobile ? 64 : 74,
+                borderRadius: "12px",
+                padding: 0,
+                boxShadow: "0 4px 14px rgba(6, 182, 212, 0.4)",
+              }}
+            >
+              <Stack gap={1} align="center">
+                <Text fw={700} size={isCompactMobile ? "9px" : "xs"}>
+                  {lang === "ru" ? "СЦЕП." : "MUF"}
+                </Text>
+              </Stack>
+            </Button>
+          )}
+
           {/* Brake Pedal */}
           <Button
             size="lg"
@@ -265,11 +308,17 @@ export default function MobileControls({
             onMouseUp={onBrakeEnd}
             onTouchStart={onBrakeStart}
             onTouchEnd={onBrakeEnd}
-            style={{ width: 68, height: 74, borderRadius: "14px", boxShadow: "0 4px 14px rgba(239, 68, 68, 0.4)" }}
+            style={{
+              width: isCompactMobile ? 48 : 64,
+              height: isCompactMobile ? 64 : 74,
+              borderRadius: "12px",
+              padding: 0,
+              boxShadow: "0 4px 14px rgba(239, 68, 68, 0.4)",
+            }}
           >
-            <Stack gap={2} align="center">
-              <Text fw={700} size="sm">
-                TORMOZ
+            <Stack gap={1} align="center">
+              <Text fw={700} size={isCompactMobile ? "10px" : "sm"}>
+                {lang === "ru" ? "ТОРМ" : "TOR"}
               </Text>
             </Stack>
           </Button>
@@ -283,11 +332,17 @@ export default function MobileControls({
             onMouseUp={onThrottleEnd}
             onTouchStart={onThrottleStart}
             onTouchEnd={onThrottleEnd}
-            style={{ width: 68, height: 88, borderRadius: "14px", boxShadow: "0 4px 14px rgba(20, 184, 166, 0.4)" }}
+            style={{
+              width: isCompactMobile ? 52 : 68,
+              height: isCompactMobile ? 74 : 88,
+              borderRadius: "12px",
+              padding: 0,
+              boxShadow: "0 4px 14px rgba(20, 184, 166, 0.4)",
+            }}
           >
-            <Stack gap={2} align="center">
-              <Text fw={700} size="md">
-                GAZ
+            <Stack gap={1} align="center">
+              <Text fw={700} size={isCompactMobile ? "12px" : "md"}>
+                {lang === "ru" ? "ГАЗ" : "GAZ"}
               </Text>
             </Stack>
           </Button>

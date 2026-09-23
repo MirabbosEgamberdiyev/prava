@@ -11,7 +11,9 @@ export type SimulatorSessionStatus =
 
 export type GearMode = "P" | "R" | "N" | "D";
 
-export type CameraView = "first_person" | "chase" | "top_down" | "free";
+export type CameraView = "first_person" | "chase" | "top_down" | "free" | "rear";
+
+export type VehicleCategory = "B" | "C" | "D";
 
 export type PenaltySeverity = "MINOR" | "MEDIUM" | "MAJOR" | "CRITICAL";
 
@@ -60,16 +62,41 @@ export interface PenaltyRule {
   explanation: LocalizedString;
 }
 
+export interface VehicleCameraOffsets {
+  chaseDist: number;
+  chaseHeight: number;
+  cockpitEyeX: number;
+  cockpitEyeY: number;
+  cockpitEyeZ: number;
+  rearBumperDist: number;
+}
+
 export interface VehicleConfig {
+  id?: string;
   modelName: string;
+  category: VehicleCategory;
   massKg: number;
   maxSpeedKmh: number;
   accelerationPower: number;
   brakingPower: number;
   steeringAngleMax: number; // degrees
+  steeringRatio?: number;
   wheelbaseMeters: number;
   trackWidthMeters: number;
+  lengthMeters: number;
+  widthMeters: number;
+  heightMeters: number;
+  groundClearanceMeters?: number;
   color: string;
+  secondaryColor?: string;
+  bodyType?: "sedan" | "suv" | "truck" | "bus";
+  engineType?: "gasoline" | "turbo" | "diesel";
+  transmissionType?: "manual" | "auto";
+  hasDualRearWheels?: boolean;
+  gearRatios?: number[];
+  reverseRatio?: number;
+  differentialRatio?: number;
+  cameraOffsets?: VehicleCameraOffsets;
 }
 
 export type ExamFSMState =
@@ -103,6 +130,52 @@ export interface VehicleTelemetry {
   wheelHeights?: [number, number, number, number]; // FL, FR, RL, RR compression offsets
   estakadaHoldSeconds?: number;
   examState?: ExamFSMState;
+  clutch?: number; // 0 (fully engaged) to 1 (fully pressed)
+  isStalled?: boolean;
+  transmissionMode?: "auto" | "manual";
+  manualGear?: "R" | "N" | "1" | "2" | "3" | "4" | "5";
+  category?: VehicleCategory;
+  mirrorsActive?: boolean;
+}
+
+export interface TelemetryFrame {
+  timestampMs: number;
+  posX: number;
+  posY: number;
+  rotation: number;
+  speed: number;
+  rpm: number;
+  gear: GearMode;
+  manualGear?: "R" | "N" | "1" | "2" | "3" | "4" | "5";
+  steeringAngle: number;
+  throttle: number;
+  brake: number;
+  clutch?: number;
+  handbrake: boolean;
+  pitch?: number;
+  roll?: number;
+  event?: string;
+  penaltyId?: string;
+}
+
+export interface ReplayRecording {
+  sessionId: string;
+  mode: SimulatorMode;
+  date: string;
+  durationSeconds: number;
+  isPassed: boolean;
+  totalPenalties: number;
+  frames: TelemetryFrame[];
+  penalties: PenaltyEvent[];
+}
+
+export interface AIInstructorFeedback {
+  id: string;
+  timestamp: number;
+  severity: "info" | "warning" | "danger" | "success";
+  category: "steering" | "speed" | "positioning" | "clutch" | "checklist" | "hazard";
+  message: LocalizedString;
+  spokenText?: string;
 }
 
 export interface PenaltyEvent {
@@ -138,6 +211,7 @@ export interface SimulatorSessionData {
   vehicleModel: string;
   exerciseResults: Record<number, ExerciseAttemptResult>;
   penalties: PenaltyEvent[];
+  replayRecording?: ReplayRecording;
 }
 
 export interface UserSimulatorStats {
@@ -155,3 +229,4 @@ export interface UserSimulatorStats {
     failCount: number;
   }>;
 }
+

@@ -16,24 +16,23 @@ import {
   IconArrowRight,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../../context/LanguageContext";
 import SEO from "../../../components/common/SEO";
 import { EXERCISE_REGISTRY } from "../registry/exerciseRegistry";
-import { VEHICLE_CONFIGS } from "../registry/vehicleConfigs";
-import { updateVehiclePhysics } from "../engine/vehiclePhysics";
-import { checkCollisions } from "../engine/collisionEngine";
-import { evaluateSensors } from "../engine/sensorEngine";
+import { SimulationController, type SimulationInput } from "../engine/SimulationController";
 import SimulatorCanvas3D from "../components/SimulatorCanvas3D";
 import HUDOverlay from "../components/HUDOverlay";
-import MobileControls from "../components/MobileControls";
 import VoiceInstructor from "../components/VoiceInstructor";
+import AIInstructorOverlay from "../components/AIInstructorOverlay";
 import TrainingHelpers from "../components/TrainingHelpers";
 import WebGLFallback, { isWebGLAvailable } from "../components/WebGLFallback";
-import type { VehicleTelemetry, CameraView, GearMode } from "../types";
+import type { VehicleTelemetry, CameraView, GearMode, AIInstructorFeedback } from "../types";
 
 export default function SimulatorTraining_Page() {
   const navigate = useNavigate();
   const { lang } = useLanguage();
+  const { t } = useTranslation();
 
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(0);
   const exercise = EXERCISE_REGISTRY[currentExerciseIndex] || EXERCISE_REGISTRY[0];
@@ -42,8 +41,16 @@ export default function SimulatorTraining_Page() {
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [instructorMsg, setInstructorMsg] = useState<string>("");
+  const [aiFeedback, setAiFeedback] = useState<AIInstructorFeedback | null>(null);
   const [completedModalOpen, setCompletedModalOpen] = useState<boolean>(false);
   const [webglSupported, setWebglSupported] = useState<boolean>(true);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleFs = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handleFs);
+    return () => document.removeEventListener("fullscreenchange", handleFs);
+  }, []);
 
   // Vehicle Telemetry
   const [telemetry, setTelemetry] = useState<VehicleTelemetry>({
@@ -65,6 +72,7 @@ export default function SimulatorTraining_Page() {
 
   const keysDownRef = useRef<Record<string, boolean>>({});
   const animFrameRef = useRef<number | null>(null);
+  const controllerRef = useRef<SimulationController | null>(null);
 
   // Check WebGL availability
   useEffect(() => {
@@ -85,68 +93,92 @@ export default function SimulatorTraining_Page() {
     const ex = EXERCISE_REGISTRY[idx];
     if (!ex) return;
     setCurrentExerciseIndex(idx);
-    setTelemetry({
-      speed: 0,
-      rpm: 800,
-      gear: "D",
-      steeringAngle: 0,
-      handbrake: false,
-      throttle: 0,
-      brake: 0,
-      seatbeltFastened: true,
-      lowBeamsOn: true,
-      turnSignal: "left",
-      posX: ex.startX,
-      posY: ex.startY,
-      rotation: ex.startRotation,
-      rollbackDistance: 0,
-    });
     setElapsedSeconds(0);
     setInstructorMsg(getLoc(ex.instructorGuide));
+
+    if (controllerRef.current) {
+      controllerRef.current.setExercise(ex);
+    }
   }, [getLoc]);
 
-  // Initial instruction
+  // Initial Controller setup
   useEffect(() => {
+    const ctrl = new SimulationController(
+      exercise,
+      "Chevrolet Cobalt",
+      {
+        onTelemetryUpdate: (telem) => setTelemetry(telem),
+        onStationCompleted: () => {
+          setCompletedModalOpen(true);
+          setInstructorMsg(
+            lang === "ru"
+              ? "Отлично! Упражнение успешно выполнено."
+              : lang === "uzc"
+              ? "Ажойиб! Машқ муваффақиятли бажарилди."
+              : "Ajoyib! Mashq muvaffaqiyatli bajarildi."
+          );
+        },
+        onPenaltyTriggered: () => {
+          setInstructorMsg(
+            lang === "ru"
+              ? "Внимание! Вы задели разметку или конус. Попробуйте еще раз."
+              : lang === "uzc"
+              ? "Диққат! Сиз чизиқ ёки конусни босдингиз. Қайта уриниб кўринг."
+              : "Diqqat! Siz chiziq yoki konusni bosdingiz. Qayta urinib ko'ring."
+          );
+        },
+        onVoiceAnnounce: (msg) => {
+          setInstructorMsg(msg);
+        },
+        onAIInstructorFeedback: (fb) => {
+          setAiFeedback(fb);
+        },
+      },
+      lang
+    );
+
+    controllerRef.current = ctrl;
     setInstructorMsg(getLoc(exercise.instructorGuide));
-  }, [exercise, getLoc]);
+  }, [exercise, getLoc, lang]);
+
+  // Synchronize language changes
+  useEffect(() => {
+    if (controllerRef.current) {
+      controllerRef.current.setLanguage(lang);
+    }
+  }, [lang]);
 
   // Keyboard handlers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       keysDownRef.current[e.key.toLowerCase()] = true;
-      if (e.key === "p" || e.key === "P") setTelemetry((prev) => ({ ...prev, gear: "P" }));
-      if (e.key === "r" || e.key === "R") setTelemetry((prev) => ({ ...prev, gear: "R" }));
-      if (e.key === "n" || e.key === "N") setTelemetry((prev) => ({ ...prev, gear: "N" }));
-      if (e.key === "d" || e.key === "D") setTelemetry((prev) => ({ ...prev, gear: "D" }));
+      if (e.key === "p" || e.key === "P") controllerRef.current?.setGear("P");
+      if (e.key === "r" || e.key === "R") controllerRef.current?.setGear("R");
+      if (e.key === "n" || e.key === "N") controllerRef.current?.setGear("N");
+      if (e.key === "d" || e.key === "D") controllerRef.current?.setGear("D");
       if (e.code === "Space") {
         e.preventDefault();
-        setTelemetry((prev) => ({ ...prev, handbrake: !prev.handbrake }));
+        controllerRef.current?.toggleHandbrake();
       }
       if (e.key === "b" || e.key === "B") {
-        setTelemetry((prev) => ({ ...prev, seatbeltFastened: !prev.seatbeltFastened }));
+        controllerRef.current?.toggleSeatbelt();
       }
       if (e.key === "l" || e.key === "L") {
-        setTelemetry((prev) => ({ ...prev, lowBeamsOn: !prev.lowBeamsOn }));
+        controllerRef.current?.toggleLights();
+      }
+      if (e.key === "i" || e.key === "I") {
+        controllerRef.current?.toggleEngine();
       }
       if (e.key === "q" || e.key === "Q") {
-        setTelemetry((prev) => ({
-          ...prev,
-          turnSignal: prev.turnSignal === "left" ? "none" : "left",
-        }));
+        controllerRef.current?.toggleTurnSignal("left");
       }
       if (e.key === "e" || e.key === "E") {
-        setTelemetry((prev) => ({
-          ...prev,
-          turnSignal: prev.turnSignal === "right" ? "none" : "right",
-        }));
+        controllerRef.current?.toggleTurnSignal("right");
       }
       if (e.key === "h" || e.key === "H") {
-        setTelemetry((prev) => ({
-          ...prev,
-          turnSignal: prev.turnSignal === "hazard" ? "none" : "hazard",
-        }));
+        controllerRef.current?.toggleTurnSignal("hazard");
       }
-      if (e.key === "c" || e.key === "C") {
+      if (e.key === "v" || e.key === "V") {
         setCameraView((prev) =>
           prev === "chase" ? "first_person" : prev === "first_person" ? "top_down" : "chase"
         );
@@ -169,52 +201,33 @@ export default function SimulatorTraining_Page() {
     return () => clearInterval(interval);
   }, []);
 
-  // Physics Loop (60 FPS)
+  // Physics Loop (60 FPS) via SimulationController
   useEffect(() => {
-    let currentTelem = telemetry;
-
     const loop = () => {
       const keys = keysDownRef.current;
       let throttle = 0;
       let brake = 0;
       let steer = 0;
+      let clutch = 0;
 
       if (keys["w"] || keys["arrowup"]) throttle = 1.0;
       if (keys["s"] || keys["arrowdown"]) brake = 1.0;
       if (keys["a"] || keys["arrowleft"]) steer = -1.0;
       if (keys["d"] || keys["arrowright"]) steer = 1.0;
+      if (keys["c"]) clutch = 1.0;
 
-      const updated = updateVehiclePhysics(
-        currentTelem,
-        { throttle, brake, steer, handbrake: currentTelem.handbrake },
-        VEHICLE_CONFIGS["Chevrolet Cobalt"],
-        0.016,
-        exercise.hasIncline
-      );
+      const input: SimulationInput = {
+        throttle,
+        brake,
+        steer,
+        clutch,
+        handbrake: telemetry.handbrake,
+      };
 
-      // Collisions check
-      const col = checkCollisions(updated, exercise);
-      if (col.hasCollision && col.type === "cone") {
-        setInstructorMsg(
-          lang === "ru"
-            ? "Внимание! Вы задели конус. В режиме обучения повторите маневр."
-            : "Diqqat! Konusga tegdiniz. Mashqni ehtiyotkorlik bilan takrorlang."
-        );
+      if (controllerRef.current) {
+        controllerRef.current.update(input, 0.016, elapsedSeconds);
       }
 
-      // Sensor check for completion
-      const sensor = evaluateSensors(updated, exercise);
-      if (sensor.isExerciseCompleted && !completedModalOpen) {
-        setCompletedModalOpen(true);
-        setInstructorMsg(
-          lang === "ru"
-            ? "Отлично! Упражнение успешно выполнено."
-            : "Ajoyib! Mashq muvaffaqiyatli bajarildi."
-        );
-      }
-
-      currentTelem = updated;
-      setTelemetry(updated);
       animFrameRef.current = requestAnimationFrame(loop);
     };
 
@@ -222,19 +235,19 @@ export default function SimulatorTraining_Page() {
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [completedModalOpen, exercise, lang]);
+  }, [elapsedSeconds, telemetry.handbrake]);
 
   return (
     <>
       <SEO
-        title={`${lang === "ru" ? "Обучение" : "O'rganish"} | ${getLoc(exercise.title)} | PravaOnline`}
+        title={`${lang === "ru" ? "Обучение" : lang === "uzc" ? "Ўрганиш" : "O'rganish"} | ${getLoc(exercise.title)} | PravaOnline`}
         description={getLoc(exercise.description)}
       />
 
-      <Container size="xl" py="sm">
-        <Stack gap="sm">
+      <Container size="xl" maw={1800} py="xs" px={{ base: "xs", sm: "sm" }}>
+        <Stack gap="xs">
           {/* Top Navigation */}
-          <Group justify="space-between" align="center">
+          <Group justify="space-between" align="center" wrap="wrap" gap="xs">
             <Button
               variant="subtle"
               color="gray"
@@ -242,12 +255,15 @@ export default function SimulatorTraining_Page() {
               leftSection={<IconArrowLeft size={16} />}
               onClick={() => navigate("/simulator")}
             >
-              {lang === "ru" ? "Главная симулятора" : "Simulyator paneli"}
+              {t("simulator.trainingPanel", "Simulyator paneli")}
             </Button>
-            <Badge color="blue" size="lg" variant="filled">
-              {lang === "ru" ? "РЕЖИМ ОБУЧЕНИЯ" : "O'RGANISH REJIMI"}
+            <Badge color="blue" size="md" variant="filled">
+              {t("simulator.trainingMode", "O'RGANISH REJIMI")}
             </Badge>
           </Group>
+
+          {/* Real-time AI Instructor Guidance Overlay */}
+          <AIInstructorOverlay feedback={aiFeedback} />
 
           {/* Voice Instructor Box */}
           <VoiceInstructor message={instructorMsg} soundEnabled={soundEnabled} />
@@ -260,12 +276,17 @@ export default function SimulatorTraining_Page() {
             <WebGLFallback onRetry={() => setWebglSupported(isWebGLAvailable())} />
           ) : (
             <Paper
-              radius="lg"
-              withBorder
+              radius={isFullscreen ? 0 : "lg"}
+              withBorder={!isFullscreen}
               style={{
                 position: "relative",
                 overflow: "hidden",
-                height: "500px",
+                height: isFullscreen ? "100vh" : "clamp(350px, 64vh, 720px)",
+                minHeight: isFullscreen ? "100vh" : "340px",
+                maxHeight: isFullscreen ? "100vh" : undefined,
+                width: isFullscreen ? "100vw" : "100%",
+                borderRadius: isFullscreen ? 0 : undefined,
+                border: isFullscreen ? "none" : undefined,
                 backgroundColor: "#1a252f",
               }}
             >
@@ -274,6 +295,9 @@ export default function SimulatorTraining_Page() {
                 exercise={exercise}
                 cameraView={cameraView}
                 showHelpers={true}
+                idealTrajectory={exercise.helperPath}
+                category="B"
+                modelName="Chevrolet Cobalt"
               />
 
               <HUDOverlay
@@ -285,66 +309,44 @@ export default function SimulatorTraining_Page() {
                 cameraView={cameraView}
                 soundEnabled={soundEnabled}
                 onCameraToggle={() =>
-                  setCameraView(
-                    cameraView === "chase"
+                  setCameraView((prev) =>
+                    prev === "chase"
                       ? "first_person"
-                      : cameraView === "first_person"
+                      : prev === "first_person"
+                      ? "rear"
+                      : prev === "rear"
                       ? "top_down"
+                      : prev === "top_down"
+                      ? "free"
                       : "chase"
                   )
                 }
                 onSoundToggle={() => setSoundEnabled(!soundEnabled)}
-                onGearSelect={(g: GearMode) => setTelemetry((prev) => ({ ...prev, gear: g }))}
-                onHandbrakeToggle={() =>
-                  setTelemetry((prev) => ({ ...prev, handbrake: !prev.handbrake }))
-                }
-                onSeatbeltToggle={() =>
-                  setTelemetry((prev) => ({ ...prev, seatbeltFastened: !prev.seatbeltFastened }))
-                }
-                onLightsToggle={() =>
-                  setTelemetry((prev) => ({ ...prev, lowBeamsOn: !prev.lowBeamsOn }))
-                }
-                onTurnSignalToggle={(sig) =>
-                  setTelemetry((prev) => ({
-                    ...prev,
-                    turnSignal: prev.turnSignal === sig ? "none" : sig,
-                  }))
-                }
+                onGearSelect={(g: GearMode) => controllerRef.current?.setGear(g)}
+                onHandbrakeToggle={() => controllerRef.current?.toggleHandbrake()}
+                onSeatbeltToggle={() => controllerRef.current?.toggleSeatbelt()}
+                onLightsToggle={() => controllerRef.current?.toggleLights()}
+                onTurnSignalToggle={(sig) => controllerRef.current?.toggleTurnSignal(sig)}
                 onNextExercise={() => resetExercise((currentExerciseIndex + 1) % EXERCISE_REGISTRY.length)}
-              />
-
-              {/* Mobile controls overlay */}
-              <MobileControls
-                onThrottleStart={() => {
-                  keysDownRef.current["w"] = true;
+                onThrottleChange={(val) => {
+                  keysDownRef.current["w"] = val > 0;
                 }}
-                onThrottleEnd={() => {
-                  keysDownRef.current["w"] = false;
+                onBrakeChange={(val) => {
+                  keysDownRef.current["s"] = val > 0;
                 }}
-                onBrakeStart={() => {
-                  keysDownRef.current["s"] = true;
+                onSteerChange={(val) => {
+                  keysDownRef.current["a"] = val < -0.05;
+                  keysDownRef.current["d"] = val > 0.05;
                 }}
-                onBrakeEnd={() => {
-                  keysDownRef.current["s"] = false;
+                onClutchChange={(val) => {
+                  controllerRef.current?.setClutch(val);
+                  setTelemetry((prev) => ({ ...prev, clutch: val }));
                 }}
-                onSteerLeftStart={() => {
-                  keysDownRef.current["a"] = true;
+                onManualGearSelect={(g) => {
+                  controllerRef.current?.setManualGear(g);
+                  setTelemetry((prev) => ({ ...prev, manualGear: g }));
                 }}
-                onSteerLeftEnd={() => {
-                  keysDownRef.current["a"] = false;
-                }}
-                onSteerRightStart={() => {
-                  keysDownRef.current["d"] = true;
-                }}
-                onSteerRightEnd={() => {
-                  keysDownRef.current["d"] = false;
-                }}
-                onGearSelect={(g: GearMode) => setTelemetry((prev) => ({ ...prev, gear: g }))}
-                onHandbrakeToggle={() =>
-                  setTelemetry((prev) => ({ ...prev, handbrake: !prev.handbrake }))
-                }
-                activeGear={telemetry.gear}
-                handbrakeActive={telemetry.handbrake}
+                showClutch={telemetry.transmissionMode === "manual"}
               />
             </Paper>
           )}
@@ -353,7 +355,7 @@ export default function SimulatorTraining_Page() {
           <Paper p="xs" radius="md" withBorder>
             <Group justify="space-between" align="center" mb={6}>
               <Text size="xs" fw={700} c="dimmed">
-                {lang === "ru" ? "Упражнение (1-12):" : "Mashqni tanlash (1-12):"}
+                {t("simulator.selectExercise", "Mashqni tanlash (1-12):")}
               </Text>
               <Button
                 size="xs"
@@ -362,7 +364,7 @@ export default function SimulatorTraining_Page() {
                 leftSection={<IconRefresh size={14} />}
                 onClick={() => resetExercise(currentExerciseIndex)}
               >
-                {lang === "ru" ? "Сбросить положение" : "Mashqni qayta boshlash"}
+                {t("simulator.resetPosition", "Mashqni qayta boshlash")}
               </Button>
             </Group>
             <Group gap={6} wrap="wrap">
@@ -390,7 +392,7 @@ export default function SimulatorTraining_Page() {
           <Group gap="xs">
             <IconCheck size={22} color="#2ecc71" />
             <Text fw={700}>
-              {lang === "ru" ? "Упражнение выполнено!" : "Mashq muvaffaqiyatli bajarildi!"}
+              {t("simulator.exerciseDone", "Mashq muvaffaqiyatli bajarildi!")}
             </Text>
           </Group>
         }
@@ -401,6 +403,8 @@ export default function SimulatorTraining_Page() {
           <Text size="sm" c="dimmed">
             {lang === "ru"
               ? "Вы успешно завершили текущее упражнение. Желаете перейти к следующему или повторить?"
+              : lang === "uzc"
+              ? "Сиз жорий машқни тўлиқ бажардингиз. Кейинги машққа ўтишни хоҳлайсизми ёки такрорлайсизми?"
               : "Siz joriy mashqni to'liq bajardingiz. Keyingi mashqqa o'tishni xohlaysizmi yoki takrorlaysizmi?"}
           </Text>
 
@@ -414,7 +418,7 @@ export default function SimulatorTraining_Page() {
                 resetExercise(currentExerciseIndex);
               }}
             >
-              {lang === "ru" ? "Повторить" : "Qayta mashq"}
+              {t("simulator.repeatExercise", "Qayta mashq")}
             </Button>
 
             {currentExerciseIndex < EXERCISE_REGISTRY.length - 1 ? (
@@ -426,7 +430,7 @@ export default function SimulatorTraining_Page() {
                   resetExercise(currentExerciseIndex + 1);
                 }}
               >
-                {lang === "ru" ? "Следующее упражнение" : "Keyingi mashq"}
+                {t("simulator.nextExercise", "Keyingi mashq")}
               </Button>
             ) : (
               <Button
@@ -436,7 +440,7 @@ export default function SimulatorTraining_Page() {
                   navigate("/simulator");
                 }}
               >
-                {lang === "ru" ? "Завершить обучение" : "O'rganishni yakunlash"}
+                {t("simulator.finishTraining", "O'rganishni yakunlash")}
               </Button>
             )}
           </Group>

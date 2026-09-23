@@ -44,11 +44,11 @@ export default function RoadMarkings_Page() {
       })
       .catch((err) => {
         console.error("Failed to load markings:", err);
-        setError("Yo'l chiziqlarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring.");
+        setError(t("curriculum.loadMarkingsError", "Yo'l chiziqlarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring."));
         setMarkings([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchMarkings();

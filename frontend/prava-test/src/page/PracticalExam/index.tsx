@@ -51,6 +51,7 @@ export default function PracticalExam_Page() {
   const [error, setError] = useState<string | null>(null);
   const [simulatorOpen, setSimulatorOpen] = useState(false);
   const [selectedMode, setSelectedMode] = useState<"training" | "practice" | "exam">("training");
+  const SHOW_SIMULATOR = false;
 
   const fetchData = useCallback(() => {
     setLoading(true);
@@ -340,69 +341,71 @@ const PRACTICAL_EXERCISES_FALLBACK: ExerciseFallback[] = [
           </Alert>
         )}
 
-        {/* Avtodrom 3D Simulator Interactive Banner */}
-        <Paper
-          p="xl"
-          radius="lg"
-          withBorder
-          style={{
-            background: "linear-gradient(135deg, rgba(24, 100, 171, 0.08) 0%, rgba(12, 133, 153, 0.12) 100%)",
-            borderColor: "rgba(24, 100, 171, 0.25)",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <Group justify="space-between" align="center" wrap="wrap" gap="lg">
-            <Stack gap="xs" style={{ maxWidth: 680 }}>
-              <Group gap="xs">
-                <Badge
-                  color="cyan"
-                  variant="filled"
-                  size="md"
-                  leftSection={<IconDeviceGamepad2 size={14} />}
-                >
-                  {t("curriculum.simulatorBadge", "3D WebGL Simulyator")}
-                </Badge>
-                <Badge color="green" variant="light" size="md">
-                  12 ta Mashq • 60 FPS
-                </Badge>
-              </Group>
-              <Title order={3} fw={800}>
-                {t("curriculum.simulatorTitle", "Avtodrom 3D Simulyatori")}
-              </Title>
-              <Text size="sm" c="dimmed">
-                {t(
-                  "curriculum.simulatorDesc",
-                  "YHXX Davlat imtihon markazi standartidagi 12 ta amaliy mashqni interaktiv 3D WebGL simulyatorida real fizika va ovozli instruktor bilan mashq qiling!"
-                )}
-              </Text>
-              <Group gap="xs" mt="xs">
-                <Badge variant="outline" color="blue" size="sm">
-                  {t("curriculum.modeTraining", "O'rganish (Training)")}
-                </Badge>
-                <Badge variant="outline" color="cyan" size="sm">
-                  {t("curriculum.modePractice", "Mashq (Practice)")}
-                </Badge>
-                <Badge variant="outline" color="orange" size="sm">
-                  {t("curriculum.modeExam", "Real Imtihon (Exam 100 ball)")}
-                </Badge>
-              </Group>
-            </Stack>
+        {/* Avtodrom 3D Simulator Interactive Banner (Temporarily hidden) */}
+        {SHOW_SIMULATOR && (
+          <Paper
+            p="xl"
+            radius="lg"
+            withBorder
+            style={{
+              background: "linear-gradient(135deg, rgba(24, 100, 171, 0.08) 0%, rgba(12, 133, 153, 0.12) 100%)",
+              borderColor: "rgba(24, 100, 171, 0.25)",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <Group justify="space-between" align="center" wrap="wrap" gap="lg">
+              <Stack gap="xs" style={{ maxWidth: 680 }}>
+                <Group gap="xs">
+                  <Badge
+                    color="cyan"
+                    variant="filled"
+                    size="md"
+                    leftSection={<IconDeviceGamepad2 size={14} />}
+                  >
+                    {t("curriculum.simulatorBadge", "3D WebGL Simulyator")}
+                  </Badge>
+                  <Badge color="green" variant="light" size="md">
+                    12 ta Mashq • 60 FPS
+                  </Badge>
+                </Group>
+                <Title order={3} fw={800}>
+                  {t("curriculum.simulatorTitle", "Avtodrom 3D Simulyatori")}
+                </Title>
+                <Text size="sm" c="dimmed">
+                  {t(
+                    "curriculum.simulatorDesc",
+                    "YHXX Davlat imtihon markazi standartidagi 12 ta amaliy mashqni interaktiv 3D WebGL simulyatorida real fizika va ovozli instruktor bilan mashq qiling!"
+                  )}
+                </Text>
+                <Group gap="xs" mt="xs">
+                  <Badge variant="outline" color="blue" size="sm">
+                    {t("curriculum.modeTraining", "O'rganish (Training)")}
+                  </Badge>
+                  <Badge variant="outline" color="cyan" size="sm">
+                    {t("curriculum.modePractice", "Mashq (Practice)")}
+                  </Badge>
+                  <Badge variant="outline" color="orange" size="sm">
+                    {t("curriculum.modeExam", "Real Imtihon (Exam 100 ball)")}
+                  </Badge>
+                </Group>
+              </Stack>
 
-            <Button
-              size="lg"
-              radius="md"
-              color="blue"
-              leftSection={<IconPlayerPlay size={20} />}
-              onClick={() => setSimulatorOpen(true)}
-              style={{
-                boxShadow: "0 8px 20px rgba(24, 100, 171, 0.3)",
-              }}
-            >
-              {t("curriculum.startSimulator", "Simulyatorni boshlash")}
-            </Button>
-          </Group>
-        </Paper>
+              <Button
+                size="lg"
+                radius="md"
+                color="blue"
+                leftSection={<IconPlayerPlay size={20} />}
+                onClick={() => setSimulatorOpen(true)}
+                style={{
+                  boxShadow: "0 8px 20px rgba(24, 100, 171, 0.3)",
+                }}
+              >
+                {t("curriculum.startSimulator", "Simulyatorni boshlash")}
+              </Button>
+            </Group>
+          </Paper>
+        )}
 
         <Tabs defaultValue="exercises">
           <Tabs.List mb="lg">
@@ -507,162 +510,164 @@ const PRACTICAL_EXERCISES_FALLBACK: ExerciseFallback[] = [
         </Tabs>
       </Stack>
 
-      {/* Avtodrom 3D Simulator Launcher Modal */}
-      <Modal
-        opened={simulatorOpen}
-        onClose={() => setSimulatorOpen(false)}
-        title={
-          <Group gap="xs">
-            <ThemeIcon color="blue" size="lg" radius="md">
-              <IconSteeringWheel size={20} />
-            </ThemeIcon>
-            <div>
-              <Text fw={700} size="md">
-                {t("curriculum.simulatorTitle", "Avtodrom 3D Simulyatori")}
-              </Text>
-              <Text size="xs" c="dimmed">
-                v2.0 • WebGL & Rapier 3D Physics
-              </Text>
-            </div>
-          </Group>
-        }
-        size="lg"
-        radius="md"
-      >
-        <Stack gap="md">
-          <Text size="sm">
-            {t(
-              "curriculum.simulatorDesc",
-              "YHXX Davlat imtihon markazi standartidagi 12 ta amaliy mashqni interaktiv 3D WebGL simulyatorida real fizika va ovozli instruktor bilan mashq qiling!"
-            )}
-          </Text>
-
-          <Paper p="md" radius="md" withBorder bg="var(--surface)">
-            <Text fw={600} size="sm" mb="xs">
-              Rejimni tanlang:
-            </Text>
-            <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xs">
-              <Card
-                padding="sm"
-                radius="sm"
-                withBorder
-                style={{
-                  cursor: "pointer",
-                  borderColor: selectedMode === "training" ? "var(--mantine-color-blue-6)" : undefined,
-                  backgroundColor: selectedMode === "training" ? "rgba(24, 100, 171, 0.08)" : undefined,
-                }}
-                onClick={() => setSelectedMode("training")}
-              >
-                <Group gap="xs" mb={4}>
-                  <ThemeIcon size="sm" color="blue" variant="light">
-                    <IconCompass size={14} />
-                  </ThemeIcon>
-                  <Text fw={600} size="xs">
-                    Training
-                  </Text>
-                </Group>
-                <Text size="xs" c="dimmed">
-                  Yo'naltiruvchi chiziqlar va ovozli instruktor
-                </Text>
-              </Card>
-
-              <Card
-                padding="sm"
-                radius="sm"
-                withBorder
-                style={{
-                  cursor: "pointer",
-                  borderColor: selectedMode === "practice" ? "var(--mantine-color-cyan-6)" : undefined,
-                  backgroundColor: selectedMode === "practice" ? "rgba(12, 133, 153, 0.08)" : undefined,
-                }}
-                onClick={() => setSelectedMode("practice")}
-              >
-                <Group gap="xs" mb={4}>
-                  <ThemeIcon size="sm" color="cyan" variant="light">
-                    <IconRefresh size={14} />
-                  </ThemeIcon>
-                  <Text fw={600} size="xs">
-                    Practice
-                  </Text>
-                </Group>
-                <Text size="xs" c="dimmed">
-                  Alohida tanlangan mashqni cheksiz takrorlash
-                </Text>
-              </Card>
-
-              <Card
-                padding="sm"
-                radius="sm"
-                withBorder
-                style={{
-                  cursor: "pointer",
-                  borderColor: selectedMode === "exam" ? "var(--mantine-color-orange-6)" : undefined,
-                  backgroundColor: selectedMode === "exam" ? "rgba(232, 89, 12, 0.08)" : undefined,
-                }}
-                onClick={() => setSelectedMode("exam")}
-              >
-                <Group gap="xs" mb={4}>
-                  <ThemeIcon size="sm" color="orange" variant="light">
-                    <IconAward size={14} />
-                  </ThemeIcon>
-                  <Text fw={600} size="xs">
-                    Real Imtihon
-                  </Text>
-                </Group>
-                <Text size="xs" c="dimmed">
-                  12 ta mashq ketma-ket, 100 ballik qat'iy nazorat
-                </Text>
-              </Card>
-            </SimpleGrid>
-          </Paper>
-
-          <Paper p="md" radius="md" withBorder bg="var(--surface)">
-            <Text fw={600} size="sm" mb="xs">
-              {t("practicalExam.controlsTitle", "Boshqaruv tugmalari (Klaviatura):")}
-            </Text>
-            <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
-              <Paper p="xs" radius="sm" withBorder ta="center">
-                <Badge size="sm" variant="outline">W / ↑</Badge>
-                <Text size="xs" mt={4} c="dimmed">{t("practicalExam.gas", "Gaz (Tezlanish)")}</Text>
-              </Paper>
-              <Paper p="xs" radius="sm" withBorder ta="center">
-                <Badge size="sm" variant="outline">S / ↓</Badge>
-                <Text size="xs" mt={4} c="dimmed">{t("practicalExam.brake", "Tormoz / Orqaga")}</Text>
-              </Paper>
-              <Paper p="xs" radius="sm" withBorder ta="center">
-                <Badge size="sm" variant="outline">A / D / ← →</Badge>
-                <Text size="xs" mt={4} c="dimmed">{t("practicalExam.steering", "Rul burilishi")}</Text>
-              </Paper>
-              <Paper p="xs" radius="sm" withBorder ta="center">
-                <Badge size="sm" variant="outline">SPACE</Badge>
-                <Text size="xs" mt={4} c="dimmed">{t("practicalExam.handbrake", "Qo'l tormozi")}</Text>
-              </Paper>
-            </SimpleGrid>
-          </Paper>
-
-          <Group justify="space-between" align="center" mt="xs">
+      {/* Avtodrom 3D Simulator Launcher Modal (Temporarily hidden) */}
+      {SHOW_SIMULATOR && (
+        <Modal
+          opened={simulatorOpen}
+          onClose={() => setSimulatorOpen(false)}
+          title={
             <Group gap="xs">
-              <ThemeIcon size="sm" color="teal" variant="light">
-                <IconVolume size={14} />
+              <ThemeIcon color="blue" size="lg" radius="md">
+                <IconSteeringWheel size={20} />
               </ThemeIcon>
-              <Text size="xs" c="dimmed">
-                {t("practicalExam.voiceInstructor", "Ovozli instruktor: O'zbekcha / Kirill / Ruscha")}
-              </Text>
+              <div>
+                <Text fw={700} size="md">
+                  {t("curriculum.simulatorTitle", "Avtodrom 3D Simulyatori")}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  v2.0 • WebGL & Rapier 3D Physics
+                </Text>
+              </div>
             </Group>
-            <Button
-              color="blue"
-              size="md"
-              leftSection={<IconPlayerPlay size={18} />}
-              onClick={() => {
-                setSimulatorOpen(false);
-                navigate(`/practical-exam/simulator?mode=${selectedMode}`);
-              }}
-            >
-              Mashqni boshlash ({selectedMode.toUpperCase()})
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+          }
+          size="lg"
+          radius="md"
+        >
+          <Stack gap="md">
+            <Text size="sm">
+              {t(
+                "curriculum.simulatorDesc",
+                "YHXX Davlat imtihon markazi standartidagi 12 ta amaliy mashqni interaktiv 3D WebGL simulyatorida real fizika va ovozli instruktor bilan mashq qiling!"
+              )}
+            </Text>
+
+            <Paper p="md" radius="md" withBorder bg="var(--surface)">
+              <Text fw={600} size="sm" mb="xs">
+                Rejimni tanlang:
+              </Text>
+              <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xs">
+                <Card
+                  padding="sm"
+                  radius="sm"
+                  withBorder
+                  style={{
+                    cursor: "pointer",
+                    borderColor: selectedMode === "training" ? "var(--mantine-color-blue-6)" : undefined,
+                    backgroundColor: selectedMode === "training" ? "rgba(24, 100, 171, 0.08)" : undefined,
+                  }}
+                  onClick={() => setSelectedMode("training")}
+                >
+                  <Group gap="xs" mb={4}>
+                    <ThemeIcon size="sm" color="blue" variant="light">
+                      <IconCompass size={14} />
+                    </ThemeIcon>
+                    <Text fw={600} size="xs">
+                      Training
+                    </Text>
+                  </Group>
+                  <Text size="xs" c="dimmed">
+                    Yo'naltiruvchi chiziqlar va ovozli instruktor
+                  </Text>
+                </Card>
+
+                <Card
+                  padding="sm"
+                  radius="sm"
+                  withBorder
+                  style={{
+                    cursor: "pointer",
+                    borderColor: selectedMode === "practice" ? "var(--mantine-color-cyan-6)" : undefined,
+                    backgroundColor: selectedMode === "practice" ? "rgba(12, 133, 153, 0.08)" : undefined,
+                  }}
+                  onClick={() => setSelectedMode("practice")}
+                >
+                  <Group gap="xs" mb={4}>
+                    <ThemeIcon size="sm" color="cyan" variant="light">
+                      <IconRefresh size={14} />
+                    </ThemeIcon>
+                    <Text fw={600} size="xs">
+                      Practice
+                    </Text>
+                  </Group>
+                  <Text size="xs" c="dimmed">
+                    Alohida tanlangan mashqni cheksiz takrorlash
+                  </Text>
+                </Card>
+
+                <Card
+                  padding="sm"
+                  radius="sm"
+                  withBorder
+                  style={{
+                    cursor: "pointer",
+                    borderColor: selectedMode === "exam" ? "var(--mantine-color-orange-6)" : undefined,
+                    backgroundColor: selectedMode === "exam" ? "rgba(232, 89, 12, 0.08)" : undefined,
+                  }}
+                  onClick={() => setSelectedMode("exam")}
+                >
+                  <Group gap="xs" mb={4}>
+                    <ThemeIcon size="sm" color="orange" variant="light">
+                      <IconAward size={14} />
+                    </ThemeIcon>
+                    <Text fw={600} size="xs">
+                      Real Imtihon
+                    </Text>
+                  </Group>
+                  <Text size="xs" c="dimmed">
+                    12 ta mashq ketma-ket, 100 ballik qat'iy nazorat
+                  </Text>
+                </Card>
+              </SimpleGrid>
+            </Paper>
+
+            <Paper p="md" radius="md" withBorder bg="var(--surface)">
+              <Text fw={600} size="sm" mb="xs">
+                {t("practicalExam.controlsTitle", "Boshqaruv tugmalari (Klaviatura):")}
+              </Text>
+              <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
+                <Paper p="xs" radius="sm" withBorder ta="center">
+                  <Badge size="sm" variant="outline">W / ↑</Badge>
+                  <Text size="xs" mt={4} c="dimmed">{t("practicalExam.gas", "Gaz (Tezlanish)")}</Text>
+                </Paper>
+                <Paper p="xs" radius="sm" withBorder ta="center">
+                  <Badge size="sm" variant="outline">S / ↓</Badge>
+                  <Text size="xs" mt={4} c="dimmed">{t("practicalExam.brake", "Tormoz / Orqaga")}</Text>
+                </Paper>
+                <Paper p="xs" radius="sm" withBorder ta="center">
+                  <Badge size="sm" variant="outline">A / D / ← →</Badge>
+                  <Text size="xs" mt={4} c="dimmed">{t("practicalExam.steering", "Rul burilishi")}</Text>
+                </Paper>
+                <Paper p="xs" radius="sm" withBorder ta="center">
+                  <Badge size="sm" variant="outline">SPACE</Badge>
+                  <Text size="xs" mt={4} c="dimmed">{t("practicalExam.handbrake", "Qo'l tormozi")}</Text>
+                </Paper>
+              </SimpleGrid>
+            </Paper>
+
+            <Group justify="space-between" align="center" mt="xs">
+              <Group gap="xs">
+                <ThemeIcon size="sm" color="teal" variant="light">
+                  <IconVolume size={14} />
+                </ThemeIcon>
+                <Text size="xs" c="dimmed">
+                  {t("practicalExam.voiceInstructor", "Ovozli instruktor: O'zbekcha / Kirill / Ruscha")}
+                </Text>
+              </Group>
+              <Button
+                color="blue"
+                size="md"
+                leftSection={<IconPlayerPlay size={18} />}
+                onClick={() => {
+                  setSimulatorOpen(false);
+                  navigate(`/practical-exam/simulator?mode=${selectedMode}`);
+                }}
+              >
+                Mashqni boshlash ({selectedMode.toUpperCase()})
+              </Button>
+            </Group>
+          </Stack>
+        </Modal>
+      )}
     </Container>
   );
 }

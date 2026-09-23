@@ -1,7 +1,7 @@
-import { Paper, Group, Text, ActionIcon, Tooltip, Box } from "@mantine/core";
+import { Paper, Group, Text, ActionIcon, Tooltip, Box, Badge } from "@mantine/core";
 import { IconCamera, IconVolume, IconVolumeOff } from "@tabler/icons-react";
 import type { VehicleTelemetry, ExerciseDefinition, CameraView, ExerciseAttemptResult } from "../types";
-import { EXERCISE_REGISTRY } from "../registry/exerciseRegistry";
+import { AUTODROME_SPEC } from "../registry/autodromeModel";
 import { useLanguage } from "../../../context/LanguageContext";
 
 interface Props {
@@ -28,6 +28,15 @@ export default function AutodromeMiniMap({
   // Heading angle in degrees for the player beacon
   const headingDeg = (telemetry.rotation * 180) / Math.PI;
 
+  // Development mode 3D/Map desync validation (Requirement #10)
+  const isDev = import.meta.env.DEV;
+  const projected3D = AUTODROME_SPEC.to3D(telemetry.posX, telemetry.posY);
+  const isDesynced =
+    isNaN(projected3D.x) ||
+    isNaN(projected3D.z) ||
+    Math.abs(projected3D.x) > 200 ||
+    Math.abs(projected3D.z) > 200;
+
   return (
     <Paper
       radius="md"
@@ -38,11 +47,12 @@ export default function AutodromeMiniMap({
         backdropFilter: "blur(12px)",
         borderColor: "rgba(255, 255, 255, 0.16)",
         boxShadow: "0 8px 32px rgba(0, 0, 0, 0.45)",
-        width: "235px",
+        maxWidth: "235px",
+        width: "min(235px, calc(100vw - 32px))",
         overflow: "hidden",
       }}
     >
-      {/* Top Header Bar matching screenshot */}
+      {/* Top Header Bar */}
       <Box
         px="xs"
         py={6}
@@ -68,7 +78,14 @@ export default function AutodromeMiniMap({
           </Group>
 
           <Group gap={2}>
-            {/* Camera View Switcher */}
+            {/* Dev Mode Desync Badge */}
+            {isDev && isDesynced && (
+              <Badge size="xs" color="red" variant="filled">
+                DESYNC
+              </Badge>
+            )}
+
+            {/* Camera View Switcher (Chase -> Cockpit -> Rear -> Top-Down -> Free Orbit) */}
             <Tooltip
               label={
                 cameraView === "chase"
@@ -83,8 +100,20 @@ export default function AutodromeMiniMap({
                     : lang === "uzc"
                     ? "Кабина кўриниши (1-шахс)"
                     : "Kabina ko'rinishi (1-shaxs)"
+                  : cameraView === "rear"
+                  ? lang === "ru"
+                    ? "Камера заднего вида"
+                    : lang === "uzc"
+                    ? "Орқа камера (Парковка)"
+                    : "Orqa kamera (Parkovka)"
+                  : cameraView === "free"
+                  ? lang === "ru"
+                    ? "Свободная 3D камера"
+                    : lang === "uzc"
+                    ? "Эркин 3D камера"
+                    : "Erkin 3D kamera"
                   : lang === "ru"
-                  ? "Вид сверху"
+                  ? "Вид сверху (Орто)"
                   : lang === "uzc"
                   ? "Юқоридан кўриниш"
                   : "Yuqoridan ko'rinish"
@@ -104,10 +133,10 @@ export default function AutodromeMiniMap({
         </Group>
       </Box>
 
-      {/* SVG Circuit Radar matching screenshot layout */}
+      {/* SVG Circuit Radar strictly consuming Single Source of Truth AUTODROME_SPEC */}
       <Box style={{ position: "relative", width: "100%", height: "165px", padding: "4px" }}>
         <svg
-          viewBox="0 0 600 500"
+          viewBox={`0 0 ${AUTODROME_SPEC.dimensions.width2D} ${AUTODROME_SPEC.dimensions.height2D}`}
           style={{
             width: "100%",
             height: "100%",
@@ -124,60 +153,191 @@ export default function AutodromeMiniMap({
               <feGaussianBlur stdDeviation="3" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
+            <linearGradient id="estakadaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#334155" />
+              <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#334155" />
+            </linearGradient>
           </defs>
 
-          <rect width="600" height="500" fill="url(#radarGrid)" />
-
-          {/* Autodrome Outer Boundary Walls */}
+          {/* Radar background grid */}
           <rect
-            x="25"
-            y="25"
-            width="550"
-            height="450"
-            rx="14"
-            fill="none"
-            stroke="#1e293b"
-            strokeWidth="2.5"
+            width={AUTODROME_SPEC.dimensions.width2D}
+            height={AUTODROME_SPEC.dimensions.height2D}
+            fill="url(#radarGrid)"
           />
 
-          {/* Green Grass Lawn Center Islands */}
-          <rect x="130" y="115" width="220" height="240" rx="10" fill="#0f291e" stroke="#166534" strokeWidth="1" />
-          <rect x="380" y="115" width="100" height="240" rx="10" fill="#0f291e" stroke="#166534" strokeWidth="1" />
+          {/* 1. Boundaries from AUTODROME_SPEC */}
+          {AUTODROME_SPEC.boundaries.map((b) => (
+            <rect
+              key={b.id}
+              x={b.x}
+              y={b.y}
+              width={b.width}
+              height={b.height}
+              rx={b.borderRadius || 8}
+              fill={b.fillColor || "none"}
+              stroke={b.strokeColor || "#1e293b"}
+              strokeWidth={b.type === "perimeter" ? 2.5 : 1}
+            />
+          ))}
 
-          {/* Road Asphalt Ribbons */}
-          <path
-            d="M 60,440 L 360,440 L 370,440 L 370,380 L 430,380 L 430,340 L 520,210 L 520,75 L 80,75 L 80,440 Z"
-            fill="none"
-            stroke="#1e293b"
-            strokeWidth="32"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 60,440 L 360,440 L 370,440 L 370,380 L 430,380 L 430,340 L 520,210 L 520,75 L 80,75 L 80,440 Z"
-            fill="none"
-            stroke="#334155"
-            strokeWidth="26"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          {/* Centerline Dashed Yellow */}
-          <path
-            d="M 60,440 L 360,440 L 370,440 L 370,380 L 430,380 L 430,340 L 520,210 L 520,75 L 80,75 L 80,440 Z"
-            fill="none"
-            stroke="#facc15"
-            strokeWidth="2"
-            strokeDasharray="6 4"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
+          {/* 2. Special Zones (Zebra, Estakada, Railway, Parking, Garage) from AUTODROME_SPEC */}
+          {AUTODROME_SPEC.zones.map((z) => {
+            const w = z.bounds.maxX - z.bounds.minX;
+            const h = z.bounds.maxY - z.bounds.minY;
 
-          {/* Middle Connecting Road */}
-          <line x1="240" y1="75" x2="240" y2="440" stroke="#334155" strokeWidth="22" />
-          <line x1="240" y1="75" x2="240" y2="440" stroke="#facc15" strokeWidth="1.5" strokeDasharray="6 4" />
+            if (z.type === "pedestrian_crossing") {
+              return (
+                <g key={z.id}>
+                  <rect x={z.bounds.minX} y={z.bounds.minY} width={w} height={h} fill="#1e293b" opacity={0.6} />
+                  {[-12, -4, 4, 12].map((off) => (
+                    <line
+                      key={off}
+                      x1={z.bounds.minX + w / 2 + off}
+                      y1={z.bounds.minY + 4}
+                      x2={z.bounds.minX + w / 2 + off}
+                      y2={z.bounds.maxY - 4}
+                      stroke="#ffffff"
+                      strokeWidth={3}
+                    />
+                  ))}
+                </g>
+              );
+            }
 
-          {/* 12 Exercise Stations Badges with Dynamic Status Colors */}
-          {EXERCISE_REGISTRY.map((ex) => {
+            if (z.type === "estakada_ramp") {
+              return (
+                <rect
+                  key={z.id}
+                  x={z.bounds.minX}
+                  y={z.bounds.minY}
+                  width={w}
+                  height={h}
+                  fill="url(#estakadaGradient)"
+                  opacity={0.7}
+                  stroke="#eab308"
+                  strokeWidth={1}
+                />
+              );
+            }
+
+            if (z.type === "railway_crossing") {
+              return (
+                <g key={z.id}>
+                  <rect x={z.bounds.minX} y={z.bounds.minY} width={w} height={h} fill="#1e293b" opacity={0.8} />
+                  {[-15, 0, 15].map((off) => (
+                    <line
+                      key={off}
+                      x1={z.bounds.minX + w / 2 + off}
+                      y1={z.bounds.minY + 2}
+                      x2={z.bounds.minX + w / 2 + off}
+                      y2={z.bounds.maxY - 2}
+                      stroke="#ef4444"
+                      strokeWidth={2}
+                    />
+                  ))}
+                </g>
+              );
+            }
+
+            if (z.type === "parallel_parking" || z.type === "garage_box") {
+              return (
+                <rect
+                  key={z.id}
+                  x={z.bounds.minX}
+                  y={z.bounds.minY}
+                  width={w}
+                  height={h}
+                  fill="rgba(56, 189, 248, 0.12)"
+                  stroke="#38bdf8"
+                  strokeWidth={1.5}
+                  strokeDasharray="4 3"
+                />
+              );
+            }
+
+            return null;
+          })}
+
+          {/* 3. Roads from AUTODROME_SPEC: 1:1 Synchronous with 3D Circuit */}
+          {/* Base Road Borders */}
+          {AUTODROME_SPEC.roads.map((r) => (
+            <line
+              key={`border_${r.id}`}
+              x1={r.start.x}
+              y1={r.start.y}
+              x2={r.end.x}
+              y2={r.end.y}
+              stroke="#1e293b"
+              strokeWidth={r.width + 4}
+              strokeLinecap="round"
+            />
+          ))}
+
+          {/* Asphalt Core */}
+          {AUTODROME_SPEC.roads.map((r) => (
+            <line
+              key={`asphalt_${r.id}`}
+              x1={r.start.x}
+              y1={r.start.y}
+              x2={r.end.x}
+              y2={r.end.y}
+              stroke="#334155"
+              strokeWidth={r.width}
+              strokeLinecap="round"
+            />
+          ))}
+
+          {/* Yellow Dashed Centerlines */}
+          {AUTODROME_SPEC.roads
+            .filter((r) => r.hasCenterline)
+            .map((r) => (
+              <line
+                key={`center_${r.id}`}
+                x1={r.start.x}
+                y1={r.start.y}
+                x2={r.end.x}
+                y2={r.end.y}
+                stroke="#facc15"
+                strokeWidth={1.5}
+                strokeDasharray="6 4"
+                strokeLinecap="round"
+              />
+            ))}
+
+          {/* 4. Cones & Stop Lines from EXERCISES */}
+          {AUTODROME_SPEC.exercises.map((ex) => (
+            <g key={`ex_props_${ex.number}`}>
+              {/* Stop lines */}
+              {ex.stopLines?.map((sl, idx) => (
+                <line
+                  key={`sl_${ex.number}_${idx}`}
+                  x1={sl.x1}
+                  y1={sl.y1}
+                  x2={sl.x2}
+                  y2={sl.y2}
+                  stroke="#ffffff"
+                  strokeWidth={2.5}
+                />
+              ))}
+              {/* Cones */}
+              {ex.cones?.map((c, idx) => (
+                <circle
+                  key={`cone_${ex.number}_${idx}`}
+                  cx={c.x}
+                  cy={c.y}
+                  r={2.5}
+                  fill="#f97316"
+                  stroke="#ffffff"
+                  strokeWidth={0.6}
+                />
+              ))}
+            </g>
+          ))}
+
+          {/* 5. 12 Exercise Stations Badges with Dynamic Status Colors */}
+          {AUTODROME_SPEC.exercises.map((ex) => {
             const isActive = ex.number === currentExercise.number;
             const res = exerciseResults ? exerciseResults[ex.number] : undefined;
             const isPassed = res?.isPassed;
@@ -205,29 +365,15 @@ export default function AutodromeMiniMap({
                     <animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.8s" repeatCount="indefinite" />
                   </circle>
                 )}
-                <circle
-                  cx="0"
-                  cy="0"
-                  r="9"
-                  fill={fillColor}
-                  stroke={strokeColor}
-                  strokeWidth="1.5"
-                />
-                <text
-                  x="0"
-                  y="3.5"
-                  fill="#ffffff"
-                  fontSize="8"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                >
+                <circle cx="0" cy="0" r="9" fill={fillColor} stroke={strokeColor} strokeWidth="1.5" />
+                <text x="0" y="3.5" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">
                   {ex.number}
                 </text>
               </g>
             );
           })}
 
-          {/* Player Vehicle Beacon matching screenshot */}
+          {/* 6. Player Vehicle Beacon (1:1 Synchronized with 3D Position) */}
           <g
             transform={`translate(${telemetry.posX}, ${telemetry.posY}) rotate(${headingDeg})`}
             filter="url(#beaconGlow)"

@@ -29,6 +29,7 @@ import {
   IconCalendar,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../../context/LanguageContext";
 import SEO from "../../../components/common/SEO";
 import { simulatorApi } from "../services/simulatorApi";
@@ -39,6 +40,7 @@ import type { UserSimulatorStats, SimulatorSessionData } from "../types";
 export default function SimulatorStatistics_Page() {
   const navigate = useNavigate();
   const { lang } = useLanguage();
+  const { t } = useTranslation();
 
   const [stats, setStats] = useState<UserSimulatorStats | null>(null);
   const [recentSessions, setRecentSessions] = useState<SimulatorSessionData[]>([]);
@@ -71,13 +73,16 @@ export default function SimulatorStatistics_Page() {
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins} ${lang === "ru" ? "мин" : "daq"} ${secs < 10 ? "0" : ""}${secs} ${lang === "ru" ? "сек" : "son"}`;
+    const unitMin = lang === "ru" ? "мин" : lang === "uzc" ? "дақ" : "daq";
+    const unitSec = lang === "ru" ? "сек" : lang === "uzc" ? "сон" : "son";
+    return `${mins} ${unitMin} ${secs < 10 ? "0" : ""}${secs} ${unitSec}`;
   };
 
   const formatDate = (isoStr: string) => {
     try {
       const d = new Date(isoStr);
-      return d.toLocaleDateString(lang === "ru" ? "ru-RU" : "uz-UZ", {
+      const loc = lang === "ru" ? "ru-RU" : lang === "uzc" ? "uz-Cyrl" : "uz-Latn";
+      return d.toLocaleDateString(loc, {
         month: "short",
         day: "numeric",
         hour: "2-digit",
@@ -138,7 +143,7 @@ export default function SimulatorStatistics_Page() {
               loading={loading}
               onClick={loadData}
             >
-              {lang === "ru" ? "Обновить данные" : "Yangilash"}
+              {t("simulator.refreshData", "Yangilash")}
             </Button>
           </Group>
 
@@ -163,13 +168,13 @@ export default function SimulatorStatistics_Page() {
                   leftSection={<IconSteeringWheel size={18} />}
                   onClick={() => navigate("/simulator/exam")}
                 >
-                  {lang === "ru" ? "Сдать экзамен" : "Imtihon topshirish"}
+                  {t("simulator.takeExam", "Imtihon topshirish")}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => navigate("/simulator/practice")}
                 >
-                  {lang === "ru" ? "Каталог упражнений" : "Mashqlar katalogi"}
+                  {t("simulator.exerciseCatalog", "Mashqlar katalogi")}
                 </Button>
               </Group>
             </Group>
@@ -180,7 +185,7 @@ export default function SimulatorStatistics_Page() {
             <Card p="md" radius="md" withBorder bg="white">
               <Group justify="space-between" mb="xs">
                 <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-                  {lang === "ru" ? "Всего попыток" : "Jami urinishlar"}
+                  {t("simulator.totalAttempts", "Jami urinishlar")}
                 </Text>
                 <ThemeIcon color="blue" variant="light" size="sm" radius="xl">
                   <IconSteeringWheel size={14} />
@@ -192,6 +197,8 @@ export default function SimulatorStatistics_Page() {
               <Text size="xs" c="dimmed" mt={4}>
                 {lang === "ru"
                   ? `Сдано: ${stats?.passedSessions || 0} / Не сдано: ${stats?.failedSessions || 0}`
+                  : lang === "uzc"
+                  ? `Топширди: ${stats?.passedSessions || 0} / Йиқилди: ${stats?.failedSessions || 0}`
                   : `Topshirdi: ${stats?.passedSessions || 0} / Yiqildi: ${stats?.failedSessions || 0}`}
               </Text>
             </Card>
@@ -199,7 +206,7 @@ export default function SimulatorStatistics_Page() {
             <Card p="md" radius="md" withBorder bg="white">
               <Group justify="space-between" mb="xs">
                 <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-                  {lang === "ru" ? "Процент сдачи" : "Muvaffaqiyat ko'rsatkichi"}
+                  {t("simulator.passRate", "Muvaffaqiyat ko'rsatkichi")}
                 </Text>
                 <ThemeIcon
                   color={(stats?.passRate || 0) >= 70 ? "green" : "orange"}
@@ -225,7 +232,7 @@ export default function SimulatorStatistics_Page() {
             <Card p="md" radius="md" withBorder bg="white">
               <Group justify="space-between" mb="xs">
                 <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-                  {lang === "ru" ? "Средний штраф" : "O'rtacha jarima"}
+                  {t("simulator.averagePenalty", "O'rtacha jarima")}
                 </Text>
                 <ThemeIcon color="red" variant="light" size="sm" radius="xl">
                   <IconAlertTriangle size={14} />
@@ -234,18 +241,18 @@ export default function SimulatorStatistics_Page() {
               <Title order={2} fw={800} c={(stats?.averageScore || 0) > 99 ? "red.7" : "dark"}>
                 {stats?.averageScore || 0}{" "}
                 <Text span size="sm" fw={500} c="dimmed">
-                  {lang === "ru" ? "баллов" : "ball"}
+                  {t("simulator.thPenalty", "ball")}
                 </Text>
               </Title>
               <Text size="xs" c="dimmed" mt={4}>
-                {lang === "ru" ? "Лимит сдачи: до 99 баллов" : "Imtihon chegarasi: 99 ballgacha"}
+                {t("simulator.penaltyLimitNote", "Imtihon chegarasi: 99 ballgacha")}
               </Text>
             </Card>
 
             <Card p="md" radius="md" withBorder bg="white">
               <Group justify="space-between" mb="xs">
                 <Text size="xs" c="dimmed" fw={700} tt="uppercase">
-                  {lang === "ru" ? "Среднее время" : "O'rtacha vaqt"}
+                  {t("simulator.averageTime", "O'rtacha vaqt")}
                 </Text>
                 <ThemeIcon color="cyan" variant="light" size="sm" radius="xl">
                   <IconClock size={14} />
@@ -322,8 +329,8 @@ export default function SimulatorStatistics_Page() {
                         borderColor: idx === 0 ? "var(--mantine-color-red-3)" : undefined,
                       }}
                     >
-                      <Group justify="space-between" wrap="nowrap">
-                        <Group gap="sm" style={{ flex: 1, minWidth: 0 }}>
+                      <Group justify="space-between" wrap="wrap" gap="xs">
+                        <Group gap="sm" style={{ flex: 1, minWidth: "200px" }}>
                           <Badge
                             size="lg"
                             circle
@@ -346,7 +353,7 @@ export default function SimulatorStatistics_Page() {
                           </Box>
                         </Group>
 
-                        <Group gap="md" wrap="nowrap">
+                        <Group gap="xs" wrap="wrap">
                           <Badge color="red" variant="light" size="md">
                             {w.failCount}{" "}
                             {lang === "ru" ? "ошибок" : "ta xato"}
@@ -406,17 +413,17 @@ export default function SimulatorStatistics_Page() {
                 </Text>
               </Box>
             ) : (
-              <Box style={{ overflowX: "auto" }}>
+              <Table.ScrollContainer minWidth={620}>
                 <Table verticalSpacing="sm" highlightOnHover>
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th>{lang === "ru" ? "Дата" : "Sana"}</Table.Th>
-                      <Table.Th>{lang === "ru" ? "Режим" : "Rejim"}</Table.Th>
-                      <Table.Th>{lang === "ru" ? "Автомобиль" : "Avtomobil"}</Table.Th>
-                      <Table.Th>{lang === "ru" ? "Штрафные баллы" : "Jarima ballari"}</Table.Th>
-                      <Table.Th>{lang === "ru" ? "Время" : "Vaqt"}</Table.Th>
-                      <Table.Th>{lang === "ru" ? "Статус" : "Holat"}</Table.Th>
-                      <Table.Th ta="right">{lang === "ru" ? "Действие" : "Amal"}</Table.Th>
+                      <Table.Th>{t("simulator.thDate", "Sana")}</Table.Th>
+                      <Table.Th>{t("simulator.thMode", "Rejim")}</Table.Th>
+                      <Table.Th>{t("simulator.thVehicle", "Avtomobil")}</Table.Th>
+                      <Table.Th>{t("simulator.thPoints", "Jarima ballari")}</Table.Th>
+                      <Table.Th>{t("simulator.thTime", "Vaqt")}</Table.Th>
+                      <Table.Th>{t("simulator.thStatus", "Holat")}</Table.Th>
+                      <Table.Th ta="right">{t("simulator.thAction", "Amal")}</Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>
@@ -447,7 +454,7 @@ export default function SimulatorStatistics_Page() {
                               color={s.totalPenaltyPoints >= 100 ? "red" : s.totalPenaltyPoints > 0 ? "orange" : "green"}
                               variant="light"
                             >
-                              {s.totalPenaltyPoints} {lang === "ru" ? "балл" : "ball"}
+                              {s.totalPenaltyPoints} {t("simulator.thPenalty", "ball")}
                             </Badge>
                           </Table.Td>
                           <Table.Td>
@@ -456,11 +463,11 @@ export default function SimulatorStatistics_Page() {
                           <Table.Td>
                             {isPassed ? (
                               <Badge color="green" variant="filled" leftSection={<IconCheck size={12} />}>
-                                {lang === "ru" ? "СДАНО" : "O'TDI"}
+                                {t("simulator.statusPassed", "O'TDI")}
                               </Badge>
                             ) : (
                               <Badge color="red" variant="filled" leftSection={<IconX size={12} />}>
-                                {lang === "ru" ? "НЕ СДАНО" : "O'TMADI"}
+                                {t("simulator.statusFailed", "O'TMADI")}
                               </Badge>
                             )}
                           </Table.Td>
@@ -471,7 +478,7 @@ export default function SimulatorStatistics_Page() {
                                 variant="subtle"
                                 onClick={() => navigate(`/simulator/result/${s.sessionId}`)}
                               >
-                                {lang === "ru" ? "Результат" : "Natija"}
+                                {t("simulator.actionResult", "Natija")}
                               </Button>
                               {s.penalties && s.penalties.length > 0 && (
                                 <Button
@@ -480,7 +487,7 @@ export default function SimulatorStatistics_Page() {
                                   color="orange"
                                   onClick={() => navigate(`/simulator/mistakes/${s.sessionId}`)}
                                 >
-                                  {lang === "ru" ? "Ошибки" : "Xatolar"}
+                                  {t("simulator.actionErrors", "Xatolar")}
                                 </Button>
                               )}
                             </Group>
@@ -490,7 +497,7 @@ export default function SimulatorStatistics_Page() {
                     })}
                   </Table.Tbody>
                 </Table>
-              </Box>
+              </Table.ScrollContainer>
             )}
           </Paper>
         </Container>

@@ -17,6 +17,7 @@ import {
   IconAlertTriangle,
   IconRefresh,
   IconCheck,
+  IconVideo,
 } from "@tabler/icons-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useLanguage } from "../../../context/LanguageContext";
@@ -45,7 +46,11 @@ export default function SimulatorMistakes_Page() {
   };
 
   const t_title =
-    lang === "ru" ? "Разбор ошибок экзамена" : "Imtihon xatoliklari tahlili";
+    lang === "ru"
+      ? "Разбор ошибок экзамена"
+      : lang === "uzc"
+      ? "Имтиҳон хатоликлари таҳлили"
+      : "Imtihon xatoliklari tahlili";
 
   if (!session || !session.penalties || session.penalties.length === 0) {
     return (
@@ -55,15 +60,21 @@ export default function SimulatorMistakes_Page() {
             <IconCheck size={36} />
           </ThemeIcon>
           <Title order={3} mb="xs">
-            {lang === "ru" ? "Ошибок не зафиксировано!" : "Hech qanday xatolik qayd etilmagan!"}
+            {lang === "ru"
+              ? "Ошибок не зафиксировано!"
+              : lang === "uzc"
+              ? "Ҳеч қандай хатолик қайд этилмаган!"
+              : "Hech qanday xatolik qayd etilmagan!"}
           </Title>
           <Text size="sm" c="dimmed" mb="lg">
             {lang === "ru"
               ? "В данной сессии не было допущено ни одной ошибки."
+              : lang === "uzc"
+              ? "Ушбу имтиҳон сессиясида биронта ҳам жарима олинмаган."
               : "Ushbu imtihon sessiyasida bironta ham jarima olinmagan."}
           </Text>
           <Button color="blue" onClick={() => navigate(`/simulator/result/${sessionId}`)}>
-            {lang === "ru" ? "Вернуться к результату" : "Natijaga qaytish"}
+            {lang === "ru" ? "Вернуться к результату" : lang === "uzc" ? "Натижага қайтиш" : "Natijaga qaytish"}
           </Button>
         </Paper>
       </Container>
@@ -83,10 +94,10 @@ export default function SimulatorMistakes_Page() {
               leftSection={<IconArrowLeft size={16} />}
               onClick={() => navigate(`/simulator/result/${sessionId}`)}
             >
-              {lang === "ru" ? "Назад к результату" : "Natijaga qaytish"}
+              {lang === "ru" ? "Назад к результату" : lang === "uzc" ? "Натижага қайтиш" : "Natijaga qaytish"}
             </Button>
             <Badge color="red" size="lg" variant="filled">
-              {session.penalties.length} {lang === "ru" ? "ошибок" : "ta xato"}
+              {session.penalties.length} {lang === "ru" ? "ошибок" : lang === "uzc" ? "та хато" : "ta xato"}
             </Badge>
           </Group>
 
@@ -97,6 +108,8 @@ export default function SimulatorMistakes_Page() {
             <Text size="sm" c="dimmed">
               {lang === "ru"
                 ? "Ниже представлен подробный список всех зафиксированных нарушений с пояснениями."
+                : lang === "uzc"
+                ? "Қуйида симулятор томонидан қайд этилган барча қоидабузарликлар ва уларнинг изоҳи келтирилган."
                 : "Quyida simulyator tomonidan qayd etilgan barcha qoidabuzarliklar va ularning izohi keltirilgan."}
             </Text>
           </Paper>
@@ -105,22 +118,22 @@ export default function SimulatorMistakes_Page() {
           <Stack gap="md">
             {session.penalties.map((pen, idx) => (
               <Card key={pen.id || idx} shadow="xs" padding="lg" radius="md" withBorder>
-                <Group justify="space-between" align="flex-start" mb="xs">
-                  <Group gap="xs">
+                <Group justify="space-between" align="flex-start" mb="xs" wrap="wrap" gap="xs">
+                  <Group gap="xs" style={{ flex: 1, minWidth: "180px" }}>
                     <ThemeIcon color="red" size="md" variant="light">
                       <IconAlertTriangle size={18} />
                     </ThemeIcon>
-                    <Box>
+                    <Box style={{ flex: 1, minWidth: 0 }}>
                       <Badge color="gray" size="xs" variant="outline" mb={2}>
-                        {pen.exerciseNumber}-mashq
+                        {pen.exerciseNumber}-{lang === "ru" ? "упражнение" : lang === "uzc" ? "машқ" : "mashq"}
                       </Badge>
-                      <Title order={5} fw={700}>
+                      <Title order={5} fw={700} style={{ wordBreak: "break-word" }}>
                         {getLoc(pen.title)}
                       </Title>
                     </Box>
                   </Group>
                   <Badge color="red" size="lg">
-                    +{pen.points} {lang === "ru" ? "баллов" : "ball"}
+                    +{pen.points} {lang === "ru" ? "баллов" : lang === "uzc" ? "балл" : "ball"}
                   </Badge>
                 </Group>
 
@@ -128,16 +141,30 @@ export default function SimulatorMistakes_Page() {
                   {getLoc(pen.explanation)}
                 </Text>
 
-                <Group justify="flex-end">
+                <Group justify="flex-end" gap="xs" wrap="wrap">
                   <Button
                     size="xs"
                     color="cyan"
                     variant="light"
+                    leftSection={<IconVideo size={14} />}
+                    onClick={() => navigate(`/simulator/result/${sessionId}`)}
+                    w={{ base: "100%", sm: "auto" }}
+                  >
+                    {lang === "ru" ? "3D Replayda ko'rish" : lang === "uzc" ? "3D Replayда кўриш" : "3D Replayda ko'rish"}
+                  </Button>
+
+                  <Button
+                    size="xs"
+                    color="orange"
+                    variant="light"
                     leftSection={<IconRefresh size={14} />}
                     onClick={() => navigate(`/simulator/practice/${pen.exerciseNumber}`)}
+                    w={{ base: "100%", sm: "auto" }}
                   >
                     {lang === "ru"
                       ? `Отработать упражнение ${pen.exerciseNumber}`
+                      : lang === "uzc"
+                      ? `${pen.exerciseNumber}-машқни алоҳида машқ қилиш`
                       : `${pen.exerciseNumber}-mashqni alohida mashq qilish`}
                   </Button>
                 </Group>

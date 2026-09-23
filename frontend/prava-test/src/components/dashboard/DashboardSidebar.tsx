@@ -20,7 +20,7 @@ import {
   IconRoad,
   IconBuildingSkyscraper,
   IconSteeringWheel,
-  IconDeviceGamepad2,
+  // IconDeviceGamepad2,
   IconGavel,
   IconBook,
 } from "@tabler/icons-react";
@@ -183,15 +183,16 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         onClose();
       },
     },
-    {
-      path: "/simulator",
-      label: t("dashboard.nav.simulator", "Avtodrom Simulyatori 3D"),
-      icon: IconDeviceGamepad2,
-      action: () => {
-        navigate("/simulator");
-        onClose();
-      },
-    },
+    // Temporarily hidden per user request
+    // {
+    //   path: "/simulator",
+    //   label: t("dashboard.nav.simulator", "Avtodrom Simulyatori 3D"),
+    //   icon: IconDeviceGamepad2,
+    //   action: () => {
+    //     navigate("/simulator");
+    //     onClose();
+    //   },
+    // },
     {
       path: "/exam-centers",
       label: t("dashboard.nav.examCenters", "Imtihon markazlari"),

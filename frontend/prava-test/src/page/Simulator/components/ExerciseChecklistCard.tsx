@@ -114,7 +114,8 @@ export default function ExerciseChecklistCard({
         backdropFilter: "blur(12px)",
         borderColor: "rgba(255, 255, 255, 0.16)",
         boxShadow: "0 8px 32px rgba(0, 0, 0, 0.45)",
-        width: "290px",
+        maxWidth: "290px",
+        width: "100%",
         overflow: "hidden",
       }}
     >

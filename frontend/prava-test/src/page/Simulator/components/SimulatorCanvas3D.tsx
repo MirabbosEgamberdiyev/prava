@@ -1,6 +1,9 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import type { VehicleTelemetry, ExerciseDefinition, CameraView } from "../types";
+import type { VehicleTelemetry, ExerciseDefinition, CameraView, VehicleCategory } from "../types";
+import { AUTODROME_SPEC } from "../registry/autodromeModel";
+import { VehicleRenderer, type BuiltVehicleInstance } from "../engine/VehicleRenderer";
+import { getVehicleConfig } from "../registry/vehicleConfigs";
 
 interface Props {
   telemetry: VehicleTelemetry;
@@ -8,6 +11,11 @@ interface Props {
   cameraView: CameraView;
   showHelpers: boolean;
   onCanvasClick?: () => void;
+  ghostTelemetry?: { posX: number; posY: number; rotation: number };
+  idealTrajectory?: Array<{ x: number; y: number }>;
+  historicalPath?: Array<{ x: number; y: number }>;
+  category?: VehicleCategory;
+  modelName?: string;
 }
 
 // Helper: Create high-contrast procedural canvas texture
@@ -85,36 +93,6 @@ function createInWorldBadgeTexture(badgeNumber: number, title: string, isActive:
   const tex = new THREE.CanvasTexture(canvas);
   tex.anisotropy = 4;
   return tex;
-}
-
-// Helper: Create Uzbek state license plate texture matching screenshot ("01 234 AAA")
-function createUzbekLicensePlateTexture(numberStr: string = "01 234 AAA"): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 64;
-  const ctx = canvas.getContext("2d");
-  if (ctx) {
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, 256, 64);
-
-    ctx.strokeStyle = "#111111";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(2, 2, 252, 60);
-
-    ctx.fillStyle = "#0099b5";
-    ctx.fillRect(6, 6, 28, 52);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 10px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("UZ", 20, 36);
-
-    ctx.fillStyle = "#111111";
-    ctx.font = "bold 32px 'DIN Alternate', Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(numberStr, 142, 32);
-  }
-  return new THREE.CanvasTexture(canvas);
 }
 
 // Helper: Yellow-and-Black checkered curb texture
@@ -246,14 +224,29 @@ export default function SimulatorCanvas3D({
   cameraView,
   showHelpers,
   onCanvasClick,
+  ghostTelemetry,
+  idealTrajectory,
+  historicalPath,
+  category,
+  modelName,
 }: Props) {
+  const activeCategory = category || telemetry.category || "B";
   const containerRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const builtVehicleRef = useRef<BuiltVehicleInstance | null>(null);
+  const currentBuiltVehicleKey = useRef<string>("");
+  const cameraViewRef = useRef<CameraView>(cameraView);
+
+  useEffect(() => {
+    cameraViewRef.current = cameraView;
+  }, [cameraView]);
 
   // Vehicle meshes and animation references
   const vehicleGroupRef = useRef<THREE.Group | null>(null);
+  const chassisGroupRef = useRef<THREE.Group | null>(null);
+  const ghostVehicleGroupRef = useRef<THREE.Group | null>(null);
   const frontLeftSteerRef = useRef<THREE.Group | null>(null);
   const frontRightSteerRef = useRef<THREE.Group | null>(null);
   const frontLeftWheelMeshRef = useRef<THREE.Mesh | null>(null);
@@ -284,12 +277,15 @@ export default function SimulatorCanvas3D({
   // 12 Floating In-World Waypoint Badges
   const waypointBadgesRef = useRef<Map<number, THREE.Mesh>>(new Map());
 
-  // Training Guide Line Spline
+  // Training Guide Line & Trajectory Meshes
   const guideLineMeshRef = useRef<THREE.Line | null>(null);
+  const idealTrajectoryMeshRef = useRef<THREE.Line | null>(null);
+  const historicalPathMeshRef = useRef<THREE.Line | null>(null);
 
   // Cameras
   const chaseCameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const cockpitCameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const rearCameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const freeCameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const topDownCameraRef = useRef<THREE.OrthographicCamera | null>(null);
 
@@ -339,6 +335,9 @@ export default function SimulatorCanvas3D({
     const freeCam = new THREE.PerspectiveCamera(50, aspect, 0.1, 1000);
     freeCameraRef.current = freeCam;
 
+    const rearCam = new THREE.PerspectiveCamera(72, aspect, 0.1, 1000);
+    rearCameraRef.current = rearCam;
+
     const frustumSize = 36;
     const topDownCam = new THREE.OrthographicCamera(
       (frustumSize * aspect) / -2,
@@ -365,6 +364,9 @@ export default function SimulatorCanvas3D({
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.15;
+      renderer.domElement.style.width = "100%";
+      renderer.domElement.style.height = "100%";
+      renderer.domElement.style.display = "block";
       container.appendChild(renderer.domElement);
       rendererRef.current = renderer;
     } catch (e) {
@@ -424,43 +426,8 @@ export default function SimulatorCanvas3D({
       scene.add(mesh);
     };
 
-    const createCurbBorder = (w: number, d: number, px: number, pz: number) => {
-      const geo = new THREE.BoxGeometry(w, 0.35, d);
-      const mesh = new THREE.Mesh(geo, curbMat);
-      mesh.position.set(px, 0.175, pz);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      scene.add(mesh);
-    };
-
-    // 7. Full Contiguous Arena Road Network (All 12 Stations connected)
-    // 7.1 South Straight (Stations 1, 2, 3)
-    createRoadSegment(200, 14, -20, 76);
-    createCurbBorder(200, 0.8, -20, 68.5);
-    createCurbBorder(200, 0.8, -20, 83.5);
-
-    // 7.2 East Straight & Turns (Stations 4, 5, 6)
-    createRoadSegment(14, 150, 52, 6);
-    createCurbBorder(0.8, 150, 44.5, 6);
-    createCurbBorder(0.8, 150, 59.5, 6);
-
-    // 7.3 North Straight (Stations 7, 8, 9)
-    createRoadSegment(180, 14, -20, -60);
-    createCurbBorder(180, 0.8, -20, -52.5);
-    createCurbBorder(180, 0.8, -20, -67.5);
-
-    // 7.4 West Straight (Stations 10, 11, 12 & Loop into Start)
-    createRoadSegment(14, 150, -92, 8);
-    createCurbBorder(0.8, 150, -84.5, 8);
-    createCurbBorder(0.8, 150, -99.5, 8);
-
-    // 4 Connecting Curve Corners (Completing the continuous circuit)
-    createRoadSegment(30, 30, 42, 66);
-    createRoadSegment(30, 30, 42, -50);
-    createRoadSegment(30, 30, -82, -50);
-    createRoadSegment(30, 30, -82, 66);
-
-    // 10cm Yellow Sensor Boundary Markings
+    // 7. Full Contiguous Arena Road Network generated from Single Source of Truth AUTODROME_SPEC
+    // 10cm Yellow Sensor Boundary Markings Material
     const yellowSensorMat = new THREE.MeshStandardMaterial({
       color: 0xfacc15,
       emissive: 0xfacc15,
@@ -468,26 +435,82 @@ export default function SimulatorCanvas3D({
       roughness: 0.4,
     });
 
-    const createYellowSensorLine = (w: number, d: number, px: number, pz: number) => {
-      const geo = new THREE.PlaneGeometry(w, d);
-      const mesh = new THREE.Mesh(geo, yellowSensorMat);
-      mesh.rotation.x = -Math.PI / 2;
-      mesh.position.set(px, 0.02, pz);
-      scene.add(mesh);
-    };
+    AUTODROME_SPEC.roads.forEach((road) => {
+      const p1 = AUTODROME_SPEC.to3D(road.start.x, road.start.y);
+      const p2 = AUTODROME_SPEC.to3D(road.end.x, road.end.y);
+      const midX = (p1.x + p2.x) / 2;
+      const midZ = (p1.z + p2.z) / 2;
+      const dx = p2.x - p1.x;
+      const dz = p2.z - p1.z;
+      const len = Math.max(1, Math.hypot(dx, dz));
+      const angle = Math.atan2(dz, dx);
+      const roadW3D = road.width * AUTODROME_SPEC.dimensions.scale3D;
 
-    // South Straight Sensor Boundaries (10cm borders)
-    createYellowSensorLine(200, 0.1, -20, 69.2);
-    createYellowSensorLine(200, 0.1, -20, 82.8);
-    // East Straight Sensor Boundaries
-    createYellowSensorLine(0.1, 150, 45.2, 6);
-    createYellowSensorLine(0.1, 150, 58.8, 6);
-    // North Straight Sensor Boundaries
-    createYellowSensorLine(180, 0.1, -20, -53.2);
-    createYellowSensorLine(180, 0.1, -20, -66.8);
-    // West Straight Sensor Boundaries
-    createYellowSensorLine(0.1, 150, -85.2, 8);
-    createYellowSensorLine(0.1, 150, -98.8, 8);
+      const segmentGroup = new THREE.Group();
+      segmentGroup.position.set(midX, 0.01, midZ);
+      segmentGroup.rotation.y = -angle;
+
+      // 7.1 Asphalt Segment
+      const roadMesh = new THREE.Mesh(new THREE.PlaneGeometry(len, roadW3D), roadMat);
+      roadMesh.rotation.x = -Math.PI / 2;
+      roadMesh.receiveShadow = true;
+      segmentGroup.add(roadMesh);
+
+      // 7.2 Curbs on Left and Right borders
+      if (road.hasCurbs) {
+        const curbLeft = new THREE.Mesh(new THREE.BoxGeometry(len, 0.35, 0.8), curbMat);
+        curbLeft.position.set(0, 0.175, -roadW3D / 2 - 0.4);
+        curbLeft.castShadow = true;
+        curbLeft.receiveShadow = true;
+        segmentGroup.add(curbLeft);
+
+        const curbRight = new THREE.Mesh(new THREE.BoxGeometry(len, 0.35, 0.8), curbMat);
+        curbRight.position.set(0, 0.175, roadW3D / 2 + 0.4);
+        curbRight.castShadow = true;
+        curbRight.receiveShadow = true;
+        segmentGroup.add(curbRight);
+      }
+
+      // 7.3 Yellow 10cm Sensor Lines on borders
+      if (road.hasYellowSensors) {
+        const sensorL = new THREE.Mesh(new THREE.PlaneGeometry(len, 0.1), yellowSensorMat);
+        sensorL.rotation.x = -Math.PI / 2;
+        sensorL.position.set(0, 0.012, -roadW3D / 2 + 0.15);
+        segmentGroup.add(sensorL);
+
+        const sensorR = new THREE.Mesh(new THREE.PlaneGeometry(len, 0.1), yellowSensorMat);
+        sensorR.rotation.x = -Math.PI / 2;
+        sensorR.position.set(0, 0.012, roadW3D / 2 - 0.15);
+        segmentGroup.add(sensorR);
+      }
+
+      // 7.4 Centerline
+      if (road.hasCenterline) {
+        const centerLine = new THREE.Mesh(
+          new THREE.PlaneGeometry(len, 0.2),
+          new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xfacc15, emissiveIntensity: 0.25 })
+        );
+        centerLine.rotation.x = -Math.PI / 2;
+        centerLine.position.set(0, 0.011, 0);
+        segmentGroup.add(centerLine);
+      }
+
+      scene.add(segmentGroup);
+    });
+
+    // 7.5 Corner Junction Curbs & Connectors
+    const createCornerJunction = (cx: number, cz: number, size: number) => {
+      const jMesh = new THREE.Mesh(new THREE.PlaneGeometry(size, size), roadMat);
+      jMesh.rotation.x = -Math.PI / 2;
+      jMesh.position.set(cx, 0.01, cz);
+      jMesh.receiveShadow = true;
+      scene.add(jMesh);
+    };
+    createCornerJunction(28, 76, 16);
+    createCornerJunction(52, 36, 16);
+    createCornerJunction(52, -70, 16);
+    createCornerJunction(-88, -70, 16);
+    createCornerJunction(-88, 76, 16);
 
     // =========================================================================
     // 8. PHYSICAL 3D OBJECTS FOR ALL 12 EXERCISE STATIONS                       //
@@ -890,184 +913,71 @@ export default function SimulatorCanvas3D({
     ].forEach(([tx, tz]) => createPineTree(tx, tz));
 
     // =========================================================================
-    // 12. HIGH-DETAIL CHEVROLET COBALT 3D PROCEDURAL SEDAN                     //
-    // =========================================================================
-    const vehicleGroup = new THREE.Group();
-    vehicleGroupRef.current = vehicleGroup;
+    // 12. HIGH-DETAIL 3D VEHICLE (Category B: Sedan / C: Truck / D: Bus)       //
+    // =========================================================================    // 9. Procedural Vehicle Instance from VehicleRenderer
+    const vConfig = getVehicleConfig(modelName || activeCategory);
+    const vehicleInstance = VehicleRenderer.buildVehicle(scene, vConfig);
+    builtVehicleRef.current = vehicleInstance;
+    currentBuiltVehicleKey.current = `${vConfig.modelName}_${vConfig.category}`;
 
-    const whitePaintMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.8, roughness: 0.18 });
+    vehicleGroupRef.current = vehicleInstance.vehicleGroup;
+    chassisGroupRef.current = vehicleInstance.chassisGroup;
+    frontLeftSteerRef.current = vehicleInstance.frontLeftSteer;
+    frontRightSteerRef.current = vehicleInstance.frontRightSteer;
+    frontLeftWheelMeshRef.current = vehicleInstance.frontLeftWheel;
+    frontRightWheelMeshRef.current = vehicleInstance.frontRightWheel;
+    rearLeftWheelMeshRef.current = vehicleInstance.rearLeftWheel;
+    rearRightWheelMeshRef.current = vehicleInstance.rearRightWheel;
+    steeringWheelMeshRef.current = vehicleInstance.steeringWheelMesh;
+    leftHeadlightSpotRef.current = vehicleInstance.leftHeadlightSpot;
+    rightHeadlightSpotRef.current = vehicleInstance.rightHeadlightSpot;
+    brakeLightMatRef.current = vehicleInstance.brakeLightMat;
+    reverseLightMatRef.current = vehicleInstance.reverseLightMat;
+    turnLeftLightMatRef.current = vehicleInstance.turnLeftLightMat;
+    turnRightLightMatRef.current = vehicleInstance.turnRightLightMat;
 
-    // Lower Chassis
-    const chassisMesh = new THREE.Mesh(new THREE.BoxGeometry(4.45, 0.85, 1.8), whitePaintMat);
-    chassisMesh.position.y = 0.65;
-    chassisMesh.castShadow = true;
-    vehicleGroup.add(chassisMesh);
+    // Ghost Hologram Vehicle for Training Mode & Replay Reference
+    const ghostGroup = new THREE.Group();
+    const ghostMat = new THREE.MeshStandardMaterial({
+      color: 0x38bdf8,
+      emissive: 0x0284c7,
+      emissiveIntensity: 0.6,
+      transparent: true,
+      opacity: 0.45,
+    });
+    const ghostChassis = new THREE.Mesh(new THREE.BoxGeometry(4.45, 0.85, 1.8), ghostMat);
+    ghostChassis.position.y = 0.65;
+    ghostGroup.add(ghostChassis);
+    const ghostCabin = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.8, 1.55), ghostMat);
+    ghostCabin.position.set(-0.15, 1.45, 0);
+    ghostGroup.add(ghostCabin);
+    ghostGroup.visible = false;
+    scene.add(ghostGroup);
+    ghostVehicleGroupRef.current = ghostGroup;
 
-    // Cabin
-    const cabinMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.8, 1.55), whitePaintMat);
-    cabinMesh.position.set(-0.15, 1.45, 0);
-    cabinMesh.castShadow = true;
-    vehicleGroup.add(cabinMesh);
+    // Ideal Trajectory Glowing Green Spline Line
+    const trajMat = new THREE.LineBasicMaterial({
+      color: 0x22c55e,
+      linewidth: 3,
+      transparent: true,
+      opacity: 0.85,
+    });
+    const trajLine = new THREE.Line(new THREE.BufferGeometry(), trajMat);
+    trajLine.visible = false;
+    scene.add(trajLine);
+    idealTrajectoryMeshRef.current = trajLine;
 
-    // Tinted Glass
-    const glassMatCobalt = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.9, roughness: 0.1, transparent: true, opacity: 0.88 });
-    const wsGeo = new THREE.PlaneGeometry(1.48, 0.72);
-    const windshield = new THREE.Mesh(wsGeo, glassMatCobalt);
-    windshield.position.set(1.06, 1.45, 0);
-    windshield.rotation.y = Math.PI / 2;
-    windshield.rotation.x = -0.35;
-    vehicleGroup.add(windshield);
-
-    const rearWindshield = new THREE.Mesh(wsGeo, glassMatCobalt);
-    rearWindshield.position.set(-1.36, 1.45, 0);
-    rearWindshield.rotation.y = -Math.PI / 2;
-    rearWindshield.rotation.x = -0.35;
-    vehicleGroup.add(rearWindshield);
-
-    // Interior Dashboard & Animated 3D Steering Wheel for Cockpit View
-    const dashMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
-    const dashboard = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.45, 1.4), dashMat);
-    dashboard.position.set(0.65, 1.15, 0);
-    vehicleGroup.add(dashboard);
-
-    // 3D Rotating Steering Wheel
-    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6 });
-    const wheelRim = new THREE.Mesh(new THREE.TorusGeometry(0.20, 0.024, 8, 24), wheelMat);
-    const wheelSpoke1 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.38, 8), wheelMat);
-    wheelSpoke1.rotation.z = Math.PI / 2;
-    wheelRim.add(wheelSpoke1);
-    const wheelSpoke2 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.20, 8), wheelMat);
-    wheelSpoke2.position.y = -0.09;
-    wheelRim.add(wheelSpoke2);
-    const wheelCenter = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.04, 16), wheelMat);
-    wheelCenter.rotation.x = Math.PI / 2;
-    wheelRim.add(wheelCenter);
-
-    const steerGroup = new THREE.Group();
-    steerGroup.position.set(0.28, 1.25, 0.35);
-    steerGroup.rotation.y = -Math.PI / 2;
-    steerGroup.rotation.x = 0.28;
-    steerGroup.add(wheelRim);
-    vehicleGroup.add(steerGroup);
-    steeringWheelMeshRef.current = wheelRim;
-
-    // Golden Chevrolet Bowtie & Chrome "COBALT" script
-    const bowtieMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.9, roughness: 0.2 });
-    const rearBowtie = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.26), bowtieMat);
-    rearBowtie.position.set(-2.24, 0.75, 0);
-    vehicleGroup.add(rearBowtie);
-
-    const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.95, roughness: 0.1 });
-    const cobaltBadge = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 0.4), chromeMat);
-    cobaltBadge.position.set(-2.24, 0.72, 0.5);
-    vehicleGroup.add(cobaltBadge);
-
-    // License Plates ("01 234 AAA")
-    const plateMat = new THREE.MeshBasicMaterial({ map: createUzbekLicensePlateTexture("01 234 AAA") });
-    const frontPlate = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.2), plateMat);
-    frontPlate.position.set(2.24, 0.38, 0);
-    frontPlate.rotation.y = Math.PI / 2;
-    vehicleGroup.add(frontPlate);
-
-    const rearPlate = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.2), plateMat);
-    rearPlate.position.set(-2.24, 0.45, 0);
-    rearPlate.rotation.y = -Math.PI / 2;
-    vehicleGroup.add(rearPlate);
-
-    // Taillight Clusters (Brake, Reverse, Turn)
-    const brakeMat = new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xef4444, emissiveIntensity: 0.4 });
-    brakeLightMatRef.current = brakeMat;
-    const reverseMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0 });
-    reverseLightMatRef.current = reverseMat;
-
-    const tlGeo = new THREE.BoxGeometry(0.18, 0.22, 0.38);
-    const tlLeft = new THREE.Mesh(tlGeo, brakeMat);
-    tlLeft.position.set(-2.23, 0.72, 0.65);
-    vehicleGroup.add(tlLeft);
-    const tlRight = new THREE.Mesh(tlGeo, brakeMat);
-    tlRight.position.set(-2.23, 0.72, -0.65);
-    vehicleGroup.add(tlRight);
-
-    // Amber Turn Signals
-    const turnSigMatL = new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: 0 });
-    turnLeftLightMatRef.current = turnSigMatL;
-    const turnMeshL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.12), turnSigMatL);
-    turnMeshL.position.set(-2.23, 0.72, 0.82);
-    vehicleGroup.add(turnMeshL);
-
-    const turnSigMatR = new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: 0 });
-    turnRightLightMatRef.current = turnSigMatR;
-    const turnMeshR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.12), turnSigMatR);
-    turnMeshR.position.set(-2.23, 0.72, -0.82);
-    vehicleGroup.add(turnMeshR);
-
-    // Headlights (Projectors + SpotLights)
-    const hlMeshGeo = new THREE.BoxGeometry(0.2, 0.24, 0.42);
-    const hlMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xfef08a, emissiveIntensity: 0.8 });
-    const hlLeft = new THREE.Mesh(hlMeshGeo, hlMat);
-    hlLeft.position.set(2.2, 0.72, 0.65);
-    vehicleGroup.add(hlLeft);
-    const hlRight = new THREE.Mesh(hlMeshGeo, hlMat);
-    hlRight.position.set(2.2, 0.72, -0.65);
-    vehicleGroup.add(hlRight);
-
-    const spotL = new THREE.SpotLight(0xfffae6, 3.5, 45, Math.PI / 6, 0.4, 1);
-    spotL.position.set(2.3, 0.75, 0.65);
-    spotL.target.position.set(25, 0, 0.65);
-    vehicleGroup.add(spotL);
-    vehicleGroup.add(spotL.target);
-    leftHeadlightSpotRef.current = spotL;
-
-    const spotR = new THREE.SpotLight(0xfffae6, 3.5, 45, Math.PI / 6, 0.4, 1);
-    spotR.position.set(2.3, 0.75, -0.65);
-    spotR.target.position.set(25, 0, -0.65);
-    vehicleGroup.add(spotR);
-    vehicleGroup.add(spotR.target);
-    rightHeadlightSpotRef.current = spotR;
-
-    // 4 Wheels & Tires
-    const tireGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.32, 24);
-    const tireMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.9 });
-    const rimMat = new THREE.MeshStandardMaterial({ color: 0xd4d4d8, metalness: 0.85, roughness: 0.2 });
-
-    const createWheelMesh = (): THREE.Mesh => {
-      const tire = new THREE.Mesh(tireGeo, tireMat);
-      tire.rotation.z = Math.PI / 2;
-      tire.castShadow = true;
-      const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.33, 16), rimMat);
-      tire.add(rim);
-      return tire;
-    };
-
-    const flSteer = new THREE.Group();
-    flSteer.position.set(1.4, 0.42, 0.95);
-    const flWheel = createWheelMesh();
-    flSteer.add(flWheel);
-    vehicleGroup.add(flSteer);
-    frontLeftSteerRef.current = flSteer;
-    frontLeftWheelMeshRef.current = flWheel;
-
-    const frSteer = new THREE.Group();
-    frSteer.position.set(1.4, 0.42, -0.95);
-    const frWheel = createWheelMesh();
-    frSteer.add(frWheel);
-    vehicleGroup.add(frSteer);
-    frontRightSteerRef.current = frSteer;
-    frontRightWheelMeshRef.current = frWheel;
-
-    const rlWheel = createWheelMesh();
-    rlWheel.position.set(-1.4, 0.42, 0.95);
-    vehicleGroup.add(rlWheel);
-    rearLeftWheelMeshRef.current = rlWheel;
-
-    const rrWheel = createWheelMesh();
-    rrWheel.position.set(-1.4, 0.42, -0.95);
-    vehicleGroup.add(rrWheel);
-    rearRightWheelMeshRef.current = rrWheel;
-
-    scene.add(vehicleGroup);
-
-    // =========================================================================
+    // Historical Driven Path Line (Orange/Red)
+    const histMat = new THREE.LineBasicMaterial({
+      color: 0xf97316,
+      linewidth: 2,
+      transparent: true,
+      opacity: 0.75,
+    });
+    const histLine = new THREE.Line(new THREE.BufferGeometry(), histMat);
+    histLine.visible = false;
+    scene.add(histLine);
+    historicalPathMeshRef.current = histLine;
     // 13. RENDER LOOP (60 FPS) WITH ANIMATIONS & FREE-CAM LISTENERS            //
     // =========================================================================
     let clock = new THREE.Clock();
@@ -1105,13 +1015,16 @@ export default function SimulatorCanvas3D({
         badge.position.y = baseY + hoverY;
       });
 
-      // Camera selection
+      // Camera selection based on cameraViewRef
+      const currentCam = cameraViewRef.current;
       let activeCam: THREE.Camera = chaseCam;
-      if (cameraView === "first_person") {
+      if (currentCam === "first_person") {
         activeCam = cockpitCam;
-      } else if (cameraView === "top_down") {
+      } else if (currentCam === "rear" && rearCameraRef.current) {
+        activeCam = rearCameraRef.current;
+      } else if (currentCam === "top_down") {
         activeCam = topDownCam;
-      } else if (cameraView === "free" && freeCam) {
+      } else if (currentCam === "free" && freeCam) {
         const { theta, phi, radius } = freeCamAngles.current;
         const target = vehicleGroupRef.current?.position || new THREE.Vector3();
         freeCam.position.set(
@@ -1129,12 +1042,12 @@ export default function SimulatorCanvas3D({
 
     // Free camera mouse drag listeners
     const handleMouseDown = (e: MouseEvent) => {
-      if (cameraView !== "free") return;
+      if (cameraViewRef.current !== "free") return;
       isFreeCamDragging.current = true;
       prevMousePos.current = { x: e.clientX, y: e.clientY };
     };
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isFreeCamDragging.current || cameraView !== "free") return;
+      if (!isFreeCamDragging.current || cameraViewRef.current !== "free") return;
       const dx = e.clientX - prevMousePos.current.x;
       const dy = e.clientY - prevMousePos.current.y;
       prevMousePos.current = { x: e.clientX, y: e.clientY };
@@ -1146,25 +1059,53 @@ export default function SimulatorCanvas3D({
       isFreeCamDragging.current = false;
     };
     const handleWheel = (e: WheelEvent) => {
-      if (cameraView !== "free") return;
+      if (cameraViewRef.current !== "free") return;
       freeCamAngles.current.radius = Math.max(30, Math.min(220, freeCamAngles.current.radius + e.deltaY * 0.1));
+    };
+
+    // Touch support for free camera and canvas gestures on mobile
+    const handleTouchStart = (e: TouchEvent) => {
+      if (cameraViewRef.current !== "free" || e.touches.length === 0) return;
+      isFreeCamDragging.current = true;
+      prevMousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    };
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isFreeCamDragging.current || cameraViewRef.current !== "free" || e.touches.length === 0) return;
+      const dx = e.touches[0].clientX - prevMousePos.current.x;
+      const dy = e.touches[0].clientY - prevMousePos.current.y;
+      prevMousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+
+      freeCamAngles.current.theta -= dx * 0.008;
+      freeCamAngles.current.phi = Math.max(0.15, Math.min(Math.PI / 2.2, freeCamAngles.current.phi - dy * 0.008));
+    };
+    const handleTouchEnd = () => {
+      isFreeCamDragging.current = false;
     };
 
     container.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
     container.addEventListener("wheel", handleWheel, { passive: true });
+    container.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd);
 
-    // Resize Handler
-    const handleResize = () => {
+    // Responsive Resize Handler with ResizeObserver, fullscreenchange and window fallback
+    const updateSize = () => {
       if (!container || !renderer) return;
-      const w = container.clientWidth || 900;
-      const h = container.clientHeight || 550;
+      const isFs = typeof document !== "undefined" && !!document.fullscreenElement;
+      const w = isFs ? window.innerWidth : (container.clientWidth || 900);
+      const h = isFs ? window.innerHeight : (container.clientHeight || 550);
+      if (w === 0 || h === 0) return;
       const asp = w / h;
       chaseCam.aspect = asp;
       chaseCam.updateProjectionMatrix();
       cockpitCam.aspect = asp;
       cockpitCam.updateProjectionMatrix();
+      if (rearCameraRef.current) {
+        rearCameraRef.current.aspect = asp;
+        rearCameraRef.current.updateProjectionMatrix();
+      }
       freeCam.aspect = asp;
       freeCam.updateProjectionMatrix();
 
@@ -1174,33 +1115,93 @@ export default function SimulatorCanvas3D({
       topDownCam.bottom = frustumSize / -2;
       topDownCam.updateProjectionMatrix();
 
-      renderer.setSize(w, h);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(w, h, false);
     };
-    window.addEventListener("resize", handleResize);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        updateSize();
+      });
+      resizeObserver.observe(container);
+    }
+    window.addEventListener("resize", updateSize);
+    window.addEventListener("orientationchange", updateSize);
+    document.addEventListener("fullscreenchange", updateSize);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      if (resizeObserver) resizeObserver.disconnect();
+      window.removeEventListener("resize", updateSize);
+      window.removeEventListener("orientationchange", updateSize);
+      document.removeEventListener("fullscreenchange", updateSize);
       container.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
       container.removeEventListener("wheel", handleWheel);
+      container.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       if (renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
+      if (builtVehicleRef.current) {
+        builtVehicleRef.current.dispose();
+        builtVehicleRef.current = null;
+      }
       renderer.dispose();
       scene.clear();
     };
-  }, [cameraView]);
+  }, []);
+
+  // Hot-swap 3D vehicle dynamically whenever modelName or activeCategory changes
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+
+    const vConfig = getVehicleConfig(modelName || activeCategory);
+    const key = `${vConfig.modelName}_${vConfig.category}`;
+
+    if (currentBuiltVehicleKey.current === key && builtVehicleRef.current) {
+      return;
+    }
+
+    // Cleanly dispose prior vehicle meshes and materials from GPU memory
+    if (builtVehicleRef.current) {
+      builtVehicleRef.current.dispose();
+      builtVehicleRef.current = null;
+    }
+
+    // Build replacement vehicle model with unique geometry, proportions and materials
+    const vehicleInstance = VehicleRenderer.buildVehicle(scene, vConfig);
+    builtVehicleRef.current = vehicleInstance;
+    currentBuiltVehicleKey.current = key;
+
+    vehicleGroupRef.current = vehicleInstance.vehicleGroup;
+    chassisGroupRef.current = vehicleInstance.chassisGroup;
+    frontLeftSteerRef.current = vehicleInstance.frontLeftSteer;
+    frontRightSteerRef.current = vehicleInstance.frontRightSteer;
+    frontLeftWheelMeshRef.current = vehicleInstance.frontLeftWheel;
+    frontRightWheelMeshRef.current = vehicleInstance.frontRightWheel;
+    rearLeftWheelMeshRef.current = vehicleInstance.rearLeftWheel;
+    rearRightWheelMeshRef.current = vehicleInstance.rearRightWheel;
+    steeringWheelMeshRef.current = vehicleInstance.steeringWheelMesh;
+    leftHeadlightSpotRef.current = vehicleInstance.leftHeadlightSpot;
+    rightHeadlightSpotRef.current = vehicleInstance.rightHeadlightSpot;
+    brakeLightMatRef.current = vehicleInstance.brakeLightMat;
+    reverseLightMatRef.current = vehicleInstance.reverseLightMat;
+    turnLeftLightMatRef.current = vehicleInstance.turnLeftLightMat;
+    turnRightLightMatRef.current = vehicleInstance.turnRightLightMat;
+  }, [modelName, activeCategory]);
 
   // Synchronize Vehicle Position, Steering, Lights & Cameras with Telemetry
   useEffect(() => {
     const vehicle = vehicleGroupRef.current;
     if (!vehicle) return;
 
-    // Convert 2D coordinates into 3D world space
-    const worldX = (telemetry.posX - 300) * 0.4;
-    const worldZ = (telemetry.posY - 250) * 0.4;
+    // Convert 2D coordinates into 3D world space using Single Source of Truth
+    const { x: worldX, z: worldZ } = AUTODROME_SPEC.to3D(telemetry.posX, telemetry.posY);
     const yaw = -telemetry.rotation;
 
     // Calculate physical Estakada elevation and pitch
@@ -1219,14 +1220,14 @@ export default function SimulatorCanvas3D({
       if (rearRightWheelMeshRef.current) rearRightWheelMeshRef.current.position.y = 0.42 + telemetry.wheelHeights[3];
     }
 
-    // Ackermann Front Wheels Steering Angle Pivot
+    // Ackermann Front Wheels Steering Angle Pivot (Left = -Z, Right = +Z in 3D world)
     const steerRad = (telemetry.steeringAngle * Math.PI) / 180;
-    if (frontLeftSteerRef.current) frontLeftSteerRef.current.rotation.y = steerRad;
-    if (frontRightSteerRef.current) frontRightSteerRef.current.rotation.y = steerRad;
+    if (frontLeftSteerRef.current) frontLeftSteerRef.current.rotation.y = -steerRad;
+    if (frontRightSteerRef.current) frontRightSteerRef.current.rotation.y = -steerRad;
 
-    // Cockpit 3D Steering Wheel Rotation with Ackermann ratio
+    // Cockpit 3D Steering Wheel Rotation with Ackermann ratio (clockwise on steer right)
     if (steeringWheelMeshRef.current) {
-      steeringWheelMeshRef.current.rotation.z = steerRad * 2.8;
+      steeringWheelMeshRef.current.rotation.z = -steerRad * 2.8;
     }
 
     // Wheels Rolling Rotation with Speed
@@ -1265,32 +1266,83 @@ export default function SimulatorCanvas3D({
       badge.scale.set(active ? 1.15 : 1.0, active ? 1.15 : 1.0, 1.0);
     });
 
-    // Toggle Training Guide Line Visibility
-    if (guideLineMeshRef.current) {
-      guideLineMeshRef.current.visible = showHelpers;
+    // Synchronize Ghost Hologram Vehicle
+    if (ghostVehicleGroupRef.current) {
+      if (ghostTelemetry) {
+        const { x: gWorldX, z: gWorldZ } = AUTODROME_SPEC.to3D(ghostTelemetry.posX, ghostTelemetry.posY);
+        const { elevationY: gElev } = getElevationAndPitch(ghostTelemetry.posX, ghostTelemetry.posY);
+        ghostVehicleGroupRef.current.position.set(gWorldX, gElev, gWorldZ);
+        ghostVehicleGroupRef.current.rotation.y = -ghostTelemetry.rotation;
+        ghostVehicleGroupRef.current.visible = true;
+      } else {
+        ghostVehicleGroupRef.current.visible = false;
+      }
     }
 
-    // Dynamic Camera Positions
-    // 1. Chase Camera (Smooth 3rd person follow behind car)
+    // Synchronize Ideal Trajectory Glowing Ribbon
+    if (idealTrajectoryMeshRef.current) {
+      const pathPoints = idealTrajectory || exercise.helperPath;
+      if (showHelpers && pathPoints && pathPoints.length > 1) {
+        const points3D = pathPoints.map((p) => {
+          const { x: px, z: pz } = AUTODROME_SPEC.to3D(p.x, p.y);
+          const { elevationY: pElev } = getElevationAndPitch(p.x, p.y);
+          return new THREE.Vector3(px, pElev + 0.12, pz);
+        });
+        idealTrajectoryMeshRef.current.geometry.setFromPoints(points3D);
+        idealTrajectoryMeshRef.current.visible = true;
+      } else {
+        idealTrajectoryMeshRef.current.visible = false;
+      }
+    }
+
+    // Synchronize Historical Driven Path Trail
+    if (historicalPathMeshRef.current) {
+      if (historicalPath && historicalPath.length > 1) {
+        const histPoints = historicalPath.map((p) => {
+          const { x: px, z: pz } = AUTODROME_SPEC.to3D(p.x, p.y);
+          const { elevationY: pElev } = getElevationAndPitch(p.x, p.y);
+          return new THREE.Vector3(px, pElev + 0.1, pz);
+        });
+        historicalPathMeshRef.current.geometry.setFromPoints(histPoints);
+        historicalPathMeshRef.current.visible = true;
+      } else {
+        historicalPathMeshRef.current.visible = false;
+      }
+    }
+
+    // Dynamic Camera Positions using vehicle-specific cameraOffsets
+    const currentConfig = getVehicleConfig(modelName || activeCategory);
+    const camOffsets = currentConfig.cameraOffsets;
+
+    // 1. Chase Camera (High-Visibility Elevated 3rd-person view revealing the road ahead)
     if (chaseCameraRef.current) {
-      const offsetDistance = 9.8;
-      const offsetHeight = 3.6 + elevationY * 0.8;
+      const offsetDistance = camOffsets?.chaseDist ?? 8.2;
+      const offsetHeight = (camOffsets?.chaseHeight ?? 4.2) + elevationY * 0.8;
       const camX = worldX - Math.cos(yaw) * offsetDistance;
-      const camZ = worldZ - Math.sin(yaw) * offsetDistance;
+      const camZ = worldZ + Math.sin(yaw) * offsetDistance;
 
       chaseCameraRef.current.position.set(camX, offsetHeight, camZ);
-      chaseCameraRef.current.lookAt(worldX + Math.cos(yaw) * 6, elevationY + 1.2, worldZ + Math.sin(yaw) * 6);
+      const lookDist = 18.0;
+      chaseCameraRef.current.lookAt(
+        worldX + Math.cos(yaw) * lookDist,
+        elevationY + 0.45,
+        worldZ - Math.sin(yaw) * lookDist
+      );
     }
 
     // 2. Cockpit Camera (Driver POV from inside cabin looking out windshield)
     if (cockpitCameraRef.current) {
-      const driverEyeX = worldX + Math.cos(yaw) * 0.15;
-      const driverEyeZ = worldZ + Math.sin(yaw) * 0.15;
-      cockpitCameraRef.current.position.set(driverEyeX, elevationY + 1.35, driverEyeZ);
+      const eyeX = camOffsets?.cockpitEyeX ?? 0.15;
+      const eyeY = camOffsets?.cockpitEyeY ?? 1.35;
+      const eyeZ = camOffsets?.cockpitEyeZ ?? -0.28;
+      const driverEyeX = worldX + eyeX * Math.cos(yaw) + eyeZ * Math.sin(yaw);
+      const driverEyeZ = worldZ - eyeX * Math.sin(yaw) + eyeZ * Math.cos(yaw);
+      cockpitCameraRef.current.position.set(driverEyeX, elevationY + eyeY, driverEyeZ);
 
-      const lookX = worldX + Math.cos(yaw) * 25;
-      const lookZ = worldZ + Math.sin(yaw) * 25;
-      cockpitCameraRef.current.lookAt(lookX, elevationY + 1.15, lookZ);
+      const lookDist = 25.0;
+      const lookX = worldX + Math.cos(yaw) * lookDist;
+      const lookZ = worldZ - Math.sin(yaw) * lookDist;
+      cockpitCameraRef.current.lookAt(lookX, elevationY + eyeY * 0.85, lookZ);
     }
 
     // 3. Top-Down Camera (Orthographic high precision parking view)
@@ -1299,7 +1351,17 @@ export default function SimulatorCanvas3D({
       topDownCameraRef.current.position.set(worldX, 40, worldZ);
       topDownCameraRef.current.lookAt(worldX, 0, worldZ);
     }
-  }, [telemetry, exercise, showHelpers]);
+
+    // 4. Rear Camera (Backup wide-angle camera placed at rear bumper looking back)
+    if (rearCameraRef.current) {
+      const rearBumperDist = camOffsets?.rearBumperDist ?? (activeCategory === "D" ? 6.2 : activeCategory === "C" ? 4.8 : 2.5);
+      const camX = worldX - Math.cos(yaw) * rearBumperDist;
+      const camZ = worldZ + Math.sin(yaw) * rearBumperDist;
+      rearCameraRef.current.position.set(camX, elevationY + 1.25, camZ);
+      const lookDist = 20;
+      rearCameraRef.current.lookAt(camX - Math.cos(yaw) * lookDist, elevationY + 0.3, camZ + Math.sin(yaw) * lookDist);
+    }
+  }, [telemetry, exercise, showHelpers, ghostTelemetry, idealTrajectory, historicalPath, activeCategory, modelName]);
 
   return (
     <div
@@ -1307,8 +1369,8 @@ export default function SimulatorCanvas3D({
       onClick={onCanvasClick}
       style={{
         width: "100%",
-        height: "560px",
-        minHeight: "480px",
+        height: "100%",
+        minHeight: "340px",
         position: "relative",
         overflow: "hidden",
         backgroundColor: "#93c5fd",

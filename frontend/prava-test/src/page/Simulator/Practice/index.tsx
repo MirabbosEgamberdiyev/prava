@@ -16,6 +16,7 @@ import {
   IconPlayerPlay,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useLanguage } from "../../../context/LanguageContext";
 import SEO from "../../../components/common/SEO";
 import { EXERCISE_REGISTRY } from "../registry/exerciseRegistry";
@@ -23,6 +24,7 @@ import { EXERCISE_REGISTRY } from "../registry/exerciseRegistry";
 export default function SimulatorPracticeList_Page() {
   const navigate = useNavigate();
   const { lang } = useLanguage();
+  const { t } = useTranslation();
 
   const getLoc = (obj: { uzl: string; uzc: string; ru: string }) => {
     if (lang === "ru") return obj.ru;
@@ -48,20 +50,20 @@ export default function SimulatorPracticeList_Page() {
     <>
       <SEO title={`${t_title} | PravaOnline`} description={t_subtitle} />
 
-      <Container size="xl" py="lg">
+      <Container size="xl" maw={1800} py="lg">
         <Stack gap="lg">
           {/* Header Bar */}
-          <Group justify="space-between" align="center">
+          <Group justify="space-between" align="center" wrap="wrap" gap="xs">
             <Button
               variant="subtle"
               color="gray"
               leftSection={<IconArrowLeft size={18} />}
               onClick={() => navigate("/simulator")}
             >
-              {lang === "ru" ? "Назад в меню" : "Simulyator menyusi"}
+              {t("simulator.backToMenu", "Simulyator menyusi")}
             </Button>
-            <Badge color="cyan" size="lg" variant="filled">
-              {lang === "ru" ? "РЕЖИМ ТРЕНИРОВКИ" : "MASHQ REJIMI"}
+            <Badge color="cyan" size="md" variant="filled">
+              {t("simulator.practiceMode", "MASHQ REJIMI")}
             </Badge>
           </Group>
 
@@ -86,7 +88,7 @@ export default function SimulatorPracticeList_Page() {
                   <Group gap={6}>
                     <IconClock size={14} color="gray" />
                     <Text size="xs" c="dimmed">
-                      {ex.timeLimitSeconds} {lang === "ru" ? "сек" : "sek"}
+                      {ex.timeLimitSeconds} {t("simulator.secondsUnit", "soniya")}
                     </Text>
                   </Group>
                 </Group>
@@ -107,7 +109,7 @@ export default function SimulatorPracticeList_Page() {
                   onClick={() => navigate(`/simulator/practice/${ex.number}`)}
                   mt="auto"
                 >
-                  {lang === "ru" ? "Тренировать" : "Mashq qilish"}
+                  {t("simulator.practiceAction", "Mashq qilish")}
                 </Button>
               </Card>
             ))}
