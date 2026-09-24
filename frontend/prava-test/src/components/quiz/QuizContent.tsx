@@ -601,7 +601,10 @@ export function QuizContent({
 
       {/* Options and Image Area */}
       {(() => {
-        const questionImageUrl = getImageUrl(currentQuestion?.imageUrl);
+        const defaultFallbackImage = (currentQuestion?.id ?? 0) % 2 === 0
+          ? "/api/v1/files/defaults/default_malibu.webp"
+          : "/api/v1/files/defaults/default_tahoe.webp";
+        const questionImageUrl = getImageUrl(currentQuestion?.imageUrl) || getImageUrl(defaultFallbackImage);
         const hasQuestionImage = Boolean(questionImageUrl && questionImageUrl.trim().length > 0);
 
         const optionsContent = (
@@ -759,7 +762,7 @@ export function QuizContent({
       })()}
 
       {/* Image zoom modal */}
-      {currentQuestion?.imageUrl && (
+      {imageModalOpened && (
         <Modal
           opened={imageModalOpened}
           onClose={() => setImageModalOpened(false)}
@@ -768,7 +771,17 @@ export function QuizContent({
           withCloseButton
           padding={0}
         >
-          <Image src={getImageUrl(currentQuestion.imageUrl)} fit="contain" />
+          <Image
+            src={
+              getImageUrl(currentQuestion?.imageUrl) ||
+              getImageUrl(
+                (currentQuestion?.id ?? 0) % 2 === 0
+                  ? "/api/v1/files/defaults/default_malibu.webp"
+                  : "/api/v1/files/defaults/default_tahoe.webp"
+              )
+            }
+            fit="contain"
+          />
         </Modal>
       )}
 
