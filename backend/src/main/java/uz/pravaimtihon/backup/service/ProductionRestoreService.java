@@ -184,7 +184,7 @@ public class ProductionRestoreService {
             try {
                 for (String table : tablesToClear) {
                     try {
-                        jdbcTemplate.execute("TRUNCATE TABLE " + table);
+                        jdbcTemplate.execute("TRUNCATE TABLE " + table + " CASCADE");
                         clearedTables.add(table);
                         log.info("[CLEAR] Cleared table={}", table);
                     } catch (Exception e) {

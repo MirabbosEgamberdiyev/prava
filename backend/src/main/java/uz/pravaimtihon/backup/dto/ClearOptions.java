@@ -48,8 +48,13 @@ public class ClearOptions {
     /** Mahalliy media fayllar (uploads katalogi) */
     private boolean clearMedia;
 
+    private boolean clearCurriculum;
+    private boolean clearSimulator;
+
     // FK-safe TRUNCATE tartibi (eng bog'liqdan boshlab)
     private static final List<String> FK_ORDER = Arrays.asList(
+            "simulator_penalty_events", "simulator_exercise_results", "simulator_sessions", "simulator_audit_logs",
+            "user_wrong_answers", "user_saved_questions",
             "user_package_access", "payments",
             "exam_answers", "exam_sessions",
             "ticket_questions", "package_questions",
@@ -57,6 +62,8 @@ public class ClearOptions {
             "user_statistics",
             "question_options", "questions",
             "tickets", "exam_packages",
+            "road_signs", "road_markings", "exam_centers",
+            "practical_exercises", "practical_penalties", "traffic_rules",
             "users", "topics"
     );
 
@@ -71,6 +78,9 @@ public class ClearOptions {
         if (clearExamSessions) {
             tables.add("exam_answers");
             tables.add("exam_sessions");
+            tables.add("simulator_penalty_events");
+            tables.add("simulator_exercise_results");
+            tables.add("simulator_sessions");
         }
         if (clearPayments) {
             tables.add("payments");
@@ -86,6 +96,8 @@ public class ClearOptions {
             tables.add("refresh_tokens");
         }
         if (clearQuestions) {
+            tables.add("user_wrong_answers");
+            tables.add("user_saved_questions");
             tables.add("ticket_questions");
             tables.add("package_questions");
             tables.add("question_options");
@@ -105,6 +117,8 @@ public class ClearOptions {
             tables.add("verification_codes");
             tables.add("exam_answers");
             tables.add("exam_sessions");
+            tables.add("user_wrong_answers");
+            tables.add("user_saved_questions");
             tables.add("users");
         }
         if (clearTopics) {
@@ -117,6 +131,20 @@ public class ClearOptions {
             tables.add("user_statistics");
             tables.add("topics");
         }
+        if (clearCurriculum || clearTopics) {
+            tables.add("road_signs");
+            tables.add("road_markings");
+            tables.add("exam_centers");
+            tables.add("practical_exercises");
+            tables.add("practical_penalties");
+            tables.add("traffic_rules");
+        }
+        if (clearSimulator) {
+            tables.add("simulator_penalty_events");
+            tables.add("simulator_exercise_results");
+            tables.add("simulator_sessions");
+            tables.add("simulator_audit_logs");
+        }
 
         // FK-safe tartibda saralash
         return FK_ORDER.stream().filter(tables::contains).collect(Collectors.toList());
@@ -126,6 +154,6 @@ public class ClearOptions {
     public boolean isEmpty() {
         return !clearUsers && !clearTopics && !clearQuestions && !clearExamPackages
                 && !clearExamSessions && !clearPayments && !clearUserPackageAccess
-                && !clearStatistics && !clearTokens && !clearMedia;
+                && !clearStatistics && !clearTokens && !clearMedia && !clearCurriculum && !clearSimulator;
     }
 }
