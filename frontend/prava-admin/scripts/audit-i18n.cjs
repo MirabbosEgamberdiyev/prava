@@ -1,34 +1,21 @@
-// scripts/audit-i18n.cjs
-// Automated i18n audit gate for PravaOnline Admin Portal
+// scripts/audit-i18n.cjs  (run: npm run i18n:audit)
+// Automated i18n audit gate for the PravaOnline admin panel.
+// Admin loads translations at runtime from public/locales/<lng>/translation.json
+// (i18next-http-backend, see src/utils/i18n.ts), so that is what we check.
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const LOCALES_DIR = path.join(ROOT, 'public', 'locales');
 const SRC_DIR = path.join(ROOT, 'src');
+const BASE = 'uzl';
+const LOCALES = ['uzl', 'uzc', 'ru', 'en'];
 
 console.log('\n======================================================');
-console.log('  PRAVAONLINE ADMIN AUTOMATED I18N AUDIT GATE');
+console.log('  PRAVAONLINE ADMIN — AUTOMATED I18N AUDIT GATE');
 console.log('======================================================\n');
 
 // 1. Load locale files
-const locales = ['uzl', 'uzc', 'ru'];
-const dictionaries = {};
-
-for (const loc of locales) {
-  const filePath = path.join(LOCALES_DIR, loc, 'translation.json');
-  if (!fs.existsSync(filePath)) {
-    console.error(`[CRITICAL] Missing locale file: ${filePath}`);
-    process.exit(1);
-  }
-  try {
-    dictionaries[loc] = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  } catch (err) {
-    console.error(`[CRITICAL] Malformed JSON in ${filePath}: ${err.message}`);
-    process.exit(1);
-  }
-}
-
 function flattenKeys(obj, prefix = '') {
   const map = {};
   for (const key in obj) {
@@ -43,101 +30,78 @@ function flattenKeys(obj, prefix = '') {
   return map;
 }
 
-const flatUzl = flattenKeys(dictionaries['uzl']);
-const flatUzc = flattenKeys(dictionaries['uzc']);
-const flatRu  = flattenKeys(dictionaries['ru']);
-
-const uzlKeys = Object.keys(flatUzl).sort();
-const uzcKeys = new Set(Object.keys(flatUzc));
-const ruKeys  = new Set(Object.keys(flatRu));
-
-console.log(`[PARITY] Total keys registered in UZL: ${uzlKeys.length}`);
-console.log(`[PARITY] Total keys registered in UZC: ${uzcKeys.size}`);
-console.log(`[PARITY] Total keys registered in RU:  ${ruKeys.size}`);
+const flat = {};
+for (const loc of LOCALES) {
+  const filePath = path.join(LOCALES_DIR, loc, 'translation.json');
+  if (!fs.existsSync(filePath)) {
+    console.error(`[CRITICAL] Missing locale file: ${filePath}`);
+    process.exit(1);
+  }
+  try {
+    flat[loc] = flattenKeys(JSON.parse(fs.readFileSync(filePath, 'utf8')));
+  } catch (err) {
+    console.error(`[CRITICAL] Malformed JSON in ${filePath}: ${err.message}`);
+    process.exit(1);
+  }
+  console.log(`[PARITY] Total keys registered in ${loc.toUpperCase()}: ${Object.keys(flat[loc]).length}`);
+}
 
 let totalErrors = 0;
+const baseKeys = Object.keys(flat[BASE]).sort();
 
-// 2. Check Key Parity (UZC and RU against UZL)
-const missingInUzc = uzlKeys.filter(k => !uzcKeys.has(k));
-const missingInRu  = uzlKeys.filter(k => !ruKeys.has(k));
-const extraInUzc   = [...uzcKeys].filter(k => !(k in flatUzl));
-const extraInRu    = [...ruKeys].filter(k => !(k in flatUzl));
-
-if (missingInUzc.length > 0) {
-  console.error(`\n[ERROR] ${missingInUzc.length} keys missing in UZC:`);
-  missingInUzc.slice(0, 10).forEach(k => console.error(`  - ${k}`));
-  totalErrors += missingInUzc.length;
+// 2. Key parity against UZL
+let parityErrors = 0;
+for (const loc of LOCALES.filter((l) => l !== BASE)) {
+  const missing = baseKeys.filter((k) => !(k in flat[loc]));
+  const extra = Object.keys(flat[loc]).filter((k) => !(k in flat[BASE]));
+  if (missing.length) {
+    console.error(`\n[ERROR] ${missing.length} keys missing in ${loc.toUpperCase()}:`);
+    missing.slice(0, 20).forEach((k) => console.error(`  - ${k}`));
+    parityErrors += missing.length;
+  }
+  if (extra.length) {
+    console.error(`\n[ERROR] ${extra.length} extra keys in ${loc.toUpperCase()} not in UZL:`);
+    extra.slice(0, 20).forEach((k) => console.error(`  - ${k}`));
+    parityErrors += extra.length;
+  }
 }
+totalErrors += parityErrors;
+if (parityErrors === 0) console.log(`[PASS] 100% key parity across ${LOCALES.join(', ').toUpperCase()}.`);
 
-if (missingInRu.length > 0) {
-  console.error(`\n[ERROR] ${missingInRu.length} keys missing in RU:`);
-  missingInRu.slice(0, 10).forEach(k => console.error(`  - ${k}`));
-  totalErrors += missingInRu.length;
-}
-
-if (extraInUzc.length > 0) {
-  console.error(`\n[ERROR] ${extraInUzc.length} extra keys in UZC not in UZL:`);
-  extraInUzc.slice(0, 10).forEach(k => console.error(`  - ${k}`));
-  totalErrors += extraInUzc.length;
-}
-
-if (extraInRu.length > 0) {
-  console.error(`\n[ERROR] ${extraInRu.length} extra keys in RU not in UZL:`);
-  extraInRu.slice(0, 10).forEach(k => console.error(`  - ${k}`));
-  totalErrors += extraInRu.length;
-}
-
-if (missingInUzc.length === 0 && missingInRu.length === 0 && extraInUzc.length === 0 && extraInRu.length === 0) {
-  console.log('[PASS] 100% key parity across UZL, UZC, and RU dictionaries.');
-}
-
-// 3. Check for Empty or Whitespace-only Values
-for (const loc of locales) {
-  const current = loc === 'uzl' ? flatUzl : loc === 'uzc' ? flatUzc : flatRu;
-  const emptyKeys = Object.entries(current).filter(([_, v]) => !v || v.trim() === '');
-  if (emptyKeys.length > 0) {
-    console.error(`\n[ERROR] ${emptyKeys.length} empty values found in ${loc}:`);
-    emptyKeys.slice(0, 5).forEach(([k]) => console.error(`  - ${k}`));
-    totalErrors += emptyKeys.length;
+// 3. Empty values
+for (const loc of LOCALES) {
+  const empty = Object.entries(flat[loc]).filter(([, v]) => !v || v.trim() === '');
+  if (empty.length) {
+    console.error(`\n[ERROR] ${empty.length} empty values found in ${loc}:`);
+    empty.slice(0, 5).forEach(([k]) => console.error(`  - ${k}`));
+    totalErrors += empty.length;
   }
 }
 
-// 4. Check Variable / Placeholder Parity
+// 4. Placeholder parity
 function extractPlaceholders(text) {
-  const matches = text.match(/\{\{?[^\{\}\s]+\}\}?/g) || [];
-  return matches.sort().join('|');
+  return (text.match(/\{\{?[^{}\s]+\}\}?/g) || []).sort().join('|');
 }
-
 let placeholderMismatches = 0;
-for (const key of uzlKeys) {
-  const pUzl = extractPlaceholders(flatUzl[key]);
-  const pUzc = extractPlaceholders(flatUzc[key] || '');
-  const pRu  = extractPlaceholders(flatRu[key] || '');
-
-  if (pUzl !== pUzc || pUzl !== pRu) {
-    console.error(`\n[ERROR] Placeholder mismatch in key "${key}":`);
-    console.error(`  UZL: "${flatUzl[key]}" (vars: ${pUzl})`);
-    console.error(`  UZC: "${flatUzc[key]}" (vars: ${pUzc})`);
-    console.error(`  RU:  "${flatRu[key]}" (vars: ${pRu})`);
+for (const key of baseKeys) {
+  const ref = extractPlaceholders(flat[BASE][key]);
+  const bad = LOCALES.filter((loc) => key in flat[loc] && extractPlaceholders(flat[loc][key]) !== ref);
+  if (bad.length) {
+    console.error(`\n[ERROR] Placeholder mismatch in key "${key}" (${bad.join(', ')}); UZL vars: ${ref}`);
     placeholderMismatches++;
     totalErrors++;
   }
 }
-if (placeholderMismatches === 0) {
-  console.log('[PASS] 100% placeholder and interpolation consistency.');
-}
+if (placeholderMismatches === 0) console.log('[PASS] 100% placeholder and interpolation consistency.');
 
-// 5. Hardcoded String Scanning in TSX / JSX files
-function walkDir(dir, fileList = []) {
+// 5. Hardcoded attribute / toast scanning in TSX / JSX files
+function walkDir(dir, exts, fileList = []) {
   if (!fs.existsSync(dir)) return fileList;
-  const files = fs.readdirSync(dir);
-  for (const file of files) {
+  for (const file of fs.readdirSync(dir)) {
     const full = path.join(dir, file);
     if (fs.statSync(full).isDirectory()) {
-      if (file !== 'node_modules' && file !== 'dist' && file !== '.git') {
-        walkDir(full, fileList);
-      }
-    } else if (file.endsWith('.tsx') || file.endsWith('.jsx')) {
+      if (!['node_modules', 'dist', '.git'].includes(file)) walkDir(full, exts, fileList);
+    } else if (exts.some((e) => file.endsWith(e)) && !file.endsWith('.d.ts')) {
       fileList.push(full);
     }
   }
@@ -149,13 +113,13 @@ const ALLOWED_BRAND_WORDS = new Set([
   'Telegram', 'Instagram', 'YouTube', 'Facebook', 'Google', 'Google Play', 'App Store', 'Windows',
   'JSON', 'SMS', 'OTP', 'ID', 'URL', 'API', 'UUID', 'VIP', 'PWA', 'IIV', 'YHXX', 'YHQ',
   'km/h', 'W', 'A', 'S', 'D', 'SPACE', 'ENTER', 'ESC', 'px', 'rem', 'auto', 'none', 'inherit',
-  'SUPER_ADMIN', 'ADMIN', 'CONTENT_MANAGER', 'ANALYST', 'SUPPORT', 'USER', 'NEW', 'IN_PROGRESS', 'ANSWERED', 'CLOSED'
+  'SUPER_ADMIN', 'ADMIN', 'CONTENT_MANAGER', 'ANALYST', 'SUPPORT', 'USER', 'NEW', 'IN_PROGRESS', 'ANSWERED', 'CLOSED',
 ]);
 
 function isAllowedLiteral(val) {
   const trimmed = val.trim();
   if (trimmed.length <= 1) return true;
-  if (/^[\d\s.,:;+\-_*\/\\|!?%#@&()\[\]{}<>=~^$]+$/.test(trimmed)) return true;
+  if (/^[\d\s.,:;+\-_*/\\|!?%#@&()[\]{}<>=~^$]+$/.test(trimmed)) return true;
   if (trimmed.startsWith('/') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) return true;
   if (ALLOWED_BRAND_WORDS.has(trimmed)) return true;
   if (trimmed.startsWith('@')) return true;
@@ -164,45 +128,67 @@ function isAllowedLiteral(val) {
 }
 
 let hardcodedIssues = 0;
-const tsxFiles = walkDir(SRC_DIR);
-
-tsxFiles.forEach(filePath => {
-  const content = fs.readFileSync(filePath, 'utf8');
-  const lines = content.split('\n');
-
+for (const filePath of walkDir(SRC_DIR, ['.tsx', '.jsx'])) {
+  const lines = fs.readFileSync(filePath, 'utf8').split('\n');
   lines.forEach((line, idx) => {
-    // Check attributes: placeholder="...", aria-label="..."
     const attrRegex = /\b(placeholder|aria-label)\s*=\s*["']([^"'{}\n]+)["']/g;
     let m;
     while ((m = attrRegex.exec(line)) !== null) {
-      const prop = m[1];
       const val = m[2].trim();
-      if (!isAllowedLiteral(val) && /[a-zA-Z\u0400-\u04FF]{3,}/.test(val)) {
-        console.error(`[HARDCODED ATTRIBUTE] ${path.relative(ROOT, filePath)}:${idx + 1} -> ${prop}="${val}"`);
+      if (!isAllowedLiteral(val) && /[a-zA-ZЀ-ӿ]{3,}/.test(val)) {
+        console.error(`[HARDCODED ATTRIBUTE] ${path.relative(ROOT, filePath)}:${idx + 1} -> ${m[1]}="${val}"`);
         hardcodedIssues++;
-        totalErrors++;
       }
     }
-
-    // Check toast.xxx("...")
     const toastRegex = /\btoast\.(success|error|info|warning)\s*\(\s*["']([^"'\n]+)["']/g;
-    let tm;
-    while ((tm = toastRegex.exec(line)) !== null) {
-      const val = tm[2].trim();
-      if (!isAllowedLiteral(val) && /[a-zA-Z\u0400-\u04FF]{3,}/.test(val)) {
-        console.error(`[HARDCODED TOAST] ${path.relative(ROOT, filePath)}:${idx + 1} -> toast.${tm[1]}("${val}")`);
+    while ((m = toastRegex.exec(line)) !== null) {
+      const val = m[2].trim();
+      if (!isAllowedLiteral(val) && /[a-zA-ZЀ-ӿ]{3,}/.test(val)) {
+        console.error(`[HARDCODED TOAST] ${path.relative(ROOT, filePath)}:${idx + 1} -> toast.${m[1]}("${val}")`);
         hardcodedIssues++;
-        totalErrors++;
       }
     }
   });
-});
+}
+totalErrors += hardcodedIssues;
+if (hardcodedIssues === 0) console.log('[PASS] 0 hardcoded attributes/toasts found in source components.');
 
-if (hardcodedIssues === 0) {
-  console.log('[PASS] 0 hardcoded attributes/toasts found in source components.');
+// 6. Static t("key") / t('key') / i18n.t("key") usages must exist in every locale.
+//    Dynamic keys (template literals, concatenation, variables) are ignored.
+const KEY_CALL_RE = /(?<![\w$.])(?:i18n\.)?t\(\s*(["'])([A-Za-z0-9_][A-Za-z0-9_.-]*)\1\s*[,)]/g;
+const PLURAL_SUFFIXES = ['_zero', '_one', '_two', '_few', '_many', '_other'];
+function keyExists(map, key) {
+  if (key in map) return true;
+  if (PLURAL_SUFFIXES.some((s) => `${key}${s}` in map)) return true;
+  const prefix = `${key}.`;
+  return Object.keys(map).some((k) => k.startsWith(prefix));
 }
 
-// 6. Summary and Exit Code
+const usedKeys = new Map();
+for (const filePath of walkDir(SRC_DIR, ['.ts', '.tsx'])) {
+  const content = fs.readFileSync(filePath, 'utf8');
+  let m;
+  while ((m = KEY_CALL_RE.exec(content)) !== null) {
+    const key = m[2];
+    if (!key.includes('.')) continue;
+    if (!usedKeys.has(key)) {
+      usedKeys.set(key, `${path.relative(ROOT, filePath)}:${content.slice(0, m.index).split('\n').length}`);
+    }
+  }
+}
+let missingUsed = 0;
+for (const [key, where] of [...usedKeys.entries()].sort()) {
+  const missingIn = LOCALES.filter((loc) => !keyExists(flat[loc], key));
+  if (missingIn.length) {
+    console.error(`[MISSING KEY] "${key}" (${where}) missing in: ${missingIn.join(', ')}`);
+    missingUsed++;
+  }
+}
+totalErrors += missingUsed;
+console.log(`[USAGE] ${usedKeys.size} static t() keys found in src/**/*.ts(x)`);
+if (missingUsed === 0) console.log(`[PASS] All static t() keys exist in ${LOCALES.join(', ').toUpperCase()}.`);
+
+// 7. Summary and exit code
 console.log('\n======================================================');
 if (totalErrors === 0) {
   console.log('  AUDIT RESULT: 100% PASS (0 ERRORS)');

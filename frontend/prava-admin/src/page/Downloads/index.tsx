@@ -166,7 +166,7 @@ export default function DownloadsPage() {
                       <div>
                         <Text fw={700} size="md">{item.platform}</Text>
                         <Text size="xs" c="dimmed">
-                          Eng so'nggi versiya: <Badge size="xs" variant="light" color="indigo">{item.latestVersion || "v1.0.0"}</Badge>
+                          {t("downloadsAdmin.latestVersion")}: <Badge size="xs" variant="light" color="indigo">{item.latestVersion || "v1.0.0"}</Badge>
                         </Text>
                       </div>
                     </Group>
@@ -176,19 +176,19 @@ export default function DownloadsPage() {
 
                   <Stack gap="xs">
                     <Group justify="space-between">
-                      <Text size="sm" c="dimmed">Yuklab olishlar soni:</Text>
-                      <Text fw={700} size="md">{item.downloadCount.toLocaleString()} marta</Text>
+                      <Text size="sm" c="dimmed">{t("downloadsAdmin.downloadCount")}:</Text>
+                      <Text fw={700} size="md">{t("downloadsAdmin.timesUnit", { count: item.downloadCount, formatted: item.downloadCount.toLocaleString() })}</Text>
                     </Group>
                     <Group justify="space-between">
-                      <Text size="sm" c="dimmed">Unikal foydalanuvchilar:</Text>
+                      <Text size="sm" c="dimmed">{t("downloadsAdmin.uniqueUsers")}:</Text>
                       <Text fw={600} size="sm">{item.uniqueUsers.toLocaleString()}</Text>
                     </Group>
                     <Group justify="space-between">
-                      <Text size="xs" c="dimmed">Oxirgi yuklab olish:</Text>
+                      <Text size="xs" c="dimmed">{t("downloadsAdmin.lastDownload")}:</Text>
                       <Group gap={4}>
                         <IconClock size={12} color="gray" />
                         <Text size="xs" c="dimmed">
-                          {item.lastDownload ? new Date(item.lastDownload).toLocaleString() : "Hali yuklanmagan"}
+                          {item.lastDownload ? new Date(item.lastDownload).toLocaleString() : t("downloadsAdmin.notDownloadedYet")}
                         </Text>
                       </Group>
                     </Group>

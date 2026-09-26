@@ -67,7 +67,7 @@ export function TicketForm({
       passingScore: (value: number) =>
         value < 0 || value > 100 ? t("validation.scoreRange") : null,
       questionIds: (value: number[]) =>
-        value.length < 10 ? "Kamida 10 ta savol tanlash kerak" : null,
+        value.length < 10 ? t("tickets.form.minTenQuestions") : null,
     },
   });
 

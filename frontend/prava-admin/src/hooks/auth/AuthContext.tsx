@@ -13,7 +13,7 @@ import Cookies from "js-cookie";
 import api, { getAccessToken, getRefreshToken, saveTokens, clearTokens } from "../../services/api";
 
 // O'zgaruvchi nomlari o'z holicha qoldi
-const USER_DATA_KEY = "userData";
+const USER_DATA_KEY = "prava_admin_user"; // services/api.ts bilan bir xil bo'lishi shart
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -38,13 +38,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const logout = useCallback(async () => {
     // Backend'ga logout so'rov yuborish
+    // Server refresh token'ni HttpOnly cookie'dan o'qiydi, bekor qiladi va cookie'ni o'chiradi.
     const refreshToken = getRefreshToken();
-    if (refreshToken) {
-      try {
-        await api.post("/api/v1/auth/logout", { refreshToken });
-      } catch {
-        // Logout API xatoligi bo'lsa ham, local ma'lumotlarni tozalaymiz
-      }
+    try {
+      await api.post("/api/v1/auth/logout", refreshToken ? { refreshToken } : {});
+    } catch {
+      // Logout API xatoligi bo'lsa ham, local ma'lumotlarni tozalaymiz
     }
 
     clearTokens();

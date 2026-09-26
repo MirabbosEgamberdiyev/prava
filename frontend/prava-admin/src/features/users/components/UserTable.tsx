@@ -35,14 +35,7 @@ const roleBadgeColor: Record<string, string> = {
   USER: "gray",
 };
 
-const roleLabel: Record<string, string> = {
-  SUPER_ADMIN: "Super Admin",
-  ADMIN: "Admin",
-  CONTENT_MANAGER: "Kontent Menejer",
-  SUPPORT: "Qo'llab-quvvatlash",
-  ANALYST: "Tahlilchi",
-  USER: "Foydalanuvchi",
-};
+const KNOWN_ROLES = new Set(["SUPER_ADMIN", "ADMIN", "CONTENT_MANAGER", "SUPPORT", "ANALYST", "USER"]);
 
 interface UserTableProps {
   users: User[];
@@ -146,7 +139,7 @@ const UserTable = ({
                 </Table.Td>
                 <Table.Td ta="center">
                   <Badge variant="light" color={roleBadgeColor[u.role] || "gray"} size="sm">
-                    {roleLabel[u.role] || u.role}
+                    {KNOWN_ROLES.has(u.role) ? t(`users.roleLabels.${u.role}`) : u.role}
                   </Badge>
                 </Table.Td>
                 <Table.Td ta="center">

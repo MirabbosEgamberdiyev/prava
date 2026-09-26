@@ -21,6 +21,7 @@ import {
   IconListNumbers,
 } from "@tabler/icons-react";
 import Cookies from "js-cookie";
+import i18n from "../../../utils/i18n";
 import { QuestionPickerModal } from "./QuestionPickerModal";
 import type { TicketQuestionItem, TranslatedField } from "../types";
 import type { Question } from "../../question/types";
@@ -36,7 +37,7 @@ interface ManagedQuestion {
 function resolveText(
   text: TranslatedField | string | null | undefined,
 ): string {
-  if (!text) return "(matn yo'q)";
+  if (!text) return i18n.t("tickets.noText");
   if (typeof text === "string") return text;
   const lang = (Cookies.get("i18next") || "uzl") as keyof TranslatedField;
   return text[lang] || text.uzl || "";
@@ -53,7 +54,7 @@ function toManaged(q: TicketQuestionItem): ManagedQuestion {
 function fromAdminQuestion(q: Question): ManagedQuestion {
   return {
     id: q.id,
-    text: q.text || "(matn yo'q)",
+    text: q.text || i18n.t("tickets.noText"),
     imageUrl: q.imageUrl || undefined,
   };
 }

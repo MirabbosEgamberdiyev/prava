@@ -5,9 +5,11 @@ import axios, {
 } from "axios";
 import Cookies from "js-cookie";
 
-const ACCESS_TOKEN_KEY = "accessToken";
-const REFRESH_TOKEN_KEY = "refreshToken";
-const USER_DATA_KEY = "userData";
+// Admin cookie nomlari web ilovanikidan ALOHIDA: web o'z cookie'larini .pravaonline.uz domeniga
+// qo'yadi va ular admin host'iga ham yetib keladi — bir xil nom sessiyalarni aralashtirardi.
+const ACCESS_TOKEN_KEY = "prava_admin_at";
+const REFRESH_TOKEN_KEY = "prava_admin_rt_legacy";
+const USER_DATA_KEY = "prava_admin_user";
 
 // Refresh uchun alohida instance (interceptor loop'dan qochish)
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -42,9 +44,10 @@ export function saveTokens(
   userData?: unknown,
 ): void {
   Cookies.set(ACCESS_TOKEN_KEY, accessToken, cookieOpts(1));
-  if (refreshToken) {
-    Cookies.set(REFRESH_TOKEN_KEY, refreshToken, cookieOpts(30));
-  }
+  // SECURITY: refresh token endi server tomonidan HttpOnly cookie'da saqlanadi (X-Auth-Mode: cookie) —
+  // JS unga tegmaydi. Eski versiyadan qolgan JS nusxasi o'chiriladi.
+  void refreshToken;
+  Cookies.remove(REFRESH_TOKEN_KEY);
   if (userData !== undefined) {
     Cookies.set(USER_DATA_KEY, JSON.stringify(userData), cookieOpts(1));
   }
@@ -59,14 +62,17 @@ export function clearTokens(): void {
 const refreshClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
-  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
+  headers: { "Content-Type": "application/json", "X-Auth-Mode": "cookie" },
 });
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
+    "X-Auth-Mode": "cookie",
   },
   // KATTA fayllar uchun cheksiz (default 10MB)
   // Per-request timeout bilan birga ishlatiladi (uploadInstallerFile, quickUpload)
@@ -147,10 +153,11 @@ api.interceptors.response.use(
 
     // 401 bo'lsa va retry qilinmagan bo'lsa
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Refresh token HttpOnly cookie'da (JS ko'rmaydi). Eski JS nusxasi bo'lsa — bir martalik migratsiya.
       const refreshToken = getRefreshToken();
 
-      // Refresh token yo'q bo'lsa — to'g'ridan-to'g'ri logout
-      if (!refreshToken) {
+      // Autentifikatsiyasiz so'rov (masalan login) — refresh qilinmaydi
+      if (!originalRequest.headers?.Authorization) {
         clearTokens();
         // NO-RELOAD FIX: avval `window.location.href = "/auth/login"` edi —
         // butun SPA'ni qayta yuklardi. Endi faqat hodisa yuboriladi;
@@ -177,9 +184,10 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await refreshClient.post("/api/v1/auth/refresh", {
-          refreshToken,
-        });
+        const response = await refreshClient.post(
+          "/api/v1/auth/refresh",
+          refreshToken ? { refreshToken } : {},
+        );
 
         const newAccessToken =
           response.data.data?.accessToken || response.data.accessToken;

@@ -12,7 +12,8 @@
     "not_title": "Tizimga kirish",
     "not_massage": "Xush kelibsiz! Muvaffaqiyatli kirdingiz.",
     "errorTitle": "Xatolik",
-    "loginError": "Login yoki parol xato!"
+    "loginError": "Login yoki parol xato!",
+    "accessDenied": "Admin panelga kirish huquqingiz yo'q"
   },
   "validation": {
     "minChars": "Kamida {{count}} ta belgi kiritish kerak",
@@ -37,7 +38,8 @@
     "textRequired": "Matn majburiy",
     "codeRequired": "Kod majburiy",
     "emailFormat": "Email formati noto'g'ri",
-    "phoneFormat": "Telefon raqami noto'g'ri"
+    "phoneFormat": "Telefon raqami noto'g'ri",
+    "atLeastTwoOptions": "Kamida 2 ta to'ldirilgan variant bo'lishi shart"
   },
   "register": {
     "title": "Hisob yaratish",
@@ -103,7 +105,8 @@
     "fines": "Jarimalar & Qoidabuzarliklar",
     "autodrom": "Avtodrom & Mashqlar",
     "simulator": "Avtodrom Simulyatori 3D",
-    "examCenters": "Imtihon markazlari"
+    "examCenters": "Imtihon markazlari",
+    "curriculum": "Ta'lim va o'quv dasturi"
   },
   "curriculum": {
     "signsTitle": "Yo'l belgilari",
@@ -250,7 +253,8 @@
     "clearFilters": "Filtrlarni tozalash",
     "total": "Jami",
     "page": "Sahifa",
-    "clear": "Tozalash"
+    "clear": "Tozalash",
+    "areYouSure": "Rostdan ham"
   },
   "dashboard": {
     "subtitle": "Avtomaktab imtihon tizimi real vaqt nazorat paneli",
@@ -318,7 +322,8 @@
     "drivingSchoolApplications": "Avtomaktab arizalari",
     "appDownloads": "Ilova Yuklab Olishlar",
     "desktopMobilePlatforms": "Desktop & Mobil platformalar",
-    "currentlyTesting": "Ayni paytda test ishlayotganlar"
+    "currentlyTesting": "Ayni paytda test ishlayotganlar",
+    "activeCount": "Faol: {{count}}"
   },
   "users": {
     "selectAll": "Barcha foydalanuvchilarni tanlash",
@@ -399,7 +404,15 @@
     "confirmForceLogout": "Majburiy logout qilish",
     "bulkDeleteTitle": "Ommaviy o'chirish",
     "bulkDeletePrompt": "ta foydalanuvchini o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi!",
-    "confirmBulkDelete": "Barchasini o'chirish"
+    "confirmBulkDelete": "Barchasini o'chirish",
+    "roleLabels": {
+      "SUPER_ADMIN": "Super Admin",
+      "ADMIN": "Administrator",
+      "CONTENT_MANAGER": "Kontent menejer",
+      "SUPPORT": "Qo'llab-quvvatlash",
+      "ANALYST": "Tahlilchi",
+      "USER": "Foydalanuvchi"
+    }
   },
   "questions": {
     "title": "Savollar",
@@ -479,7 +492,9 @@
     "selectFilePlaceholder": "JSON yoki CSV faylni tanlang",
     "uploadAndImport": "Yuklash va Import qilish",
     "cloneSuccess": "Savoldan muvaffaqiyatli nusxa olindi",
-    "cloneError": "Nusxa olishda xatolik yuz berdi"
+    "cloneError": "Nusxa olishda xatolik yuz berdi",
+    "successRateLabel": "Muvaffaqiyat foizi",
+    "newQuestion": "Yangi savol"
   },
   "topics": {
     "title": "Mavzular",
@@ -613,7 +628,16 @@
     "attachQuestions": "Savollarni birlashtirish",
     "time": "Vaqt",
     "currency": "so'm",
-    "questions": "Savollar"
+    "questions": "Savollar",
+    "activateTitle": "Paketni faollashtirish",
+    "deactivateTitle": "Paketni nofaol qilish",
+    "activateConfirm": "“{{name}}” paketini faollashtirmoqchimisiz?",
+    "deactivateConfirm": "“{{name}}” paketini nofaol qilmoqchimisiz?",
+    "deleteButton": "O'chirish",
+    "cancelButton": "Bekor qilish",
+    "yes": "Ha",
+    "no": "Yo'q",
+    "regenerateButton": "Qayta yaratish"
   },
   "tickets": {
     "title": "Biletlar",
@@ -634,7 +658,9 @@
       "packageId": "To'plam ID",
       "questionCount": "Savollar soni",
       "duration": "Vaqt (daqiqa)",
-      "passingScore": "O'tish bali"
+      "passingScore": "O'tish bali",
+      "packageOptional": "Paket (ixtiyoriy)",
+      "minTenQuestions": "Kamida 10 ta savol tanlash kerak"
     },
     "editTicket": "Biletni tahrirlash",
     "updateSuccess": "Bilet muvaffaqiyatli yangilandi",
@@ -643,7 +669,8 @@
     "createError": "Bilet yaratishda xatolik",
     "deletedSuccess": "Bilet muvaffaqiyatli o'chirildi",
     "deleteError": "Bilet o'chirishda xatolik",
-    "selectQuestion": "Savol tanlash"
+    "selectQuestion": "Savol tanlash",
+    "noText": "(matn yo'q)"
   },
   "statistics": {
     "title": "Statistika",
@@ -1489,7 +1516,16 @@
       "statusSuccess": "Hamkorlik holati muvaffaqiyatli yangilandi",
       "deleteSuccess": "Ariza muvaffaqiyatli o'chirildi",
       "error": "Xatolik yuz berdi"
-    }
+    },
+    "statusLabels": {
+      "NEW": "Yangi",
+      "CONTACTED": "Bog'lanildi",
+      "NEGOTIATION": "Muzokarada",
+      "CONVERTED": "Muvaffaqiyatli (mijoz)",
+      "REJECTED": "Rad etildi"
+    },
+    "viewDetail": "Batafsil / Statusni o'zgartirish",
+    "noComment": "Izoh ko'rsatilmagan"
   },
   "faqAdmin": {
     "modal": {
@@ -1636,7 +1672,13 @@
     "errorLoad": "Statistikani yuklab bo'lmadi",
     "retry": "Qayta urinish",
     "totalDownloads": "Jami yuklab olishlar",
-    "releaseDownloads": "Versiya bo'yicha yuklab olishlar"
+    "releaseDownloads": "Versiya bo'yicha yuklab olishlar",
+    "latestVersion": "Eng so'nggi versiya",
+    "downloadCount": "Yuklab olishlar soni",
+    "timesUnit": "{{formatted}} marta",
+    "uniqueUsers": "Unikal foydalanuvchilar",
+    "lastDownload": "Oxirgi yuklab olish",
+    "notDownloadedYet": "Hali yuklanmagan"
   },
   "settingsAdmin": {
     "subtitle": "Tizim parametrlari, sayt sozlamalari va shaxsiy profil",
@@ -1647,7 +1689,31 @@
     "tabStatus": "Tizim Holati",
     "securitySectionTitle": "Xavfsizlik va Kirish Cheklovlari (Security)",
     "saveSuccess": "Barcha tizim sozlamalari muvaffaqiyatli saqlandi",
-    "saveError": "Sozlamalarni saqlashda xatolik yuz berdi"
+    "saveError": "Sozlamalarni saqlashda xatolik yuz berdi",
+    "generalTitle": "Umumiy sayt sozlamalari",
+    "siteNameUzl": "Sayt nomi (o'zbekcha lotin)",
+    "siteNameUzc": "Sayt nomi (kirill)",
+    "siteNameRu": "Sayt nomi (ruscha)",
+    "siteDescription": "Sayt tavsifi",
+    "supportPhone": "Qo'llab-quvvatlash telefoni",
+    "supportEmail": "Qo'llab-quvvatlash emaili",
+    "telegramBot": "Telegram bot havolasi",
+    "telegramChannel": "Telegram kanal havolasi",
+    "examTitle": "Imtihon sozlamalari",
+    "examDuration": "Imtihon davomiyligi (daqiqa)",
+    "questionsPerTicket": "Biletda savollar soni",
+    "minPassScore": "Minimal o'tish bali (to'g'ri javoblar)",
+    "shuffleQuestions": "Savollarni tasodifiy tartibda ko'rsatish",
+    "shuffleOptions": "Variantlarni tasodifiy aralashtirish",
+    "showResultsImmediately": "Natijalarni darhol ko'rsatish",
+    "maxSessions": "Maksimal faol sessiyalar (bir akkauntda)",
+    "sessionTtl": "Sessiya amal qilish muddati (soatda)",
+    "loginRateLimit": "Login urinishlar chegarasi (rate limit)",
+    "seoTitle": "SEO va meta teglar",
+    "metaTitle": "Meta title (sarlavha)",
+    "metaDescription": "Meta description (tavsif)",
+    "metaKeywords": "Meta keywords (kalit so'zlar vergul bilan)",
+    "saveAll": "Barcha tizim sozlamalarini saqlash"
   },
   "simulator": {
     "adminTitle": "Avtodrom Simulyatori boshqaruv paneli",

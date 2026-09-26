@@ -144,7 +144,7 @@ export function QuestionPickerModal({
                     </Box>
                     <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
                       <Text size="sm" lineClamp={2}>
-                        {q.text || "(matn yo'q)"}
+                        {q.text || t("tickets.noText")}
                       </Text>
                       <Group gap={4}>
                         {q.topic && (

@@ -306,33 +306,33 @@ const Settings_Page = () => {
                 <Card shadow="sm" padding="lg" radius="md" withBorder>
                   <Group mb="md">
                     <IconWorld size={20} color="var(--mantine-color-blue-6)" />
-                    <Text fw={600} size="lg">Umumiy Sayt Sozlamalari (General)</Text>
+                    <Text fw={600} size="lg">{t("settingsAdmin.generalTitle")}</Text>
                   </Group>
                   <Grid>
                     <Grid.Col span={{ base: 12, md: 4 }}>
                       <TextInput
-                        label="Sayt nomi (O'zbekcha Lotin)"
+                        label={t("settingsAdmin.siteNameUzl")}
                         value={settings.site_name_uz || ""}
                         onChange={(e) => handleSettingChange("site_name_uz", e.currentTarget.value)}
                       />
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, md: 4 }}>
                       <TextInput
-                        label="Sayt nomi (Kirill)"
+                        label={t("settingsAdmin.siteNameUzc")}
                         value={settings.site_name_uzc || ""}
                         onChange={(e) => handleSettingChange("site_name_uzc", e.currentTarget.value)}
                       />
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, md: 4 }}>
                       <TextInput
-                        label="Sayt nomi (Ruscha)"
+                        label={t("settingsAdmin.siteNameRu")}
                         value={settings.site_name_ru || ""}
                         onChange={(e) => handleSettingChange("site_name_ru", e.currentTarget.value)}
                       />
                     </Grid.Col>
                     <Grid.Col span={12}>
                       <Textarea
-                        label="Sayt tavsifi (Description)"
+                        label={t("settingsAdmin.siteDescription")}
                         rows={2}
                         value={settings.site_description_uz || ""}
                         onChange={(e) => handleSettingChange("site_description_uz", e.currentTarget.value)}
@@ -340,28 +340,28 @@ const Settings_Page = () => {
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
-                        label="Qo'llab-quvvatlash telefoni"
+                        label={t("settingsAdmin.supportPhone")}
                         value={settings.support_phone || ""}
                         onChange={(e) => handleSettingChange("support_phone", e.currentTarget.value)}
                       />
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
-                        label="Support Email"
+                        label={t("settingsAdmin.supportEmail")}
                         value={settings.support_email || ""}
                         onChange={(e) => handleSettingChange("support_email", e.currentTarget.value)}
                       />
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
-                        label="Telegram Bot havolasi"
+                        label={t("settingsAdmin.telegramBot")}
                         value={settings.telegram_bot || ""}
                         onChange={(e) => handleSettingChange("telegram_bot", e.currentTarget.value)}
                       />
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
-                        label="Telegram Kanal havolasi"
+                        label={t("settingsAdmin.telegramChannel")}
                         value={settings.telegram_channel || ""}
                         onChange={(e) => handleSettingChange("telegram_channel", e.currentTarget.value)}
                       />
@@ -389,12 +389,12 @@ const Settings_Page = () => {
                 <Card shadow="sm" padding="lg" radius="md" withBorder>
                   <Group mb="md">
                     <IconCertificate size={20} color="var(--mantine-color-green-6)" />
-                    <Text fw={600} size="lg">Imtihon Sozlamalari (Exam Settings)</Text>
+                    <Text fw={600} size="lg">{t("settingsAdmin.examTitle")}</Text>
                   </Group>
                   <Grid>
                     <Grid.Col span={{ base: 12, sm: 4 }}>
                       <NumberInput
-                        label="Imtihon davomiyligi (daqiqa)"
+                        label={t("settingsAdmin.examDuration")}
                         min={5}
                         max={120}
                         value={parseInt(settings.exam_duration_minutes || "20")}
@@ -403,7 +403,7 @@ const Settings_Page = () => {
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 4 }}>
                       <NumberInput
-                        label="Biletda savollar soni"
+                        label={t("settingsAdmin.questionsPerTicket")}
                         min={10}
                         max={50}
                         value={parseInt(settings.exam_question_count || "20")}
@@ -412,7 +412,7 @@ const Settings_Page = () => {
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 4 }}>
                       <NumberInput
-                        label="Minimal o'tish bali (to'g'ri javoblar)"
+                        label={t("settingsAdmin.minPassScore")}
                         min={1}
                         max={50}
                         value={parseInt(settings.exam_pass_score || "18")}
@@ -422,7 +422,7 @@ const Settings_Page = () => {
                     <Grid.Col span={{ base: 12, sm: 4 }}>
                       <Switch
                         mt="md"
-                        label="Savollarni tasodifiy tartibda ko'rsatish"
+                        label={t("settingsAdmin.shuffleQuestions")}
                         checked={settings.shuffle_questions === "true"}
                         onChange={(e) => handleSettingChange("shuffle_questions", String(e.currentTarget.checked))}
                       />
@@ -430,7 +430,7 @@ const Settings_Page = () => {
                     <Grid.Col span={{ base: 12, sm: 4 }}>
                       <Switch
                         mt="md"
-                        label="Variantlarni tasodifiy aralashtirish"
+                        label={t("settingsAdmin.shuffleOptions")}
                         checked={settings.shuffle_options === "true"}
                         onChange={(e) => handleSettingChange("shuffle_options", String(e.currentTarget.checked))}
                       />
@@ -438,7 +438,7 @@ const Settings_Page = () => {
                     <Grid.Col span={{ base: 12, sm: 4 }}>
                       <Switch
                         mt="md"
-                        label="Natijalarni darhol ko'rsatish"
+                        label={t("settingsAdmin.showResultsImmediately")}
                         checked={settings.show_results_immediately === "true"}
                         onChange={(e) => handleSettingChange("show_results_immediately", String(e.currentTarget.checked))}
                       />
@@ -455,7 +455,7 @@ const Settings_Page = () => {
                   <Grid>
                     <Grid.Col span={{ base: 12, sm: 4 }}>
                       <NumberInput
-                        label="Maksimal faol sessiyalar (bir akkauntda)"
+                        label={t("settingsAdmin.maxSessions")}
                         min={1}
                         max={10}
                         value={parseInt(settings.max_active_sessions || "2")}
@@ -464,7 +464,7 @@ const Settings_Page = () => {
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 4 }}>
                       <NumberInput
-                        label="Sessiya amal qilish muddati (soatda)"
+                        label={t("settingsAdmin.sessionTtl")}
                         min={1}
                         max={720}
                         value={parseInt(settings.session_timeout_hours || "24")}
@@ -473,7 +473,7 @@ const Settings_Page = () => {
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 4 }}>
                       <NumberInput
-                        label="Login urinishlar chegarasi (Rate limit)"
+                        label={t("settingsAdmin.loginRateLimit")}
                         min={3}
                         max={20}
                         value={parseInt(settings.rate_limit_attempts || "5")}
@@ -487,19 +487,19 @@ const Settings_Page = () => {
                 <Card shadow="sm" padding="lg" radius="md" withBorder>
                   <Group mb="md">
                     <IconSearch size={20} color="var(--mantine-color-indigo-6)" />
-                    <Text fw={600} size="lg">SEO va Meta Teglar (Search Engine Optimization)</Text>
+                    <Text fw={600} size="lg">{t("settingsAdmin.seoTitle")}</Text>
                   </Group>
                   <Grid>
                     <Grid.Col span={12}>
                       <TextInput
-                        label="Meta Title (Sarlavha)"
+                        label={t("settingsAdmin.metaTitle")}
                         value={settings.seo_title_uz || ""}
                         onChange={(e) => handleSettingChange("seo_title_uz", e.currentTarget.value)}
                       />
                     </Grid.Col>
                     <Grid.Col span={12}>
                       <Textarea
-                        label="Meta Description (Tavsif)"
+                        label={t("settingsAdmin.metaDescription")}
                         rows={2}
                         value={settings.seo_description_uz || ""}
                         onChange={(e) => handleSettingChange("seo_description_uz", e.currentTarget.value)}
@@ -507,7 +507,7 @@ const Settings_Page = () => {
                     </Grid.Col>
                     <Grid.Col span={12}>
                       <TextInput
-                        label="Meta Keywords (Kalit so'zlar vergul bilan)"
+                        label={t("settingsAdmin.metaKeywords")}
                         value={settings.seo_keywords_uz || ""}
                         onChange={(e) => handleSettingChange("seo_keywords_uz", e.currentTarget.value)}
                       />
@@ -525,7 +525,7 @@ const Settings_Page = () => {
                     disabled={systemSettingsSaving}
                     onClick={handleSaveSystemSettings}
                   >
-                    Barcha Tizim Sozlamalarini Saqlash
+                    {t("settingsAdmin.saveAll")}
                   </Button>
                 </Group>
               </Stack>

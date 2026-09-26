@@ -56,13 +56,7 @@ const statusColors: Record<string, string> = {
   REJECTED: "red",
 };
 
-const statusLabels: Record<string, string> = {
-  NEW: "Yangi (NEW)",
-  CONTACTED: "Bog'lanildi",
-  NEGOTIATION: "Muzokarada",
-  CONVERTED: "Muvaffaqiyatli (Mijoz)",
-  REJECTED: "Rad etildi",
-};
+const LEAD_STATUSES = ["NEW", "CONTACTED", "NEGOTIATION", "CONVERTED", "REJECTED"] as const;
 
 export default function PartnersPage() {
   const { t } = useTranslation();
@@ -237,7 +231,7 @@ export default function PartnersPage() {
                     <Table.Td>{lead.region || "-"}</Table.Td>
                     <Table.Td>
                       <Badge color={statusColors[lead.status] || "gray"} variant="filled">
-                        {statusLabels[lead.status] || lead.status}
+                        {(LEAD_STATUSES as readonly string[]).includes(lead.status) ? t(`partners.statusLabels.${lead.status}`) : lead.status}
                       </Badge>
                     </Table.Td>
                     <Table.Td>
@@ -253,7 +247,8 @@ export default function PartnersPage() {
                         <ActionIcon
                           variant="subtle"
                           color="blue"
-                          title="Batafsil / Status o'zgartirish"
+                          title={t("partners.viewDetail")}
+                          aria-label={t("partners.viewDetail")}
                           onClick={() => handleOpenDetail(lead)}
                         >
                           <IconEye size={18} />
@@ -327,18 +322,17 @@ export default function PartnersPage() {
             <div>
               <Text size="xs" c="dimmed">{t("partners.modal.detailsSection")}</Text>
               <Paper withBorder p="xs" bg="gray.0">
-                <Text size="sm">{selectedLead.comment || "Izoh ko'rsatilmagan"}</Text>
+                <Text size="sm">{selectedLead.comment || t("partners.noComment")}</Text>
               </Paper>
             </div>
 
             <Select
               label={t("partners.modal.statusSection")}
               data={[
-                { value: "NEW", label: "Yangi (NEW)" },
-                { value: "CONTACTED", label: "Bog'lanildi (CONTACTED)" },
-                { value: "NEGOTIATION", label: "Muzokarada (NEGOTIATION)" },
-                { value: "CONVERTED", label: "Muvaffaqiyatli Mijoz (CONVERTED)" },
-                { value: "REJECTED", label: "Rad etildi (REJECTED)" },
+                ...LEAD_STATUSES.map((s) => ({
+                  value: s,
+                  label: `${t(`partners.statusLabels.${s}`)} (${s})`,
+                })),
               ]}
               value={newStatus}
               onChange={(val) => setNewStatus(val || "NEW")}

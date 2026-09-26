@@ -311,7 +311,7 @@ const Home_Page = () => {
             value={stats.totalUsers}
             icon={<IconUsers size={24} />}
             color="blue"
-            subtitle={`Faol: ${stats.activeUsers ?? stats.activeUsersToday ?? 0}`}
+            subtitle={t("dashboard.activeCount", { count: stats.activeUsers ?? stats.activeUsersToday ?? 0 })}
             onClick={() => navigate("/users")}
           />
           <StatCard
@@ -348,7 +348,7 @@ const Home_Page = () => {
             value={stats.totalQuestions}
             icon={<IconQuestionMark size={24} />}
             color="violet"
-            subtitle={`Faol: ${stats.activeQuestions ?? stats.totalQuestions}`}
+            subtitle={t("dashboard.activeCount", { count: stats.activeQuestions ?? stats.totalQuestions })}
             onClick={() => navigate("/questions")}
           />
           <StatCard

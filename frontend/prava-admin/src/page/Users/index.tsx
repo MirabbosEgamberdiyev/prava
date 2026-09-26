@@ -285,7 +285,7 @@ const Users_Page = () => {
                   leftSection={<IconTrash size={14} />}
                   onClick={openBulkDelete}
                 >
-                  O'chirish
+                  {t("common.delete")}
                 </Button>
               )}
               <Button
@@ -294,7 +294,7 @@ const Users_Page = () => {
                 color="gray"
                 onClick={() => setSelectedIds([])}
               >
-                Bekor qilish
+                {t("common.cancel")}
               </Button>
             </Group>
           </Group>
@@ -420,12 +420,10 @@ const Users_Page = () => {
           </Text>
           <Select
             data={[
-              { value: "USER", label: "Foydalanuvchi (USER)" },
-              { value: "ADMIN", label: "Administrator (ADMIN)" },
-              { value: "CONTENT_MANAGER", label: "Kontent Menejer (CONTENT_MANAGER)" },
-              { value: "SUPPORT", label: "Qo'llab-quvvatlash (SUPPORT)" },
-              { value: "ANALYST", label: "Tahlilchi (ANALYST)" },
-              { value: "SUPER_ADMIN", label: "Super Admin (SUPER_ADMIN)" },
+              ...(["USER", "ADMIN", "CONTENT_MANAGER", "SUPPORT", "ANALYST", "SUPER_ADMIN"] as const).map((r) => ({
+                value: r,
+                label: `${t(`users.roleLabels.${r}`)} (${r})`,
+              })),
             ]}
             value={newRole}
             onChange={setNewRole}

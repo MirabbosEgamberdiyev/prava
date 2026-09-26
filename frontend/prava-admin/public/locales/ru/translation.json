@@ -12,7 +12,8 @@
     "not_title": "Добро пожаловать",
     "not_massage": "Поздравляем! Вы успешно вошли в систему.",
     "errorTitle": "Ошибка",
-    "loginError": "Неверный логин или пароль!"
+    "loginError": "Неверный логин или пароль!",
+    "accessDenied": "У вас нет доступа к панели администратора"
   },
   "validation": {
     "minChars": "Минимум {{count}} символов",
@@ -37,7 +38,8 @@
     "textRequired": "Текст обязателен",
     "codeRequired": "Код обязателен",
     "emailFormat": "Неверный формат email",
-    "phoneFormat": "Неверный формат телефона"
+    "phoneFormat": "Неверный формат телефона",
+    "atLeastTwoOptions": "Должно быть заполнено не менее 2 вариантов"
   },
   "register": {
     "title": "Создать аккаунт",
@@ -103,7 +105,8 @@
     "fines": "Штрафы и нарушения",
     "autodrom": "Автодром и упражнения",
     "simulator": "Автодром Симулятор 3D",
-    "examCenters": "Экзаменационные центры"
+    "examCenters": "Экзаменационные центры",
+    "curriculum": "Обучение и учебная программа"
   },
   "curriculum": {
     "signsTitle": "Дорожные знаки",
@@ -250,7 +253,8 @@
     "clearFilters": "Сбросить фильтры",
     "total": "Всего",
     "page": "Страница",
-    "clear": "Очистить"
+    "clear": "Очистить",
+    "areYouSure": "Вы действительно хотите удалить"
   },
   "dashboard": {
     "subtitle": "Панель мониторинга системы экзаменов автошколы в реальном времени",
@@ -318,7 +322,8 @@
     "drivingSchoolApplications": "Заявки автошкол",
     "appDownloads": "Скачивания приложения",
     "desktopMobilePlatforms": "Desktop и мобильные платформы",
-    "currentlyTesting": "Проходят тест в данный момент"
+    "currentlyTesting": "Проходят тест в данный момент",
+    "activeCount": "Активных: {{count}}"
   },
   "users": {
     "selectAll": "Выбрать всех пользователей",
@@ -399,7 +404,15 @@
     "confirmForceLogout": "Принудительно разлогинить",
     "bulkDeleteTitle": "Массовое удаление",
     "bulkDeletePrompt": "пользователей? Это действие необратимо!",
-    "confirmBulkDelete": "Удалить все"
+    "confirmBulkDelete": "Удалить все",
+    "roleLabels": {
+      "SUPER_ADMIN": "Суперадмин",
+      "ADMIN": "Администратор",
+      "CONTENT_MANAGER": "Контент-менеджер",
+      "SUPPORT": "Поддержка",
+      "ANALYST": "Аналитик",
+      "USER": "Пользователь"
+    }
   },
   "questions": {
     "title": "Вопросы",
@@ -479,7 +492,9 @@
     "selectFilePlaceholder": "Выберите JSON или CSV файл",
     "uploadAndImport": "Загрузить и импортировать",
     "cloneSuccess": "Вопрос успешно скопирован",
-    "cloneError": "Ошибка при копировании"
+    "cloneError": "Ошибка при копировании",
+    "successRateLabel": "Процент успешности",
+    "newQuestion": "Новый вопрос"
   },
   "topics": {
     "title": "Темы",
@@ -613,7 +628,16 @@
     "regenerateSuccess": "Вопросы пересозданы",
     "regenerateError": "Ошибка пересоздания вопросов",
     "attachSuccess": "{{count}} вопросов прикреплено",
-    "attachError": "Ошибка прикрепления вопросов"
+    "attachError": "Ошибка прикрепления вопросов",
+    "activateTitle": "Активация пакета",
+    "deactivateTitle": "Деактивация пакета",
+    "activateConfirm": "Активировать пакет «{{name}}»?",
+    "deactivateConfirm": "Деактивировать пакет «{{name}}»?",
+    "deleteButton": "Удалить",
+    "cancelButton": "Отмена",
+    "yes": "Да",
+    "no": "Нет",
+    "regenerateButton": "Перегенерировать"
   },
   "tickets": {
     "title": "Билеты",
@@ -641,9 +665,12 @@
       "packageId": "ID пакета",
       "questionCount": "Кол-во вопросов",
       "duration": "Время (мин)",
-      "passingScore": "Проходной балл"
+      "passingScore": "Проходной балл",
+      "packageOptional": "Пакет (необязательно)",
+      "minTenQuestions": "Нужно выбрать не менее 10 вопросов"
     },
-    "selectQuestion": "Выбор вопроса"
+    "selectQuestion": "Выбор вопроса",
+    "noText": "(нет текста)"
   },
   "statistics": {
     "title": "Статистика",
@@ -1489,7 +1516,16 @@
       "statusSuccess": "Статус заявки успешно обновлен",
       "deleteSuccess": "Заявка успешно удалена",
       "error": "Произошла ошибка"
-    }
+    },
+    "statusLabels": {
+      "NEW": "Новый",
+      "CONTACTED": "Связались",
+      "NEGOTIATION": "Переговоры",
+      "CONVERTED": "Успешно (клиент)",
+      "REJECTED": "Отклонено"
+    },
+    "viewDetail": "Подробнее / Изменить статус",
+    "noComment": "Комментарий не указан"
   },
   "faqAdmin": {
     "modal": {
@@ -1636,7 +1672,13 @@
     "errorLoad": "Не удалось загрузить статистику",
     "retry": "Повторить",
     "totalDownloads": "Всего скачиваний",
-    "releaseDownloads": "Скачиваний по версии"
+    "releaseDownloads": "Скачиваний по версии",
+    "latestVersion": "Последняя версия",
+    "downloadCount": "Количество загрузок",
+    "timesUnit": "{{formatted}} раз",
+    "uniqueUsers": "Уникальные пользователи",
+    "lastDownload": "Последняя загрузка",
+    "notDownloadedYet": "Ещё не загружалось"
   },
   "settingsAdmin": {
     "subtitle": "Параметры системы, настройки сайта и персональный профиль",
@@ -1647,7 +1689,31 @@
     "tabStatus": "Статус Системы",
     "securitySectionTitle": "Безопасность и Ограничения Доступа (Security)",
     "saveSuccess": "Все системные настройки успешно сохранены",
-    "saveError": "Ошибка при сохранении настроек"
+    "saveError": "Ошибка при сохранении настроек",
+    "generalTitle": "Общие настройки сайта",
+    "siteNameUzl": "Название сайта (узбекский, латиница)",
+    "siteNameUzc": "Название сайта (узбекский, кириллица)",
+    "siteNameRu": "Название сайта (русский)",
+    "siteDescription": "Описание сайта",
+    "supportPhone": "Телефон поддержки",
+    "supportEmail": "Email поддержки",
+    "telegramBot": "Ссылка на Telegram-бот",
+    "telegramChannel": "Ссылка на Telegram-канал",
+    "examTitle": "Настройки экзамена",
+    "examDuration": "Длительность экзамена (мин)",
+    "questionsPerTicket": "Количество вопросов в билете",
+    "minPassScore": "Минимальный проходной балл (правильные ответы)",
+    "shuffleQuestions": "Показывать вопросы в случайном порядке",
+    "shuffleOptions": "Перемешивать варианты ответов",
+    "showResultsImmediately": "Показывать результаты сразу",
+    "maxSessions": "Макс. активных сессий (на аккаунт)",
+    "sessionTtl": "Срок действия сессии (в часах)",
+    "loginRateLimit": "Лимит попыток входа (rate limit)",
+    "seoTitle": "SEO и мета-теги",
+    "metaTitle": "Meta title (заголовок)",
+    "metaDescription": "Meta description (описание)",
+    "metaKeywords": "Meta keywords (через запятую)",
+    "saveAll": "Сохранить все системные настройки"
   },
   "simulator": {
     "adminTitle": "Панель управления Автодром Симулятором",

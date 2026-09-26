@@ -129,7 +129,7 @@ const Question_Page = () => {
             leftSection={<IconPlus size={16} />}
             onClick={() => navigate("/questions/add")}
           >
-            Yangi savol
+            {t("questions.newQuestion")}
           </Button>
         </Group>
       </Group>
