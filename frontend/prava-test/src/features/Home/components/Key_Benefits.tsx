@@ -37,9 +37,9 @@ export const Key_Benefits = React.memo(() => {
       title: t("home.benefits.card2Title", "Davlat imtihoni simulyatori"),
       desc: t(
         "home.benefits.card2Desc",
-        "20 ta savol, 25 daqiqa vaqt va YHXK kompyuter markazidagi kabi haqiqiy imtihon muhiti."
+        "20 ta savol, 20 daqiqa vaqt va YHXK kompyuter markazidagi kabi haqiqiy imtihon muhiti."
       ),
-      badge: t("home.benefits.card2Badge", "20 savol / 25 daqiqa"),
+      badge: t("home.benefits.card2Badge", "20 savol / 20 daqiqa"),
       color: "#6366f1",
       bg: "rgba(99, 102, 241, 0.1)",
     },

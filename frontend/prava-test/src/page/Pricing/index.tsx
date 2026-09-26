@@ -52,7 +52,7 @@ export default function Pricing_Page() {
       premium: t("pricing.feat2Full", "Barcha {{count}} ta bilet", { count: getCachedTotalTickets() }),
     },
     {
-      name: t("pricing.feat3", "Davlat imtihoni simulyatori (25 daqiqa)"),
+      name: t("pricing.feat3", "Davlat imtihoni simulyatori (20 daqiqa)"),
       free: t("pricing.feat3Free", "1 marta bepul"),
       standard: t("pricing.featUnlimited", "Cheksiz"),
       premium: t("pricing.featUnlimited", "Cheksiz"),
@@ -242,7 +242,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.freeF2", "20 ta savol / 25 daqiqa reglamenti")}
+                  {t("pricing.freeF2", "20 ta savol / 20 daqiqa reglamenti")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">

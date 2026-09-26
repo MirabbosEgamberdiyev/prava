@@ -97,7 +97,7 @@ export default function FAQ_Page() {
         question: t("faq.q2", "Imtihondan o'tish shartlari qanday?"),
         answer: t(
           "faq.a2",
-          "Haqiqiy imtihondagi kabi 20 ta savolga 25 daqiqa vaqt beriladi. O'tish uchun kamida 18 ta savolga (90%) to'g'ri javob berishingiz kerak, ya'ni maksimal 2 tagacha xatoga yo'l qo'yiladi."
+          "Haqiqiy imtihondagi kabi 20 ta savolga 20 daqiqa vaqt beriladi. O'tish uchun kamida 17 ta savolga to'g'ri javob berishingiz kerak, ya'ni maksimal 3 tagacha xatoga yo'l qo'yiladi."
         ),
       },
       {

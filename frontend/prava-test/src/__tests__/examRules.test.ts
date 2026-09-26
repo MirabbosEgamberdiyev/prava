@@ -14,13 +14,13 @@ import {
 describe("examRules", () => {
   it("defaults match the agreed business rules (marathon = 1 min/question)", () => {
     expect(DEFAULT_EXAM_RULES.marathon.secondsPerQuestion).toBe(60);
-    expect(DEFAULT_EXAM_RULES.real).toMatchObject({ questionCount: 20, maxWrong: 2 });
+    expect(DEFAULT_EXAM_RULES.real).toMatchObject({ questionCount: 20, maxWrong: 3 });
   });
 
   it("falls back per field on invalid server data", () => {
     const r = normalizeExamRules({ real: { questionCount: -5, maxWrong: "x" }, marathon: { secondsPerQuestion: 90 } });
     expect(r.real.questionCount).toBe(20);
-    expect(r.real.maxWrong).toBe(2);
+    expect(r.real.maxWrong).toBe(3);
     expect(r.marathon.secondsPerQuestion).toBe(90);
     expect(normalizeExamRules(null)).toEqual({ ...DEFAULT_EXAM_RULES });
   });
@@ -33,10 +33,10 @@ describe("examRules", () => {
 
 describe("maxAllowedWrong", () => {
   it("scales real.maxWrong by question count (floored)", () => {
-    expect(maxAllowedWrong(20, DEFAULT_EXAM_RULES)).toBe(2);
+    expect(maxAllowedWrong(20, DEFAULT_EXAM_RULES)).toBe(3);
     expect(maxAllowedWrong(10, DEFAULT_EXAM_RULES)).toBe(1);
-    expect(maxAllowedWrong(50, DEFAULT_EXAM_RULES)).toBe(5);
-    expect(maxAllowedWrong(15, DEFAULT_EXAM_RULES)).toBe(1);
+    expect(maxAllowedWrong(50, DEFAULT_EXAM_RULES)).toBe(7);
+    expect(maxAllowedWrong(15, DEFAULT_EXAM_RULES)).toBe(2);
     expect(maxAllowedWrong(5, DEFAULT_EXAM_RULES)).toBe(0);
   });
 });
@@ -45,12 +45,13 @@ describe("isExamPassed", () => {
   const R = DEFAULT_EXAM_RULES;
 
   it("real: passes when wrong + unanswered <= allowed", () => {
-    expect(isExamPassed({ mode: "real", total: 20, correct: 18, wrong: 2, unanswered: 0 }, R)).toBe(true);
-    expect(isExamPassed({ mode: "real", total: 20, correct: 18, wrong: 1, unanswered: 1 }, R)).toBe(true);
-    expect(isExamPassed({ mode: "real", total: 20, correct: 17, wrong: 3, unanswered: 0 }, R)).toBe(false);
-    expect(isExamPassed({ mode: "real", total: 20, correct: 17, wrong: 1, unanswered: 2 }, R)).toBe(false);
+    expect(isExamPassed({ mode: "real", total: 20, correct: 17, wrong: 3, unanswered: 0 }, R)).toBe(true);
+    expect(isExamPassed({ mode: "real", total: 20, correct: 17, wrong: 2, unanswered: 1 }, R)).toBe(true);
+    expect(isExamPassed({ mode: "real", total: 20, correct: 16, wrong: 4, unanswered: 0 }, R)).toBe(false);
+    expect(isExamPassed({ mode: "real", total: 20, correct: 16, wrong: 1, unanswered: 3 }, R)).toBe(false);
     expect(isExamPassed({ mode: "real", total: 10, correct: 9, wrong: 1, unanswered: 0 }, R)).toBe(true);
     expect(isExamPassed({ mode: "real", total: 10, correct: 8, wrong: 2, unanswered: 0 }, R)).toBe(false);
+    expect(isExamPassed({ mode: "real", total: 15, correct: 13, wrong: 2, unanswered: 0 }, R)).toBe(true);
   });
 
   it("real: unanswered ignored when unansweredCountsAsWrong=false", () => {

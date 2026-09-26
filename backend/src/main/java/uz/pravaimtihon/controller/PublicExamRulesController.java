@@ -54,7 +54,8 @@ public class PublicExamRulesController {
         public static class Real {
             private int questionCount = 20;
             private int secondsPerQuestion = 60;
-            private int maxWrong = 2;
+            /** Real imtihonda ruxsat etilgan xatolar (20 savolga). 4-xatoda yiqiladi. */
+            private int maxWrong = 3;
             private boolean unansweredCountsAsWrong = true;
         }
 

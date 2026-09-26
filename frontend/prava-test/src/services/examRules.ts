@@ -25,7 +25,7 @@ export const DEFAULT_EXAM_RULES: ExamRules = {
   real: {
     questionCount: 20,
     secondsPerQuestion: 60,
-    maxWrong: 2,
+    maxWrong: 3,
     unansweredCountsAsWrong: true,
   },
   ticket: { secondsPerQuestion: 60, passPercent: 90 },

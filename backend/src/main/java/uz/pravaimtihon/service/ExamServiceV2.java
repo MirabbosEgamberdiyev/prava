@@ -559,7 +559,10 @@ public class ExamServiceV2 {
         boolean isPassed;
         if ("real".equalsIgnoreCase(request.getExamType())) {
             int incorrectAndUnanswered = totalQuestions - correctCount;
-            isPassed = incorrectAndUnanswered <= 2;
+            // exam-rules: 20 savolga maxWrong ta xato, boshqa savol soniga proporsional.
+            int allowed = (int) Math.floor((double) examRules.getReal().getMaxWrong() * totalQuestions
+                    / Math.max(1, examRules.getReal().getQuestionCount()));
+            isPassed = incorrectAndUnanswered <= allowed;
         } else {
             isPassed = percentage >= passingScore;
         }

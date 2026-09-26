@@ -189,7 +189,7 @@ class SecurityFlowsIntegrationTest {
         mvc.perform(get("/api/v1/public/exam-rules"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.marathon.secondsPerQuestion").value(60))
-                .andExpect(jsonPath("$.data.real.maxWrong").value(2));
+                .andExpect(jsonPath("$.data.real.maxWrong").value(3));
     }
 
     // ── Faza 5: offline-bundle v2 (savollar + mavzular + biletlar, ETag) ────────

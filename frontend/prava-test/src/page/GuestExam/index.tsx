@@ -41,7 +41,7 @@ const GuestExamPage = () => {
   const navigate = useNavigate();
 
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [durationMinutes, setDurationMinutes] = useState(25);
+  const [durationMinutes, setDurationMinutes] = useState(20);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [limitReached, setLimitReached] = useState(false);
@@ -75,7 +75,7 @@ const GuestExamPage = () => {
         const exam = res.data?.data;
         if (!exam?.questions?.length) throw new Error("No questions");
         setQuestions(exam.questions);
-        setDurationMinutes(exam.durationMinutes ?? 25);
+        setDurationMinutes(exam.durationMinutes ?? 20);
         // Limit hisoblagichi FAQAT imtihon muvaffaqiyatli yuklangandan keyin
         // oshiriladi (avval ham shunday edi) — tarmoq xatosi foydalanuvchining
         // yagona bepul urinishini yeb qo'ymasin.
@@ -97,7 +97,7 @@ const GuestExamPage = () => {
         const exam = res.data?.data;
         if (!exam?.questions?.length) throw new Error("No questions");
         setQuestions(exam.questions);
-        setDurationMinutes(exam.durationMinutes ?? 25);
+        setDurationMinutes(exam.durationMinutes ?? 20);
         setAnswers({});
         setGuestResultOpened(false);
         localStorage.setItem(GUEST_EXAM_KEY, "1");
