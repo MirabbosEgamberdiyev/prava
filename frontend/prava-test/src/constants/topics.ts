@@ -437,8 +437,20 @@ export const OFFICIAL_TOPIC_BY_NAME_MAP: Record<string, OfflineTopic> = (() => {
 export function findOfficialTopic(topic: any): OfflineTopic | undefined {
   if (!topic) return undefined;
   if (typeof topic === "number") return OFFICIAL_TOPIC_MAP[topic];
-  if (topic.id != null && OFFICIAL_TOPIC_MAP[topic.id]) {
-    return OFFICIAL_TOPIC_MAP[topic.id];
+  if (typeof topic === "string" && !isNaN(Number(topic)) && topic.trim() !== "") {
+    const num = Number(topic);
+    if (OFFICIAL_TOPIC_MAP[num]) return OFFICIAL_TOPIC_MAP[num];
+  }
+  const id =
+    topic.id != null
+      ? Number(topic.id)
+      : topic.topicId != null
+      ? Number(topic.topicId)
+      : topic.topic_id != null
+      ? Number(topic.topic_id)
+      : null;
+  if (id != null && !isNaN(id) && OFFICIAL_TOPIC_MAP[id]) {
+    return OFFICIAL_TOPIC_MAP[id];
   }
   if (topic.code && OFFICIAL_TOPIC_BY_CODE[topic.code]) {
     return OFFICIAL_TOPIC_BY_CODE[topic.code];
@@ -448,6 +460,11 @@ export function findOfficialTopic(topic: any): OfflineTopic | undefined {
     topic.name_uzl ||
     topic.nameUzl ||
     (typeof topic.name === "string" ? topic.name : null) ||
+    topic.name_uzc ||
+    topic.nameUzc ||
+    topic.name_ru ||
+    topic.nameRu ||
+    (typeof topic.title === "string" ? topic.title : null) ||
     "";
   if (rawName) {
     const key = normalizeTopicKey(rawName);

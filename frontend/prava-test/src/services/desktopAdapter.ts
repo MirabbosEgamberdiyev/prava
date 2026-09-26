@@ -23,6 +23,7 @@ import {
 import { curriculumApi } from "./curriculumApi";
 import { fetchExamRules, durationMinutesFor } from "./examRules";
 import { normalizeLanguage, type AppLanguage } from "../context/LanguageContext";
+import { latinToCyrillic, cyrillicToLatin } from "../utils/transliterate";
 
 let cachedTotalQuestions = 1234;
 let cachedTotalTickets = 63;
@@ -67,36 +68,25 @@ export function localizeTopic(
   if (!tp) return "";
   const lang = overrideLang || getLang();
   const official = findOfficialTopic(tp);
+  const hasCyrillic = (s: any) => typeof s === "string" && /[\u0400-\u04FF]/.test(s);
 
   if (lang === "uzc") {
-    return (
-      tp.name_uzc ||
-      official?.name_uzc ||
-      tp.name_uzl ||
-      official?.name_uzl ||
-      tp.name_ru ||
-      official?.name_ru ||
-      ""
-    );
+    if (official?.name_uzc) return official.name_uzc;
+    if (tp.name_uzc && hasCyrillic(tp.name_uzc)) return tp.name_uzc;
+    if (tp.name_uzl && String(tp.name_uzl).trim()) return latinToCyrillic(String(tp.name_uzl));
+    return tp.name_ru || official?.name_uzc || "";
   }
   if (lang === "ru") {
-    return (
-      tp.name_ru ||
-      official?.name_ru ||
-      tp.name_uzl ||
-      official?.name_uzl ||
-      tp.name_uzc ||
-      official?.name_uzc ||
-      ""
-    );
+    if (official?.name_ru) return official.name_ru;
+    if (tp.name_ru && hasCyrillic(tp.name_ru)) return tp.name_ru;
+    if (tp.name_ru) return tp.name_ru;
+    return official?.name_ru || tp.name_uzl || "";
   }
   return (
-    tp.name_uzl ||
     official?.name_uzl ||
-    tp.name_uzc ||
-    official?.name_uzc ||
+    tp.name_uzl ||
+    (tp.name_uzc ? cyrillicToLatin(tp.name_uzc) : "") ||
     tp.name_ru ||
-    official?.name_ru ||
     ""
   );
 }
@@ -440,34 +430,45 @@ export async function getTopics(): Promise<OfflineTopic[]> {
     if (rawList.length > 0) {
       return rawList.map((tp: any) => {
         const official = findOfficialTopic(tp);
+        const hasCyr = (s: any) => typeof s === "string" && /[\u0400-\u04FF]/.test(s);
+        const rawUzc =
+          (typeof tp.name === "object" ? tp.name?.uzc : null) ||
+          tp.nameUzc ||
+          tp.name_uzc;
+        const rawUzl =
+          (typeof tp.name === "object" ? tp.name?.uzl : null) ||
+          tp.nameUzl ||
+          tp.name_uzl ||
+          tp.name;
+        const rawRu =
+          (typeof tp.name === "object" ? tp.name?.ru : null) ||
+          tp.nameRu ||
+          tp.name_ru;
+
+        const nameUzl = official?.name_uzl || (typeof rawUzl === "string" ? rawUzl : "") || "";
+        const nameUzc =
+          official?.name_uzc ||
+          (rawUzc && hasCyr(rawUzc) ? rawUzc : null) ||
+          (nameUzl ? latinToCyrillic(nameUzl) : "");
+        const nameRu =
+          official?.name_ru ||
+          (rawRu && hasCyr(rawRu) ? rawRu : null) ||
+          rawRu ||
+          nameUzl;
+        const nameEn =
+          official?.name_en ||
+          (typeof tp.name === "object" ? tp.name?.en : null) ||
+          tp.nameEn ||
+          tp.name_en ||
+          "";
+
         return {
           id: tp.id,
           code: tp.code || official?.code || null,
-          name_uzl:
-            (typeof tp.name === "object" ? tp.name?.uzl : null) ||
-            tp.nameUzl ||
-            tp.name_uzl ||
-            official?.name_uzl ||
-            tp.name ||
-            "",
-          name_uzc:
-            (typeof tp.name === "object" ? tp.name?.uzc : null) ||
-            tp.nameUzc ||
-            tp.name_uzc ||
-            official?.name_uzc ||
-            "",
-          name_en:
-            (typeof tp.name === "object" ? tp.name?.en : null) ||
-            tp.nameEn ||
-            tp.name_en ||
-            official?.name_en ||
-            "",
-          name_ru:
-            (typeof tp.name === "object" ? tp.name?.ru : null) ||
-            tp.nameRu ||
-            tp.name_ru ||
-            official?.name_ru ||
-            "",
+          name_uzl: nameUzl,
+          name_uzc: nameUzc,
+          name_en: nameEn,
+          name_ru: nameRu,
           question_count: tp.questionCount ?? tp.questionsCount ?? official?.question_count ?? 20,
         };
       });

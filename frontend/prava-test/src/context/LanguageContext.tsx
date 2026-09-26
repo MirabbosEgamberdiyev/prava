@@ -13,10 +13,9 @@ import { useAuth } from "../auth/AuthContext";
 import type {
   LocalizedText,
   OfflineQuestion,
-  OfflineTopic,
   QuestionOption,
 } from "../types";
-import { OFFICIAL_TOPIC_MAP, findOfficialTopic } from "../constants/topics";
+import { findOfficialTopic } from "../constants/topics";
 import { latinToCyrillic, cyrillicToLatin } from "../utils/transliterate";
 import { getHtmlLang } from "../utils/date";
 import api from "../api/api";
@@ -100,7 +99,7 @@ export interface LanguageContextType {
   languages: LanguageOption[];
   currentLanguageOption: LanguageOption;
   localize: (text: LocalizedText | Record<string, string> | string | undefined | null) => string;
-  localizeTopic: (topic: OfflineTopic | null | undefined) => string;
+  localizeTopic: (topic: any) => string;
   localizeQuestion: (q: OfflineQuestion | null | undefined) => string;
   localizeOption: (opt: QuestionOption | null | undefined) => string;
   localizeExplanation: (q: OfflineQuestion | null | undefined) => string | null;
@@ -261,35 +260,41 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (!topic) return "";
       const official = findOfficialTopic(topic);
       const nameRu =
+        (typeof topic.name === "object" ? topic.name?.ru : null) ||
         topic.name_ru ||
         topic.nameRu ||
-        (typeof topic.name === "object" ? topic.name?.ru : null) ||
         official?.name_ru;
       const nameUzc =
+        (typeof topic.name === "object" ? topic.name?.uzc : null) ||
         topic.name_uzc ||
         topic.nameUzc ||
-        (typeof topic.name === "object" ? topic.name?.uzc : null) ||
         official?.name_uzc;
       const nameUzl =
+        (typeof topic.name === "object" ? topic.name?.uzl : null) ||
         topic.name_uzl ||
         topic.nameUzl ||
-        (typeof topic.name === "object" ? topic.name?.uzl : null) ||
         official?.name_uzl ||
         (typeof topic.name === "string" ? topic.name : "");
 
+      const hasCyrillic = (s: any) => typeof s === "string" && /[\u0400-\u04FF]/.test(s);
+
       if (language === "uzc") {
-        if (nameUzc && String(nameUzc).trim()) return String(nameUzc);
+        if (official?.name_uzc) return official.name_uzc;
+        if (nameUzc && hasCyrillic(nameUzc)) return String(nameUzc);
         if (nameUzl && String(nameUzl).trim()) return latinToCyrillic(String(nameUzl));
         if (nameRu && String(nameRu).trim()) return String(nameRu);
         return "";
       }
       if (language === "ru") {
+        if (official?.name_ru) return official.name_ru;
+        if (nameRu && hasCyrillic(nameRu)) return String(nameRu);
         if (nameRu && String(nameRu).trim()) return String(nameRu);
         if (nameUzl && String(nameUzl).trim()) return String(nameUzl);
         if (nameUzc && String(nameUzc).trim()) return cyrillicToLatin(String(nameUzc));
         return "";
       }
       // uzl
+      if (official?.name_uzl) return official.name_uzl;
       if (nameUzl && String(nameUzl).trim()) return String(nameUzl);
       if (nameUzc && String(nameUzc).trim()) return cyrillicToLatin(String(nameUzc));
       if (nameRu && String(nameRu).trim()) return String(nameRu);
@@ -403,36 +408,25 @@ export function useLanguage(): LanguageContextType {
       },
       localizeTopic: (tp) => {
         if (!tp) return "";
-        const official = tp.id != null ? OFFICIAL_TOPIC_MAP[tp.id] : undefined;
+        const official = findOfficialTopic(tp);
+        const hasCyrillic = (s: any) => typeof s === "string" && /[\u0400-\u04FF]/.test(s);
         if (normalized === "uzc") {
-          return (
-            tp.name_uzc ||
-            official?.name_uzc ||
-            tp.name_uzl ||
-            official?.name_uzl ||
-            tp.name_ru ||
-            official?.name_ru ||
-            ""
-          );
+          if (official?.name_uzc) return official.name_uzc;
+          if (tp.name_uzc && hasCyrillic(tp.name_uzc)) return tp.name_uzc;
+          if (tp.name_uzl && String(tp.name_uzl).trim()) return latinToCyrillic(String(tp.name_uzl));
+          return tp.name_ru || official?.name_uzc || "";
         }
         if (normalized === "ru") {
-          return (
-            tp.name_ru ||
-            official?.name_ru ||
-            tp.name_uzl ||
-            official?.name_uzl ||
-            tp.name_uzc ||
-            official?.name_uzc ||
-            ""
-          );
+          if (official?.name_ru) return official.name_ru;
+          if (tp.name_ru && hasCyrillic(tp.name_ru)) return tp.name_ru;
+          if (tp.name_ru) return tp.name_ru;
+          return official?.name_ru || tp.name_uzl || "";
         }
         return (
-          tp.name_uzl ||
           official?.name_uzl ||
-          tp.name_uzc ||
-          official?.name_uzc ||
+          tp.name_uzl ||
+          (tp.name_uzc ? cyrillicToLatin(tp.name_uzc) : "") ||
           tp.name_ru ||
-          official?.name_ru ||
           ""
         );
       },

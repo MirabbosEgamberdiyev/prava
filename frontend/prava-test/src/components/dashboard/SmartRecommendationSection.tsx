@@ -10,6 +10,7 @@ import {
   IconCheck,
 } from "@tabler/icons-react";
 import styles from "./Dashboard.module.css";
+import { useLanguage } from "../../context/LanguageContext";
 
 interface WeakTopic {
   id: number;
@@ -29,6 +30,7 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
   practicedCount = 0,
 }) => {
   const { t } = useTranslation();
+  const { localizeTopic } = useLanguage();
   const navigate = useNavigate();
 
   const handleFixMistakes = () => {
@@ -91,7 +93,9 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
                   onClick={() => navigate(`/marafon?topicId=${topic.id}`)}
                 >
                   <span className={styles.weakTopicNum}>{index + 1}</span>
-                  <span className={styles.weakTopicName}>{topic.name}</span>
+                  <span className={styles.weakTopicName}>
+                    {localizeTopic({ id: topic.id, name: topic.name }) || topic.name}
+                  </span>
                   <span className={styles.weakTopicMistakes}>
                     {t("dashboard.recommendation.mistakesCount", {
                       count: topic.wrongCount,

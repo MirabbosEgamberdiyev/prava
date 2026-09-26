@@ -21,9 +21,11 @@ import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import type { LeaderboardResponse, TopicsResponse } from "../types";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export function LeaderboardPage({ hideTitle = true }: { hideTitle?: boolean } = {}) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { localizeTopic } = useLanguage();
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
   });
@@ -51,10 +53,7 @@ export function LeaderboardPage({ hideTitle = true }: { hideTitle?: boolean } = 
     ...topics.map((topic: any) => ({
       // Backend /leaderboard/{topic} mavzu KODI bo'yicha qidiradi (ID emas) — avval filtr bo'sh natija berardi.
       value: String(topic.code ?? topic.id),
-      label:
-        typeof topic.name === "object"
-          ? topic.name[i18n.language] || topic.name.uzl || topic.name.ru || ""
-          : String(topic.name || ""),
+      label: localizeTopic(topic),
     })),
   ];
 

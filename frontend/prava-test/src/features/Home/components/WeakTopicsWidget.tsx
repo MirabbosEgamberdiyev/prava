@@ -81,10 +81,16 @@ export default function WeakTopicsWidget({ userId }: Props) {
         .map(([tidStr, count]) => {
           const tid = Number(tidStr);
           const found = topicList.find((tp) => tp.id === tid) || OFFICIAL_TOPIC_MAP[tid];
+          const rawFallback =
+            language === "ru"
+              ? `Тема #${tid}`
+              : language === "uzc"
+              ? `Мавзу #${tid}`
+              : `Mavzu #${tid}`;
           return {
             topicId: tid,
             topicObj: found,
-            name: found ? localizeTopic(found) : `Mavzu #${tid}`,
+            name: found ? localizeTopic(found) : rawFallback,
             count,
           };
         })
