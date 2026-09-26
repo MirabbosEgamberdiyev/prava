@@ -44,90 +44,21 @@ echo "[5/6] Nginx konfiguratsiyalarni o'rnatish..."
 # Default config'ni o'chirish
 rm -f /etc/nginx/sites-enabled/default
 
-# prava-test (user) — port 80
-cat > /etc/nginx/sites-available/prava-test << 'NGINX'
-server {
-    listen 80;
-    server_name _;
-
-    root /var/www/prava-test;
-    index index.html;
-
-    gzip on;
-    gzip_vary on;
-    gzip_proxied any;
-    gzip_comp_level 6;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
-
-    location /assets/ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
-    location /api/ {
-        proxy_pass http://127.0.0.1:8080/api/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    access_log /var/log/nginx/prava-test.access.log;
-    error_log  /var/log/nginx/prava-test.error.log;
-}
-NGINX
-
-# prava-admin — port 8081
-cat > /etc/nginx/sites-available/prava-admin << 'NGINX'
-server {
-    listen 8081;
-    server_name _;
-
-    root /var/www/prava-admin;
-    index index.html;
-
-    gzip on;
-    gzip_vary on;
-    gzip_proxied any;
-    gzip_comp_level 6;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
-
-    location /assets/ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
-    location /api/ {
-        proxy_pass http://127.0.0.1:8080/api/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    access_log /var/log/nginx/prava-admin.access.log;
-    error_log  /var/log/nginx/prava-admin.error.log;
-}
-NGINX
-
+# Konfiguratsiyalar repo'dagi deploy/nginx/ dan olinadi (inline nusxalar eskirib qolardi).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+mkdir -p /etc/nginx/snippets
+cp "$SCRIPT_DIR/nginx/prava-test.conf"  /etc/nginx/sites-available/prava-test
+cp "$SCRIPT_DIR/nginx/prava-admin.conf" /etc/nginx/sites-available/prava-admin
+cp "$SCRIPT_DIR/nginx/snippets/prava-security-headers.conf" /etc/nginx/snippets/
+# Admin kirish nazorati: mavjud bo'lmasa example'dan (faqat localhost'ga ruxsat) yaratiladi.
+if [ ! -f /etc/nginx/snippets/prava-admin-access.conf ]; then
+    cp "$SCRIPT_DIR/nginx/snippets/prava-admin-access.conf.example" /etc/nginx/snippets/prava-admin-access.conf
+    echo "DIQQAT: /etc/nginx/snippets/prava-admin-access.conf ga admin IP'larini qo'shing"
+fi
+if [ ! -f /etc/nginx/.htpasswd-prava-admin ]; then
+    echo "DIQQAT: sudo htpasswd -c /etc/nginx/.htpasswd-prava-admin <login> ni bajaring"
+    touch /etc/nginx/.htpasswd-prava-admin
+fi
 # Symlink yaratish
 ln -sf /etc/nginx/sites-available/prava-test /etc/nginx/sites-enabled/
 ln -sf /etc/nginx/sites-available/prava-admin /etc/nginx/sites-enabled/
@@ -136,11 +67,12 @@ ln -sf /etc/nginx/sites-available/prava-admin /etc/nginx/sites-enabled/
 nginx -t
 systemctl restart nginx
 
-# ─── 6. Firewall (8081 portni ochish) ────────────────────────────────
+# ─── 6. Firewall ──────────────────────────────────────────────────
 echo "[6/6] Firewall sozlash..."
 if command -v ufw &> /dev/null; then
     ufw allow 80/tcp
-    ufw allow 8081/tcp
+    ufw allow 443/tcp
+    ufw delete allow 8081/tcp 2>/dev/null || true   # admin endi faqat admin.pravaonline.uz (HTTPS) orqali
     ufw allow 22/tcp
     echo "UFW rules qo'shildi"
 fi
@@ -150,5 +82,5 @@ echo "════════════════════════�
 echo " Setup tugadi!"
 echo ""
 echo " prava-test (user):  http://164.68.100.190"
-echo " prava-admin:        http://164.68.100.190:8081"
+echo " prava-admin:        https://admin.pravaonline.uz  (certbot --nginx -d admin.pravaonline.uz)"
 echo "══════════════════════════════════════════"

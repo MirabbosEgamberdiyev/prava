@@ -1,0 +1,16 @@
+# gitleaks sozlamasi — standart qoidalar + loyiha uchun istisnolar.
+# Haqiqiy sir topilsa: uni REVOKE qiling (commit'dan o'chirish yetarli emas — u git tarixida qoladi).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test fixture'lari va ochiq (public) identifikatorlar"
+paths = [
+  '''backend/src/test/''',
+  '''\.env\.example$''',
+  '''application-payment\.yml\.example$''',
+]
+regexes = [
+  # Google OAuth client ID — ochiq identifikator, sir emas
+  '''[0-9]{12}-[a-z0-9]{32}\.apps\.googleusercontent\.com''',
+]

@@ -20,6 +20,8 @@ FRONTEND_WEB_DIR="/var/www/web.pravaonline.uz"
 FRONTEND_ADMIN_DIR="/var/www/admin"
 BRANCH="main"
 LOCKFILE="/tmp/prava-deploy.lock"
+# Oldingi deploy health-check'dan o'tmagan bo'lsa shu fayl mavjud bo'ladi.
+PENDING_MARKER="/var/lib/prava-deploy.pending"
 HEALTH_URL="http://localhost:8080/actuator/health"
 MAX_HEALTH_RETRIES=30
 HEALTH_RETRY_INTERVAL=5
@@ -93,10 +95,23 @@ log "  Backend changed: $BACKEND_CHANGED"
 log "  Frontend (user) changed: $FRONTEND_USER_CHANGED"
 log "  Frontend (admin) changed: $FRONTEND_ADMIN_CHANGED"
 
+if [ -f "$PENDING_MARKER" ]; then
+    log "  Oldingi deploy tugallanmagan ($(cat "$PENDING_MARKER" | cut -c1-8)) — hammasi qayta deploy qilinadi"
+    BACKEND_CHANGED=true
+    FRONTEND_USER_CHANGED=true
+    FRONTEND_ADMIN_CHANGED=true
+fi
+
 # --- Backend deploy ---
 if [ "$BACKEND_CHANGED" = true ]; then
     log "[2/6] Building and deploying backend..."
     cd "$BACKEND_DIR"
+    # Rollback uchun joriy image saqlanadi (birinchi deploy'da bo'lmasligi mumkin).
+    HAS_PREVIOUS=false
+    if docker image inspect prava-online:latest >/dev/null 2>&1; then
+        docker tag prava-online:latest prava-online:previous
+        HAS_PREVIOUS=true
+    fi
     docker compose up -d --build 2>&1
     log "  Backend containers started. Waiting for health check..."
 
@@ -118,7 +133,22 @@ if [ "$BACKEND_CHANGED" = true ]; then
         log "  Docker status:"
         docker compose ps 2>&1
         log "  Recent logs:"
-        docker compose logs --tail=20 app 2>&1
+        docker compose logs --tail=50 app 2>&1
+        if [ "$HAS_PREVIOUS" = true ]; then
+            log "  ROLLBACK: oldingi image qayta ishga tushirilmoqda..."
+            docker tag prava-online:previous prava-online:latest
+            docker compose up -d --no-build app 2>&1
+            for i in $(seq 1 $MAX_HEALTH_RETRIES); do
+                sleep $HEALTH_RETRY_INTERVAL
+                if [ "$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" 2>/dev/null || echo 000)" = "200" ]; then
+                    log "  ROLLBACK OK: oldingi versiya ishlayapti"
+                    break
+                fi
+            done
+        fi
+        # Kod yangi commit'da qoladi (cron uni qayta-qayta deploy qilmaydi). Belgi qo'yiladi:
+        # keyingi push'da backend va frontend'lar o'zgarishdan qat'i nazar TO'LIQ qayta deploy qilinadi.
+        echo "$REMOTE_HEAD" > "$PENDING_MARKER"
         exit 1
     fi
 else
@@ -169,6 +199,7 @@ docker builder prune -f --filter "until=24h" 2>&1 || true
 
 # --- Summary ---
 log "=========================================="
+rm -f "$PENDING_MARKER"
 log "DEPLOY COMPLETE!"
 log "  Commit: $(git rev-parse --short HEAD)"
 log "  Backend: $BACKEND_CHANGED"

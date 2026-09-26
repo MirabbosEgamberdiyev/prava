@@ -28,6 +28,16 @@ services:
     networks:
       - prava-network
 
+  # Bir martalik: mavjud volume'lar root egaligida yaratilgan — ilova endi non-root (uid 10001)
+  # sifatida ishlaydi, shuning uchun yozish huquqi beriladi. Har deploy'da tez (idempotent) bajariladi.
+  volume-permissions:
+    image: alpine:3.20
+    command: ["sh", "-c", "chown -R 10001:10001 /app/uploads /app/logs"]
+    volumes:
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
+    restart: "no"
+
   # Spring Boot Application
   app:
     container_name: prava-online
@@ -36,8 +46,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      volume-permissions:
+        condition: service_completed_successfully
+    # SECURITY: faqat localhost — tashqi trafik nginx (TLS + rate-limit) orqali o'tadi.
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
+    # SECURITY: .env dagi BARCHA o'zgaruvchilar konteynerga o'tadi (PAYME_*, CLICK_*,
+    # TELEGRAM_WEBHOOK_SECRET, LICENSE_ED25519_SEED, APP_INIT_* va h.k.).
+    # Avval faqat quyidagi ro'yxat o'tardi, qolganlari uchun kod default'lari ishlatilardi.
+    env_file: .env
     environment:
       # Database connection
       DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-prava_online_db}
@@ -72,9 +89,8 @@ services:
       TELEGRAM_ADMIN_CHAT_ID: ${TELEGRAM_ADMIN_CHAT_ID:-}
       TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-https://pravaonline.uz/api/v1/telegram/webhook}
 
-      # Default admin bootstrap parollari — kodda endi default YO'Q.
-      # Agar bular bo'sh bo'lsa, DefaultUserInitializer default adminlarni
-      # umuman yaratmaydi (ma'lum parolli admin akkaunt paydo bo'lmasligi uchun).
+      # Default admin bootstrap — faqat APP_INIT_DEFAULT_USERS_ENABLED=true va parol (>=12 belgi)
+      # berilganda YANGI akkaunt yaratiladi. Mavjud akkauntlarga tegilmaydi.
       APP_INIT_SUPER_ADMIN_PASSWORD: ${APP_INIT_SUPER_ADMIN_PASSWORD:-}
       APP_INIT_ADMIN_PASSWORD: ${APP_INIT_ADMIN_PASSWORD:-}
     volumes:

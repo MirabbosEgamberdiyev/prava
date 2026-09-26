@@ -1,0 +1,15 @@
+# Admin panel kirish nazorati — /etc/nginx/snippets/prava-admin-access.conf ga nusxalang.
+# prava-admin.conf buni server darajasida include qiladi.
+#
+# 1) IP allowlist: ofis / VPN manzillarini qo'shing. Oxirgi qator "deny all" BO'LISHI SHART.
+allow 127.0.0.1;
+# allow 203.0.113.10;       # ofis
+# allow 10.8.0.0/24;        # VPN (WireGuard/Tailscale)
+deny all;
+
+# 2) Ikkinchi qatlam — HTTP Basic Auth (faqat SPA statik fayllari uchun;
+#    /api/ va /media/ location'larida `auth_basic off` — ular Bearer token ishlatadi):
+#    sudo apt install apache2-utils
+#    sudo htpasswd -c /etc/nginx/.htpasswd-prava-admin <login>
+auth_basic           "Prava Admin";
+auth_basic_user_file /etc/nginx/.htpasswd-prava-admin;
