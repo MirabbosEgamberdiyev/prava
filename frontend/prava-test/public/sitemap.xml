@@ -116,4 +116,60 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://pravaonline.uz/privacy" />
   </url>
 
+  <!-- 11. Yo'l belgilari / Road signs -->
+  <url>
+    <loc>https://pravaonline.uz/signs</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <!-- 12. Yo'l chiziqlari / Road markings -->
+  <url>
+    <loc>https://pravaonline.uz/markings</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 13. Yo'l harakati qoidalari / Traffic rules -->
+  <url>
+    <loc>https://pravaonline.uz/rules</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <!-- 14. Jarimalar / Penalties -->
+  <url>
+    <loc>https://pravaonline.uz/penalties</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- 15. Imtihon markazlari / Exam centers -->
+  <url>
+    <loc>https://pravaonline.uz/exam-centers</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- 16. Amaliy imtihon / Practical exam -->
+  <url>
+    <loc>https://pravaonline.uz/practical-exam</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- 17. Ommaviy oferta / Public offer -->
+  <url>
+    <loc>https://pravaonline.uz/offer</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+  </url>
+
 </urlset>

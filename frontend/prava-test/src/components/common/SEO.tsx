@@ -53,14 +53,18 @@ const SEO = ({
   const fullTitle = title.includes(SITE_NAME)
     ? title
     : `${title} | ${SITE_NAME}`;
-  const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : BASE_URL;
+  // P1-W7: canonical berilmasa — joriy sahifa (origin + pathname), bosh sahifa EMAS.
+  const canonicalUrl = canonical
+    ? `${BASE_URL}${canonical}`
+    : typeof window !== "undefined"
+      ? `${window.location.origin}${window.location.pathname}`
+      : BASE_URL;
   const robotsContent = noIndex
     ? "noindex, nofollow"
     : "index, follow, max-image-preview:large, max-snippet:-1";
 
   useEffect(() => {
-    // Sync HTML document lang
-    document.documentElement.lang = currentLang === "ru" ? "ru" : "uz";
+    // NOTE: <html lang> is owned by LanguageContext (utils/date.ts getHtmlLang) — do not set it here.
 
     // Title
     document.title = fullTitle;
@@ -110,7 +114,7 @@ const SEO = ({
         .querySelector('script[data-seo="page"]')
         ?.remove();
     };
-  }, [fullTitle, description, keywords, canonicalUrl, ogImage, type, robotsContent, jsonLd]);
+  }, [fullTitle, description, keywords, canonicalUrl, ogImage, type, robotsContent, jsonLd, ogLocale]);
 
   return null;
 };

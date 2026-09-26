@@ -657,7 +657,7 @@ export default function SimulatorDashboard_Page() {
             <Group justify="space-between" align="center" wrap="wrap" gap="xs">
               {/* Left: Car Badge & Title */}
               <Group gap="xs" align="center">
-                <ActionIcon size="lg" radius="md" color="blue" variant="filled">
+                <ActionIcon component="span" aria-hidden="true" size="lg" radius="md" color="blue" variant="filled">
                   <IconSteeringWheel size={20} />
                 </ActionIcon>
                 <Text size="md" fw={800} c="white" style={{ letterSpacing: "0.3px" }}>
@@ -781,6 +781,7 @@ export default function SimulatorDashboard_Page() {
                     size="md"
                     variant="subtle"
                     color="gray"
+                    aria-label={t("a11y.cameraView", "Kamera ko'rinishini almashtirish")}
                     onClick={() =>
                       setCameraView((prev) =>
                         prev === "chase"
@@ -801,21 +802,27 @@ export default function SimulatorDashboard_Page() {
 
                 {/* Camera Snapshot Icon */}
                 <Tooltip label={lang === "ru" ? "Снимок экрана" : lang === "uzc" ? "Скриншот олиш" : "Skrinshot olish"}>
-                  <ActionIcon size="md" variant="subtle" color="gray">
+                  <ActionIcon size="md" variant="subtle" color="gray" aria-label={t("a11y.screenshot", "Skrinshot olish")}>
                     <IconDeviceFloppy size={18} />
                   </ActionIcon>
                 </Tooltip>
 
                 {/* Split Screen / PIP Icon */}
                 <Tooltip label={lang === "ru" ? "Разделенный экран" : lang === "uzc" ? "Бўлинган экран" : "Bo'lingan экран"}>
-                  <ActionIcon size="md" variant="subtle" color="gray">
+                  <ActionIcon size="md" variant="subtle" color="gray" aria-label={t("a11y.splitScreen", "Bo'lingan ekran")}>
                     <IconLayersSubtract size={18} />
                   </ActionIcon>
                 </Tooltip>
 
                 {/* Fullscreen Toggle Icon */}
                 <Tooltip label={isFullscreen ? (lang === "ru" ? "Выйти" : lang === "uzc" ? "Кичрайтириш" : "Kichraytirish") : (lang === "ru" ? "На весь экран" : lang === "uzc" ? "Тўлиқ экран" : "To'liq экран")}>
-                  <ActionIcon size="md" variant="subtle" color="gray" onClick={toggleFullscreen}>
+                  <ActionIcon
+                    size="md"
+                    variant="subtle"
+                    color="gray"
+                    onClick={toggleFullscreen}
+                    aria-label={isFullscreen ? t("a11y.exitFullscreen", "To'liq ekrandan chiqish") : t("a11y.enterFullscreen", "To'liq ekran")}
+                  >
                     {isFullscreen ? <IconMinimize size={18} /> : <IconMaximize size={18} />}
                   </ActionIcon>
                 </Tooltip>

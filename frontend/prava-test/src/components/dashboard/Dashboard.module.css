@@ -14,7 +14,7 @@
   background-color: var(--bg);
   color: var(--text);
   position: relative;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-family, "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -837,7 +837,6 @@
   border-radius: 10px;
   font-size: 13.5px;
   color: var(--text);
-  outline: none;
   transition: all 0.15s ease;
   font-family: inherit;
 }
@@ -845,6 +844,11 @@
 .innerSearchInput:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+/* A11y (WCAG 2.4.7): fokus halqasi yashirilmaydi — ko'rinadigan klaviatura fokusi */
+.innerSearchInput:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .topicsInnerGrid {
@@ -1878,7 +1882,11 @@
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
-  outline: none;
+}
+/* A11y (WCAG 2.4.7): fokus halqasi yashirilmaydi — ko'rinadigan klaviatura fokusi */
+.searchModalInput:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .searchModalInput::placeholder {

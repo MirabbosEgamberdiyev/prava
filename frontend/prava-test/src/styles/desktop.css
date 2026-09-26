@@ -7,7 +7,22 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Yagona UI shrifti — Montserrat (design-tokens.json → font.family).
+   Avval `*` selektori Inter'ni majburlardi; endi ildizdan meros olinadi,
+   forma elementlari esa (UA default shriftini olmasligi uchun) meros oladi. */
+html,
+body {
+  font-family: var(--font-family);
+}
+
+button,
+input,
+select,
+textarea,
+optgroup {
+  font-family: inherit;
 }
 
 /* ── Mobile-First Global Viewport & Zero-Overflow Guard (280px – 3840px) ── */
@@ -47,7 +62,7 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, label, input, textarea, select {
 
 /* ── WCAG 2.2 AA Keyboard Navigation & Accessible Focus ── */
 :focus-visible {
-  outline: 2px solid var(--primary, #3b82f6) !important;
+  outline: 2px solid var(--primary) !important;
   outline-offset: 2px !important;
 }
 
@@ -165,38 +180,49 @@ html[data-text-size="large"] { font-size: 112% !important; }
 :root,
 [data-theme="light"],
 [data-mantine-color-scheme="light"] {
-  --primary: #1D9BF0;
-  --primary-hover: #0EA5E9;
-  --primary-light: #E0F2FE;
-  --primary-mid: #1D9BF0;
-  --danger: #EF4444;
-  --danger-light: #FEF2F2;
-  --success: #22C55E;
-  --correct: #22C55E;
-  --wrong: #EF4444;
-  --warning: #F59E0B;
-  --bg: #F8FAFC;
-  --card-bg: #FFFFFF;
-  --surface: #FFFFFF;
-  --surface-muted: #F1F5F9;
-  --surface-elevated: #FFFFFF;
-  --text: #0F172A;
-  --text-muted: #64748B;
-  --border: #E2E8F0;
-  --theme-text: #0F172A;
-  --theme-border: #E2E8F0;
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-light: #e0f2fe;
+  --primary-mid: #0284c7;
+  --primary-rgb: 2, 132, 199;
+  --on-primary: #ffffff;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --danger-bg: #fee2e2;
+  --success: #16a34a;
+  --success-bg: #dcfce7;
+  --correct: #16a34a;
+  --wrong: #dc2626;
+  --warning: #b45309;
+  --warning-bg: #fef3c7;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --surface: #ffffff;
+  --surface-alt: #f1f5f9;
+  --surface-muted: #f1f5f9;
+  --surface-elevated: #ffffff;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --text-secondary: #475569;
+  --border: #e2e8f0;
+  --theme-text: #0f172a;
+  --theme-border: #e2e8f0;
   --header-bg: rgba(255, 255, 255, 0.9);
-  --header-border: #E2E8F0;
-  --bg-input: #FFFFFF;
-  --input-bg: #FFFFFF;
-  --input-border: #E2E8F0;
+  --header-border: #e2e8f0;
+  --bg-input: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #e2e8f0;
 
-  /* ============ GLOBAL DESIGN SYSTEM TOKENS ============ */
+  /* Shrift — design-tokens.json (font.family) */
+  --font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* ============ GLOBAL DESIGN SYSTEM TOKENS (design-tokens.json → radius) ============ */
   --radius-xs: 8px;
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-xl: 24px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
 
   --radius: 8px;
   --radius-lg-legacy: 12px;
@@ -236,10 +262,10 @@ html[data-text-size="large"] { font-size: 112% !important; }
   --transition-normal: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Mantine V7 Semantic Token Bridge */
-  --mantine-color-body: #F8FAFC;
-  --mantine-color-default: #FFFFFF;
-  --mantine-color-default-border: #E2E8F0;
-  --mantine-color-default-hover: #F1F5F9;
+  --mantine-color-body: #f8fafc;
+  --mantine-color-default: #ffffff;
+  --mantine-color-default-border: #e2e8f0;
+  --mantine-color-default-hover: #f1f5f9;
 
   /* Safe Area Inset Support (iPhone Notch, Dynamic Island) */
   --sat: env(safe-area-inset-top, 0px);
@@ -255,32 +281,39 @@ html[data-theme="dark"],
 html[data-mantine-color-scheme="dark"],
 [data-theme="dark"],
 [data-mantine-color-scheme="dark"] {
-  --primary: #1D9BF0;
-  --primary-hover: #0EA5E9;
-  --primary-light: rgba(29, 155, 240, 0.15);
-  --primary-mid: #1D9BF0;
-  --accent: #38BDF8;
-  --danger: #EF4444;
-  --danger-light: rgba(239, 68, 68, 0.15);
-  --success: #22C55E;
-  --correct: #22C55E;
-  --wrong: #EF4444;
-  --warning: #F59E0B;
-  --bg: #0B1220;
-  --card-bg: #172033;
+  --primary: #38bdf8;
+  --primary-hover: #7dd3fc;
+  --primary-light: rgba(56, 189, 248, 0.15);
+  --primary-mid: #38bdf8;
+  --primary-rgb: 56, 189, 248;
+  --on-primary: #0b1220;
+  --accent: #38bdf8;
+  --danger: #f87171;
+  --danger-light: #7f1d1d;
+  --danger-bg: #7f1d1d;
+  --success: #4ade80;
+  --success-bg: #14532d;
+  --correct: #4ade80;
+  --wrong: #f87171;
+  --warning: #fbbf24;
+  --warning-bg: #78350f;
+  --bg: #0b1220;
+  --card-bg: #111827;
   --surface: #111827;
-  --surface-muted: #1E293B;
-  --surface-elevated: #1E293B;
-  --text: #F8FAFC;
-  --text-muted: #94A3B8;
-  --border: rgba(255, 255, 255, 0.08);
-  --theme-text: #F8FAFC;
-  --theme-border: rgba(255, 255, 255, 0.08);
+  --surface-alt: #1e293b;
+  --surface-muted: #1e293b;
+  --surface-elevated: #1e293b;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-secondary: #94a3b8;
+  --border: #334155;
+  --theme-text: #e2e8f0;
+  --theme-border: #334155;
   --header-bg: rgba(11, 18, 32, 0.9);
-  --header-border: rgba(255, 255, 255, 0.08);
+  --header-border: #334155;
   --bg-input: #111827;
   --input-bg: #111827;
-  --input-border: rgba(255, 255, 255, 0.12);
+  --input-border: #334155;
 
   --card-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
   --card-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.07);
@@ -291,50 +324,57 @@ html[data-mantine-color-scheme="dark"],
   --shadow-lg: var(--card-shadow-lg);
 
   /* Mantine V7 Semantic Token Bridge */
-  --mantine-color-body: #0B1220;
-  --mantine-color-default: #172033;
-  --mantine-color-default-border: rgba(255, 255, 255, 0.08);
-  --mantine-color-default-hover: #1E293B;
+  --mantine-color-body: #0b1220;
+  --mantine-color-default: #111827;
+  --mantine-color-default-border: #334155;
+  --mantine-color-default-hover: #1e293b;
 }
 
 /* ============ OS PREFERS DARK MODE FALLBACK ============ */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --primary: #2196F3;
-    --primary-hover: #1E88E5;
-    --primary-light: rgba(33, 150, 243, 0.15);
-    --primary-mid: #2196F3;
-    --accent: #38BDF8;
-    --danger: #EF4444;
-    --danger-light: rgba(239, 68, 68, 0.15);
-    --success: #10B981;
-    --correct: #10B981;
-    --wrong: #EF4444;
-    --warning: #F59E0B;
-    --bg: #0A0F14;
+    --primary: #38bdf8;
+    --primary-hover: #7dd3fc;
+    --primary-light: rgba(56, 189, 248, 0.15);
+    --primary-mid: #38bdf8;
+    --primary-rgb: 56, 189, 248;
+    --on-primary: #0b1220;
+    --accent: #38bdf8;
+    --danger: #f87171;
+    --danger-light: #7f1d1d;
+    --danger-bg: #7f1d1d;
+    --success: #4ade80;
+    --success-bg: #14532d;
+    --correct: #4ade80;
+    --wrong: #f87171;
+    --warning: #fbbf24;
+    --warning-bg: #78350f;
+    --bg: #0b1220;
     --card-bg: #111827;
     --surface: #111827;
-    --surface-muted: #1E293B;
-    --surface-elevated: #1E293B;
-    --text: #F8FAFC;
-    --text-muted: #94A3B8;
-    --border: rgba(255, 255, 255, 0.08);
-    --theme-text: #F8FAFC;
-    --theme-border: rgba(255, 255, 255, 0.08);
-    --header-bg: rgba(10, 15, 20, 0.85);
-    --header-border: rgba(255, 255, 255, 0.08);
+    --surface-alt: #1e293b;
+    --surface-muted: #1e293b;
+    --surface-elevated: #1e293b;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-secondary: #94a3b8;
+    --border: #334155;
+    --theme-text: #e2e8f0;
+    --theme-border: #334155;
+    --header-bg: rgba(11, 18, 32, 0.9);
+    --header-border: #334155;
     --bg-input: #111827;
     --input-bg: #111827;
-    --input-border: rgba(255, 255, 255, 0.12);
+    --input-border: #334155;
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
     --shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.07);
     --shadow-lg: 0 16px 40px -8px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
 
     /* Mantine V7 Semantic Token Bridge */
-    --mantine-color-body: #0A0F14;
+    --mantine-color-body: #0b1220;
     --mantine-color-default: #111827;
-    --mantine-color-default-border: rgba(255, 255, 255, 0.08);
-    --mantine-color-default-hover: #1E293B;
+    --mantine-color-default-border: #334155;
+    --mantine-color-default-hover: #1e293b;
   }
 }
 
@@ -838,6 +878,7 @@ body:has(.app) {
 /* ============ LOADING ============ */
 .loading-screen {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -865,6 +906,7 @@ body:has(.app) {
 /* ============ LICENSE SCREEN ============ */
 .license-screen {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -931,7 +973,6 @@ body:has(.app) {
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
-  outline: none;
   width: 100%;
   color: var(--text);
 }
@@ -939,6 +980,11 @@ body:has(.app) {
 .license-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+/* A11y (WCAG 2.4.7): fokus halqasi yashirilmaydi — ko'rinadigan klaviatura fokusi */
+.license-input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .error-message {
@@ -1013,6 +1059,7 @@ body:has(.app) {
 /* ============ USER SELECT SCREEN ============ */
 .usp-screen {
   height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1318,7 +1365,6 @@ body:has(.app) {
   font-size: 13.5px;
   font-family: "Montserrat", sans-serif;
   font-weight: 500;
-  outline: none;
   margin-bottom: 7px;
   color: var(--text);
   transition:
@@ -1329,6 +1375,11 @@ body:has(.app) {
 .user-name-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+}
+/* A11y (WCAG 2.4.7): fokus halqasi yashirilmaydi — ko'rinadigan klaviatura fokusi */
+.user-name-input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .user-name-input::placeholder {
@@ -1535,6 +1586,7 @@ body:has(.app) {
 /* ============ MAIN SCREEN ============ */
 .main-screen {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -1679,6 +1731,7 @@ body:has(.app) {
 /* ============ HOME SCREEN ============ */
 .home-screen {
   height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   scrollbar-gutter: stable;
   background: var(--bg);
@@ -2870,6 +2923,7 @@ body:has(.app) {
 /* ============ MARATHON SETUP SCREEN ============ */
 .marathon-setup-screen {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2920,11 +2974,15 @@ body:has(.app) {
   font-size: 14px;
   font-family: "Montserrat", sans-serif;
   cursor: pointer;
-  outline: none;
   transition: border-color 0.15s;
 }
 .marathon-setup-select:focus {
   border-color: var(--primary);
+}
+/* A11y (WCAG 2.4.7): fokus halqasi yashirilmaydi — ko'rinadigan klaviatura fokusi */
+.marathon-setup-select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 .marathon-setup-hint {
   display: flex;
@@ -3019,6 +3077,7 @@ body:has(.app) {
 /* ============ QUIZ SCREEN ============ */
 .quiz-screen {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -3379,6 +3438,7 @@ body:has(.app) {
 /* Result screen — shared */
 .quiz-result-screen {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4042,6 +4102,12 @@ body:has(.app) {
   overflow: hidden;
 }
 
+/* Marafon sozlash sahifasi (avval inline `minHeight: 100vh`) */
+.marathon-setup-wrapper {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 /* ── Topbar ── */
 .exam-topbar {
   background: var(--card-bg);
@@ -4271,6 +4337,13 @@ body:has(.app) {
   background: #ebfbee;
   color: #2f9e44;
 }
+/* Secure imtihon: javob tanlangan, server tekshiruvi kutilmoqda / noma'lum */
+.exam-option.selected {
+  border-color: var(--primary);
+}
+.exam-qnum.answered {
+  border-color: var(--primary);
+}
 .exam-option.wrong,
 .exam-opt-btn.wrong {
   border-color: var(--danger);
@@ -4456,6 +4529,7 @@ body:has(.app) {
 /* ── Result screen ── */
 .exam-result-screen {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4669,12 +4743,16 @@ body:has(.app) {
   border-radius: var(--radius);
   font-size: 12.5px;
   font-family: "Montserrat", sans-serif;
-  outline: none;
   width: 200px;
   transition: border-color 0.15s;
 }
 .topics-search-input:focus {
   border-color: var(--primary);
+}
+/* A11y (WCAG 2.4.7): fokus halqasi yashirilmaydi — ko'rinadigan klaviatura fokusi */
+.topics-search-input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 .topics-search-input::placeholder {
   color: var(--text-muted);
@@ -5989,10 +6067,14 @@ body:has(.app) {
   color: var(--text);
   font-size: 12px;
   cursor: pointer;
-  outline: none;
 }
 .q-topic-select:focus {
   border-color: var(--primary);
+}
+/* A11y (WCAG 2.4.7): fokus halqasi yashirilmaydi — ko'rinadigan klaviatura fokusi */
+.q-topic-select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 .q-search-wrap {
   flex: 1;
@@ -6014,10 +6096,14 @@ body:has(.app) {
   background: var(--card-bg);
   color: var(--text);
   font-size: 12px;
-  outline: none;
 }
 .q-search-input:focus {
   border-color: var(--primary);
+}
+/* A11y (WCAG 2.4.7): fokus halqasi yashirilmaydi — ko'rinadigan klaviatura fokusi */
+.q-search-input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 .q-search-input::placeholder {
   color: var(--text-muted);
@@ -6148,6 +6234,7 @@ body:has(.app) {
 .img-zoom-content {
   max-width: 90vw;
   max-height: 90vh;
+  max-height: 90dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6155,6 +6242,7 @@ body:has(.app) {
 .img-zoom-img {
   max-width: 90vw;
   max-height: 90vh;
+  max-height: 90dvh;
   object-fit: contain;
   border-radius: 12px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
@@ -6348,6 +6436,7 @@ body:has(.app) {
   .exam-screen {
     height: auto;
     min-height: 100vh;
+    min-height: 100dvh;
     overflow-y: auto;
   }
   .exam-topbar {
@@ -6466,6 +6555,67 @@ body:has(.app) {
     height: 30px;
     font-size: 12px;
     border-radius: 7px;
+  }
+}
+
+/* ── Exam ekrani telefon (≤ 600px, 360px gacha) — bitta ekranga sig'ishi ──
+   Ekran balandligi dinamik viewport (dvh) bo'yicha qat'iy: topbar + savol +
+   rasm (≤ 35dvh) + skroll qilinadigan javoblar ro'yxati + pastki navigatsiya.
+   iOS Safari toolbar tugmalarni yopmaydi; gorizontal skroll yo'q. */
+@media (max-width: 600px) {
+  .exam-screen {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  .exam-question-header {
+    padding: 8px 12px;
+    max-height: 25vh;
+    max-height: 25dvh;
+    overflow-y: auto;
+  }
+  .exam-question-text {
+    font-size: 14.5px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .exam-two-col {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .exam-col-image {
+    flex: 0 0 auto;
+    min-height: 0;
+    max-height: 35vh;
+    max-height: 35dvh;
+    padding: 8px 12px;
+  }
+  .exam-col-image:has(.exam-img-placeholder) {
+    display: none;
+  }
+  .exam-col-image .zoomable-wrap,
+  .exam-question-img {
+    max-height: calc(35vh - 16px);
+    max-height: calc(35dvh - 16px);
+  }
+  .exam-col-options {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 10px 12px;
+  }
+  .exam-option-text {
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+  .exam-bottom {
+    position: static;
+    flex-shrink: 0;
   }
 }
 
@@ -6723,7 +6873,7 @@ body:has(.app) {
 }
 
 .enterprise-card:hover {
-  border-color: rgba(37, 99, 235, 0.4);
+  border-color: rgba(var(--primary-rgb), 0.4);
   transform: translateY(-1px);
 }
 

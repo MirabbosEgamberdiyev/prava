@@ -13,6 +13,7 @@ import {
   getQuestionStats,
   resetAllStats,
 } from "../../services/desktopAdapter";
+import { Modal } from "@mantine/core";
 import SEO from "../../components/common/SEO";
 import styles from "../../components/dashboard/Dashboard.module.css";
 import {
@@ -329,19 +330,31 @@ export default function Statistics_Page() {
         canonical="/statistics"
         noIndex={true}
       />
-      {/* ── Reset confirm modal ── */}
-        {resetConfirm && (
-          <div
-            className="reset-overlay"
-            onClick={() => !resetting && setResetConfirm(false)}
+      {/* ── Reset confirm modal (Mantine Modal — P2-W6) ── */}
+        <Modal.Root
+          opened={resetConfirm}
+          onClose={() => !resetting && setResetConfirm(false)}
+          closeOnClickOutside={!resetting}
+          closeOnEscape={!resetting}
+          centered
+          size={380}
+          zIndex={9000}
+        >
+          <Modal.Overlay backgroundOpacity={0.5} blur={3} />
+          <Modal.Content
+            radius="lg"
+            styles={{ content: { background: "transparent", boxShadow: "none" } }}
           >
-            <div className="reset-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="reset-modal-icon">
+            <Modal.Body className="reset-modal" style={{ padding: "28px 24px" }}>
+              <div className="reset-modal-icon" aria-hidden="true">
                 <IconAlertTriangle size={32} />
               </div>
-              <div className="reset-modal-title">
+              <Modal.Title
+                className="reset-modal-title"
+                style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.3, color: "var(--text)", marginBottom: 10 }}
+              >
                 {t("stats.resetAll", "Barcha statistikani tozalash")}
-              </div>
+              </Modal.Title>
               <div className="reset-modal-msg">
                 {t(
                   "stats.resetAllConfirm",
@@ -367,9 +380,9 @@ export default function Statistics_Page() {
                   {resetting ? t("common.loading", "Yuklanmoqda...") : t("common.yes", "Ha, tozalash")}
                 </button>
               </div>
-            </div>
-          </div>
-        )}
+            </Modal.Body>
+          </Modal.Content>
+        </Modal.Root>
 
         {/* Page Header */}
         <div className={styles.innerPageHeader}>

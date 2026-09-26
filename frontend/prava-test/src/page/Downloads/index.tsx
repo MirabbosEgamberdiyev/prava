@@ -90,6 +90,8 @@ export default function Downloads_Page() {
         label: t("dl.viewChecksum", "SHA-256 va o'zgarishlar"),
         action: () => {
           const winRelease = releases?.find((r) => r.platform === "WINDOWS");
+          // Fallback when the releases API is unavailable: no fabricated
+          // download count / checksum / file size — those are only shown from real data.
           const fallbackWinRelease: AppReleaseResponse = {
             id: 1,
             platform: "WINDOWS",
@@ -100,10 +102,8 @@ export default function Downloads_Page() {
             status: "ACTIVE",
             isLatest: true,
             isForceUpdate: false,
-            downloadCount: 12400,
+            downloadCount: 0,
             downloadUrl: WINDOWS_DIRECT_URL,
-            fileSizeFormatted: "145 MB",
-            checksum: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
             releaseDate: new Date().toISOString(),
             appCategory: "OFFLINE",
           };
@@ -497,10 +497,12 @@ export default function Downloads_Page() {
           radius="md"
         >
           <Stack gap="md">
-            <Group justify="space-between">
-              <Text size="xs" c="dimmed">{t("dl.size", "Hajmi")}:</Text>
-              <Text size="sm" fw={600}>{selectedRelease.fileSizeFormatted || "145 MB"}</Text>
-            </Group>
+            {selectedRelease.fileSizeFormatted && (
+              <Group justify="space-between">
+                <Text size="xs" c="dimmed">{t("dl.size", "Hajmi")}:</Text>
+                <Text size="sm" fw={600}>{selectedRelease.fileSizeFormatted}</Text>
+              </Group>
+            )}
             {selectedRelease.checksum && (
               <Box>
                 <Text size="xs" c="dimmed" mb={4}>{t("dl.sha256", "SHA-256 Nazorat summasi:")}</Text>

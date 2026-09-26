@@ -307,6 +307,7 @@ export default function HUDOverlay({
                       color="dark"
                       radius="sm"
                       onClick={onToggleFullscreen}
+                      aria-label={isFullscreen ? t("a11y.exitFullscreen", "To'liq ekrandan chiqish") : t("a11y.enterFullscreen", "To'liq ekran")}
                       style={{
                         backgroundColor: "rgba(15, 23, 42, 0.88)",
                         border: "1px solid rgba(255, 255, 255, 0.15)",

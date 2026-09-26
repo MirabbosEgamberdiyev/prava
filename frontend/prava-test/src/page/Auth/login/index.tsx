@@ -258,8 +258,8 @@ const Login_Page: React.FC = () => {
               style={{
                 fontSize: "13.5px",
                 fontWeight: 700,
-                backgroundColor: "var(--primary, #2196F3)",
-                boxShadow: "0 4px 12px rgba(33, 150, 243, 0.25)",
+                backgroundColor: "var(--primary)",
+                boxShadow: "0 4px 12px rgba(var(--primary-rgb), 0.25)",
               }}
             >
               {loading

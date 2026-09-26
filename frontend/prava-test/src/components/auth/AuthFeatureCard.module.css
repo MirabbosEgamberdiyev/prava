@@ -19,8 +19,8 @@
 
 .featureCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(33, 150, 243, 0.08);
-  border-color: rgba(33, 150, 243, 0.35);
+  box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.08);
+  border-color: rgba(var(--primary-rgb), 0.35);
 }
 
 :global([data-theme="dark"]) .featureCard:hover,
@@ -34,9 +34,9 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: rgba(33, 150, 243, 0.1);
-  color: var(--primary, #2196F3);
-  border: 1px solid rgba(33, 150, 243, 0.15);
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(var(--primary-rgb), 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,7 +45,7 @@
 
 :global([data-theme="dark"]) .iconBox,
 :global([data-mantine-color-scheme="dark"]) .iconBox {
-  background: rgba(33, 150, 243, 0.15);
+  background: rgba(var(--primary-rgb), 0.15);
   color: #38bdf8;
   border-color: rgba(56, 189, 248, 0.2);
 }

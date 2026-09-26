@@ -13,7 +13,10 @@ import {
   IconArrowLeft,
   IconSparkles,
   IconAlertTriangle,
+  IconCircleCheck,
+  IconCircleX,
 } from "@tabler/icons-react";
+import { isExamPassed, useExamRules, type ExamMode } from "../../services/examRules";
 
 export interface GamificationResultProps {
   score: number; // 0 to 100
@@ -30,6 +33,13 @@ export interface GamificationResultProps {
   onHome?: () => void;
   title?: string;
   errorMsg?: string | null;
+  /**
+   * Natija rejimi — berilsa, yagona qoida (`isExamPassed`) bo'yicha aniq
+   * O'TDI / O'TMADI holati ko'rsatiladi.
+   */
+  mode?: ExamMode;
+  /** Server hisoblagan holat (bo'lsa, `mode` bo'yicha hisobdan ustun). */
+  passed?: boolean;
 }
 
 export const GamificationResult: React.FC<GamificationResultProps> = ({
@@ -47,10 +57,18 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
   onHome,
   title,
   errorMsg,
+  mode,
+  passed: passedProp,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const rules = useExamRules();
   const actualTotal = totalQuestions ?? total ?? correct + wrong + unanswered;
+  const passed: boolean | undefined =
+    passedProp ??
+    (mode
+      ? isExamPassed({ mode, total: actualTotal, correct, wrong, unanswered }, rules)
+      : undefined);
   const handleHome = onBackHome ?? onHome ?? (() => {});
 
   // Exact 3-Tier Gamification Logic
@@ -136,6 +154,34 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
         >
           {errorMsg ? <IconX size={40} color="#fff" stroke={2.5} /> : tierConfig.icon}
         </div>
+
+        {/* Aniq O'TDI / O'TMADI holati (yagona qoida) */}
+        {!errorMsg && passed !== undefined && (
+          <div style={{ marginBottom: "12px" }}>
+            <span
+              role="status"
+              data-testid="exam-pass-state"
+              data-passed={passed ? "true" : "false"}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 14px",
+                borderRadius: "var(--radius-pill, 999px)",
+                background: passed ? "var(--success-bg)" : "var(--danger-bg)",
+                color: passed ? "var(--success)" : "var(--danger)",
+                border: `1.5px solid ${passed ? "var(--success)" : "var(--danger)"}`,
+                fontSize: "13px",
+                fontWeight: 800,
+                letterSpacing: "0.6px",
+                textTransform: "uppercase",
+              }}
+            >
+              {passed ? <IconCircleCheck size={16} stroke={2.4} /> : <IconCircleX size={16} stroke={2.4} />}
+              <span>{passed ? t("gamification.passed", "O'tdi") : t("gamification.failed", "O'tmadi")}</span>
+            </span>
+          </div>
+        )}
 
         {/* Title */}
         <h2
@@ -256,7 +302,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
               style={{
                 width: "100%",
                 minHeight: "46px",
-                background: "var(--primary, #1971c2)",
+                background: "var(--primary)",
                 color: "#fff",
                 border: "none",
                 borderRadius: "12px",
@@ -268,7 +314,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
                 gap: "8px",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
-                boxShadow: "0 4px 14px rgba(25, 113, 194, 0.3)",
+                boxShadow: "0 4px 14px rgba(var(--primary-rgb), 0.3)",
               }}
             >
               <IconSearch size={18} stroke={2.2} />

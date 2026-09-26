@@ -1,6 +1,18 @@
 import i18n from "./i18n";
 
 /**
+ * Returns the BCP-47 language tag for <html lang> (uzl -> uz-Latn, uzc -> uz-Cyrl, ru -> ru).
+ * Single source of truth — only LanguageContext should write document.documentElement.lang.
+ */
+export function getHtmlLang(lang?: string): string {
+  const l = lang || i18n.resolvedLanguage || i18n.language || "uzl";
+  if (l === "ru") return "ru";
+  if (l === "uzc") return "uz-Cyrl";
+  if (l === "en") return "en";
+  return "uz-Latn";
+}
+
+/**
  * Returns BCP-47 locale matching current app language.
  */
 export function getAppDateLocale(lang?: string): string {

@@ -31,9 +31,8 @@ export function LeaderboardPage({ hideTitle = true }: { hideTitle?: boolean } = 
   const page = Math.max(0, Number(searchParams.get("page") ?? 0));
   const selectedTopic = searchParams.get("topic") ?? null;
 
-  const { data: topicsResponse } = useSWR<TopicsResponse>(
-    "/api/v1/admin/topics/with-questions",
-  );
+  // User endpoint (same TopicResponse as the admin one); "with questions" = questionCount > 0.
+  const { data: topicsResponse } = useSWR<TopicsResponse>("/api/v1/app/topics");
 
   const leaderboardUrl = selectedTopic
     ? `/api/v1/statistics/leaderboard/${selectedTopic}?page=${page}&size=20`
@@ -43,12 +42,15 @@ export function LeaderboardPage({ hideTitle = true }: { hideTitle?: boolean } = 
     useSWR<LeaderboardResponse>(leaderboardUrl);
 
   const leaderboard = leaderboardResponse?.data;
-  const topics = topicsResponse?.data || [];
+  const topics = (topicsResponse?.data || []).filter(
+    (topic) => (topic.questionCount ?? 0) > 0,
+  );
 
   const topicOptions = [
     { value: "", label: t("leaderboard.global", "Umumiy reyting") },
     ...topics.map((topic: any) => ({
-      value: String(topic.id),
+      // Backend /leaderboard/{topic} mavzu KODI bo'yicha qidiradi (ID emas) — avval filtr bo'sh natija berardi.
+      value: String(topic.code ?? topic.id),
       label:
         typeof topic.name === "object"
           ? topic.name[i18n.language] || topic.name.uzl || topic.name.ru || ""

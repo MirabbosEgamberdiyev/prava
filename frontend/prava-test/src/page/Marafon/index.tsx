@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import type { OfflineQuestion, OfflineTopic } from "../../types/desktop";
 import {
-  getMarathonQuestions,
+  startMarathonSession,
   getTopics,
   addWrongAnswer,
   saveExamResult,
@@ -16,7 +16,6 @@ import {
   localizeExp,
   localizeTopic,
   parseOptions,
-  getActiveMarathonSessionId,
   submitExamSession,
   getCachedTotalQuestions,
 } from "../../services/desktopAdapter";
@@ -26,7 +25,11 @@ import ImageZoomModal, { ZoomableImage } from "../../components/common/ImageZoom
 import GamificationResult from "../../components/quiz/GamificationResult";
 import QuizReviewModal from "../../components/quiz/QuizReviewModal";
 import TestSetupCard from "../../components/quiz/TestSetupCard";
+import ConfirmFinishModal from "../../components/quiz/ConfirmFinishModal";
+import ExamTimerAnnouncer from "../../components/quiz/ExamTimerAnnouncer";
 import SEO from "../../components/common/SEO";
+import { useExamTimer } from "../../hooks/useExamTimer";
+import { durationSecondsFor, useExamRules } from "../../services/examRules";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -36,7 +39,6 @@ import {
   IconBulb,
   IconBookmark,
   IconBookmarkFilled,
-  IconAlertTriangle,
   IconPlayerPlay,
   IconTrash,
   IconRotateClockwise,
@@ -87,12 +89,32 @@ export default function Marafon_Page() {
     selTopic: number | null;
     countIdx: number;
     timestamp: number;
+    sessionId?: number | null;
+    /** Marafon vaqti tugaydigan absolyut vaqt (ms, epoch) — resume qolgan vaqtdan davom etadi. */
+    deadline?: number;
   } | null>(null);
 
+  // Marafon vaqtli: savollar soni × marathon.secondsPerQuestion (exam-rules)
+  const rules = useExamRules();
+  /** Taymer davomiyligi (soniya) — start/resume paytida deadline'dan hisoblanadi. */
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const deadlineRef = useRef<number | null>(null);
+
   const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sessionIdRef = useRef<number | null>(null);
   const answersRef = useRef(answers);
+  const questionsRef = useRef(questions);
   const activeQnumRef = useRef<HTMLButtonElement | null>(null);
+  const finishedRef = useRef(false);
   answersRef.current = answers;
+  questionsRef.current = questions;
+
+  // Unmount: kutilayotgan auto-advance taymerini tozalash
+  useEffect(() => {
+    return () => {
+      if (autoRef.current) clearTimeout(autoRef.current);
+    };
+  }, []);
 
   // Check for saved uncompleted marathon session on mount
   useEffect(() => {
@@ -120,8 +142,42 @@ export default function Marafon_Page() {
     setCurrent(Math.min(savedSession.current || 0, savedSession.questions.length - 1));
     setSelTopic(savedSession.selTopic ?? null);
     setCountIdx(savedSession.countIdx || 0);
+    sessionIdRef.current = savedSession.sessionId ?? null;
+    questionsRef.current = savedSession.questions;
+
+    // Absolyut deadline saqlangan — qolgan vaqtdan davom etamiz. Eski (deadline'siz)
+    // sessiyalar uchun: javob berilmagan savollar × secondsPerQuestion.
+    const now = Date.now();
+    const answeredCount = Object.keys(savedSession.answers || {}).length;
+    const deadline =
+      typeof savedSession.deadline === "number" && Number.isFinite(savedSession.deadline)
+        ? savedSession.deadline
+        : now +
+          durationSecondsFor(
+            Math.max(0, savedSession.questions.length - answeredCount),
+            rules.marathon.secondsPerQuestion,
+          ) *
+            1000;
+    deadlineRef.current = deadline;
+    const remaining = Math.ceil((deadline - now) / 1000);
+    finishedRef.current = false;
+    if (remaining <= 0) {
+      // Vaqt resume'dan oldin tugagan — darhol yakunlab yuboramiz.
+      triggerFinish();
+      return;
+    }
+    setTimerSeconds(remaining);
     setPhase("exam");
   };
+
+  // /me dagi "Davom ettirish" kartasidan (?resume=1) kelinganda — avtomatik davom ettirish
+  const autoResumedRef = useRef(false);
+  useEffect(() => {
+    if (autoResumedRef.current || !savedSession || phase !== "setup") return;
+    if (searchParams.get("resume") !== "1") return;
+    autoResumedRef.current = true;
+    handleResumeMarathon();
+  });
 
   const handleDiscardSavedMarathon = () => {
     try {
@@ -145,6 +201,16 @@ export default function Marafon_Page() {
     if (phase === "setup") {
       navigate("/me");
     } else {
+      // Exam'dan chiqilganda saqlangan sessiya (deadline bilan) setup'da resume uchun ko'rinsin
+      if (phase === "exam") {
+        try {
+          const raw = localStorage.getItem(MARATHON_STORAGE_KEY);
+          const parsed = raw ? JSON.parse(raw) : null;
+          if (parsed && Array.isArray(parsed.questions) && parsed.questions.length > 0) {
+            setSavedSession(parsed);
+          }
+        } catch {}
+      }
       setPhase("setup");
     }
   };
@@ -193,58 +259,82 @@ export default function Marafon_Page() {
         ? (maxQ > 0 ? maxQ : getCachedTotalQuestions())
         : (maxQ > 0 ? Math.min(chosenOption, maxQ) : chosenOption);
 
-    getMarathonQuestions(selTopic ?? undefined, limit)
-      .then((qs) => {
+    sessionIdRef.current = null;
+    startMarathonSession(selTopic ?? undefined, limit)
+      .then(({ sessionId, questions: qs }) => {
         if (qs.length === 0) {
           setErrorMsg(t("marathon.noQuestions", "Savollar topilmadi"));
           setPhase("result");
           return;
         }
+        sessionIdRef.current = sessionId;
+        const total = durationSecondsFor(qs.length, rules.marathon.secondsPerQuestion);
+        deadlineRef.current = Date.now() + total * 1000;
+        finishedRef.current = false;
+        setTimerSeconds(total);
         setQuestions(qs);
+        questionsRef.current = qs;
         setPhase("exam");
       })
       .catch((e) => {
         setErrorMsg(String(e));
         setPhase("result");
       });
-  }, [selTopic, countIdx, topics, t]);
+  }, [selTopic, countIdx, topics, t, rules]);
 
-  const triggerFinish = useCallback(() => {
+  function triggerFinish() {
+    if (finishedRef.current) return; // taymer + tugma bir vaqtda — ikki marta yuborilmasin
+    finishedRef.current = true;
     if (autoRef.current) {
       clearTimeout(autoRef.current);
       autoRef.current = null;
     }
+    const questions = questionsRef.current;
     const curAnswers = answersRef.current;
     const correct = Object.values(curAnswers).filter((a) => a.selected === a.correct).length;
     const total = questions.length;
     const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const planned = durationSecondsFor(total, rules.marathon.secondsPerQuestion);
+    const remaining = deadlineRef.current
+      ? Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000))
+      : planned;
+    deadlineRef.current = null;
     setPhase("result");
     saveExamResult({
       userId,
       score,
       totalQuestions: total,
       correctAnswers: correct,
-      durationSeconds: 0,
+      durationSeconds: Math.max(0, planned - remaining),
       examType: "marathon",
     }).catch(() => {});
 
-    const activeId = getActiveMarathonSessionId();
+    const activeId = sessionIdRef.current;
     if (activeId && questions.length > 0) {
+      sessionIdRef.current = null; // ikki marta yuborilmasin
       const submitList = questions.map((q, idx) => ({
         questionId: q.id,
         selectedOptionIndex: curAnswers[idx]?.selected ?? null,
       }));
-      submitExamSession(activeId, submitList).catch(() => {});
+      // Xato bo'lsa submitExamSession o'zi navbatga qo'yadi va bildirishnoma ko'rsatadi
+      void submitExamSession(activeId, submitList);
     }
 
     try {
       localStorage.removeItem(MARATHON_STORAGE_KEY);
     } catch {}
     setSavedSession(null);
-  }, [questions, userId, MARATHON_STORAGE_KEY]);
+  }
+
+  // Marafon taymeri (Exam sahifasi bilan bir xil hook) — tugaganda avtomatik yakunlash
+  const { timeLeft, warning: timerWarning } = useExamTimer({
+    durationSeconds: timerSeconds,
+    running: phase === "exam",
+    onExpire: () => triggerFinish(),
+  });
 
   const handleSelect = (optIdx: number) => {
-    if (answers[current] !== undefined) return;
+    if (answers[current] !== undefined || finishedRef.current) return;
     const q = questions[current];
     if (!q) return;
     const opts = parseOptions(q.options_json);
@@ -276,6 +366,8 @@ export default function Marafon_Page() {
           selTopic,
           countIdx,
           timestamp: Date.now(),
+          sessionId: sessionIdRef.current,
+          deadline: deadlineRef.current ?? undefined,
         })
       );
     } catch {}
@@ -318,6 +410,8 @@ export default function Marafon_Page() {
     const handleKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      // Tasdiqlash oynasi ochiq: klaviaturani Mantine Modal boshqaradi
+      if (confirmFinishOpen || zoomSrc) return;
 
       const map: Record<string, number> = {
         F1: 0, F2: 1, F3: 2, F4: 3, F5: 4,
@@ -347,7 +441,18 @@ export default function Marafon_Page() {
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [phase, answers, current, questions.length]);
+  }, [phase, answers, current, questions.length, confirmFinishOpen, zoomSrc]);
+
+  // Marafon uzun bo'lishi mumkin (1000+ savol = 1000+ daqiqa) — soat ham ko'rsatiladi.
+  const formatTime = (s: number) => {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    const mmss = `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+    return h > 0 ? `${h}:${mmss}` : mmss;
+  };
+  const timerIsRed = timeLeft <= 60;
+  const timerIsYellow = !timerIsRed && timeLeft <= 300;
 
   // ─── SETUP ───
   if (phase === "setup") {
@@ -357,7 +462,7 @@ export default function Marafon_Page() {
       : t("testSetup.marathonTitle", "Katta Marafon");
 
     return (
-      <div className="marathon-setup-wrapper" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div className="marathon-setup-wrapper" style={{ display: "flex", flexDirection: "column" }}>
         <SEO
           title={`${pageTitle} — ${t("seo.marathon.title", "Marafon")}`}
           description={t("seo.marathon.desc", "Barcha rasmiy savollardan iborat cheksiz marafon.")}
@@ -409,7 +514,7 @@ export default function Marafon_Page() {
                   borderRadius: 16,
                   padding: "20px 24px",
                   marginBottom: 24,
-                  boxShadow: "0 8px 24px -4px rgba(37, 99, 235, 0.15)",
+                  boxShadow: "0 8px 24px -4px rgba(var(--primary-rgb), 0.15)",
                   display: "flex",
                   flexDirection: "column",
                   gap: 14,
@@ -422,7 +527,7 @@ export default function Marafon_Page() {
                         width: 44,
                         height: 44,
                         borderRadius: 12,
-                        background: "rgba(37, 99, 235, 0.12)",
+                        background: "rgba(var(--primary-rgb), 0.12)",
                         color: "var(--primary)",
                         display: "flex",
                         alignItems: "center",
@@ -485,7 +590,7 @@ export default function Marafon_Page() {
                         display: "inline-flex",
                         alignItems: "center",
                         gap: 8,
-                        boxShadow: "0 4px 14px rgba(37, 99, 235, 0.35)",
+                        boxShadow: "0 4px 14px rgba(var(--primary-rgb), 0.35)",
                       }}
                     >
                       <IconPlayerPlay size={18} />
@@ -589,6 +694,7 @@ export default function Marafon_Page() {
 
           <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 12px" }}>
             <GamificationResult
+              mode="marathon"
               score={score}
               correct={correct}
               wrong={wrong}
@@ -631,6 +737,7 @@ export default function Marafon_Page() {
         canonical="/marafon"
         noIndex={true}
       />
+      <ExamTimerAnnouncer warning={timerWarning} />
       <div className="exam-screen">
         {/* ── Top bar ── */}
         <div className="exam-topbar">
@@ -649,6 +756,13 @@ export default function Marafon_Page() {
             >
               {t("activeTest.finishTest", "Yakunlash")} <IconX size={15} />
             </button>
+            <span
+              className={`exam-timer${timerIsRed ? " red" : timerIsYellow ? " yellow" : ""}`}
+              role="timer"
+              aria-label={`${t("exam.timeLeft", "Qolgan vaqt")}: ${formatTime(timeLeft)}`}
+            >
+              {formatTime(timeLeft)}
+            </span>
           </div>
 
           <div className="exam-topbar-center">
@@ -675,6 +789,12 @@ export default function Marafon_Page() {
           <button
             className={`exam-bookmark-btn${savedIds.has(q.id) ? " saved" : ""}`}
             onClick={() => handleToggleSave(q)}
+            aria-pressed={savedIds.has(q.id)}
+            aria-label={
+              savedIds.has(q.id)
+                ? t("saved.remove", "Saqlangandan o'chirish")
+                : t("common.save", "Saqlash")
+            }
             title={
               savedIds.has(q.id)
                 ? t("saved.remove", "Saqlangandan o'chirish")
@@ -760,7 +880,7 @@ export default function Marafon_Page() {
         </div>
 
         {/* Zoom modal */}
-        {zoomSrc && <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />}
+        <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />
 
         {/* ── Bottom: question numbers + nav ── */}
         <div className="exam-bottom">
@@ -864,99 +984,15 @@ export default function Marafon_Page() {
           </div>
         </div>
 
-        {/* Confirmation Modal before early finish */}
-        {confirmFinishOpen && (
-          <div
-            className="modal-overlay"
-            onClick={() => setConfirmFinishOpen(false)}
-            style={{
-              position: "fixed",
-              inset: 0,
-              backgroundColor: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(4px)",
-              zIndex: 99999,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "16px",
-            }}
-          >
-            <div
-              className="modal-card"
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                maxWidth: "420px",
-                width: "100%",
-                background: "var(--card-bg, var(--surface, #fff))",
-                borderRadius: "18px",
-                padding: "24px",
-                border: "1.5px solid var(--border)",
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  width: "56px",
-                  height: "56px",
-                  borderRadius: "50%",
-                  background: "rgba(224, 49, 49, 0.12)",
-                  color: "#e03131",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "0 auto 16px",
-                }}
-              >
-                <IconAlertTriangle size={28} stroke={2} />
-              </div>
-              <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", fontWeight: 800, color: "var(--text)" }}>
-                {t("activeTest.confirmFinishTitle", "Testni yakunlaysizmi?")}
-              </h3>
-              <p style={{ margin: "0 0 20px 0", fontSize: "13.5px", color: "var(--text-muted)", lineHeight: 1.45 }}>
-                {t("activeTest.confirmFinishDesc", "Belgilanmagan savollar xato deb hisoblanadi. Rostdan ham testni yakunlamoqchimisiz?")}
-              </p>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button
-                  type="button"
-                  onClick={() => setConfirmFinishOpen(false)}
-                  style={{
-                    flex: 1,
-                    minHeight: "42px",
-                    borderRadius: "10px",
-                    border: "1.5px solid var(--border)",
-                    background: "var(--surface)",
-                    color: "var(--text)",
-                    fontSize: "13.5px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  {t("activeTest.cancel", "Davom etish")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setConfirmFinishOpen(false);
-                    triggerFinish();
-                  }}
-                  style={{
-                    flex: 1,
-                    minHeight: "42px",
-                    borderRadius: "10px",
-                    border: "none",
-                    background: "#e03131",
-                    color: "#fff",
-                    fontSize: "13.5px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  {t("activeTest.confirm", "Yakunlash")}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Confirmation Modal before early finish (Mantine Modal — P2-W6) */}
+        <ConfirmFinishModal
+          opened={confirmFinishOpen}
+          onCancel={() => setConfirmFinishOpen(false)}
+          onConfirm={() => {
+            setConfirmFinishOpen(false);
+            triggerFinish();
+          }}
+        />
       </div>
     </>
   );

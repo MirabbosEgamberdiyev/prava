@@ -17,6 +17,7 @@ import { curriculumApi, type TrafficRule } from "../../services/curriculumApi";
 import { useLanguage } from "../../context/LanguageContext";
 import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
+import SafeHtml from "../../components/common/SafeHtml";
 
 export default function TrafficRules_Page() {
   const { lang } = useLanguage();
@@ -115,13 +116,13 @@ export default function TrafficRules_Page() {
         ) : (
           <Paper withBorder radius="md" p="xl" bg="var(--mantine-color-body)">
             {currentRule ? (
-              <div
+              <SafeHtml
                 style={{
                   lineHeight: 1.8,
                   fontSize: "1rem",
                   color: "var(--mantine-color-text)",
                 }}
-                dangerouslySetInnerHTML={{ __html: getLocalizedContent(currentRule) }}
+                html={getLocalizedContent(currentRule)}
               />
             ) : (
               <Center py={40}>

@@ -725,7 +725,10 @@
     "examFinished": "Imtihon yakunlandi!",
     "submitError": "Javoblarni yuborishda xatolik yuz berdi",
     "startError": "Imtihonni boshlashda xatolik yuz berdi",
-    "sessionNotFound": "Faol imtihon sessiyasi topilmadi yoki uning muddati tugagan."
+    "sessionNotFound": "Faol imtihon sessiyasi topilmadi yoki uning muddati tugagan.",
+    "submitQueuedTitle": "Natija saqlanmadi",
+    "submitQueued": "Natija saqlanmadi — internet qaytganda qayta yuboriladi",
+    "submitFlushed": "Saqlanmagan natijalar serverga yuborildi"
   },
   "notifications": {
     "markAllRead": "Barchasini o'qilgan deb belgilash",
@@ -735,7 +738,11 @@
     "browserActive": "Brauzer xabarlari faol",
     "sendTest": "Test xabar",
     "empty": "Hozircha hech qanday bildirishnoma yo'q",
-    "clearAll": "Tozalash"
+    "clearAll": "Tozalash",
+    "browserEnabledBody": "Brauzer bildirishnomalari muvaffaqiyatli yoqildi!",
+    "testTitle": "PravaOnline — Eslatma",
+    "testBody": "Bugungi mashg'ulotni boshlash vaqti bo'ldi!",
+    "unreadCount": "{{count}} ta o'qilmagan"
   },
   "userMenu": {
     "user": "Foydalanuvchi",
@@ -911,7 +918,16 @@
     "boldTextDesc": "Barcha matn va sarlavhalarni aniqroq va qalinroq ko'rsatish",
     "previewLabel": "Jonli ko'rinish:",
     "previewText": "Bu yerda matn o'lchami va qalinligi qanday ko'rinishi namoyish etilmoqda.",
-    "subtitle": "Hisob ma'lumotlari va tizim sozlamalari"
+    "subtitle": "Hisob ma'lumotlari va tizim sozlamalari",
+    "thisDevice": "Shu qurilma",
+    "lastActive": "Oxirgi faollik",
+    "removeDevice": "Qurilmani chiqarish",
+    "removeDeviceTitle": "Qurilmani chiqarish",
+    "removeDeviceConfirm": "\"{{name}}\" qurilmasidagi sessiya yakunlanadi. Davom etasizmi?",
+    "cannotRemoveCurrent": "Joriy qurilmani chiqarib bo'lmaydi",
+    "deviceRemoved": "Qurilma chiqarildi",
+    "deviceRemoveError": "Qurilmani chiqarib bo'lmadi. Qayta urinib ko'ring.",
+    "unknownDevice": "Noma'lum qurilma"
   },
   "footer": {
     "telegramBot": "Telegram Bot",
@@ -1870,7 +1886,11 @@
     "retry": "Qayta urinib ko'rish",
     "verifyingDesc": "To'lov tekshirilmoqda, iltimos kuting...",
     "payWithClick": "Click orqali to'lash",
-    "payWithPayme": "Payme orqali to'lash"
+    "payWithPayme": "Payme orqali to'lash",
+    "invalidRedirect": "To'lov sahifasi manzili noto'g'ri. Iltimos, keyinroq qayta urinib ko'ring.",
+    "invalidPaymentId": "To'lov identifikatori noto'g'ri",
+    "stillVerifying": "To'lov hali tasdiqlanmoqda. Bu biroz vaqt olishi mumkin — holatni qo'lda yangilang.",
+    "refreshStatus": "Holatni yangilash"
   },
   "partners": {
     "badge": "Avtomaktablar va Korporativ Hamkorlik",
@@ -2011,7 +2031,9 @@
     "score": "Natija",
     "tierGoldTitle": "Oltin daraja",
     "tierTargetTitle": "Maqsadli daraja",
-    "tierRetryTitle": "Qayta urinish"
+    "tierRetryTitle": "Qayta urinish",
+    "passed": "O'tdi",
+    "failed": "O'tmadi"
   },
   "testSetup": {
     "topicTestTitle": "Mavzulashtirilgan test",
@@ -2240,7 +2262,17 @@
     "fallbackTopic3": "Harakat tezligi va xavfsiz oraliq",
     "fallbackTopic4": "Quvib o'tish va to'xtash qoidalari",
     "fallbackTopic5": "Piyodalar va velosipedchilar harakati",
-    "unread": "yangi"
+    "unread": "yangi",
+    "resume": {
+      "aria": "Tugallanmagan imtihon",
+      "marathonTitle": "Tugallanmagan marafon",
+      "examTitle": "Tugallanmagan imtihon",
+      "progress": "{{answered}} / {{total}} ta savolga javob berilgan",
+      "questions": "{{count}} ta savol",
+      "minutesLeft": "{{count}} daqiqa qoldi",
+      "timeUp": "Vaqt tugagan — natijani yuboring",
+      "continue": "Davom ettirish"
+    }
   },
   "mode": {
     "online": "Onlayn",
@@ -2585,7 +2617,8 @@
       "socialProof": "Foydalanuvchilarimiz bizga ishonadi",
       "passwordComplexity": "Parol kamida 8 ta belgi, katta-kichik harf, raqam va maxsus belgidan (@$!%*?&) iborat bo'lishi kerak",
       "passwordValid": "Parol xavfsizlik talablariga javob beradi",
-      "passwordHint": "8+ belgi, A-Z, 0-9, @$!"
+      "passwordHint": "8+ belgi, A-Z, 0-9, @$!",
+      "step2Badge": "2-bosqich: Tasdiqlash"
     },
     "forgot": {
       "backToLogin": "Kirishga qaytish",
@@ -2833,7 +2866,26 @@
     "exerciseDone": "Mashq muvaffaqiyatli bajarildi!",
     "repeatExercise": "Qayta mashq",
     "nextExercise": "Keyingi mashq",
-    "finishTraining": "O'rganishni yakunlash"
+    "finishTraining": "O'rganishni yakunlash",
+    "attemptDone": "Urinish yakunlandi!",
+    "category": "Kategoriya",
+    "errorJournalTitle": "Xatolar jurnali",
+    "exercise": "Mashq",
+    "fullscreen": "To'liq ekran",
+    "headlights": "Chiroqlar",
+    "keepDrivingCarefully": "Avtomobilni ehtiyotkorlik bilan boshqarishda davom eting.",
+    "map": "Xarita",
+    "mirrors": "Ko'zgular",
+    "mirrorsTitle": "Orqani ko'rish ko'zgulari",
+    "noErrorsRecorded": "Hozircha hech qanday xatolik qayd etilmadi",
+    "penaltyUnit": "ball",
+    "pointsUnit": "ball",
+    "retryAttempt": "Qaytadan urinish",
+    "reverseActive": "ORQAGA YURISH",
+    "seatbelt": "Xavfsizlik kamari",
+    "turnLeft": "Chap burilish",
+    "turnRight": "O'ng burilish",
+    "viewReplay": "Takroriy ko'rish"
   },
   "practicalExam": {
     "controlsTitle": "Boshqaruv tugmalari (Klaviatura):",
@@ -2843,5 +2895,19 @@
     "handbrake": "Qol tormozi",
     "voiceInstructor": "Ovozli instruktor: Ozbekcha / Kirill / Ruscha",
     "loadError": "Amaliy imtihon malumotlarini yuklashda xatolik yuz berdi. Qayta urinib koring."
+  },
+  "a11y": {
+    "timerFiveMinutesLeft": "Imtihon tugashiga 5 daqiqa qoldi",
+    "timerOneMinuteLeft": "Imtihon tugashiga 1 daqiqa qoldi",
+    "imageZoomDialog": "Rasm kattalashtirilgan ko'rinishda",
+    "soundOn": "Ovozni yoqish",
+    "soundOff": "Ovozni o'chirish",
+    "cameraView": "Kamera ko'rinishini almashtirish",
+    "steeringWheelMode": "Virtual rul boshqaruvi",
+    "keyboardMode": "Klaviatura tugmalari",
+    "enterFullscreen": "To'liq ekran",
+    "exitFullscreen": "To'liq ekrandan chiqish",
+    "screenshot": "Skrinshot olish",
+    "splitScreen": "Bo'lingan ekran"
   }
 }

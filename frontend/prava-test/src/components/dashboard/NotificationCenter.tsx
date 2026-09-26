@@ -12,7 +12,6 @@ import {
   IconTarget,
   IconInfoCircle,
 } from "@tabler/icons-react";
-import { getCachedTotalTickets } from "../../services/desktopAdapter";
 import styles from "./Dashboard.module.css";
 
 export interface InAppNotification {
@@ -24,47 +23,28 @@ export interface InAppNotification {
   type: "info" | "success" | "reminder" | "streak";
 }
 
-const STORAGE_KEY = "prava_inapp_notifications_v1";
+const STORAGE_KEY = "prava_inapp_notifications_v2";
 
-const DEFAULT_NOTIFICATIONS: InAppNotification[] = [
-  {
-    id: "notif-welcome",
-    title: "🎉 PravaOnline ga xush kelibsiz!",
-    description: `Davlat YHXX imtihonlariga tayyorlanish uchun ${getCachedTotalTickets()} ta bilet va barcha mavzular sizga taqdim etildi.`,
-    time: "Bugun",
-    read: false,
-    type: "info",
-  },
-  {
-    id: "notif-daily-goal",
-    title: "🎯 Kunlik o'quv maqsadi",
-    description: "Bugungi 30 ta savol rejangizni yakunlab, seriyangizni saqlab qoling.",
-    time: "Eslatma",
-    read: false,
-    type: "reminder",
-  },
-  {
-    id: "notif-streak",
-    title: "🔥 O'quv seriyasi faol",
-    description: "Har kuni muntazam shug'ullanish orqali haydovchilik imtihonini 1-urinishda topshiring!",
-    time: "1 kun oldin",
-    read: true,
-    type: "streak",
-  },
-];
+// v1 held hardcoded demo notifications — dropped so users never see fake entries.
+const LEGACY_STORAGE_KEYS = ["prava_inapp_notifications_v1"];
+
+function loadNotifications(): InAppNotification[] {
+  try {
+    LEGACY_STORAGE_KEYS.forEach((k) => localStorage.removeItem(k));
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed as InAppNotification[];
+    }
+  } catch {
+    // ignore
+  }
+  return [];
+}
 
 export default function NotificationCenter() {
   const { t } = useTranslation();
-  const [notifications, setNotifications] = useState<InAppNotification[]>(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {}
-    return DEFAULT_NOTIFICATIONS;
-  });
+  const [notifications, setNotifications] = useState<InAppNotification[]>(loadNotifications);
 
   const [browserPermission, setBrowserPermission] = useState<NotificationPermission>(() => {
     if (typeof window !== "undefined" && "Notification" in window) {
@@ -103,22 +83,22 @@ export default function NotificationCenter() {
         setBrowserPermission(perm);
         if (perm === "granted") {
           new Notification("PravaOnline", {
-            body: "Brauzer bildirishnomalari muvaffaqiyatli yoqildi! 🚗",
+            body: t("notifications.browserEnabledBody", "Brauzer bildirishnomalari muvaffaqiyatli yoqildi!"),
             icon: "/logo.svg",
           });
         }
       } catch {}
     }
-  }, []);
+  }, [t]);
 
   const handleSendTestNotification = useCallback(() => {
     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-      new Notification("PravaOnline — Eslatma", {
-        body: "Bugungi 30 ta savol testini yechish vaqti bo'ldi! 🚘",
+      new Notification(t("notifications.testTitle", "PravaOnline — Eslatma"), {
+        body: t("notifications.testBody", "Bugungi mashg'ulotni boshlash vaqti bo'ldi!"),
         icon: "/logo.svg",
       });
     }
-  }, []);
+  }, [t]);
 
   const renderIcon = (type: InAppNotification["type"]) => {
     switch (type) {
@@ -144,7 +124,7 @@ export default function NotificationCenter() {
         >
           <IconBell size={19} stroke={1.8} />
           {unreadCount > 0 && (
-            <span className={styles.notificationBadge} aria-label={`${unreadCount} ta o'qilmagan`}>
+            <span className={styles.notificationBadge} aria-label={t("notifications.unreadCount", "{{count}} ta o'qilmagan", { count: unreadCount })}>
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}

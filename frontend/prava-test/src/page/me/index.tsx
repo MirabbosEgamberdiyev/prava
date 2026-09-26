@@ -21,6 +21,7 @@ import {
   getCachedTotalTickets,
 } from "../../services/desktopAdapter";
 import { storageService } from "../../services/storageService";
+import ResumeExamCard from "../../components/dashboard/ResumeExamCard";
 import { OFFICIAL_TOPICS, findOfficialTopic } from "../../constants/topics";
 import type {
   FullStats,
@@ -48,6 +49,9 @@ interface MarathonActiveSession {
   selTopic: number | null;
   countIdx: number;
   timestamp: number;
+  sessionId?: number | null;
+  /** Marafon tugash vaqti (ms, epoch). */
+  deadline?: number;
 }
 
 function getActiveMarathonSession(userId: number): MarathonActiveSession | null {
@@ -366,7 +370,7 @@ export default function User_Page() {
         btnBg: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
         iconBoxBg: "linear-gradient(135deg, #34d399 0%, #059669 100%)",
         icon: <IconTicket size={26} stroke={2} />,
-        onAction: () => navigate(`/ticket-exam?ticketId=${nextTicketNum}`),
+        onAction: () => navigate(`/tickets/${nextTicketNum}`),
       };
     }
 
@@ -445,6 +449,9 @@ export default function User_Page() {
       <WelcomeBanner displayName={displayName} />
 
       {/* 2. [P0] Next Best Action Hero Card (Deterministic Pedagogical Next Step) */}
+      {/* 1.5 Tugallanmagan imtihon (lokal marafon yoki server faol sessiyasi) */}
+      <ResumeExamCard marathonSession={marathonSession} />
+
       <NextBestActionCard {...nextBestAction} />
 
       {/* 3. Three Gamified Progress Cards */}

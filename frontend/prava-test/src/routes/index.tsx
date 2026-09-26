@@ -2,7 +2,6 @@ import { lazy, Suspense, useEffect } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { nprogress } from "@mantine/nprogress";
 import ProtectedRoute from "../auth/ProtectedRoute";
-import AdminRoute from "../auth/AdminRoute";
 import App_Layout from "../layout/App_Layout";
 import User_Layout from "../layout/User_Layout";
 import Exam_Layout from "../layout/Exam_Layout";
@@ -37,7 +36,6 @@ const TopicDetail_Page = lazy(() => import("../page/Topics/TopicDetail"));
 const GuestExam_Page = lazy(() => import("../page/GuestExam"));
 const NotFound_Page = lazy(() => import("../page/Notfound/404"));
 const PaymentSuccessPage = lazy(() => import("../payment/PaymentSuccessPage"));
-const ActivationCodesPage = lazy(() => import("../page/Admin/ActivationCodes"));
 const Downloads_Page      = lazy(() => import("../page/Downloads"));
 const Partners_Page       = lazy(() => import("../page/Partners"));
 const About_Page          = lazy(() => import("../page/About"));
@@ -316,13 +314,6 @@ export default function AppRoutes() {
               </Route>
             </Route>
 
-            {/* SUPER_ADMIN only routes */}
-            <Route element={<AdminRoute />}>
-              <Route element={<User_Layout />}>
-                <Route path="/admin/activation-codes" element={<ActivationCodesPage />} />
-              </Route>
-            </Route>
-
             {/* 404 for unknown web app routes */}
             <Route element={<App_Layout />}>
               <Route path="*" element={<NotFound_Page />} />
@@ -449,13 +440,6 @@ export default function AppRoutes() {
                 <Route path="/wrong-exam" element={<WrongExam_Page />} />
                 <Route path="/exam/result/:sessionId" element={<ExamResult_Page />} />
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />
-              </Route>
-            </Route>
-
-            {/* SUPER_ADMIN only routes */}
-            <Route element={<AdminRoute />}>
-              <Route element={<User_Layout />}>
-                <Route path="/admin/activation-codes" element={<ActivationCodesPage />} />
               </Route>
             </Route>
 

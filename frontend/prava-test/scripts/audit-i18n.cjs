@@ -1,22 +1,22 @@
-// scripts/audit-i18n.cjs
+// scripts/audit-i18n.cjs  (run: npm run i18n:audit)
 // Automated i18n audit gate for PravaOnline
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const LOCALES_DIR = path.join(ROOT, 'public', 'locales');
+const LOCALES_DIR = path.join(ROOT, 'src', 'locales');
 const SRC_DIR = path.join(ROOT, 'src');
 
 console.log('\n======================================================');
 console.log('  PRAVAONLINE AUTOMATED I18N AUDIT GATE');
 console.log('======================================================\n');
 
-// 1. Load locale files
+// 1. Load locale files (runtime bundles: src/locales/<lng>.json — see src/utils/i18n.ts)
 const locales = ['uzl', 'uzc', 'ru'];
 const dictionaries = {};
 
 for (const loc of locales) {
-  const filePath = path.join(LOCALES_DIR, loc, 'translation.json');
+  const filePath = path.join(LOCALES_DIR, `${loc}.json`);
   if (!fs.existsSync(filePath)) {
     console.error(`[CRITICAL] Missing locale file: ${filePath}`);
     process.exit(1);
@@ -201,6 +201,62 @@ tsxFiles.forEach(filePath => {
 
 if (hardcodedIssues === 0) {
   console.log('[PASS] 0 hardcoded attributes/toasts found in source components.');
+}
+
+// 5b. t("key") / t('key') / i18n.t("key") usages in src/**/*.ts(x) must exist in every locale.
+//     Dynamic keys (template literals, concatenation, variables) are ignored.
+function walkSource(dir, fileList = []) {
+  if (!fs.existsSync(dir)) return fileList;
+  for (const file of fs.readdirSync(dir)) {
+    const full = path.join(dir, file);
+    if (fs.statSync(full).isDirectory()) {
+      if (!['node_modules', 'dist', '.git', 'locales'].includes(file)) walkSource(full, fileList);
+    } else if (/\.(ts|tsx)$/.test(file) && !file.endsWith('.d.ts')) {
+      fileList.push(full);
+    }
+  }
+  return fileList;
+}
+
+const KEY_CALL_RE = /(?<![\w$.])(?:i18n\.)?t\(\s*(["'])([A-Za-z0-9_][A-Za-z0-9_.\-]*)\1\s*[,)]/g;
+const PLURAL_SUFFIXES = ['_zero', '_one', '_two', '_few', '_many', '_other'];
+const flatByLoc = { uzl: flatUzl, uzc: flatUzc, ru: flatRu };
+
+function keyExists(flat, key) {
+  if (key in flat) return true;
+  // plural forms (key_one / key_other ...) or object keys used with returnObjects
+  if (PLURAL_SUFFIXES.some((s) => `${key}${s}` in flat)) return true;
+  const prefix = `${key}.`;
+  return Object.keys(flat).some((k) => k.startsWith(prefix));
+}
+
+const usedKeys = new Map(); // key -> first location
+for (const filePath of walkSource(SRC_DIR)) {
+  const content = fs.readFileSync(filePath, 'utf8');
+  let m;
+  KEY_CALL_RE.lastIndex = 0;
+  while ((m = KEY_CALL_RE.exec(content)) !== null) {
+    const key = m[2];
+    if (!key.includes('.')) continue; // namespaced keys only (skip t("x") helpers that aren't i18n)
+    if (!usedKeys.has(key)) {
+      const line = content.slice(0, m.index).split('\n').length;
+      usedKeys.set(key, `${path.relative(ROOT, filePath)}:${line}`);
+    }
+  }
+}
+
+let missingUsed = 0;
+for (const [key, where] of [...usedKeys.entries()].sort()) {
+  const missingIn = locales.filter((loc) => !keyExists(flatByLoc[loc], key));
+  if (missingIn.length > 0) {
+    console.error(`[MISSING KEY] "${key}" (${where}) missing in: ${missingIn.join(', ')}`);
+    missingUsed++;
+    totalErrors++;
+  }
+}
+console.log(`[USAGE] ${usedKeys.size} static t() keys found in src/**/*.ts(x)`);
+if (missingUsed === 0) {
+  console.log('[PASS] All static t() keys exist in UZL, UZC and RU.');
 }
 
 // 6. Summary and Exit Code

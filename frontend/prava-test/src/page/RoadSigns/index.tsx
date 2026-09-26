@@ -30,6 +30,7 @@ import { curriculumApi, type RoadSign } from "../../services/curriculumApi";
 import { useLanguage } from "../../context/LanguageContext";
 import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
+import SafeHtml from "../../components/common/SafeHtml";
 import { AppImage } from "../../components/common/AppImage";
 
 const CATEGORIES = [
@@ -298,9 +299,9 @@ export default function RoadSigns_Page() {
               <Badge variant="outline" color="gray" mb="xs">
                 {selectedSign.category}
               </Badge>
-              <div
+              <SafeHtml
                 style={{ fontSize: "0.95rem", lineHeight: 1.6, color: "var(--mantine-color-text)" }}
-                dangerouslySetInnerHTML={{ __html: getLocalizedDesc(selectedSign) }}
+                html={getLocalizedDesc(selectedSign)}
               />
             </Box>
           </Stack>

@@ -654,6 +654,8 @@ export function QuizContent({
                 >
                   <Flex gap="md" align="center" w="100%">
                     <ActionIcon
+                      component="span"
+                      aria-hidden="true"
                       radius="sm"
                       size="md"
                       variant={iconProps.variant}

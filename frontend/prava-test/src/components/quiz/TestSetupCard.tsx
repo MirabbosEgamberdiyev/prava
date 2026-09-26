@@ -104,7 +104,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {isSingleTopic ? (
-                <IconBook2 size={20} color="#1971c2" />
+                <IconBook2 size={20} color="var(--primary)" />
               ) : (
                 <IconFlame size={20} color="#7950f2" />
               )}
@@ -247,12 +247,12 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
                     height: "44px",
                     borderRadius: "10px",
                     border: isSelected
-                      ? "2px solid var(--primary, #1971c2)"
+                      ? "2px solid var(--primary)"
                       : "1.5px solid var(--border)",
                     background: isSelected
-                      ? "var(--primary-light, rgba(25, 113, 194, 0.1))"
+                      ? "var(--primary-light, rgba(var(--primary-rgb), 0.1))"
                       : "var(--surface)",
-                    color: isSelected ? "var(--primary, #1971c2)" : "var(--text)",
+                    color: isSelected ? "var(--primary)" : "var(--text)",
                     fontSize: "13px",
                     fontWeight: 700,
                     cursor: isOptionExcessive ? "not-allowed" : "pointer",
@@ -276,7 +276,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
             width: "100%",
             height: "48px",
             borderRadius: "12px",
-            background: "var(--primary, #1971c2)",
+            background: "var(--primary)",
             color: "#fff",
             border: "none",
             fontSize: "15px",
@@ -286,7 +286,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
             justifyContent: "center",
             gap: "8px",
             cursor: "pointer",
-            boxShadow: "0 4px 16px rgba(25, 113, 194, 0.35)",
+            boxShadow: "0 4px 16px rgba(var(--primary-rgb), 0.35)",
             transition: "all 0.15s ease",
           }}
         >

@@ -12,6 +12,7 @@ import {
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import api from "../../../api/api";
+import { fetchExamRules, durationMinutesFor } from "../../../services/examRules";
 import { QuizNav, type QuizNavHandle } from "../../../components/quiz/QuizNav";
 import { QuizContent } from "../../../components/quiz/QuizContent";
 import { useAutoSave, restoreAnswers } from "../../../hooks/useAutoSave";
@@ -28,7 +29,7 @@ interface MarathonExamPageProps {
 
 const Marathon_ExamPage = ({
   questionCount = 20,
-  durationMinutes = 30,
+  durationMinutes: durationMinutesProp,
   topicId = null,
   examMode = "visible",
 }: MarathonExamPageProps) => {
@@ -57,6 +58,10 @@ const Marathon_ExamPage = ({
       const endpoint = isSecureMode
         ? "/api/v2/exams/marathon/start-secure"
         : "/api/v2/exams/marathon/start-visible";
+      // Biznes qoidasi: marafon = savollar soni × marathon.secondsPerQuestion (default 1 daqiqa)
+      const rules = await fetchExamRules();
+      const durationMinutes =
+        durationMinutesProp ?? durationMinutesFor(questionCount, rules.marathon.secondsPerQuestion);
       const body: Record<string, unknown> = {
         questionCount,
         durationMinutes,
@@ -85,7 +90,7 @@ const Marathon_ExamPage = ({
     } finally {
       setLoading(false);
     }
-  }, [isSecureMode, questionCount, durationMinutes, topicId, t]);
+  }, [isSecureMode, questionCount, durationMinutesProp, topicId, t]);
 
   useEffect(() => {
     startMarathon();

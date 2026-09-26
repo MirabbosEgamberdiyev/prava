@@ -18,6 +18,26 @@ import type {
 } from "../types";
 import { OFFICIAL_TOPIC_MAP, findOfficialTopic } from "../constants/topics";
 import { latinToCyrillic, cyrillicToLatin } from "../utils/transliterate";
+import { getHtmlLang } from "../utils/date";
+import api from "../api/api";
+
+/**
+ * Best-effort: persist the chosen language to the logged-in user's profile.
+ * Never blocks the UI and never surfaces errors (validateStatus accepts every status,
+ * so global axios error toasts/refresh logic are not triggered).
+ * NOTE: backend must expose PATCH /api/v1/auth/me { preferredLanguage } — see audit P2/§9.
+ */
+function persistLanguageToProfile(lang: AppLanguage): void {
+  void api
+    .patch(
+      "/api/v1/auth/me",
+      { preferredLanguage: lang },
+      { validateStatus: () => true },
+    )
+    .catch(() => {
+      // ignore — best-effort only
+    });
+}
 
 export type AppLanguage = "uzl" | "uzc" | "ru";
 
@@ -140,15 +160,21 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, [user?.preferredLanguage]);
 
-  // Synchronize i18next instance and document language on initial mount
+  // Synchronize i18next instance on initial mount
   useEffect(() => {
     if (i18n.language !== language) {
       i18n.changeLanguage(language);
     }
-    if (typeof document !== "undefined") {
-      document.documentElement.lang = language;
-    }
   }, []);
+
+  // Single owner of <html lang> (BCP-47: uz-Latn / uz-Cyrl / ru)
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = getHtmlLang(language);
+    }
+  }, [language]);
+
+  const isLoggedIn = !!user;
 
   const setLanguage = useCallback(async (newLang: string): Promise<void> => {
     const normalized = normalizeLanguage(newLang);
@@ -157,22 +183,10 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     // 1. Sync i18next instance
     await i18n.changeLanguage(normalized);
 
-    // 2. Persist to localStorage and sync user object if present
+    // 2. Persist to localStorage
     try {
       localStorage.setItem("prava_lang", normalized);
       localStorage.setItem("i18nextLng", normalized);
-      const rawUser = localStorage.getItem("userData");
-      if (rawUser) {
-        try {
-          const parsed = JSON.parse(rawUser);
-          if (parsed && typeof parsed === "object") {
-            parsed.preferredLanguage = normalized;
-            localStorage.setItem("userData", JSON.stringify(parsed));
-          }
-        } catch {
-          // ignore
-        }
-      }
     } catch {
       // ignore
     }
@@ -188,10 +202,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       sameSite: "Lax",
     });
 
-    // 4. Update DOM attribute
-    if (typeof document !== "undefined") {
-      document.documentElement.lang = normalized;
-    }
+    // 4. <html lang> is updated by the [language] effect above.
 
     // 5. Dispatch global window event for components outside React context
     if (typeof window !== "undefined") {
@@ -199,7 +210,12 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         new CustomEvent("appLanguageChanged", { detail: normalized })
       );
     }
-  }, []);
+
+    // 6. Save to the user profile (best-effort, non-blocking)
+    if (isLoggedIn) {
+      persistLanguageToProfile(normalized);
+    }
+  }, [isLoggedIn]);
 
   // Listen to external i18n language changes (e.g. from tests or third-party adapters)
   useEffect(() => {

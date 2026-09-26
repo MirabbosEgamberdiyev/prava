@@ -8,7 +8,6 @@ import {
   IconSettings,
   IconHistory,
   IconTrophy,
-  IconKey,
   IconLogout,
   IconMenu2,
   IconLayoutSidebarLeftCollapse,
@@ -39,7 +38,6 @@ function getInitials(name: string): string {
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
-  user,
   displayName,
   onOpenSearch,
   onToggleMobileSidebar,
@@ -177,14 +175,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             >
               {t("dashboard.tools.ratingTitle", "Reyting")}
             </Menu.Item>
-            {(user?.role === "SUPER_ADMIN" || user?.role === "ADMIN") && (
-              <Menu.Item
-                leftSection={<IconKey size={16} />}
-                onClick={() => navigate("/admin/activation-codes")}
-              >
-                {t("nav.activationCodes", "Aktivatsiya kodlari")}
-              </Menu.Item>
-            )}
             <Menu.Divider />
             <Menu.Item
               color="red"

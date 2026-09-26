@@ -15,16 +15,17 @@ import {
 } from "@tabler/icons-react";
 import styles from "../../components/dashboard/Dashboard.module.css";
 
-// Light mode palette (WCAG AA compliant contrast ratio >= 4.5:1)
+// Light mode palette — WCAG AA: har bir matn/fon juftligi >= 4.5:1 (P2-W12).
+// 1/2/3/8-matn ranglari to'qroq variantga almashtirildi (avval 4.07–4.67:1).
 const PALETTE = [
-  { bg: "#e7f5ff", color: "#1971c2", border: "#74c0fc" },
-  { bg: "#ebfbee", color: "#2b8a3e", border: "#8ce99a" },
-  { bg: "#fef3c7", color: "#b45309", border: "#fcd34d" },
+  { bg: "#e7f5ff", color: "#1864ab", border: "#74c0fc" },
+  { bg: "#ebfbee", color: "#166534", border: "#8ce99a" },
+  { bg: "#fef3c7", color: "#92400e", border: "#fcd34d" },
   { bg: "#f3f0ff", color: "#6741d9", border: "#b197fc" },
   { bg: "#e3fafc", color: "#0b7285", border: "#66d9e8" },
   { bg: "#fff0f6", color: "#c2255c", border: "#f783ac" },
   { bg: "#fff7ed", color: "#c2410c", border: "#fed7aa" },
-  { bg: "#e6fcf5", color: "#087f5b", border: "#63e6be" },
+  { bg: "#e6fcf5", color: "#066649", border: "#63e6be" },
   { bg: "#f8f0fc", color: "#9c36b5", border: "#da77f2" },
   { bg: "#fff5f5", color: "#c92a2a", border: "#ff8787" },
 ];

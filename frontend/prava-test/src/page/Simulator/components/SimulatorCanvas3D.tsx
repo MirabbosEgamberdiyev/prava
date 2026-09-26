@@ -980,7 +980,7 @@ export default function SimulatorCanvas3D({
     historicalPathMeshRef.current = histLine;
     // 13. RENDER LOOP (60 FPS) WITH ANIMATIONS & FREE-CAM LISTENERS            //
     // =========================================================================
-    let clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
     const animate = () => {
       animFrameRef.current = requestAnimationFrame(animate);

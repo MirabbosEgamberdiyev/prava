@@ -22,6 +22,7 @@ import { curriculumApi, type RoadMarking } from "../../services/curriculumApi";
 import { useLanguage } from "../../context/LanguageContext";
 import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
+import SafeHtml from "../../components/common/SafeHtml";
 import { AppImage } from "../../components/common/AppImage";
 
 export default function RoadMarkings_Page() {
@@ -239,9 +240,9 @@ export default function RoadMarkings_Page() {
                 h={140}
               />
             </Box>
-            <div
+            <SafeHtml
               style={{ fontSize: "0.95rem", lineHeight: 1.6 }}
-              dangerouslySetInnerHTML={{ __html: getLocalizedDesc(selectedMarking) }}
+              html={getLocalizedDesc(selectedMarking)}
             />
           </Stack>
         )}

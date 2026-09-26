@@ -36,19 +36,31 @@ export default function PaymentSuccessPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [status, setStatus] = useState<PaymentStatusResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Error is stored as a code (not a translated string) so the polling effect
+  // does not depend on `t` and does not restart when the language changes.
+  const [error, setError] = useState<
+    { kind: 'missingId' | 'invalidId' } | { kind: 'server'; message?: string } | null
+  >(null);
   const [polling, setPolling] = useState(true);
+  const [timedOut, setTimedOut] = useState(false);
+  const [refreshNonce, setRefreshNonce] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const idStr = params.get('payment');
     if (!idStr) {
-      setError(t("payment.failedDesc", "To'lov identifikatori topilmadi"));
+      setError({ kind: 'missingId' });
       setPolling(false);
       return;
     }
     const id = Number(idStr);
+    if (!Number.isFinite(id) || !Number.isInteger(id) || id <= 0) {
+      setError({ kind: 'invalidId' });
+      setPolling(false);
+      return;
+    }
 
+    let cancelled = false;
     let attempts = 0;
     const maxAttempts = 30; // ~90 seconds
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -56,6 +68,7 @@ export default function PaymentSuccessPage() {
     const tick = async () => {
       try {
         const r = await paymentApi.status(id);
+        if (cancelled) return;
         setStatus(r);
         if (
           r.state === 'PERFORMED' ||
@@ -68,20 +81,38 @@ export default function PaymentSuccessPage() {
         }
         attempts += 1;
         if (attempts >= maxAttempts) {
+          setTimedOut(true);
           setPolling(false);
           return;
         }
         timer = setTimeout(tick, 3000);
       } catch (e: any) {
-        setError(e?.response?.data?.error ?? t("common.unknownError", "Xatolik yuz berdi"));
+        if (cancelled) return;
+        setError({ kind: 'server', message: e?.response?.data?.error });
         setPolling(false);
       }
     };
     tick();
     return () => {
+      cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [t]);
+  }, [refreshNonce]);
+
+  const handleManualRefresh = () => {
+    setError(null);
+    setTimedOut(false);
+    setPolling(true);
+    setRefreshNonce((n) => n + 1);
+  };
+
+  const errorText = !error
+    ? null
+    : error.kind === 'missingId'
+    ? t("payment.failedDesc", "To'lov identifikatori topilmadi")
+    : error.kind === 'invalidId'
+    ? t("payment.invalidPaymentId", "To'lov identifikatori noto'g'ri")
+    : (error.kind === 'server' && error.message) || t("common.unknownError", "Xatolik yuz berdi");
 
   const isSuccess = status?.state === 'PERFORMED';
   const isFailed =
@@ -150,9 +181,9 @@ export default function PaymentSuccessPage() {
               </Stack>
             )}
 
-            {error && (
+            {errorText && (
               <Alert color="red" w="100%" radius="md">
-                {error}
+                {errorText}
               </Alert>
             )}
 
@@ -193,6 +224,22 @@ export default function PaymentSuccessPage() {
                   </Text>
                 </Stack>
 
+                {timedOut && !isSuccess && !isFailed && (
+                  <Alert color="orange" w="100%" radius="md">
+                    <Stack gap="xs">
+                      <Text size="sm">
+                        {t(
+                          "payment.stillVerifying",
+                          "To'lov hali tasdiqlanmoqda. Bu biroz vaqt olishi mumkin — holatni qo'lda yangilang."
+                        )}
+                      </Text>
+                      <Button size="xs" variant="light" color="orange" onClick={handleManualRefresh}>
+                        {t("payment.refreshStatus", "Holatni yangilash")}
+                      </Button>
+                    </Stack>
+                  </Alert>
+                )}
+
                 {/* Amount Hero */}
                 <Box
                   w="100%"
@@ -205,7 +252,7 @@ export default function PaymentSuccessPage() {
                       ? "rgba(47, 158, 68, 0.08)"
                       : isFailed
                       ? "rgba(224, 49, 49, 0.08)"
-                      : "rgba(25, 113, 194, 0.08)",
+                      : "rgba(var(--primary-rgb), 0.08)",
                   }}
                 >
                   <Text size="xs" fw={600} tt="uppercase" c="dimmed">

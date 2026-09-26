@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../auth/AuthContext";
 import type { OfflineQuestion, OfflineTicket } from "../../../types/desktop";
 import {
-  getQuestionsByTicket,
+  startTicketSession,
   saveExamResult,
   addWrongAnswer,
   saveTicketStat,
@@ -15,7 +15,6 @@ import {
   localizeOpt,
   localizeExp,
   parseOptions,
-  getActiveTicketSessionId,
   submitExamSession,
   getLang,
 } from "../../../services/desktopAdapter";
@@ -25,6 +24,10 @@ import ImageZoomModal, { ZoomableImage } from "../../../components/common/ImageZ
 import SEO from "../../../components/common/SEO";
 import GamificationResult from "../../../components/quiz/GamificationResult";
 import QuizReviewModal from "../../../components/quiz/QuizReviewModal";
+import ConfirmFinishModal from "../../../components/quiz/ConfirmFinishModal";
+import ExamTimerAnnouncer from "../../../components/quiz/ExamTimerAnnouncer";
+import { useExamTimer } from "../../../hooks/useExamTimer";
+import { isExamPassed, useExamRules } from "../../../services/examRules";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -53,6 +56,9 @@ export default function TicketExamPage() {
   const { user } = useAuth();
   const userId = user?.id ? Number(user.id) : 1;
 
+  // Bilet qoidalari (exam-rules): savolga secondsPerQuestion, o'tish foizi passPercent
+  const rules = useExamRules();
+
   const ticketId = id ? Number(id) : 1;
   const ticket: OfflineTicket = {
     id: ticketId,
@@ -63,7 +69,7 @@ export default function TicketExamPage() {
     name_en: `Ticket #${ticketId}`,
     name_ru: `Билет #${ticketId}`,
     duration_minutes: 20,
-    passing_score: 90,
+    passing_score: rules.ticket.passPercent,
     question_count: 20,
   };
 
@@ -78,7 +84,6 @@ export default function TicketExamPage() {
   const [questions, setQuestions] = useState<OfflineQuestion[]>([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
-  const [timeLeft, setTimeLeft] = useState(ticket.question_count * 60);
   const [isTimeUp, setIsTimeUp] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [savedScore, setSavedScore] = useState(0);
@@ -88,13 +93,21 @@ export default function TicketExamPage() {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [confirmFinishOpen, setConfirmFinishOpen] = useState(false);
 
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(Date.now());
   const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sessionIdRef = useRef<number | null>(null);
   const answersRef = useRef(answers);
   answersRef.current = answers;
+  const finishedRef = useRef(false);
 
   const onBack = () => navigate("/tickets");
+
+  // Unmount: kutilayotgan auto-advance taymerini tozalash
+  useEffect(() => {
+    return () => {
+      if (autoRef.current) clearTimeout(autoRef.current);
+    };
+  }, []);
 
   // Beforeunload listener during exam
   useEffect(() => {
@@ -117,16 +130,18 @@ export default function TicketExamPage() {
     answersRef.current = {};
     setCurrent(0);
     setIsTimeUp(false);
-    setTimeLeft(ticket.question_count * 60);
     setErrorMsg(null);
+    finishedRef.current = false;
 
-    getQuestionsByTicket(ticket.id)
-      .then((qs) => {
+    sessionIdRef.current = null;
+    startTicketSession(ticket.id)
+      .then(({ sessionId, questions: qs }) => {
         if (qs.length === 0) {
           setErrorMsg(t("exam.noQuestions", "Savollar topilmadi"));
           setPhase("result");
           return;
         }
+        sessionIdRef.current = sessionId;
         setQuestions(qs);
         setPhase("exam");
         startTimeRef.current = Date.now();
@@ -138,7 +153,7 @@ export default function TicketExamPage() {
       .finally(() => {
         loadingRef.current = false;
       });
-  }, [ticket.id, ticket.question_count, t]);
+  }, [ticket.id, t]);
 
   useEffect(() => {
     loadQuestions();
@@ -181,7 +196,9 @@ export default function TicketExamPage() {
 
   const triggerFinish = useCallback(
     (timeUp = false) => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      // Ikki marta yakunlanmasin (taymer + tugma bir vaqtda, StrictMode)
+      if (finishedRef.current) return;
+      finishedRef.current = true;
       if (autoRef.current) {
         clearTimeout(autoRef.current);
         autoRef.current = null;
@@ -194,7 +211,18 @@ export default function TicketExamPage() {
       setSavedScore(score);
       if (!timeUp) setIsTimeUp(false);
       setPhase("result");
-      const isPassed = !timeUp && score >= ticket.passing_score;
+      const answeredCount = Object.keys(curAnswers).length;
+      // Yagona qoida (barcha platformalar): foiz >= ticket.passPercent
+      const isPassed = isExamPassed(
+        {
+          mode: "ticket",
+          total,
+          correct,
+          wrong: Math.max(0, answeredCount - correct),
+          unanswered: Math.max(0, total - answeredCount),
+        },
+        rules,
+      );
       saveExamResult({
         userId,
         score,
@@ -205,35 +233,29 @@ export default function TicketExamPage() {
       }).catch(() => {});
       saveTicketStat(userId, ticket.id, duration, correct, score, isPassed).catch(() => {});
 
-      const activeSessionId = getActiveTicketSessionId();
+      const activeSessionId = sessionIdRef.current;
       if (activeSessionId && questions.length > 0) {
+        sessionIdRef.current = null; // ikki marta yuborilmasin
         const answersPayload = questions.map((q, idx) => ({
           questionId: q.id,
           selectedOptionIndex: curAnswers[idx]?.selected ?? null,
         }));
-        submitExamSession(activeSessionId, answersPayload).catch(() => {});
+        // Xato bo'lsa submitExamSession o'zi navbatga qo'yadi va bildirishnoma ko'rsatadi
+        void submitExamSession(activeSessionId, answersPayload);
       }
     },
-    [questions, ticket, userId]
+    [questions, ticket, userId, rules]
   );
 
-  useEffect(() => {
-    if (phase !== "exam") return;
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          setIsTimeUp(true);
-          triggerFinish(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [phase, triggerFinish]);
+  // P2-W5: deadline asosidagi taymer; onExpire bir marta, state updater tashqarisida.
+  const { timeLeft, warning: timerWarning } = useExamTimer({
+    durationSeconds: (questions.length || ticket.question_count) * rules.ticket.secondsPerQuestion,
+    running: phase === "exam",
+    onExpire: () => {
+      setIsTimeUp(true);
+      triggerFinish(true);
+    },
+  });
 
   useEffect(() => {
     document.getElementById(`ticket-qnum-${current}`)?.scrollIntoView({
@@ -250,17 +272,8 @@ export default function TicketExamPage() {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 
-      if (confirmFinishOpen) {
-        if (e.key === "Escape") {
-          e.preventDefault();
-          setConfirmFinishOpen(false);
-        } else if (e.key === "Enter") {
-          e.preventDefault();
-          setConfirmFinishOpen(false);
-          triggerFinish(false);
-        }
-        return;
-      }
+      // Tasdiqlash oynasi ochiq: klaviaturani Mantine Modal boshqaradi
+      if (confirmFinishOpen || zoomSrc) return;
 
       const map: Record<string, number> = {
         F1: 0, F2: 1, F3: 2, F4: 3, F5: 4,
@@ -283,7 +296,7 @@ export default function TicketExamPage() {
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [phase, answers, current, questions.length, confirmFinishOpen, triggerFinish]);
+  }, [phase, answers, current, questions.length, confirmFinishOpen, zoomSrc]);
 
   const handleSelect = (optIdx: number) => {
     if (answers[current] !== undefined) return;
@@ -368,6 +381,7 @@ export default function TicketExamPage() {
         />
         <div style={{ height: "100vh", maxHeight: "100dvh", overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
           <GamificationResult
+            mode="ticket"
             score={score}
             correct={correct}
             wrong={wrong}
@@ -419,6 +433,7 @@ export default function TicketExamPage() {
         canonical={`/tickets/${ticket.id}`}
           noIndex={true}
       />
+      <ExamTimerAnnouncer warning={timerWarning} />
       <div className="exam-screen">
         {/* ── Top bar ── */}
         <div className="exam-topbar">
@@ -432,6 +447,8 @@ export default function TicketExamPage() {
             </button>
             <span
               className={`exam-timer${timerIsRed ? " red" : timerIsYellow ? " yellow" : ""}`}
+              role="timer"
+              aria-label={`${t("exam.timeLeft", "Qolgan vaqt")}: ${formatTime(timeLeft)}`}
             >
               {formatTime(timeLeft)}
             </span>
@@ -464,6 +481,12 @@ export default function TicketExamPage() {
           <button
             className={`exam-bookmark-btn${savedIds.has(q.id) ? " saved" : ""}`}
             onClick={() => handleToggleSave(q)}
+            aria-pressed={savedIds.has(q.id)}
+            aria-label={
+              savedIds.has(q.id)
+                ? t("saved.remove", "Saqlangandan o'chirish")
+                : t("common.save", "Saqlash")
+            }
             title={
               savedIds.has(q.id)
                 ? t("saved.remove", "Saqlangandan o'chirish")
@@ -549,7 +572,7 @@ export default function TicketExamPage() {
         </div>
 
         {/* Zoom modal */}
-        {zoomSrc && <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />}
+        <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />
 
         {/* ── Bottom: question numbers + nav ── */}
         <div className="exam-bottom">
@@ -606,121 +629,15 @@ export default function TicketExamPage() {
         </div>
       </div>
 
-      {/* Early finish confirmation modal */}
-      {confirmFinishOpen && (
-        <div
-          className="modal-overlay"
-          onClick={() => setConfirmFinishOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.65)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
-            zIndex: 99999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "16px",
-          }}
-        >
-          <div
-            className="modal-card"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: "420px",
-              width: "100%",
-              background: "var(--card-bg, #ffffff)",
-              borderRadius: "18px",
-              padding: "26px 24px",
-              border: "1.5px solid var(--border)",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
-              textAlign: "center",
-            }}
-          >
-            <div
-              style={{
-                width: "56px",
-                height: "56px",
-                borderRadius: "50%",
-                background: "rgba(224, 49, 49, 0.12)",
-                color: "#e03131",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 16px",
-              }}
-            >
-              <IconAlertTriangle size={30} stroke={2} />
-            </div>
-            <h3
-              style={{
-                margin: "0 0 8px 0",
-                fontSize: "18px",
-                fontWeight: 800,
-                color: "var(--text, #111827)",
-              }}
-            >
-              {t("activeTest.confirmFinishTitle", "Testni yakunlaysizmi?")}
-            </h3>
-            <p
-              style={{
-                margin: "0 0 22px 0",
-                fontSize: "13.5px",
-                color: "var(--text-muted, #64748b)",
-                lineHeight: 1.5,
-              }}
-            >
-              {t(
-                "activeTest.confirmFinishDesc",
-                "Belgilanmagan savollar xato deb hisoblanadi. Rostdan ham testni yakunlamoqchimisiz?"
-              )}
-            </p>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <button
-                type="button"
-                onClick={() => setConfirmFinishOpen(false)}
-                style={{
-                  flex: 1,
-                  minHeight: "44px",
-                  borderRadius: "12px",
-                  border: "1.5px solid var(--border)",
-                  background: "var(--surface, transparent)",
-                  color: "var(--text, #334155)",
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                {t("activeTest.cancel", "Davom etish")}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setConfirmFinishOpen(false);
-                  triggerFinish(false);
-                }}
-                style={{
-                  flex: 1,
-                  minHeight: "44px",
-                  borderRadius: "12px",
-                  border: "none",
-                  background: "#e03131",
-                  color: "#ffffff",
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  boxShadow: "0 4px 12px rgba(224, 49, 49, 0.3)",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                {t("activeTest.confirm", "Yakunlash")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Early finish confirmation modal (Mantine Modal — P2-W6) */}
+      <ConfirmFinishModal
+        opened={confirmFinishOpen}
+        onCancel={() => setConfirmFinishOpen(false)}
+        onConfirm={() => {
+          setConfirmFinishOpen(false);
+          triggerFinish(false);
+        }}
+      />
     </>
   );
 }

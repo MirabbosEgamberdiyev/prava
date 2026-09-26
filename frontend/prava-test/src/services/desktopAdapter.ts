@@ -15,22 +15,43 @@ import { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP, findOfficialTopic } from "../const
 export { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP, findOfficialTopic };
 import storageService, { type StoredQuestion } from "./storageService";
 import api from "../api/api";
+import {
+  enqueuePendingSubmit,
+  isRetryableSubmitError,
+  notifySubmitQueued,
+} from "./pendingSubmits";
 import { curriculumApi } from "./curriculumApi";
+import { fetchExamRules, durationMinutesFor } from "./examRules";
 import { normalizeLanguage, type AppLanguage } from "../context/LanguageContext";
 
 let cachedTotalQuestions = 1234;
 let cachedTotalTickets = 63;
 
-curriculumApi.getStats().then((s) => {
-  if (s?.totalQuestions) cachedTotalQuestions = s.totalQuestions;
-  if (s?.totalTickets) cachedTotalTickets = s.totalTickets;
-}).catch(() => {});
+// Kurs statistikasi (savol/bilet soni) LAZY yuklanadi — avval modul import
+// qilinishi bilanoq (hatto landing/login sahifasida ham) so'rov ketardi.
+// Endi birinchi foydalanishda bir marta so'raladi; javob kelguncha default.
+let statsPromise: Promise<void> | null = null;
+
+export function ensureCurriculumStats(): Promise<void> {
+  if (!statsPromise) {
+    statsPromise = curriculumApi
+      .getStats()
+      .then((s) => {
+        if (s?.totalQuestions) cachedTotalQuestions = s.totalQuestions;
+        if (s?.totalTickets) cachedTotalTickets = s.totalTickets;
+      })
+      .catch(() => {});
+  }
+  return statsPromise;
+}
 
 export function getCachedTotalQuestions(): number {
+  void ensureCurriculumStats();
   return cachedTotalQuestions;
 }
 
 export function getCachedTotalTickets(): number {
+  void ensureCurriculumStats();
   return cachedTotalTickets;
 }
 
@@ -201,103 +222,145 @@ export function fromStoredQuestion(sq: StoredQuestion): OfflineQuestion {
   };
 }
 
-// ── ACTIVE SESSION TRACKING ───────────────────────────────────────────────────
-let activeExamSessionId: number | null = null;
-let activeTicketSessionId: number | null = null;
-let activeMarathonSessionId: number | null = null;
+// ── EXAM SESSIONS ─────────────────────────────────────────────────────────────
+//
+// Sessiya ID endi modul-darajasidagi global o'zgaruvchida saqlanmaydi (P1-W5):
+// start funksiyalari `{ sessionId, questions }` qaytaradi va sahifa uni o'z
+// state/ref'ida saqlaydi. Shu sababli ikki imtihon bir-birining sessiyasini
+// ustiga yozib yubormaydi.
 
-export function getActiveExamSessionId(): number | null {
-  return activeExamSessionId;
+export interface StartedSession {
+  sessionId: number | null;
+  questions: OfflineQuestion[];
 }
 
-export function getActiveTicketSessionId(): number | null {
-  return activeTicketSessionId;
+export interface SubmitAnswerDetail {
+  questionId: number;
+  selectedOptionIndex: number | null;
+  correctOptionIndex: number | null;
+  isCorrect: boolean | null;
 }
 
-export function getActiveMarathonSessionId(): number | null {
-  return activeMarathonSessionId;
+export interface SubmitResult {
+  sessionId: number;
+  totalQuestions: number;
+  answeredCount: number;
+  correctCount: number;
+  incorrectCount: number;
+  unansweredCount: number;
+  percentage: number | null;
+  isPassed: boolean | null;
+  answerDetails: SubmitAnswerDetail[];
 }
 
+export type SubmitOutcome =
+  | { ok: true; result: SubmitResult | null }
+  | { ok: false; queued: boolean };
+
+const SUBMIT_ENDPOINT = "/api/v2/exams/submit";
+
+/**
+ * Sessiya javoblarini serverga yuboradi. Hech qachon throw qilmaydi:
+ * tarmoq/5xx xatosida so'rov `pendingSubmits` navbatiga yoziladi va
+ * foydalanuvchiga bildirishnoma ko'rsatiladi.
+ */
 export async function submitExamSession(
-  sessionId: number,
+  sessionId: number | null | undefined,
   answers: { questionId: number; selectedOptionIndex?: number | null; timeSpentSeconds?: number }[]
-): Promise<boolean> {
-  if (!sessionId || !answers || answers.length === 0) return false;
+): Promise<SubmitOutcome> {
+  if (!sessionId || !answers || answers.length === 0) return { ok: false, queued: false };
+  const body = {
+    sessionId,
+    answers: answers.map((a) => ({
+      questionId: a.questionId,
+      selectedOptionIndex: a.selectedOptionIndex != null ? a.selectedOptionIndex : null,
+      timeSpentSeconds: a.timeSpentSeconds || 0,
+    })),
+  };
   try {
-    await api.post("/api/v2/exams/submit", {
-      sessionId,
-      answers: answers.map((a) => ({
-        questionId: a.questionId,
-        selectedOptionIndex: a.selectedOptionIndex != null ? a.selectedOptionIndex : null,
-        timeSpentSeconds: a.timeSpentSeconds || 0,
-      })),
-    });
+    const res = await api.post<{ data?: SubmitResult }>(SUBMIT_ENDPOINT, body);
     window.dispatchEvent(new Event("prava-storage-changed"));
-    return true;
+    return { ok: true, result: res.data?.data ?? null };
   } catch (err) {
     console.warn("Failed to submit exam session to backend:", err);
-    return false;
+    if (isRetryableSubmitError(err)) {
+      enqueuePendingSubmit(SUBMIT_ENDPOINT, body);
+      notifySubmitQueued();
+      return { ok: false, queued: true };
+    }
+    return { ok: false, queued: false };
   }
+}
+
+/**
+ * Bitta javobni server orqali tekshirish (secure rejim uchun).
+ * `null` — tekshirib bo'lmadi (tarmoq xatosi).
+ */
+export async function checkExamAnswer(
+  questionId: number,
+  selectedOptionIndex: number
+): Promise<{ isCorrect: boolean; correctOptionIndex: number } | null> {
+  try {
+    const res = await api.post<{
+      data?: { isCorrect?: boolean; correctOptionIndex?: number };
+    }>("/api/v2/exams/check-answer", { questionId, selectedOptionIndex });
+    const d = res.data?.data;
+    if (d && typeof d.correctOptionIndex === "number") {
+      return {
+        isCorrect: d.isCorrect ?? d.correctOptionIndex === selectedOptionIndex,
+        correctOptionIndex: d.correctOptionIndex,
+      };
+    }
+  } catch {
+    // offline yoki server xatosi
+  }
+  return null;
 }
 
 // ── DATA FETCHING APIS ────────────────────────────────────────────────────────
 
-export async function getExamQuestions(count = 20): Promise<OfflineQuestion[]> {
-  try {
-    const res = await api.post<{
-      data: { sessionId?: number; questions: any[] };
-    }>("/api/v2/exams/marathon/start-visible", {
-      questionCount: count,
-      durationMinutes: count,
-    });
-    if (res.data?.data?.sessionId) {
-      activeExamSessionId = res.data.data.sessionId;
-    }
-    if (res.data?.data?.questions && res.data.data.questions.length > 0) {
-      return res.data.data.questions.map(normalizeQuestion);
-    }
-  } catch {
-    // fallback to start-visible
-    try {
-      const res2 = await api.post<{
-        data: { sessionId?: number; questions: any[] };
-      }>("/api/v2/exams/start-visible", {
-        questionCount: count,
-        durationMinutes: count,
-      });
-      if (res2.data?.data?.sessionId) {
-        activeExamSessionId = res2.data.data.sessionId;
-      }
-      if (res2.data?.data?.questions && res2.data.data.questions.length > 0) {
-        return res2.data.data.questions.map(normalizeQuestion);
-      }
-    } catch {
-      // ignore
-    }
-  }
-  return [];
+/**
+ * Rasmiy imtihon simulyatsiyasi — SECURE rejim (P1-W4).
+ * To'g'ri javoblar yuklab olinmaydi: `correct_option` = -1 (noma'lum),
+ * baholash serverda `/api/v2/exams/submit` orqali.
+ */
+export async function startSecureExamSession(count = 20): Promise<StartedSession> {
+  const rules = await fetchExamRules();
+  const res = await api.post<{
+    data: { sessionId?: number; questions: any[] };
+  }>("/api/v2/exams/marathon/start-secure", {
+    questionCount: count,
+    // Qoida: savol soni × real.secondsPerQuestion (default 60 s → 20 savol = 20 daqiqa)
+    durationMinutes: durationMinutesFor(count, rules.real.secondsPerQuestion),
+  });
+  const questions = (res.data?.data?.questions ?? []).map((q) => ({
+    ...normalizeQuestion(q),
+    correct_option: -1,
+  }));
+  return { sessionId: res.data?.data?.sessionId ?? null, questions };
 }
 
-export async function getMarathonQuestions(topicId?: number, count = 100): Promise<OfflineQuestion[]> {
+export async function startMarathonSession(topicId?: number, count = 100): Promise<StartedSession> {
+  if (!(count && count > 0)) await ensureCurriculumStats();
   const actualCount = count && count > 0 ? count : cachedTotalQuestions;
+  // Biznes qoidasi: marafon davomiyligi = savollar soni × 1 daqiqa (exam-rules)
+  const rules = await fetchExamRules();
   try {
     const res = await api.post<{
       data: { sessionId?: number; questions: any[] };
     }>("/api/v2/exams/marathon/start-visible", {
       questionCount: actualCount,
-      durationMinutes: actualCount,
+      durationMinutes: durationMinutesFor(actualCount, rules.marathon.secondsPerQuestion),
       topicId,
     });
-    if (res.data?.data?.sessionId) {
-      activeMarathonSessionId = res.data.data.sessionId;
-    }
-    if (res.data?.data?.questions) {
-      return res.data.data.questions.map(normalizeQuestion);
-    }
+    return {
+      sessionId: res.data?.data?.sessionId ?? null,
+      questions: (res.data?.data?.questions ?? []).map(normalizeQuestion),
+    };
   } catch (err: any) {
-    console.warn("getMarathonQuestions error:", err?.response?.data || err?.message || err);
+    console.warn("startMarathonSession error:", err?.response?.data || err?.message || err);
   }
-  return [];
+  return { sessionId: null, questions: [] };
 }
 
 export async function getTickets(): Promise<OfflineTicket[]> {
@@ -345,21 +408,19 @@ export async function getTickets(): Promise<OfflineTicket[]> {
   return fallbackTickets;
 }
 
-export async function getQuestionsByTicket(ticketId: number): Promise<OfflineQuestion[]> {
+export async function startTicketSession(ticketId: number): Promise<StartedSession> {
   try {
     const res = await api.post<{
       data: { sessionId?: number; questions: any[] };
     }>("/api/v2/tickets/start-visible", { ticketId });
-    if (res.data?.data?.sessionId) {
-      activeTicketSessionId = res.data.data.sessionId;
-    }
-    if (res.data?.data?.questions && res.data.data.questions.length > 0) {
-      return res.data.data.questions.map(normalizeQuestion);
-    }
+    return {
+      sessionId: res.data?.data?.sessionId ?? null,
+      questions: (res.data?.data?.questions ?? []).map(normalizeQuestion),
+    };
   } catch (err: any) {
-    console.warn("getQuestionsByTicket start-visible error:", err?.response?.data || err?.message || err);
+    console.warn("startTicketSession start-visible error:", err?.response?.data || err?.message || err);
   }
-  return [];
+  return { sessionId: null, questions: [] };
 }
 
 export async function getTopics(): Promise<OfflineTopic[]> {
@@ -374,19 +435,6 @@ export async function getTopics(): Promise<OfflineTopic[]> {
       }
     } catch {
       // ignore
-    }
-
-    if (rawList.length === 0) {
-      try {
-        const res = await api.get<{ data: any[] }>("/api/v1/admin/topics/active", {
-          headers: { "Accept-Language": getLang() },
-        });
-        if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
-          rawList = res.data.data;
-        }
-      } catch {
-        // ignore
-      }
     }
 
     if (rawList.length > 0) {
@@ -433,6 +481,8 @@ export async function getTopics(): Promise<OfflineTopic[]> {
 // ── STATS & STORAGE WRAPPERS ──────────────────────────────────────────────────
 
 export async function getFullStats(_userId?: number): Promise<FullStats> {
+  // Umumiy savol/bilet soni aniq bo'lishi uchun lazy statistikani kutamiz (bir marta).
+  await ensureCurriculumStats();
   const storedTicketStats = storageService.getTicketStats();
   const ticketStats: TicketReadinessStat[] = [];
   const totalTickets = cachedTotalTickets;

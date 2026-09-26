@@ -12,11 +12,42 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import type { User, AuthData } from "../types";
 import api from "../api/api";
+import { isCookieAuthMode } from "../api/authMode";
+import { flushPendingSubmits } from "../services/pendingSubmits";
 import { getSharedCookieDomain } from "../utils/domain";
 
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_DATA_KEY = "userData";
+
+/**
+ * Service-worker runtime caches that may hold user-scoped API responses
+ * (see vite.config.ts workbox.runtimeCaching → cacheName "api-cache").
+ * Cleared on logout so the next user on the same device never sees them.
+ */
+const USER_SCOPED_SW_CACHES = ["api-cache"];
+
+/** Logout'da o'chiriladigan, foydalanuvchiga tegishli localStorage kalitlari (keyingi foydalanuvchiga ko'rinmasin). */
+const USER_SCOPED_LOCAL_KEYS = ["prava_inapp_notifications_v2", "prava_pending_submits_v1"];
+const USER_SCOPED_LOCAL_PREFIXES = ["prava_autosave_"];
+
+export function clearUserScopedCaches(): void {
+  if (typeof window === "undefined") return;
+  try {
+    USER_SCOPED_LOCAL_KEYS.forEach((k) => localStorage.removeItem(k));
+    Object.keys(localStorage)
+      .filter((k) => USER_SCOPED_LOCAL_PREFIXES.some((p) => k.startsWith(p)))
+      .forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // storage bloklangan — o'tkazib yuboramiz
+  }
+  if (!("caches" in window)) return;
+  USER_SCOPED_SW_CACHES.forEach((name) => {
+    void window.caches.delete(name).catch(() => {
+      // ignore
+    });
+  });
+}
 
 export function clearAuthCookies(): void {
   const domain = getSharedCookieDomain();
@@ -71,13 +102,31 @@ const checkAuthStatus = (): boolean => {
   if (expiry && expiry > Date.now()) return true;
 
   // Access token eskirgan — refresh token bormi?
-  const refreshToken = Cookies.get(REFRESH_TOKEN_KEY);
-  if (refreshToken) return true; // API interceptor yangilaydi
+  // (cookie rejimida refresh token HttpOnly — JS uni ko'rmaydi, interceptor server orqali yangilaydi)
+  if (isCookieAuthMode() || Cookies.get(REFRESH_TOKEN_KEY)) return true; // API interceptor yangilaydi
 
   // Hech qanday valid token yo'q — cookie'larni tozalash
   clearAuthCookies();
   return false;
 };
+
+/**
+ * SECURITY: `userData` cookie JS o'qiy oladigan va barcha *.pravaonline.uz subdomenlariga
+ * yuboriladigan cookie. Unda telefon/email saqlanmaydi — faqat UI uchun zarur minimal maydonlar.
+ * To'liq profil faqat xotirada (login javobi yoki /auth/me). Desktop OAuth oynasida (legacy)
+ * desktop ilova userData'ni to'liq o'qiydi, shuning uchun u yerda o'zgarmaydi.
+ */
+const toCookieUser = (u: User): Partial<User> =>
+  isCookieAuthMode()
+    ? {
+        id: u.id,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        fullName: u.fullName,
+        role: u.role,
+        preferredLanguage: u.preferredLanguage,
+      }
+    : u;
 
 const getInitialUser = () => {
   const user = Cookies.get(USER_DATA_KEY);
@@ -132,6 +181,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     // Listen for forced logout from API interceptor (e.g. refresh token expired)
     const onForceLogout = () => {
+      clearUserScopedCaches();
       setIsAuthenticated(false);
       setUser(null);
       try {
@@ -151,11 +201,41 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     };
   }, [syncAuthState, navigate]);
 
+  // To'liq profil (telefon/email) cookie'da yo'q — sahifa yuklanganda bir marta xotiraga olinadi.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    api
+      .get("/api/v1/auth/me")
+      .then((res) => {
+        const full = (res.data?.data ?? null) as User | null;
+        if (!cancelled && full?.id) {
+          setUser(full);
+          // Eski (to'liq PII'li) cookie'ni minimal ko'rinishga almashtirish — migratsiya.
+          const isSecure = window.location.protocol === "https:";
+          Cookies.set(USER_DATA_KEY, JSON.stringify(toCookieUser(full)), {
+            expires: 1,
+            secure: isSecure,
+            sameSite: "lax",
+            domain: getSharedCookieDomain(),
+          });
+        }
+      })
+      .catch(() => {
+        // Offline yoki xato — cookie'dagi minimal ma'lumot bilan davom etiladi.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
   const saveAuthData = (authData: AuthData) => {
     const { accessToken, refreshToken, user: userData, expiresIn } = authData;
 
     // expiresIn millisekundda kelsa kun hisobiga o'tkazamiz, kelmasa 1 kun
-    const expiryDays = expiresIn ? expiresIn / (1000 * 60 * 60 * 24) : 1;
+    // Access token endi qisqa (30 daqiqa) — cookie esa kamida 1 kun turadi, JWT muddatini server tekshiradi
+    // va interceptor uni refresh orqali yangilaydi.
+    const expiryDays = Math.max(1, expiresIn ? expiresIn / (1000 * 60 * 60 * 24) : 1);
 
     // HTTP da secure: true cookie saqlanmaydi, shuning uchun protocol'ga qarab o'rnatamiz
     const isSecure = window.location.protocol === "https:";
@@ -168,7 +248,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       domain,
     });
 
-    if (refreshToken) {
+    if (isCookieAuthMode()) {
+      // Refresh token HttpOnly cookie'da (server o'rnatadi) — eski JS nusxasi o'chiriladi.
+      Cookies.remove(REFRESH_TOKEN_KEY);
+      if (domain) Cookies.remove(REFRESH_TOKEN_KEY, { domain });
+    } else if (refreshToken) {
       Cookies.set(REFRESH_TOKEN_KEY, refreshToken, {
         expires: 30, // Refresh token uchun 30 kun
         secure: isSecure,
@@ -177,7 +261,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       });
     }
 
-    Cookies.set(USER_DATA_KEY, JSON.stringify(userData), {
+    Cookies.set(USER_DATA_KEY, JSON.stringify(toCookieUser(userData)), {
       expires: expiryDays,
       secure: isSecure,
       sameSite: "lax",
@@ -204,14 +288,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const logout = async () => {
     try {
+      // Tozalashdan oldin yuborilmagan natijalar bir marta yuboriladi (ko'pi bilan 4 s kutiladi).
+      await Promise.race([
+        flushPendingSubmits().catch(() => 0),
+        new Promise((resolve) => setTimeout(resolve, 4000)),
+      ]);
       const refreshToken = Cookies.get(REFRESH_TOKEN_KEY);
-      if (refreshToken) {
-        await api.post("/api/v1/auth/logout", { refreshToken });
+      if (isCookieAuthMode() || refreshToken) {
+        // Cookie rejimida server HttpOnly cookie'dan o'qiydi va uni o'chiradi.
+        await api.post("/api/v1/auth/logout", refreshToken ? { refreshToken } : {});
       }
     } catch {
       // Logout API xatosi bo'lsa ham, local tokenlarni tozalaymiz
     } finally {
       clearAuthCookies();
+      clearUserScopedCaches();
       try {
         localStorage.setItem("auth_sync_event", `logout_${Date.now()}`);
       } catch {

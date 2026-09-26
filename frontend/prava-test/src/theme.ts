@@ -1,22 +1,31 @@
 import { createTheme, type MantineColorsTuple } from "@mantine/core";
+import tokens from "./theme/design-tokens.json";
 
-const primaryBlue: MantineColorsTuple = [
-  "#f0f9ff",
-  "#e0f2fe",
-  "#bae6fd",
-  "#7dd3fc",
-  "#38bdf8",
-  "#0ea5e9",
-  "#0284c7",
-  "#0369a1",
-  "#075985",
-  "#0c4a6e",
-];
+/**
+ * Mantine theme — YAGONA MANBA: `src/theme/design-tokens.json`
+ * (web, desktop va mobil ilovalar uchun umumiy). Qiymatlarni shu yerda
+ * qattiq yozmang — tokenlar faylini o'zgartiring.
+ */
+
+const BRAND_SHADES = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900"] as const;
+
+/** color.brand (50..900) → Mantine 10 ta shade (0..9). */
+const brand = BRAND_SHADES.map(
+  (k) => tokens.color.brand[k],
+) as unknown as MantineColorsTuple;
+
+const px = (v: number) => `${v / 16}rem`;
+
+/** Montserrat + tizim shriftlari (fallback). */
+const FONT_STACK = `"${tokens.font.family}", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
 
 export const theme = createTheme({
-  primaryColor: "blue",
+  primaryColor: "brand",
   colors: {
-    blue: primaryBlue,
+    brand,
+    // Kodda `color="blue"` ko'p joyda ishlatilgan — ular ham brend palitrasini
+    // olsin (Mantine default ko'k #228be6 boshqa ko'k tus sifatida chiqmasin).
+    blue: brand,
   },
 
   /**
@@ -33,7 +42,7 @@ export const theme = createTheme({
   autoContrast: true,
   luminanceThreshold: 0.3,
 
-  fontFamily: '"Montserrat", sans-serif',
+  fontFamily: FONT_STACK,
 
   /**
    * Imtihon davomida foydalanuvchi ketma-ket 20-50 ta savol o'qiydi.
@@ -41,11 +50,11 @@ export const theme = createTheme({
    * Quyidagi shkala savol/javob matnini havodorroq qiladi.
    */
   fontSizes: {
-    xs: "0.75rem",
-    sm: "0.875rem",
-    md: "1rem",
-    lg: "1.125rem",
-    xl: "1.25rem",
+    xs: px(tokens.font.size.xs),
+    sm: px(tokens.font.size.sm),
+    md: px(tokens.font.size.md),
+    lg: px(tokens.font.size.lg),
+    xl: px(tokens.font.size.xl),
   },
   lineHeights: {
     xs: "1.45",
@@ -56,7 +65,7 @@ export const theme = createTheme({
   },
 
   headings: {
-    fontFamily: '"Montserrat", sans-serif',
+    fontFamily: FONT_STACK,
     sizes: {
       h1: { fontSize: "2.125rem", lineHeight: "1.3", fontWeight: "700" },
       h2: { fontSize: "1.625rem", lineHeight: "1.35", fontWeight: "700" },
@@ -67,6 +76,15 @@ export const theme = createTheme({
       h5: { fontSize: "1rem", lineHeight: "1.5", fontWeight: "600" },
       h6: { fontSize: "0.9375rem", lineHeight: "1.5", fontWeight: "600" },
     },
+  },
+
+  /** Radius shkalasi — tokens.radius (xs tokenlarda yo'q: sm ning yarmi). */
+  radius: {
+    xs: px(tokens.radius.sm / 2),
+    sm: px(tokens.radius.sm),
+    md: px(tokens.radius.md),
+    lg: px(tokens.radius.lg),
+    xl: px(tokens.radius.xl),
   },
 
   // Kodda tugmalar/kartalar allaqachon `radius="md"` ni qo'lda uzatardi —

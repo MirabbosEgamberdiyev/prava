@@ -460,6 +460,8 @@ export default function AvtodromSimulator_Page() {
                     variant="light"
                     color={soundEnabled ? "blue" : "gray"}
                     onClick={() => setSoundEnabled(!soundEnabled)}
+                    aria-label={soundEnabled ? t("a11y.soundOff", "Ovozni o'chirish") : t("a11y.soundOn", "Ovozni yoqish")}
+                    aria-pressed={soundEnabled}
                   >
                     {soundEnabled ? <IconVolume size={18} /> : <IconVolumeOff size={18} />}
                   </ActionIcon>
@@ -469,6 +471,7 @@ export default function AvtodromSimulator_Page() {
                   <ActionIcon
                     variant="light"
                     color="gray"
+                    aria-label={t("a11y.cameraView", "Kamera ko'rinishini almashtirish")}
                     onClick={() => {
                       setCameraView(
                         cameraView === "top_down"

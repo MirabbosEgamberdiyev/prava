@@ -62,6 +62,8 @@ function getActiveUserId(): string {
   return "guest";
 }
 
+const LEGACY_MIGRATED_SUFFIX = "__legacy_migrated";
+
 function getScopedKey(baseKey: string): string {
   const uid = getActiveUserId();
   return `${baseKey}_${uid}`;
@@ -73,13 +75,23 @@ function safeGet<T>(baseKey: string, defaultValue: T): T {
     const raw = localStorage.getItem(scopedKey);
     if (raw) return JSON.parse(raw);
 
-    // Backward compatibility: migrate from legacy un-scoped key
-    const legacy = localStorage.getItem(baseKey);
-    if (legacy) {
-      try {
-        localStorage.setItem(scopedKey, legacy);
-        return JSON.parse(legacy);
-      } catch {}
+    // Backward compatibility: migrate legacy un-scoped data ONCE, to the first
+    // signed-in user who reads it, then delete the legacy copy so it can never
+    // leak into another account (or a guest) on the same device.
+    const migratedFlag = `${baseKey}${LEGACY_MIGRATED_SUFFIX}`;
+    if (getActiveUserId() !== "guest" && !localStorage.getItem(migratedFlag)) {
+      const legacy = localStorage.getItem(baseKey);
+      localStorage.setItem(migratedFlag, "1");
+      if (legacy) {
+        localStorage.removeItem(baseKey);
+        try {
+          const parsed = JSON.parse(legacy);
+          localStorage.setItem(scopedKey, legacy);
+          return parsed;
+        } catch {
+          // corrupt legacy data — drop it
+        }
+      }
     }
     return defaultValue;
   } catch {
@@ -236,11 +248,16 @@ export const storageService = {
 
   // ── RESET ALL STATS ──
   resetAllStats(): void {
-    localStorage.removeItem(STORAGE_KEYS.WRONG_ANSWERS);
-    localStorage.removeItem(STORAGE_KEYS.SAVED_QUESTIONS);
-    localStorage.removeItem(STORAGE_KEYS.EXAM_HISTORY);
-    localStorage.removeItem(STORAGE_KEYS.TICKET_STATS);
-    localStorage.removeItem(STORAGE_KEYS.QUESTION_ATTEMPTS);
+    // Data lives under `${key}_${userId}` — remove the CURRENT user's scoped keys
+    // (plus any leftover legacy un-scoped copy, so it cannot be re-migrated).
+    Object.values(STORAGE_KEYS).forEach((baseKey) => {
+      try {
+        localStorage.removeItem(getScopedKey(baseKey));
+        localStorage.removeItem(baseKey);
+      } catch {
+        // ignore
+      }
+    });
     window.dispatchEvent(new Event("prava-storage-changed"));
   },
 };

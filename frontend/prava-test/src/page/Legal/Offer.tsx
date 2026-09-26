@@ -43,7 +43,7 @@ export default function Offer_Page() {
 
         <div className="saas-card" style={{ padding: "40px 32px", marginBottom: 64 }}>
           <Stack gap="md">
-            <Box p="md" style={{ borderRadius: 12, background: "var(--card-highlight-bg, rgba(37,99,235,0.04))", border: "1px solid var(--border)" }}>
+            <Box p="md" style={{ borderRadius: 12, background: "var(--card-highlight-bg, rgba(var(--primary-rgb), 0.04))", border: "1px solid var(--border)" }}>
               <Group gap="xs" align="flex-start">
                 <ThemeIcon size={22} radius="xl" color="blue" variant="light" mt={2}>
                   <IconShieldCheck size={14} />

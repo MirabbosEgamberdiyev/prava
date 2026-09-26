@@ -49,11 +49,3 @@ export const paymentApi = {
     api.get<PaymentStatusResponse>(`${base}/${paymentId}/status`).then((r) => r.data),
 };
 
-// Admin
-const adminBase = '/api/v1/admin/packages';
-export const adminPaymentApi = {
-  togglePaid: (packageId: number, paid: boolean, price?: number) =>
-    api.patch(`${adminBase}/${packageId}/toggle-paid`, { paid, price }).then((r) => r.data),
-  getPricing: (packageId: number) =>
-    api.get(`${adminBase}/${packageId}/pricing`).then((r) => r.data),
-};

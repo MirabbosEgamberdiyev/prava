@@ -30,15 +30,17 @@ import { findOfficialTopic } from "../../../constants/topics";
 import type { Ticket } from "../../../types";
 import type { Package } from "../../../features/Package/types";
 
-interface TopicResponse {
-  data: {
-    id: number;
-    code: string;
-    name: { uzl: string; uzc: string; en: string; ru: string };
-    description?: { uzl: string; uzc: string; en: string; ru: string };
-    questionCount: number;
-    isActive: boolean;
-  };
+interface TopicItem {
+  id: number;
+  code: string;
+  name: { uzl: string; uzc: string; en: string; ru: string };
+  description?: { uzl: string; uzc: string; en: string; ru: string };
+  questionCount: number;
+  isActive: boolean;
+}
+
+interface TopicsListResponse {
+  data: TopicItem[];
 }
 
 interface PackagesResponse {
@@ -65,12 +67,15 @@ const TopicDetail_Page = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string | null>("packages");
 
-  // Fetch topic by code
-  const { data: topicData, isLoading: topicLoading } = useSWR<TopicResponse>(
-    topicCode ? `/api/v1/admin/topics/code/${topicCode}` : null
+  // Fetch active topics from the user endpoint and pick the one by code
+  // (the admin /topics/code/{code} endpoint is not meant for the user app).
+  const { data: topicsData, isLoading: topicLoading } = useSWR<TopicsListResponse>(
+    topicCode ? "/api/v1/app/topics" : null
   );
 
-  const topic = topicData?.data;
+  const topic = topicsData?.data?.find(
+    (tp) => tp.code?.toLowerCase() === topicCode?.toLowerCase()
+  );
 
   // Fetch packages by topic code
   const { data: packagesData, isLoading: packagesLoading } =

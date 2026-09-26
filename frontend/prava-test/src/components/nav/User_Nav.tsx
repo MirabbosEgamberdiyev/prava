@@ -9,7 +9,6 @@ import {
   Flex,
   Button,
   useComputedColorScheme,
-  Divider,
 } from "@mantine/core";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -21,13 +20,11 @@ import {
   IconCarambola,
   IconChartBar,
   IconHistory,
-  IconKey,
   IconLayoutGrid,
   IconListDetails,
   IconSettings,
   IconTrophy,
 } from "@tabler/icons-react";
-import { useAuth } from "../../auth/AuthContext";
 
 interface AppShellNavbarProps {
   toggle: () => void;
@@ -35,10 +32,8 @@ interface AppShellNavbarProps {
 
 const User_Nav = ({ toggle }: AppShellNavbarProps) => {
   const { t }    = useTranslation();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
 
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
@@ -132,7 +127,7 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
                 key={i}
                 label={item.name}
                 leftSection={
-                  <ActionIcon variant="light" size="md" radius="sm">
+                  <ActionIcon component="span" aria-hidden="true" variant="light" size="md" radius="sm">
                     {item.icon}
                   </ActionIcon>
                 }
@@ -174,34 +169,6 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
             ))}
           </Box>
 
-          {/* SUPER_ADMIN section */}
-          {isSuperAdmin && (
-            <Box mt="xs">
-              <Divider
-                label={<Text size="xs" c="dimmed" fw={600}>{t("nav.superAdmin", "SUPER ADMIN")}</Text>}
-                my="xs"
-              />
-              <NavLink
-                label={t("nav.activationCodes")}
-                leftSection={
-                  <ActionIcon variant="light" size="md" radius="sm" color="blue">
-                    <IconKey size={18} />
-                  </ActionIcon>
-                }
-                variant="light"
-                active={location.pathname === "/admin/activation-codes"}
-                onClick={() => {
-                  toggle();
-                  navigate("/admin/activation-codes");
-                }}
-                style={{
-                  borderRadius: "var(--mantine-radius-xs)",
-                  fontWeight: 500,
-                }}
-                my={2}
-              />
-            </Box>
-          )}
         </ScrollArea>
 
         <Paper
@@ -211,7 +178,7 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
           radius="md"
         >
           <Flex direction="column" align="center" gap="xs">
-            <ActionIcon variant="subtle" size="xl" radius="xl" color="yellow">
+            <ActionIcon component="span" aria-hidden="true" variant="subtle" size="xl" radius="xl" color="yellow">
               <IconCarambola size={32} />
             </ActionIcon>
             <Text size="xs" ta="center" c="dimmed">

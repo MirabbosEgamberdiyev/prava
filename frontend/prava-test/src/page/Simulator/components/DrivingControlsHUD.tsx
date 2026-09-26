@@ -14,6 +14,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Paper, Group, Stack, Text, Button, ActionIcon, Box, Badge } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
+import { useTranslation } from "react-i18next";
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -66,6 +67,7 @@ export default function DrivingControlsHUD({
   onManualGearSelect,
 }: Props) {
   const { lang } = useLanguage();
+  const { t } = useTranslation();
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isNarrowMobile = useMediaQuery("(max-width: 480px)");
@@ -105,7 +107,7 @@ export default function DrivingControlsHUD({
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
       const rad = Math.atan2(touch.clientY - centerY, touch.clientX - centerX);
-      let deg = (rad * 180) / Math.PI;
+      const deg = (rad * 180) / Math.PI;
 
       let deltaDeg = deg - startTouchAngle.current;
       if (deltaDeg > 180) deltaDeg -= 360;
@@ -244,7 +246,9 @@ export default function DrivingControlsHUD({
               variant={controlInputMode === "touch" ? "filled" : "subtle"}
               color="blue"
               onClick={() => setControlInputMode("touch")}
-              title="Virtual Rul boshqaruvi"
+              title={t("a11y.steeringWheelMode", "Virtual rul boshqaruvi")}
+              aria-label={t("a11y.steeringWheelMode", "Virtual rul boshqaruvi")}
+              aria-pressed={controlInputMode === "touch"}
             >
               <IconSteeringWheel size={14} />
             </ActionIcon>
@@ -253,7 +257,9 @@ export default function DrivingControlsHUD({
               variant={controlInputMode === "keyboard" ? "filled" : "subtle"}
               color="blue"
               onClick={() => setControlInputMode("keyboard")}
-              title="Klaviatura tugmalari"
+              title={t("a11y.keyboardMode", "Klaviatura tugmalari")}
+              aria-label={t("a11y.keyboardMode", "Klaviatura tugmalari")}
+              aria-pressed={controlInputMode === "keyboard"}
             >
               <IconKeyboard size={14} />
             </ActionIcon>

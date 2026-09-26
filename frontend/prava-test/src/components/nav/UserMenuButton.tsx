@@ -5,7 +5,6 @@ import {
   IconUser,
   IconHistory,
   IconTrophy,
-  IconKey,
 } from "@tabler/icons-react";
 import { Group, Avatar, Text, Menu, UnstyledButton, Box } from "@mantine/core";
 import { useAuth } from "../../auth/AuthContext";
@@ -122,14 +121,6 @@ function UserMenuButton() {
         >
           {t("leaderboard.title", "Reyting")}
         </Menu.Item>
-        {(user?.role === "SUPER_ADMIN" || user?.role === "ADMIN") && (
-          <Menu.Item
-            leftSection={<IconKey size={15} />}
-            onClick={() => goToApp("/admin/activation-codes")}
-          >
-            {t("nav.activationCodes", "Aktivatsiya kodlari")}
-          </Menu.Item>
-        )}
 
         <Menu.Divider />
 

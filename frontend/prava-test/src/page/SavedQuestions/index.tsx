@@ -182,7 +182,7 @@ export default function SavedQuestions_Page() {
             </div>
           )}
         </div>
-        {zoomSrc && <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />}
+        <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />
     </>
   );
 }

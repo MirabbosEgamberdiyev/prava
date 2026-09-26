@@ -3,6 +3,27 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { paymentApi } from './paymentApi';
 
+/**
+ * Only these payment-provider origins may receive a browser redirect.
+ * Anything else coming back from the server is refused (open-redirect / phishing guard).
+ */
+const ALLOWED_REDIRECT_HOSTS = new Set([
+  'my.click.uz',
+  'checkout.paycom.uz',
+  'test.paycom.uz',
+  'checkout.test.paycom.uz',
+]);
+
+function isAllowedPaymentRedirect(url: unknown): url is string {
+  if (typeof url !== 'string' || !url) return false;
+  try {
+    const u = new URL(url);
+    return u.protocol === 'https:' && ALLOWED_REDIRECT_HOSTS.has(u.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
 export interface PaymentButtonsProps {
   packageId: number;
   packageName: string;
@@ -21,8 +42,12 @@ export function PaymentButtons({
   const [loading, setLoading] = useState<'click' | 'payme' | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
-  const go = (url: string) => {
-    if (openInNewTab) window.open(url, '_blank');
+  const go = (url: unknown) => {
+    if (!isAllowedPaymentRedirect(url)) {
+      setErr(t('payment.invalidRedirect', "To'lov sahifasi manzili noto'g'ri. Iltimos, keyinroq qayta urinib ko'ring."));
+      return;
+    }
+    if (openInNewTab) window.open(url, '_blank', 'noopener,noreferrer');
     else window.location.href = url;
   };
 

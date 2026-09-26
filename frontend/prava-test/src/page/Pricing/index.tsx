@@ -294,7 +294,7 @@ export default function Pricing_Page() {
               height: "100%",
               position: "relative",
               border: "2px solid var(--primary)",
-              background: "var(--card-highlight-bg, rgba(37, 99, 235, 0.03))",
+              background: "var(--card-highlight-bg, rgba(var(--primary-rgb), 0.03))",
             }}
           >
             <Box mb="md">

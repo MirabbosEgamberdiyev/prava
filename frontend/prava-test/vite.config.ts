@@ -73,6 +73,15 @@ export default defineConfig({
           'logo.svg',
           'favicon.svg',
           'icons/*.svg',
+          /*
+           * P1-W6: katta rasmlar (public/images/**) va three.js/simulyator
+           * chunk'lari precache'dan chiqarildi — ular faqat kerak bo'lganda
+           * yuklanadi (rasmlar runtime `image-cache` orqali keshlanadi).
+           */
+          'images/**',
+          '**/SimulatorCanvas3D*',
+          '**/three*',
+          '**/WebGLFallback*',
         ],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         // Yangi versiyaga darhol o'tish (kutib o'tirmaydi)

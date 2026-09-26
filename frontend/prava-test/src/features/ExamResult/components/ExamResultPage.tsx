@@ -484,7 +484,7 @@ function AnswerReviewCard({
           style={{
             background:
               computedColorScheme === "light"
-                ? "rgba(25, 113, 194, 0.08)"
+                ? "rgba(var(--primary-rgb), 0.08)"
                 : "rgba(255, 255, 255, 0.05)",
             border: "1px solid var(--border)",
           }}

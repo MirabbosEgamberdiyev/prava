@@ -74,7 +74,7 @@ export default function MobileControls({
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
       const rad = Math.atan2(touch.clientY - centerY, touch.clientX - centerX);
-      let deg = (rad * 180) / Math.PI;
+      const deg = (rad * 180) / Math.PI;
 
       let deltaDeg = deg - startTouchAngle.current;
       if (deltaDeg > 180) deltaDeg -= 360;
