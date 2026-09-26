@@ -22,15 +22,11 @@ import {
   IconArrowLeft,
   IconArrowRight,
   IconCheck,
-  IconClock,
   IconDeviceMobile,
   IconInfoCircle,
   IconLock,
   IconMail,
   IconMessageDots,
-  IconShieldCheck,
-  IconUser,
-  IconUserCheck,
 } from "@tabler/icons-react";
 import api from "@/api/api";
 import { notifications } from "@mantine/notifications";
@@ -40,11 +36,7 @@ import CapsLockWarning from "@/components/auth/CapsLockWarning";
 import { formatUzPhone, isValidUzPhone, normalizeUzPhone } from "@/utils/phoneUtils";
 import AuthLayout from "@/components/auth/AuthLayout";
 import AuthCard from "@/components/auth/AuthCard";
-import AuthChecklist from "@/components/auth/AuthChecklist";
-import AuthFeatureCard from "@/components/auth/AuthFeatureCard";
-import AuthQuoteCard from "@/components/auth/AuthQuoteCard";
 import AuthStepper from "@/components/auth/AuthStepper";
-import layoutClasses from "@/components/auth/AuthLayout.module.css";
 import { isPasswordSecure } from "@/page/Auth/register";
 
 const ForgotPassword_Page: React.FC = () => {
@@ -263,105 +255,6 @@ const ForgotPassword_Page: React.FC = () => {
     }
   };
 
-  // Left Column Content
-  const leftColumnContent = (
-    <>
-      <div className={layoutClasses.leftPillBadge}>
-        <IconLock size={16} />
-        <span>
-          {t("authV2.badge.accountSecurity", "Hisobingiz xavfsizligi biz uchun muhim")}
-        </span>
-      </div>
-
-      <h1 className={layoutClasses.leftHeadline}>
-        {t("authV2.forgot.headlineMain", "Parolni tiklash —")}{" "}
-        <span className={layoutClasses.headlineAccent}>
-          {t("authV2.forgot.headlineAccent", "oson va xavfsiz")}
-        </span>
-      </h1>
-
-      <p className={layoutClasses.leftDescription}>
-        {t(
-          "authV2.forgot.description",
-          "Akkauntingizga qayta kirish uchun email yoki telefon raqamingizni kiriting. Biz sizga tasdiqlash kodini yuboramiz."
-        )}
-      </p>
-
-      <AuthChecklist
-        items={[
-          {
-            id: "fp1",
-            text: t("authV2.forgot.check1", "Ma'lumotlaringiz himoyalangan"),
-            icon: <IconShieldCheck size={14} stroke={2.5} />,
-            iconBg: "#10b981",
-          },
-          {
-            id: "fp2",
-            text: t("authV2.forgot.check2", "Tez va qulay tiklash jarayoni"),
-            icon: <IconUserCheck size={14} stroke={2.5} />,
-            iconBg: "#9333ea",
-          },
-          {
-            id: "fp3",
-            text: t("authV2.forgot.check3", "24/7 qo'llab-quvvatlash"),
-            icon: <IconUser size={14} stroke={2.5} />,
-            iconBg: "#0b84f3",
-          },
-        ]}
-      />
-
-      <AuthQuoteCard
-        quote={t(
-          "authV2.forgot.quoteText",
-          "Xavfsiz haydovchi — har doim oldinda!"
-        )}
-      />
-    </>
-  );
-
-  // Right Column Content
-  const rightColumnContent = (
-    <>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-        <IconInfoCircle size={20} color="#0b84f3" />
-        <h3
-          style={{
-            fontSize: "1.05rem",
-            fontWeight: 700,
-            color: "var(--text, #0f172a)",
-            margin: 0,
-          }}
-        >
-          {t("authV2.forgot.remindersTitle", "Eslatmalar")}
-        </h3>
-      </div>
-
-      <AuthFeatureCard
-        icon={<IconMail size={22} />}
-        iconBg="rgba(11, 132, 243, 0.1)"
-        iconColor="#0b84f3"
-        title={t("authV2.forgot.rem1", "Kodni spam papkangizda ham tekshirib ko'ring.")}
-        description=""
-      />
-
-      <AuthFeatureCard
-        icon={<IconClock size={22} />}
-        iconBg="rgba(6, 182, 212, 0.1)"
-        iconColor="#06b6d4"
-        title={t("authV2.forgot.rem2", "Tasdiqlash kodi 10 daqiqa mobaynida amal qiladi.")}
-        description=""
-      />
-
-      <AuthFeatureCard
-        icon={<IconShieldCheck size={22} />}
-        iconBg="rgba(16, 185, 129, 0.1)"
-        iconColor="#10b981"
-        title={t("authV2.forgot.rem3", "Hech kimga tasdiqlash kodingizni bermang.")}
-        description=""
-      />
-    </>
-  );
-
   const stepLabels: [string, string, string] = [
     t("authV2.forgot.step1Title", "Hisobni tekshirish"),
     t("authV2.forgot.step2Title", "Kodni tasdiqlash"),
@@ -378,10 +271,9 @@ const ForgotPassword_Page: React.FC = () => {
         label: t("authV2.forgot.backToLogin", "Kirishga qaytish"),
       }}
       stepIndicator={t("authV2.forgot.stepIndicator", { current: step, total: 3 })}
-      leftColumn={leftColumnContent}
-      rightColumn={rightColumnContent}
     >
       <AuthCard
+        icon={<img src="/logo.svg" alt="Prava Online" width={32} height={32} style={{ objectFit: "contain" }} />}
         title={t("authV2.forgot.title", "Parolni tiklash")}
         subtitle={t(
           "authV2.forgot.subtitle",

@@ -15,9 +15,6 @@ import { useTranslation } from "react-i18next";
 import {
   IconAlertCircle,
   IconArrowRight,
-  IconCar,
-  IconChartBar,
-  IconDeviceDesktop,
   IconDeviceMobile,
   IconLock,
   IconMail,
@@ -32,11 +29,8 @@ import CapsLockWarning from "@/components/auth/CapsLockWarning";
 import { normalizeUzPhone } from "@/utils/phoneUtils";
 import AuthLayout from "@/components/auth/AuthLayout";
 import AuthCard from "@/components/auth/AuthCard";
-import AuthChecklist from "@/components/auth/AuthChecklist";
-import AuthFeatureCard from "@/components/auth/AuthFeatureCard";
 import SocialAuthGroup from "@/components/auth/SocialAuthGroup";
 import AuthSecurityNotice from "@/components/auth/AuthSecurityNotice";
-import layoutClasses from "@/components/auth/AuthLayout.module.css";
 
 const Login_Page: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -130,129 +124,14 @@ const Login_Page: React.FC = () => {
     return <IconUser size={18} />;
   };
 
-  // Left Column Content
-  const leftColumnContent = (
-    <>
-      <div className={layoutClasses.leftPillBadge}>
-        <IconCar size={16} />
-        <span>{t("authV2.badge.examPrep", "Haydovchilik imtihoniga ishonchli tayyorgarlik")}</span>
-      </div>
-
-      <h1 className={layoutClasses.leftHeadline}>
-        {t("authV2.login.headlineMain", "Bilimli haydovchi —")}{" "}
-        <span className={layoutClasses.headlineAccent}>
-          {t("authV2.login.headlineAccent", "xavfsiz yo'l!")}
-        </span>
-      </h1>
-
-      <p className={layoutClasses.leftDescription}>
-        {t(
-          "authV2.login.description",
-          "Rasmiy savollar, imtihon simulyatori va batafsil tahlil yordamida haydovchilik imtihoniga oson va ishonchli tayyorlaning."
-        )}
-      </p>
-
-      <AuthChecklist
-        items={[
-          {
-            id: "chk1",
-            text: t("authV2.login.check1", "Rasmiy bazadagi savollar"),
-          },
-          {
-            id: "chk2",
-            text: t("authV2.login.check2", "Real imtihon muhitiga o'xshash testlar"),
-          },
-          {
-            id: "chk3",
-            text: t("authV2.login.check3", "Istalgan qurilmada foydalanish"),
-          },
-        ]}
-      />
-    </>
-  );
-
-  // Right Column Content
-  const rightColumnContent = (
-    <>
-      <h3
-        style={{
-          fontSize: "0.95rem",
-          fontWeight: 700,
-          color: "var(--text, #0f172a)",
-          margin: "0 0 2px",
-          lineHeight: 1.3,
-        }}
-      >
-        {t("authV2.login.featTitle", "Imkoniyatlar")}
-      </h3>
-
-      <AuthFeatureCard
-        icon={<IconCar size={20} />}
-        iconBg="rgba(33, 150, 243, 0.1)"
-        iconColor="#2196F3"
-        title={t("authV2.login.feat1Title", "Rasmiy savollar")}
-        description={t(
-          "authV2.login.feat1Desc",
-          "IIV YHXBB bazasidagi barcha savollar doimiy yangilanadi."
-        )}
-      />
-
-      <AuthFeatureCard
-        icon={<IconDeviceDesktop size={20} />}
-        iconBg="rgba(56, 189, 248, 0.1)"
-        iconColor="#38BDF8"
-        title={t("authV2.login.feat2Title", "Imtihon simulyatori")}
-        description={t(
-          "authV2.login.feat2Desc",
-          "Real imtihon muhitiga o'xshash sharoitda mashq qiling."
-        )}
-      />
-
-      <AuthFeatureCard
-        icon={<IconChartBar size={20} />}
-        iconBg="rgba(16, 185, 129, 0.1)"
-        iconColor="#10B981"
-        title={t("authV2.login.feat3Title", "Batafsil statistika")}
-        description={t(
-          "authV2.login.feat3Desc",
-          "Natijalaringizni tahlil qiling va xatolar ustida ishlang."
-        )}
-      />
-
-      <div
-        style={{
-          marginTop: 2,
-          padding: "4px 12px",
-          borderRadius: 9999,
-          border: "1px dashed rgba(33, 150, 243, 0.3)",
-          background: "rgba(33, 150, 243, 0.06)",
-          color: "var(--primary, #2196F3)",
-          fontWeight: 700,
-          fontStyle: "italic",
-          fontSize: "0.78rem",
-          textAlign: "center",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 6,
-        }}
-      >
-        <span>{t("authV2.login.goalNote", "Maqsad yaqinroq!")}</span>
-        <span aria-hidden="true">⤴</span>
-      </div>
-    </>
-  );
-
   return (
     <AuthLayout
       seoTitle={t("seo.login.title", "Tizimga kirish")}
       seoDescription={t("seo.login.desc", "Shaxsiy kabinetingizga kiring.")}
       canonicalUrl="/auth/login"
-      leftColumn={leftColumnContent}
-      rightColumn={rightColumnContent}
     >
       <AuthCard
-        icon={<img src="/logo.svg" alt="Prava Online" width={28} height={28} style={{ objectFit: "contain" }} />}
+        icon={<img src="/logo.svg" alt="Prava Online" width={32} height={32} style={{ objectFit: "contain" }} />}
         title={t("authV2.login.title", "Xush kelibsiz!")}
         subtitle={t(
           "authV2.login.subtitle",

@@ -4433,6 +4433,8 @@ body:has(.app) {
   color: var(--text);
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .exam-nav-btn:hover:not(:disabled) {
   border-color: var(--primary);
@@ -4729,7 +4731,7 @@ body:has(.app) {
   transition:
     box-shadow 0.15s,
     transform 0.1s;
-  cursor: default;
+  cursor: pointer;
 }
 .tpc-card:hover {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -6447,6 +6449,23 @@ body:has(.app) {
     padding: 4px 8px;
     height: 32px;
     font-size: 11px;
+  }
+  .exam-bottom {
+    padding: 8px 8px 10px;
+  }
+  .exam-bottom-row {
+    gap: 6px;
+  }
+  .exam-nav-btn {
+    padding: 8px 10px;
+    font-size: 12.5px;
+    min-height: 40px;
+  }
+  .exam-qnum {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+    border-radius: 7px;
   }
 }
 

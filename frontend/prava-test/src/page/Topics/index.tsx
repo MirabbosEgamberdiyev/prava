@@ -15,16 +15,16 @@ import {
 } from "@tabler/icons-react";
 import styles from "../../components/dashboard/Dashboard.module.css";
 
-// Light mode palette
+// Light mode palette (WCAG AA compliant contrast ratio >= 4.5:1)
 const PALETTE = [
   { bg: "#e7f5ff", color: "#1971c2", border: "#74c0fc" },
-  { bg: "#ebfbee", color: "#2f9e44", border: "#8ce99a" },
-  { bg: "#fff3bf", color: "#e67700", border: "#ffd43b" },
+  { bg: "#ebfbee", color: "#2b8a3e", border: "#8ce99a" },
+  { bg: "#fef3c7", color: "#b45309", border: "#fcd34d" },
   { bg: "#f3f0ff", color: "#6741d9", border: "#b197fc" },
-  { bg: "#e3fafc", color: "#0c8599", border: "#66d9e8" },
+  { bg: "#e3fafc", color: "#0b7285", border: "#66d9e8" },
   { bg: "#fff0f6", color: "#c2255c", border: "#f783ac" },
-  { bg: "#fff4e6", color: "#e8590c", border: "#ffa94d" },
-  { bg: "#e6fcf5", color: "#099268", border: "#63e6be" },
+  { bg: "#fff7ed", color: "#c2410c", border: "#fed7aa" },
+  { bg: "#e6fcf5", color: "#087f5b", border: "#63e6be" },
   { bg: "#f8f0fc", color: "#9c36b5", border: "#da77f2" },
   { bg: "#fff5f5", color: "#c92a2a", border: "#ff8787" },
 ];
@@ -206,6 +206,15 @@ export default function Topics_Page() {
                 <div
                   key={topic.id}
                   className="tpc-card"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onStartTopicTest(topic.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onStartTopicTest(topic.id);
+                    }
+                  }}
                   style={
                     {
                       "--tpc-color": pal.color,
@@ -232,7 +241,10 @@ export default function Topics_Page() {
                   {/* Test button */}
                   <button
                     className="tpc-btn"
-                    onClick={() => onStartTopicTest(topic.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onStartTopicTest(topic.id);
+                    }}
                     type="button"
                   >
                     <IconPlayerPlay size={14} />

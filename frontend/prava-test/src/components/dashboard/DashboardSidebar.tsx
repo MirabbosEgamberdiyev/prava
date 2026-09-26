@@ -366,7 +366,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               type="button"
               className={styles.premiumCollapsedBtn}
               onClick={() => {
-                navigate("/pricing");
+                navigate("/packages");
                 onClose();
               }}
               aria-label={t("dashboard.premium.title", "Premium imkoniyatlar")}
@@ -403,7 +403,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               type="button"
               className={styles.premiumCardBtn}
               onClick={() => {
-                navigate("/pricing");
+                navigate("/packages");
                 onClose();
               }}
             >

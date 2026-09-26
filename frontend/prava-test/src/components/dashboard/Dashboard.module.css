@@ -678,6 +678,51 @@
   transform: translateY(-1px);
 }
 
+@media (max-height: 768px) {
+  .sidebar {
+    padding: 12px 10px 8px;
+  }
+  .sidebarNav {
+    gap: 2px;
+  }
+  .navItem {
+    min-height: 36px;
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+  .sidebarBottomToggleWrap {
+    margin-top: 4px;
+    margin-bottom: 4px;
+    padding-top: 4px;
+  }
+  .sidebarToggleBtn {
+    height: 32px;
+    font-size: 12px;
+  }
+  .sidebarBottomCard {
+    padding: 10px 12px;
+    gap: 4px;
+    border-radius: 12px;
+  }
+  .premiumBadgeIcon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+  }
+  .premiumCardTitle {
+    font-size: 12px;
+  }
+  .premiumCardDesc {
+    display: none;
+  }
+  .premiumCardBtn {
+    height: 30px;
+    font-size: 11.5px;
+    margin-top: 2px;
+  }
+}
+
 /* Mobile Search Trigger Button (desktop default: hidden) */
 .mobileSearchBtn {
   display: none;

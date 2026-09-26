@@ -33,6 +33,12 @@ export default function Header({
   const { isAuthenticated } = useAuth();
   const location = useLocation();
 
+  const isAuthPage =
+    location.pathname.startsWith("/auth") ||
+    location.pathname.includes("login") ||
+    location.pathname.includes("register") ||
+    location.pathname.includes("forgot-password");
+
   const isRegisterOrForgot =
     location.pathname.includes("register") ||
     location.pathname.includes("forgot-password");
@@ -40,8 +46,6 @@ export default function Header({
 
   const authCtaText = isRegisterOrForgot
     ? t("auth.login", "Kirish")
-    : isLogin
-    ? t("home.hero.startNow", "Boshlash")
     : t("home.hero.startNow", "Boshlash");
 
   const authCtaHref = isRegisterOrForgot
@@ -54,15 +58,17 @@ export default function Header({
     <AppShell.Header className="saas-header">
       <Container h="100%" size={1440} px={{ base: "xs", sm: "md", lg: "lg" }} style={{ maxWidth: 1440, width: "100%" }}>
         <div className="saas-header-inner">
-          {/* Left: Mobile Burger + Brand */}
+          {/* Left: Mobile Burger + Brand (Clean OsonPrava Style) */}
           <Group gap="xs" wrap="nowrap" align="center" style={{ flexShrink: 0 }}>
-            <Burger
-              opened={opened}
-              onClick={toggle}
-              hiddenFrom="md"
-              size="sm"
-              aria-label={opened ? t("nav.close_menu", "Menyuni yopish") : t("nav.open_menu", "Menyuni ochish")}
-            />
+            {!isAuthPage && (
+              <Burger
+                opened={opened}
+                onClick={toggle}
+                hiddenFrom="md"
+                size="sm"
+                aria-label={opened ? t("nav.close_menu", "Menyuni yopish") : t("nav.open_menu", "Menyuni ochish")}
+              />
+            )}
             <DomainLink
               href={getLandingUrl("/")}
               className="saas-brand"
@@ -82,53 +88,48 @@ export default function Header({
             </DomainLink>
           </Group>
 
-          {/* Center: Desktop Navigation Links */}
-          <Box visibleFrom="md" className="saas-nav-container">
-            <DomainLink href={getLandingUrl("/")} className="saas-nav-link">
-              {t("nav.home", "Bosh sahifa")}
-            </DomainLink>
-            <a href={getLandingUrl("/#benefits")} className="saas-nav-link">
-              {t("nav.features", "Imkoniyatlar")}
-            </a>
-            <DomainLink href={getLandingUrl("/partners")} className="saas-nav-link">
-              {t("nav.partners", "Avtomaktablar")}
-            </DomainLink>
-            <a href={getLandingUrl("/#faq")} className="saas-nav-link">
-              {t("nav.faq", "FAQ")}
-            </a>
-            <DomainLink href={getLandingUrl("/about")} className="saas-nav-link">
-              {t("nav.about", "Biz haqimizda")}
-            </DomainLink>
-            <DomainLink href={getLandingUrl("/contact")} className="saas-nav-link">
-              {t("nav.contact", "Bog'lanish")}
-            </DomainLink>
-          </Box>
-
-          {/* Right: Telegram + Theme + Language + Single CTA button (OsonPrava Style) */}
+          {/* Right: Telegram + Theme + Language + CTA (OsonPrava Style - Clean & Distraction-free) */}
           <Group gap={8} wrap="nowrap" align="center" style={{ flexShrink: 0 }} className="saas-header-right">
-            <Box visibleFrom="sm">
-              <Tooltip label="Telegram" position="bottom" withArrow>
-                <a
-                  href="https://t.me/pravaonlineuz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="header-control-icon-btn"
-                  aria-label={t("nav.telegramChannel", "Telegram kanalimiz")}
-                >
-                  <IconBrandTelegram size={17} color="#0088cc" stroke={1.8} />
-                </a>
-              </Tooltip>
-            </Box>
+            {!isAuthPage && (
+              <Box visibleFrom="sm">
+                <Tooltip label="Telegram" position="bottom" withArrow>
+                  <a
+                    href="https://t.me/pravaonlineuz"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="header-control-icon-btn"
+                    aria-label={t("nav.telegramChannel", "Telegram kanalimiz")}
+                  >
+                    <IconBrandTelegram size={17} color="#0088cc" stroke={1.8} />
+                  </a>
+                </Tooltip>
+              </Box>
+            )}
 
             <ColorMode />
             <LanguagePicker />
 
-            <Box visibleFrom="sm" className="navbar-divider" aria-hidden="true" />
+            <Box visibleFrom="xs" className="navbar-divider" aria-hidden="true" />
 
             {isAuthenticated ? (
               <UserMenuButton />
+            ) : isAuthPage ? (
+              <DomainLink
+                href={getLandingUrl("/")}
+                style={{ textDecoration: "none" }}
+              >
+                <Button
+                  radius="md"
+                  size="xs"
+                  variant="subtle"
+                  color="gray"
+                  style={{ fontWeight: 600 }}
+                >
+                  {t("nav.home", "Bosh sahifa")}
+                </Button>
+              </DomainLink>
             ) : (
-              <Box visibleFrom="sm">
+              <Box>
                 <DomainLink
                   href={getWebAppUrl(authCtaHref)}
                   style={{ textDecoration: "none" }}
@@ -162,3 +163,4 @@ export default function Header({
 }
 
 export const MemoizedHeader = React.memo(Header);
+

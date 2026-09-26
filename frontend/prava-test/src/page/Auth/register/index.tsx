@@ -20,30 +20,22 @@ import {
   IconAlertCircle,
   IconArrowLeft,
   IconArrowRight,
-  IconBook,
-  IconChartBar,
   IconCheck,
-  IconDeviceDesktop,
   IconExternalLink,
   IconLock,
   IconMail,
-  IconSchool,
   IconUser,
 } from "@tabler/icons-react";
 import { useAuth } from "@/auth/AuthContext";
 import api from "@/api/api";
-import { getCachedTotalQuestions, getCachedTotalTickets } from "@/services/desktopAdapter";
 import { notifications } from "@mantine/notifications";
 import { getErrorMessage } from "@/types/errors";
 import { useCapsLock } from "@/hooks/useCapsLock";
 import CapsLockWarning from "@/components/auth/CapsLockWarning";
 import AuthLayout from "@/components/auth/AuthLayout";
 import AuthCard from "@/components/auth/AuthCard";
-import AuthChecklist from "@/components/auth/AuthChecklist";
-import AuthFeatureCard from "@/components/auth/AuthFeatureCard";
 import SocialAuthGroup from "@/components/auth/SocialAuthGroup";
 import AuthSecurityNotice from "@/components/auth/AuthSecurityNotice";
-import layoutClasses from "@/components/auth/AuthLayout.module.css";
 
 // Real-time password validation helper
 export const isPasswordSecure = (val: string): boolean => {
@@ -272,158 +264,6 @@ const Register_Page: React.FC = () => {
     return `https://${domain}`;
   };
 
-  // Left Column Content
-  const leftColumnContent = (
-    <>
-      <div className={layoutClasses.leftPillBadge}>
-        <IconSchool size={16} />
-        <span>{t("authV2.badge.examPrep", "Haydovchilik imtihoniga ishonchli tayyorgarlik")}</span>
-      </div>
-
-      <h1 className={layoutClasses.leftHeadline}>
-        {t("authV2.register.headlineMain", "Bugungi qadam —")}{" "}
-        <span className={layoutClasses.headlineAccent}>
-          {t("authV2.register.headlineAccent", "ertangi ishonch")}
-        </span>
-      </h1>
-
-      <p className={layoutClasses.leftDescription}>
-        {t(
-          "authV2.register.description",
-          "Ro'yxatdan o'ting va {{questionsCount}} ta rasmiy savol, {{ticketsCount}} ta bilet va davlat imtihoni simulyatori bilan bilimlaringizni mustahkamlang.",
-          {
-            questionsCount: getCachedTotalQuestions().toLocaleString(),
-            ticketsCount: getCachedTotalTickets(),
-          }
-        )}
-      </p>
-
-      <AuthChecklist
-        items={[
-          {
-            id: "r1",
-            text: t("authV2.register.check1", "Tez va oson ro'yxatdan o'tish"),
-          },
-          {
-            id: "r2",
-            text: t("authV2.register.check2", "Barcha qurilmalarda foydalanish"),
-          },
-          {
-            id: "r3",
-            text: t("authV2.register.check3", "Shaxsiy yutuqlar va statistika"),
-          },
-          {
-            id: "r4",
-            text: t("authV2.register.check4", "Real imtihon formatida testlar"),
-          },
-        ]}
-      />
-    </>
-  );
-
-  // Right Column Content
-  const rightColumnContent = (
-    <>
-      <h3
-        style={{
-          fontSize: "0.95rem",
-          fontWeight: 700,
-          color: "var(--text, #0f172a)",
-          margin: "0 0 2px",
-          lineHeight: 1.3,
-        }}
-      >
-        {t(
-          "authV2.register.benefitsTitle",
-          "Ro'yxatdan o'tganingizdan so'ng nimalarga ega bo'lasiz?"
-        )}
-      </h3>
-
-      <AuthFeatureCard
-        icon={<IconBook size={20} />}
-        iconBg="rgba(33, 150, 243, 0.1)"
-        iconColor="#2196F3"
-        title={t("authV2.register.b1Title", "To'liq testlar bazasi")}
-        description={t(
-          "authV2.register.b1Desc",
-          "{{questionsCount}} ta rasmiy savol va {{ticketsCount}} ta bilet.",
-          {
-            questionsCount: getCachedTotalQuestions().toLocaleString(),
-            ticketsCount: getCachedTotalTickets(),
-          }
-        )}
-      />
-
-      <AuthFeatureCard
-        icon={<IconDeviceDesktop size={20} />}
-        iconBg="rgba(56, 189, 248, 0.1)"
-        iconColor="#38BDF8"
-        title={t("authV2.register.b2Title", "Davlat imtihoni simulyatori")}
-        description={t(
-          "authV2.register.b2Desc",
-          "Real imtihon muhitiga o'xshash testlar."
-        )}
-      />
-
-      <AuthFeatureCard
-        icon={<IconChartBar size={20} />}
-        iconBg="rgba(16, 185, 129, 0.1)"
-        iconColor="#10B981"
-        title={t("authV2.register.b3Title", "Shaxsiy statistika")}
-        description={t(
-          "authV2.register.b3Desc",
-          "Natijalaringizni tahlil qiling, xatolar ustida ishlang."
-        )}
-      />
-
-      {/* Trust social proof badge */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "6px 12px",
-          background: "var(--surface, #ffffff)",
-          border: "1px solid var(--border, #e2e8f0)",
-          borderRadius: 12,
-        }}
-      >
-        <div style={{ display: "flex", marginLeft: 2 }}>
-          {["#2196F3", "#38BDF8", "#10B981", "#F59E0B"].map((color, i) => (
-            <div
-              key={color}
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: "50%",
-                background: color,
-                border: "2px solid var(--surface, #ffffff)",
-                marginLeft: i > 0 ? -6 : 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#ffffff",
-                fontSize: 10,
-                fontWeight: 700,
-              }}
-            >
-              {String.fromCharCode(65 + i)}
-            </div>
-          ))}
-        </div>
-        <span
-          style={{
-            fontSize: "0.78rem",
-            fontWeight: 600,
-            color: "var(--text, #1e293b)",
-          }}
-        >
-          {t("authV2.register.socialProof", "Foydalanuvchilarimiz bizga ishonadi")} 💙
-        </span>
-      </div>
-    </>
-  );
-
   const passwordValid = isPasswordSecure(form.values.password);
 
   return (
@@ -435,11 +275,10 @@ const Register_Page: React.FC = () => {
         { label: t("nav.home", "Bosh sahifa"), href: "/" },
         { label: t("authV2.register.title", "Ro'yxatdan o'tish") },
       ]}
-      leftColumn={leftColumnContent}
-      rightColumn={rightColumnContent}
+      stepIndicator={step === 2 ? t("authV2.register.step2Badge", "2-bosqich: Tasdiqlash") : undefined}
     >
       <AuthCard
-        icon={<img src="/logo.svg" alt="Prava Online" width={28} height={28} style={{ objectFit: "contain" }} />}
+        icon={<img src="/logo.svg" alt="Prava Online" width={32} height={32} style={{ objectFit: "contain" }} />}
         title={t("authV2.register.title", "Ro'yxatdan o'tish")}
         subtitle={t(
           "authV2.register.subtitle",

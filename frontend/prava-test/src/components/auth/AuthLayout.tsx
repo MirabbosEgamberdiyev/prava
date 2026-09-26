@@ -1,7 +1,6 @@
 import React, { type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { IconArrowLeft, IconChevronRight, IconSparkles } from "@tabler/icons-react";
-import { Accordion } from "@mantine/core";
+import { IconArrowLeft, IconChevronRight } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import classes from "./AuthLayout.module.css";
 import SEO from "@/components/common/SEO";
@@ -28,8 +27,8 @@ interface AuthLayoutProps {
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({
   children,
-  leftColumn,
-  rightColumn,
+  leftColumn: _leftColumn,
+  rightColumn: _rightColumn,
   backLink,
   stepIndicator,
   breadcrumbs,
@@ -91,33 +90,10 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           </div>
         )}
 
-        {/* 3-Column Grid Composition on Desktop */}
-        <div className={classes.threeColGrid}>
-          {leftColumn && <aside className={classes.leftCol}>{leftColumn}</aside>}
+        {/* Clean, Focused Centered Card Layout (PravaOlamiz / OsonPrava Clean Style) */}
+        <div className={classes.centeredCardWrapper}>
           <main className={classes.centerCol}>{children}</main>
-          {rightColumn && <aside className={classes.rightCol}>{rightColumn}</aside>}
         </div>
-
-        {/* Mobile Accordion: Collapses benefits under the form on mobile devices */}
-        {(leftColumn || rightColumn) && (
-          <div className={classes.mobileAccordionWrapper}>
-            <Accordion variant="separated" radius="md">
-              <Accordion.Item value="platform-benefits">
-                <Accordion.Control icon={<IconSparkles size={18} color="var(--primary, #2196F3)" />}>
-                  <span className={classes.mobileAccordionTitle}>
-                    {t("authV2.mobileFeaturesToggle", "Platforma imkoniyatlari va afzalliklari")}
-                  </span>
-                </Accordion.Control>
-                <Accordion.Panel>
-                  <div className={classes.mobilePanelContent}>
-                    {leftColumn}
-                    {rightColumn}
-                  </div>
-                </Accordion.Panel>
-              </Accordion.Item>
-            </Accordion>
-          </div>
-        )}
       </div>
     </div>
   );
