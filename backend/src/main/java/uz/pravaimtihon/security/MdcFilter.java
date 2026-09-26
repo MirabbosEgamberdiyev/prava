@@ -29,7 +29,8 @@ public class MdcFilter extends OncePerRequestFilter {
                                      HttpServletResponse response,
                                      FilterChain filterChain) throws ServletException, IOException {
         String requestId = request.getHeader(REQUEST_ID_HEADER);
-        if (requestId == null || requestId.isBlank()) {
+        // Klient qiymati log va javob header'iga tushadi — faqat xavfsiz format qabul qilinadi (log injection).
+        if (requestId == null || !requestId.matches("[A-Za-z0-9-]{8,64}")) {
             requestId = UUID.randomUUID().toString().substring(0, 8);
         }
 

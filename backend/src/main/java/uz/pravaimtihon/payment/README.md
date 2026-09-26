@@ -16,6 +16,7 @@ CLICK_SECRET_KEY=xxxxxxxxxxxxxxxxxxx
 PAYME_MERCHANT_ID=xxxxxxxxxxxxxxxxxxxxxxxx
 PAYME_CASHBOX_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
 PAYME_TEST_CASHBOX_KEY=optional-for-sandbox
+PAYME_TEST_MODE=false          # sandbox kaliti faqat true bo'lsa qabul qilinadi (prod profilda taqiqlangan)
 
 # Optional overrides
 PAYMENT_FRONTEND_BASE_URL=https://pravaonline.uz

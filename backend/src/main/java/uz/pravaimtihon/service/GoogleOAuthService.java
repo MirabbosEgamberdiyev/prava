@@ -24,6 +24,8 @@ public class GoogleOAuthService {
 
     private final GoogleIdTokenVerifier verifier;
     private final RestTemplate restTemplate;
+    /** Ruxsat etilgan OAuth client ID'lar — ID token va access token uchun ham tekshiriladi. */
+    private final java.util.Set<String> allowedAudiences;
 
     @Value("${app.oauth.google.enabled:true}")
     private boolean enabled;
@@ -54,6 +56,7 @@ public class GoogleOAuthService {
                 new NetHttpTransport(),
                 GsonFactory.getDefaultInstance()
         ).setAudience(audiences).build();
+        this.allowedAudiences = java.util.Set.copyOf(audiences);
         log.info("Google OAuth: verifier configured with {} audience(s)", audiences.size());
     }
 
@@ -71,7 +74,7 @@ public class GoogleOAuthService {
             }
 
             GoogleIdToken.Payload p = token.getPayload();
-            log.info("Google ID token verified successfully for email: {}", p.getEmail());
+            log.debug("Google ID token verified successfully");
 
             return GoogleUserInfo.builder()
                     .id(p.getSubject())
@@ -98,6 +101,20 @@ public class GoogleOAuthService {
         }
 
         try {
+            // SECURITY (token substitution): userinfo endpoint tokenning QAYSI ilovaga berilganini
+            // tekshirmaydi. Boshqa ilova uchun olingan access token bilan login qilishning oldini
+            // olish uchun avval tokeninfo orqali aud/azp bizning client ID'larimizdan biri ekanini tekshiramiz.
+            ResponseEntity<Map> info = restTemplate.getForEntity(
+                    "https://oauth2.googleapis.com/tokeninfo?access_token={t}", Map.class, accessToken);
+            Map<String, Object> infoBody = info.getBody();
+            Object aud = infoBody == null ? null : infoBody.get("aud");
+            Object azp = infoBody == null ? null : infoBody.get("azp");
+            if (!(aud instanceof String a && allowedAudiences.contains(a))
+                    && !(azp instanceof String z && allowedAudiences.contains(z))) {
+                log.warn("Google access token rejected: audience is not one of our client IDs");
+                throw new BusinessException("error.google.token.invalid");
+            }
+
             log.debug("Verifying Google access token via userinfo endpoint");
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + accessToken);
@@ -116,7 +133,7 @@ public class GoogleOAuthService {
                 throw new BusinessException("error.google.token.invalid");
             }
 
-            log.info("Google access token verified successfully for email: {}", body.get("email"));
+            log.debug("Google access token verified successfully");
 
             return GoogleUserInfo.builder()
                     .id((String) body.get("sub"))

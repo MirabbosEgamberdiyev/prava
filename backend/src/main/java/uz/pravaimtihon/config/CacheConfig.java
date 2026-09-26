@@ -146,7 +146,8 @@ public class CacheConfig {
                 Caffeine.newBuilder()
                         .maximumWeight(64L * 1024 * 1024)
                         .<Object, Object>weigher((k, v) -> (v instanceof byte[] b) ? b.length : 1024)
-                        .expireAfterAccess(30, TimeUnit.MINUTES)
+                        // expireAfterAccess edi: tez-tez so'raladigan rasm ALMASHTIRILSA ham eski nusxa abadiy qolardi
+                        .expireAfterWrite(30, TimeUnit.MINUTES)
                         .recordStats()
                         .build());
 

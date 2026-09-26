@@ -57,6 +57,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+                        // Prometheus metrikalari — faqat server ichidan (host yoki Docker tarmog'i).
+                        .requestMatchers("/actuator/prometheus").access((authentication, context) ->
+                                new org.springframework.security.authorization.AuthorizationDecision(
+                                        ClientIpResolver.isTrustedProxy(context.getRequest().getRemoteAddr())))
                         // ============================================
                         // PUBLIC ENDPOINTS - NO AUTHENTICATION
                         // ============================================
@@ -92,10 +96,16 @@ public class SecurityConfig {
                                 "/error",
 
                                 // ✅ Curriculum & Simulator Public Endpoints
-                                "/api/v1/curriculum/**",
-                                "/api/v1/simulator/**",
-                                "/api/v1/autodrom/**"
+                                "/api/v1/curriculum/**"
                         ).permitAll()
+
+                        // Simulator/Autodrom: faqat ma'lumotnoma (mashqlar, mashinalar) ochiq.
+                        // Sessiyalar va statistika — faqat login bilan (avval mehmonlar userId=1 ga yozilardi).
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/simulator/exercises", "/api/v1/simulator/vehicles",
+                                "/api/v1/autodrom/exercises", "/api/v1/autodrom/vehicles"
+                        ).permitAll()
+                        .requestMatchers("/api/v1/simulator/**", "/api/v1/autodrom/**").authenticated()
 
                         // Packages - PUBLIC READ (biletlar ro'yxati va soni)
                         .requestMatchers(HttpMethod.GET,
@@ -251,7 +261,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Accept-Language", "X-Requested-With"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Accept-Language", "X-Requested-With", "X-Auth-Mode"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Total-Count", "Content-Disposition", "X-Request-Id"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);

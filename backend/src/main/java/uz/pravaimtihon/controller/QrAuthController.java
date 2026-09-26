@@ -82,6 +82,10 @@ public class QrAuthController {
                 .filter(u -> !u.getDeleted() && u.getIsActive())
                 .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
 
+        if (!sessionStore.canApprove(request.getSessionId(), request.getChallenge())) {
+            throw new BusinessException("error.qr.session.invalid");
+        }
+
         // Generate full production credentials for the desktop client
         AuthResponse authResponse = authService.generateAuthResponse(user, language);
 
@@ -93,7 +97,7 @@ public class QrAuthController {
         );
 
         if (!approved) {
-            throw new BusinessException("QR sessiyasi muddati o'tgan yoki allaqachon ishlatilgan");
+            throw new BusinessException("error.qr.session.invalid");
         }
 
         return ResponseEntity.ok(ApiResponse.success("Qurilma muvaffaqiyatli ulandi", Map.of(

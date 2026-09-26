@@ -105,6 +105,13 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     // Statistics
     // ============================================
 
+    /** Offline to'plam uchun barcha faol biletlar (savollar lazy — tranzaksiya ichida o'qiladi). */
+    @Query("SELECT t FROM Ticket t WHERE t.deleted = false AND t.isActive = true ORDER BY t.ticketNumber")
+    List<Ticket> findAllActiveOrderByNumber();
+
+    @Query("SELECT COUNT(t), MAX(t.updatedAt) FROM Ticket t WHERE t.deleted = false AND t.isActive = true")
+    List<Object[]> activeTicketsFingerprint();
+
     @Query("SELECT COUNT(t) FROM Ticket t WHERE t.deleted = false AND t.isActive = true")
     long countActiveTickets();
 

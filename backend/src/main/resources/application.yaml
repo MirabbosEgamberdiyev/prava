@@ -34,6 +34,8 @@ spring:
           time_zone: UTC
         order_inserts: true
         order_updates: true
+        # N+1 oldini olish: lazy kolleksiya/assotsiatsiyalar 50 tadan to'plab yuklanadi
+        default_batch_fetch_size: 50
     open-in-view: false
 
   # Flyway Configuration
@@ -96,8 +98,8 @@ spring:
     multipart:
       enabled: true
       # Backup ZIP — 1 GB dan ko'p bo'lishi mumkin (media + DB to'plami)
-      max-file-size: 10GB
-      max-request-size: 10GB
+      max-file-size: 1100MB   # eng katta yuklama — installer/backup (1GB); avval 10GB edi
+      max-request-size: 1100MB
       # 5 MB dan kichik fayllar xotirada, kattaroqlari diskka tushadi
       file-size-threshold: 5MB
       # Yarim yuklangan fayllar uchun tashlash kerak emas
@@ -112,7 +114,8 @@ app:
   # Yaratish: openssl rand -base64 48
   jwt:
     secret: ${JWT_SECRET}
-    access-token-expiration: 86400000
+    # SECURITY: 24 soat → 30 daqiqa. Klientlar refresh token bilan jimgina yangilaydi.
+    access-token-expiration: ${JWT_ACCESS_TTL_MS:1800000}
     refresh-token-expiration: 2592000000
     # B6/A2: faqat GET-download havolalarida (?access_token=) ishlatiladigan,
     # asosiy access-tokendan ancha qisqa muddatli maxsus token
@@ -136,11 +139,11 @@ app:
   # Telegram Bot Configuration (for Login Widget verification + Bot commands + Notifications)
   telegram:
     # SECURITY: bot token = to'liq bot ustidan nazorat. Hardcoded default olib tashlandi.
-    bot-token: ${TELEGRAM_BOT_TOKEN:8485868847:AAEaP6qPZ0XUxKSkhKYUfdT_xhM74_YApEE}
+    bot-token: ${TELEGRAM_BOT_TOKEN:}
     bot-username: ${TELEGRAM_BOT_USERNAME:pravaonlineuzbot}
     admin-chat-id: ${TELEGRAM_CHAT_ID:${TELEGRAM_ADMIN_CHAT_ID:}}
     webhook-url: ${TELEGRAM_WEBHOOK_URL:}
-    webhook-secret: ${TELEGRAM_WEBHOOK_SECRET:prava_secret_webhook_token_2026}
+    webhook-secret: ${TELEGRAM_WEBHOOK_SECRET:}
     base-url: ${TELEGRAM_BASE_URL:https://pravaonline.uz}
 
   # Multi-Channel Contact / Partnership Inquiries
@@ -255,6 +258,7 @@ app:
       merchant-id:       ${PAYME_MERCHANT_ID:}
       cashbox-key:       ${PAYME_CASHBOX_KEY:}
       test-cashbox-key:  ${PAYME_TEST_CASHBOX_KEY:}
+      test-mode:         ${PAYME_TEST_MODE:false}   # sandbox kaliti faqat true bo'lsa qabul qilinadi
       checkout-base-url: https://checkout.paycom.uz
       return-path:       /payment/success
       timeout-seconds:   43200
@@ -311,11 +315,11 @@ server:
       force: true
   # Tomcat sozlamalari — 1 GB installer yuklash uchun
   tomcat:
-    connection-timeout: 900000        # 15 daqiqa (default 20s — katta fayl uchun yetmaydi)
-    keep-alive-timeout:  900000        # 15 daqiqa
+    connection-timeout: 120000        # 2 daqiqa: paketlar orasidagi kutish (upload oqimi davom etsa uzilmaydi)
+    keep-alive-timeout:  60000
     max-connections:     10000
     max-http-form-post-size: -1        # cheksiz (multipart limit application.yaml multipart bo'limidan)
-    max-swallow-size:    -1            # multipart parse vaqtida cheksiz
+    max-swallow-size:    10MB          # rad etilgan so'rov tanasidan ko'pi bilan shuncha o'qiladi (DoS)
 
 # ✅ FIXED: Actuator Configuration
 management:
@@ -350,3 +354,12 @@ springdoc:
     operations-sorter: method
     tags-sorter: alpha
   show-actuator: false
+# Sentry — faqat SENTRY_DSN berilganda faol (bo'sh bo'lsa hech narsa yuborilmaydi).
+sentry:
+  dsn: ${SENTRY_DSN:}
+  environment: ${SENTRY_ENVIRONMENT:${SPRING_PROFILES_ACTIVE:dev}}
+  send-default-pii: false          # IP, cookie, header'lar yuborilmaydi
+  traces-sample-rate: ${SENTRY_TRACES_SAMPLE_RATE:0.0}
+  ignored-exceptions-for-type:
+    - uz.pravaimtihon.exception.BaseException
+    - uz.pravaimtihon.payment.exception.PaymentException

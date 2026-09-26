@@ -173,6 +173,21 @@ public class GlobalExceptionHandler {
     /**
      * Access Denied
      */
+    /**
+     * Unique/FK cheklov buzilishi (masalan parallel so'rovlar) — avval 500 qaytardi.
+     * DB tafsilotlari (jadval/ustun nomlari) klientga chiqarilmaydi.
+     */
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<?>> handleDataIntegrityViolation(
+            org.springframework.dao.DataIntegrityViolationException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Data integrity violation on {}: {}", request.getRequestURI(),
+                ex.getMostSpecificCause().getClass().getSimpleName());
+        ApiResponse<?> response = ApiResponse.error(getMessage("error.data.conflict"), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<?>> handleAccessDenied(
             AccessDeniedException ex,

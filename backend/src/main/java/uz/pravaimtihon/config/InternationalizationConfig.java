@@ -19,6 +19,8 @@ public class InternationalizationConfig implements WebMvcConfigurer {
         source.setBasename("i18n/messages");
         source.setDefaultEncoding("UTF-8");
         source.setFallbackToSystemLocale(false);
+        // Kalit tanlangan tilda bo'lmasa — o'zbek (lotin) matni, xom kalit emas.
+        source.setDefaultLocale(new java.util.Locale("uzl"));
         source.setUseCodeAsDefaultMessage(true);
         return source;
     }

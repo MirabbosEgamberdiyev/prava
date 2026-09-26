@@ -28,6 +28,35 @@ public class TelegramTokenStore {
 
     private final SecureRandom secureRandom = new SecureRandom();
 
+    /*
+     * SECURITY: 5 xonali kod (100k) — mavjud klientlar (desktop, mobil) aynan shu formatni kutadi.
+     * IP bo'yicha limit (RateLimitFilter, 10/min) botnet'ga qarshi yetarli emas, shuning uchun
+     * GLOBAL muvaffaqiyatsiz urinishlar soni cheklanadi: 1 daqiqada MAX_GLOBAL_FAILURES dan oshsa,
+     * tekshiruv 1 daqiqaga to'xtatiladi (hamma uchun). Keyingi bosqich: uzunroq kod + klient yangilanishi.
+     */
+    private static final int MAX_GLOBAL_FAILURES = 30;
+    private static final long FAILURE_WINDOW_MS = 60_000L;
+    private long failureWindowStart = 0L;
+    private int failuresInWindow = 0;
+    private long circuitOpenUntil = 0L;
+
+    private void registerFailure() {
+        long now = System.currentTimeMillis();
+        if (now - failureWindowStart > FAILURE_WINDOW_MS) {
+            failureWindowStart = now;
+            failuresInWindow = 0;
+        }
+        if (++failuresInWindow >= MAX_GLOBAL_FAILURES) {
+            circuitOpenUntil = now + FAILURE_WINDOW_MS;
+            failuresInWindow = 0;
+            log.error("Telegram code brute-force suspected: validation paused for {} ms", FAILURE_WINDOW_MS);
+        }
+    }
+
+    private boolean isCircuitOpen() {
+        return System.currentTimeMillis() < circuitOpenUntil;
+    }
+
     /**
      * Generates a cryptographically secure 5-digit numeric verification code (00000 - 99999) with user profile.
      * If an active token already exists for the user, it is immediately invalidated.
@@ -58,7 +87,7 @@ public class TelegramTokenStore {
         tokens.put(token, new TokenEntry(userData, expiresAt));
         userActiveTokens.put(telegramUserId, token);
 
-        log.info("Generated 5-digit verification code for Telegram user {}: {} (TTL: {}m)", telegramUserId, token, TTL_MINUTES);
+        log.info("Generated Telegram verification code for user {} (TTL: {}m)", telegramUserId, TTL_MINUTES);
         return token;
     }
 
@@ -74,11 +103,16 @@ public class TelegramTokenStore {
         if (token == null || token.isBlank()) {
             return null;
         }
+        if (isCircuitOpen()) {
+            log.warn("Telegram code validation temporarily blocked: too many failed attempts globally");
+            return null;
+        }
 
         String normalizedToken = token.trim();
         TokenEntry entry = tokens.remove(normalizedToken);
         if (entry == null) {
-            log.warn("Telegram verification code not found or already consumed: {}", normalizedToken);
+            registerFailure();
+            log.warn("Telegram verification code not found or already consumed");
             return null;
         }
 

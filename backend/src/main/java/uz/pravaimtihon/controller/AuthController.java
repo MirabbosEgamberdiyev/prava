@@ -32,6 +32,19 @@ public class AuthController {
 
     private final AuthService authService;
     private final MessageService messageService;
+    private final uz.pravaimtihon.security.RefreshTokenCookies refreshTokenCookies;
+
+    /** Body'da token bo'lmasa (web cookie rejimi) HttpOnly cookie'dan olinadi. */
+    private RefreshTokenRequest withCookieFallback(RefreshTokenRequest request, jakarta.servlet.http.HttpServletRequest httpRequest) {
+        RefreshTokenRequest r = request != null ? request : new RefreshTokenRequest();
+        if (r.getRefreshToken() == null || r.getRefreshToken().isBlank()) {
+            r.setRefreshToken(refreshTokenCookies.read(httpRequest));
+        }
+        if (r.getRefreshToken() != null && r.getRefreshToken().isBlank()) {
+            r.setRefreshToken(null);
+        }
+        return r;
+    }
 
     @PostMapping("/google")
     @Operation(
@@ -564,10 +577,12 @@ public class AuthController {
             )
     })
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
-            @Valid @RequestBody RefreshTokenRequest request,
+            @RequestBody(required = false) RefreshTokenRequest request,
+            jakarta.servlet.http.HttpServletRequest httpRequest,
             @Parameter(description = "Accept-Language", required = true)
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
+        request = withCookieFallback(request, httpRequest);
         AuthResponse response = authService.refreshToken(request, language);
         return ResponseEntity.ok(ApiResponse.success(messageService.getMessage("success.auth.token.refreshed", language), response));
     }
@@ -608,12 +623,18 @@ public class AuthController {
             )
     })
     public ResponseEntity<ApiResponse<Void>> logout(
-            @Valid @RequestBody RefreshTokenRequest request,
+            @RequestBody(required = false) RefreshTokenRequest request,
+            jakarta.servlet.http.HttpServletRequest httpRequest,
             @Parameter(description = "Accept-Language", required = true)
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
-        authService.logout(request.getRefreshToken(), language);
-        return ResponseEntity.ok(ApiResponse.success(messageService.getMessage("success.auth.logout", language), null));
+        request = withCookieFallback(request, httpRequest);
+        if (request.getRefreshToken() != null) {
+            authService.logout(request.getRefreshToken(), language);
+        }
+        return ResponseEntity.ok()
+                .header(uz.pravaimtihon.security.RefreshTokenCookies.headerName(), refreshTokenCookies.clearHeader())
+                .body(ApiResponse.success(messageService.getMessage("success.auth.logout", language), null));
     }
 
     @PostMapping("/forgot-password")
@@ -938,5 +959,16 @@ public class AuthController {
 
         UserResponse response = authService.getCurrentUser(language);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PatchMapping("/me")
+    @Operation(summary = "O'z interfeys tilini saqlash", description = "Body: { \"preferredLanguage\": \"uzl\" | \"uzc\" | \"ru\" | \"en\" }")
+    public ResponseEntity<ApiResponse<UserResponse>> updateMyLanguage(
+            @RequestBody java.util.Map<String, String> body) {
+        String code = body == null ? null : body.get("preferredLanguage");
+        if (code == null || !AcceptLanguage.isValid(code)) {
+            throw new uz.pravaimtihon.exception.ValidationException("validation.field.required");
+        }
+        return ResponseEntity.ok(ApiResponse.success(authService.updateMyLanguage(AcceptLanguage.fromCode(code))));
     }
 }

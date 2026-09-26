@@ -42,6 +42,9 @@ public interface TopicRepository extends JpaRepository<Topic, Long> {
     @Query("SELECT t FROM Topic t WHERE t.deleted = false AND t.isActive = true ORDER BY t.displayOrder, t.nameUzl")
     List<Topic> findAllActiveOrderByDisplayOrder();
 
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(t), MAX(t.updatedAt) FROM Topic t WHERE t.deleted = false AND t.isActive = true")
+    List<Object[]> activeTopicsFingerprint();
+
     /**
      * Get all topics with pagination
      */

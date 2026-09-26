@@ -10,11 +10,11 @@ public interface SimulatorService {
 
     SimulatorSessionResponse createSession(Long userId, StartSimulatorSessionRequest request);
 
-    SimulatorSessionResponse getSession(Long sessionId);
+    SimulatorSessionResponse getSession(Long userId, Long sessionId);
 
-    void recordPenalty(Long sessionId, RecordSimulatorPenaltyRequest request);
+    void recordPenalty(Long userId, Long sessionId, RecordSimulatorPenaltyRequest request);
 
-    SimulatorSessionResponse finishSession(Long sessionId, FinishSimulatorSessionRequest request);
+    SimulatorSessionResponse finishSession(Long userId, Long sessionId, FinishSimulatorSessionRequest request);
 
     SimulatorStatisticsDto getUserStatistics(Long userId);
 

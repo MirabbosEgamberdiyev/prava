@@ -5,7 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uz.pravaimtihon.controller.AdminStatisticsController.DeviceInfoResponse;
+import uz.pravaimtihon.dto.response.DeviceInfoResponse;
+import uz.pravaimtihon.security.SessionRevocationService;
 import uz.pravaimtihon.dto.response.GlobalDeviceLimitResponse;
 import uz.pravaimtihon.entity.RefreshToken;
 import uz.pravaimtihon.entity.User;
@@ -15,7 +16,9 @@ import uz.pravaimtihon.repository.RefreshTokenRepository;
 import uz.pravaimtihon.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Qurilma boshqaruvi servisi.
@@ -28,6 +31,7 @@ public class DeviceManagementService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final SessionRevocationService sessionRevocationService;
 
     /**
      * Maksimal qurilmalar sonini o'rnatish (individual user uchun).
@@ -114,6 +118,64 @@ public class DeviceManagementService {
                 .activeDevices(actualActiveCount)
                 .remainingSlots(Math.max(0, user.getMaxDevices() - actualActiveCount))
                 .build();
+    }
+
+    /**
+     * Foydalanuvchining o'z qurilmalari ro'yxati (har bir refresh token family = bitta qurilma).
+     *
+     * @param currentSessionId joriy so'rov access token'idagi {@code sid} (bo'lmasa null)
+     */
+    @Transactional(readOnly = true)
+    public DeviceInfoResponse getMyDevices(Long userId, String currentSessionId) {
+        DeviceInfoResponse info = getDeviceInfo(userId);
+        Map<String, RefreshToken> latestByFamily = new LinkedHashMap<>();
+        for (RefreshToken t : refreshTokenRepository.findActiveTokensByUserId(userId, LocalDateTime.now())) {
+            latestByFamily.putIfAbsent(t.getTokenFamily(), t); // so'rov createdAt DESC — birinchisi eng yangisi
+        }
+        List<DeviceInfoResponse.DeviceItem> devices = latestByFamily.values().stream()
+                .map(t -> DeviceInfoResponse.DeviceItem.builder()
+                        .deviceId(t.getTokenFamily())
+                        .deviceName(describeUserAgent(t.getUserAgent()))
+                        .lastActiveAt(t.getLastUsedAt() != null ? t.getLastUsedAt() : t.getCreatedAt())
+                        .isCurrent(t.getTokenFamily().equals(currentSessionId))
+                        .build())
+                .toList();
+        info.setDevices(devices);
+        info.setActiveDevices(devices.size());
+        info.setRemainingSlots(Math.max(0, info.getMaxDevices() - devices.size()));
+        return info;
+    }
+
+    /**
+     * Foydalanuvchi o'z qurilma sessiyasini yopadi. Boshqa foydalanuvchining sessiyasi
+     * bo'lsa ham "topilmadi" qaytariladi (mavjudligini oshkor qilmaslik uchun).
+     */
+    @Transactional
+    public void revokeMyDevice(Long userId, String deviceId) {
+        List<RefreshToken> tokens = refreshTokenRepository.findActiveTokensByFamily(deviceId, LocalDateTime.now());
+        boolean owned = !tokens.isEmpty() && tokens.stream().allMatch(t -> t.getUser().getId().equals(userId));
+        if (!owned) {
+            throw new ResourceNotFoundException("error.device.not.found");
+        }
+        refreshTokenRepository.revokeAllByFamily(deviceId, LocalDateTime.now());
+        sessionRevocationService.evict(deviceId);
+        log.info("User {} revoked device session", userId);
+    }
+
+    private static String describeUserAgent(String ua) {
+        if (ua == null || ua.isBlank()) return "Unknown device";
+        String os = ua.contains("Android") ? "Android"
+                : ua.contains("iPhone") || ua.contains("iPad") ? "iOS"
+                : ua.contains("Windows") ? "Windows"
+                : ua.contains("Mac OS") ? "macOS"
+                : ua.contains("Linux") ? "Linux" : null;
+        String client = ua.contains("okhttp") || ua.contains("Expo") || ua.contains("PravaOnline") ? "App"
+                : ua.contains("Edg/") ? "Edge"
+                : ua.contains("Chrome/") ? "Chrome"
+                : ua.contains("Firefox/") ? "Firefox"
+                : ua.contains("Safari/") ? "Safari" : null;
+        if (os == null && client == null) return ua.length() > 40 ? ua.substring(0, 40) : ua;
+        return (client != null ? client : "Browser") + (os != null ? " · " + os : "");
     }
 
     /**

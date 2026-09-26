@@ -486,9 +486,11 @@ public class PaymeService {
         if (!"Paycom".equals(parts[0])) return false;
 
         String given = parts[1];
-        String prod  = props.getPayme().getCashboxKey();
-        String test  = props.getPayme().getTestCashboxKey();
-        return constantEq(given, prod) || constantEq(given, test);
+        if (given.isBlank()) return false;
+        if (constantEq(given, props.getPayme().getCashboxKey())) return true;
+        // Sandbox kaliti faqat test rejimi aniq yoqilganda qabul qilinadi.
+        return props.getPayme().isTestMode()
+                && constantEq(given, props.getPayme().getTestCashboxKey());
     }
 
     /** Faol tranzaksiyani rollback-only deb belgilaydi (istisno yutilgan holatda). */
@@ -504,11 +506,11 @@ public class PaymeService {
         }
     }
 
+    /** Bo'sh yoki sozlanmagan kalit HECH QACHON mos kelmaydi. */
     private static boolean constantEq(String a, String b) {
-        if (a == null || b == null || a.length() != b.length()) return false;
-        int r = 0;
-        for (int i = 0; i < a.length(); i++) r |= a.charAt(i) ^ b.charAt(i);
-        return r == 0;
+        if (a == null || b == null || a.isBlank() || b.isBlank()) return false;
+        return java.security.MessageDigest.isEqual(
+                a.getBytes(StandardCharsets.UTF_8), b.getBytes(StandardCharsets.UTF_8));
     }
 
     private static JsonRpcError unauthorized(String dbg) {

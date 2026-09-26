@@ -46,8 +46,10 @@ public class PaymentProperties {
         private String  merchantId;
         /** Cashbox key — used for Basic Auth verification of webhooks. */
         private String  cashboxKey;
-        /** Also called "Test key" — if set we accept requests from this key as well. */
+        /** Also called "Test key" — accepted ONLY when {@link #testMode} is true. */
         private String  testCashboxKey;
+        /** Sandbox rejimi. Prod'da doim false bo'lishi kerak. */
+        private boolean testMode = false;
         private String  checkoutBaseUrl = "https://checkout.paycom.uz";
         private String  returnPath      = "/payment/success";
         /** Soft cap — payments older than this (seconds) can be auto-cancelled. */

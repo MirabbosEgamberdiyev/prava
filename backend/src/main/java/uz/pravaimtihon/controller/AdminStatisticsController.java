@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import uz.pravaimtihon.dto.request.DeviceLimitRequest;
 import uz.pravaimtihon.dto.request.StatisticsFilterRequest;
 import uz.pravaimtihon.dto.response.ApiResponse;
+import uz.pravaimtihon.dto.response.DeviceInfoResponse;
 import uz.pravaimtihon.dto.response.ComprehensiveStatisticsResponse;
 import uz.pravaimtihon.dto.response.GlobalDeviceLimitResponse;
 import uz.pravaimtihon.enums.AcceptLanguage;
@@ -295,19 +296,4 @@ public class AdminStatisticsController {
         return ResponseEntity.ok(ApiResponse.success("User reset to global limit"));
     }
 
-    // ============================================
-    // INNER CLASSES
-    // ============================================
-
-    @lombok.Data
-    @lombok.Builder
-    @lombok.NoArgsConstructor
-    @lombok.AllArgsConstructor
-    public static class DeviceInfoResponse {
-        private Long userId;
-        private String userName;
-        private Integer maxDevices;
-        private Integer activeDevices;
-        private Integer remainingSlots;
-    }
 }

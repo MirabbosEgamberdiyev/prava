@@ -158,23 +158,11 @@ public class Ticket extends BaseEntity {
     // ============================================
 
     public String getName(AcceptLanguage language) {
-        if (language == null) return nameUzl;
-        return switch (language) {
-            case UZL -> nameUzl != null ? nameUzl : nameEn;
-            case UZC -> nameUzc != null ? nameUzc : nameUzl;
-            case EN -> nameEn != null ? nameEn : nameUzl;
-            case RU -> nameRu != null ? nameRu : nameUzl;
-        };
+                return uz.pravaimtihon.util.Localized.pick(language, nameUzl, nameUzc, nameRu, nameEn);
     }
 
     public String getDescription(AcceptLanguage language) {
-        if (language == null) return descriptionUzl;
-        return switch (language) {
-            case UZL -> descriptionUzl != null ? descriptionUzl : descriptionEn;
-            case UZC -> descriptionUzc != null ? descriptionUzc : descriptionUzl;
-            case EN -> descriptionEn != null ? descriptionEn : descriptionUzl;
-            case RU -> descriptionRu != null ? descriptionRu : descriptionUzl;
-        };
+                return uz.pravaimtihon.util.Localized.pick(language, descriptionUzl, descriptionUzc, descriptionRu, descriptionEn);
     }
 
     // ============================================

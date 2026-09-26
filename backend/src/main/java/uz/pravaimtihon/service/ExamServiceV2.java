@@ -41,6 +41,8 @@ public class ExamServiceV2 {
     private final ExamAnswerRepository answerRepository;
     private final ExamPackageRepository packageRepository;
     private final QuestionRepository questionRepository;
+    private final QuestionStatsService questionStatsService;
+    private final uz.pravaimtihon.controller.PublicExamRulesController.ExamRules examRules;
     private final QuestionOptionRepository optionRepository;
     private final UserRepository userRepository;
     private final UserStatisticsRepository statisticsRepository;
@@ -135,7 +137,7 @@ public class ExamServiceV2 {
         if (!isFreePackage &&
                 !paymentAccessService.hasActiveAccess(userId, examPackage.getId())) {
             throw uz.pravaimtihon.payment.exception.PaymentException
-                    .paymentRequired("Bu paket uchun to'lov talab qilinadi");
+                    .paymentRequired("error.payment.required");
         }
 
         // Savollarni tanlash va aralashtirish
@@ -265,13 +267,15 @@ public class ExamServiceV2 {
         // ✅ OPTIONS allaqachon yuklangan - loadOptionsForQuestions kerak emas
 
         // Davomiylik va o'tish balini hisoblash
+        // SECURITY: vaqt va o'tish balini SERVER belgilaydi (exam-rules). Avval klient istalgan
+        // durationMinutes (masalan 10000) va passingScore (masalan 0) yuborishi mumkin edi.
+        // Klient faqat QISQAROQ vaqt so'rashi mumkin.
+        int maxMinutes = Math.max(1, (int) Math.ceil(targetCount * examRules.getMarathon().getSecondsPerQuestion() / 60.0));
         int durationMinutes = request.getDurationMinutes() != null
-                ? request.getDurationMinutes()
-                : Math.max(examProperties.getMarathonMinDurationMinutes(), request.getQuestionCount());
+                ? Math.max(1, Math.min(request.getDurationMinutes(), maxMinutes))
+                : maxMinutes;
 
-        int passingScore = request.getPassingScore() != null
-                ? request.getPassingScore()
-                : DEFAULT_PASSING_SCORE;
+        int passingScore = examRules.getMarathon().getPassPercent();
 
         // Sessiya yaratish - har doim saqlanadi
         ExamSession session = createMarathonSession(user, selectedQuestions, durationMinutes, passingScore);
@@ -356,20 +360,30 @@ public class ExamServiceV2 {
         // Imtihon javoblarini olish va qayta ishlash
         List<ExamAnswer> examAnswers = answerRepository.findByExamSessionIdOrderByQuestionOrder(session.getId());
 
+        // SECURITY: vaqt tugagandan keyin (60s tarmoq zaxirasi bilan) yuborilgan YANGI javoblar
+        // qabul qilinmaydi — avval muddatdan istalgancha keyin ham javoblar baholanardi.
+        boolean acceptNewAnswers = session.getExpiresAt() == null
+                || !LocalDateTime.now().isAfter(session.getExpiresAt().plusSeconds(60));
+
         for (ExamAnswer examAnswer : examAnswers) {
             Question question = examAnswer.getQuestion();
             if (question == null) continue;
 
-            AnswerSubmitRequest userAnswer = answerMap.get(question.getId());
-
-            if (userAnswer != null && userAnswer.getSelectedOptionIndex() != null
-                    && examAnswer.getSelectedOptionIndex() == null) {
-                // Faqat hali javob berilmagan savollarni yangilash
-                examAnswer.submitAnswer(
-                        userAnswer.getSelectedOptionIndex(),
-                        userAnswer.getTimeSpentSeconds()
-                );
-                question.recordAnswer(examAnswer.getIsCorrect());
+            // check-answer bilan qulflangan javob o'zgarmaydi (statistikasi o'sha paytda yozilgan).
+            if (!examAnswer.isLocked()) {
+                AnswerSubmitRequest userAnswer = answerMap.get(question.getId());
+                if (acceptNewAnswers && userAnswer != null && userAnswer.getSelectedOptionIndex() != null) {
+                    examAnswer.submitAnswer(
+                            userAnswer.getSelectedOptionIndex(),
+                            userAnswer.getTimeSpentSeconds()
+                    );
+                } else if (examAnswer.getSelectedOptionIndex() != null) {
+                    // autosave qilingan javob — qayta baholanadi (isCorrect avval bo'sh qolardi)
+                    examAnswer.submitAnswer(examAnswer.getSelectedOptionIndex(), examAnswer.getTimeSpentSeconds());
+                }
+                if (examAnswer.isAnswered()) {
+                    questionStatsService.recordAnswer(question.getId(), examAnswer.getIsCorrect());
+                }
             }
         }
 
@@ -401,6 +415,25 @@ public class ExamServiceV2 {
                 userId, request.getClientSessionId(), request.getExamType(),
                 request.getAnswers() != null ? request.getAnswers().size() : 0);
 
+        // Idempotentlik: klient javob yo'qolganda qayta yuboradi — mavjud natijani qaytaramiz.
+        String clientSessionId = request.getClientSessionId() != null && !request.getClientSessionId().isBlank()
+                ? request.getClientSessionId().trim() : null;
+        if (clientSessionId != null) {
+            Optional<ExamSession> existing = sessionRepository.findFirstByUserIdAndClientSessionId(userId, clientSessionId);
+            if (existing.isPresent()) {
+                log.info("Offline imtihon allaqachon yozilgan: sessionId={}", existing.get().getId());
+                return buildResultResponse(existing.get(), answerRepository.findByExamSessionIdOrderByQuestionOrder(existing.get().getId()));
+            }
+        }
+
+        // Bir savolga bir nechta javob yuborilsa faqat birinchisi hisoblanadi.
+        List<AnswerSubmitRequest> uniqueAnswers = new ArrayList<>(request.getAnswers() == null ? List.of()
+                : request.getAnswers().stream()
+                    .filter(a -> a.getQuestionId() != null)
+                    .collect(Collectors.toMap(AnswerSubmitRequest::getQuestionId, a -> a, (a, b) -> a, LinkedHashMap::new))
+                    .values());
+        request.setAnswers(uniqueAnswers);
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
 
@@ -418,18 +451,35 @@ public class ExamServiceV2 {
             }
         }
 
+        // SECURITY: pullik paketga (yoki uning biletiga) ruxsati bo'lmasa, natija o'sha paketga bog'lanmaydi.
+        // Rad etilmaydi — aks holda offline navbatdagi hodisa abadiy qayta yuborilardi.
+        if (examPackage != null && !Boolean.TRUE.equals(examPackage.getIsFree())
+                && !paymentAccessService.hasActiveAccess(userId, examPackage.getId())) {
+            log.warn("record-offline: user {} has no access to package {} — result stored unlinked", userId, examPackage.getId());
+            examPackage = null;
+            ticket = null;
+        }
+
+        // Klient vaqti ishonchsiz: oxirgi 30 kun ichida va kelajakda emas (5 daqiqa soat farqi zaxirasi).
+        LocalDateTime now = LocalDateTime.now();
         LocalDateTime finishedAt = request.getCompletedAt() != null
                 ? LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(request.getCompletedAt()), java.time.ZoneId.systemDefault())
-                : LocalDateTime.now();
+                : now;
+        if (finishedAt.isAfter(now.plusMinutes(5)) || finishedAt.isBefore(now.minusDays(30))) {
+            finishedAt = now;
+        }
 
         long durSeconds = request.getDurationSeconds() != null && request.getDurationSeconds() > 0
                 ? request.getDurationSeconds()
                 : (request.getAnswers() != null ? request.getAnswers().size() * 30L : 600L);
 
+        durSeconds = Math.min(durSeconds, 4 * 3600L); // ishonchsiz klient qiymati — cheklanadi
         LocalDateTime startedAt = finishedAt.minusSeconds(durSeconds);
         int durationMinutes = (int) Math.max(1, Math.ceil(durSeconds / 60.0));
 
-        int totalQuestions = request.getAnswers() != null ? request.getAnswers().size() : 0;
+        // Javobsiz savollar ham hisobga olinadi: 5/20 to'g'ri javob 100% emas, 25% bo'lishi kerak.
+        int totalQuestions = Math.max(uniqueAnswers.size(),
+                request.getTotalQuestions() != null ? request.getTotalQuestions() : 0);
 
         ExamSession session = ExamSession.builder()
                 .user(user)
@@ -442,6 +492,7 @@ public class ExamServiceV2 {
                 .startedAt(startedAt)
                 .finishedAt(finishedAt)
                 .expiresAt(finishedAt)
+                .clientSessionId(clientSessionId)
                 .build();
 
         session = sessionRepository.save(session);
@@ -478,7 +529,7 @@ public class ExamServiceV2 {
                         .build();
 
                 examAnswers.add(answer);
-                question.recordAnswer(isCorrect);
+                questionStatsService.recordAnswer(question.getId(), isCorrect);
             }
 
             if (!examAnswers.isEmpty()) {
@@ -522,8 +573,14 @@ public class ExamServiceV2 {
 
         session = sessionRepository.save(session);
 
-        // Update statistics
-        updateUserStatisticsSafe(session);
+        // Aqlga sig'maydigan darajada tez (savolga < 2 s) yechilgan natija saqlanadi, lekin
+        // statistika va reytingga (leaderboard) ta'sir qilmaydi.
+        if (durSeconds >= 2L * answeredCount) {
+            updateUserStatisticsSafe(session);
+        } else {
+            log.warn("record-offline: implausible duration {}s for {} answers (session {}) — stats not updated",
+                    durSeconds, answeredCount, session.getId());
+        }
 
         log.info("Offline imtihon saqlandi: sessionId={}, score={}/{}, passed={}",
                 session.getId(), correctCount, totalQuestions, isPassed);
@@ -542,17 +599,33 @@ public class ExamServiceV2 {
      * @param request Savol ID va tanlangan variant
      * @return To'g'ri/noto'g'ri + tushuntirish
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public CheckAnswerResponse checkAnswer(CheckAnswerRequest request) {
-        getCurrentUserIdRequired(); // Auth tekshirish
+        Long userId = getCurrentUserIdRequired();
 
-        Question question = questionRepository.findById(request.getQuestionId())
-                .orElseThrow(() -> new ResourceNotFoundException("error.question.not.found"));
+        // SECURITY: faqat foydalanuvchining davom etayotgan imtihonidagi savol tekshiriladi.
+        List<ExamAnswer> candidates = request.getQuestionId() == null
+                ? List.of()
+                : answerRepository.findInActiveSessions(userId, request.getQuestionId());
+        if (candidates.isEmpty()) {
+            throw new ResourceNotFoundException("error.question.not.found");
+        }
+        ExamAnswer examAnswer = candidates.get(0);
+        if (examAnswer.getExamSession().isExpired()) {
+            throw new BusinessException("error.exam.session.expired");
+        }
 
-        log.debug("Javob tekshirilmoqda: questionId={}, selected={}",
-                request.getQuestionId(), request.getSelectedOptionIndex());
+        // SECURITY: birinchi tekshiruv javobni QULFLAYDI va baholaydi. Avval javob saqlanmasdi —
+        // har bir variantni ketma-ket "tekshirib", keyin submit'da to'g'risini yuborish mumkin edi.
+        // Qayta so'rov birinchi (qulflangan) tanlov natijasini qaytaradi.
+        if (!examAnswer.isLocked()) {
+            examAnswer.submitAnswer(request.getSelectedOptionIndex(), 0L);
+            examAnswer.setLocked(true);
+            answerRepository.save(examAnswer);
+            questionStatsService.recordAnswer(examAnswer.getQuestion().getId(), examAnswer.getIsCorrect());
+        }
 
-        return mapper.toCheckAnswerResponse(question, request.getSelectedOptionIndex());
+        return mapper.toCheckAnswerResponse(examAnswer.getQuestion(), examAnswer.getSelectedOptionIndex());
     }
 
     // ============================================
@@ -723,7 +796,7 @@ public class ExamServiceV2 {
                             userAnswer.getSelectedOptionIndex(),
                             userAnswer.getTimeSpentSeconds()
                     );
-                    question.recordAnswer(examAnswer.getIsCorrect());
+                    questionStatsService.recordAnswer(question.getId(), examAnswer.getIsCorrect());
                 }
             }
 

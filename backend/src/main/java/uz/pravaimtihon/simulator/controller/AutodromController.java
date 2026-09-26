@@ -30,9 +30,6 @@ public class AutodromController {
     public ResponseEntity<ApiResponse<SimulatorSessionResponse>> createSession(
             @Valid @RequestBody StartSimulatorSessionRequest request) {
         Long userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
-            userId = 1L;
-        }
         log.info("[AutodromController] Creating session for user {} with mode {}", userId, request.getMode());
         SimulatorSessionResponse response = simulatorService.createSession(userId, request);
         return ResponseEntity.ok(ApiResponse.success(response));
@@ -42,7 +39,7 @@ public class AutodromController {
     @Operation(summary = "Start autodrome session timer", description = "Marks session as running and returns details")
     public ResponseEntity<ApiResponse<SimulatorSessionResponse>> startSession(
             @PathVariable Long id) {
-        SimulatorSessionResponse response = simulatorService.getSession(id);
+        SimulatorSessionResponse response = simulatorService.getSession(SecurityUtils.getCurrentUserId(), id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -55,7 +52,7 @@ public class AutodromController {
         if (request.getPosX() != null && (request.getPosX() < 0 || request.getPosX() > 1000)) {
             log.warn("[AutodromController] Anti-cheat flag: Invalid coordinate posX={}", request.getPosX());
         }
-        simulatorService.recordPenalty(id, request);
+        simulatorService.recordPenalty(SecurityUtils.getCurrentUserId(), id, request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
@@ -69,7 +66,7 @@ public class AutodromController {
             log.warn("[AutodromController] Anti-cheat correction: isPassed cannot be true with penalty points={}", request.getTotalPenaltyPoints());
             request.setIsPassed(false);
         }
-        SimulatorSessionResponse response = simulatorService.finishSession(id, request);
+        SimulatorSessionResponse response = simulatorService.finishSession(SecurityUtils.getCurrentUserId(), id, request);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -77,7 +74,7 @@ public class AutodromController {
     @Operation(summary = "Get autodrome result", description = "Retrieves session result, pass/fail status, and penalty log")
     public ResponseEntity<ApiResponse<SimulatorSessionResponse>> getResult(
             @PathVariable Long id) {
-        SimulatorSessionResponse response = simulatorService.getSession(id);
+        SimulatorSessionResponse response = simulatorService.getSession(SecurityUtils.getCurrentUserId(), id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -92,9 +89,6 @@ public class AutodromController {
     @Operation(summary = "Get user autodrome statistics", description = "Aggregated performance metrics and history")
     public ResponseEntity<ApiResponse<SimulatorStatisticsDto>> getStatistics() {
         Long userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
-            userId = 1L;
-        }
         SimulatorStatisticsDto stats = simulatorService.getUserStatistics(userId);
         return ResponseEntity.ok(ApiResponse.success(stats));
     }
@@ -103,9 +97,6 @@ public class AutodromController {
     @Operation(summary = "Get weak exercises", description = "Stations needing more practice")
     public ResponseEntity<ApiResponse<List<WeakExerciseDto>>> getWeakExercises() {
         Long userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
-            userId = 1L;
-        }
         List<WeakExerciseDto> list = simulatorService.getWeakExercises(userId);
         return ResponseEntity.ok(ApiResponse.success(list));
     }

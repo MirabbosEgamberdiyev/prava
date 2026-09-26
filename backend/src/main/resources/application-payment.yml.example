@@ -27,6 +27,7 @@ app:
       merchant-id:       ${PAYME_MERCHANT_ID:}
       cashbox-key:       ${PAYME_CASHBOX_KEY:}
       test-cashbox-key:  ${PAYME_TEST_CASHBOX_KEY:}
+      test-mode:         ${PAYME_TEST_MODE:false}   # sandbox kaliti faqat true bo'lsa qabul qilinadi
       checkout-base-url: https://checkout.paycom.uz
       return-path:       /payment/success
       timeout-seconds:   43200

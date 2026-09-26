@@ -21,6 +21,7 @@ public class FaqService {
 
     @Transactional
     public FaqItem create(FaqItem faq) {
+        faq.resetServerManagedFields(); // mass-assignment himoyasi
         return faqRepository.save(faq);
     }
 

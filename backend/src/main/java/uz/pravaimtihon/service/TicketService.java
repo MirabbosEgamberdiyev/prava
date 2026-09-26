@@ -46,6 +46,7 @@ public class TicketService {
     private final ExamSessionRepository sessionRepository;
     private final ExamAnswerRepository answerRepository;
     private final ExamResponseMapper mapper;
+    private final uz.pravaimtihon.payment.service.PaymentAccessService paymentAccessService;
 
     // ============================================
     // BILET YARATISH
@@ -322,6 +323,15 @@ public class TicketService {
 
         if (!ticket.getIsActive()) {
             throw new BusinessException("error.ticket.not.active");
+        }
+
+        // Payment gate: bilet pullik paketga tegishli bo'lsa faol ruxsat shart (avval bilet orqali
+        // pullik paket savollarini to'lovsiz olish mumkin edi — audit P1-B1).
+        ExamPackage ticketPackage = ticket.getExamPackage();
+        if (ticketPackage != null && !Boolean.TRUE.equals(ticketPackage.getIsFree())
+                && !paymentAccessService.hasActiveAccess(userId, ticketPackage.getId())) {
+            throw uz.pravaimtihon.payment.exception.PaymentException
+                    .paymentRequired("error.payment.required");
         }
 
         // Agar foydalanuvchida faol sessiyalar bo'lsa — barchasini abandon qilamiz (atomic UPDATE, no optimistic lock collision)

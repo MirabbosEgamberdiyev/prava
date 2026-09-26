@@ -125,6 +125,7 @@ public class FileService {
     /**
      * Update file by fileName
      */
+    @org.springframework.cache.annotation.CacheEvict(value = {"fileCache", "contentTypeCache", "fileExistsCache"}, allEntries = true)
     public FileUploadResponse updateByFileName(String fileName, String folder,
                                                MultipartFile newFile, AcceptLanguage language) {
         validateFileName(fileName, language);
@@ -138,6 +139,7 @@ public class FileService {
     /**
      * Update file by fileUrl
      */
+    @org.springframework.cache.annotation.CacheEvict(value = {"fileCache", "contentTypeCache", "fileExistsCache"}, allEntries = true)
     public FileUploadResponse updateByFileUrl(String fileUrl, MultipartFile newFile, AcceptLanguage language) {
         if (fileUrl == null || fileUrl.isBlank()) {
             throw new FileStorageException(
@@ -189,6 +191,7 @@ public class FileService {
     /**
      * Delete file by fileName
      */
+    @org.springframework.cache.annotation.CacheEvict(value = {"fileCache", "contentTypeCache", "fileExistsCache"}, allEntries = true)
     public boolean deleteByFileName(String fileName, String folder, AcceptLanguage language) {
         validateFileName(fileName, language);
         validateFolder(folder, language);
@@ -200,6 +203,7 @@ public class FileService {
     /**
      * Delete file by fileUrl
      */
+    @org.springframework.cache.annotation.CacheEvict(value = {"fileCache", "contentTypeCache", "fileExistsCache"}, allEntries = true)
     public boolean deleteByFileUrl(String fileUrl, AcceptLanguage language) {
         if (fileUrl == null || fileUrl.isBlank()) {
             throw new FileStorageException(

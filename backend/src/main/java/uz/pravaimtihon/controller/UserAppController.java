@@ -28,6 +28,25 @@ import java.util.List;
 public class UserAppController {
 
     private final UserAppService userAppService;
+    private final uz.pravaimtihon.service.OfflineBundleService offlineBundleService;
+
+    // ─── Offline bundle (desktop) ─────────────────────────────────────────────
+
+    @GetMapping("/offline-bundle")
+    @Operation(summary = "Offline rejim uchun barcha faol savollar (ETag bilan versiyalangan)")
+    public ResponseEntity<ApiResponse<uz.pravaimtihon.service.OfflineBundleService.Bundle>> getOfflineBundle(
+            @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        Long userId = principal != null ? principal.getId() : null;
+        String etag = "\"" + offlineBundleService.currentVersionFor(userId) + "\"";
+        // private: shaxsiy (huquqqa bog'liq) javob — umumiy/proxy keshlarda saqlanmasin.
+        org.springframework.http.CacheControl cc = org.springframework.http.CacheControl.noCache().cachePrivate();
+        if (etag.equals(ifNoneMatch)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_MODIFIED).eTag(etag).cacheControl(cc).build();
+        }
+        return ResponseEntity.ok().eTag(etag).cacheControl(cc)
+                .body(ApiResponse.success(offlineBundleService.getBundleFor(userId)));
+    }
 
     // ─── Topics ───────────────────────────────────────────────────────────────
 

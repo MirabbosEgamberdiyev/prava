@@ -28,6 +28,7 @@ public class UserStatisticsController {
 
     private final ComprehensiveStatisticsService statisticsService;
     private final DeviceManagementService deviceService;
+    private final uz.pravaimtihon.security.JwtTokenProvider jwtTokenProvider;
 
     // ============================================
     // TO'LIQ STATISTIKA
@@ -219,9 +220,28 @@ public class UserStatisticsController {
 
     @GetMapping("/devices")
     @Operation(summary = "Mening qurilmalarim haqida ma'lumot")
-    public ResponseEntity<ApiResponse<AdminStatisticsController.DeviceInfoResponse>> getMyDeviceInfo() {
+    public ResponseEntity<ApiResponse<uz.pravaimtihon.dto.response.DeviceInfoResponse>> getMyDeviceInfo(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         Long userId = uz.pravaimtihon.security.SecurityUtils.getCurrentUserId();
-        AdminStatisticsController.DeviceInfoResponse response = deviceService.getDeviceInfo(userId);
+        uz.pravaimtihon.dto.response.DeviceInfoResponse response =
+                deviceService.getMyDevices(userId, currentSessionId(authHeader));
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @DeleteMapping("/devices/{deviceId}")
+    @Operation(summary = "O'z qurilma sessiyasini yopish")
+    public ResponseEntity<ApiResponse<Void>> revokeMyDevice(@PathVariable String deviceId) {
+        Long userId = uz.pravaimtihon.security.SecurityUtils.getCurrentUserId();
+        deviceService.revokeMyDevice(userId, deviceId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    private String currentSessionId(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) return null;
+        try {
+            return jwtTokenProvider.extractSessionId(authHeader.substring(7));
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

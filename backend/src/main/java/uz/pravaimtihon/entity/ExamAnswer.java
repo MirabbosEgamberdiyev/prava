@@ -47,6 +47,18 @@ public class ExamAnswer extends BaseEntity {
     @Column(name = "time_spent_seconds")
     private Long timeSpentSeconds;
 
+    /**
+     * check-answer orqali darhol tekshirilgan javob qulflanadi: keyin submit/autosave uni
+     * o'zgartira olmaydi (aks holda barcha variantlarni sinab ko'rib, keyin to'g'risini yuborish mumkin edi).
+     */
+    @Column(name = "answer_locked", nullable = false)
+    @Builder.Default
+    private Boolean locked = false;
+
+    public boolean isLocked() {
+        return Boolean.TRUE.equals(locked);
+    }
+
     public void submitAnswer(Integer selectedIndex, Long timeSpent) {
         this.selectedOptionIndex = selectedIndex;
         this.timeSpentSeconds = timeSpent;

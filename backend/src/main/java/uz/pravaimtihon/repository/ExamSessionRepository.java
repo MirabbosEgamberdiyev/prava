@@ -16,6 +16,8 @@ public interface ExamSessionRepository extends JpaRepository<ExamSession, Long> 
 
     Optional<ExamSession> findByIdAndUserId(Long id, Long userId);
 
+    Optional<ExamSession> findFirstByUserIdAndClientSessionId(Long userId, String clientSessionId);
+
     /**
      * ⚠️ AUDIT — RACE CONDITION: imtihonni yakunlash (submit / auto-submit)
      * hech qanday qulfsiz bajarilardi. Ikkita parallel so'rov (masalan

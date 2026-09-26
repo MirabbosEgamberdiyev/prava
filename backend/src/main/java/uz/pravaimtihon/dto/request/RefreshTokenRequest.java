@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RefreshTokenRequest {
 
-    @NotBlank(message = "validation.token.required")
+    // Web (cookie rejimi) body'da yubormaydi — token HttpOnly cookie'dan o'qiladi (AuthController).
     private String refreshToken;
 }

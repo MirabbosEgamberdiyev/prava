@@ -38,6 +38,7 @@ public class JwtTokenProvider {
     private String issuer;
 
     private static final String CLAIM_TOKEN_TYPE = "typ";
+    private static final String CLAIM_SESSION_ID = "sid";
     private static final String TOKEN_TYPE_DOWNLOAD = "download";
 
     /**
@@ -55,7 +56,18 @@ public class JwtTokenProvider {
      * ✅ Access Token yaratish
      */
     public String generateAccessToken(UserDetails userDetails) {
+        return generateAccessToken(userDetails, null);
+    }
+
+    /**
+     * @param sessionId refresh token family — access token'ni qurilma sessiyasiga bog'laydi,
+     *                  sessiya revoke qilinsa token ham rad etiladi ({@link SessionRevocationService}).
+     */
+    public String generateAccessToken(UserDetails userDetails, String sessionId) {
         Map<String, Object> extraClaims = new HashMap<>();
+        if (sessionId != null) {
+            extraClaims.put(CLAIM_SESSION_ID, sessionId);
+        }
         if (userDetails instanceof CustomUserDetails customUserDetails) {
             extraClaims.put("userId", customUserDetails.getId());
             extraClaims.put("role", customUserDetails.getRole().name());
@@ -132,6 +144,10 @@ public class JwtTokenProvider {
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractSessionId(String token) {
+        return extractClaim(token, claims -> claims.get(CLAIM_SESSION_ID, String.class));
     }
 
     public Long extractUserId(String token) {

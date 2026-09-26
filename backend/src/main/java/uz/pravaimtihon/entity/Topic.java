@@ -81,24 +81,14 @@ public class Topic extends BaseEntity {
      * Get localized name based on language
      */
     public String getName(AcceptLanguage language) {
-        return switch (language) {
-            case UZL -> nameUzl;
-            case UZC -> nameUzc != null ? nameUzc : nameUzl;
-            case EN -> nameEn != null ? nameEn : nameUzl;
-            case RU -> nameRu != null ? nameRu : nameUzl;
-        };
+        return uz.pravaimtihon.util.Localized.pick(language, nameUzl, nameUzc, nameRu, nameEn);
     }
 
     /**
      * Get localized description based on language
      */
     public String getDescription(AcceptLanguage language) {
-        return switch (language) {
-            case UZL -> descriptionUzl;
-            case UZC -> descriptionUzc != null ? descriptionUzc : descriptionUzl;
-            case EN -> descriptionEn != null ? descriptionEn : descriptionUzl;
-            case RU -> descriptionRu != null ? descriptionRu : descriptionUzl;
-        };
+        return uz.pravaimtihon.util.Localized.pick(language, descriptionUzl, descriptionUzc, descriptionRu, descriptionEn);
     }
 
     /**

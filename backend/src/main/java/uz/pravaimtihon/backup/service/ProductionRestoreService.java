@@ -69,6 +69,7 @@ public class ProductionRestoreService {
     private final StorageProperties          storageProperties;
     private final BackupJobRegistry          jobRegistry;
     private final PlatformTransactionManager txManager;
+    private final org.springframework.cache.CacheManager cacheManager;
 
     private static final String SUPPORTED_VERSION = "2.0";
 
@@ -147,6 +148,10 @@ public class ProductionRestoreService {
                 log.info("[RESTORE] Media import skipped (importMedia=false)");
             }
 
+            // Tiklangan ma'lumot eski kesh (savollar, fayllar, statistika) bilan aralashmasin.
+
+            cacheManager.getCacheNames().forEach(n -> { var c = cacheManager.getCache(n); if (c != null) c.clear(); });
+
             job.markCompleted("Restore complete");
             log.info("[RESTORE] Completed: jobId={} duration={}ms", jobId, System.currentTimeMillis() - t0);
 
@@ -180,23 +185,16 @@ public class ProductionRestoreService {
         if (!tablesToClear.isEmpty()) {
             log.info("[CLEAR] Starting selective clear: tables={}", tablesToClear);
 
-            jdbcTemplate.execute("SET session_replication_role = 'replica'");
-            try {
-                for (String table : tablesToClear) {
-                    try {
-                        jdbcTemplate.execute("TRUNCATE TABLE " + table + " CASCADE");
-                        clearedTables.add(table);
-                        log.info("[CLEAR] Cleared table={}", table);
-                    } catch (Exception e) {
-                        failedTables.add(table);
-                        log.error("[CLEAR] Failed to clear table={}: {}", table, e.getMessage());
-                    }
-                }
-            } finally {
+            // TRUNCATE ... CASCADE FK'larni o'zi hal qiladi. Avvalgi `SET session_replication_role`
+            // pool'dagi tasodifiy ulanishda qolib ketardi (FK'lar boshqa so'rovlar uchun o'chib qolardi).
+            for (String table : tablesToClear) {
                 try {
-                    jdbcTemplate.execute("SET session_replication_role = 'origin'");
-                } catch (Exception ex) {
-                    log.warn("[CLEAR] Could not re-enable FK constraints: {}", ex.getMessage());
+                    jdbcTemplate.execute("TRUNCATE TABLE " + table + " CASCADE");
+                    clearedTables.add(table);
+                    log.info("[CLEAR] Cleared table={}", table);
+                } catch (Exception e) {
+                    failedTables.add(table);
+                    log.error("[CLEAR] Failed to clear table={}: {}", table, e.getMessage());
                 }
             }
 
@@ -326,8 +324,9 @@ public class ProductionRestoreService {
             });
         }
 
-        jdbcTemplate.execute("SET session_replication_role = 'replica'");
-
+        // AUDIT: avval bu yerda pool'dagi TASODIFIY ulanishda `SET session_replication_role` qilinardi —
+        // FK'lar o'chirilgan ulanish pool'ga qaytib, keyingi aloqasiz so'rovlarga ta'sir qilardi.
+        // Endi har bir batch tranzaksiyasi ichida `SET LOCAL` ishlatiladi (insertBatchInTx).
         int totalRows    = 0;
         int entityCount  = manifest.getEntities().size();
         int i            = 0;
@@ -374,12 +373,6 @@ public class ProductionRestoreService {
             }
         } catch (Exception e) {
             throw new RuntimeException("DB restore failed: " + e.getMessage(), e);
-        } finally {
-            try {
-                jdbcTemplate.execute("SET session_replication_role = 'origin'");
-            } catch (Exception ex) {
-                log.warn("[RESTORE] Could not re-enable FK constraints: {}", ex.getMessage());
-            }
         }
 
         if (!failedTables.isEmpty()) {
@@ -712,6 +705,8 @@ public class ProductionRestoreService {
         try {
             tx.executeWithoutResult(status -> {
                 try {
+                    // SET LOCAL — faqat shu tranzaksiya/ulanish uchun; commit/rollback'da avtomatik tiklanadi.
+                    jdbcTemplate.execute("SET LOCAL session_replication_role = 'replica'");
                     int[] r = joinTable
                             ? insertJoinTableBatch(table, rows)
                             : insertEntityBatch(table, rows, force);

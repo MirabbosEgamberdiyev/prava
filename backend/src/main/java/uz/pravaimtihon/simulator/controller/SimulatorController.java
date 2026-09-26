@@ -30,10 +30,6 @@ public class SimulatorController {
     public ResponseEntity<ApiResponse<SimulatorSessionResponse>> startSession(
             @Valid @RequestBody StartSimulatorSessionRequest request) {
         Long userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
-            // Fallback for guest trial simulation if unauthenticated
-            userId = 1L;
-        }
         SimulatorSessionResponse response = simulatorService.createSession(userId, request);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -42,7 +38,7 @@ public class SimulatorController {
     @Operation(summary = "Get simulator session", description = "Retrieves simulation session details and result")
     public ResponseEntity<ApiResponse<SimulatorSessionResponse>> getSession(
             @PathVariable Long id) {
-        SimulatorSessionResponse response = simulatorService.getSession(id);
+        SimulatorSessionResponse response = simulatorService.getSession(SecurityUtils.getCurrentUserId(), id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -51,7 +47,7 @@ public class SimulatorController {
     public ResponseEntity<ApiResponse<Void>> recordPenalty(
             @PathVariable Long id,
             @Valid @RequestBody RecordSimulatorPenaltyRequest request) {
-        simulatorService.recordPenalty(id, request);
+        simulatorService.recordPenalty(SecurityUtils.getCurrentUserId(), id, request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
@@ -60,7 +56,7 @@ public class SimulatorController {
     public ResponseEntity<ApiResponse<SimulatorSessionResponse>> finishSession(
             @PathVariable Long id,
             @Valid @RequestBody FinishSimulatorSessionRequest request) {
-        SimulatorSessionResponse response = simulatorService.finishSession(id, request);
+        SimulatorSessionResponse response = simulatorService.finishSession(SecurityUtils.getCurrentUserId(), id, request);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -68,9 +64,6 @@ public class SimulatorController {
     @Operation(summary = "User simulator statistics", description = "Returns aggregated statistics, pass rate, average score and time")
     public ResponseEntity<ApiResponse<SimulatorStatisticsDto>> getUserStatistics() {
         Long userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
-            userId = 1L;
-        }
         SimulatorStatisticsDto stats = simulatorService.getUserStatistics(userId);
         return ResponseEntity.ok(ApiResponse.success(stats));
     }
@@ -79,9 +72,6 @@ public class SimulatorController {
     @Operation(summary = "User weak exercises", description = "Identifies exercises with highest failure count for targeted practice")
     public ResponseEntity<ApiResponse<List<WeakExerciseDto>>> getWeakExercises() {
         Long userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
-            userId = 1L;
-        }
         List<WeakExerciseDto> list = simulatorService.getWeakExercises(userId);
         return ResponseEntity.ok(ApiResponse.success(list));
     }

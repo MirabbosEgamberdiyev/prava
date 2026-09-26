@@ -218,9 +218,13 @@ public class ClickService {
                 .append(nz(r.getSignTime()));
 
         String computed = md5Hex(raw.toString());
-        boolean ok = computed.equalsIgnoreCase(r.getSignString());
+        String given = r.getSignString() == null ? "" : r.getSignString().toLowerCase(java.util.Locale.ROOT);
+        // Vaqtga bog'liq bo'lmagan solishtirish; hisoblangan imzo log'ga yozilmaydi.
+        boolean ok = MessageDigest.isEqual(
+                computed.toLowerCase(java.util.Locale.ROOT).getBytes(StandardCharsets.UTF_8),
+                given.getBytes(StandardCharsets.UTF_8));
         if (!ok) {
-            log.warn("[click] sign check failed  computed={}  got={}", computed, r.getSignString());
+            log.warn("[click] sign check failed for click_trans_id={}", r.getClickTransId());
         }
         return ok;
     }

@@ -70,6 +70,10 @@ public class ExamSession extends BaseEntity {
     @Column(name = "total_questions", nullable = false)
     private Integer totalQuestions;
 
+    /** Offline klientdagi sessiya ID — (user_id, client_session_id) bo'yicha takroriy sinxronizatsiya oldini oladi. */
+    @Column(name = "client_session_id", length = 100)
+    private String clientSessionId;
+
     @Column(name = "answered_count")
     @Builder.Default
     private Integer answeredCount = 0;
@@ -202,8 +206,11 @@ public class ExamSession extends BaseEntity {
         if (totalQuestions > 0) {
             this.percentage = (correctCount * 100.0) / totalQuestions;
             this.score = correctCount;
-            // Handle null examPackage (marathon mode) - default passing score is 70%
-            int passingScore = examPackage != null ? examPackage.getPassingScore() : 70;
+            // Paket bo'lsa uning bali, bilet bo'lsa biletniki (avval bilet 90% o'rniga 70% bilan baholanardi),
+            // marafon — 90% (exam-rules default).
+            int passingScore = examPackage != null && examPackage.getPassingScore() != null ? examPackage.getPassingScore()
+                    : ticket != null && ticket.getPassingScore() != null ? ticket.getPassingScore()
+                    : 90;
             this.isPassed = percentage >= passingScore;
         }
     }

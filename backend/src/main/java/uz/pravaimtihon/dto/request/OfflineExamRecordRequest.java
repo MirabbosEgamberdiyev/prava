@@ -21,6 +21,7 @@ import java.util.List;
 public class OfflineExamRecordRequest {
 
     @Schema(description = "Mijozdagi sessiya ID yoki timestamp", example = "1710000000")
+    @jakarta.validation.constraints.Size(max = 100)
     private String clientSessionId;
 
     @Schema(description = "Imtihon turi (ticket, real, marathon)", example = "real")
@@ -36,7 +37,13 @@ public class OfflineExamRecordRequest {
     private Long completedAt;
 
     @NotEmpty(message = "validation.exam.answers.required")
+    @jakarta.validation.constraints.Size(max = 200)
     @Valid
     @Schema(description = "Javoblar ro'yxati", required = true)
     private List<AnswerSubmitRequest> answers;
+
+    @Schema(description = "Imtihondagi jami savollar soni (javobsizlari bilan). Berilmasa answers soni olinadi.", example = "20")
+    @jakarta.validation.constraints.Min(1)
+    @jakarta.validation.constraints.Max(200)
+    private Integer totalQuestions;
 }

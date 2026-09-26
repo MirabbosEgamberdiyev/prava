@@ -141,6 +141,18 @@ public class QrPairingSessionStore {
     }
 
     /**
+     * Sessiya tasdiqlanishi mumkinmi (holatni o'zgartirmaydi). Token yaratishdan OLDIN chaqiriladi —
+     * aks holda yaroqsiz sessiya uchun ham yangi qurilma sessiyasi ochilib, eng eski qurilma chiqarilardi.
+     */
+    public synchronized boolean canApprove(String sessionId, String challenge) {
+        SessionEntry entry = sessions.get(sessionId);
+        return entry != null
+                && isChallengeValid(entry.getChallenge(), challenge)
+                && !Instant.now().isAfter(entry.getExpiresAt())
+                && (entry.getStatus() == Status.PENDING || entry.getStatus() == Status.SCANNED);
+    }
+
+    /**
      * Authenticated mobile/web user approves the desktop pairing
      */
     public synchronized boolean approveSession(String sessionId, String challenge, Long userId, AuthResponse authResponse) {

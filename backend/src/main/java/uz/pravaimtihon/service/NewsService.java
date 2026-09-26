@@ -22,6 +22,8 @@ public class NewsService {
 
     @Transactional
     public NewsArticle create(NewsArticle article) {
+        article.resetServerManagedFields(); // mass-assignment himoyasi
+        article.setViewCount(0L);
         if (article.getSlug() == null || article.getSlug().isBlank()) {
             article.setSlug(generateSlug(article.getTitleUzl()));
         }

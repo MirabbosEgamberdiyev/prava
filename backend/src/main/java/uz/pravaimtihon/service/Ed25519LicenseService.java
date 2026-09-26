@@ -50,22 +50,8 @@ public class Ed25519LicenseService {
     //      yangi build tarqating.
     //   3) LICENSE_ED25519_SEED ni serverdagi .env ga qo'ying.
     //   4) Eski seed'ni KOMPROMETATSIYA QILINGAN deb hisoblang.
-    // Kalit almashtirilgunicha eski (leaked) seed fallback sifatida ishlaydi,
-    // aks holda barcha mavjud litsenziyalar bir zumda buzilardi.
+    // Eski (leaked) seed fallback OLIB TASHLANDI: seed berilmasa imzolash o'chiriladi.
     // ══════════════════════════════════════════════════════════════════════════
-
-    /** Legacy (git'ga tushib ketgan, komprometatsiya qilingan) seed — faqat fallback. */
-    private static final byte[] LEGACY_LEAKED_SEED = {
-        (byte)0x07, (byte)0x92, (byte)0xb6, (byte)0xf7,
-        (byte)0x25, (byte)0xd9, (byte)0x44, (byte)0x33,
-        (byte)0xf0, (byte)0x82, (byte)0x92, (byte)0x66,
-        (byte)0x85, (byte)0xae, (byte)0x5c, (byte)0x37,
-        (byte)0xe0, (byte)0xd7, (byte)0x6c, (byte)0x1b,
-        (byte)0xf2, (byte)0x45, (byte)0x2f, (byte)0x0b,
-        (byte)0x7b, (byte)0xc5, (byte)0xf6, (byte)0xc0,
-        (byte)0x87, (byte)0xd0, (byte)0x34, (byte)0x56,
-    };
-
     /**
      * EPOCH: activation.rs / HTML generator ikkalasida ham 2024-01-01 UTC.
      * dateToDays() → Math.floor((date - EPOCH) / 86_400_000)
@@ -78,23 +64,18 @@ public class Ed25519LicenseService {
     public Ed25519LicenseService(
             @Value("${app.license.ed25519.seed:}") String configuredSeed) {
 
-        byte[] seed;
         if (configuredSeed != null && !configuredSeed.isBlank()) {
-            seed = decodeSeed(configuredSeed.trim());
-            log.info("Ed25519LicenseService: imzolash kaliti konfiguratsiyadan olindi (env)");
+            this.privateKey = buildPrivateKey(decodeSeed(configuredSeed.trim()));
+            log.info("Ed25519LicenseService initialized (algorithm: Ed25519, epoch: {})", EPOCH);
         } else {
-            seed = LEGACY_LEAKED_SEED;
-            log.error("═══════════════════════════════════════════════════════════════");
-            log.error("XAVFSIZLIK OGOHLANTIRISHI: LICENSE_ED25519_SEED o'rnatilmagan!");
-            log.error("Litsenziya imzolash uchun kodga yozilgan (git'da OCHIQ bo'lgan)");
-            log.error("eski kalit ishlatilmoqda — uni bilgan har kim soxta desktop");
-            log.error("litsenziya generatsiya qila oladi. Kalitni almashtiring va");
-            log.error("LICENSE_ED25519_SEED ni .env ga qo'shing.");
-            log.error("═══════════════════════════════════════════════════════════════");
+            // Ilova ishga tushadi, lekin aktivatsiya kodlari generatsiya qilinmaydi.
+            this.privateKey = null;
+            log.error("LICENSE_ED25519_SEED is not set — desktop activation code generation is DISABLED");
         }
+    }
 
-        this.privateKey = buildPrivateKey(seed);
-        log.info("Ed25519LicenseService initialized (algorithm: Ed25519, epoch: {})", EPOCH);
+    public boolean isConfigured() {
+        return privateKey != null;
     }
 
     /** Seed'ni base64 (standart yoki url-safe) yoki hex ko'rinishidan 32 baytga aylantiradi. */
@@ -136,6 +117,9 @@ public class Ed25519LicenseService {
      * @return           Aktivatsiya tokeni (base64url + '.' har 8 ta belgi)
      */
     public String generateToken(String machineId, LocalDate startDate, LocalDate endDate) {
+        if (privateKey == null) {
+            throw new IllegalStateException("License signing key is not configured (LICENSE_ED25519_SEED)");
+        }
         try {
             // 1. Kunlarni hisoblash (EPOCH dan beri)
             int startDays = (int) ChronoUnit.DAYS.between(EPOCH, startDate);

@@ -26,6 +26,10 @@ public interface ExamPackageRepository extends JpaRepository<ExamPackage, Long> 
 
     Page<ExamPackage> findByIsFreeAndDeletedFalseAndIsActiveTrue(Boolean isFree, Pageable pageable);
 
+    /** Pullik paketlar ID'lari (offline to'plamda biletlarni filtrlash uchun). */
+    @Query("SELECT p.id FROM ExamPackage p WHERE p.deleted = false AND (p.isFree = false OR p.isFree IS NULL)")
+    java.util.List<Long> findPaidPackageIds();
+
     @Query("SELECT p FROM ExamPackage p WHERE p.id = :id AND p.deleted = false")
     Optional<ExamPackage> findById(@Param("id") Long id);
 

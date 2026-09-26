@@ -65,9 +65,10 @@ public class StatisticsService {
     /**
      * Evict caches after exam completion.
      */
+    // "leaderboard" bu yerdan olib tashlandi: har bir submit'da tozalanib kesh deyarli ishlamas edi.
+    // Leaderboard 5 daqiqalik TTL bilan yangilanadi (CacheConfig).
     @Caching(evict = {
             @CacheEvict(value = "user_stats", allEntries = true),
-            @CacheEvict(value = "leaderboard", allEntries = true),
             @CacheEvict(value = "dashboard_stats", allEntries = true)
     })
     public void evictUserCaches(Long userId) {

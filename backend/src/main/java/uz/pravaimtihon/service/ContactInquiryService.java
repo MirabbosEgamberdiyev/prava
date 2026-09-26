@@ -108,10 +108,9 @@ public class ContactInquiryService {
         }
 
         // Server Audit Log
-        log.info("[AUDIT LOG - INQUIRY CREATED] requestId={} | dateTime={} | organization={} | fullName={} | phone={} | telegram={} | region={} | orgType={} | computerCount={} | ip={}",
-                ticketId, formattedDate, request.getOrganization().trim(), request.getFullName().trim(),
-                request.getPhone().trim(), telegramUser, region, orgType,
-                computerCount, safeIp);
+        // Shaxsiy ma'lumotlar (ism, telefon, telegram) DB'da saqlanadi — log'ga takrorlanmaydi.
+        log.info("[AUDIT LOG - INQUIRY CREATED] requestId={} | dateTime={} | region={} | orgType={} | computerCount={}",
+                ticketId, formattedDate, region, orgType, computerCount);
 
         List<String> deliveryErrors = new ArrayList<>();
 

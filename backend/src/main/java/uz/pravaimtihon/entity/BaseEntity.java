@@ -58,6 +58,22 @@ public abstract class BaseEntity implements Serializable {
     private Long version;
 
     // Soft delete method
+    /**
+     * Klientdan kelgan (JSON bind qilingan) entity'dagi server boshqaradigan maydonlarni tozalaydi.
+     * Aks holda POST so'rovida id/version/deleted yuborib mavjud yozuvni ustiga yozish mumkin edi.
+     */
+    public void resetServerManagedFields() {
+        this.id = null;
+        this.version = null;
+        this.createdAt = null;
+        this.createdBy = null;
+        this.updatedAt = null;
+        this.updatedBy = null;
+        this.deleted = false;
+        this.deletedAt = null;
+        this.deletedBy = null;
+    }
+
     public void softDelete(String deletedBy) {
         this.deleted = true;
         this.deletedAt = LocalDateTime.now();

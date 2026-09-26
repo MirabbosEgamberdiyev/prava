@@ -36,11 +36,6 @@ public class QuestionOption extends BaseEntity {
     private String textRu;
 
     public String getText(AcceptLanguage language) {
-        return switch (language) {
-            case UZL -> textUzl;
-            case UZC -> textUzc != null ? textUzc : textUzl;
-            case EN -> textEn != null ? textEn : textUzl;
-            case RU -> textRu != null ? textRu : textUzl;
-        };
+        return uz.pravaimtihon.util.Localized.pick(language, textUzl, textUzc, textRu, textEn);
     }
 }

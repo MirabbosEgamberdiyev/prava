@@ -155,20 +155,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
      *  3) aks holda `remoteAddr`.
      */
     private String getClientIp(HttpServletRequest request) {
-        String realIp = request.getHeader("X-Real-IP");
-        if (realIp != null && !realIp.isBlank()) {
-            return realIp.trim();
-        }
-
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-            String[] hops = xForwardedFor.split(",");
-            String lastHop = hops[hops.length - 1].trim();
-            if (!lastHop.isEmpty()) {
-                return lastHop;
-            }
-        }
-        return request.getRemoteAddr();
+        return uz.pravaimtihon.security.ClientIpResolver.resolve(request);
     }
 
     /**

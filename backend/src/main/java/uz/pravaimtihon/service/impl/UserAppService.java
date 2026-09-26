@@ -29,12 +29,16 @@ public class UserAppService {
 
     // ─── Topics ───────────────────────────────────────────────────────────────
 
+    @Transactional(readOnly = true)
     public List<TopicResponse> getActiveTopics() {
-        return topicService.getAllActiveTopics(uz.pravaimtihon.enums.AcceptLanguage.UZL);
+        // Avval har doim UZL qaytarilardi — endi so'rov tili (Accept-Language).
+        return topicService.getAllActiveTopics(uz.pravaimtihon.util.LanguageHelper.getCurrentLanguage());
     }
 
     // ─── Questions by topic ───────────────────────────────────────────────────
 
+    // open-in-view=false: lazy options tranzaksiya ichida yuklanishi shart (aks holda LazyInitializationException → 500).
+    @Transactional(readOnly = true)
     public List<uz.pravaimtihon.dto.response.exam.QuestionResponse> getQuestionsByTopic(Long topicId) {
         org.springframework.data.domain.Pageable all =
                 org.springframework.data.domain.PageRequest.of(0, 2000);
@@ -58,9 +62,9 @@ public class UserAppService {
                         },
                         () -> {
                             User user = userRepository.findById(userId)
-                                    .orElseThrow(() -> new RuntimeException("User topilmadi"));
+                                    .orElseThrow(() -> new uz.pravaimtihon.exception.ResourceNotFoundException("error.user.not.found"));
                             Question q = questionRepository.findById(questionId)
-                                    .orElseThrow(() -> new RuntimeException("Savol topilmadi"));
+                                    .orElseThrow(() -> new uz.pravaimtihon.exception.ResourceNotFoundException("error.question.not.found"));
                             wrongAnswerRepo.save(UserWrongAnswer.builder()
                                     .user(user).question(q)
                                     .wrongCount(1).lastSeen(LocalDateTime.now())
@@ -105,9 +109,9 @@ public class UserAppService {
     public boolean saveQuestion(Long userId, Long questionId) {
         if (!savedQuestionRepo.existsByUserIdAndQuestionId(userId, questionId)) {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User topilmadi"));
+                    .orElseThrow(() -> new uz.pravaimtihon.exception.ResourceNotFoundException("error.user.not.found"));
             Question q = questionRepository.findById(questionId)
-                    .orElseThrow(() -> new RuntimeException("Savol topilmadi"));
+                    .orElseThrow(() -> new uz.pravaimtihon.exception.ResourceNotFoundException("error.question.not.found"));
             savedQuestionRepo.save(UserSavedQuestion.builder()
                     .user(user).question(q)
                     .savedAt(LocalDateTime.now())
@@ -128,9 +132,9 @@ public class UserAppService {
             return false; // o'chirildi
         } else {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User topilmadi"));
+                    .orElseThrow(() -> new uz.pravaimtihon.exception.ResourceNotFoundException("error.user.not.found"));
             Question q = questionRepository.findById(questionId)
-                    .orElseThrow(() -> new RuntimeException("Savol topilmadi"));
+                    .orElseThrow(() -> new uz.pravaimtihon.exception.ResourceNotFoundException("error.question.not.found"));
             savedQuestionRepo.save(UserSavedQuestion.builder()
                     .user(user).question(q)
                     .savedAt(LocalDateTime.now())

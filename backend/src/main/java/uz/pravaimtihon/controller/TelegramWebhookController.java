@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uz.pravaimtihon.service.TelegramBotService;
 
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Map;
 
 @RestController
@@ -44,16 +46,12 @@ public class TelegramWebhookController {
         String expectedSecret = telegramBotService.getWebhookSecretToken();
         String receivedSecret = request.getHeader("X-Telegram-Bot-Api-Secret-Token");
 
-        boolean hasSecretConfigured = expectedSecret != null && !expectedSecret.isBlank();
-
-        if (hasSecretConfigured) {
-            if (!expectedSecret.equals(receivedSecret)) {
-                log.warn("Webhook request with invalid secret token from IP: {}", getClientIp(request));
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
-            }
-        } else if (ipValidationEnabled && !isValidTelegramIp(request)) {
-            String clientIp = getClientIp(request);
-            log.warn("Webhook request from unauthorized IP: {}", clientIp);
+        // SECURITY: secret token MAJBURIY. Avvalgi "secret yo'q bo'lsa IP bo'yicha tekshirish" fallback'i
+        // olib tashlandi — IP header'lari soxtalashtirilishi mumkin.
+        if (expectedSecret == null || expectedSecret.isBlank() || receivedSecret == null
+                || !MessageDigest.isEqual(expectedSecret.getBytes(StandardCharsets.UTF_8),
+                                          receivedSecret.getBytes(StandardCharsets.UTF_8))) {
+            log.warn("Webhook request with missing/invalid secret token from IP: {}", getClientIp(request));
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
         }
 
@@ -106,20 +104,7 @@ public class TelegramWebhookController {
      * `remoteAddr` tartibida olinadi.
      */
     private String getClientIp(HttpServletRequest request) {
-        String realIp = request.getHeader("X-Real-IP");
-        if (realIp != null && !realIp.isBlank()) {
-            return realIp.trim();
-        }
-
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-            String[] hops = xForwardedFor.split(",");
-            String lastHop = hops[hops.length - 1].trim();
-            if (!lastHop.isEmpty()) {
-                return lastHop;
-            }
-        }
-        return request.getRemoteAddr();
+        return uz.pravaimtihon.security.ClientIpResolver.resolve(request);
     }
 
     /**

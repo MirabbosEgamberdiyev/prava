@@ -53,16 +53,16 @@ public class SimulatorServiceImpl implements SimulatorService {
 
     @Override
     @Transactional(readOnly = true)
-    public SimulatorSessionResponse getSession(Long sessionId) {
-        SimulatorSession session = sessionRepository.findById(sessionId)
+    public SimulatorSessionResponse getSession(Long userId, Long sessionId) {
+        SimulatorSession session = sessionRepository.findByIdAndUserId(sessionId, userId) // IDOR himoyasi
                 .orElseThrow(() -> new ResourceNotFoundException("Simulator session not found with id: " + sessionId));
         return mapToResponse(session);
     }
 
     @Override
     @Transactional
-    public void recordPenalty(Long sessionId, RecordSimulatorPenaltyRequest request) {
-        SimulatorSession session = sessionRepository.findById(sessionId)
+    public void recordPenalty(Long userId, Long sessionId, RecordSimulatorPenaltyRequest request) {
+        SimulatorSession session = sessionRepository.findByIdAndUserId(sessionId, userId) // IDOR himoyasi
                 .orElseThrow(() -> new ResourceNotFoundException("Simulator session not found with id: " + sessionId));
 
         SimulatorPenaltyEvent event = SimulatorPenaltyEvent.builder()
@@ -90,8 +90,8 @@ public class SimulatorServiceImpl implements SimulatorService {
 
     @Override
     @Transactional
-    public SimulatorSessionResponse finishSession(Long sessionId, FinishSimulatorSessionRequest request) {
-        SimulatorSession session = sessionRepository.findById(sessionId)
+    public SimulatorSessionResponse finishSession(Long userId, Long sessionId, FinishSimulatorSessionRequest request) {
+        SimulatorSession session = sessionRepository.findByIdAndUserId(sessionId, userId) // IDOR himoyasi
                 .orElseThrow(() -> new ResourceNotFoundException("Simulator session not found with id: " + sessionId));
 
         int totalPenalty = request.getTotalPenaltyPoints() != null ? request.getTotalPenaltyPoints() : 0;

@@ -151,6 +151,16 @@ public class AuthService {
         // Canonical phone number
         String phone = request.getPhoneNumber();
 
+        // SECURITY: faqat kod yuborilgan (ya'ni tasdiqlangan) kanal "verified" deb belgilanadi.
+        // Ikkinchi identifikator tasdiqlanmagan holda saqlanadi va band bo'lsa rad etiladi.
+        boolean smsVerified = request.getVerificationType().name().equals("SMS");
+        if (smsVerified && request.getEmail() != null && userRepository.existsByEmail(request.getEmail())) {
+            throw new ConflictException("error.user.email.exists");
+        }
+        if (!smsVerified && phone != null && userRepository.existsByPhoneNumber(phone)) {
+            throw new ConflictException("error.user.phone.exists");
+        }
+
         User user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -160,8 +170,8 @@ public class AuthService {
                 .role(Role.USER)
                 .preferredLanguage(request.getPreferredLanguage())
                 .isActive(true)
-                .isEmailVerified(request.getEmail() != null)
-                .isPhoneVerified(phone != null)
+                .isEmailVerified(!smsVerified && request.getEmail() != null)
+                .isPhoneVerified(smsVerified && phone != null)
                 .build();
 
         user = userRepository.save(user);
@@ -254,6 +264,9 @@ public class AuthService {
      */
     public AuthResponse refreshToken(RefreshTokenRequest request, AcceptLanguage language) {
         log.info("Refreshing token [lang={}]", language);
+        if (request == null || request.getRefreshToken() == null || request.getRefreshToken().isBlank()) {
+            throw new UnauthorizedException("error.token.invalid");
+        }
 
         // Check if the token was already revoked (reuse detection with 15s grace window)
         if (refreshTokenRepository.isTokenRevoked(request.getRefreshToken())) {
@@ -271,7 +284,7 @@ public class AuthService {
                         User activeUser = activeToken.getUser();
                         if (Boolean.TRUE.equals(activeUser.getIsActive())) {
                             CustomUserDetails userDetails = CustomUserDetails.from(activeUser);
-                            String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails);
+                            String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails, revokedToken.getTokenFamily());
                             UserResponse userResponse = userMapper.toResponse(activeUser, language);
                             return AuthResponse.builder()
                                     .accessToken(newAccessToken)
@@ -305,7 +318,7 @@ public class AuthService {
 
         // Generate new refresh token in the same family
         CustomUserDetails userDetails = CustomUserDetails.from(user);
-        String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails);
+        String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails, refreshToken.getTokenFamily());
         String newRefreshTokenStr = UUID.randomUUID().toString();
 
         RefreshToken newRefreshToken = RefreshToken.builder()
@@ -314,6 +327,8 @@ public class AuthService {
                 .tokenFamily(refreshToken.getTokenFamily())
                 .expiresAt(LocalDateTime.now().plusDays(30))
                 .lastUsedAt(LocalDateTime.now())
+                .userAgent(refreshToken.getUserAgent() != null ? refreshToken.getUserAgent() : currentUserAgent())
+                .ipAddress(currentClientIp())
                 .build();
 
         refreshTokenRepository.save(newRefreshToken);
@@ -491,6 +506,23 @@ public class AuthService {
         return userMapper.toResponse(user, language);
     }
 
+    /**
+     * Foydalanuvchi o'z interfeys tilini saqlaydi (web/desktop til almashtirganda).
+     * Faqat preferredLanguage o'zgaradi — boshqa profil maydonlariga tegilmaydi.
+     */
+    @Transactional
+    public UserResponse updateMyLanguage(AcceptLanguage newLanguage) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new UnauthorizedException("error.auth.required");
+        }
+        User user = userRepository.findById(userId)
+                .filter(u -> !u.getDeleted() && u.getIsActive())
+                .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
+        user.setPreferredLanguage(newLanguage);
+        return userMapper.toResponse(userRepository.save(user), newLanguage);
+    }
+
     @Transactional
     public AuthResponse googleAuth(GoogleAuthRequest request, AcceptLanguage language) {
 
@@ -522,7 +554,26 @@ public class AuthService {
     }
     private User linkOrCreateGoogleUser(GoogleUserInfo google, AcceptLanguage language) {
 
-        return userRepository.findByEmailAndDeletedFalse(google.getEmail())
+        java.util.Optional<User> byEmail = userRepository.findByEmailAndDeletedFalse(google.getEmail());
+
+        // SECURITY (pre-account hijack): email TASDIQLANMAGAN akkauntga Google hech qachon bog'lanmaydi —
+        // aks holda begona odam qurbon emaili bilan oldindan akkaunt ochib, keyin uning Google
+        // login'ini o'z akkauntiga "tortib olishi" mumkin edi. Email'ning haqiqiy egasi — Google
+        // tasdiqlagan foydalanuvchi, shuning uchun tasdiqlanmagan akkauntdan email ajratiladi.
+        if (byEmail.isPresent() && !Boolean.TRUE.equals(byEmail.get().getIsEmailVerified())) {
+            User stale = byEmail.get();
+            boolean hasOtherLogin = stale.getPhoneNumber() != null || stale.getTelegramId() != null;
+            if (hasOtherLogin) {
+                log.warn("Detaching unverified email from user {} before Google sign-in", stale.getId());
+                stale.setEmail(null);
+                userRepository.saveAndFlush(stale);
+                byEmail = java.util.Optional.empty();
+            } else {
+                throw new ConflictException("error.user.email.exists");
+            }
+        }
+
+        return byEmail
                 .map(existing -> {
                     existing.setGoogleId(google.getId());
                     existing.setOauthProvider(OAuthProvider.GOOGLE);
@@ -744,9 +795,9 @@ public class AuthService {
 
         CustomUserDetails userDetails = CustomUserDetails.from(user);
 
-        String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
         String refreshTokenStr = UUID.randomUUID().toString();
         String tokenFamily = UUID.randomUUID().toString();
+        String accessToken = jwtTokenProvider.generateAccessToken(userDetails, tokenFamily);
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .token(refreshTokenStr)
@@ -754,6 +805,8 @@ public class AuthService {
                 .tokenFamily(tokenFamily)
                 .expiresAt(LocalDateTime.now().plusDays(30))
                 .lastUsedAt(LocalDateTime.now())
+                .userAgent(currentUserAgent())
+                .ipAddress(currentClientIp())
                 .build();
 
         refreshTokenRepository.save(refreshToken);
@@ -767,6 +820,25 @@ public class AuthService {
                 .expiresIn(jwtTokenProvider.getAccessTokenExpiration())
                 .user(userResponse)
                 .build();
+    }
+
+    /** Qurilmalar ro'yxatida ko'rsatish uchun (so'rov konteksti bo'lmasa null). */
+    private static String currentUserAgent() {
+        var attrs = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        if (attrs instanceof org.springframework.web.context.request.ServletRequestAttributes sra) {
+            String ua = sra.getRequest().getHeader("User-Agent");
+            return ua == null ? null : (ua.length() > 500 ? ua.substring(0, 500) : ua);
+        }
+        return null;
+    }
+
+    private static String currentClientIp() {
+        var attrs = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        if (attrs instanceof org.springframework.web.context.request.ServletRequestAttributes sra) {
+            String ip = uz.pravaimtihon.security.ClientIpResolver.resolve(sra.getRequest());
+            return ip == null ? null : (ip.length() > 45 ? ip.substring(0, 45) : ip);
+        }
+        return null;
     }
 
     private void validateRegistrationIdentifier(RegisterRequest request) {

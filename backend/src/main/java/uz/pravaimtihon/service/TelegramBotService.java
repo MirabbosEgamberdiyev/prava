@@ -60,7 +60,10 @@ public class TelegramBotService {
         if (configuredWebhookSecret != null && !configuredWebhookSecret.isBlank()) {
             webhookSecretToken = configuredWebhookSecret.trim();
         } else {
-            webhookSecretToken = "prava_secret_webhook_token_2026";
+            // SECURITY: hardcoded fallback olib tashlandi. Secret bo'lmasa webhook barcha so'rovlarni rad etadi.
+            webhookSecretToken = null;
+            log.error("TELEGRAM_WEBHOOK_SECRET is not set — Telegram webhook will reject all updates");
+            return;
         }
         log.info("Telegram webhookSecretToken initialized");
     }
@@ -381,8 +384,10 @@ public class TelegramBotService {
 
     private void handleContactMessage(long chatId, long userId, Map<String, Object> from, Map<String, Object> contact) {
         try {
+            // SECURITY: user_id MAJBURIY. Qo'lda yaratilgan kontakt kartasida user_id bo'lmaydi —
+            // uni qabul qilish istalgan telefon raqamini "tasdiqlangan" deb bog'lashga imkon berardi.
             Number contactUserIdNum = (Number) contact.get("user_id");
-            if (contactUserIdNum != null && contactUserIdNum.longValue() != userId) {
+            if (contactUserIdNum == null || contactUserIdNum.longValue() != userId) {
                 AcceptLanguage lang = getUserLanguage(userId);
                 String warning = switch (lang) {
                     case RU -> "⚠️ Пожалуйста, отправьте свой собственный номер телефона через кнопку контактов.";
@@ -404,7 +409,7 @@ public class TelegramBotService {
             }
 
             if (!clean.matches("^998[0-9]{9}$")) {
-                log.warn("Invalid phone number format received from Telegram: {}", clean);
+                log.warn("Invalid phone number format received from Telegram (len={})", clean.length());
                 return;
             }
 
@@ -414,6 +419,23 @@ public class TelegramBotService {
             Optional<User> byPhone = userRepository.findByPhoneNumberAndDeletedFalse(clean);
             if (byPhone.isPresent()) {
                 User existing = byPhone.get();
+                // SECURITY: xodim akkauntlari bot orqali hech qachon bog'lanmaydi, va boshqa
+                // Telegram akkauntiga bog'langan foydalanuvchi jimgina qayta bog'lanmaydi.
+                boolean staff = existing.getRole() != Role.USER;
+                boolean linkedElsewhere = existing.getTelegramId() != null
+                        && !existing.getTelegramId().isBlank()
+                        && !existing.getTelegramId().equals(tgId);
+                if (staff || linkedElsewhere) {
+                    log.warn("Refused Telegram link for user {} (staff={}, linkedElsewhere={})",
+                            existing.getId(), staff, linkedElsewhere);
+                    String refuse = switch (lang) {
+                        case RU -> "⚠️ Этот номер уже привязан к другому аккаунту. Обратитесь в поддержку.";
+                        case UZC -> "⚠️ Бу рақам бошқа аккаунтга уланган. Қўллаб-қувватлаш хизматига мурожаат қилинг.";
+                        default -> "⚠️ Bu raqam boshqa akkauntga ulangan. Qo'llab-quvvatlash xizmatiga murojaat qiling.";
+                    };
+                    sendMessage(chatId, refuse, null);
+                    return;
+                }
                 existing.setTelegramId(tgId);
                 if (from != null && from.get("username") != null) {
                     existing.setTelegramUsername((String) from.get("username"));
@@ -428,7 +450,7 @@ public class TelegramBotService {
                     tgUser.setPhoneNumber(clean);
                     tgUser.setIsPhoneVerified(true);
                     userRepository.save(tgUser);
-                    log.info("Updated Telegram user {} with phone number {}", tgId, clean);
+                    log.info("Updated Telegram user {} with a verified phone number", tgId);
                 } else {
                     String firstName = from != null ? (String) from.get("first_name") : "User";
                     String lastName = from != null ? (String) from.get("last_name") : null;
@@ -446,7 +468,7 @@ public class TelegramBotService {
                             .preferredLanguage(lang)
                             .isActive(true)
                             .build());
-                    log.info("Registered new user with phone {} and Telegram ID {}", clean, tgId);
+                    log.info("Registered new user via Telegram contact, Telegram ID {}", tgId);
                 }
             }
 

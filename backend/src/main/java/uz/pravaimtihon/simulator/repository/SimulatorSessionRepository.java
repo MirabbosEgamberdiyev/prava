@@ -13,6 +13,8 @@ public interface SimulatorSessionRepository extends JpaRepository<SimulatorSessi
 
     List<SimulatorSession> findByUserIdOrderByCreatedAtDesc(Long userId);
 
+    java.util.Optional<SimulatorSession> findByIdAndUserId(Long id, Long userId);
+
     @Query("SELECT COUNT(s) FROM SimulatorSession s WHERE s.user.id = :userId AND s.deleted = false")
     Long countSessionsByUserId(@Param("userId") Long userId);
 

@@ -163,6 +163,18 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             "ORDER BY FUNCTION('RANDOM')")
     List<Long> findRandomQuestionIds(Pageable pageable);
 
+    /** Offline to'plam uchun barcha faol savol ID'lari (tartiblangan). */
+    @Query("SELECT q.id FROM Question q WHERE q.deleted = false AND q.isActive = true ORDER BY q.id")
+    List<Long> findAllActiveIds();
+
+    /** Offline to'plam versiyasi: faol savollar soni va oxirgi o'zgarish vaqti. */
+    @Query("SELECT COUNT(q), MAX(q.updatedAt) FROM Question q WHERE q.deleted = false AND q.isActive = true")
+    List<Object[]> activeQuestionsFingerprint();
+
+    /** Offline to'plam: faol savol → mavzu juftliklari. */
+    @Query("SELECT q.id, q.topic.id FROM Question q WHERE q.deleted = false AND q.isActive = true AND q.topic IS NOT NULL")
+    List<Object[]> findActiveQuestionTopicPairs();
+
     /**
      * Mavzu bo'yicha tasodifiy N ta faol savol ID'si (DB tomonda LIMIT bilan).
      */

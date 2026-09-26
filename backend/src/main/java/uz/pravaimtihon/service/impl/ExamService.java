@@ -37,6 +37,7 @@ public class ExamService {
 
     private final ExamSessionRepository sessionRepository;
     private final ExamAnswerRepository answerRepository;
+    private final uz.pravaimtihon.service.QuestionStatsService questionStatsService;
     private final ExamPackageRepository packageRepository;
     private final QuestionRepository questionRepository;
     private final QuestionOptionRepository optionRepository;
@@ -93,7 +94,7 @@ public class ExamService {
         if (!isFreePackage &&
                 !paymentAccessService.hasActiveAccess(userId, examPackage.getId())) {
             throw uz.pravaimtihon.payment.exception.PaymentException
-                    .paymentRequired("Bu paket uchun to'lov talab qilinadi");
+                    .paymentRequired("error.payment.required");
         }
 
         // ✅ Shuffle and select questions
@@ -199,12 +200,12 @@ public class ExamService {
         for (ExamAnswer examAnswer : examAnswers) {
             SubmitAnswerRequest userAnswer = answerMap.get(examAnswer.getQuestion().getId());
 
-            if (userAnswer != null) {
+            if (userAnswer != null && !examAnswer.isLocked()) { // check-answer qulfi hurmat qilinadi
                 examAnswer.submitAnswer(
                         userAnswer.getSelectedOptionIndex(),
                         userAnswer.getTimeSpentSeconds()
                 );
-                examAnswer.getQuestion().recordAnswer(examAnswer.getIsCorrect());
+                questionStatsService.recordAnswer(examAnswer.getQuestion().getId(), examAnswer.getIsCorrect());
             }
         }
 
@@ -571,11 +572,11 @@ public class ExamService {
         int answeredCount = 0;
         for (var ans : request.getAnswers()) {
             ExamAnswer examAnswer = answerMap.get(ans.getQuestionId());
-            if (examAnswer != null && ans.getSelectedOptionIndex() != null) {
-                examAnswer.setSelectedOptionIndex(ans.getSelectedOptionIndex());
-                if (ans.getTimeSpentSeconds() != null) {
-                    examAnswer.setTimeSpentSeconds(ans.getTimeSpentSeconds());
-                }
+            // Qulflangan (check-answer) javob o'zgartirilmaydi. submitAnswer isCorrect'ni ham
+            // belgilaydi — avval autosave faqat indeksni yozardi va javob "noto'g'ri" hisoblanardi.
+            if (examAnswer != null && ans.getSelectedOptionIndex() != null && !examAnswer.isLocked()) {
+                examAnswer.submitAnswer(ans.getSelectedOptionIndex(),
+                        ans.getTimeSpentSeconds() != null ? ans.getTimeSpentSeconds() : examAnswer.getTimeSpentSeconds());
                 answeredCount++;
             }
         }

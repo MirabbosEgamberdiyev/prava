@@ -54,7 +54,47 @@ public enum AcceptLanguage {
             return UZL; // Default to Uzbek Latin
         }
 
-        String normalized = code.trim().toLowerCase();
+        // Brauzer header'i: "ru-RU,ru;q=0.9,en;q=0.8" — afzallik (q) bo'yicha birinchi
+        // tanilgan tilni tanlaymiz. Avval butun satr bitta kod deb solishtirilardi va
+        // rus/kirill foydalanuvchilari har doim o'zbek lotinida javob olardi.
+        if (code.indexOf(',') >= 0 || code.indexOf(';') >= 0) {
+            AcceptLanguage best = null;
+            double bestQ = -1;
+            for (String part : code.split(",")) {
+                String[] pieces = part.trim().split(";");
+                double q = 1.0;
+                for (int i = 1; i < pieces.length; i++) {
+                    String p = pieces[i].trim();
+                    if (p.startsWith("q=")) {
+                        try {
+                            q = Double.parseDouble(p.substring(2));
+                        } catch (NumberFormatException ignored) {
+                            q = 0;
+                        }
+                    }
+                }
+                AcceptLanguage lang = matchSingle(pieces[0]);
+                if (lang != null && q > bestQ) {
+                    best = lang;
+                    bestQ = q;
+                }
+            }
+            return best != null ? best : UZL;
+        }
+
+        AcceptLanguage single = matchSingle(code);
+        return single != null ? single : UZL;
+    }
+
+    /** Bitta til tegini tanib oladi; tanilmasa null. */
+    private static AcceptLanguage matchSingle(String code) {
+        if (code == null || code.isBlank()) return null;
+        String normalized = code.trim().toLowerCase().replace('_', '-');
+
+        if (normalized.startsWith("uz-cyrl")) return UZC;
+        if (normalized.equals("uz") || normalized.startsWith("uz-")) return UZL;
+        if (normalized.startsWith("ru-")) return RU;
+        if (normalized.startsWith("en-")) return EN;
 
         return switch (normalized) {
             case "uzl", "uz-latn", "uz_latn", "uzbek" -> UZL;
@@ -64,11 +104,11 @@ public enum AcceptLanguage {
             default -> {
                 // Try to match by display name (case-insensitive)
                 for (AcceptLanguage lang : values()) {
-                    if (lang.displayName.equalsIgnoreCase(code)) {
+                    if (lang.displayName.equalsIgnoreCase(code.trim())) {
                         yield lang;
                     }
                 }
-                yield UZL; // Default fallback
+                yield null; // tanilmadi — chaqiruvchi UZL ga tushadi
             }
         };
     }

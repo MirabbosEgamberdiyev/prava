@@ -22,6 +22,17 @@ public interface ExamAnswerRepository extends JpaRepository<ExamAnswer, Long> {
             "ORDER BY ea.questionOrder ASC")
     List<ExamAnswer> findByExamSessionIdOrderByQuestionOrder(@Param("sessionId") Long sessionId);
 
+    /** Savol foydalanuvchining hozir davom etayotgan imtihonida bormi (check-answer uchun). */
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM ExamAnswer a " +
+            "WHERE a.question.id = :questionId AND a.examSession.user.id = :userId " +
+            "AND a.examSession.status = uz.pravaimtihon.enums.ExamStatus.IN_PROGRESS")
+    boolean existsInActiveSession(@Param("userId") Long userId, @Param("questionId") Long questionId);
+
+    /** Savolning foydalanuvchi faol sessiyasidagi javob yozuvi (eng yangi sessiya birinchi). */
+    @Query("SELECT a FROM ExamAnswer a WHERE a.question.id = :questionId AND a.examSession.user.id = :userId " +
+            "AND a.examSession.status = uz.pravaimtihon.enums.ExamStatus.IN_PROGRESS ORDER BY a.examSession.startedAt DESC")
+    List<ExamAnswer> findInActiveSessions(@Param("userId") Long userId, @Param("questionId") Long questionId);
+
     /**
      * Count answers for a session
      */

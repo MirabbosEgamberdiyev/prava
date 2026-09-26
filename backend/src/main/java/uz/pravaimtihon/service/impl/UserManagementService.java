@@ -244,6 +244,10 @@ public class UserManagementService {
 
         targetUser.setIsActive(isActive);
         targetUser = userRepository.save(targetUser);
+        if (!Boolean.TRUE.equals(isActive)) {
+            // Bloklangan foydalanuvchining barcha sessiyalari yopiladi (access token ham rad etiladi).
+            refreshTokenRepository.revokeAllByUserId(targetUser.getId(), java.time.LocalDateTime.now());
+        }
 
         log.info("User status changed: {} -> {}", targetUser.getId(), isActive);
 
@@ -337,6 +341,7 @@ public class UserManagementService {
 
     public void resetPassword(Long userId, String newPassword) {
         User user = getUserOrThrow(userId);
+        validateAccessToUser(getCurrentUser(), user);
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         refreshTokenRepository.revokeAllByUserId(userId, java.time.LocalDateTime.now());
@@ -345,6 +350,7 @@ public class UserManagementService {
 
     public void forceLogout(Long userId) {
         User user = getUserOrThrow(userId);
+        validateAccessToUser(getCurrentUser(), user);
         refreshTokenRepository.deleteAllByUserId(user.getId());
         log.info("Force logout executed for user id: {}", userId);
     }
@@ -352,6 +358,8 @@ public class UserManagementService {
     public void bulkUpdateStatus(List<Long> ids, boolean isActive) {
         if (ids == null || ids.isEmpty()) return;
         List<User> users = userRepository.findAllById(ids);
+        User current = getCurrentUser();
+        users.forEach(u -> validateAccessToUser(current, u)); // ADMIN SUPER_ADMIN ga ta'sir qila olmaydi
         for (User u : users) {
             if (!Boolean.TRUE.equals(u.getDeleted())) {
                 u.setIsActive(isActive);
@@ -367,6 +375,8 @@ public class UserManagementService {
     public void bulkDelete(List<Long> ids) {
         if (ids == null || ids.isEmpty()) return;
         List<User> users = userRepository.findAllById(ids);
+        User current = getCurrentUser();
+        users.forEach(u -> validateAccessToUser(current, u));
         for (User u : users) {
             u.setDeleted(true);
             refreshTokenRepository.deleteAllByUserId(u.getId());

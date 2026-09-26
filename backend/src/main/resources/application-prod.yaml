@@ -96,10 +96,10 @@ app:
 
   # Telegram Bot — env variable orqali
   telegram:
-    bot-token: ${TELEGRAM_BOT_TOKEN:8485868847:AAEaP6qPZ0XUxKSkhKYUfdT_xhM74_YApEE}
+    bot-token: ${TELEGRAM_BOT_TOKEN:}
     bot-username: ${TELEGRAM_BOT_USERNAME:pravaonlineuzbot}
     webhook-url: ${TELEGRAM_WEBHOOK_URL:https://pravaonline.uz/api/v1/telegram/webhook}
-    webhook-secret: ${TELEGRAM_WEBHOOK_SECRET:prava_secret_webhook_token_2026}
+    webhook-secret: ${TELEGRAM_WEBHOOK_SECRET:}
     base-url: ${TELEGRAM_BASE_URL:https://web.pravaonline.uz}
 
   storage:
@@ -107,8 +107,8 @@ app:
       enabled: true
       path: /app/uploads
 
-  default-users:
-    enabled: true
+  # Eslatma: seed boshqaruvi `app.init.default-users.enabled` (APP_INIT_DEFAULT_USERS_ENABLED),
+  # default=false. Avvalgi `app.default-users.enabled` kaliti hech narsani boshqarmasdi.
 
   # =========================================================
   # Payment module — Click & Payme
@@ -136,6 +136,7 @@ app:
       merchant-id:       ${PAYME_MERCHANT_ID:}
       cashbox-key:       ${PAYME_CASHBOX_KEY:}
       test-cashbox-key:  ${PAYME_TEST_CASHBOX_KEY:}
+      test-mode:         false                       # PROD: sandbox kaliti HECH QACHON qabul qilinmaydi
       checkout-base-url: https://checkout.paycom.uz
       return-path:       /payment/success
       timeout-seconds:   43200
@@ -157,7 +158,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: health
+        include: health,prometheus   # prometheus: faqat ichki tarmoqdan (SecurityConfig), nginx /actuator ni proxy qilmaydi
   endpoint:
     health:
       enabled: true

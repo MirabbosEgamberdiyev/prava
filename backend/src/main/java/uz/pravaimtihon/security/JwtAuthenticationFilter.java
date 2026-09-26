@@ -25,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService userDetailsService;
+    private final SessionRevocationService sessionRevocationService;
 
     // ✅ Public endpoints list - JWT token talab qilinmaydi
     private static final List<String> PUBLIC_ENDPOINTS = Arrays.asList(
@@ -91,21 +92,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        if (isDownloadToken && !isDownloadPath(requestPath)) {
+            // Qisqa muddatli download-token faqat fayl yuklab olish yo'lida amal qiladi —
+            // avval u istalgan GET endpoint'ga admin sifatida kirishga imkon berardi.
+            log.warn("Rejected download token outside download paths (path={})", requestPath);
+            filterChain.doFilter(request, response);
+            return;
+        }
         log.debug("JWT token found, length: {}", jwt.length());
 
         try {
             final String userIdentifier = jwtTokenProvider.extractUsername(jwt);
-            log.debug("Extracted username from token: {}", userIdentifier);
 
             // If token is valid and no authentication is set
             if (userIdentifier != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                log.debug("Loading user details for: {}", userIdentifier);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userIdentifier);
                 log.debug("User loaded successfully: {}", userDetails.getUsername());
 
-                if (jwtTokenProvider.isTokenValid(jwt, userDetails)) {
-                    log.debug("Token is valid for user: {}", userIdentifier);
+                // SECURITY: bloklangan/qulflangan foydalanuvchi va revoke qilingan sessiya
+                // tokeni muddati tugaguncha ishlab turmasligi kerak.
+                String sid = jwtTokenProvider.extractSessionId(jwt);
+                boolean accountOk = userDetails.isEnabled() && userDetails.isAccountNonLocked();
+                boolean sessionOk = sid == null || sessionRevocationService.isSessionActive(sid);
+                if (!accountOk || !sessionOk) {
+                    log.debug("Rejected token: accountOk={}, sessionOk={}", accountOk, sessionOk);
+                } else if (jwtTokenProvider.isTokenValid(jwt, userDetails)) {
 
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
@@ -115,9 +127,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                    log.info("User {} authenticated successfully", userIdentifier);
+                    log.debug("User authenticated successfully");
                 } else {
-                    log.warn("Token validation failed for user: {}", userIdentifier);
+                    log.warn("Token validation failed");
                 }
             } else if (userIdentifier == null) {
                 log.warn("Could not extract username from token");
@@ -136,6 +148,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * ✅ FIXED: Faqat public endpointlar uchun filterni skip qilish
      * /api/v1/auth/me va /api/v1/auth/change-password JWT talab qiladi!
      */
+    private static boolean isDownloadPath(String path) {
+        return path != null && (path.matches("/api/v1/admin/backup/.*/download")
+                || path.startsWith("/api/v1/files/installers/"));
+    }
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
