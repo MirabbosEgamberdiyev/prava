@@ -22,6 +22,7 @@ const prefetchMap: Record<string, () => Promise<unknown>> = {
   "/tickets": () => import("../page/Ticket"),
   "/topics": () => import("../page/Topics"),
   "/marafon": () => import("../page/Marafon"),
+  "/survival": () => import("../page/Survival"),
   "/exam": () => import("../page/Exam"),
   "/history": () => import("../page/History"),
   "/leaderboard": () => import("../page/Leaderboard"),

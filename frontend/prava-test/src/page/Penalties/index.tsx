@@ -20,6 +20,8 @@ import { curriculumApi, type PracticalPenalty } from "../../services/curriculumA
 import { useLanguage } from "../../context/LanguageContext";
 import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
+import { errorKeyFor } from "../../types/errors";
+import { pickLocalized } from "../../data/curriculumLocale";
 
 export default function Penalties_Page() {
   const { lang } = useLanguage();
@@ -27,7 +29,7 @@ export default function Penalties_Page() {
 
   const [penalties, setPenalties] = useState<PracticalPenalty[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [search, setSearch] = useState("");
 
   const fetchPenalties = useCallback(() => {
@@ -36,46 +38,41 @@ export default function Penalties_Page() {
     curriculumApi
       .getPenalties()
       .then((data) => {
-        setPenalties(Array.isArray(data) ? data : []);
+        setPenalties(data);
       })
-      .catch((err) => {
-        console.error("Failed to load penalties:", err);
-        setError(t("curriculum.loadPenaltiesError", "Jarimalar ma'lumotlarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring."));
+      .catch((err: unknown) => {
+        // 5xx/tarmoq xatolari uchun global toast api.ts'da chiqadi — bu yerda faqat inline xato.
+        setError(err);
         setPenalties([]);
       })
       .finally(() => setLoading(false));
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     fetchPenalties();
   }, [fetchPenalties]);
 
-  const safePenalties = useMemo(() => (Array.isArray(penalties) ? penalties : []), [penalties]);
-
-  const getLocalizedText = (p: PracticalPenalty) => {
-    if (lang === "ru" && p.text_ru) return p.text_ru;
-    if (lang === "uzc" && p.text_uzc) return p.text_uzc;
-    return p.text_uzl || "";
-  };
+  const localized = useMemo(
+    () =>
+      penalties
+        .filter((p): p is PracticalPenalty => !!p)
+        .map((p) => ({ penalty: p, text: pickLocalized(lang, p.text_uzl, p.text_uzc, p.text_ru) })),
+    [penalties, lang],
+  );
 
   const filtered = useMemo(() => {
-    return safePenalties.filter((p) => {
-      if (!p) return false;
-      if (!search.trim()) return true;
-      const q = search.trim().toLowerCase();
-      return (
-        getLocalizedText(p).toLowerCase().includes(q) ||
-        (p.penalty_number != null && p.penalty_number.toString().includes(q))
-      );
-    });
-  }, [safePenalties, search, lang]);
+    const q = search.trim().toLowerCase();
+    if (!q) return localized;
+    return localized.filter(
+      ({ penalty, text }) =>
+        text.toLowerCase().includes(q) ||
+        (penalty.penalty_number != null && penalty.penalty_number.toString().includes(q)),
+    );
+  }, [localized, search]);
 
   return (
     <Container size="xl" py="xl">
-      <SEO
-        title={t("seo.penaltiesTitle", "Jarimalar va Qoidabuzarliklar — Rasmiy Imtihon va YHQ Nizomi")}
-        description={t("seo.penaltiesDesc", "Imtihondagi jarima ballari va yo'l harakati qoidabuzarliklari bo'yicha to'liq ma'lumotlar jadvali.")}
-      />
+      <SEO title={t("seo.penaltiesTitle")} description={t("seo.penaltiesDesc")} />
 
       <Stack gap="lg">
         <Group justify="space-between" align="flex-start">
@@ -87,13 +84,16 @@ export default function Penalties_Page() {
               {t("curriculum.finesSubtitle")}
             </Text>
           </div>
-          <Badge size="lg" variant="filled" color="red" leftSection={<IconGavel size={14} />}>
-            {filtered.length} {t("curriculum.finesCount")}
-          </Badge>
+          {!loading && !error && (
+            <Badge size="lg" variant="filled" color="red" leftSection={<IconGavel size={14} />}>
+              {t("curriculum.finesCount", { count: filtered.length })}
+            </Badge>
+          )}
         </Group>
 
         <TextInput
           placeholder={t("curriculum.searchFines")}
+          aria-label={t("curriculum.searchFines")}
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
           leftSection={<IconSearch size={18} />}
@@ -108,17 +108,23 @@ export default function Penalties_Page() {
           radius="md"
         />
 
-        {/* Error State with Retry Button */}
-        {error && (
+        {loading ? (
+          <Stack gap="xs" aria-busy="true" aria-label={t("common.loading")}>
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <Skeleton key={idx} height={42} radius="sm" />
+            ))}
+          </Stack>
+        ) : error ? (
           <Alert
             icon={<IconAlertTriangle size={18} />}
             title={t("common.error")}
             color="red"
             variant="light"
             radius="md"
+            role="alert"
           >
             <Group justify="space-between" align="center">
-              <Text size="sm">{error}</Text>
+              <Text size="sm">{t(errorKeyFor(error, "curriculum.loadPenaltiesError"))}</Text>
               <Button
                 size="xs"
                 color="red"
@@ -126,18 +132,10 @@ export default function Penalties_Page() {
                 leftSection={<IconRefresh size={14} />}
                 onClick={fetchPenalties}
               >
-                {t("common.refresh")}
+                {t("common.retry")}
               </Button>
             </Group>
           </Alert>
-        )}
-
-        {loading ? (
-          <Stack gap="xs">
-            {Array.from({ length: 8 }).map((_, idx) => (
-              <Skeleton key={idx} height={42} radius="sm" />
-            ))}
-          </Stack>
         ) : filtered.length === 0 ? (
           <Center py={60}>
             <Stack align="center" gap="xs">
@@ -152,38 +150,40 @@ export default function Penalties_Page() {
           </Center>
         ) : (
           <Paper withBorder radius="md" p="md">
-            <Table striped highlightOnHover verticalSpacing="sm">
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th style={{ width: 60 }}>{t("curriculum.colNumber")}</Table.Th>
-                  <Table.Th>{t("curriculum.colViolation")}</Table.Th>
-                  <Table.Th style={{ width: 220 }}>{t("curriculum.colPoints")}</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {filtered.map((p) => (
-                  <Table.Tr key={p.id}>
-                    <Table.Td fw={700}>{p.penalty_number}</Table.Td>
-                    <Table.Td style={{ fontSize: "0.95rem" }}>{getLocalizedText(p)}</Table.Td>
-                    <Table.Td>
-                      {p.points >= 100 ? (
-                        <Badge color="red" variant="filled">
-                          {t("curriculum.fail100")}
-                        </Badge>
-                      ) : p.points >= 20 ? (
-                        <Badge color="orange" variant="filled">
-                          {p.points} ball
-                        </Badge>
-                      ) : (
-                        <Badge color="yellow" variant="light">
-                          {p.points} ball
-                        </Badge>
-                      )}
-                    </Table.Td>
+            <Table.ScrollContainer minWidth={560}>
+              <Table striped highlightOnHover verticalSpacing="sm">
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th style={{ width: 60 }}>{t("curriculum.colNumber")}</Table.Th>
+                    <Table.Th>{t("curriculum.colViolation")}</Table.Th>
+                    <Table.Th style={{ width: 220 }}>{t("curriculum.colPoints")}</Table.Th>
                   </Table.Tr>
-                ))}
-              </Table.Tbody>
-            </Table>
+                </Table.Thead>
+                <Table.Tbody>
+                  {filtered.map(({ penalty: p, text }) => (
+                    <Table.Tr key={p.id}>
+                      <Table.Td fw={700}>{p.penalty_number}</Table.Td>
+                      <Table.Td style={{ fontSize: "0.95rem" }}>{text}</Table.Td>
+                      <Table.Td>
+                        {p.points >= 100 ? (
+                          <Badge color="red" variant="filled">
+                            {t("curriculum.fail100")}
+                          </Badge>
+                        ) : p.points >= 20 ? (
+                          <Badge color="orange" variant="filled">
+                            {t("curriculum.pointsValue", { count: p.points })}
+                          </Badge>
+                        ) : (
+                          <Badge color="yellow" variant="light">
+                            {t("curriculum.pointsValue", { count: p.points })}
+                          </Badge>
+                        )}
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            </Table.ScrollContainer>
           </Paper>
         )}
       </Stack>

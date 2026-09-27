@@ -26,6 +26,7 @@ import {
 } from "@tabler/icons-react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { errorKeyFor, getErrorMessage } from "../../../types/errors";
 import { useAuth } from "../../../auth/AuthContext";
 import api from "../../../api/api";
 import SEO from "../../../components/common/SEO";
@@ -60,7 +61,7 @@ export default function PairPage() {
 
   useEffect(() => {
     if (!sessionId || !challenge) {
-      setError(t("pair.invalidUrl", { defaultValue: "QR havola yaroqsiz yoki parametrlari to'liq emas." }));
+      setError(t("pair.invalidUrl"));
       setLoading(false);
       return;
     }
@@ -82,23 +83,16 @@ export default function PairPage() {
           if (sessionData.status === "APPROVED" || sessionData.status === "CONSUMED") {
             setSuccess(true);
           } else if (sessionData.status === "REJECTED" || sessionData.status === "CANCELLED") {
-            setError(t("pair.cancelled", { defaultValue: "Ushbu sessiya bekor qilingan." }));
+            setError(t("pair.cancelled"));
           } else if (sessionData.status === "EXPIRED" || sessionData.expired) {
             setError(
-              t("pair.expired", {
-                defaultValue: "QR kod muddati tugagan (90 soniya). Desktop ilovasida qaytadan yangilang.",
-              })
+              t("pair.expired")
             );
           }
         }
       } catch (err: any) {
         if (isMounted) {
-          const msg =
-            err.response?.data?.message ||
-            t("pair.expired", {
-              defaultValue: "QR kod sessiyasi topilmadi yoki muddati tugagan. Desktop ilovasida yangilang.",
-            });
-          setError(msg);
+          setError(getErrorMessage(err, t("pair.expired")));
         }
       } finally {
         if (isMounted) {
@@ -125,10 +119,7 @@ export default function PairPage() {
       });
       setSuccess(true);
     } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        t("common.error", { defaultValue: "Qurilmani ulashda xatolik yuz berdi. Qaytadan urinib ko'ring." });
-      setError(msg);
+      setError(getErrorMessage(err, t(errorKeyFor(err, "common.errorOccurred"))));
     } finally {
       setActionLoading(false);
     }
@@ -142,9 +133,9 @@ export default function PairPage() {
         sessionId,
         challenge,
       });
-      setError(t("pair.cancelled", { defaultValue: "Ulanish so'rovi bekor qilindi." }));
+      setError(t("pair.cancelled"));
     } catch {
-      setError(t("pair.cancelled", { defaultValue: "Ulanish so'rovi bekor qilindi." }));
+      setError(t("pair.cancelled"));
     } finally {
       setActionLoading(false);
     }
@@ -157,10 +148,8 @@ export default function PairPage() {
   return (
     <>
       <SEO
-        title={`${t("pair.title", { defaultValue: "Qurilmani Ulash" })} — PRAVA`}
-        description={t("pair.subtitle", {
-          defaultValue: "PRAVA Desktop ilovasini hisobingizga xavfsiz QR orqali ulang",
-        })}
+        title={`${t("pair.title")} — PRAVA`}
+        description={t("pair.subtitle")}
         canonical="/auth/pair"
         noIndex={true}
       />
@@ -179,13 +168,11 @@ export default function PairPage() {
           </Center>
 
           <Title order={2} ta="center" mb="xs" size="1.4rem" fw={800}>
-            {t("pair.title", { defaultValue: "Yangi qurilma ulanishi" })}
+            {t("pair.title")}
           </Title>
 
           <Text c="dimmed" size="xs" ta="center" mb="xl" maw={380} mx="auto" style={{ lineHeight: 1.5 }}>
-            {t("pair.subtitle", {
-              defaultValue: "PRAVA Desktop ilovasi hisobingizga kirish uchun ruxsat so'ramoqda",
-            })}
+            {t("pair.subtitle")}
           </Text>
 
           {loading && (
@@ -193,7 +180,7 @@ export default function PairPage() {
               <Stack align="center" gap="xs">
                 <Loader size="md" />
                 <Text size="sm" c="dimmed">
-                  {t("pair.checking", { defaultValue: "Sessiya tekshirilmoqda..." })}
+                  {t("pair.checking")}
                 </Text>
               </Stack>
             </Center>
@@ -203,7 +190,7 @@ export default function PairPage() {
             <Stack gap="md">
               <Alert
                 icon={<IconAlertCircle size={18} />}
-                title={t("pair.errorTitle", { defaultValue: "Xatolik" })}
+                title={t("pair.errorTitle")}
                 color="red"
                 variant="light"
                 radius="md"
@@ -216,7 +203,7 @@ export default function PairPage() {
                 radius="md"
                 onClick={() => navigate("/")}
               >
-                {t("pair.goHome", { defaultValue: "Bosh sahifaga qaytish" })}
+                {t("pair.goHome")}
               </Button>
             </Stack>
           )}
@@ -227,13 +214,10 @@ export default function PairPage() {
                 <IconCheck size={36} />
               </ThemeIcon>
               <Title order={3} ta="center" c="green.7" size="1.25rem" fw={800}>
-                {t("pair.successTitle", { defaultValue: "Muvaffaqiyatli ulandi!" })}
+                {t("pair.successTitle")}
               </Title>
               <Text size="xs" ta="center" c="dimmed" maw={380} style={{ lineHeight: 1.5 }}>
-                {t("pair.successDesc", {
-                  defaultValue:
-                    "Desktop ilovangizga avtomatik kirildi. Endi siz barcha testlar, obunalar va saqlangan natijalaringizdan Desktop ilovada foydalanishingiz mumkin.",
-                })}
+                {t("pair.successDesc")}
               </Text>
               <Button
                 component={Link}
@@ -244,7 +228,7 @@ export default function PairPage() {
                 mt="md"
                 radius="md"
               >
-                {t("pair.goToCabinet", { defaultValue: "Shaxsiy kabinetga o'tish" })}
+                {t("pair.goToCabinet")}
               </Button>
             </Stack>
           )}
@@ -259,7 +243,7 @@ export default function PairPage() {
               >
                 <Group justify="space-between" mb="xs">
                   <Text size="xs" fw={700} c="dimmed" tt="uppercase" style={{ letterSpacing: 0.5 }}>
-                    {t("pair.deviceInfo", { defaultValue: "Qurilma ma'lumotlari" })}
+                    {t("pair.deviceInfo")}
                   </Text>
                   <Badge color="blue" variant="light" size="sm">
                     {sessionInfo.platform || "Desktop"}
@@ -273,7 +257,7 @@ export default function PairPage() {
                 </Group>
                 {sessionInfo.appVersion && (
                   <Text size="xs" c="dimmed">
-                    {t("pair.appVersion", { defaultValue: "Ilova versiyasi" })}: v{sessionInfo.appVersion}
+                    {t("pair.appVersion")}: v{sessionInfo.appVersion}
                   </Text>
                 )}
               </Card>
@@ -290,7 +274,7 @@ export default function PairPage() {
                       <IconUserCheck size={20} color="var(--mantine-color-blue-7)" />
                       <Box>
                         <Text size="xs" c="dimmed">
-                          {t("pair.targetAccount", { defaultValue: "Ulanadigan hisob:" })}
+                          {t("pair.targetAccount")}
                         </Text>
                         <Text size="sm" fw={700} c="blue.9">
                           {user?.fullName || user?.phoneNumber || user?.email || "Foydalanuvchi"}
@@ -306,10 +290,7 @@ export default function PairPage() {
                       style={{ marginTop: 2, flexShrink: 0 }}
                     />
                     <Text size="xs" c="dimmed" style={{ lineHeight: 1.4 }}>
-                      {t("pair.notice", {
-                        defaultValue:
-                          "«Tasdiqlash» tugmasini bosganingizda ushbu kompyuter profilingizga ulanadi va hisobingizdagi obuna ochiladi.",
-                      })}
+                      {t("pair.notice")}
                     </Text>
                   </Group>
 
@@ -324,7 +305,7 @@ export default function PairPage() {
                       onClick={handleReject}
                       disabled={actionLoading}
                     >
-                      {t("pair.reject", { defaultValue: "Rad etish" })}
+                      {t("pair.reject")}
                     </Button>
                     <Button
                       variant="filled"
@@ -334,7 +315,7 @@ export default function PairPage() {
                       onClick={handleApprove}
                       loading={actionLoading}
                     >
-                      {t("pair.approve", { defaultValue: "Tasdiqlash" })}
+                      {t("pair.approve")}
                     </Button>
                   </Group>
                 </Stack>
@@ -342,15 +323,12 @@ export default function PairPage() {
                 <Stack gap="md">
                   <Alert
                     icon={<IconAlertCircle size={18} />}
-                    title={t("pair.authRequired", { defaultValue: "Avtorizatsiya talab qilinadi" })}
+                    title={t("pair.authRequired")}
                     color="blue"
                     variant="light"
                     radius="md"
                   >
-                    {t("pair.authRequiredDesc", {
-                      defaultValue:
-                        "Desktop ilovani ulash uchun avval o'z hisobingizga kiring. Agar hisobingiz bo'lmasa, yangi hisob ochishingiz mumkin.",
-                    })}
+                    {t("pair.authRequiredDesc")}
                   </Alert>
 
                   <Button
@@ -363,7 +341,7 @@ export default function PairPage() {
                     size="md"
                     radius="md"
                   >
-                    {t("pair.loginExisting", { defaultValue: "Mavjud hisob bilan kirish" })}
+                    {t("pair.loginExisting")}
                   </Button>
 
                   <Button
@@ -375,7 +353,7 @@ export default function PairPage() {
                     fullWidth
                     radius="md"
                   >
-                    {t("pair.registerNew", { defaultValue: "Yangi hisob yaratish" })}
+                    {t("pair.registerNew")}
                   </Button>
                 </Stack>
               )}

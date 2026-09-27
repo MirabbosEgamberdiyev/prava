@@ -10,7 +10,7 @@ const NotFound_Page = () => {
 
   return (
     <div>
-      <SEO title={t("seo.notFound.title", "404 — Sahifa topilmadi")} description={t("seo.notFound.desc", "Kechirasiz, sahifa topilmadi.")}
+      <SEO title={t("seo.notFound.title")} description={t("seo.notFound.desc")}
         noIndex={true}
       />
       <Container className={classes.root}>
@@ -28,7 +28,7 @@ const NotFound_Page = () => {
             </Text>
             <Group justify="center">
               <Button component={Link} to="/" size="md" radius="md">
-                {t("notFound.backHome", "Bosh sahifaga qaytish")}
+                {t("notFound.backHome")}
               </Button>
             </Group>
           </div>

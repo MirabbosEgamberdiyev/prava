@@ -25,19 +25,18 @@ export const Device_Platforms = React.memo(() => {
   const { t } = useTranslation();
 
   return (
-    <section className={classes.devicePlatformsModernSection} id="devices" aria-label={t("home.devices.ariaLabel", "Mavjud qurilmalar")}>
+    <section className={classes.devicePlatformsModernSection} id="devices" aria-label={t("home.devices.ariaLabel")}>
       <div className={classes.sectionHeaderCentered}>
         <div className={classes.sectionCategoryBadge}>
           <IconDevices size={14} />
-          <span>{t("home.devices.badge", "Barcha Qurilmalarda")}</span>
+          <span>{t("home.devices.badge")}</span>
         </div>
         <h2 className={classes.sectionHeaderTitle}>
-          {t("home.devices.title", "Istalgan qurilmada qulay o'rganing")}
+          {t("home.devices.title")}
         </h2>
         <p className={classes.sectionHeaderSubtitle}>
           {t(
-            "home.devices.subtitle",
-            "Brauzerda, kompyuterda internetsiz yoki mobil telefonda — barcha qulay formatlar mavjud."
+            "home.devices.subtitle"
           )}
         </p>
       </div>
@@ -53,17 +52,16 @@ export const Device_Platforms = React.memo(() => {
               <IconBrowser size={26} stroke={1.9} />
             </div>
             <span className={`${classes.platformPillBadge} ${classes.pillWeb}`}>
-              {t("home.devices.webBadge", "BRAUZERDA")}
+              {t("home.devices.webBadge")}
             </span>
           </div>
 
           <h3 className={classes.platformTitleModern}>
-            {t("home.devices.webTitle", "Web ilova")}
+            {t("home.devices.webTitle")}
           </h3>
           <p className={classes.platformDescModern}>
             {t(
-              "home.devices.webDesc",
-              "Hech narsa yuklab olmasdan brauzerda darhol ishlaydi."
+              "home.devices.webDesc"
             )}
           </p>
 
@@ -78,7 +76,7 @@ export const Device_Platforms = React.memo(() => {
                 rightSection={<IconExternalLink size={16} />}
                 className={classes.platformActionBtn}
               >
-                {t("home.devices.webAction", "Web ilovaga o'tish")}
+                {t("home.devices.webAction")}
               </Button>
             </DomainLink>
           </div>
@@ -94,17 +92,16 @@ export const Device_Platforms = React.memo(() => {
               <IconBrandWindows size={26} stroke={1.9} />
             </div>
             <span className={`${classes.platformPillBadge} ${classes.pillWindows}`}>
-              {t("home.devices.windowsBadge", "INTERNETSIZ")}
+              {t("home.devices.windowsBadge")}
             </span>
           </div>
 
           <h3 className={classes.platformTitleModern}>
-            {t("home.devices.windowsTitle", "Windows Desktop")}
+            {t("home.devices.windowsTitle")}
           </h3>
           <p className={classes.platformDescModern}>
             {t(
-              "home.devices.windowsDesc",
-              "To'liq offline ishlaydigan ilova (.exe). Barcha savollar va izohlar mavjud."
+              "home.devices.windowsDesc"
             )}
           </p>
 
@@ -121,7 +118,7 @@ export const Device_Platforms = React.memo(() => {
               leftSection={<IconDownload size={16} />}
               className={classes.platformActionBtn}
             >
-              {t("home.devices.windowsAction", "Yuklab olish (.exe)")}
+              {t("home.devices.windowsAction")}
             </Button>
           </div>
         </div>
@@ -136,17 +133,16 @@ export const Device_Platforms = React.memo(() => {
               <IconDeviceMobile size={26} stroke={1.9} />
             </div>
             <span className={`${classes.platformPillBadge} ${classes.pillMobile}`}>
-              {t("home.devices.mobileBadge", "MOBIL ILOVA")}
+              {t("home.devices.mobileBadge")}
             </span>
           </div>
 
           <h3 className={classes.platformTitleModern}>
-            {t("home.devices.mobileTitle", "Android va iOS")}
+            {t("home.devices.mobileTitle")}
           </h3>
           <p className={classes.platformDescModern}>
             {t(
-              "home.devices.mobileDesc",
-              "Telefoningizda istalgan vaqtda o'rganing."
+              "home.devices.mobileDesc"
             )}
           </p>
 
@@ -192,17 +188,16 @@ export const Device_Platforms = React.memo(() => {
               <IconBrandTelegram size={26} stroke={1.9} />
             </div>
             <span className={`${classes.platformPillBadge} ${classes.pillTelegram}`}>
-              {t("home.devices.telegramBadge", "TELEGRAM")}
+              {t("home.devices.telegramBadge")}
             </span>
           </div>
 
           <h3 className={classes.platformTitleModern}>
-            {t("home.devices.telegramTitle", "Telegram Bot")}
+            {t("home.devices.telegramTitle")}
           </h3>
           <p className={classes.platformDescModern}>
             {t(
-              "home.devices.telegramDesc",
-              "Rasmiy bot orqali tezkor bildirishnomalar va mini testlar."
+              "home.devices.telegramDesc"
             )}
           </p>
 
@@ -220,7 +215,7 @@ export const Device_Platforms = React.memo(() => {
               rightSection={<IconExternalLink size={16} />}
               className={classes.platformActionBtn}
             >
-              {t("home.devices.telegramAction", "Telegramda ochish")}
+              {t("home.devices.telegramAction")}
             </Button>
           </div>
         </div>

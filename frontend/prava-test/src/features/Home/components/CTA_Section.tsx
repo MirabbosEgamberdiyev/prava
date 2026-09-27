@@ -18,7 +18,7 @@ export const CTA_Section = React.memo(() => {
   ];
 
   return (
-    <section className={classes.finalCtaSectionModern} aria-label={t("home.cta.ariaLabel", "Harakatga chaqiruv")}>
+    <section className={classes.finalCtaSectionModern} aria-label={t("home.cta.ariaLabel")}>
       <div className={classes.finalCtaCard}>
         {/* Top Glow Icon */}
         <div className={classes.finalCtaIconRing}>
@@ -27,13 +27,12 @@ export const CTA_Section = React.memo(() => {
 
         {/* Title & Description */}
         <h2 className={classes.finalCtaTitle}>
-          {t("home.cta.title", "Haydovchilik imtihoniga tayyorgarlikni hoziroq boshlang!")}
+          {t("home.cta.title")}
         </h2>
 
         <p className={classes.finalCtaSubtitle}>
           {t(
-            "home.cta.subtitle",
-            "Ro'yxatdan o'ting va bepul sinov imtihoni orqali bilimlaringizni sinab ko'ring."
+            "home.cta.subtitle"
           )}
         </p>
 
@@ -62,8 +61,8 @@ export const CTA_Section = React.memo(() => {
             >
               <span>
                 {isAuthenticated
-                  ? t("nav.dashboard", "Boshqaruv paneliga o'tish")
-                  : t("home.cta.primaryBtn", "Web ilovani ochish")}
+                  ? t("nav.dashboard")
+                  : t("home.cta.primaryBtn")}
               </span>
               <IconArrowRight size={18} />
             </button>
@@ -81,7 +80,7 @@ export const CTA_Section = React.memo(() => {
               style={{ height: 48, padding: "0 24px", fontSize: "0.95rem" }}
             >
               <IconPlayerPlay size={16} style={{ fill: "currentColor" }} />
-              <span>{t("home.cta.secondaryBtn", "Bepul sinov imtihoni")}</span>
+              <span>{t("home.cta.secondaryBtn")}</span>
             </button>
           </DomainLink>
         </div>

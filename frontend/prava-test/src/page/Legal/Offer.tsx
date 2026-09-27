@@ -17,10 +17,9 @@ export default function Offer_Page() {
   return (
     <>
       <SEO
-        title={t("seo.offer.title", "Ommaviy Oferta — Prava Online")}
+        title={t("seo.offer.title")}
         description={t(
-          "seo.offer.desc",
-          "Prava Online axborot-ta'lim platformasi orqali xizmatlar ko'rsatish bo'yicha rasmiy ommaviy oferta shartnomasi."
+          "seo.offer.desc"
         )}
         keywords="prava online oferta, ommaviy oferta prava, ommaviy shartnoma prava test, to'lov shartlari prava"
         canonical="/offer"
@@ -31,13 +30,13 @@ export default function Offer_Page() {
         <div className="saas-header-block">
           <div className="saas-badge-pill">
             <IconFileCertificate size={13} />
-            <span>{t("legal.offerBadge", "Rasmiy Yuridik Hujjat")}</span>
+            <span>{t("legal.offerBadge")}</span>
           </div>
           <h1 className="saas-page-title">
-            {t("legal.offerTitle", "Ommaviy Oferta Shartnomasi")}
+            {t("legal.offerTitle")}
           </h1>
           <p className="saas-page-subtitle">
-            {t("legal.lastUpdated", "Oxirgi yangilanish: 2026-yil 1-yanvar")}
+            {t("legal.lastUpdated")}
           </p>
         </div>
 
@@ -50,104 +49,95 @@ export default function Offer_Page() {
                 </ThemeIcon>
                 <Text size="xs" c="dimmed" lh={1.6}>
                   {t(
-                    "legal.offerNotice",
-                    "Ushbu hujjat O'zbekiston Respublikasi Fuqarolik Kodeksining 367 va 369-moddalariga muvofiq rasmiy ommaviy oferta hisoblanadi. Saytda ro'yxatdan o'tish yoki to'lovni amalga oshirish mazkur oferta shartlarini to'liq va so'zsiz qabul qilish (aksept) hisoblanadi."
+                    "legal.offerNotice"
                   )}
                 </Text>
               </Group>
             </Box>
 
             <Title order={3} size="h4" mt="xs">
-              {t("legal.offer.sec1Title", "1. Atamalar va ta'riflar")}
+              {t("legal.offer.sec1Title")}
             </Title>
             <Text size="sm" c="dimmed" lh={1.8}>
               {t(
-                "legal.offer.sec1Text",
-                "• 'Ijrochi' — 'Prava Online' mustaqil axborot-ta'lim platformasi boshqaruvchisi.\n• 'Buyurtmachi' (Foydalanuvchi) — Platformada ro'yxatdan o'tgan yoki to'lovni amalga oshirgan jismoniy yoki yuridik shaxs.\n• 'Aksept' — Buyurtmachi tomonidan ofertaning barcha shartlarini to'liq va so'zsiz qabul qilish harakati (to'lov yoki ro'yxatdan o'tish).\n• 'Xizmatlar' — Haydovchilik nazariy imtihoniga tayyorgarlik ko'rish uchun testlar, biletlar, simulyator va tahliliy vositalarga elektron kirish huquqini berish."
+                "legal.offer.sec1Text"
               )}
             </Text>
 
             <Divider my="sm" />
 
             <Title order={3} size="h4" mt="xs">
-              {t("legal.offer.sec2Title", "2. Shartnoma predmeti")}
+              {t("legal.offer.sec2Title")}
             </Title>
             <Text size="sm" c="dimmed" lh={1.8}>
               {t(
-                "legal.offer.sec2Text",
-                "Ijrochi Buyurtmachiga platformadagi tanlangan tarif rejasi doirasida avtomatlashtirilgan o'quv-test materiallaridan, imtihon simulyatoridan va shaxsiy kabinet imkoniyatlaridan belgilangan muddat davomida masofaviy foydalanish huquqini taqdim etadi, Buyurtmachi esa xizmatlar uchun belgilangan haqni to'laydi."
+                "legal.offer.sec2Text"
               )}
             </Text>
 
             <Divider my="sm" />
 
             <Title order={3} size="h4" mt="xs">
-              {t("legal.offer.sec3Title", "3. Akseptlash tartibi")}
+              {t("legal.offer.sec3Title")}
             </Title>
             <Text size="sm" c="dimmed" lh={1.8}>
               {t(
-                "legal.offer.sec3Text",
-                "Mazkur ofertaning aksepti quyidagi harakatlardan biri sodir etilganda to'liq hisoblanadi: a) Platformada telefon raqami yoki Telegram/Google orqali muvaffaqiyatli ro'yxatdan o'tish; b) Tanlangan pullik tarif uchun to'lovni tasdiqlash. Aksept amalga oshirilgan paytdan boshlab shartnoma qonuniy kuchga kirgan hisoblanadi."
+                "legal.offer.sec3Text"
               )}
             </Text>
 
             <Divider my="sm" />
 
             <Title order={3} size="h4" mt="xs">
-              {t("legal.offer.sec4Title", "4. Tariflar va to'lov shartlari")}
+              {t("legal.offer.sec4Title")}
             </Title>
             <Text size="sm" c="dimmed" lh={1.8}>
               {t(
-                "legal.offer.sec4Text",
-                "Xizmatlarning amaldagi qiymati 'Tariflar' sahifasida O'zbekiston so'mida (UZS) ko'rsatiladi. To'lovlar 100% oldindan to'lov shaklida litsenziyaga ega to'lov operatorlari (Payme, Click, Uzum Bank) orqali amalga oshiriladi. To'lov tasdiqlangach, kirish huquqi real vaqtda avtomatik ochiladi."
+                "legal.offer.sec4Text"
               )}
             </Text>
 
             <Divider my="sm" />
 
             <Title order={3} size="h4" mt="xs">
-              {t("legal.offer.sec5Title", "5. Xizmatlarni ko'rsatish tartibi")}
+              {t("legal.offer.sec5Title")}
             </Title>
             <Text size="sm" c="dimmed" lh={1.8}>
               {t(
-                "legal.offer.sec5Text",
-                "Xizmatlar 24/7 rejimida masofaviy elektron shaklda ko'rsatiladi. Profilga kirish uchun Buyurtmachi o'zining internetga ulangan qurilmasi (telefon, kompyuter, planshet) yoki Windows uchun offline ilovadan foydalanadi. Ijrochi rejaviy profilaktika ishlarini o'tkazishda xizmatni qisqa muddatga cheklash huquqiga ega."
+                "legal.offer.sec5Text"
               )}
             </Text>
 
             <Divider my="sm" />
 
             <Title order={3} size="h4" mt="xs">
-              {t("legal.offer.sec6Title", "6. Tomonlarning huquq va majburiyatlari")}
+              {t("legal.offer.sec6Title")}
             </Title>
             <Text size="sm" c="dimmed" lh={1.8}>
               {t(
-                "legal.offer.sec6Text",
-                "Buyurtmachi o'z akkauntini uchinchi shaxslarga bermaslik, platformaning intellektual mulkini himoya qilish va tizim xavfsizligiga ziyon yetkazmaslik majburiyatini oladi. Ijrochi xizmatlarning barqaror ishlashini ta'minlash va foydalanuvchining shaxsiy ma'lumotlarini maxfiy saqlash majburiyatini oladi."
+                "legal.offer.sec6Text"
               )}
             </Text>
 
             <Divider my="sm" />
 
             <Title order={3} size="h4" mt="xs">
-              {t("legal.offer.sec7Title", "7. Mablag'larni qaytarish (Refund) siyosati")}
+              {t("legal.offer.sec7Title")}
             </Title>
             <Text size="sm" c="dimmed" lh={1.8}>
               {t(
-                "legal.offer.sec7Text",
-                "Raqamli xizmatlar o'ziga xos xususiyatga ega bo'lib, to'lov amalga oshirilib, akkauntga to'liq kirish huquqi taqdim etilgandan so'ng, xizmat ko'rsatilgan hisoblanadi. Agar texnik nosozlik sababli kirish imkoni bo'lmasa va bu holat 48 soat ichida bartaraf etilmasa, Buyurtmachi mablag'ni qaytarishni talab qilishga haqli."
+                "legal.offer.sec7Text"
               )}
             </Text>
 
             <Divider my="sm" />
 
             <Title order={3} size="h4" mt="xs">
-              {t("legal.offer.sec8Title", "8. Nizolarni hal qilish va rekvizitlar")}
+              {t("legal.offer.sec8Title")}
             </Title>
             <Text size="sm" c="dimmed" lh={1.8}>
               {t(
-                "legal.offer.sec8Text",
-                "Shartnoma bo'yicha yuzaga keladigan barcha nizolar dastlab muzokaralar va yozma murojaatlar orqali hal etiladi. Kelishuvga erishilmagan taqdirda nizo O'zbekiston Respublikasining amaldagi qonunchiligiga muvofiq sudda ko'rib chiqiladi.\n\nBog'lanish: +998 99 391 25 05 | Telegram: @pravaonlineuz"
+                "legal.offer.sec8Text"
               )}
             </Text>
           </Stack>

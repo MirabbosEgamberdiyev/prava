@@ -90,23 +90,22 @@ const ForgotPassword_Page: React.FC = () => {
     validate: {
       identifier: (value, values) => {
         if (!value || value.trim().length === 0) {
-          return t("validation.required", "Ushbu maydon to'ldirilishi shart");
+          return t("validation.required");
         }
         if (values.verificationType === "EMAIL") {
           return /^\S+@\S+\.\S+$/.test(value.trim())
             ? null
-            : t("validation.invalidEmail", "Email manzili noto'g'ri formatda");
+            : t("validation.invalidEmail");
         }
         return isValidUzPhone(value)
           ? null
-          : t("validation.phoneLength", "Telefon raqami noto'g'ri formatda (+998...)");
+          : t("validation.phoneLength");
       },
       newPassword: (value) => {
         if (step !== 3) return null;
         if (!isPasswordSecure(value)) {
           return t(
-            "validation.passwordComplexity",
-            "Parol barcha xavfsizlik talablariga javob berishi kerak"
+            "validation.passwordComplexity"
           );
         }
         return null;
@@ -114,7 +113,7 @@ const ForgotPassword_Page: React.FC = () => {
       confirmPassword: (value, values) => {
         if (step !== 3) return null;
         if (value !== values.newPassword) {
-          return t("forgotPassword.passwordMismatch", "Parollar mos kelmadi");
+          return t("forgotPassword.passwordMismatch");
         }
         return null;
       },
@@ -144,19 +143,19 @@ const ForgotPassword_Page: React.FC = () => {
       setCountdown(60);
       setCode("");
       notifications.show({
-        title: t("common.success", "Muvaffaqiyatli"),
-        message: t("authV2.forgot.otpPrompt", "Tasdiqlash kodi yuborildi"),
+        title: t("common.success"),
+        message: t("authV2.forgot.codeSent"),
         color: "teal",
         withBorder: true,
       });
     } catch (error: unknown) {
       const msg = getErrorMessage(
         error,
-        t("forgotPassword.errorMessage", "Foydalanuvchi topilmadi yoki xatolik yuz berdi")
+        t("forgotPassword.errorMessage")
       );
       setErrorMessage(msg);
       notifications.show({
-        title: t("forgotPassword.errorTitle", "Xatolik"),
+        title: t("forgotPassword.errorTitle"),
         message: msg,
         color: "red",
         withBorder: true,
@@ -185,15 +184,15 @@ const ForgotPassword_Page: React.FC = () => {
 
       setCountdown(60);
       notifications.show({
-        title: t("common.success", "Muvaffaqiyatli"),
-        message: t("authV2.forgot.otpPrompt", "Tasdiqlash kodi qayta yuborildi"),
+        title: t("common.success"),
+        message: t("authV2.forgot.codeResent"),
         color: "teal",
         withBorder: true,
       });
     } catch (error: unknown) {
       const msg = getErrorMessage(
         error,
-        t("forgotPassword.errorMessage", "Kodni qayta yuborishda xatolik yuz berdi")
+        t("forgotPassword.errorMessage")
       );
       setErrorMessage(msg);
     } finally {
@@ -229,10 +228,9 @@ const ForgotPassword_Page: React.FC = () => {
       });
 
       notifications.show({
-        title: t("forgotPassword.successTitle", "Muvaffaqiyatli"),
+        title: t("forgotPassword.successTitle"),
         message: t(
-          "forgotPassword.successMessage",
-          "Parolingiz muvaffaqiyatli yangilandi. Yangi parol bilan kirishingiz mumkin."
+          "forgotPassword.successMessage"
         ),
         color: "teal",
         withBorder: true,
@@ -241,11 +239,11 @@ const ForgotPassword_Page: React.FC = () => {
     } catch (error: unknown) {
       const msg = getErrorMessage(
         error,
-        t("forgotPassword.resetError", "Parolni yangilashda xatolik yuz berdi")
+        t("forgotPassword.resetError")
       );
       setErrorMessage(msg);
       notifications.show({
-        title: t("forgotPassword.errorTitle", "Xatolik"),
+        title: t("forgotPassword.errorTitle"),
         message: msg,
         color: "red",
         withBorder: true,
@@ -256,28 +254,27 @@ const ForgotPassword_Page: React.FC = () => {
   };
 
   const stepLabels: [string, string, string] = [
-    t("authV2.forgot.step1Title", "Hisobni tekshirish"),
-    t("authV2.forgot.step2Title", "Kodni tasdiqlash"),
-    t("authV2.forgot.step3Title", "Yangi parol"),
+    t("authV2.forgot.step1Title"),
+    t("authV2.forgot.step2Title"),
+    t("authV2.forgot.step3Title"),
   ];
 
   return (
     <AuthLayout
-      seoTitle={t("forgotPassword.title", "Parolni tiklash")}
-      seoDescription={t("seo.login.desc", "Akkaunt parolini tiklash.")}
+      seoTitle={t("forgotPassword.title")}
+      seoDescription={t("seo.login.desc")}
       canonicalUrl="/auth/forgot-password"
       backLink={{
         href: "/auth/login",
-        label: t("authV2.forgot.backToLogin", "Kirishga qaytish"),
+        label: t("authV2.forgot.backToLogin"),
       }}
       stepIndicator={t("authV2.forgot.stepIndicator", { current: step, total: 3 })}
     >
       <AuthCard
         icon={<img src="/logo.svg" alt="Prava Online" width={32} height={32} style={{ objectFit: "contain" }} />}
-        title={t("authV2.forgot.title", "Parolni tiklash")}
+        title={t("authV2.forgot.title")}
         subtitle={t(
-          "authV2.forgot.subtitle",
-          "Email yoki telefon raqamingizni kiriting, biz sizga tasdiqlash kodini yuboramiz."
+          "authV2.forgot.subtitle"
         )}
       >
         {/* 3-Step Interactive Stepper */}
@@ -302,7 +299,7 @@ const ForgotPassword_Page: React.FC = () => {
         {step === 1 && (
           <Stack gap={10}>
             <TextInput
-              label={t("authV2.login.identifierLabel", "Email yoki Telefon raqam")}
+              label={t("authV2.login.identifierLabel")}
               placeholder={
                 form.values.verificationType === "EMAIL"
                   ? "example@mail.com"
@@ -352,7 +349,7 @@ const ForgotPassword_Page: React.FC = () => {
                     label: (
                       <Center style={{ gap: 6 }}>
                         <IconMail size={14} />
-                        <span>{t("authV2.register.methodEmail", "Email orqali")}</span>
+                        <span>{t("authV2.register.methodEmail")}</span>
                       </Center>
                     ),
                     value: "EMAIL",
@@ -361,7 +358,7 @@ const ForgotPassword_Page: React.FC = () => {
                     label: (
                       <Center style={{ gap: 6 }}>
                         <IconMessageDots size={14} />
-                        <span>{t("authV2.register.methodSms", "SMS orqali")}</span>
+                        <span>{t("authV2.register.methodSms")}</span>
                       </Center>
                     ),
                     value: "SMS",
@@ -392,8 +389,8 @@ const ForgotPassword_Page: React.FC = () => {
               }}
             >
               {loading
-                ? t("authV2.forgot.sendingCode", "Kod yuborilmoqda...")
-                : t("authV2.forgot.sendCodeBtn", "Tasdiqlash kodini yuborish")}
+                ? t("authV2.forgot.sendingCode")
+                : t("authV2.forgot.sendCodeBtn")}
             </Button>
 
             <Alert
@@ -406,8 +403,7 @@ const ForgotPassword_Page: React.FC = () => {
             >
               <Text size="xs" lh={1.4}>
                 {t(
-                  "authV2.forgot.infoAlert",
-                  "Tizimda ro'yxatdan o'tgan email yoki telefon raqamingizni kiriting. Tasdiqlash kodi bir necha daqiqa ichida yuboriladi."
+                  "authV2.forgot.infoAlert"
                 )}
               </Text>
             </Alert>
@@ -425,16 +421,13 @@ const ForgotPassword_Page: React.FC = () => {
               p="xs"
             >
               <Text size="xs">
-                {t(
-                  "authV2.forgot.otpPrompt",
-                  "Biz {{recipient}} manziliga 6 xonali tasdiqlash kodini yubordik."
-                ).replace("{{recipient}}", form.values.identifier)}
+                {t("authV2.forgot.otpPrompt", { recipient: form.values.identifier })}
               </Text>
             </Alert>
 
             <Box>
               <Text size="xs" fw={600} mb={4} ta="center">
-                {t("authV2.forgot.otpLabel", "Tasdiqlash kodini kiriting")}
+                {t("authV2.forgot.otpLabel")}
               </Text>
               <Center>
                 <PinInput
@@ -449,14 +442,14 @@ const ForgotPassword_Page: React.FC = () => {
                   }}
                   autoFocus
                   radius="md"
-                  aria-label={t("authV2.forgot.otpLabel", "Tasdiqlash kodi")}
+                  aria-label={t("authV2.forgot.otpLabel")}
                 />
               </Center>
             </Box>
 
             <Group justify="center" gap={6}>
               <Text size="xs" c="dimmed">
-                {t("register.didntReceive", "Kod kelmadimi?")}
+                {t("register.didntReceive")}
               </Text>
               <Button
                 variant="subtle"
@@ -467,7 +460,7 @@ const ForgotPassword_Page: React.FC = () => {
               >
                 {countdown > 0
                   ? t("authV2.forgot.resendIn", { seconds: countdown })
-                  : t("authV2.forgot.resendPrompt", "Kodni qayta yuborish")}
+                  : t("authV2.forgot.resendPrompt")}
               </Button>
             </Group>
 
@@ -486,7 +479,7 @@ const ForgotPassword_Page: React.FC = () => {
                 boxShadow: "0 4px 12px rgba(var(--primary-rgb), 0.25)",
               }}
             >
-              {t("authV2.forgot.verifyBtn", "Kodni tasdiqlash")}
+              {t("authV2.forgot.verifyBtn")}
             </Button>
 
             <Flex justify="center" mt={2}>
@@ -499,7 +492,7 @@ const ForgotPassword_Page: React.FC = () => {
                 style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
               >
                 <IconArrowLeft size={14} />
-                <span>{t("common.back", "Orqaga")}</span>
+                <span>{t("common.back")}</span>
               </Anchor>
             </Flex>
           </Stack>
@@ -523,7 +516,7 @@ const ForgotPassword_Page: React.FC = () => {
                       fw={600}
                       style={{ color: "var(--text, #0f172a)", display: "inline-flex", gap: 2 }}
                     >
-                      <span>{t("authV2.forgot.newPassLabel", "Yangi parol")}</span>
+                      <span>{t("authV2.forgot.newPassLabel")}</span>
                       <span style={{ color: "#ef4444" }}>*</span>
                     </Text>
                     {form.values.newPassword.length > 0 && (
@@ -544,10 +537,10 @@ const ForgotPassword_Page: React.FC = () => {
                         {isPasswordSecure(form.values.newPassword) ? (
                           <>
                             <IconCheck size={14} stroke={2.5} />
-                            <span>{t("authV2.register.passwordValid", "Parol talablarga mos")}</span>
+                            <span>{t("authV2.register.passwordValid")}</span>
                           </>
                         ) : (
-                          <span>{t("authV2.register.passwordHint", "8+ belgi, A-Z, 0-9, @$!")}</span>
+                          <span>{t("authV2.register.passwordHint")}</span>
                         )}
                       </Text>
                     )}
@@ -557,8 +550,7 @@ const ForgotPassword_Page: React.FC = () => {
                 <PasswordInput
                   id="forgot-newPassword"
                   placeholder={t(
-                    "authV2.forgot.newPassPlaceholder",
-                    "Yangi parolingizni kiriting"
+                    "authV2.forgot.newPassPlaceholder"
                   )}
                   required
                   size="sm"
@@ -588,10 +580,9 @@ const ForgotPassword_Page: React.FC = () => {
 
               <PasswordInput
                 id="forgot-confirmPassword"
-                label={t("authV2.forgot.confirmPassLabel", "Yangi parolni tasdiqlang")}
+                label={t("authV2.forgot.confirmPassLabel")}
                 placeholder={t(
-                  "authV2.forgot.confirmPassPlaceholder",
-                  "Parolni qayta kiriting"
+                  "authV2.forgot.confirmPassPlaceholder"
                 )}
                 required
                 size="sm"
@@ -636,8 +627,8 @@ const ForgotPassword_Page: React.FC = () => {
                 }}
               >
                 {loading
-                  ? t("authV2.forgot.resetting", "Parol yangilanmoqda...")
-                  : t("authV2.forgot.resetBtn", "Parolni yangilash")}
+                  ? t("authV2.forgot.resetting")
+                  : t("authV2.forgot.resetBtn")}
               </Button>
             </Stack>
           </form>

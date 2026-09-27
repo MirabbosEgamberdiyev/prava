@@ -60,7 +60,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
               )}
 
               {breadcrumbs && breadcrumbs.length > 0 && (
-                <nav aria-label={t("common.breadcrumbs", "Breadcrumbs")} className={classes.breadcrumbRow}>
+                <nav aria-label={t("common.breadcrumbs")} className={classes.breadcrumbRow}>
                   {breadcrumbs.map((item, idx) => {
                     const isLast = idx === breadcrumbs.length - 1;
                     return (

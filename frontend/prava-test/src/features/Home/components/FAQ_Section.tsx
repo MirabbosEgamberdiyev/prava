@@ -41,7 +41,7 @@ export function FAQ_Section() {
   const { t } = useTranslation();
 
   return (
-    <section className={classes.faqSectionModern} id="faq" aria-label={t("home.faq.ariaLabel", "Ko'p so'raladigan savollar")}>
+    <section className={classes.faqSectionModern} id="faq" aria-label={t("home.faq.ariaLabel")}>
       <FAQStructuredData t={t} />
       
       {/* Top Header Row with Title and Link */}
@@ -49,22 +49,21 @@ export function FAQ_Section() {
         <div className={classes.faqHeaderLeft}>
           <div className={classes.sectionCategoryBadge}>
             <IconHelpCircle size={14} />
-            <span>{t("home.faq.badge", "Savol-Javob")}</span>
+            <span>{t("home.faq.badge")}</span>
           </div>
           <h2 className={classes.sectionHeaderTitle}>
-            {t("home.faq.title", "Ko'p so'raladigan savollar")}
+            {t("home.faq.title")}
           </h2>
           <p className={classes.sectionHeaderSubtitle}>
             {t(
-              "home.faq.subtitle",
-              "Platformamiz haqida eng ko'p beriladigan savollarga javoblar."
+              "home.faq.subtitle"
             )}
           </p>
         </div>
 
         <div className={classes.faqHeaderRight}>
           <Link to="/faq" className={classes.faqViewAllLink}>
-            <span>{t("home.faq.viewAll", "Barcha savollar")}</span>
+            <span>{t("home.faq.viewAll")}</span>
             <IconArrowRight size={16} />
           </Link>
         </div>

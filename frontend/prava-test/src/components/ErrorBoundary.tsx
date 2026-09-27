@@ -94,7 +94,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       if (errorType === "chunk") {
         return (
-          <Center h="100vh">
+          <Center h="100dvh" px="md">
             <Stack align="center" gap="md">
               <Title order={3}>
                 {t("errors.chunkTitle")}
@@ -112,7 +112,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       if (errorType === "network") {
         return (
-          <Center h="100vh">
+          <Center h="100dvh" px="md">
             <Stack align="center" gap="md">
               <Title order={3}>
                 {t("errors.noInternetTitle")}
@@ -133,14 +133,17 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <Center h="100vh">
+        <Center h="100dvh" px="md">
           <Stack align="center" gap="md">
             <Title order={3} c="red">
               {t("errors.renderTitle")}
             </Title>
-            <Text c="dimmed" ta="center" maw={400}>
-              {this.state.error?.message}
-            </Text>
+            {/* W-05: texnik xato matni faqat DEV rejimida ko'rsatiladi */}
+            {import.meta.env.DEV && this.state.error?.message && (
+              <Text c="dimmed" ta="center" maw={400} style={{ overflowWrap: "anywhere" }}>
+                {this.state.error.message}
+              </Text>
+            )}
             <Button
               onClick={() => {
                 this.setState({ hasError: false, error: null, errorType: "render" });

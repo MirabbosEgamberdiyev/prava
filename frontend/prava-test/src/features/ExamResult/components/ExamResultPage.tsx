@@ -121,7 +121,7 @@ export function ExamResultPage() {
   };
 
   return (
-    <Box bg="var(--bg)" mih="100vh" style={{ color: "var(--text)" }}>
+    <Box bg="var(--bg)" mih="100dvh" style={{ color: "var(--text)" }}>
       {/*
         Mobil ko'rinishda pastdagi "Orqaga" tugmasi `position: fixed` —
         avval kontent tagida qo'shimcha joy yo'q edi va tugma oxirgi
@@ -281,7 +281,7 @@ export function ExamResultPage() {
               leftSection={<IconAlertTriangle size={18} />}
               onClick={() => navigate("/wrong-exam")}
             >
-              {t("examResult.practiceMistakes", "Xatolar ustida ishlash")} ({result.incorrectCount})
+              {t("examResult.practiceMistakes")} ({result.incorrectCount})
             </Button>
           )}
 
@@ -293,7 +293,7 @@ export function ExamResultPage() {
             leftSection={<IconRefresh size={18} />}
             onClick={() => navigate("/exam")}
           >
-            {t("examResult.retryExam", "Qayta urinish")}
+            {t("examResult.retryExam")}
           </Button>
 
           <Button
@@ -303,7 +303,7 @@ export function ExamResultPage() {
             leftSection={<IconArrowLeft size={18} />}
             onClick={() => navigate("/me")}
           >
-            {t("examResult.backToDashboard", "Boshqaruv paneliga qaytish")}
+            {t("examResult.backToDashboard")}
           </Button>
         </Flex>
 
@@ -332,7 +332,7 @@ export function ExamResultPage() {
               leftSection={<IconAlertTriangle size={18} />}
               onClick={() => navigate("/wrong-exam")}
             >
-              {t("examResult.practiceMistakes", "Xatolar ustida ishlash")} ({result.incorrectCount})
+              {t("examResult.practiceMistakes")} ({result.incorrectCount})
             </Button>
           )}
           <Group grow gap="xs">
@@ -343,7 +343,7 @@ export function ExamResultPage() {
               leftSection={<IconRefresh size={16} />}
               onClick={() => navigate("/exam")}
             >
-              {t("examResult.retryExam", "Qayta")}
+              {t("examResult.retryExam")}
             </Button>
             <Button
               size="sm"
@@ -351,7 +351,7 @@ export function ExamResultPage() {
               leftSection={<IconArrowLeft size={16} />}
               onClick={() => navigate("/me")}
             >
-              {t("examResult.backToDashboard", "Dashboard")}
+              {t("examResult.backToDashboard")}
             </Button>
           </Group>
         </Box>

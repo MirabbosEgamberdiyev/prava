@@ -36,7 +36,7 @@ export default function ImageZoomModal({ src, onClose }: Props) {
     >
       <Modal.Overlay backgroundOpacity={0.85} blur={4} />
       <Modal.Content
-        aria-label={t("a11y.imageZoomDialog", "Rasm kattalashtirilgan ko'rinishda")}
+        aria-label={t("a11y.imageZoomDialog")}
         onContextMenu={(e) => e.preventDefault()}
         styles={{
           content: {
@@ -52,7 +52,7 @@ export default function ImageZoomModal({ src, onClose }: Props) {
           className="img-zoom-close"
           onClick={onClose}
           type="button"
-          aria-label={t("common.close", "Yopish")}
+          aria-label={t("common.close")}
           style={{ position: "fixed" }}
         >
           <IconX size={20} />

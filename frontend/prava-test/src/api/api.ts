@@ -10,6 +10,27 @@ import { getSharedCookieDomain } from "../utils/domain";
 import { AUTH_MODE_HEADERS, isCookieAuthMode } from "./authMode";
 
 const ACCESS_TOKEN_KEY = "accessToken";
+const SUPPORTED_API_LANGS = ["uzl", "uzc", "ru"] as const;
+
+/**
+ * Backend xabarlarini (4xx biznes xatolari va h.k.) `Accept-Language` bo'yicha
+ * tarjima qiladi. Til avval faqat cookie'dan olinardi — cookie yo'q/eskirgan
+ * bo'lsa server uzl'da javob berardi. Endi joriy i18next tili ishlatiladi.
+ */
+function currentApiLanguage(): string {
+  const lng = (i18n.resolvedLanguage || i18n.language || Cookies.get("i18next") || "uzl").toLowerCase();
+  return (SUPPORTED_API_LANGS as readonly string[]).includes(lng) ? lng : "uzl";
+}
+
+declare module "axios" {
+  interface AxiosRequestConfig {
+    /**
+     * W-19: true bo'lsa global "api-error" toast chiqarilmaydi — sahifa xatoni
+     * o'zi (inline + Qayta urinish) ko'rsatadi, foydalanuvchi ikki marta xabar ko'rmaydi.
+     */
+    silent?: boolean;
+  }
+}
 const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_DATA_KEY = "userData";
 
@@ -161,12 +182,9 @@ api.interceptors.request.use(
     // 1. Tokenni olish
     let token = Cookies.get(ACCESS_TOKEN_KEY);
 
-    // 2. Tilni cookiedan olish
-    const language = Cookies.get("i18next") || "uzl";
-
-    if (config.headers) {
-      // TILNI BIRIKTIRISH
-      config.headers["Accept-Language"] = language;
+    // 2. Joriy til (so'rovda aniq berilgan bo'lsa — o'shani saqlaymiz)
+    if (config.headers && !config.headers["Accept-Language"]) {
+      config.headers["Accept-Language"] = currentApiLanguage();
     }
 
     // 3. Proactive token refresh: 5 daqiqadan kam qolsa oldindan yangilash.
@@ -218,7 +236,8 @@ api.interceptors.response.use(
       "/api/v2/exams/start-secure",
       "/api/v2/exams/submit",
     ];
-    const isSelfHandled = SELF_HANDLED_URLS.some((u) => requestUrl.includes(u));
+    const isSelfHandled =
+      Boolean(error.config?.silent) || SELF_HANDLED_URLS.some((u) => requestUrl.includes(u));
     const isCanceled = axios.isCancel(error) || error.code === "ERR_CANCELED";
 
     if (error.response) {
@@ -228,7 +247,7 @@ api.interceptors.response.use(
         if (!isSelfHandled) {
           window.dispatchEvent(
             new CustomEvent("api-error", {
-              detail: { status: 403, message: i18n.t("errors.accessDenied", "Ruxsat etilmagan amal"), url: requestUrl },
+              detail: { status: 403, message: i18n.t("errors.accessDenied"), url: requestUrl },
             }),
           );
         }
@@ -238,7 +257,7 @@ api.interceptors.response.use(
         if (!isSelfHandled) {
           window.dispatchEvent(
             new CustomEvent("api-error", {
-              detail: { status, message: i18n.t("errors.serverError", "Serverda nosozlik yuz berdi. Iltimos keyinroq qayta urinib ko'ring."), url: requestUrl },
+              detail: { status, message: i18n.t("errors.serverError"), url: requestUrl },
             }),
           );
         }
@@ -246,7 +265,7 @@ api.interceptors.response.use(
     } else if (!isCanceled && !isSelfHandled && (error.code === "ERR_NETWORK" || !error.response)) {
       window.dispatchEvent(
         new CustomEvent("api-error", {
-          detail: { status: 0, message: i18n.t("errors.networkError", "Internet tarmog'iga ulanishda xatolik yuz berdi."), url: requestUrl },
+          detail: { status: 0, message: i18n.t("errors.networkError"), url: requestUrl },
         }),
       );
     }

@@ -78,3 +78,34 @@ describe("isExamPassed", () => {
     expect(isExamPassed({ mode: "real", total: 0, correct: 0, wrong: 0, unanswered: 0 }, R)).toBe(false);
   });
 });
+
+import { isStoredResultPassed, modeFromExamType } from "../services/examRules";
+
+describe("stored exam results (W-04)", () => {
+  it("maps exam types from server and local history", () => {
+    expect(modeFromExamType("EXAM")).toBe("real");
+    expect(modeFromExamType("exam")).toBe("real");
+    expect(modeFromExamType("MARATHON")).toBe("marathon");
+    expect(modeFromExamType("ticket_12")).toBe("ticket");
+    expect(modeFromExamType("wrong_practice")).toBe("wrong");
+    expect(modeFromExamType(undefined)).toBe("ticket");
+  });
+
+  it("prefers the stored passed flag", () => {
+    expect(isStoredResultPassed({ exam_type: "exam", total_questions: 20, correct_answers: 10, passed: true })).toBe(true);
+    expect(isStoredResultPassed({ exam_type: "exam", total_questions: 20, correct_answers: 20, passed: false })).toBe(false);
+  });
+
+  it("uses the real-exam rule (maxWrong=3) for old records, not score>=90", () => {
+    // 17/20 = 85% -> passed in the real exam (3 mistakes), failed under the old score>=90 check
+    expect(isStoredResultPassed({ exam_type: "EXAM", total_questions: 20, correct_answers: 17, score: 85 })).toBe(true);
+    expect(isStoredResultPassed({ exam_type: "EXAM", total_questions: 20, correct_answers: 16, score: 80 })).toBe(false);
+    expect(isStoredResultPassed({ exam_type: "ticket_3", total_questions: 20, correct_answers: 18, score: 90 })).toBe(true);
+    expect(isStoredResultPassed({ exam_type: "ticket_3", total_questions: 20, correct_answers: 17, score: 85 })).toBe(false);
+  });
+
+  it("falls back to score when the question count is unknown", () => {
+    expect(isStoredResultPassed({ exam_type: "marathon", total_questions: 0, score: 95 })).toBe(true);
+    expect(isStoredResultPassed({ exam_type: "marathon", total_questions: 0, score: 50 })).toBe(false);
+  });
+});

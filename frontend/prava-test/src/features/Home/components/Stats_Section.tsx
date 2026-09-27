@@ -8,7 +8,7 @@ import {
   IconLanguage,
 } from "@tabler/icons-react";
 import useSWR from "swr";
-import { getCachedTotalQuestions, getCachedTotalTickets } from "../../../services/desktopAdapter";
+import { useCurriculumCounts } from "../../../hooks/useCurriculumCounts";
 import classes from "./Home.module.css";
 
 // Counter animation hook
@@ -106,6 +106,7 @@ interface PublicStatsResponse {
 
 export function Stats_Section() {
   const { t } = useTranslation();
+  const counts = useCurriculumCounts();
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -120,8 +121,8 @@ export function Stats_Section() {
 
   const statsObj = publicStatsData?.data;
   // Rasmiy savollar soni: API'dan olingan aniq son yoki bazadan
-  const totalQuestions = statsObj?.totalQuestions && statsObj.totalQuestions > 0 ? statsObj.totalQuestions : getCachedTotalQuestions();
-  const totalTickets = (statsObj as any)?.totalTickets || getCachedTotalTickets();
+  const totalQuestions = statsObj?.totalQuestions && statsObj.totalQuestions > 0 ? statsObj.totalQuestions : counts.questions;
+  const totalTickets = (statsObj as any)?.totalTickets || counts.tickets;
 
   const stats: StatItem[] = [
     {
@@ -189,7 +190,7 @@ export function Stats_Section() {
   }, []);
 
   return (
-    <section className={classes.statsModernSection} ref={sectionRef} aria-label={t("home.stats.ariaLabel", "Statistika")}>
+    <section className={classes.statsModernSection} ref={sectionRef} aria-label={t("home.stats.ariaLabel")}>
       <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }} spacing={{ base: "md", md: "lg" }}>
         {stats.map((stat) => (
           <StatCard

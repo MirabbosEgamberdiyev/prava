@@ -72,6 +72,10 @@ const User_Nav = ({ toggle }: AppShellNavbarProps) => {
           name: t("nav.marathon"),
           url: "/marafon",
         },
+        {
+          name: t("nav.survival"),
+          url: "/survival",
+        },
       ],
     },
     {

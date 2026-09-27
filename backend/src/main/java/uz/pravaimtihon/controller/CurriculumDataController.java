@@ -55,7 +55,8 @@ public class CurriculumDataController {
             return ResponseEntity.ok(ApiResponse.success(stats));
         } catch (Exception e) {
             log.error("Failed to fetch curriculum stats", e);
-            return ResponseEntity.internalServerError().body(ApiResponse.error("Failed to load statistics: " + e.getMessage()));
+            // B-16: ichki xato matni (SQL, jadval nomlari) public javobga chiqarilmaydi — faqat logda.
+            return ResponseEntity.internalServerError().body(ApiResponse.error("Statistics are temporarily unavailable"));
         }
     }
 

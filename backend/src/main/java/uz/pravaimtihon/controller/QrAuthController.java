@@ -2,6 +2,7 @@ package uz.pravaimtihon.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,15 +14,24 @@ import uz.pravaimtihon.dto.response.AuthResponse;
 import uz.pravaimtihon.entity.User;
 import uz.pravaimtihon.enums.AcceptLanguage;
 import uz.pravaimtihon.exception.BusinessException;
+import uz.pravaimtihon.exception.ForbiddenException;
 import uz.pravaimtihon.exception.ResourceNotFoundException;
 import uz.pravaimtihon.exception.UnauthorizedException;
 import uz.pravaimtihon.repository.UserRepository;
+import uz.pravaimtihon.security.ClientIpResolver;
 import uz.pravaimtihon.security.SecurityUtils;
 import uz.pravaimtihon.service.QrPairingSessionStore;
 import uz.pravaimtihon.service.impl.AuthService;
 
 import java.util.Map;
 
+/**
+ * QR orqali qurilma juftlash.
+ *
+ * <p>pollSecret (B-01): {@code /init} javobidagi {@code pollSecret} {@code /status}, {@code /poll} va
+ * {@code /cancel} so'rovlarida {@value #POLL_SECRET_HEADER} sarlavhasida yuboriladi. O'tish davrida
+ * ({@code app.qr.allow-legacy-poll=true}) sarlavhasiz poll ham qabul qilinadi.
+ */
 @RestController
 @RequestMapping("/api/v1/auth/qr")
 @RequiredArgsConstructor
@@ -29,29 +39,68 @@ import java.util.Map;
 @Tag(name = "QR Device Pairing", description = "Cross-platform Desktop - Web - Mobile pairing protocol")
 public class QrAuthController {
 
+    public static final String POLL_SECRET_HEADER = "X-QR-Poll-Secret";
+
     private final QrPairingSessionStore sessionStore;
     private final AuthService authService;
     private final UserRepository userRepository;
 
     @PostMapping("/init")
-    @Operation(summary = "Desktop yangi pairing sessiyasini boshlaydi")
+    @Operation(summary = "Desktop yangi pairing sessiyasini boshlaydi (javobda pollSecret — faqat desktop uchun)")
     public ResponseEntity<ApiResponse<QrPairingInitResponse>> initPairing(
-            @RequestBody(required = false) QrPairingInitRequest request
+            @RequestBody(required = false) QrPairingInitRequest request,
+            HttpServletRequest httpRequest
     ) {
         if (request == null) {
             request = new QrPairingInitRequest();
         }
-        QrPairingInitResponse response = sessionStore.createSession(request);
+        QrPairingInitResponse response = sessionStore.createSession(request,
+                ClientIpResolver.resolve(httpRequest), httpRequest.getHeader("User-Agent"));
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping({"/status", "/poll"})
-    @Operation(summary = "Desktop sessiya holatini so'rab turadi (polling)")
+    @Operation(summary = "Desktop sessiya holatini so'rab turadi (polling). Sarlavha: X-QR-Poll-Secret")
     public ResponseEntity<ApiResponse<QrPairingStatusResponse>> checkStatus(
-            @RequestParam("sessionId") String sessionId
+            @RequestParam("sessionId") String sessionId,
+            @RequestHeader(value = POLL_SECRET_HEADER, required = false) String pollSecret
     ) {
-        QrPairingStatusResponse response = sessionStore.pollStatus(sessionId);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        QrPairingSessionStore.PollOutcome outcome;
+        try {
+            outcome = sessionStore.poll(sessionId, pollSecret);
+        } catch (QrPairingSessionStore.PollSecretException e) {
+            throw new ForbiddenException("error.qr.poll.secret.invalid");
+        }
+
+        if (!outcome.approved()) {
+            return ResponseEntity.ok(ApiResponse.success(QrPairingStatusResponse.builder()
+                    .status(outcome.status().name())
+                    .build()));
+        }
+
+        // B-13/B-18: tokenlar iste'mol paytida, tashabbuskor (desktop) qurilma ma'lumotlari bilan yaratiladi.
+        User user = outcome.userId() == null ? null : userRepository.findById(outcome.userId())
+                .filter(u -> !Boolean.TRUE.equals(u.getDeleted()) && Boolean.TRUE.equals(u.getIsActive()))
+                .orElse(null);
+        if (user == null) {
+            log.warn("QR session {} approved by a user that is no longer active — pairing rejected", sessionId);
+            return ResponseEntity.ok(ApiResponse.success(QrPairingStatusResponse.builder()
+                    .status(QrPairingSessionStore.Status.REJECTED.name())
+                    .build()));
+        }
+
+        AuthResponse auth = authService.generateAuthResponse(user,
+                outcome.language() != null ? outcome.language() : AcceptLanguage.UZL,
+                outcome.initUserAgent(), outcome.initIp());
+
+        log.info("QR pairing tokens issued to initiator for session {} (userId={})", sessionId, user.getId());
+        return ResponseEntity.ok(ApiResponse.success(QrPairingStatusResponse.builder()
+                .status("APPROVED")
+                .accessToken(auth.getAccessToken())
+                .refreshToken(auth.getRefreshToken())
+                .expiresIn(auth.getExpiresIn())
+                .user(auth.getUser())
+                .build()));
     }
 
     @GetMapping("/session-info")
@@ -78,22 +127,16 @@ public class QrAuthController {
             throw new UnauthorizedException("error.auth.required");
         }
 
-        User user = userRepository.findById(userId)
+        userRepository.findById(userId)
                 .filter(u -> !u.getDeleted() && u.getIsActive())
                 .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
 
-        if (!sessionStore.canApprove(request.getSessionId(), request.getChallenge())) {
-            throw new BusinessException("error.qr.session.invalid");
-        }
-
-        // Generate full production credentials for the desktop client
-        AuthResponse authResponse = authService.generateAuthResponse(user, language);
-
+        // Tokenlar bu yerda yaratilmaydi (B-13): desktop poll qilganda, uning qurilmasi uchun yaratiladi.
         boolean approved = sessionStore.approveSession(
                 request.getSessionId(),
                 request.getChallenge(),
                 userId,
-                authResponse
+                language
         );
 
         if (!approved) {
@@ -123,16 +166,23 @@ public class QrAuthController {
         return ResponseEntity.ok(ApiResponse.success(Map.of("rejected", rejected)));
     }
 
+    /**
+     * Desktop sessiyani bekor qiladi. B-01: {@code challenge} (body/query) YOKI pollSecret
+     * ({@value #POLL_SECRET_HEADER} sarlavhasi yoki body'dagi {@code pollSecret}) talab qilinadi.
+     * Javob shakli o'zgarmagan; tasdiqlanmasa {@code cancelled:false}.
+     */
     @PostMapping("/cancel")
-    @Operation(summary = "Desktop tomoni sessiyani bekor qiladi")
+    @Operation(summary = "Desktop tomoni sessiyani bekor qiladi (challenge yoki X-QR-Poll-Secret kerak)")
     public ResponseEntity<ApiResponse<Map<String, Object>>> cancelPairing(
             @RequestBody(required = false) Map<String, String> body,
-            @RequestParam(value = "sessionId", required = false) String sessionIdParam
+            @RequestParam(value = "sessionId", required = false) String sessionIdParam,
+            @RequestParam(value = "challenge", required = false) String challengeParam,
+            @RequestHeader(value = POLL_SECRET_HEADER, required = false) String pollSecretHeader
     ) {
         String sessionId = (sessionIdParam != null) ? sessionIdParam : (body != null ? body.get("sessionId") : null);
-        if (sessionId != null) {
-            sessionStore.cancelSession(sessionId);
-        }
-        return ResponseEntity.ok(ApiResponse.success(Map.of("cancelled", true)));
+        String challenge = (challengeParam != null) ? challengeParam : (body != null ? body.get("challenge") : null);
+        String pollSecret = (pollSecretHeader != null) ? pollSecretHeader : (body != null ? body.get("pollSecret") : null);
+        boolean cancelled = sessionId != null && sessionStore.cancelSession(sessionId, challenge, pollSecret);
+        return ResponseEntity.ok(ApiResponse.success(Map.of("cancelled", cancelled)));
     }
 }

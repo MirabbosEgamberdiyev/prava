@@ -58,7 +58,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           type="button"
           className={styles.mobileMenuBtn}
           onClick={onToggleMobileSidebar}
-          aria-label={t("common.menu", "Menyu")}
+          aria-label={t("common.menu")}
         >
           <IconMenu2 size={22} />
         </button>
@@ -88,13 +88,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           onClick={onToggleSidebarCollapse}
           aria-label={
             isSidebarCollapsed
-              ? t("dashboard.expand", "Panelni ochish")
-              : t("dashboard.collapse", "Panelni yig'ish")
+              ? t("dashboard.expand")
+              : t("dashboard.collapse")
           }
           title={
             isSidebarCollapsed
-              ? t("dashboard.expand", "Panelni ochish")
-              : t("dashboard.collapse", "Panelni yig'ish")
+              ? t("dashboard.expand")
+              : t("dashboard.collapse")
           }
         >
           {isSidebarCollapsed ? (
@@ -110,11 +110,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         type="button"
         className={styles.searchTrigger}
         onClick={onOpenSearch}
-        aria-label={t("dashboard.searchPlaceholder", "Mavzu, savol yoki qoida qidirish...")}
+        aria-label={t("dashboard.searchPlaceholder")}
       >
         <IconSearch size={17} className={styles.searchIcon} />
         <span className={styles.searchPlaceholder}>
-          {t("dashboard.searchPlaceholder", "Mavzu, savol yoki qoida qidirish...")}
+          {t("dashboard.searchPlaceholder")}
         </span>
         <kbd className={styles.searchKbd}>⌘ K</kbd>
       </button>
@@ -126,7 +126,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           type="button"
           className={styles.mobileSearchBtn}
           onClick={onOpenSearch}
-          aria-label={t("dashboard.searchPlaceholder", "Mavzu, savol yoki qoida qidirish...")}
+          aria-label={t("dashboard.searchPlaceholder")}
         >
           <IconSearch size={19} stroke={2} />
         </button>
@@ -149,7 +149,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               <div className={styles.userInfo}>
                 <span className={styles.userName}>{displayName}</span>
                 <span className={styles.userStatus}>
-                  {t("dashboard.accountStatus", "Premium foydalanuvchi")}
+                  {t("dashboard.accountStatus")}
                 </span>
               </div>
               <IconChevronDown size={14} className={styles.userChevron} />
@@ -161,19 +161,19 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               leftSection={<IconSettings size={16} />}
               onClick={() => navigate("/settings")}
             >
-              {t("nav.settings", "Sozlamalar")}
+              {t("nav.settings")}
             </Menu.Item>
             <Menu.Item
               leftSection={<IconHistory size={16} />}
               onClick={() => navigate("/history")}
             >
-              {t("dashboard.tools.historyTitle", "Imtihon tarixi")}
+              {t("dashboard.tools.historyTitle")}
             </Menu.Item>
             <Menu.Item
               leftSection={<IconTrophy size={16} />}
               onClick={() => navigate("/leaderboard")}
             >
-              {t("dashboard.tools.ratingTitle", "Reyting")}
+              {t("dashboard.tools.ratingTitle")}
             </Menu.Item>
             <Menu.Divider />
             <Menu.Item
@@ -181,7 +181,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               leftSection={<IconLogout size={16} />}
               onClick={onLogout}
             >
-              {t("auth.logout", "Chiqish")}
+              {t("auth.logout")}
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>

@@ -3,7 +3,13 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import type { OfflineTicket, TicketStat } from "../../types/desktop";
-import { getTickets, getTicketStats, getLang, getCachedTotalTickets } from "../../services/desktopAdapter";
+import { getTickets, getPublicTickets, getTicketStats, getLang } from "../../services/desktopAdapter";
+import { useCurriculumCounts } from "../../hooks/useCurriculumCounts";
+import { useExamRules } from "../../services/examRules";
+import { scopedUserId } from "../../utils/userScope";
+import { loginPath, registerPath } from "../../utils/returnTo";
+import { errorKeyFor } from "../../types/errors";
+import { reportError } from "../../utils/monitoring";
 import SEO from "../../components/common/SEO";
 import {
   IconTicket,
@@ -18,25 +24,36 @@ import styles from "../../components/dashboard/Dashboard.module.css";
 export default function Tickets_Page() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const userId = user?.id ? Number(user.id) : 1;
+  const { user, isAuthenticated } = useAuth();
+  const userId = scopedUserId(user);
+  const counts = useCurriculumCounts();
+  const rules = useExamRules();
 
   const [tickets, setTickets] = useState<OfflineTicket[]>([]);
   const [statsMap, setStatsMap] = useState<Record<number, TicketStat>>({});
   const [loading, setLoading] = useState(true);
+  /** Yuklash xatosi uchun i18n kaliti (null — xato yo'q). */
+  const [errorKey, setErrorKey] = useState<string | null>(null);
+  /** Mehmon va ochiq endpoint hali yo'q — ro'yxat o'rniga login CTA. */
+  const [guestLocked, setGuestLocked] = useState(false);
 
   const localizeName = (tk: OfflineTicket): string => {
     if (!tk) return "";
     const l = getLang();
     if (l === "uzc" && tk.name_uzc) return tk.name_uzc;
     if (l === "ru" && tk.name_ru) return tk.name_ru;
-    return tk.name_uzl || tk.name_ru || tk.name_uzc || `${t("home.biletlar", "Bilet")} #${tk.ticket_number || ""}`;
+    return tk.name_uzl || tk.name_ru || tk.name_uzc || `${t("home.biletlar")} #${tk.ticket_number || ""}`;
   };
 
   const loadData = useCallback(() => {
     setLoading(true);
-    Promise.all([getTickets(), getTicketStats(userId)])
+    setErrorKey(null);
+    // W-06: mehmonlar ochiq ro'yxatni ko'radi (GET /api/v1/public/tickets); endpoint
+    // hali bo'lmasa — login CTA. Biletni boshlash login talab qiladi (returnTo bilan).
+    const ticketsPromise: Promise<OfflineTicket[] | null> = isAuthenticated ? getTickets() : getPublicTickets();
+    Promise.all([ticketsPromise, isAuthenticated ? getTicketStats(userId) : Promise.resolve([])])
       .then(([tkts, stats]) => {
+        setGuestLocked(tkts === null);
         setTickets(Array.isArray(tkts) ? tkts : []);
         const map: Record<number, TicketStat> = {};
         if (Array.isArray(stats)) {
@@ -46,9 +63,12 @@ export default function Tickets_Page() {
         }
         setStatsMap(map);
       })
-      .catch(() => {})
+      .catch((err: unknown) => {
+        reportError("tickets.load", err);
+        setErrorKey(errorKeyFor(err));
+      })
       .finally(() => setLoading(false));
-  }, [userId]);
+  }, [userId, isAuthenticated]);
 
   useEffect(() => {
     loadData();
@@ -58,22 +78,27 @@ export default function Tickets_Page() {
   }, [loadData]);
 
   const onStartTicket = (ticket: OfflineTicket) => {
-    navigate(`/tickets/${ticket.id}`);
+    const target = `/tickets/${ticket.id}`;
+    // Mehmon: login'dan keyin aynan shu biletning 1-savoliga qaytadi.
+    navigate(isAuthenticated ? target : loginPath(target));
   };
+
+  const totalCount = tickets.length || counts.tickets;
+  const questionsPerTicket = rules.real.questionCount;
 
   return (
     <>
       <SEO
-        title={t("seo.tickets.title", "Biletlar — {{count}} ta Rasmiy YHXX Biletlari", {
-          count: tickets.length || getCachedTotalTickets() || 63,
-        })}
-        description={t(
-          "seo.tickets.desc",
-          "Barcha {{count}} ta rasmiy biletni yeching va har bir bilet bo'yicha bilimingizni tekshiring.",
-          {
-            count: tickets.length || getCachedTotalTickets() || 63,
-          }
-        )}
+        title={
+          totalCount > 0
+            ? t("seo.tickets.title", { count: totalCount })
+            : t("seo.tickets.titleGeneric")
+        }
+        description={
+          totalCount > 0
+            ? t("seo.tickets.desc", { count: totalCount })
+            : t("seo.tickets.descGeneric")
+        }
         canonical="/tickets"
         noIndex={true}
       />
@@ -82,22 +107,24 @@ export default function Tickets_Page() {
           <div className={styles.innerPageHeaderLeft}>
             <div className={styles.innerPageTitleRow}>
               <h1 className={styles.innerPageTitle}>
-                {t("home.biletlar", "Biletlar")}
+                {t("home.biletlar")}
               </h1>
-              {!loading && tickets.length > 0 && (
+              {!loading && !errorKey && !isAuthenticated && tickets.length > 0 && (
+          <p style={{ color: "var(--text-muted)", fontSize: 13, margin: "0 0 12px" }}>
+            {t("tickets.guestHint")}
+          </p>
+        )}
+
+        {!loading && !errorKey && tickets.length > 0 && (
                 <span className={styles.innerPageCountChip}>
-                  {tickets.length} {t("tickets.unit", "ta rasmiy bilet")}
+                  {tickets.length} {t("tickets.unit")}
                 </span>
               )}
             </div>
             <p className={styles.innerPageSubtitle}>
-              {t(
-                "tickets.subtitle",
-                "YHXBB rasmiy {{count}} ta bilet to'plami. Har bir bilet 20 ta savoldan iborat.",
-                {
-                  count: tickets.length || getCachedTotalTickets() || 63,
-                }
-              )}
+              {totalCount > 0
+                ? t("tickets.subtitle", { count: totalCount, questions: questionsPerTicket })
+                : t("tickets.subtitleGeneric", { questions: questionsPerTicket })}
             </p>
           </div>
         </div>
@@ -106,12 +133,48 @@ export default function Tickets_Page() {
           <div className="loading-screen" style={{ minHeight: 320 }}>
             <div className="spinner" />
             <p style={{ marginTop: 12, color: "var(--text-muted)", fontSize: 14 }}>
-              {t("common.loading", "Biletlar yuklanmoqda...")}
+              {t("common.loading")}
             </p>
           </div>
         )}
 
-        {!loading && tickets.length === 0 && (
+        {!loading && errorKey && (
+          <div className="empty-state" role="alert" style={{ padding: "60px 20px", textAlign: "center" }}>
+            <h4 style={{ fontSize: 17, fontWeight: 700, margin: "8px 0 0", color: "var(--text)" }}>
+              {t(errorKey)}
+            </h4>
+            <button type="button" className="saas-btn-primary" onClick={loadData} style={{ marginTop: 12 }}>
+              {t("common.retry")}
+            </button>
+          </div>
+        )}
+
+        {!loading && !errorKey && guestLocked && (
+          <div className="empty-state" style={{ padding: "48px 20px", textAlign: "center" }}>
+            <IconLock size={32} stroke={1.5} color="var(--text-muted)" />
+            <h4 style={{ fontSize: 17, fontWeight: 700, margin: "12px 0 4px", color: "var(--text)" }}>
+              {t("tickets.guestLockedTitle")}
+            </h4>
+            <p style={{ color: "var(--text-muted)", fontSize: 14, margin: "0 auto", maxWidth: 420 }}>
+              {t("tickets.guestLockedDesc")}
+            </p>
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginTop: 16 }}>
+              <button type="button" className="saas-btn-primary" onClick={() => navigate(loginPath("/tickets"))}>
+                {t("guestHome.login")}
+              </button>
+              <button
+                type="button"
+                className="saas-btn-primary"
+                style={{ background: "transparent", color: "var(--primary)", border: "1px solid var(--primary)" }}
+                onClick={() => navigate(registerPath("/tickets"))}
+              >
+                {t("guestHome.register")}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!loading && !errorKey && !guestLocked && tickets.length === 0 && (
           <div
             className="empty-state"
             style={{
@@ -137,7 +200,7 @@ export default function Tickets_Page() {
               <IconTicket size={32} stroke={1.5} color="var(--text-muted)" />
             </div>
             <h4 style={{ fontSize: 17, fontWeight: 700, margin: "8px 0 0", color: "var(--text)" }}>
-              {t("common.noData", "Hozircha biletlar yuklanmadi")}
+              {t("common.noData")}
             </h4>
             <button
               type="button"
@@ -145,7 +208,7 @@ export default function Tickets_Page() {
               onClick={loadData}
               style={{ marginTop: 8 }}
             >
-              {t("common.retry", "Qayta yuklash")}
+              {t("common.retry")}
             </button>
           </div>
         )}
@@ -163,8 +226,8 @@ export default function Tickets_Page() {
 
               const btnLabel =
                 done > 0
-                  ? t("tickets.continue", "Davom etish")
-                  : t("tickets.start", "Boshlash");
+                  ? t("tickets.continue")
+                  : t("tickets.start");
 
               const isBlocked = ticket.is_blocked === true;
 
@@ -193,7 +256,7 @@ export default function Tickets_Page() {
                         zIndex: 1,
                       }}
                     >
-                      <IconLock size={12} /> {t("tickets.blocked", "Bloklangan")}
+                      <IconLock size={12} /> {t("tickets.blocked")}
                     </div>
                   )}
 
@@ -204,8 +267,8 @@ export default function Tickets_Page() {
                       {!isBlocked && badgeType && (
                         <span className={`tc-badge tc-badge--${badgeType}`}>
                           {badgeType === "passed"
-                            ? t("tickets.badgePassed", "O'tgan")
-                            : t("tickets.badgeOngoing", "Jarayonda")}
+                            ? t("tickets.badgePassed")
+                            : t("tickets.badgeOngoing")}
                         </span>
                       )}
                     </div>
@@ -216,11 +279,11 @@ export default function Tickets_Page() {
                   <div className="tc-meta">
                     <span className="tc-meta-item">
                       <IconListNumbers size={13} />
-                      {ticket.question_count} {t("common.questions", "savol")}
+                      {ticket.question_count} {t("common.questions")}
                     </span>
                     <span className="tc-meta-item">
                       <IconClock size={13} />
-                      {ticket.question_count} {t("common.min", "daq")}
+                      {ticket.duration_minutes} {t("common.min")}
                     </span>
                   </div>
 
@@ -235,7 +298,7 @@ export default function Tickets_Page() {
                             const m = Math.floor(totalSec / 60);
                             const s = totalSec % 60;
                             return m > 0
-                              ? `${m} ${t("common.min", "daq")} ${s}s`
+                              ? `${m} ${t("common.min")} ${s}s`
                               : `${s}s`;
                           })()}
                         </span>
@@ -271,7 +334,7 @@ export default function Tickets_Page() {
                         type="button"
                       >
                         <IconLock size={15} />
-                        {t("tickets.blocked", "Bloklangan")}
+                        {t("tickets.blocked")}
                       </button>
                     ) : (
                       <button
@@ -279,8 +342,8 @@ export default function Tickets_Page() {
                         onClick={() => onStartTicket(ticket)}
                         type="button"
                       >
-                        <IconPlayerPlay size={15} />
-                        {btnLabel}
+                        {isAuthenticated ? <IconPlayerPlay size={15} /> : <IconLock size={15} />}
+                        {isAuthenticated ? btnLabel : t("guestHome.loginToStart")}
                       </button>
                     )}
                   </div>

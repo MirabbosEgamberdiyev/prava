@@ -11,9 +11,9 @@ export default function ThemeToggle() {
     <button
       className="theme-toggle"
       onClick={toggleTheme}
-      title={isLight ? t("common.darkMode", "Qorong'i rejim") : t("common.lightMode", "Yorug' rejim")}
+      title={isLight ? t("common.darkMode") : t("common.lightMode")}
       type="button"
-      aria-label={t("theme.toggleTheme", "Mavzuni almashtirish")}
+      aria-label={t("theme.toggleTheme")}
     >
       {isLight ? (
         <IconMoon size={18} stroke={2} />

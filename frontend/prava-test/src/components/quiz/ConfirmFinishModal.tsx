@@ -8,6 +8,13 @@ interface ConfirmFinishModalProps {
   onCancel: () => void;
   /** "Yakunlash" tugmasi. */
   onConfirm: () => void;
+  /**
+   * "finish" — testni muddatidan oldin yakunlash (standart);
+   * "leave" — faol imtihon davomida sahifadan chiqishni tasdiqlash (W-07).
+   */
+  variant?: "finish" | "leave";
+  /** Tavsif matnini almashtirish (masalan, marafon — javoblar saqlanadi). */
+  description?: string;
 }
 
 /**
@@ -21,8 +28,18 @@ interface ConfirmFinishModalProps {
  * "Yakunlash" tugmasi `data-autofocus` — avvalgi klaviatura xulqi (Enter =
  * yakunlash, Esc = davom etish) saqlanadi.
  */
-export default function ConfirmFinishModal({ opened, onCancel, onConfirm }: ConfirmFinishModalProps) {
+export default function ConfirmFinishModal({
+  opened,
+  onCancel,
+  onConfirm,
+  variant = "finish",
+  description,
+}: ConfirmFinishModalProps) {
   const { t } = useTranslation();
+  const isLeave = variant === "leave";
+  const title = isLeave ? t("exam.leaveTitle") : t("activeTest.confirmFinishTitle");
+  const desc = description ?? (isLeave ? t("exam.leaveDesc") : t("activeTest.confirmFinishDesc"));
+  const confirmLabel = isLeave ? t("exam.exit") : t("activeTest.confirm");
 
   return (
     <Modal.Root opened={opened} onClose={onCancel} centered size={420} zIndex={10000}>
@@ -64,7 +81,7 @@ export default function ConfirmFinishModal({ opened, onCancel, onConfirm }: Conf
               color: "var(--text, #111827)",
             }}
           >
-            {t("activeTest.confirmFinishTitle", "Testni yakunlaysizmi?")}
+            {title}
           </Modal.Title>
           <p
             style={{
@@ -74,10 +91,7 @@ export default function ConfirmFinishModal({ opened, onCancel, onConfirm }: Conf
               lineHeight: 1.5,
             }}
           >
-            {t(
-              "activeTest.confirmFinishDesc",
-              "Belgilanmagan savollar xato deb hisoblanadi. Rostdan ham testni yakunlamoqchimisiz?",
-            )}
+            {desc}
           </p>
           <div style={{ display: "flex", gap: 12 }}>
             <button
@@ -97,7 +111,7 @@ export default function ConfirmFinishModal({ opened, onCancel, onConfirm }: Conf
                 transition: "all 0.15s ease",
               }}
             >
-              {t("activeTest.cancel", "Davom etish")}
+              {t("activeTest.cancel")}
             </button>
             <button
               type="button"
@@ -118,7 +132,7 @@ export default function ConfirmFinishModal({ opened, onCancel, onConfirm }: Conf
                 transition: "all 0.15s ease",
               }}
             >
-              {t("activeTest.confirm", "Yakunlash")}
+              {confirmLabel}
             </button>
           </div>
         </Modal.Body>

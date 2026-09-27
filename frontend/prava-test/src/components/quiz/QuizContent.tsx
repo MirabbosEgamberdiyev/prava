@@ -40,6 +40,10 @@ import { AppImage } from "../common/AppImage";
 import { FormattedExplanation } from "../common/FormattedExplanation";
 import { getImageUrl } from "../../utils/imageUtils";
 import api from "../../api/api";
+import { useExamHotkeys } from "../../hooks/useExamHotkeys";
+import { isGloballyReported } from "../../types/errors";
+import { reportError } from "../../utils/monitoring";
+import KeyboardHint from "./KeyboardHint";
 import classes from "./QuizContent.module.css";
 
 interface QuizContentProps {
@@ -111,7 +115,7 @@ export function QuizContent({
           setSavedQuestionIds(new Set(list.map((q: { questionId: number }) => q.questionId)));
         }
       })
-      .catch(() => {});
+      .catch((e) => reportError("quiz.loadSaved", e));
   }, [isAuthenticated]);
 
   // Toggle saved question
@@ -130,7 +134,7 @@ export function QuizContent({
     // Optimistik yangilanish ROLLBACK bilan. Avval `.catch(() => {})` edi —
     // so'rov muvaffaqiyatsiz bo'lsa ham ikonka "saqlandi" holatida qolib,
     // interfeys yolg'on ma'lumot ko'rsatardi.
-    api.post(`/api/v1/app/saved-questions/${questionId}`).catch(() => {
+    api.post(`/api/v1/app/saved-questions/${questionId}`).catch((err: unknown) => {
       setSavedQuestionIds((prev) => {
         const reverted = new Set(prev);
         if (wasSaved) {
@@ -140,17 +144,22 @@ export function QuizContent({
         }
         return reverted;
       });
-      notifications.show({
-        color: "red",
-        message: t("common.errorOccurred"),
-      });
+      // 5xx/tarmoq — api.ts global toast ko'rsatgan (W-19)
+      if (!isGloballyReported(err)) {
+        notifications.show({
+          color: "red",
+          message: t("common.errorOccurred"),
+        });
+      }
     });
   };
 
   // Send wrong answer to backend
   const sendWrongAnswer = (questionId: number) => {
     if (!isAuthenticated) return;
-    api.post(`/api/v1/app/wrong-answers/${questionId}`).catch(() => {});
+    api
+      .post(`/api/v1/app/wrong-answers/${questionId}`)
+      .catch((e) => reportError("quiz.addWrongAnswer", e));
   };
 
   // Convert parent answers to simple index map
@@ -251,88 +260,17 @@ export function QuizContent({
     if (idx !== -1) setActiveQuiz(idx);
   };
 
-  // Full Keyboard Navigation (F1-F5, 1-5, Arrows, Space, Enter, Escape)
+  // Escape: ochiq izohni yopish (modal ochiq bo'lsa — Mantine o'zi boshqaradi)
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-
-      // If a modal is open, ignore quiz hotkeys
-      if (imageModalOpened || resultModalOpened) return;
-
-      // Escape: close explanation if open
-      if (e.key === "Escape" && explanationOpen) {
-        e.preventDefault();
-        setExplanationOpen(false);
-        return;
-      }
-
-      // Space: toggle explanation if answered and allowed
-      if (e.key === " " || e.code === "Space") {
-        if (
-          showExplanation &&
-          !isSecureMode &&
-          selectedAnswers[activeQuiz] !== undefined &&
-          currentQuestion?.explanation
-        ) {
-          e.preventDefault();
-          setExplanationOpen((prev) => !prev);
-          return;
-        }
-      }
-
-      // Enter: advance to next question if answered
-      if (e.key === "Enter") {
-        if (selectedAnswers[activeQuiz] !== undefined && !isLastQuestion) {
-          e.preventDefault();
-          goToNextQuestion();
-          return;
-        }
-      }
-
-      // Option selection: F1-F5 and 1-5
-      const map: Record<string, number> = {
-        F1: 0, F2: 1, F3: 2, F4: 3, F5: 4,
-        "1": 0, "2": 1, "3": 2, "4": 3, "5": 4,
-      };
-
-      if (e.key in map) {
-        e.preventDefault();
-        const optionIndex = map[e.key];
-        const options = currentQuestion?.options || [];
-        if (optionIndex < options.length) {
-          handleSelectAnswer(activeQuiz, optionIndex);
-        }
-        return;
-      }
-
-      // Arrows navigation
-      if (e.key === "ArrowLeft" && !isFirstQuestion) {
-        e.preventDefault();
-        goToPrevQuestion();
-      }
-      if (e.key === "ArrowRight" && !isLastQuestion) {
-        e.preventDefault();
-        goToNextQuestion();
-      }
+    if (!explanationOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || imageModalOpened || resultModalOpened) return;
+      e.preventDefault();
+      setExplanationOpen(false);
     };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    activeQuiz,
-    currentQuestion,
-    selectedAnswers,
-    isFirstQuestion,
-    isLastQuestion,
-    goToNextQuestion,
-    goToPrevQuestion,
-    imageModalOpened,
-    resultModalOpened,
-    explanationOpen,
-    showExplanation,
-    isSecureMode,
-  ]);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [explanationOpen, imageModalOpened, resultModalOpened]);
 
   const handleSelectAnswer = (questionIndex: number, optionIndex: number) => {
     if (selectedAnswers[questionIndex] !== undefined) return;
@@ -377,6 +315,30 @@ export function QuizContent({
     );
   };
 
+  // W-16: yagona klaviatura boshqaruvi (1–5 / A–D, ←/→, Enter, Space — izoh).
+  // Modal (natija, rasm, yakunlash) ochiq bo'lsa hook o'zi e'tiborsiz qoldiradi.
+  useExamHotkeys({
+    enabled: questions.length > 0,
+    blocked: imageModalOpened || resultModalOpened,
+    optionCount: currentQuestion?.options?.length ?? 0,
+    onSelect: (optionIndex) => handleSelectAnswer(activeQuiz, optionIndex),
+    onPrev: goToPrevQuestion,
+    onNext: goToNextQuestion,
+    onEnter: () => {
+      if (selectedAnswers[activeQuiz] !== undefined && !isLastQuestion) goToNextQuestion();
+    },
+    onSpace: () => {
+      if (
+        showExplanation &&
+        !isSecureMode &&
+        selectedAnswers[activeQuiz] !== undefined &&
+        currentQuestion?.explanation
+      ) {
+        setExplanationOpen((prev) => !prev);
+      }
+    },
+  });
+
   const handleFinishExam = () => {
     if (errorLimitMode) {
       setResultModalOpened(true);
@@ -389,7 +351,7 @@ export function QuizContent({
     return (
       <Box
         bg={computedColorScheme === "light" ? "gray.1" : "dark.8"}
-        mih="92vh"
+        mih="92dvh"
         p="xl"
       >
         <Container>
@@ -482,7 +444,7 @@ export function QuizContent({
   };
 
   return (
-    <Box bg={computedColorScheme === "light" ? "gray.1" : "dark.8"} mih="92vh">
+    <Box bg={computedColorScheme === "light" ? "gray.1" : "dark.8"} mih="92dvh">
       {/* Progress bar for marathon mode */}
       {showProgressBar && (
         <Box
@@ -579,14 +541,14 @@ export function QuizContent({
             {localize(currentQuestion?.text)}
           </Text>
           {isAuthenticated && (
-            <Tooltip label={savedQuestionIds.has(currentQuestion?.id) ? t("saved.remove", { defaultValue: "Belgini olib tashlash" }) : t("exam.saveQuestion", { defaultValue: "Savolni saqlash" })}>
+            <Tooltip label={savedQuestionIds.has(currentQuestion?.id) ? t("saved.remove") : t("exam.saveQuestion")}>
               <ActionIcon
                 variant={savedQuestionIds.has(currentQuestion?.id) ? "filled" : "light"}
                 color="blue"
                 size="lg"
                 radius="xl"
                 aria-pressed={savedQuestionIds.has(currentQuestion?.id)}
-                aria-label={t("exam.saveQuestion", { defaultValue: "Savolni saqlash" })}
+                aria-label={t("exam.saveQuestion")}
                 onClick={() => currentQuestion && handleToggleSaved(currentQuestion.id)}
               >
                 {savedQuestionIds.has(currentQuestion?.id)
@@ -635,7 +597,7 @@ export function QuizContent({
                   role="button"
                   tabIndex={isAnswered ? -1 : 0}
                   aria-disabled={isAnswered}
-                  aria-label={`F${option.index + 1}: ${optionLabel}${stateLabel}`}
+                  aria-label={`${option.index + 1}: ${optionLabel}${stateLabel}`}
                   className={classes.optionPaper}
                   data-clickable={!isAnswered}
                   style={{
@@ -662,7 +624,7 @@ export function QuizContent({
                       color={iconProps.color}
                       style={{ fontWeight: 700, fontSize: 12, flexShrink: 0 }}
                     >
-                      {"F" + (option.index + 1)}
+                      {option.index + 1}
                     </ActionIcon>
                     <Text fw={500} size="sm" style={{ flex: 1 }}>{localize(option.text)}</Text>
                     {!isSecureMode && isAnswered && isThisCorrect && (
@@ -1026,6 +988,7 @@ export function QuizContent({
             </Button>
           )}
         </Flex>
+        <KeyboardHint />
       </Container>
     </Box>
   );

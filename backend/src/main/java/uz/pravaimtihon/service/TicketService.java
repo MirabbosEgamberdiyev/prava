@@ -47,6 +47,7 @@ public class TicketService {
     private final ExamAnswerRepository answerRepository;
     private final ExamResponseMapper mapper;
     private final uz.pravaimtihon.payment.service.PaymentAccessService paymentAccessService;
+    private final ExamGradingPolicy gradingPolicy;
 
     // ============================================
     // BILET YARATISH
@@ -164,8 +165,11 @@ public class TicketService {
                 .topic(topic)
                 .questions(new ArrayList<>(questions))
                 .targetQuestionCount(targetCount)
-                .durationMinutes(request.getDurationMinutes() != null ? request.getDurationMinutes() : 15)
-                .passingScore(request.getPassingScore() != null ? request.getPassingScore() : 70)
+                // Yangi biletlar uchun default'lar exam-rules bilan bir xil (20 savol × 60 s, 90%).
+                .durationMinutes(request.getDurationMinutes() != null ? request.getDurationMinutes()
+                        : Math.max(1, (int) Math.ceil(targetCount * gradingPolicy.rules().getTicket().getSecondsPerQuestion() / 60.0)))
+                .passingScore(request.getPassingScore() != null ? request.getPassingScore()
+                        : gradingPolicy.rules().getTicket().getPassPercent())
                 .isActive(true)
                 .build();
 
@@ -410,7 +414,9 @@ public class TicketService {
                 .topicName(topic != null ? mapper.toTopicName(topic) : null)
                 .totalQuestions(questions.size())
                 .durationMinutes(ticket.getDurationMinutes())
-                .passingScore(ticket.getPassingScore())
+                // Bilet baholanishi exam-rules.ticket.passPercent bo'yicha (biletdagi passing_score emas).
+                .passingScore(gradingPolicy.rules().getTicket().getPassPercent())
+                .examMode(uz.pravaimtihon.enums.ExamMode.TICKET)
                 .startedAt(now)
                 .expiresAt(expiresAt)
                 .isMarathonMode(false)

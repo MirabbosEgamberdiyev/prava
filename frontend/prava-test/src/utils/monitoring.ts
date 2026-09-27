@@ -31,3 +31,21 @@ export function initMonitoring(): void {
       // Monitoring ixtiyoriy — yuklanmasa ilova ishlashda davom etadi.
     });
 }
+
+/**
+ * Jim yutilgan xatolarni qayd qilish (W-22): DEV'da konsolga, Sentry yoqilgan bo'lsa
+ * unga yuboriladi. Foydalanuvchiga hech narsa ko'rsatilmaydi.
+ */
+export function reportError(context: string, error: unknown): void {
+  if (import.meta.env.DEV) {
+    console.warn(`[${context}]`, error);
+  }
+  if (!import.meta.env.VITE_SENTRY_DSN) return;
+  import("@sentry/react")
+    .then((Sentry) => {
+      Sentry.captureException(error, { tags: { context } });
+    })
+    .catch(() => {
+      // monitoring ixtiyoriy
+    });
+}

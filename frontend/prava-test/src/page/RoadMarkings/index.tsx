@@ -24,6 +24,8 @@ import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 import SafeHtml from "../../components/common/SafeHtml";
 import { AppImage } from "../../components/common/AppImage";
+import { errorKeyFor } from "../../types/errors";
+import { pickLocalized } from "../../data/curriculumLocale";
 
 export default function RoadMarkings_Page() {
   const { lang } = useLanguage();
@@ -31,7 +33,7 @@ export default function RoadMarkings_Page() {
 
   const [markings, setMarkings] = useState<RoadMarking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [selectedMarking, setSelectedMarking] = useState<RoadMarking | null>(null);
 
@@ -41,51 +43,41 @@ export default function RoadMarkings_Page() {
     curriculumApi
       .getMarkings()
       .then((data) => {
-        setMarkings(Array.isArray(data) ? data : []);
+        setMarkings(data);
       })
-      .catch((err) => {
-        console.error("Failed to load markings:", err);
-        setError(t("curriculum.loadMarkingsError", "Yo'l chiziqlarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring."));
+      .catch((err: unknown) => {
+        // 5xx/tarmoq xatolari uchun global toast api.ts'da chiqadi — bu yerda faqat inline xato.
+        setError(err);
         setMarkings([]);
       })
       .finally(() => setLoading(false));
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     fetchMarkings();
   }, [fetchMarkings]);
 
-  const safeMarkings = useMemo(() => (Array.isArray(markings) ? markings : []), [markings]);
+  const safeMarkings = useMemo(() => markings.filter((m): m is RoadMarking => !!m), [markings]);
 
-  const getLocalizedTitle = (m: RoadMarking) => {
-    if (lang === "ru" && m.title_ru) return m.title_ru;
-    if (lang === "uzc" && m.title_uzc) return m.title_uzc;
-    return m.title_uzl;
-  };
+  const getLocalizedTitle = (m: RoadMarking) => pickLocalized(lang, m.title_uzl, m.title_uzc, m.title_ru);
 
-  const getLocalizedDesc = (m: RoadMarking) => {
-    if (lang === "ru" && m.description_ru) return m.description_ru;
-    if (lang === "uzc" && m.description_uzc) return m.description_uzc;
-    return m.description_uzl || "";
-  };
+  const getLocalizedDesc = (m: RoadMarking) =>
+    pickLocalized(lang, m.description_uzl, m.description_uzc, m.description_ru);
 
   const filteredMarkings = useMemo(() => {
     if (activeTab === "all") return safeMarkings;
     if (activeTab === "horizontal") {
-      return safeMarkings.filter((m) => m && m.code && m.code.startsWith("1."));
+      return safeMarkings.filter((m) => m.code?.startsWith("1."));
     }
     if (activeTab === "vertical") {
-      return safeMarkings.filter((m) => m && m.code && m.code.startsWith("2."));
+      return safeMarkings.filter((m) => m.code?.startsWith("2."));
     }
     return safeMarkings;
   }, [safeMarkings, activeTab]);
 
   return (
     <Container size="xl" py="xl">
-      <SEO
-        title={t("seo.markings.title", "Yo'l chiziqlari — Rasmiy YHXX Yo'l Belgilash Chiziqlari")}
-        description={t("seo.markings.desc", "O'zbekiston Respublikasi Yo'l Harakati Qoidalaridagi barcha rasmiy gorizontal va vertikal yo'l chiziqlari.")}
-      />
+      <SEO title={t("seo.markings.title")} description={t("seo.markings.desc")} />
 
       <Stack gap="lg">
         <Group justify="space-between" align="flex-start">
@@ -97,9 +89,11 @@ export default function RoadMarkings_Page() {
               {t("curriculum.markingsSubtitle")}
             </Text>
           </div>
-          <Badge size="lg" variant="filled" color="teal" leftSection={<IconRoad size={14} />}>
-            {filteredMarkings.length} {t("curriculum.markingsCount")}
-          </Badge>
+          {!loading && !error && (
+            <Badge size="lg" variant="filled" color="teal" leftSection={<IconRoad size={14} />}>
+              {t("curriculum.markingsCount", { count: filteredMarkings.length })}
+            </Badge>
+          )}
         </Group>
 
         {/* Filter Tabs */}
@@ -117,30 +111,6 @@ export default function RoadMarkings_Page() {
           </Tabs.List>
         </Tabs>
 
-        {/* Error State with Retry Button */}
-        {error && (
-          <Alert
-            icon={<IconAlertTriangle size={18} />}
-            title={t("common.error")}
-            color="red"
-            variant="light"
-            radius="md"
-          >
-            <Group justify="space-between" align="center">
-              <Text size="sm">{error}</Text>
-              <Button
-                size="xs"
-                color="red"
-                variant="light"
-                leftSection={<IconRefresh size={14} />}
-                onClick={fetchMarkings}
-              >
-                {t("common.refresh")}
-              </Button>
-            </Group>
-          </Alert>
-        )}
-
         {/* Content Area */}
         {loading ? (
           <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
@@ -152,14 +122,36 @@ export default function RoadMarkings_Page() {
               </Card>
             ))}
           </SimpleGrid>
+        ) : error ? (
+          <Alert
+            icon={<IconAlertTriangle size={18} />}
+            title={t("common.error")}
+            color="red"
+            variant="light"
+            radius="md"
+            role="alert"
+          >
+            <Group justify="space-between" align="center">
+              <Text size="sm">{t(errorKeyFor(error, "curriculum.loadMarkingsError"))}</Text>
+              <Button
+                size="xs"
+                color="red"
+                variant="light"
+                leftSection={<IconRefresh size={14} />}
+                onClick={fetchMarkings}
+              >
+                {t("common.retry")}
+              </Button>
+            </Group>
+          </Alert>
         ) : filteredMarkings.length === 0 ? (
           <Center py={60}>
             <Stack align="center" gap="xs">
               <IconAlertTriangle size={40} color="gray" />
-              <Text c="dimmed">{t("curriculum.emptyMarkings", "Yo'l chiziqlari topilmadi")}</Text>
+              <Text c="dimmed">{t("curriculum.emptyMarkings")}</Text>
               {activeTab !== "all" && (
                 <Button size="xs" variant="subtle" onClick={() => setActiveTab("all")}>
-                  {t("curriculum.showAllMarkings", "Barcha chiziqlarni ko'rsatish")}
+                  {t("curriculum.showAllMarkings")}
                 </Button>
               )}
             </Stack>
@@ -194,7 +186,7 @@ export default function RoadMarkings_Page() {
                     {m.code}
                   </Badge>
                   <Text size="xs" c="dimmed">
-                    {m.code.startsWith("2.") ? t("curriculum.verticalBadge", "Vertikal") : t("curriculum.horizontalBadge", "Gorizontal")}
+                    {m.code?.startsWith("2.") ? t("curriculum.verticalBadge") : t("curriculum.horizontalBadge")}
                   </Text>
                 </Group>
 

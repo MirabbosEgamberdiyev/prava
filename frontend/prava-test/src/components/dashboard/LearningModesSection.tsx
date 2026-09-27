@@ -8,8 +8,9 @@ import {
   IconPencil,
   IconArrowRight,
   IconSparkles,
+  IconFlame,
 } from "@tabler/icons-react";
-import { getCachedTotalTickets, getCachedTotalQuestions } from "../../services/desktopAdapter";
+import { useCurriculumCounts } from "../../hooks/useCurriculumCounts";
 import styles from "./Dashboard.module.css";
 
 interface LearningModesSectionProps {
@@ -35,22 +36,23 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const ticketsCount = totalTickets || getCachedTotalTickets() || 63;
-  const questionsCount = totalQuestions || getCachedTotalQuestions() || 1234;
+  const curriculum = useCurriculumCounts();
+  // W-10: faqat serverdan kelgan raqamlar; noma'lum (0) bo'lsa raqamsiz matn ko'rsatiladi.
+  const ticketsCount = totalTickets || curriculum.tickets;
+  const questionsCount = totalQuestions || curriculum.questions;
 
   return (
     <section
       className={styles.modesSection}
-      aria-label={t("dashboard.modes.title", "Asosiy ta'lim rejimlari")}
+      aria-label={t("dashboard.modes.title")}
     >
       <div className={styles.sectionHeader}>
         <h3 className={styles.sectionTitle}>
-          {t("dashboard.modes.title", "Asosiy ta'lim rejimlari")}
+          {t("dashboard.modes.title")}
         </h3>
         <p className={styles.sectionSubtitle}>
           {t(
-            "dashboard.modes.subtitle",
-            "Maqsadingizga eng mos rejimni tanlang va bilim oling"
+            "dashboard.modes.subtitle"
           )}
         </p>
       </div>
@@ -70,13 +72,12 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
               {t("dashboard.modes.topicsChip", {
                 done: topicsLearnedCount,
                 total: totalTopicsCount,
-                defaultValue: `${topicsLearnedCount}/${totalTopicsCount} mavzu`,
               })}
             </span>
           ) : (
             <span className={styles.modeBadgeRecommended}>
               <IconSparkles size={11} stroke={2.5} />
-              {t("dashboard.modes.recommended", "TAVSIYA ETILADI")}
+              {t("dashboard.modes.recommended")}
             </span>
           )}
 
@@ -88,12 +89,11 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
               <IconBook2 size={24} stroke={2} />
             </div>
             <h4 className={styles.modeTitle}>
-              {t("dashboard.modes.topicsTitle", "Mavzular")}
+              {t("dashboard.modes.topicsTitle")}
             </h4>
             <p className={styles.modeDesc}>
               {t(
-                "dashboard.modes.topicsDesc",
-                "Nazariya va amaliy bilimlarni mavzular bo'yicha bosqichma-bosqich o'rganing."
+                "dashboard.modes.topicsDesc"
               )}
             </p>
           </div>
@@ -106,7 +106,7 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
               navigate("/topics");
             }}
           >
-            <span>{t("dashboard.modes.startBtn", "Boshlash")}</span>
+            <span>{t("dashboard.modes.startBtn")}</span>
             <IconArrowRight size={15} stroke={2.5} />
           </button>
         </article>
@@ -120,12 +120,11 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
           tabIndex={0}
           onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/tickets")}
         >
-          {ticketsSolvedCount > 0 && (
+          {ticketsSolvedCount > 0 && ticketsCount > 0 && (
             <span className={styles.modeProgressChip}>
               {t("dashboard.modes.ticketsChip", {
                 done: ticketsSolvedCount,
                 total: ticketsCount,
-                defaultValue: `${ticketsSolvedCount}/${ticketsCount} bilet`,
               })}
             </span>
           )}
@@ -138,14 +137,15 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
               <IconTicket size={24} stroke={2} />
             </div>
             <h4 className={styles.modeTitle}>
-              {t("dashboard.modes.ticketsTitle", "Biletlar")}
+              {t("dashboard.modes.ticketsTitle")}
             </h4>
             <p className={styles.modeDesc}>
-              {t(
-                "dashboard.modes.ticketsDesc",
-                "1 dan {{count}} gacha rasmiy biletlar bilan o'zingizni sinab ko'ring.",
-                { count: ticketsCount }
-              )}
+              {ticketsCount > 0
+                ? t(
+                    "dashboard.modes.ticketsDesc",
+                    { count: ticketsCount }
+                  )
+                : t("dashboard.modes.ticketsDescNoCount")}
             </p>
           </div>
 
@@ -157,7 +157,7 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
               navigate("/tickets");
             }}
           >
-            <span>{t("dashboard.modes.startBtn", "Boshlash")}</span>
+            <span>{t("dashboard.modes.startBtn")}</span>
             <IconArrowRight size={15} stroke={2.5} />
           </button>
         </article>
@@ -171,7 +171,7 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
           tabIndex={0}
           onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/marafon")}
         >
-          {marathonCurrentIndex > 0 && (
+          {marathonCurrentIndex > 0 && questionsCount > 0 && (
             <span
               className={styles.modeProgressChip}
               style={{
@@ -183,7 +183,6 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
               {t("dashboard.modes.marathonChip", {
                 current: marathonCurrentIndex,
                 total: questionsCount,
-                defaultValue: `${marathonCurrentIndex}/${questionsCount} savol`,
               })}
             </span>
           )}
@@ -196,14 +195,15 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
               <IconRun size={24} stroke={2} />
             </div>
             <h4 className={styles.modeTitle}>
-              {t("dashboard.modes.marathonTitle", "Marafon")}
+              {t("dashboard.modes.marathonTitle")}
             </h4>
             <p className={styles.modeDesc}>
-              {t(
-                "dashboard.modes.marathonDesc",
-                "Barcha {{count}} ta savol ketma-ket. Tayyorgarligingizni maksimal darajada sinang.",
-                { count: questionsCount }
-              )}
+              {questionsCount > 0
+                ? t(
+                    "dashboard.modes.marathonDesc",
+                    { count: questionsCount }
+                  )
+                : t("dashboard.modes.marathonDescNoCount")}
             </p>
           </div>
 
@@ -215,7 +215,7 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
               navigate("/marafon");
             }}
           >
-            <span>{t("dashboard.modes.startBtn", "Boshlash")}</span>
+            <span>{t("dashboard.modes.startBtn")}</span>
             <IconArrowRight size={15} stroke={2.5} />
           </button>
         </article>
@@ -233,7 +233,6 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
             <span className={styles.modeProgressChip}>
               {t("dashboard.modes.examChip", {
                 score: lastExamScore,
-                defaultValue: `Oxirgi: ${lastExamScore}%`,
               })}
             </span>
           )}
@@ -246,12 +245,11 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
               <IconPencil size={24} stroke={2} />
             </div>
             <h4 className={styles.modeTitle}>
-              {t("dashboard.modes.examTitle", "Haqiqiy imtihon")}
+              {t("dashboard.modes.examTitle")}
             </h4>
             <p className={styles.modeDesc}>
               {t(
-                "dashboard.modes.examDesc",
-                "Vaqt cheklangan rasmiy DTM test simulyatori."
+                "dashboard.modes.examDesc"
               )}
             </p>
           </div>
@@ -264,7 +262,41 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
               onOpenExamPicker();
             }}
           >
-            <span>{t("dashboard.modes.startBtn", "Boshlash")}</span>
+            <span>{t("dashboard.modes.startBtn")}</span>
+            <IconArrowRight size={15} stroke={2.5} />
+          </button>
+        </article>
+
+        {/* Mode 5: Xatogacha marafon (Survival) — to'liq kenglikdagi karta */}
+        <article
+          className={styles.modeCard}
+          style={{ "--mode-accent": "#dc2626", gridColumn: "1 / -1", minHeight: 0 } as React.CSSProperties}
+          onClick={() => navigate("/survival")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/survival")}
+        >
+          <div>
+            <div
+              className={styles.modeIconBox}
+              style={{ background: "linear-gradient(135deg, #fb923c 0%, #dc2626 100%)" }}
+            >
+              <IconFlame size={24} stroke={2} />
+            </div>
+            <h4 className={styles.modeTitle}>{t("dashboard.modes.survivalTitle")}</h4>
+            <p className={styles.modeDesc}>{t("dashboard.modes.survivalDesc")}</p>
+          </div>
+
+          <button
+            type="button"
+            className={styles.modeActionRow}
+            style={{ maxWidth: 320 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate("/survival");
+            }}
+          >
+            <span>{t("dashboard.modes.startBtn")}</span>
             <IconArrowRight size={15} stroke={2.5} />
           </button>
         </article>

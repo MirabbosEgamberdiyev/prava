@@ -88,7 +88,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <Modal.Title style={{ margin: 0, fontSize: "clamp(15px, 3.5vw, 17px)", fontWeight: 800, lineHeight: 1.3, color: "var(--text)" }}>
-              {t("gamification.reviewMistakes", "Xatolarni tahlil qilish")}
+              {t("gamification.reviewMistakes")}
             </Modal.Title>
             <span
               style={{
@@ -100,7 +100,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                 color: "#e03131",
               }}
             >
-              {mistakesIndices.length} {t("common.wrong", "ta xato")}
+              {mistakesIndices.length} {t("common.wrong")}
             </span>
           </div>
 
@@ -129,7 +129,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                   color: filter === "mistakes" ? "var(--primary)" : "var(--text-muted)",
                 }}
               >
-                {t("common.wrong", "Faqat xatolar")}
+                {t("quiz.onlyMistakes")}
               </button>
               <button
                 type="button"
@@ -146,7 +146,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                   color: filter === "all" ? "var(--primary)" : "var(--text-muted)",
                 }}
               >
-                {t("common.all", "Barchasi")}
+                {t("common.all")}
               </button>
             </div>
 
@@ -154,7 +154,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              aria-label={t("common.close", "Yopish")}
+              aria-label={t("common.close")}
               style={{
                 background: "none",
                 border: "none",
@@ -184,7 +184,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
         >
           {displayedList.length === 0 ? (
             <div style={{ textAlign: "center", padding: "36px 0", color: "var(--text-muted)" }}>
-              {t("gamification.noMistakes", "Ajoyib! Birorta ham xato qilmadingiz.")}
+              {t("gamification.noMistakes")}
             </div>
           ) : (
             displayedList.map(({ q, idx, ans }) => {
@@ -221,7 +221,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                         borderRadius: "6px",
                       }}
                     >
-                      {t("exam.questionReviewNum", { number: idx + 1, defaultValue: `${idx + 1}-savol` })} • {isWrong ? t("common.wrong", "Xato") : t("common.correct", "To'g'ri")}
+                      {t("exam.questionReviewNum", { number: idx + 1 })} • {isWrong ? t("common.wrong") : t("common.correct")}
                     </span>
                   </div>
 
@@ -230,7 +230,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                     <div style={{ marginBottom: "12px", maxHeight: "180px", overflow: "hidden", borderRadius: "8px" }}>
                       <SecureImage
                         path={q.image_path}
-                        alt={t("exam.questionIllustration", "Savol rasmi")}
+                        alt={t("exam.questionIllustration")}
                         style={{ width: "100%", maxHeight: "180px", objectFit: "contain", borderRadius: "8px" }}
                       />
                     </div>
@@ -311,12 +311,12 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
 
                           {isCorrect && (
                             <span style={{ fontSize: "11px", fontWeight: 800, color: "#2f9e44" }}>
-                              ✓ {t("examResult.correctAnswer", "To'g'ri javob")}
+                              ✓ {t("examResult.correctAnswer")}
                             </span>
                           )}
                           {isSelected && !isCorrect && (
                             <span style={{ fontSize: "11px", fontWeight: 800, color: "#e03131" }}>
-                              ✕ {t("examResult.yourAnswer", "Sizning javobingiz")}
+                              ✕ {t("examResult.yourAnswer")}
                             </span>
                           )}
                         </div>
@@ -343,7 +343,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                       <IconBulb size={18} color="var(--primary)" style={{ flexShrink: 0, marginTop: 2 }} />
                       <div style={{ lineHeight: 1.4 }}>
                         <span style={{ fontWeight: 700, color: "var(--primary)" }}>
-                          {t("activeTest.explanation", "YHQ tushuntirishi")}:{" "}
+                          {t("activeTest.explanation")}:{" "}
                         </span>
                         {explanation}
                       </div>
@@ -379,7 +379,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
               cursor: "pointer",
             }}
           >
-            {t("common.close", "Yopish")}
+            {t("common.close")}
           </button>
         </div>
       </Modal.Content>

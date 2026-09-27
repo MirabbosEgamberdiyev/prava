@@ -38,8 +38,7 @@ public interface ExamMapper {
                 .language(session.getLanguage())
                 .totalQuestions(session.getTotalQuestions())
                 .durationMinutes(session.getDurationMinutes())
-                .passingScore(session.getExamPackage() != null ?
-                        session.getExamPackage().getPassingScore() : null)
+                .passingScore(uz.pravaimtihon.service.ExamGradingPolicy.current().grade(session).passingScore())
                 .startedAt(session.getStartedAt())
                 .expiresAt(session.getExpiresAt())
                 .questions(mapExamAnswersToQuestions(session.getAnswers(), targetLanguage))
@@ -73,8 +72,7 @@ public interface ExamMapper {
                 .score(session.getScore())
                 .percentage(session.getPercentage())
                 .isPassed(session.getIsPassed())
-                .passingScore(session.getExamPackage() != null ?
-                        session.getExamPackage().getPassingScore() : null)
+                .passingScore(uz.pravaimtihon.service.ExamGradingPolicy.current().grade(session).passingScore())
                 .startedAt(session.getStartedAt())
                 .finishedAt(session.getFinishedAt())
                 .durationSeconds(session.getDurationSeconds())

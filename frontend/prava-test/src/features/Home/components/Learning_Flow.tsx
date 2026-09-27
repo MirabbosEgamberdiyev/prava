@@ -17,10 +17,9 @@ export const Learning_Flow = React.memo(() => {
     {
       num: "01",
       icon: IconUserPlus,
-      title: t("home.howItWorks.step1Title", "Ro'yxatdan o'ting"),
+      title: t("home.howItWorks.step1Title"),
       desc: t(
-        "home.howItWorks.step1Desc",
-        "Bepul hisob yarating va tizimga kiring"
+        "home.howItWorks.step1Desc"
       ),
       color: "#0b84f3",
       bg: "rgba(11, 132, 243, 0.1)",
@@ -28,10 +27,9 @@ export const Learning_Flow = React.memo(() => {
     {
       num: "02",
       icon: IconBook2,
-      title: t("home.howItWorks.step2Title", "Testlarni yeching"),
+      title: t("home.howItWorks.step2Title"),
       desc: t(
-        "home.howItWorks.step2Desc",
-        "Biletlar, alohida mavzular yoki marafon rejimida o'rganing"
+        "home.howItWorks.step2Desc"
       ),
       color: "#10b981",
       bg: "rgba(16, 185, 129, 0.1)",
@@ -39,10 +37,9 @@ export const Learning_Flow = React.memo(() => {
     {
       num: "03",
       icon: IconDeviceDesktopAnalytics,
-      title: t("home.howItWorks.step3Title", "Imtihon simulyatorini topshiring"),
+      title: t("home.howItWorks.step3Title"),
       desc: t(
-        "home.howItWorks.step3Desc",
-        "Haqiqiy sharoitda o'zingizni sinab ko'ring"
+        "home.howItWorks.step3Desc"
       ),
       color: "#6366f1",
       bg: "rgba(99, 102, 241, 0.1)",
@@ -50,10 +47,9 @@ export const Learning_Flow = React.memo(() => {
     {
       num: "04",
       icon: IconCertificate,
-      title: t("home.howItWorks.step4Title", "Natijaga erishing"),
+      title: t("home.howItWorks.step4Title"),
       desc: t(
-        "home.howItWorks.step4Desc",
-        "Bilimlaringizni mustahkamlang va imtihondan o'ting"
+        "home.howItWorks.step4Desc"
       ),
       color: "#f59e0b",
       bg: "rgba(245, 158, 11, 0.1)",
@@ -61,20 +57,17 @@ export const Learning_Flow = React.memo(() => {
   ];
 
   return (
-    <section className={classes.howItWorksSectionModern} id="how-it-works" aria-label={t("home.howItWorks.ariaLabel", "Qanday ishlaydi")}>
+    <section className={classes.howItWorksSectionModern} id="how-it-works" aria-label={t("home.howItWorks.ariaLabel")}>
       <div className={classes.sectionHeaderCentered}>
         <div className={classes.sectionCategoryBadge}>
           <IconRoute size={14} />
-          <span>{t("home.howItWorks.badge", "Oddiy va samarali")}</span>
+          <span>{t("home.howItWorks.badge")}</span>
         </div>
         <h2 className={classes.sectionHeaderTitle}>
-          {t("home.howItWorks.title", "Qanday ishlaydi?")}
+          {t("home.howItWorks.title")}
         </h2>
         <p className={classes.sectionHeaderSubtitle}>
-          {t(
-            "home.howItWorks.subtitle",
-            "4 oddiy qadamda imtihonga tayyorlaning"
-          )}
+          {t("home.howItWorks.subtitle", { count: steps.length })}
         </p>
       </div>
 

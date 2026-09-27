@@ -18,6 +18,8 @@ import { useLanguage } from "../../context/LanguageContext";
 import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 import SafeHtml from "../../components/common/SafeHtml";
+import { errorKeyFor } from "../../types/errors";
+import { pickLocalized } from "../../data/curriculumLocale";
 
 export default function TrafficRules_Page() {
   const { lang } = useLanguage();
@@ -25,7 +27,7 @@ export default function TrafficRules_Page() {
 
   const [rules, setRules] = useState<TrafficRule[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
 
   const fetchRules = useCallback(() => {
     setLoading(true);
@@ -33,36 +35,32 @@ export default function TrafficRules_Page() {
     curriculumApi
       .getRules()
       .then((data) => {
-        setRules(Array.isArray(data) ? data : []);
+        setRules(data);
       })
-      .catch((err) => {
-        console.error("Failed to load traffic rules:", err);
-        setError(t("curriculum.loadRulesError", "Yo'l harakati qoidalarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring."));
+      .catch((err: unknown) => {
+        // 5xx/tarmoq xatolari uchun global toast api.ts'da chiqadi — bu yerda faqat inline xato.
+        setError(err);
         setRules([]);
       })
       .finally(() => setLoading(false));
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     fetchRules();
   }, [fetchRules]);
 
-  const safeRules = useMemo(() => (Array.isArray(rules) ? rules : []), [rules]);
-
-  const getLocalizedContent = (r: TrafficRule) => {
-    if (lang === "ru" && r.content_html_ru) return r.content_html_ru;
-    if (lang === "uzc" && r.content_html_uzc) return r.content_html_uzc;
-    return r.content_html_uzl || "";
-  };
-
-  const currentRule = safeRules[0];
+  const currentRule: TrafficRule | undefined = rules[0];
+  const currentHtml = useMemo(
+    () =>
+      currentRule
+        ? pickLocalized(lang, currentRule.content_html_uzl, currentRule.content_html_uzc, currentRule.content_html_ru)
+        : "",
+    [currentRule, lang],
+  );
 
   return (
     <Container size="xl" py="xl">
-      <SEO
-        title={t("seo.rulesTitle", "Yo'l Harakati Qoidalari — Rasmiy Elektron Kitob (YHQ)")}
-        description={t("seo.rulesDesc", "O'zbekiston Respublikasi Vazirlar Mahkamasining 172-son qarori bilan tasdiqlangan rasmiy Yo'l Harakati Qoidalari matni.")}
-      />
+      <SEO title={t("seo.rulesTitle")} description={t("seo.rulesDesc")} />
 
       <Stack gap="lg">
         <Group justify="space-between" align="flex-start">
@@ -79,30 +77,6 @@ export default function TrafficRules_Page() {
           </Badge>
         </Group>
 
-        {/* Error State with Retry Button */}
-        {error && (
-          <Alert
-            icon={<IconAlertTriangle size={18} />}
-            title={t("common.error")}
-            color="red"
-            variant="light"
-            radius="md"
-          >
-            <Group justify="space-between" align="center">
-              <Text size="sm">{error}</Text>
-              <Button
-                size="xs"
-                color="red"
-                variant="light"
-                leftSection={<IconRefresh size={14} />}
-                onClick={fetchRules}
-              >
-                {t("common.refresh")}
-              </Button>
-            </Group>
-          </Alert>
-        )}
-
         {loading ? (
           <Paper withBorder radius="md" p="xl" bg="var(--mantine-color-body)">
             <Stack gap="md">
@@ -113,16 +87,38 @@ export default function TrafficRules_Page() {
               <Skeleton height={16} width="92%" />
             </Stack>
           </Paper>
+        ) : error ? (
+          <Alert
+            icon={<IconAlertTriangle size={18} />}
+            title={t("common.error")}
+            color="red"
+            variant="light"
+            radius="md"
+            role="alert"
+          >
+            <Group justify="space-between" align="center">
+              <Text size="sm">{t(errorKeyFor(error, "curriculum.loadRulesError"))}</Text>
+              <Button
+                size="xs"
+                color="red"
+                variant="light"
+                leftSection={<IconRefresh size={14} />}
+                onClick={fetchRules}
+              >
+                {t("common.retry")}
+              </Button>
+            </Group>
+          </Alert>
         ) : (
           <Paper withBorder radius="md" p="xl" bg="var(--mantine-color-body)">
-            {currentRule ? (
+            {currentHtml ? (
               <SafeHtml
                 style={{
                   lineHeight: 1.8,
                   fontSize: "1rem",
                   color: "var(--mantine-color-text)",
                 }}
-                html={getLocalizedContent(currentRule)}
+                html={currentHtml}
               />
             ) : (
               <Center py={40}>
@@ -130,7 +126,7 @@ export default function TrafficRules_Page() {
                   <IconAlertTriangle size={40} color="gray" />
                   <Text c="dimmed">{t("curriculum.rulesNotLoaded")}</Text>
                   <Button size="xs" variant="subtle" onClick={fetchRules}>
-                    Qayta urinish
+                    {t("common.refresh")}
                   </Button>
                 </Stack>
               </Center>

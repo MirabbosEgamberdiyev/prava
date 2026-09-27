@@ -109,8 +109,8 @@ export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = 
     if (item.packageName) return localize(item.packageName);
     if (item.ticketName)
       return `${localize(item.ticketName)} #${item.ticketNumber}`;
-    if (item.isMarathonMode || item.isMarathon) return t("marathon.title", "Marafon");
-    return t("history.exam", "Imtihon");
+    if (item.isMarathonMode || item.isMarathon) return t("marathon.title");
+    return t("history.exam");
   };
 
   const totalPages = history?.totalPages ?? 0;
@@ -162,10 +162,9 @@ export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = 
       {!isLoading && filteredContent.length === 0 && (
         <EmptyState
           icon={<IconHistory size={48} color="var(--primary)" style={{ opacity: 0.75 }} />}
-          title={t("history.emptyTitle", "Imtihonlar tarixi bo'sh")}
+          title={t("history.emptyTitle")}
           description={t(
-            "history.emptyDesc",
-            "Siz hali birorta ham imtihon topshirmadingiz. Bilimingizni sinash uchun birinchi imtihonni topshiring."
+            "history.emptyDesc"
           )}
           action={
             <Button
@@ -175,7 +174,7 @@ export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = 
               onClick={() => navigate("/exam")}
               mt="xs"
             >
-              {t("exam.startBtn", "Imtihonni boshlash")}
+              {t("exam.startBtn")}
             </Button>
           }
         />

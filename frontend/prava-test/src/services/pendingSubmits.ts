@@ -64,10 +64,9 @@ export function notifySubmitQueued(): void {
   notifications.show({
     id: "pending-submit-queued",
     color: "orange",
-    title: i18n.t("notification.submitQueuedTitle", "Natija saqlanmadi"),
+    title: i18n.t("notification.submitQueuedTitle"),
     message: i18n.t(
       "notification.submitQueued",
-      "Natija saqlanmadi — internet qaytganda qayta yuboriladi",
     ),
     autoClose: 8000,
   });
@@ -125,7 +124,7 @@ export function flushPendingSubmits(): Promise<number> {
       notifications.show({
         id: "pending-submit-flushed",
         color: "green",
-        message: i18n.t("notification.submitFlushed", "Saqlanmagan natijalar serverga yuborildi"),
+        message: i18n.t("notification.submitFlushed"),
       });
     }
     return sent;

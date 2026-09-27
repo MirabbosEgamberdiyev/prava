@@ -16,7 +16,7 @@ export default function ExamPickerModal({ opened, onClose, onSelect }: Props) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-card exam-picker-modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="modal-title">{t("exam.howManyQuestions", "Nechta savoldan imtihon?")}</h3>
+        <h3 className="modal-title">{t("exam.howManyQuestions")}</h3>
         <div className="exam-picker-grid">
           {EXAM_OPTIONS.map((count) => (
             <button
@@ -26,8 +26,8 @@ export default function ExamPickerModal({ opened, onClose, onSelect }: Props) {
               onClick={() => onSelect(count)}
             >
               <span className="exam-picker-num">{count}</span>
-              <span className="exam-picker-label">{t("exam.questionsUnit", "ta savol")}</span>
-              <span className="exam-picker-time">{count} {t("exam.minuteShort", "daq")}</span>
+              <span className="exam-picker-label">{t("exam.questionsUnit")}</span>
+              <span className="exam-picker-time">{count} {t("exam.minuteShort")}</span>
             </button>
           ))}
         </div>

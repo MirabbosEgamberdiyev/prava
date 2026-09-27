@@ -115,4 +115,13 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Query("SELECT COUNT(t) FROM Ticket t WHERE t.deleted = false AND t.isActive = true")
     long countActiveTickets();
 
+    /**
+     * Offline to'plam versiyasi (B-07): bilet↔savol bog'lanishlari nazorat yig'indisi
+     * (qatorlar soni, question_id yig'indisi, tartib bilan og'irlangan yig'indi) — updated_at
+     * o'zgarmasdan biletdagi savollar almashtirilsa ham versiya o'zgaradi.
+     */
+    @Query(value = "SELECT COUNT(*), COALESCE(SUM(question_id), 0), COALESCE(SUM((question_order + 1) * question_id), 0) FROM ticket_questions",
+            nativeQuery = true)
+    List<Object[]> ticketQuestionsChecksum();
+
 }

@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
+import { scopedUserId } from "../../utils/userScope";
+import { reportError } from "../../utils/monitoring";
 import type { WrongAnswerEntry } from "../../types/desktop";
 import {
   getWrongAnswers,
@@ -27,29 +29,29 @@ export default function WrongAnswers_Page() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const userId = user?.id ? Number(user.id) : 1;
+  const userId = scopedUserId(user);
 
   const [entries, setEntries] = useState<WrongAnswerEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [zoomSrc, setZoomSrc] = useState<string | null>(null);
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     getWrongAnswers(userId)
       .then((data) => setEntries(Array.isArray(data) ? data.filter((e) => e && e.question) : []))
-      .catch(() => {})
+      .catch((err: unknown) => reportError("wrongAnswers.load", err))
       .finally(() => setLoading(false));
-  };
+  }, [userId]);
 
   useEffect(() => {
     loadData();
     const onStorage = () => loadData();
     window.addEventListener("prava-storage-changed", onStorage);
     return () => window.removeEventListener("prava-storage-changed", onStorage);
-  }, [userId]);
+  }, [loadData]);
 
   const handleRemove = async (questionId: number) => {
-    await removeWrongAnswer(userId, questionId).catch(() => {});
+    await removeWrongAnswer(userId, questionId).catch((err: unknown) => reportError("wrongAnswers.remove", err));
     setEntries((prev) => prev.filter((e) => e?.question?.id !== questionId));
   };
 
@@ -58,8 +60,8 @@ export default function WrongAnswers_Page() {
   return (
     <>
       <SEO
-        title={t("seo.wrongAnswers.title", "Xatolar ustida ishlash — PravaOnline")}
-        description={t("seo.wrongAnswers.desc", "Xato qilingan savollarni qayta ko'rish va amaliyot.")}
+        title={t("seo.wrongAnswers.title")}
+        description={t("seo.wrongAnswers.desc")}
         canonical="/wrong-answers"
         noIndex={true}
       />
@@ -73,21 +75,20 @@ export default function WrongAnswers_Page() {
                   stroke={2}
                   style={{ color: "#e03131", verticalAlign: "middle", marginRight: 8 }}
                 />
-                {t("wrongAnswers.title", "Xatolar ustida ishlash")}
+                {t("wrongAnswers.title")}
               </h1>
               {!loading && entries.length > 0 && (
                 <span
                   className={styles.innerPageCountChip}
                   style={{ background: "rgba(224, 49, 49, 0.12)", color: "#e03131" }}
                 >
-                  {entries.length} {t("common.questions", "savol")}
+                  {entries.length} {t("common.questions")}
                 </span>
               )}
             </div>
             <p className={styles.innerPageSubtitle}>
               {t(
-                "wrongAnswers.subtitle",
-                "Test yoki imtihon davomida yo'l qo'yilgan xatolaringizni chuqur tahlil qiling va qayta mustahkamlang."
+                "wrongAnswers.subtitle"
               )}
             </p>
           </div>
@@ -110,7 +111,7 @@ export default function WrongAnswers_Page() {
                 }}
               >
                 <IconPlayerPlay size={16} stroke={2.2} />
-                {t("wrongAnswers.practice", "Amaliyotni boshlash")}
+                {t("wrongAnswers.practice")}
               </button>
             </div>
           )}
@@ -122,17 +123,16 @@ export default function WrongAnswers_Page() {
             <div className="loading-screen" style={{ minHeight: 320 }}>
               <div className="spinner" />
               <p style={{ marginTop: 12, color: "var(--text-muted)", fontSize: 14 }}>
-                {t("common.loading", "Savollar yuklanmoqda...")}
+                {t("common.loading")}
               </p>
             </div>
           ) : entries.length === 0 ? (
             <div className="review-empty" style={{ padding: "60px 20px" }}>
               <IconCheck size={56} stroke={1.5} color="#2f9e44" />
-              <h3 style={{ marginTop: 16 }}>{t("wrongAnswers.emptyTitle", "Xatolar yo'q!")}</h3>
+              <h3 style={{ marginTop: 16 }}>{t("wrongAnswers.emptyTitle")}</h3>
               <p style={{ maxWidth: 460, margin: "8px auto 0", color: "var(--text-muted)", fontSize: 14 }}>
                 {t(
-                  "wrongAnswers.emptySub",
-                  "Ajoyib natija! Test yoki imtihon davomida qilgan xatolaringiz avtomatik tarzda shu yerda to'planadi."
+                  "wrongAnswers.emptySub"
                 )}
               </p>
               <button
@@ -141,7 +141,7 @@ export default function WrongAnswers_Page() {
                 onClick={() => navigate("/tickets")}
                 style={{ marginTop: 20 }}
               >
-                {t("home.biletlar", "Biletlarni yechish")}
+                {t("home.biletlar")}
               </button>
             </div>
           ) : (
@@ -174,9 +174,9 @@ export default function WrongAnswers_Page() {
                           e.stopPropagation();
                           handleRemove(q.id);
                         }}
-                        title={t("wrongAnswers.remove", "O'chirish")}
+                        title={t("wrongAnswers.remove")}
                         type="button"
-                        aria-label={t("wrongAnswers.remove", "O'chirish")}
+                        aria-label={t("wrongAnswers.remove")}
                       >
                         <IconTrash size={14} stroke={2} />
                       </button>
@@ -214,7 +214,7 @@ export default function WrongAnswers_Page() {
                             <div className="quiz-explanation-text" style={{ display: "block" }}>
                               <strong>
                                 <IconBulb size={15} style={{ verticalAlign: "middle", marginRight: 4 }} />
-                                {t("exam.explanation", "Izoh")}:
+                                {t("exam.explanation")}:
                               </strong>{" "}
                               {localizeExp(q)}
                             </div>

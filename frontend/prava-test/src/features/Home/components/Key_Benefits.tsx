@@ -8,79 +8,75 @@ import {
   IconSparkles,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { getCachedTotalTickets, getCachedTotalQuestions } from "../../../services/desktopAdapter";
+import { useCurriculumCountParams } from "../../../hooks/useCurriculumCounts";
 import classes from "./Home.module.css";
 
 export const Key_Benefits = React.memo(() => {
   const { t } = useTranslation();
+  const countParams = useCurriculumCountParams();
 
   const benefits = [
     {
       icon: IconTicket,
-      title: t("home.benefits.card1Title", "{{count}} ta rasmiy bilet", {
-        count: getCachedTotalTickets(),
+      title: t("home.benefits.card1Title", {
+        tickets: countParams.tickets,
       }),
       desc: t(
         "home.benefits.card1Desc",
-        "IIV YHXBB bazasidagi barcha {{ticketsCount}} ta rasmiy bilet va {{questionsCount}} ta savollar to'liq jamlangan.",
         {
-          ticketsCount: getCachedTotalTickets(),
-          questionsCount: getCachedTotalQuestions().toLocaleString(),
+          ticketsCount: countParams.tickets,
+          questionsCount: countParams.questions,
         }
       ),
-      badge: t("home.benefits.card1Badge", "Rasmiy baza"),
+      badge: t("home.benefits.card1Badge"),
       color: "#0b84f3",
       bg: "rgba(11, 132, 243, 0.1)",
     },
     {
       icon: IconDeviceDesktopAnalytics,
-      title: t("home.benefits.card2Title", "Davlat imtihoni simulyatori"),
+      title: t("home.benefits.card2Title"),
       desc: t(
-        "home.benefits.card2Desc",
-        "20 ta savol, 20 daqiqa vaqt va YHXK kompyuter markazidagi kabi haqiqiy imtihon muhiti."
+        "home.benefits.card2Desc"
       ),
-      badge: t("home.benefits.card2Badge", "20 savol / 20 daqiqa"),
+      badge: t("home.benefits.card2Badge"),
       color: "#6366f1",
       bg: "rgba(99, 102, 241, 0.1)",
     },
     {
       icon: IconBrain,
-      title: t("home.benefits.card3Title", "Xatolar ustida ishlash"),
+      title: t("home.benefits.card3Title"),
       desc: t(
-        "home.benefits.card3Desc",
-        "Siz adashgan savollar avtomatik saqlanadi va to'g'ri o'zlashtirilguncha qayta mashq qilinadi."
+        "home.benefits.card3Desc"
       ),
-      badge: t("home.benefits.card3Badge", "Aqlli tahlil"),
+      badge: t("home.benefits.card3Badge"),
       color: "#10b981",
       bg: "rgba(16, 185, 129, 0.1)",
     },
     {
       icon: IconDevices,
-      title: t("home.benefits.card4Title", "Offline va barcha qurilmalar"),
+      title: t("home.benefits.card4Title"),
       desc: t(
-        "home.benefits.card4Desc",
-        "Windows kompyuter uchun ilova internetsiz to'liq ishlaydi, shuningdek mobil telefon va vebda mavjud."
+        "home.benefits.card4Desc"
       ),
-      badge: t("home.benefits.card4Badge", "Internetsiz (.exe)"),
+      badge: t("home.benefits.card4Badge"),
       color: "#f59e0b",
       bg: "rgba(245, 158, 11, 0.1)",
     },
   ];
 
   return (
-    <section className={classes.benefitsSectionModern} id="benefits" aria-label={t("home.benefits.ariaLabel", "Asosiy afzalliklar")}>
+    <section className={classes.benefitsSectionModern} id="benefits" aria-label={t("home.benefits.ariaLabel")}>
       <div className={classes.sectionHeaderCentered}>
         <div className={classes.sectionCategoryBadge}>
           <IconSparkles size={14} />
-          <span>{t("home.benefits.badge", "Asosiy afzalliklar")}</span>
+          <span>{t("home.benefits.badge")}</span>
         </div>
         <h2 className={classes.sectionHeaderTitle}>
-          {t("home.benefits.heading", "Nima uchun Prava Online?")}
+          {t("home.benefits.heading")}
         </h2>
         <p className={classes.sectionHeaderSubtitle}>
           {t(
-            "home.benefits.subheading",
-            "Imtihonga tayyorlanishning eng samarali va zamonaviy yo'li"
+            "home.benefits.subheading"
           )}
         </p>
       </div>

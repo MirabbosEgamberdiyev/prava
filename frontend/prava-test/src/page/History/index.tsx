@@ -10,8 +10,8 @@ const History_Page = () => {
   return (
     <>
       <SEO
-        title={t("seo.history.title", "Imtihonlar Tarixi — PravaOnline")}
-        description={t("seo.history.desc", "O'tgan imtihonlaringiz natijalarini ko'ring.")}
+        title={t("seo.history.title")}
+        description={t("seo.history.desc")}
         canonical="/history"
         noIndex={true}
       />
@@ -25,13 +25,12 @@ const History_Page = () => {
                 stroke={2}
                 style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }}
               />
-              {t("history.title", "Imtihonlar tarixi")}
+              {t("history.title")}
             </h1>
           </div>
           <p className={styles.innerPageSubtitle}>
             {t(
-              "history.subtitle",
-              "O'tkazilgan barcha imtihonlar, sarflangan vaqt va to'plangan ballar arxivi."
+              "history.subtitle"
             )}
           </p>
         </div>

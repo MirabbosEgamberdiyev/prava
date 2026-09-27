@@ -13,6 +13,7 @@ import classes from "./Home.module.css";
 import { DomainLink } from "@/components/common/DomainLink";
 import { getWebAppUrl, getLandingUrl } from "@/utils/domain";
 import { useAuth } from "@/auth/AuthContext";
+import { useCurriculumCountParams } from "@/hooks/useCurriculumCounts";
 
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=uz.prava.online";
 const APP_STORE_URL = "https://apps.apple.com/app/prava-online/id0000000000";
@@ -21,6 +22,7 @@ const TELEGRAM_BOT_URL = "https://t.me/pravaonlineuzbot";
 
 export function Hero_Banner() {
   const { t } = useTranslation();
+  const countParams = useCurriculumCountParams();
   const { isAuthenticated } = useAuth();
 
   const trustChecklist = [
@@ -31,27 +33,24 @@ export function Hero_Banner() {
   ];
 
   return (
-    <section className={classes.heroCenteredSection} aria-label={t("home.hero.ariaLabel", "Asosiy qism")}>
+    <section className={classes.heroCenteredSection} aria-label={t("home.hero.ariaLabel")}>
       <div className={classes.heroCenteredContent}>
         {/* 1. Top Pill Badge */}
         <div className={classes.heroPillBadge}>
           <span className={classes.heroPillIcon}>⭐</span>
-          <span>{t("home.hero.verifiedBadge", "IIV YHXBB 2026-yilgi amaldagi reglamenti asosida")}</span>
+          <span>{t("home.hero.verifiedBadge")}</span>
         </div>
 
         {/* 2. Main Centered Headline */}
         <h1 className={classes.heroCenteredTitle}>
-          {t("home.hero.titleStart", "Haydovchilik imtihoniga")}{" "}
-          <span className={classes.heroHighlightWord}>{t("home.hero.highlightWord", "oson")}</span>{" "}
-          {t("home.hero.titleEnd", "tayyorlaning!")}
+          {t("home.hero.titleStart")}{" "}
+          <span className={classes.heroHighlightWord}>{t("home.hero.highlightWord")}</span>{" "}
+          {t("home.hero.titleEnd")}
         </h1>
 
         {/* 3. Centered Subtitle */}
         <p className={classes.heroCenteredSubtitle}>
-          {t(
-            "home.hero.description",
-            "1200+ rasmiy savollar, 70 ta bilet va IIV YHXBB davlat imtihoni simulyatori. Kompyuter yoki telefon orqali bilimlaringizni sinovdan o'tkazing va imtihondan birinchi urinishda o'ting."
-          )}
+          {t("home.hero.description", countParams)}
         </p>
 
         {/* 4. Action Buttons */}
@@ -62,7 +61,7 @@ export function Hero_Banner() {
               style={{ textDecoration: "none" }}
             >
               <button type="button" className={classes.heroPrimaryBtn}>
-                <span>{t("nav.dashboard", "Boshqaruv paneliga o'tish")}</span>
+                <span>{t("nav.dashboard")}</span>
                 <IconArrowRight size={18} />
               </button>
             </DomainLink>
@@ -74,7 +73,7 @@ export function Hero_Banner() {
               style={{ textDecoration: "none" }}
             >
               <button type="button" className={classes.heroPrimaryBtn}>
-                <span>{t("home.hero.openWebApp", "Web ilovani ochish")}</span>
+                <span>{t("home.hero.openWebApp")}</span>
                 <IconArrowRight size={18} />
               </button>
             </DomainLink>
@@ -88,7 +87,7 @@ export function Hero_Banner() {
           >
             <button type="button" className={classes.heroSecondaryBtn}>
               <IconPlayerPlay size={16} style={{ fill: "currentColor" }} />
-              <span>{t("guestExam.tryFree", "Bepul sinov imtihoni")}</span>
+              <span>{t("guestExam.tryFree")}</span>
             </button>
           </DomainLink>
         </div>
@@ -96,7 +95,7 @@ export function Hero_Banner() {
         {/* 5. Platform Store Badges Row */}
         <div className={classes.storeBadgesWrapper}>
           <span className={classes.storeBadgesLabel}>
-            {t("home.hero.availableOn", "Barcha qurilmalarda mavjud:")}
+            {t("home.hero.availableOn")}
           </span>
           <div className={classes.storeBadgesRow}>
             <a

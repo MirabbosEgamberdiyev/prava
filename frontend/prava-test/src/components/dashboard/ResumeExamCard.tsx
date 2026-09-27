@@ -70,8 +70,8 @@ export default function ResumeExamCard({ marathonSession }: Props) {
 
   if (useLocal && local) {
     const answered = Object.keys(local.answers || {}).length;
-    title = t("dashboard.resume.marathonTitle", "Tugallanmagan marafon");
-    desc = t("dashboard.resume.progress", "{{answered}} / {{total}} ta savolga javob berilgan", {
+    title = t("dashboard.resume.marathonTitle");
+    desc = t("dashboard.resume.progress", {
       answered,
       total: local.questions.length,
     });
@@ -81,18 +81,18 @@ export default function ResumeExamCard({ marathonSession }: Props) {
     const parsed = server?.expiresAt ? Date.parse(server.expiresAt) : NaN;
     const isPackage = server?.packageId != null;
     title = isPackage
-      ? t("dashboard.resume.examTitle", "Tugallanmagan imtihon")
-      : t("dashboard.resume.marathonTitle", "Tugallanmagan marafon");
+      ? t("dashboard.resume.examTitle")
+      : t("dashboard.resume.marathonTitle");
     desc =
       (isPackage && server?.packageName) ||
-      t("dashboard.resume.questions", "{{count}} ta savol", { count: server?.totalQuestions ?? 0 });
+      t("dashboard.resume.questions", { count: server?.totalQuestions ?? 0 });
     target = isPackage ? `/packages/${server?.packageId}` : "/marafon";
     left = minutesLeft(Number.isNaN(parsed) ? null : parsed, now);
   }
 
   return (
     <section
-      aria-label={t("dashboard.resume.aria", "Tugallanmagan imtihon")}
+      aria-label={t("dashboard.resume.aria")}
       style={{
         display: "flex",
         alignItems: "center",
@@ -130,8 +130,8 @@ export default function ResumeExamCard({ marathonSession }: Props) {
             {left != null &&
               ` • ${
                 left > 0
-                  ? t("dashboard.resume.minutesLeft", "{{count}} daqiqa qoldi", { count: left })
-                  : t("dashboard.resume.timeUp", "Vaqt tugagan — natijani yuboring")
+                  ? t("dashboard.resume.minutesLeft", { count: left })
+                  : t("dashboard.resume.timeUp")
               }`}
           </p>
         </div>
@@ -155,7 +155,7 @@ export default function ResumeExamCard({ marathonSession }: Props) {
         }}
       >
         <IconPlayerPlay size={18} />
-        <span>{t("dashboard.resume.continue", "Davom ettirish")}</span>
+        <span>{t("dashboard.resume.continue")}</span>
       </button>
     </section>
   );

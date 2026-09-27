@@ -4,7 +4,19 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  /*
+   * W-21: production build'da console.log/debug/info/warn chaqiruvlari "pure"
+   * deb belgilanadi (natijasi ishlatilmasa minifier olib tashlaydi) va
+   * `debugger` o'chiriladi. console.error qoldiriladi (ErrorBoundary/monitoring).
+   */
+  esbuild:
+    mode === 'production'
+      ? {
+          pure: ['console.log', 'console.debug', 'console.info', 'console.warn'],
+          drop: ['debugger'],
+        }
+      : undefined,
   define: {
     // Har build paytida yangi timestamp — i18n cache bypass uchun
     __BUILD_TIME__: JSON.stringify(Date.now().toString()),
@@ -197,4 +209,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

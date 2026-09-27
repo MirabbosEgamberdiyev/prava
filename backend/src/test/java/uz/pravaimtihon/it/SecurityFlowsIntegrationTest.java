@@ -189,7 +189,104 @@ class SecurityFlowsIntegrationTest {
         mvc.perform(get("/api/v1/public/exam-rules"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.marathon.secondsPerQuestion").value(60))
-                .andExpect(jsonPath("$.data.real.maxWrong").value(3));
+                .andExpect(jsonPath("$.data.real.maxWrong").value(3))
+                // B-20: yagona manba — qo'shimcha maydonlar
+                .andExpect(jsonPath("$.data.ticket.questionCount").value(20))
+                .andExpect(jsonPath("$.data.ticket.passPercent").value(90))
+                .andExpect(jsonPath("$.data.ticket.count").isNumber())
+                .andExpect(jsonPath("$.data.marathon.defaultQuestionCount").value(20))
+                .andExpect(jsonPath("$.data.survival.maxWrong").value(0))
+                .andExpect(jsonPath("$.data.guest.questionCount").value(20))
+                .andExpect(jsonPath("$.data.guest.maxWrong").value(3));
+    }
+
+    // ── B-03/B-04: real imtihon natijasi baholashda ishlatilgan o'tish balini ko'rsatadi ──
+    @Test
+    void offlineRealExamReportsMaxWrongBasedPassingScore() throws Exception {
+        String token = accessToken(login(false));
+        String payload = "{\"clientSessionId\":\"real_pass_" + UUID.randomUUID() + "\",\"examType\":\"real\","
+                + "\"durationSeconds\":600,\"totalQuestions\":20,\"answers\":[]}";
+        mvc.perform(post("/api/v2/exams/record-offline").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON).content(payload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.passingScore").value(85))
+                .andExpect(jsonPath("$.data.maxWrong").value(3))
+                .andExpect(jsonPath("$.data.examMode").value("REAL"))
+                .andExpect(jsonPath("$.data.isPassed").value(false));
+    }
+
+    // ── B-08: jarimalar (public, ETag) ─────────────────────────────────────────
+    @Test
+    void publicFinesSupportStrongEtag() throws Exception {
+        MvcResult first = mvc.perform(get("/api/v1/public/fines"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.bhm.amount").isNumber())
+                .andExpect(jsonPath("$.data.version").isNotEmpty())
+                .andExpect(jsonPath("$.data.fines").isArray())
+                .andReturn();
+        String etag = first.getResponse().getHeader("ETag");
+        assertThat(etag).startsWith("\"");
+        assertThat(first.getResponse().getHeader("Cache-Control")).contains("max-age=300");
+
+        mvc.perform(get("/api/v1/public/fines").header("If-None-Match", "W/" + etag))
+                .andExpect(status().isNotModified());
+    }
+
+    @Test
+    void adminFinesRequireAdminRole() throws Exception {
+        String token = accessToken(login(false));
+        mvc.perform(get("/api/v1/admin/fines").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    // ── B-10: mehmon katalogi (savollarsiz) ────────────────────────────────────
+    @Test
+    void publicCatalogIsOpenAndHasNoQuestionBodies() throws Exception {
+        mvc.perform(get("/api/v1/public/tickets"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray());
+        mvc.perform(get("/api/v1/public/topics"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray());
+    }
+
+    // ── B-15: public statistika — soxta activeUsers yo'q ───────────────────────
+    @Test
+    void publicStatsHasRealCountsOnly() throws Exception {
+        mvc.perform(get("/api/v1/public/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalQuestions").isNumber())
+                .andExpect(jsonPath("$.data.totalTickets").isNumber())
+                .andExpect(jsonPath("$.data.activeUsers").doesNotExist());
+    }
+
+    // ── B-01: QR pollSecret ─────────────────────────────────────────────────────
+    @Test
+    void qrPollSecretIsIssuedAndVerified() throws Exception {
+        JsonNode init = json.readTree(mvc.perform(post("/api/v1/auth/qr/init").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"clientType\":\"DESKTOP\",\"deviceName\":\"IT Desktop\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).at("/data");
+        String sessionId = init.get("sessionId").asText();
+        String secret = init.get("pollSecret").asText();
+        assertThat(secret).isNotBlank();
+        assertThat(init.get("qrPayload").asText()).doesNotContain(secret);
+
+        mvc.perform(get("/api/v1/auth/qr/status").param("sessionId", sessionId).header("X-QR-Poll-Secret", "wrong"))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/auth/qr/status").param("sessionId", sessionId).header("X-QR-Poll-Secret", secret))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("PENDING"));
+
+        // cancel: challenge ham, pollSecret ham bo'lmasa bekor qilinmaydi
+        mvc.perform(post("/api/v1/auth/qr/cancel").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sessionId\":\"" + sessionId + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.cancelled").value(false));
+        mvc.perform(post("/api/v1/auth/qr/cancel").contentType(MediaType.APPLICATION_JSON)
+                        .header("X-QR-Poll-Secret", secret)
+                        .content("{\"sessionId\":\"" + sessionId + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.cancelled").value(true));
     }
 
     // ── Faza 5: offline-bundle v2 (savollar + mavzular + biletlar, ETag) ────────

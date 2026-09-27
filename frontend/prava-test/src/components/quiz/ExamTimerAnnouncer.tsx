@@ -12,9 +12,9 @@ export default function ExamTimerAnnouncer({ warning }: { warning: ExamTimerWarn
   const { t } = useTranslation();
   const message =
     warning === "one"
-      ? t("a11y.timerOneMinuteLeft", "Imtihon tugashiga 1 daqiqa qoldi")
+      ? t("a11y.timerOneMinuteLeft")
       : warning === "five"
-        ? t("a11y.timerFiveMinutesLeft", "Imtihon tugashiga 5 daqiqa qoldi")
+        ? t("a11y.timerFiveMinutesLeft")
         : "";
 
   return (

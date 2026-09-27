@@ -8,12 +8,14 @@ import {
   IconTicket,
   IconPencil,
   IconRun,
+  IconFlame,
   IconDirections,
   IconRoad,
   IconSteeringWheel,
   IconBuildingSkyscraper,
   IconBook,
   IconGavel,
+  IconScale,
   IconChartBar,
   IconBookmark,
   IconAlertTriangle,
@@ -63,8 +65,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
     const items: SearchItem[] = [
       {
         id: "mode-exam",
-        title: t("dashboard.modes.examTitle", "Haqiqiy Imtihon"),
-        category: t("dashboard.categories.exam", "Imtihon"),
+        title: t("dashboard.modes.examTitle"),
+        category: t("dashboard.categories.exam"),
         icon: IconPencil,
         action: () => {
           onClose();
@@ -73,8 +75,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "mode-marathon",
-        title: t("dashboard.modes.marathonTitle", "Marafon"),
-        category: t("dashboard.categories.practice", "Amaliyot"),
+        title: t("dashboard.modes.marathonTitle"),
+        category: t("dashboard.categories.practice"),
         icon: IconRun,
         action: () => {
           onClose();
@@ -82,9 +84,19 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
         },
       },
       {
+        id: "mode-survival",
+        title: t("survival.title"),
+        category: t("dashboard.categories.practice"),
+        icon: IconFlame,
+        action: () => {
+          onClose();
+          navigate("/survival");
+        },
+      },
+      {
         id: "mode-tickets",
-        title: t("dashboard.modes.ticketsTitle", "Biletlar"),
-        category: t("dashboard.categories.tickets", "Biletlar"),
+        title: t("dashboard.modes.ticketsTitle"),
+        category: t("dashboard.categories.tickets"),
         icon: IconTicket,
         action: () => {
           onClose();
@@ -93,8 +105,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "mode-topics",
-        title: t("dashboard.modes.topicsTitle", "Mavzular"),
-        category: t("dashboard.categories.topics", "Mavzular"),
+        title: t("dashboard.modes.topicsTitle"),
+        category: t("dashboard.categories.topics"),
         icon: IconBook2,
         action: () => {
           onClose();
@@ -103,8 +115,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "section-signs",
-        title: t("dashboard.nav.signs", "Yo'l belgilari"),
-        category: t("nav.learn", "O'rganish"),
+        title: t("dashboard.nav.signs"),
+        category: t("nav.learn"),
         icon: IconDirections,
         action: () => {
           onClose();
@@ -113,8 +125,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "section-markings",
-        title: t("dashboard.nav.markings", "Yo'l chiziqlari"),
-        category: t("nav.learn", "O'rganish"),
+        title: t("dashboard.nav.markings"),
+        category: t("nav.learn"),
         icon: IconRoad,
         action: () => {
           onClose();
@@ -123,8 +135,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "section-autodrom",
-        title: t("dashboard.nav.autodrom", "Avtodrom"),
-        category: t("nav.learn", "O'rganish"),
+        title: t("dashboard.nav.autodrom"),
+        category: t("nav.learn"),
         icon: IconSteeringWheel,
         action: () => {
           onClose();
@@ -133,8 +145,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "section-exam-centers",
-        title: t("dashboard.nav.examCenters", "Imtihon markazlari"),
-        category: t("nav.learn", "O'rganish"),
+        title: t("dashboard.nav.examCenters"),
+        category: t("nav.learn"),
         icon: IconBuildingSkyscraper,
         action: () => {
           onClose();
@@ -143,8 +155,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "section-rules",
-        title: t("dashboard.nav.rules", "YHQ Qoidalari"),
-        category: t("nav.learn", "O'rganish"),
+        title: t("dashboard.nav.rules"),
+        category: t("nav.learn"),
         icon: IconBook,
         action: () => {
           onClose();
@@ -153,8 +165,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "section-penalties",
-        title: t("dashboard.nav.penalties", "Jarimalar"),
-        category: t("nav.learn", "O'rganish"),
+        title: t("dashboard.nav.penalties"),
+        category: t("nav.learn"),
         icon: IconGavel,
         action: () => {
           onClose();
@@ -162,9 +174,19 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
         },
       },
       {
+        id: "section-traffic-fines",
+        title: t("dashboard.nav.trafficFines"),
+        category: t("nav.learn"),
+        icon: IconScale,
+        action: () => {
+          onClose();
+          navigate("/fines");
+        },
+      },
+      {
         id: "section-stats",
-        title: t("dashboard.nav.stats", "Statistika"),
-        category: t("nav.tools", "Vositalar"),
+        title: t("dashboard.nav.stats"),
+        category: t("nav.tools"),
         icon: IconChartBar,
         action: () => {
           onClose();
@@ -173,8 +195,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "section-saved",
-        title: t("dashboard.nav.saved", "Saqlangan savollar"),
-        category: t("nav.tools", "Vositalar"),
+        title: t("dashboard.nav.saved"),
+        category: t("nav.tools"),
         icon: IconBookmark,
         action: () => {
           onClose();
@@ -183,8 +205,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "section-wrong",
-        title: t("nav.wrongAnswers", "Xato javoblar ustida ishlash"),
-        category: t("nav.tools", "Vositalar"),
+        title: t("nav.wrongAnswers"),
+        category: t("nav.tools"),
         icon: IconAlertTriangle,
         action: () => {
           onClose();
@@ -193,8 +215,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "section-rating",
-        title: t("dashboard.nav.rating", "Reyting"),
-        category: t("nav.tools", "Vositalar"),
+        title: t("dashboard.nav.rating"),
+        category: t("nav.tools"),
         icon: IconTrophy,
         action: () => {
           onClose();
@@ -203,8 +225,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "section-history",
-        title: t("nav.history", "Imtihon tarixi"),
-        category: t("nav.tools", "Vositalar"),
+        title: t("nav.history"),
+        category: t("nav.tools"),
         icon: IconHistory,
         action: () => {
           onClose();
@@ -213,8 +235,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       },
       {
         id: "section-settings",
-        title: t("dashboard.nav.settings", "Sozlamalar"),
-        category: t("nav.tools", "Vositalar"),
+        title: t("dashboard.nav.settings"),
+        category: t("nav.tools"),
         icon: IconSettings,
         action: () => {
           onClose();
@@ -228,7 +250,7 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       items.push({
         id: `topic-${topic.id}`,
         title: localizeTopic(topic),
-        category: t("dashboard.categories.topics", "Mavzular"),
+        category: t("dashboard.categories.topics"),
         icon: IconBook2,
         action: () => {
           onClose();
@@ -241,8 +263,8 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
     for (let i = 1; i <= 20; i++) {
       items.push({
         id: `ticket-${i}`,
-        title: `${i}-${t("dashboard.ticketNum", "bilet")}`,
-        category: t("dashboard.categories.tickets", "Biletlar"),
+        title: t("dashboard.ticketNum", { num: i }),
+        category: t("dashboard.categories.tickets"),
         icon: IconTicket,
         action: () => {
           onClose();
@@ -298,7 +320,7 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label={t("dashboard.searchModalLabel", "Global qidiruv")}
+      aria-label={t("dashboard.searchModalLabel")}
     >
       <div
         className={styles.searchModalCard}
@@ -311,7 +333,7 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
             ref={inputRef}
             type="text"
             className={styles.searchModalInput}
-            placeholder={t("dashboard.searchPlaceholder", "Mavzu, savol yoki qoida qidirish...")}
+            placeholder={t("dashboard.searchPlaceholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -319,7 +341,7 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
             type="button"
             onClick={onClose}
             style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)" }}
-            aria-label={t("common.close", "Yopish")}
+            aria-label={t("common.close")}
           >
             <IconX size={18} />
           </button>
@@ -328,7 +350,7 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
         <div className={styles.searchModalResults}>
           {filteredItems.length === 0 ? (
             <div style={{ padding: "24px 16px", textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>
-              {t("dashboard.noSearchResults", "Hech narsa topilmadi")}
+              {t("dashboard.noSearchResults")}
             </div>
           ) : (
             filteredItems.map((item, idx) => (
@@ -353,13 +375,13 @@ export const DashboardSearchModal: React.FC<SearchModalProps> = ({
 
         <div className={styles.searchModalFooter}>
           <span>
-            <kbd className={styles.searchKbd}>↑</kbd> <kbd className={styles.searchKbd}>↓</kbd> {t("dashboard.navigate", "harakatlanish")}
+            <kbd className={styles.searchKbd}>↑</kbd> <kbd className={styles.searchKbd}>↓</kbd> {t("dashboard.navigate")}
           </span>
           <span>
-            <kbd className={styles.searchKbd}>Enter</kbd> {t("dashboard.select", "tanlash")}
+            <kbd className={styles.searchKbd}>Enter</kbd> {t("dashboard.select")}
           </span>
           <span>
-            <kbd className={styles.searchKbd}>ESC</kbd> {t("dashboard.close", "yopish")}
+            <kbd className={styles.searchKbd}>ESC</kbd> {t("dashboard.close")}
           </span>
         </div>
       </div>

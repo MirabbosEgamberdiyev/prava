@@ -51,7 +51,6 @@ export const AuthStepper: React.FC<AuthStepperProps> = ({
       aria-label={t("authV2.stepper.stepAria", {
         current: currentStep,
         total: 3,
-        defaultValue: `Bosqich ${currentStep} / 3`,
       })}
     >
       <div className={classes.connectingLine}>

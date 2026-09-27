@@ -46,4 +46,8 @@ public class OfflineExamRecordRequest {
     @jakarta.validation.constraints.Min(1)
     @jakarta.validation.constraints.Max(200)
     private Integer totalQuestions;
+
+    @Schema(description = "Imtihon rejimi (ixtiyoriy, examType'dan ustun): REAL | TICKET | MARATHON | SURVIVAL | TOPIC | PACKAGE. "
+            + "Berilmasa examType'dan aniqlanadi (\"real\" → REAL, \"ticket\" → TICKET, ...).", example = "REAL", nullable = true)
+    private uz.pravaimtihon.enums.ExamMode mode;
 }

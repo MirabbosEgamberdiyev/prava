@@ -39,10 +39,24 @@ public class GuestExamController {
     private final ExamPackageRepository packageRepository;
     private final TopicRepository topicRepository;
     private final ExamResponseMapper mapper;
+    private final uz.pravaimtihon.repository.TicketRepository ticketRepository;
+    private final uz.pravaimtihon.service.ExamGradingPolicy gradingPolicy;
 
-    private static final int GUEST_QUESTION_COUNT = 20;
-    private static final int GUEST_DURATION_MINUTES = 20; // real imtihon bilan bir xil (exam-rules)
-    private static final int GUEST_PASSING_SCORE = 90;
+    // B-12: guest qiymatlari exam-rules.guest dan (avval konstantalar edi).
+    private int guestQuestionCount() {
+        return Math.max(1, gradingPolicy.rules().getGuest().getQuestionCount());
+    }
+
+    private int guestDurationMinutes(int questionCount) {
+        return Math.max(1, (int) Math.ceil(questionCount * gradingPolicy.rules().getGuest().getSecondsPerQuestion() / 60.0));
+    }
+
+    /** maxWrong qoidasining foiz ekvivalenti (20 savol, 3 xato → 85). */
+    private int guestPassingScore(int questionCount) {
+        int allowed = (int) Math.floor((double) Math.max(0, gradingPolicy.rules().getGuest().getMaxWrong())
+                * questionCount / guestQuestionCount());
+        return uz.pravaimtihon.service.ExamGradingPolicy.equivalentPercent(questionCount, allowed);
+    }
 
     /**
      * Guest imtihon uchun 20 ta tasodifiy savol qaytaradi.
@@ -56,6 +70,7 @@ public class GuestExamController {
     )
     public ResponseEntity<ApiResponse<ExamResponse>> getGuestExam() {
         log.debug("Guest exam so'rovi — bazadan tasodifiy savollar yuklanmoqda");
+        int guestCount = guestQuestionCount();
 
         // ⚠️ AUDIT — PERFORMANCE: avval bu yerda
         // `findRandomQuestionsWithOptions(PageRequest...)` chaqirilardi.
@@ -68,7 +83,7 @@ public class GuestExamController {
         // Endi ikki bosqich: (1) DB tomonda random + LIMIT bilan faqat ID'lar,
         // (2) o'sha ID'lar uchun variantlar bitta so'rovda.
         List<Long> ids = questionRepository.findRandomQuestionIds(
-                PageRequest.of(0, GUEST_QUESTION_COUNT)
+                PageRequest.of(0, guestCount)
         );
 
         List<Question> available = ids.isEmpty()
@@ -80,8 +95,9 @@ public class GuestExamController {
             return ResponseEntity.ok(ApiResponse.success(
                     ExamResponse.builder()
                             .totalQuestions(0)
-                            .durationMinutes(GUEST_DURATION_MINUTES)
-                            .passingScore(GUEST_PASSING_SCORE)
+                            .durationMinutes(guestDurationMinutes(guestCount))
+                            .passingScore(guestPassingScore(guestCount))
+                            .maxWrong(gradingPolicy.rules().getGuest().getMaxWrong())
                             .isVisibleMode(true)
                             .isMarathonMode(false)
                             .questions(List.of())
@@ -93,8 +109,8 @@ public class GuestExamController {
         // faqat `IN (:ids)` natijasining tartibini aralashtirish uchun.
         List<Question> selected = new ArrayList<>(available);
         Collections.shuffle(selected);
-        if (selected.size() > GUEST_QUESTION_COUNT) {
-            selected = selected.subList(0, GUEST_QUESTION_COUNT);
+        if (selected.size() > guestCount) {
+            selected = selected.subList(0, guestCount);
         }
 
         // Visible mode = true: to'g'ri javoblar va tushuntirishlar qaytariladi
@@ -103,10 +119,11 @@ public class GuestExamController {
         LocalDateTime now = LocalDateTime.now();
         ExamResponse response = ExamResponse.builder()
                 .totalQuestions(questions.size())
-                .durationMinutes(GUEST_DURATION_MINUTES)
-                .passingScore(GUEST_PASSING_SCORE)
+                .durationMinutes(guestDurationMinutes(questions.size()))
+                .passingScore(guestPassingScore(questions.size()))
+                .maxWrong((int) Math.floor((double) gradingPolicy.rules().getGuest().getMaxWrong() * questions.size() / guestCount))
                 .startedAt(now)
-                .expiresAt(now.plusMinutes(GUEST_DURATION_MINUTES))
+                .expiresAt(now.plusMinutes(guestDurationMinutes(questions.size())))
                 .isVisibleMode(true)
                 .isMarathonMode(false)
                 .questions(questions)
@@ -125,15 +142,14 @@ public class GuestExamController {
             description = "Autentifikatsiyasiz ochiq umumiy statistika (savollar, biletlar va mavzular soni)."
     )
     public ResponseEntity<ApiResponse<PublicStatsResponse>> getPublicStats() {
-        long questionsCount = questionRepository.count();
-        long packagesCount = packageRepository.count();
-        long topicsCount = topicRepository.count();
-
+        // B-15: faqat haqiqiy sonlar — o'chirilgan (soft-deleted) va nofaol yozuvlarsiz.
+        // Avval bo'sh bazada to'qib chiqarilgan qiymatlar (1200/70/30) va soxta activeUsers=50000 qaytarilardi.
+        // activeUsers endi qaytarilmaydi (web uni ko'rsatmaydi).
         PublicStatsResponse stats = PublicStatsResponse.builder()
-                .totalQuestions(questionsCount > 0 ? questionsCount : 1200L)
-                .totalPackages(packagesCount > 0 ? packagesCount : 70L)
-                .totalTopics(topicsCount > 0 ? topicsCount : 30L)
-                .activeUsers(50000L)
+                .totalQuestions(questionRepository.countActiveQuestions())
+                .totalPackages(packageRepository.countActivePackages())
+                .totalTopics(topicRepository.countByDeletedFalseAndIsActiveTrue())
+                .totalTickets(ticketRepository.countActiveTickets())
                 .build();
 
         return ResponseEntity.ok(ApiResponse.success(stats));

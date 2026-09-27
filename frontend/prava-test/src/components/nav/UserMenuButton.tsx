@@ -29,13 +29,13 @@ function UserMenuButton() {
   const handleLogout = () => {
     logout();
     notifications.show({
-      title: t("userMenu.logoutTitle", "Chiqish"),
-      message: t("userMenu.logoutMessage", "Tizimdan muvaffaqiyatli chiqdingiz"),
+      title: t("userMenu.logoutTitle"),
+      message: t("userMenu.logoutMessage"),
       color: "yellow",
     });
   };
 
-  const fullName = user?.fullName || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || t("userMenu.user", "Foydalanuvchi");
+  const fullName = user?.fullName || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || t("userMenu.user");
   const contact = user?.phoneNumber || user?.email || "";
   const initials =
     `${user?.firstName?.charAt(0) || ""}${user?.lastName?.charAt(0) || ""}`.toUpperCase() ||
@@ -101,25 +101,25 @@ function UserMenuButton() {
           leftSection={<IconUser size={15} />}
           onClick={() => goToApp("/me")}
         >
-          {t("nav.dashboard", "Boshqaruv paneli")}
+          {t("nav.dashboard")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconSettings size={15} />}
           onClick={() => goToApp("/settings")}
         >
-          {t("userMenu.settings", "Sozlamalar")}
+          {t("userMenu.settings")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconHistory size={15} />}
           onClick={() => goToApp("/history")}
         >
-          {t("history.title", "Imtihon tarixi")}
+          {t("history.title")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconTrophy size={15} />}
           onClick={() => goToApp("/leaderboard")}
         >
-          {t("leaderboard.title", "Reyting")}
+          {t("leaderboard.title")}
         </Menu.Item>
 
         <Menu.Divider />
@@ -129,7 +129,7 @@ function UserMenuButton() {
           onClick={handleLogout}
           leftSection={<IconLogout size={15} />}
         >
-          {t("userMenu.logout", "Chiqish")}
+          {t("userMenu.logout")}
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

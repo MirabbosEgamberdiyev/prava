@@ -10,7 +10,7 @@ const ColorMode = () => {
 
   return (
     <Tooltip
-      label={isLight ? t("common.darkMode", "Qorong'u rejim") : t("common.lightMode", "Yorug' rejim")}
+      label={isLight ? t("common.darkMode") : t("common.lightMode")}
       position="bottom"
       withArrow
     >

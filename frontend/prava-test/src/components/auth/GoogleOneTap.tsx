@@ -17,6 +17,8 @@ import { ENV } from "../../config/env";
 import api from "../../api/api";
 import { getErrorMessage } from "../../types/errors";
 import { isGoogleOneTapAllowed } from "../../utils/domain";
+import { readReturnTo } from "../../utils/returnTo";
+import { DEFAULT_AFTER_LOGIN } from "../../auth/useReturnTo";
 
 // ----- Google GSI type declarations -----
 interface CredentialResponse {
@@ -110,7 +112,11 @@ export function GoogleOneTap() {
             i18n.changeLanguage(userLang.toLowerCase());
           }
           authLogin(apiResponse.data.data);
-          navigate("/me", { replace: true });
+          // W-06: auth sahifasida bo'lsa — returnTo (yoki /me); boshqa sahifada foydalanuvchi
+          // turgan joyida qoladi (mehmon ko'rib turgan sahifa login'dan keyin ham ochiq).
+          if (location.pathname.startsWith("/auth")) {
+            navigate(readReturnTo(location.search) ?? DEFAULT_AFTER_LOGIN, { replace: true });
+          }
           notifications.show({
             title: t("auth.google.successTitle"),
             message: t("auth.google.successMessage"),

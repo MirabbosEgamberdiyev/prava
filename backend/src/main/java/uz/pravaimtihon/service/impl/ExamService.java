@@ -569,7 +569,6 @@ public class ExamService {
         Map<Long, ExamAnswer> answerMap = examAnswers.stream()
                 .collect(Collectors.toMap(a -> a.getQuestion().getId(), a -> a));
 
-        int answeredCount = 0;
         for (var ans : request.getAnswers()) {
             ExamAnswer examAnswer = answerMap.get(ans.getQuestionId());
             // Qulflangan (check-answer) javob o'zgartirilmaydi. submitAnswer isCorrect'ni ham
@@ -577,11 +576,15 @@ public class ExamService {
             if (examAnswer != null && ans.getSelectedOptionIndex() != null && !examAnswer.isLocked()) {
                 examAnswer.submitAnswer(ans.getSelectedOptionIndex(),
                         ans.getTimeSpentSeconds() != null ? ans.getTimeSpentSeconds() : examAnswer.getTimeSpentSeconds());
-                answeredCount++;
             }
         }
 
         answerRepository.saveAll(examAnswers);
+        // B-17: sessiyadagi BARCHA javob berilgan savollar (avvalgi autosave'lar va check-answer
+        // bilan qulflanganlar ham) — avval faqat shu so'rovdagi o'zgarishlar sanalardi.
+        int answeredCount = (int) examAnswers.stream()
+                .filter(a -> a.getSelectedOptionIndex() != null)
+                .count();
         session.setAnsweredCount(answeredCount);
         session.setLastSavedAt(LocalDateTime.now());
         sessionRepository.save(session);

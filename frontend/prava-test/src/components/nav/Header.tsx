@@ -45,8 +45,8 @@ export default function Header({
   const isLogin = location.pathname.includes("login");
 
   const authCtaText = isRegisterOrForgot
-    ? t("auth.login", "Kirish")
-    : t("home.hero.startNow", "Boshlash");
+    ? t("auth.login")
+    : t("home.hero.startNow");
 
   const authCtaHref = isRegisterOrForgot
     ? "/auth/login"
@@ -66,13 +66,13 @@ export default function Header({
                 onClick={toggle}
                 hiddenFrom="md"
                 size="sm"
-                aria-label={opened ? t("nav.close_menu", "Menyuni yopish") : t("nav.open_menu", "Menyuni ochish")}
+                aria-label={opened ? t("nav.close_menu") : t("nav.open_menu")}
               />
             )}
             <DomainLink
               href={getLandingUrl("/")}
               className="saas-brand"
-              aria-label={t("common.appName", "Prava Online")}
+              aria-label={t("common.appName")}
               onMouseEnter={() => prefetchRoute("/")}
               onFocus={() => prefetchRoute("/")}
             >
@@ -98,7 +98,7 @@ export default function Header({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="header-control-icon-btn"
-                    aria-label={t("nav.telegramChannel", "Telegram kanalimiz")}
+                    aria-label={t("nav.telegramChannel")}
                   >
                     <IconBrandTelegram size={17} color="#0088cc" stroke={1.8} />
                   </a>
@@ -125,7 +125,7 @@ export default function Header({
                   color="gray"
                   style={{ fontWeight: 600 }}
                 >
-                  {t("nav.home", "Bosh sahifa")}
+                  {t("nav.home")}
                 </Button>
               </DomainLink>
             ) : (

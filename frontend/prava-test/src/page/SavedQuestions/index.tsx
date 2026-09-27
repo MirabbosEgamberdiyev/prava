@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
+import { scopedUserId } from "../../utils/userScope";
+import { reportError } from "../../utils/monitoring";
 import type { SavedQuestionEntry } from "../../types/desktop";
 import {
   getSavedQuestions,
@@ -26,37 +28,37 @@ export default function SavedQuestions_Page() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const userId = user?.id ? Number(user.id) : 1;
+  const userId = scopedUserId(user);
 
   const [entries, setEntries] = useState<SavedQuestionEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [zoomSrc, setZoomSrc] = useState<string | null>(null);
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     getSavedQuestions(userId)
       .then((data) => setEntries(Array.isArray(data) ? data.filter((e) => e && e.question) : []))
-      .catch(() => {})
+      .catch((err: unknown) => reportError("savedQuestions.load", err))
       .finally(() => setLoading(false));
-  };
+  }, [userId]);
 
   useEffect(() => {
     loadData();
     const onStorage = () => loadData();
     window.addEventListener("prava-storage-changed", onStorage);
     return () => window.removeEventListener("prava-storage-changed", onStorage);
-  }, [userId]);
+  }, [loadData]);
 
   const handleRemove = async (questionId: number) => {
-    await toggleSavedQuestion(userId, questionId).catch(() => {});
+    await toggleSavedQuestion(userId, questionId).catch((err: unknown) => reportError("savedQuestions.remove", err));
     setEntries((prev) => prev.filter((e) => e?.question?.id !== questionId));
   };
 
   return (
     <>
       <SEO
-        title={t("seo.savedQuestions.title", "Saqlangan savollar")}
-        description={t("seo.savedQuestions.desc", "Belgilangan muhim savollar ro'yxati.")}
+        title={t("seo.savedQuestions.title")}
+        description={t("seo.savedQuestions.desc")}
         canonical="/saved-questions"
         noIndex={true}
       />
@@ -64,17 +66,16 @@ export default function SavedQuestions_Page() {
         <div className={styles.innerPageHeader}>
           <div className={styles.innerPageHeaderLeft}>
             <div className={styles.innerPageTitleRow}>
-              <h1 className={styles.innerPageTitle}>{t("saved.title", "Saqlangan savollar")}</h1>
+              <h1 className={styles.innerPageTitle}>{t("saved.title")}</h1>
               {!loading && entries.length > 0 && (
                 <span className={styles.innerPageCountChip}>
-                  {entries.length} {t("common.questions", "savol")}
+                  {entries.length} {t("common.questions")}
                 </span>
               )}
             </div>
             <p className={styles.innerPageSubtitle}>
               {t(
-                "saved.subtitle",
-                "O'rganish davomida xatcho'p qo'yilgan muhim va takrorlash kerak bo'lgan savollar."
+                "saved.subtitle"
               )}
             </p>
           </div>
@@ -85,17 +86,16 @@ export default function SavedQuestions_Page() {
             <div className="loading-screen" style={{ minHeight: 320 }}>
               <div className="spinner" />
               <p style={{ marginTop: 12, color: "var(--text-muted)", fontSize: 14 }}>
-                {t("common.loading", "Savollar yuklanmoqda...")}
+                {t("common.loading")}
               </p>
             </div>
           ) : entries.length === 0 ? (
             <div className="review-empty" style={{ padding: "60px 20px" }}>
               <IconBookmark size={56} stroke={1.5} color="var(--primary)" />
-              <h3>{t("saved.emptyTitle", "Saqlangan savollar yo'q")}</h3>
+              <h3>{t("saved.emptyTitle")}</h3>
               <p style={{ maxWidth: 420, margin: "0 auto", color: "var(--text-muted)", fontSize: 14 }}>
                 {t(
-                  "saved.emptyDesc",
-                  "Testlar yoki biletlarni yechayotganda eslab qolish kerak bo'lgan savollarni xatcho'p orqali saqlang."
+                  "saved.emptyDesc"
                 )}
               </p>
               <button
@@ -104,7 +104,7 @@ export default function SavedQuestions_Page() {
                 onClick={() => navigate("/tickets")}
                 style={{ marginTop: 16 }}
               >
-                {t("nav.tickets", "Biletlarni ko'rish")}
+                {t("nav.tickets")}
               </button>
             </div>
           ) : (
@@ -129,7 +129,7 @@ export default function SavedQuestions_Page() {
                           e.stopPropagation();
                           handleRemove(q.id);
                         }}
-                        title={t("saved.remove", "Saqlangandan o'chirish")}
+                        title={t("saved.remove")}
                         type="button"
                       >
                         <IconBookmarkOff size={14} stroke={2} />
@@ -168,7 +168,7 @@ export default function SavedQuestions_Page() {
                             <div className="quiz-explanation-text" style={{ display: "block" }}>
                               <strong>
                                 <IconBulb size={15} style={{ verticalAlign: "middle", marginRight: 4 }} />
-                                {t("exam.explanation", "Izoh")}:
+                                {t("exam.explanation")}:
                               </strong>{" "}
                               {localizeExp(q)}
                             </div>

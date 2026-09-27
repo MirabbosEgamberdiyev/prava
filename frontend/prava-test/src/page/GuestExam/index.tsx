@@ -27,8 +27,17 @@ import {
   IconClock,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { getCachedTotalTickets } from "../../services/desktopAdapter";
 import SEO from "../../components/common/SEO";
+import { useCurriculumCounts } from "../../hooks/useCurriculumCounts";
+import {
+  durationMinutesFor,
+  getExamRulesSync,
+  isExamPassed,
+  maxAllowedWrong,
+  useExamRules,
+} from "../../services/examRules";
+import { errorKeyFor } from "../../types/errors";
+import { registerPath } from "../../utils/returnTo";
 import { QuizContent } from "../../components/quiz/QuizContent";
 import { QuizNav } from "../../components/quiz/QuizNav";
 import api from "../../api/api";
@@ -36,13 +45,29 @@ import type { Question, AnswersMap } from "../../types";
 
 const GUEST_EXAM_KEY = "guestExamCount";
 
+/**
+ * W-06: ro'yxatdan o'tgandan keyin qaytiladigan sahifa. Mehmon sinovi bir
+ * martalik — "/try-exam" ga qaytish yana cheklov ekranini ko'rsatadi, shuning
+ * uchun foydalanuvchi to'g'ridan-to'g'ri biletlar ro'yxatiga qaytariladi.
+ */
+const GUEST_RETURN_TO = "/tickets";
+
+/** Rasmiy qoidalar bo'yicha standart davomiylik (daqiqa) — server qiymat bermasa. */
+const defaultGuestDurationMinutes = () => {
+  const r = getExamRulesSync().real;
+  return durationMinutesFor(r.questionCount, r.secondsPerQuestion);
+};
+
 const GuestExamPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const rules = useExamRules();
+  const { tickets: totalTickets } = useCurriculumCounts();
 
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [durationMinutes, setDurationMinutes] = useState(20);
+  const [durationMinutes, setDurationMinutes] = useState(defaultGuestDurationMinutes);
   const [loading, setLoading] = useState(true);
+  /** Xato — i18n kaliti (render paytida joriy tilda tarjima qilinadi). */
   const [error, setError] = useState<string | null>(null);
   const [limitReached, setLimitReached] = useState(false);
   const [answers, setAnswers] = useState<AnswersMap>({});
@@ -50,16 +75,15 @@ const GuestExamPage = () => {
 
   const hasFetched = useRef(false);
 
-  useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-
+  const loadGuestExam = () => {
     const count = parseInt(localStorage.getItem(GUEST_EXAM_KEY) || "0", 10);
     if (count >= 1) {
       setLimitReached(true);
       setLoading(false);
       return;
     }
+    setError(null);
+    setLoading(true);
 
     /*
      * BUG FIX: avval xom `fetch("/api/v1/public/guest-exam")` ishlatilardi va
@@ -75,38 +99,33 @@ const GuestExamPage = () => {
         const exam = res.data?.data;
         if (!exam?.questions?.length) throw new Error("No questions");
         setQuestions(exam.questions);
-        setDurationMinutes(exam.durationMinutes ?? 20);
+        setDurationMinutes(exam.durationMinutes ?? defaultGuestDurationMinutes());
         // Limit hisoblagichi FAQAT imtihon muvaffaqiyatli yuklangandan keyin
         // oshiriladi (avval ham shunday edi) — tarmoq xatosi foydalanuvchining
         // yagona bepul urinishini yeb qo'ymasin.
         localStorage.setItem(GUEST_EXAM_KEY, String(count + 1));
       })
-      .catch(() => {
-        setError(t("exam.loadError", "Imtihon savollarini yuklashda xatolik yuz berdi"));
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleRetryGuestExam = () => {
-    localStorage.removeItem(GUEST_EXAM_KEY);
-    setLimitReached(false);
-    setLoading(true);
-    api
-      .get("/api/v1/public/guest-exam")
-      .then((res) => {
-        const exam = res.data?.data;
-        if (!exam?.questions?.length) throw new Error("No questions");
-        setQuestions(exam.questions);
-        setDurationMinutes(exam.durationMinutes ?? 20);
-        setAnswers({});
-        setGuestResultOpened(false);
-        localStorage.setItem(GUEST_EXAM_KEY, "1");
-      })
-      .catch(() => {
-        setError(t("exam.loadError", "Imtihon savollarini yuklashda xatolik yuz berdi"));
+      .catch((err: unknown) => {
+        // Tarmoq/5xx — api.ts global toast chiqaradi; bu yerda inline xato + "Qayta urinish"
+        setError(errorKeyFor(err, "exam.loadError"));
       })
       .finally(() => setLoading(false));
   };
+
+  const loadRef = useRef(loadGuestExam);
+  useEffect(() => {
+    loadRef.current = loadGuestExam;
+  });
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    loadRef.current();
+  }, []);
+
+  /*
+   * W-20: "Sinovni qayta yechish" tugmasi olib tashlandi — u `guestExamCount` ni
+   * o'chirib, bir martalik bepul sinovni cheksiz qayta boshlashga imkon berardi.
+   */
 
   const handleAnswerSelect = (
     questionIndex: number,
@@ -137,13 +156,28 @@ const GuestExamPage = () => {
   const correctPercentage =
     questions.length > 0 ? (correctCount / questions.length) * 100 : 0;
 
-  const scoreColor =
-    correctPercentage >= 90 ? "green" : correctPercentage >= 60 ? "yellow" : "red";
+  // W-03: mehmon imtihoni — rasmiy (real) qoida: xato + javobsiz ≤ ruxsat etilgan xatolar
+  const passed = isExamPassed(
+    {
+      mode: "real",
+      total: questions.length,
+      correct: correctCount,
+      wrong: incorrectCount,
+      unanswered: unansweredCount,
+    },
+    rules,
+  );
+  // W-02: matnlar uchun — ruxsat etilgan xatolar va kamida kerakli to'g'ri javoblar
+  const guestTotal = questions.length || rules.real.questionCount;
+  const maxWrong = maxAllowedWrong(guestTotal, rules);
+  const minCorrect = Math.max(0, guestTotal - maxWrong);
+
+  const scoreColor = passed ? "green" : correctPercentage >= 60 ? "yellow" : "red";
 
   const seoElement = (
     <SEO
-      title={t("seo.tryExam.title", t("guestExam.seoTitle", "Bepul Sinov Imtihoni — Prava Online"))}
-      description={t("seo.tryExam.desc", t("guestExam.seoDescription", "Ro'yxatdan o'tmasdan YHXBB sinov imtihonini bepul topshirib ko'ring."))}
+      title={t("seo.tryExam.title", t("guestExam.seoTitle"))}
+      description={t("seo.tryExam.desc", t("guestExam.seoDescription"))}
       keywords="prava test, prava test bepul, prava sinov imtihoni, haydovchilik imtihoni sinov, YHXBB test online, online prava test, bepul prava test, 70 ta bilet, avtotest, тест ПДД онлайн, бесплатный экзамен ПДД"
       canonical="/try-exam"
       jsonLd={{
@@ -163,10 +197,10 @@ const GuestExamPage = () => {
     return (
       <>
         {seoElement}
-        <Center h="100vh" style={{ background: "var(--bg)" }}>
+        <Center h="100dvh" style={{ background: "var(--bg)" }}>
           <Box ta="center">
             <Loader size="lg" mb="md" />
-            <Text c="dimmed">{t("common.loading", "Savollar yuklanmoqda...")}</Text>
+            <Text c="dimmed">{t("common.loading")}</Text>
           </Box>
         </Center>
       </>
@@ -177,21 +211,19 @@ const GuestExamPage = () => {
     return (
       <>
         {seoElement}
-        <Center h="100vh" style={{ background: "var(--bg)", padding: 16 }}>
+        <Center h="100dvh" style={{ background: "var(--bg)", padding: 16 }}>
           <div style={{ maxWidth: 460, width: "100%" }}>
             <div className="saas-card" style={{ padding: "36px 28px", textAlign: "center" }}>
               <ThemeIcon size={56} radius="xl" color="blue" variant="light" mb="md" mx="auto">
                 <IconSparkles size={28} />
               </ThemeIcon>
               <Title order={1} size="h3" mb="xs">
-                {t("guestExam.completedTitle", "Sinov imtihoni yakunlandi")}
+                {t("guestExam.completedTitle")}
               </Title>
               <Text size="sm" c="dimmed" mb="lg" lh={1.6}>
-                {t(
-                  "guestExam.registerPromptFull",
-                  "Siz bepul sinov imtihonidan foydalandingiz. Barcha {{count}} ta rasmiy bilet, xatolar ustida ishlash, cheksiz marafon va natijalaringizni doimiy saqlab borish uchun bepul ro'yxatdan o'ting.",
-                  { count: getCachedTotalTickets() }
-                )}
+                {totalTickets > 0
+                  ? t("guestExam.registerPromptFull", { count: totalTickets })
+                  : t("guestExam.registerPromptNoCount")}
               </Text>
               <Stack gap="sm">
                 <Button
@@ -200,9 +232,9 @@ const GuestExamPage = () => {
                   h={46}
                   className="saas-interactive-btn"
                   leftSection={<IconUserPlus size={18} />}
-                  onClick={() => navigate("/auth/register")}
+                  onClick={() => navigate(registerPath(GUEST_RETURN_TO))}
                 >
-                  {t("register.register", "Bepul ro'yxatdan o'tish")}
+                  {t("register.register")}
                 </Button>
                 <Button
                   variant="light"
@@ -211,24 +243,16 @@ const GuestExamPage = () => {
                   h={44}
                   onClick={() => navigate("/partners")}
                 >
-                  {t("nav.corporate", "Avtomaktablar va Hamkorlik")}
+                  {t("nav.corporate")}
                 </Button>
                 <Group justify="center" gap="md" mt="xs">
                   <Button
                     variant="subtle"
                     size="xs"
                     color="gray"
-                    onClick={handleRetryGuestExam}
-                  >
-                    {t("guestExam.tryAgain", "Sinovni qayta yechish")}
-                  </Button>
-                  <Button
-                    variant="subtle"
-                    size="xs"
-                    color="gray"
                     onClick={() => navigate("/")}
                   >
-                    {t("notFound.backHome", "Bosh sahifa")}
+                    {t("notFound.backHome")}
                   </Button>
                 </Group>
               </Stack>
@@ -243,23 +267,23 @@ const GuestExamPage = () => {
     return (
       <>
         {seoElement}
-        <Center h="100vh" style={{ background: "var(--bg)", padding: 16 }}>
+        <Center h="100dvh" style={{ background: "var(--bg)", padding: 16 }}>
           <Box ta="center" maw={440}>
             <ThemeIcon size={56} radius="xl" color="red" variant="light" mb="md" mx="auto">
               <IconAlertCircle size={28} />
             </ThemeIcon>
             <Title order={1} size="h3" mb="xs" c="red">
-              {t("common.error", "Xatolik")}
+              {t("common.error")}
             </Title>
             <Text size="sm" c="dimmed" mb="lg" lh={1.6}>
-              {error}
+              {t(error)}
             </Text>
             <Group justify="center" gap="sm">
-              <Button onClick={() => window.location.reload()} variant="filled">
-                {t("common.retry", "Qayta urinish")}
+              <Button onClick={loadGuestExam} variant="filled">
+                {t("common.retry")}
               </Button>
               <Button onClick={() => navigate("/")} variant="light">
-                {t("notFound.backHome", "Bosh sahifa")}
+                {t("notFound.backHome")}
               </Button>
             </Group>
           </Box>
@@ -272,13 +296,13 @@ const GuestExamPage = () => {
     return (
       <>
         {seoElement}
-        <Center h="100vh" style={{ background: "var(--bg)", padding: 16 }}>
+        <Center h="100dvh" style={{ background: "var(--bg)", padding: 16 }}>
           <Box ta="center" maw={440}>
             <Title order={1} size="h3" mb="md">
-              {t("exam.notFound", "Savollar topilmadi")}
+              {t("exam.notFound")}
             </Title>
             <Button onClick={() => navigate("/")}>
-              {t("notFound.backHome", "Bosh sahifa")}
+              {t("notFound.backHome")}
             </Button>
           </Box>
         </Center>
@@ -354,18 +378,12 @@ const GuestExamPage = () => {
               }
             />
             <Text fw={600} size="md" c={scoreColor} ta="center">
-              {correctPercentage >= 90
-                ? t("exam.result.passed", "Imtihondan o'tdingiz!")
-                : t("exam.result.failed", "Imtihondan o'ta olmadingiz")}
+              {passed ? t("exam.result.passed") : t("exam.result.failed")}
             </Text>
             <Text size="xs" c="dimmed" ta="center" maw={320}>
-              {correctPercentage >= 90
-                ? t(
-                    "guestExam.passedEncourage",
-                    "Ajoyib natija! Haqiqiy davlat imtihonida ham 18+ to'g'ri javob talab etiladi. Barcha {{count}} ta biletni to'liq o'zlashtirishni tavsiya etamiz.",
-                    { count: getCachedTotalTickets() }
-                  )
-                : t("guestExam.failedEncourage", "Davlat imtihonidan o'tish uchun kamida 18 ta to'g'ri javob kerak. Xatolar ustida ishlab, bilimingizni 100% ga chiqaring.")}
+              {passed
+                ? t("guestExam.passedEncourage", { minCorrect })
+                : t("guestExam.failedEncourage", { minCorrect, max: maxWrong })}
             </Text>
           </Stack>
 
@@ -384,7 +402,7 @@ const GuestExamPage = () => {
                 {correctCount}
               </Text>
               <Text size="xs" c="dimmed" ta="center">
-                {t("exam.correct", "To'g'ri")}
+                {t("exam.correct")}
               </Text>
             </Stack>
 
@@ -401,7 +419,7 @@ const GuestExamPage = () => {
                 {incorrectCount}
               </Text>
               <Text size="xs" c="dimmed" ta="center">
-                {t("exam.incorrect", "Noto'g'ri")}
+                {t("exam.incorrect")}
               </Text>
             </Stack>
 
@@ -418,7 +436,7 @@ const GuestExamPage = () => {
                 {unansweredCount}
               </Text>
               <Text size="xs" c="dimmed" ta="center">
-                {t("exam.unanswered", "Qoldirilgan")}
+                {t("exam.unanswered")}
               </Text>
             </Stack>
           </SimpleGrid>
@@ -433,9 +451,11 @@ const GuestExamPage = () => {
               radius="md"
               h={44}
               color="blue"
-              onClick={() => navigate("/auth/register")}
+              onClick={() => navigate(registerPath(GUEST_RETURN_TO))}
             >
-              {t("guestExam.unlockAll", "Barcha {{count}} ta biletni ochish", { count: getCachedTotalTickets() })}
+              {totalTickets > 0
+                ? t("guestExam.unlockAll", { count: totalTickets })
+                : t("guestExam.unlockAllNoCount")}
             </Button>
             <Button
               fullWidth
@@ -446,7 +466,7 @@ const GuestExamPage = () => {
               leftSection={<IconChartBar size={18} />}
               onClick={() => setGuestResultOpened(false)}
             >
-              {t("exam.reviewAnswers", "Javoblarni ko'rish va tahlil qilish")}
+              {t("exam.reviewAnswers")}
             </Button>
             <Button
               fullWidth
@@ -458,7 +478,7 @@ const GuestExamPage = () => {
               leftSection={<IconHome size={16} />}
               onClick={() => navigate("/")}
             >
-              {t("notFound.backHome", "Bosh sahifa")}
+              {t("notFound.backHome")}
             </Button>
           </Stack>
         </Stack>

@@ -175,6 +175,10 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     @Query("SELECT q.id, q.topic.id FROM Question q WHERE q.deleted = false AND q.isActive = true AND q.topic IS NOT NULL")
     List<Object[]> findActiveQuestionTopicPairs();
 
+    /** Public katalog: mavzu ID → faol savollar soni. */
+    @Query("SELECT q.topic.id, COUNT(q) FROM Question q WHERE q.deleted = false AND q.isActive = true AND q.topic IS NOT NULL GROUP BY q.topic.id")
+    List<Object[]> countActiveQuestionsGroupedByTopic();
+
     /**
      * Mavzu bo'yicha tasodifiy N ta faol savol ID'si (DB tomonda LIMIT bilan).
      */

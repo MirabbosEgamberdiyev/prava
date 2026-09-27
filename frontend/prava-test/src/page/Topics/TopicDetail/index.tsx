@@ -29,6 +29,20 @@ import styles from "../../../components/dashboard/Dashboard.module.css";
 import { findOfficialTopic } from "../../../constants/topics";
 import type { Ticket } from "../../../types";
 import type { Package } from "../../../features/Package/types";
+import { useAuth } from "../../../auth/AuthContext";
+import { loginPath } from "../../../utils/returnTo";
+import type { OfflineTopic } from "../../../types/desktop";
+
+/** Mehmon uchun: rasmiy mavzular ro'yxatidan TopicItem (API /api/v1/app/topics login talab qiladi). */
+function officialToTopicItem(o: OfflineTopic): TopicItem {
+  return {
+    id: o.id,
+    code: o.code || String(o.id),
+    name: { uzl: o.name_uzl, uzc: o.name_uzc || "", en: o.name_en || "", ru: o.name_ru || "" },
+    questionCount: o.question_count ?? 0,
+    isActive: true,
+  };
+}
 
 interface TopicItem {
   id: number;
@@ -66,16 +80,19 @@ const TopicDetail_Page = () => {
   const { localize, localizeTopic } = useLanguage();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string | null>("packages");
+  const { isAuthenticated } = useAuth();
 
   // Fetch active topics from the user endpoint and pick the one by code
   // (the admin /topics/code/{code} endpoint is not meant for the user app).
+  // W-06: mehmonlar uchun so'rov yuborilmaydi (401) — rasmiy mavzular ro'yxati ishlatiladi.
   const { data: topicsData, isLoading: topicLoading } = useSWR<TopicsListResponse>(
-    topicCode ? "/api/v1/app/topics" : null
+    topicCode && isAuthenticated ? "/api/v1/app/topics" : null
   );
 
-  const topic = topicsData?.data?.find(
-    (tp) => tp.code?.toLowerCase() === topicCode?.toLowerCase()
-  );
+  const official = topicCode ? findOfficialTopic({ code: topicCode }) : undefined;
+  const topic =
+    topicsData?.data?.find((tp) => tp.code?.toLowerCase() === topicCode?.toLowerCase()) ??
+    (official && (!isAuthenticated || !topicLoading) ? officialToTopicItem(official) : undefined);
 
   // Fetch packages by topic code
   const { data: packagesData, isLoading: packagesLoading } =
@@ -88,7 +105,7 @@ const TopicDetail_Page = () => {
   // Fetch tickets by topic id
   const { data: ticketsData, isLoading: ticketsLoading } =
     useSWR<TicketsResponse>(
-      topic?.id
+      topic?.id && isAuthenticated
         ? `/api/v2/tickets/topic/${topic.id}?page=0&size=50&sortBy=ticketNumber&direction=ASC&lang=${i18n.language}`
         : null
     );
@@ -106,8 +123,8 @@ const TopicDetail_Page = () => {
   return (
     <>
       <SEO
-        title={`${topicName || t("topics.title")} — ${t("seo.topicDetail.title", "Mavzu Testlari")}`}
-        description={`${topicName} — ${t("seo.topicDetail.desc", "Mavzu bo'yicha imtihon savollarini yeching.")}`}
+        title={`${topicName || t("topics.title")} — ${t("seo.topicDetail.title")}`}
+        description={`${topicName} — ${t("seo.topicDetail.desc")}`}
         canonical={`/topics/${topicCode}`}
         noIndex={true}
       />
@@ -127,7 +144,7 @@ const TopicDetail_Page = () => {
               onClick={() => navigate("/topics")}
               leftSection={<IconArrowLeft size={16} />}
             >
-              {t("topics.title", "Barcha mavzular")}
+              {t("topics.title")}
             </Button>
           </div>
         ) : (
@@ -154,7 +171,7 @@ const TopicDetail_Page = () => {
                   </h1>
                   {topic.questionCount > 0 && (
                     <span className={styles.innerPageCountChip}>
-                      {topic.questionCount} {t("common.questions", "savol")}
+                      {topic.questionCount} {t("common.questions")}
                     </span>
                   )}
                 </div>
@@ -183,7 +200,7 @@ const TopicDetail_Page = () => {
                   }}
                 >
                   <IconArrowLeft size={16} />
-                  {t("common.back", "Orqaga")}
+                  {t("common.back")}
                 </button>
               </div>
             </div>
@@ -238,7 +255,16 @@ const TopicDetail_Page = () => {
               </Tabs.Panel>
 
               <Tabs.Panel value="tickets">
-                {ticketsLoading ? (
+                {!isAuthenticated ? (
+                  <Center h={200}>
+                    <Stack align="center" gap="md">
+                      <Text c="dimmed" ta="center">{t("guestHome.ticketsLoginHint")}</Text>
+                      <Button radius="md" onClick={() => navigate(loginPath(`/topics/${topicCode}`))}>
+                        {t("guestHome.loginToStart")}
+                      </Button>
+                    </Stack>
+                  </Center>
+                ) : ticketsLoading ? (
                   <Grid gutter="md">
                     {Array.from({ length: 4 }).map((_, i) => (
                       <Grid.Col key={i} span={{ base: 6, md: 4, lg: 4, xl: 3 }}>
@@ -277,7 +303,7 @@ const TopicDetail_Page = () => {
                     <Button
                       radius="md"
                       onClick={() =>
-                        navigate("/marafon", { state: { topicId: topic.id } })
+                        navigate(`/marafon?topicId=${topic.id}`)
                       }
                     >
                       {t("topics.startMarathon")}

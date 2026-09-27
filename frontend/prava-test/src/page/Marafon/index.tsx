@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
@@ -17,7 +17,6 @@ import {
   localizeTopic,
   parseOptions,
   submitExamSession,
-  getCachedTotalQuestions,
 } from "../../services/desktopAdapter";
 import ColorMode from "../../components/other/ColorMode";
 import LanguagePicker from "../../components/language/LanguagePicker";
@@ -28,8 +27,15 @@ import TestSetupCard from "../../components/quiz/TestSetupCard";
 import ConfirmFinishModal from "../../components/quiz/ConfirmFinishModal";
 import ExamTimerAnnouncer from "../../components/quiz/ExamTimerAnnouncer";
 import SEO from "../../components/common/SEO";
+import KeyboardHint from "../../components/quiz/KeyboardHint";
 import { useExamTimer } from "../../hooks/useExamTimer";
-import { durationSecondsFor, useExamRules } from "../../services/examRules";
+import { useExamHotkeys } from "../../hooks/useExamHotkeys";
+import { useExamLeaveGuard } from "../../hooks/useExamLeaveGuard";
+import { formatCount, useCurriculumCounts } from "../../hooks/useCurriculumCounts";
+import { durationSecondsFor, isExamPassed, useExamRules } from "../../services/examRules";
+import { errorKeyFor, getErrorMessage } from "../../types/errors";
+import { reportError } from "../../utils/monitoring";
+import { scopedUserId } from "../../utils/userScope";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -51,14 +57,25 @@ interface Answer {
   correct: number;
 }
 
-const COUNT_OPTIONS = [10, 20, 30, 50, 0]; // 0 = barchasi
+const COUNT_OPTIONS = [10, 20, 30, 50, 0]; // 0 = barchasi (MARATHON_MAX_QUESTIONS bilan cheklangan)
+
+/**
+ * W-15: bitta marafon sessiyasidagi savollar soni chegarasi. Tugallanmagan
+ * sessiya (resume uchun) localStorage'ga TO'LIQ savollar bilan yoziladi — serverda
+ * savollarni ID bo'yicha qayta olish API'si yo'q, shuning uchun "faqat ID" saqlash
+ * resume'ni buzadi. ~1200 ta to'liq savol (3 tilda matn, izohlar) localStorage
+ * kvotasiga (~5 MB) sig'maydi va har javobda qayta yoziladi; shu sababli
+ * "Barchasi" ham ko'pi bilan 100 ta savol bilan cheklanadi.
+ */
+const MARATHON_MAX_QUESTIONS = 100;
 
 export default function Marafon_Page() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const userId = user?.id ? Number(user.id) : 1;
+  const userId = scopedUserId(user);
+  const { questions: totalQuestionsKnown } = useCurriculumCounts();
 
   const location = useLocation();
   const rawTopicId = searchParams.get("topicId") || (location.state as { topicId?: number | string } | null)?.topicId;
@@ -77,7 +94,8 @@ export default function Marafon_Page() {
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
   const [showExp, setShowExp] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  /** Start xatosi (obyekt) — matn render paytida joriy tilda tarjima qilinadi. */
+  const [failure, setFailure] = useState<{ kind: "empty" } | { kind: "error"; error: unknown } | null>(null);
   const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
   const [zoomSrc, setZoomSrc] = useState<string | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -186,16 +204,9 @@ export default function Marafon_Page() {
     setSavedSession(null);
   };
 
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (phase === "exam" && Object.keys(answers).length > 0) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [phase, answers]);
+  // W-07: faol marafon davomida ilova ichidagi navigatsiya va sahifani yopish to'siladi.
+  // Tugallanmagan sessiya localStorage'da qoladi — keyinroq davom ettirish mumkin.
+  const guard = useExamLeaveGuard(phase === "exam");
 
   const onBack = () => {
     if (phase === "setup") {
@@ -216,7 +227,9 @@ export default function Marafon_Page() {
   };
 
   useEffect(() => {
-    getTopics().then((data) => setTopics(Array.isArray(data) ? data : [])).catch(() => {});
+    getTopics()
+      .then((data) => setTopics(Array.isArray(data) ? data : []))
+      .catch((e) => reportError("marathon.loadTopics", e));
   }, []);
 
   useEffect(() => {
@@ -226,7 +239,7 @@ export default function Marafon_Page() {
           setSavedIds(new Set(entries.filter((e) => e?.question?.id != null).map((e) => e.question.id)));
         }
       })
-      .catch(() => {});
+      .catch((e) => reportError("marathon.loadSaved", e));
   }, [userId]);
 
   useEffect(() => {
@@ -241,29 +254,28 @@ export default function Marafon_Page() {
     });
   }, [current]);
 
-  const startExam = useCallback(() => {
+  const startExam = () => {
     setPhase("loading");
     setAnswers({});
     answersRef.current = {};
     setCurrent(0);
-    setErrorMsg(null);
+    setFailure(null);
 
     const maxQ =
       selTopic != null
-        ? topics.find((t) => t.id === selTopic)?.question_count ?? 0
-        : getCachedTotalQuestions();
+        ? topics.find((tp) => tp.id === selTopic)?.question_count ?? 0
+        : totalQuestionsKnown;
 
     const chosenOption = COUNT_OPTIONS[countIdx];
-    const limit =
-      chosenOption === 0
-        ? (maxQ > 0 ? maxQ : getCachedTotalQuestions())
-        : (maxQ > 0 ? Math.min(chosenOption, maxQ) : chosenOption);
+    // "Barchasi" — mavjud savollar, lekin MARATHON_MAX_QUESTIONS dan oshmaydi (W-15)
+    const wanted = chosenOption === 0 ? MARATHON_MAX_QUESTIONS : chosenOption;
+    const limit = maxQ > 0 ? Math.min(wanted, maxQ) : wanted;
 
     sessionIdRef.current = null;
     startMarathonSession(selTopic ?? undefined, limit)
       .then(({ sessionId, questions: qs }) => {
         if (qs.length === 0) {
-          setErrorMsg(t("marathon.noQuestions", "Savollar topilmadi"));
+          setFailure({ kind: "empty" });
           setPhase("result");
           return;
         }
@@ -276,11 +288,13 @@ export default function Marafon_Page() {
         questionsRef.current = qs;
         setPhase("exam");
       })
-      .catch((e) => {
-        setErrorMsg(String(e));
+      .catch((err: unknown) => {
+        // desktopAdapter xatoda THROW qiladi (W-05). 5xx/tarmoq — api.ts global toast
+        // ko'rsatadi; bu yerda faqat lokalizatsiyalangan inline xato + "Qayta urinish".
+        setFailure({ kind: "error", error: err });
         setPhase("result");
       });
-  }, [selTopic, countIdx, topics, t, rules]);
+  };
 
   function triggerFinish() {
     if (finishedRef.current) return; // taymer + tugma bir vaqtda — ikki marta yuborilmasin
@@ -307,7 +321,17 @@ export default function Marafon_Page() {
       correctAnswers: correct,
       durationSeconds: Math.max(0, planned - remaining),
       examType: "marathon",
-    }).catch(() => {});
+      passed: isExamPassed(
+        {
+          mode: "marathon",
+          total,
+          correct,
+          wrong: Math.max(0, Object.keys(curAnswers).length - correct),
+          unanswered: Math.max(0, total - Object.keys(curAnswers).length),
+        },
+        rules,
+      ),
+    }).catch((e) => reportError("marathon.saveResult", e));
 
     const activeId = sessionIdRef.current;
     if (activeId && questions.length > 0) {
@@ -345,8 +369,10 @@ export default function Marafon_Page() {
     }
 
     const isCorrect = optIdx === q.correct_option;
-    if (!isCorrect) addWrongAnswer(userId, q).catch(() => {});
-    recordQuestionAttempt(userId, q.id, isCorrect, "marathon").catch(() => {});
+    if (!isCorrect) addWrongAnswer(userId, q).catch((e) => reportError("marathon.addWrongAnswer", e));
+    recordQuestionAttempt(userId, q.id, isCorrect, "marathon").catch((e) =>
+      reportError("marathon.recordAttempt", e),
+    );
 
     const newAns = {
       ...answers,
@@ -395,7 +421,7 @@ export default function Marafon_Page() {
       clearTimeout(autoRef.current);
       autoRef.current = null;
     }
-    toggleSavedQuestion(userId, q);
+    toggleSavedQuestion(userId, q).catch((e) => reportError("marathon.toggleSaved", e));
     setSavedIds((prev) => {
       const next = new Set(prev);
       if (next.has(q.id)) next.delete(q.id);
@@ -404,44 +430,26 @@ export default function Marafon_Page() {
     });
   };
 
-  // F1–F5 and 1–5 keyboard shortcuts
-  useEffect(() => {
-    if (phase !== "exam") return;
-    const handleKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-      // Tasdiqlash oynasi ochiq: klaviaturani Mantine Modal boshqaradi
-      if (confirmFinishOpen || zoomSrc) return;
-
-      const map: Record<string, number> = {
-        F1: 0, F2: 1, F3: 2, F4: 3, F5: 4,
-        "1": 0, "2": 1, "3": 2, "4": 3, "5": 4,
-      };
-      if (e.key in map) {
-        e.preventDefault();
-        handleSelect(map[e.key]);
+  // W-16: yagona klaviatura boshqaruvi (1–5 / A–D, ←/→, Enter, Space — izoh)
+  const lastIdx = Math.max(0, questions.length - 1);
+  useExamHotkeys({
+    enabled: phase === "exam",
+    blocked: confirmFinishOpen || !!zoomSrc || guard.blocked,
+    optionCount: questions[current] ? parseOptions(questions[current].options_json).length : 0,
+    onSelect: handleSelect,
+    onPrev: () => setCurrent((c) => Math.max(0, c - 1)),
+    onNext: () => setCurrent((c) => Math.min(lastIdx, c + 1)),
+    onEnter: () => {
+      if (answers[current] !== undefined && current < lastIdx) {
+        setCurrent((c) => Math.min(lastIdx, c + 1));
       }
-      if (e.key === " " || e.code === "Space") {
-        if (answers[current] !== undefined) {
-          e.preventDefault();
-          setShowExp((prev) => !prev);
-          return;
-        }
+    },
+    onSpace: () => {
+      if (answers[current] !== undefined && questions[current] && localizeExp(questions[current])) {
+        handleToggleExp();
       }
-      if (e.key === "Enter") {
-        if (answers[current] !== undefined && current < (questions.length || 1) - 1) {
-          e.preventDefault();
-          setCurrent((c) => Math.min((questions.length || 1) - 1, c + 1));
-          return;
-        }
-      }
-      if (e.key === "ArrowLeft") setCurrent((c) => Math.max(0, c - 1));
-      if (e.key === "ArrowRight")
-        setCurrent((c) => Math.min((questions.length || 1) - 1, c + 1));
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [phase, answers, current, questions.length, confirmFinishOpen, zoomSrc]);
+    },
+  });
 
   // Marafon uzun bo'lishi mumkin (1000+ savol = 1000+ daqiqa) — soat ham ko'rsatiladi.
   const formatTime = (s: number) => {
@@ -458,14 +466,14 @@ export default function Marafon_Page() {
   if (phase === "setup") {
     const isSingleTopic = selTopic != null;
     const pageTitle = isSingleTopic
-      ? t("testSetup.topicTestTitle", "Mavzulashtirilgan test")
-      : t("testSetup.marathonTitle", "Katta Marafon");
+      ? t("testSetup.topicTestTitle")
+      : t("testSetup.marathonTitle");
 
     return (
       <div className="marathon-setup-wrapper" style={{ display: "flex", flexDirection: "column" }}>
         <SEO
-          title={`${pageTitle} — ${t("seo.marathon.title", "Marafon")}`}
-          description={t("seo.marathon.desc", "Barcha rasmiy savollardan iborat cheksiz marafon.")}
+          title={`${pageTitle} — ${t("seo.marathon.title")}`}
+          description={t("seo.marathon.desc", { questions: formatCount(totalQuestionsKnown) })}
           canonical="/marafon"
           noIndex={true}
         />
@@ -496,7 +504,7 @@ export default function Marafon_Page() {
             }}
           >
             <IconChevronLeft size={20} />
-            <span>{t("common.back", "Orqaga")}</span>
+            <span>{t("common.back")}</span>
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <ColorMode />
@@ -538,12 +546,11 @@ export default function Marafon_Page() {
                     </div>
                     <div>
                       <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "var(--text)" }}>
-                        {t("marathon.resumeTitle", "Tugallanmagan sessiya topildi")}
+                        {t("marathon.resumeTitle")}
                       </h3>
                       <p style={{ margin: "3px 0 0", fontSize: 13, color: "var(--text-secondary)" }}>
                         {t(
                           "marathon.resumeDesc",
-                          "Siz avvalgi marafoningizda {{answered}} / {{total}} ta savolga javob bergansiz.",
                           {
                             answered: Object.keys(savedSession.answers || {}).length,
                             total: savedSession.questions?.length || 0,
@@ -572,7 +579,7 @@ export default function Marafon_Page() {
                       }}
                     >
                       <IconTrash size={16} />
-                      <span>{t("marathon.discardResume", "Yangi boshlash")}</span>
+                      <span>{t("marathon.discardResume")}</span>
                     </button>
 
                     <button
@@ -594,7 +601,7 @@ export default function Marafon_Page() {
                       }}
                     >
                       <IconPlayerPlay size={18} />
-                      <span>{t("marathon.resumeButton", "Davom ettirish")}</span>
+                      <span>{t("marathon.resumeButton")}</span>
                     </button>
                   </div>
                 </div>
@@ -635,6 +642,7 @@ export default function Marafon_Page() {
               onStart={startExam}
               onBack={onBack}
               localizeTopic={localizeTopic}
+              allCap={MARATHON_MAX_QUESTIONS}
             />
           </div>
         </main>
@@ -647,7 +655,7 @@ export default function Marafon_Page() {
     return (
       <div className="loading-screen">
         <div className="spinner" />
-        <p>{t("common.loading", "Yuklanmoqda...")}</p>
+        <p>{t("common.loading")}</p>
       </div>
     );
   }
@@ -663,18 +671,18 @@ export default function Marafon_Page() {
 
     const isSingleTopic = selTopic != null;
     const screenTitle = isSingleTopic
-      ? t("testSetup.topicTestTitle", "Mavzulashtirilgan test")
-      : t("testSetup.marathonTitle", "Katta Marafon");
+      ? t("testSetup.topicTestTitle")
+      : t("testSetup.marathonTitle");
 
     return (
       <>
         <SEO
-          title={`${screenTitle} — ${t("seo.examResult.title", "Natija")}`}
-          description={t("seo.marathon.desc", "Prava Online test natijalari va statistikasi")}
+          title={`${screenTitle} — ${t("seo.examResult.title")}`}
+          description={t("seo.marathon.desc", { questions: formatCount(totalQuestionsKnown) })}
           canonical="/marafon"
           noIndex={true}
         />
-        <div style={{ height: "100vh", maxHeight: "100dvh", overflowY: "auto", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
+        <div style={{ height: "100dvh", overflowY: "auto", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
           <header className="home-header">
             <div className="home-header-inner">
               <div
@@ -700,13 +708,19 @@ export default function Marafon_Page() {
               wrong={wrong}
               unanswered={unanswered}
               totalQuestions={total}
-              errorMsg={errorMsg}
+              errorMsg={
+                failure == null
+                  ? null
+                  : failure.kind === "empty"
+                    ? t("marathon.noQuestions")
+                    : getErrorMessage(failure.error, t(errorKeyFor(failure.error, "notification.startError")))
+              }
               onReviewMistakes={() => setReviewOpen(true)}
               onRetry={() => {
                 setPhase("setup");
               }}
               onBackHome={() => navigate("/me")}
-              title={`${screenTitle} natijasi`}
+              title={t("testSetup.resultTitle", { title: screenTitle })}
             />
           </main>
 
@@ -732,8 +746,8 @@ export default function Marafon_Page() {
   return (
     <>
       <SEO
-        title={`${t("seo.marathon.title", "Marafon")} — ${t("activeTest.questionsCount", "Savollar")}: ${correct + wrong}`}
-        description={t("seo.marathon.desc", "Prava Online marafon testi")}
+        title={`${t("seo.marathon.title")} — ${t("activeTest.questionsCount")}: ${correct + wrong}`}
+        description={t("seo.marathon.desc", { questions: formatCount(totalQuestionsKnown) })}
         canonical="/marafon"
         noIndex={true}
       />
@@ -754,12 +768,12 @@ export default function Marafon_Page() {
               }}
               type="button"
             >
-              {t("activeTest.finishTest", "Yakunlash")} <IconX size={15} />
+              {t("activeTest.finishTest")} <IconX size={15} />
             </button>
             <span
               className={`exam-timer${timerIsRed ? " red" : timerIsYellow ? " yellow" : ""}`}
               role="timer"
-              aria-label={`${t("exam.timeLeft", "Qolgan vaqt")}: ${formatTime(timeLeft)}`}
+              aria-label={`${t("exam.timeLeft")}: ${formatTime(timeLeft)}`}
             >
               {formatTime(timeLeft)}
             </span>
@@ -792,13 +806,13 @@ export default function Marafon_Page() {
             aria-pressed={savedIds.has(q.id)}
             aria-label={
               savedIds.has(q.id)
-                ? t("saved.remove", "Saqlangandan o'chirish")
-                : t("common.save", "Saqlash")
+                ? t("saved.remove")
+                : t("common.save")
             }
             title={
               savedIds.has(q.id)
-                ? t("saved.remove", "Saqlangandan o'chirish")
-                : t("common.save", "Saqlash")
+                ? t("saved.remove")
+                : t("common.save")
             }
             type="button"
           >
@@ -828,7 +842,7 @@ export default function Marafon_Page() {
                   disabled={!!answered}
                   type="button"
                 >
-                  <span className="exam-option-key">F{idx + 1}</span>
+                  <span className="exam-option-key">{idx + 1}</span>
                   <span className="exam-option-text">{localizeOpt(opt)}</span>
                   {answered && idx === q.correct_option && (
                     <IconCheck size={15} className="opt-icon correct" />
@@ -852,8 +866,8 @@ export default function Marafon_Page() {
                 >
                   <IconBulb size={15} />
                   {showExp
-                    ? t("marathon.hideExplanation", "Izohni yashirish")
-                    : t("marathon.showExplanation", "Izohni ko'rish")}
+                    ? t("marathon.hideExplanation")
+                    : t("marathon.showExplanation")}
                 </button>
                 {showExp && (
                   <div className="quiz-explanation-text">{explanation}</div>
@@ -890,8 +904,9 @@ export default function Marafon_Page() {
               onClick={() => setCurrent((c) => Math.max(0, c - 1))}
               disabled={current === 0}
               type="button"
+              title={t("exam.prev")}
             >
-              <IconChevronLeft size={17} /> {t("exam.prev", "Oldingi")}
+              <IconChevronLeft size={17} /> <span>{t("exam.prev")}</span>
             </button>
 
             <div className="exam-qnums-wrap">
@@ -919,7 +934,7 @@ export default function Marafon_Page() {
                           className="exam-qnum"
                           onClick={() => setCurrent(0)}
                           type="button"
-                          title={t("exam.firstQuestion", "1-savol")}
+                          title={t("exam.firstQuestion")}
                         >
                           1..
                         </button>
@@ -946,7 +961,7 @@ export default function Marafon_Page() {
                           className="exam-qnum"
                           onClick={() => setCurrent(total - 1)}
                           type="button"
-                          title={`${total}-savol`}
+                          title={t("exam.questionN", { n: total })}
                         >
                           ..{total}
                         </button>
@@ -969,19 +984,22 @@ export default function Marafon_Page() {
                   }
                 }}
                 type="button"
+                title={t("activeTest.finishTest")}
               >
-                {t("activeTest.finishTest", "Yakunlash")} <IconCheck size={17} />
+                <span>{t("activeTest.finishTest")}</span> <IconCheck size={17} />
               </button>
             ) : (
               <button
                 className="exam-nav-btn primary"
                 onClick={() => setCurrent((c) => Math.min(questions.length - 1, c + 1))}
                 type="button"
+                title={t("exam.next")}
               >
-                {t("exam.next", "Keyingi")} <IconChevronRight size={17} />
+                <span>{t("exam.next")}</span> <IconChevronRight size={17} />
               </button>
             )}
           </div>
+          <KeyboardHint />
         </div>
 
         {/* Confirmation Modal before early finish (Mantine Modal — P2-W6) */}
@@ -992,6 +1010,15 @@ export default function Marafon_Page() {
             setConfirmFinishOpen(false);
             triggerFinish();
           }}
+        />
+
+        {/* W-07: faol marafondan chiqishni tasdiqlash (javoblar saqlanib qoladi) */}
+        <ConfirmFinishModal
+          variant="leave"
+          description={t("marathon.leaveDesc")}
+          opened={guard.blocked}
+          onCancel={guard.stay}
+          onConfirm={guard.leave}
         />
       </div>
     </>

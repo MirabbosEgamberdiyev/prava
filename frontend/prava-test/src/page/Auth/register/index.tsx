@@ -13,7 +13,9 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { useNavigate, useLocation, useSearchParams, Navigate } from "react-router-dom";
+import { useNavigate, useSearchParams, Navigate } from "react-router-dom";
+import { useReturnTo } from "../../../auth/useReturnTo";
+import { loginPath } from "../../../utils/returnTo";
 import { useForm } from "@mantine/form";
 import { useTranslation } from "react-i18next";
 import {
@@ -60,17 +62,9 @@ const Register_Page: React.FC = () => {
   const [countdown, setCountdown] = useState(60);
   const isCapsLock = useCapsLock();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const locationState = location.state as
-    | { from?: string | { pathname: string; search?: string } }
-    | undefined;
-  let from = "/me";
-  if (typeof locationState?.from === "string") {
-    from = locationState.from;
-  } else if (locationState?.from?.pathname) {
-    from = locationState.from.pathname + (locationState.from.search || "");
-  }
+  // W-06: maqsadli manzil — `?returnTo=` (yagona manba), xavfsiz tekshirilgan
+  const { returnTo, destination: from } = useReturnTo();
 
   const form = useForm({
     initialValues: {
@@ -82,24 +76,23 @@ const Register_Page: React.FC = () => {
     validate: {
       firstName: (value) =>
         value.trim().length < 2
-          ? t("validation.nameTooShort", "Ism kamida 2 ta belgidan iborat bo'lishi kerak")
+          ? t("validation.nameTooShort")
           : null,
       lastName: (value) =>
         value.trim().length < 2
-          ? t("validation.nameTooShort", "Familiya kamida 2 ta belgidan iborat bo'lishi kerak")
+          ? t("validation.lastNameTooShort")
           : null,
       email: (value) => {
         if (!value || value.trim().length === 0)
-          return t("validation.invalidEmail", "Email manzilini kiriting");
+          return t("validation.invalidEmail");
         return /^\S+@\S+\.\S+$/.test(value.trim())
           ? null
-          : t("validation.invalidEmail", "Email manzili noto'g'ri formatda");
+          : t("validation.invalidEmail");
       },
       password: (value) => {
         if (!isPasswordSecure(value)) {
           return t(
-            "authV2.register.passwordComplexity",
-            "Parol kamida 8 ta belgi, katta-kichik harf, raqam va maxsus belgidan (@$!%*?&) iborat bo'lishi kerak"
+            "authV2.register.passwordComplexity"
           );
         }
         return null;
@@ -156,11 +149,11 @@ const Register_Page: React.FC = () => {
     } catch (error: unknown) {
       const msg = getErrorMessage(
         error,
-        t("register.errorMessage", "Ro'yxatdan o'tishda xatolik yuz berdi")
+        t("register.errorMessage")
       );
       setErrorMessage(msg);
       notifications.show({
-        title: t("register.errorTitle", "Xatolik"),
+        title: t("register.errorTitle"),
         message: msg,
         color: "red",
         withBorder: true,
@@ -189,15 +182,15 @@ const Register_Page: React.FC = () => {
       await api.post("/api/v1/auth/register/init", payload);
       setCountdown(60);
       notifications.show({
-        title: t("common.success", "Muvaffaqiyatli"),
-        message: t("register.otpSentTo", "Tasdiqlash kodi qayta yuborildi"),
+        title: t("common.success"),
+        message: t("register.otpSentTo"),
         color: "teal",
         withBorder: true,
       });
     } catch (error: unknown) {
       const msg = getErrorMessage(
         error,
-        t("register.errorMessage", "Kodni qayta yuborishda xatolik yuz berdi")
+        t("register.errorMessage")
       );
       setErrorMessage(msg);
     } finally {
@@ -230,8 +223,8 @@ const Register_Page: React.FC = () => {
       if (res.data) {
         authRegister(res.data.data);
         notifications.show({
-          title: t("register.successTitle", "Tabriklaymiz!"),
-          message: t("register.successMessage", "Hisobingiz muvaffaqiyatli yaratildi"),
+          title: t("register.successTitle"),
+          message: t("register.successMessage"),
           color: "teal",
           withBorder: true,
         });
@@ -240,11 +233,11 @@ const Register_Page: React.FC = () => {
     } catch (error: unknown) {
       const msg = getErrorMessage(
         error,
-        t("register.codeError", "Tasdiqlash kodi noto'g'ri yoki muddati o'tgan")
+        t("register.codeError")
       );
       setErrorMessage(msg);
       notifications.show({
-        title: t("register.errorTitle", "Xatolik"),
+        title: t("register.errorTitle"),
         message: msg,
         color: "red",
         withBorder: true,
@@ -268,25 +261,24 @@ const Register_Page: React.FC = () => {
 
   return (
     <AuthLayout
-      seoTitle={t("seo.register.title", "Ro'yxatdan o'tish")}
-      seoDescription={t("seo.register.desc", "Bepul ro'yxatdan o'ting va testlarni boshlang.")}
+      seoTitle={t("seo.register.title")}
+      seoDescription={t("seo.register.desc")}
       canonicalUrl="/auth/register"
       breadcrumbs={[
-        { label: t("nav.home", "Bosh sahifa"), href: "/" },
-        { label: t("authV2.register.title", "Ro'yxatdan o'tish") },
+        { label: t("nav.home"), href: "/" },
+        { label: t("authV2.register.title") },
       ]}
-      stepIndicator={step === 2 ? t("authV2.register.step2Badge", "2-bosqich: Tasdiqlash") : undefined}
+      stepIndicator={step === 2 ? t("authV2.register.step2Badge") : undefined}
     >
       <AuthCard
         icon={<img src="/logo.svg" alt="Prava Online" width={32} height={32} style={{ objectFit: "contain" }} />}
-        title={t("authV2.register.title", "Ro'yxatdan o'tish")}
+        title={t("authV2.register.title")}
         subtitle={t(
-          "authV2.register.subtitle",
-          "Bepul hisob yarating va imtihonga tayyorlanishni boshlang."
+          "authV2.register.subtitle"
         )}
-        switchPrompt={t("authV2.register.hasAccount", "Allaqachon akkauntingiz bormi?")}
-        switchLinkText={t("authV2.register.loginLink", "Tizimga kirish")}
-        switchLinkHref="/auth/login"
+        switchPrompt={t("authV2.register.hasAccount")}
+        switchLinkText={t("authV2.register.loginLink")}
+        switchLinkHref={loginPath(returnTo)}
       >
         {errorMessage && (
           <Alert
@@ -314,10 +306,9 @@ const Register_Page: React.FC = () => {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", width: "100%" }}>
                 <TextInput
                   id="register-firstName"
-                  label={t("authV2.register.firstName", "Ism")}
+                  label={t("authV2.register.firstName")}
                   placeholder={t(
-                    "authV2.register.firstNamePlaceholder",
-                    "Masalan: Ali"
+                    "authV2.register.firstNamePlaceholder"
                   )}
                   required
                   size="sm"
@@ -347,10 +338,9 @@ const Register_Page: React.FC = () => {
 
                 <TextInput
                   id="register-lastName"
-                  label={t("authV2.register.lastName", "Familiya")}
+                  label={t("authV2.register.lastName")}
                   placeholder={t(
-                    "authV2.register.lastNamePlaceholder",
-                    "Masalan: Valiyev"
+                    "authV2.register.lastNamePlaceholder"
                   )}
                   required
                   size="sm"
@@ -383,10 +373,9 @@ const Register_Page: React.FC = () => {
               <TextInput
                 id="register-email"
                 type="email"
-                label={t("authV2.register.emailLabel", "Email manzil")}
+                label={t("authV2.register.emailLabel")}
                 placeholder={t(
-                  "authV2.register.emailPlaceholder",
-                  "example@mail.com"
+                  "authV2.register.emailPlaceholder"
                 )}
                 required
                 size="sm"
@@ -425,7 +414,7 @@ const Register_Page: React.FC = () => {
                       fw={600}
                       style={{ color: "var(--text, #0f172a)", display: "inline-flex", gap: 2 }}
                     >
-                      <span>{t("authV2.register.passwordLabel", "Parol")}</span>
+                      <span>{t("authV2.register.passwordLabel")}</span>
                       <span style={{ color: "#ef4444" }}>*</span>
                     </Text>
                     {form.values.password.length > 0 && (
@@ -444,10 +433,10 @@ const Register_Page: React.FC = () => {
                         {passwordValid ? (
                           <>
                             <IconCheck size={14} stroke={2.5} />
-                            <span>{t("authV2.register.passwordValid", "Parol talablarga mos")}</span>
+                            <span>{t("authV2.register.passwordValid")}</span>
                           </>
                         ) : (
-                          <span>{t("authV2.register.passwordHint", "8+ belgi, A-Z, 0-9, @$!")}</span>
+                          <span>{t("authV2.register.passwordHint")}</span>
                         )}
                       </Text>
                     )}
@@ -457,8 +446,7 @@ const Register_Page: React.FC = () => {
                 <PasswordInput
                   id="register-password"
                   placeholder={t(
-                    "authV2.register.passwordPlaceholder",
-                    "Kamida 8 ta belgi"
+                    "authV2.register.passwordPlaceholder"
                   )}
                   required
                   size="sm"
@@ -504,8 +492,8 @@ const Register_Page: React.FC = () => {
                 }}
               >
                 {loading
-                  ? t("authV2.register.submitting", "Ro'yxatdan o'tilmoqda...")
-                  : t("authV2.register.submit", "Ro'yxatdan o'tish")}
+                  ? t("authV2.register.submitting")
+                  : t("authV2.register.submit")}
               </Button>
 
               <SocialAuthGroup mode="register" />
@@ -524,10 +512,7 @@ const Register_Page: React.FC = () => {
               p="xs"
             >
               <Text size="xs">
-                {t(
-                  "authV2.forgot.otpPrompt",
-                  "Biz {{recipient}} manziliga 6 xonali tasdiqlash kodini yubordik."
-                ).replace("{{recipient}}", form.values.email)}
+                {t("authV2.forgot.otpPrompt", { recipient: form.values.email })}
               </Text>
             </Alert>
 
@@ -543,13 +528,13 @@ const Register_Page: React.FC = () => {
                 radius="md"
                 rightSection={<IconExternalLink size={14} />}
               >
-                {t("register.openMailApp", "Pochtani ochish")}
+                {t("register.openMailApp")}
               </Button>
             </Center>
 
             <Box>
               <Text size="xs" fw={600} mb={4} ta="center">
-                {t("authV2.forgot.otpLabel", "Tasdiqlash kodini kiriting")}
+                {t("authV2.forgot.otpLabel")}
               </Text>
               <Center>
                 <PinInput
@@ -561,14 +546,14 @@ const Register_Page: React.FC = () => {
                   onChange={setCode}
                   autoFocus
                   radius="md"
-                  aria-label={t("authV2.forgot.otpLabel", "Tasdiqlash kodi")}
+                  aria-label={t("authV2.forgot.otpLabel")}
                 />
               </Center>
             </Box>
 
             <Group justify="center" gap={6}>
               <Text size="xs" c="dimmed">
-                {t("register.didntReceive", "Kod kelmadimi?")}
+                {t("register.didntReceive")}
               </Text>
               <Button
                 variant="subtle"
@@ -579,7 +564,7 @@ const Register_Page: React.FC = () => {
               >
                 {countdown > 0
                   ? t("authV2.forgot.resendIn", { seconds: countdown })
-                  : t("authV2.forgot.resendPrompt", "Kodni qayta yuborish")}
+                  : t("authV2.forgot.resendPrompt")}
               </Button>
             </Group>
 
@@ -600,8 +585,8 @@ const Register_Page: React.FC = () => {
               }}
             >
               {loading
-                ? t("authV2.forgot.verifying", "Tasdiqlanmoqda...")
-                : t("authV2.forgot.verifyBtn", "Kodni tasdiqlash")}
+                ? t("authV2.forgot.verifying")
+                : t("authV2.forgot.verifyBtn")}
             </Button>
 
             <Flex justify="center" mt={2}>
@@ -614,7 +599,7 @@ const Register_Page: React.FC = () => {
                 style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
               >
                 <IconArrowLeft size={14} />
-                <span>{t("common.back", "Orqaga")}</span>
+                <span>{t("common.back")}</span>
               </Anchor>
             </Flex>
           </Stack>

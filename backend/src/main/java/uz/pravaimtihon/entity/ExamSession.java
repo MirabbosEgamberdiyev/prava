@@ -74,6 +74,14 @@ public class ExamSession extends BaseEntity {
     @Column(name = "client_session_id", length = 100)
     private String clientSessionId;
 
+    /**
+     * Imtihon rejimi (REAL, TICKET, MARATHON, ...) — baholash qoidasini tanlaydi.
+     * NULL — eski sessiyalar/klientlar: rejim bilet/paketdan aniqlanadi (V12 migratsiya).
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "exam_mode", length = 20)
+    private uz.pravaimtihon.enums.ExamMode examMode;
+
     @Column(name = "answered_count")
     @Builder.Default
     private Integer answeredCount = 0;
@@ -206,12 +214,8 @@ public class ExamSession extends BaseEntity {
         if (totalQuestions > 0) {
             this.percentage = (correctCount * 100.0) / totalQuestions;
             this.score = correctCount;
-            // Paket bo'lsa uning bali, bilet bo'lsa biletniki (avval bilet 90% o'rniga 70% bilan baholanardi),
-            // marafon — 90% (exam-rules default).
-            int passingScore = examPackage != null && examPackage.getPassingScore() != null ? examPackage.getPassingScore()
-                    : ticket != null && ticket.getPassingScore() != null ? ticket.getPassingScore()
-                    : 90;
-            this.isPassed = percentage >= passingScore;
+            // Baholash yagona joyda — exam-rules asosida (REAL: maxWrong, bilet/marafon: 90%, paket: o'z bali).
+            uz.pravaimtihon.service.ExamGradingPolicy.current().applyTo(this);
         }
     }
 

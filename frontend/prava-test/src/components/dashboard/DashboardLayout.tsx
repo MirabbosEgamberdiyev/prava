@@ -208,7 +208,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="modal-title">
-              {t("dashboard.examQuestionCount", "Nechta savoldan imtihon?")}
+              {t("dashboard.examQuestionCount")}
             </h3>
             <div className="exam-picker-grid">
               {EXAM_OPTIONS.map((count) => (
@@ -220,10 +220,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 >
                   <span className="exam-picker-num">{count}</span>
                   <span className="exam-picker-label">
-                    {t("dashboard.questionsUnit", "savol")}
+                    {t("dashboard.questionsUnit")}
                   </span>
                   <span className="exam-picker-time">
-                    {count} {t("dashboard.minutesUnit", "daq")}
+                    {count} {t("dashboard.minutesUnit")}
                   </span>
                 </button>
               ))}
@@ -233,7 +233,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               onClick={() => setInternalExamPickerOpen(false)}
               type="button"
             >
-              {t("dashboard.cancel", "Bekor qilish")}
+              {t("dashboard.cancel")}
             </button>
           </div>
         </div>

@@ -27,9 +27,25 @@ const lazyLocaleBackend: BackendModule = {
       callback(null, {});
       return;
     }
-    loader()
+    /*
+     * W-13: t() chaqiruvlarida endi inline default matnlar yo'q (ular JSON'dan
+     * farqlanib ketgan edi). Shuning uchun locale chunk yuklanmasa (tarmoq uzilishi,
+     * eski deploy chunk'i o'chirilgan) — bir marta qayta urinamiz, so'ng uzl
+     * chunk'iga tushamiz: foydalanuvchi xom kalitlar yoki eskirgan matn o'rniga
+     * hech bo'lmaganda to'liq o'zbekcha (lotin) matnni ko'radi.
+     */
+    const loadWithRetry = (fn: () => Promise<{ default: ResourceKey }>) => fn().catch(() => fn());
+    loadWithRetry(loader)
       .then((mod) => callback(null, mod.default))
-      .catch((err: unknown) => callback(err as Error, null));
+      .catch((err: unknown) => {
+        if (language === "uzl") {
+          callback(err as Error, null);
+          return;
+        }
+        loadWithRetry(loaders.uzl)
+          .then((mod) => callback(null, mod.default))
+          .catch((fallbackErr: unknown) => callback(fallbackErr as Error, null));
+      });
   },
 };
 
@@ -44,9 +60,10 @@ export const i18nReady = i18n
   .init({
     supportedLngs: [...SUPPORTED_LANGS],
     /*
-     * Qo'llab-quvvatlanadigan til uchun fallback yuklanmaydi (uchala locale
-     * kalitlari 100% mos; t() chaqiruvlarida uzl defaultValue bor) — aks holda
-     * ru/uzc foydalanuvchisi uzl.json'ni ham yuklab olardi.
+     * Qo'llab-quvvatlanadigan til uchun alohida fallback til yuklanmaydi: uchala
+     * locale kalitlari 100% mos (npm run i18n:audit tekshiradi), chunk yuklanmasa esa
+     * backend o'zi uzl chunk'ini qaytaradi (yuqoridagi lazyLocaleBackend.read).
+     * Aks holda ru/uzc foydalanuvchisi uzl.json'ni ham doim yuklab olardi.
      * Noma'lum til (masalan "en") → "uzl".
      */
     fallbackLng: (code: string) =>
@@ -68,7 +85,7 @@ export const i18nReady = i18n
     },
   })
   .catch(() => {
-    // Locale chunk yuklanmasa ham ilova ochilsin (t() defaultValue'lar ishlaydi)
+    // Locale chunk (va uzl zaxirasi) yuklanmasa ham ilova ochilsin
   });
 
 export default i18n;

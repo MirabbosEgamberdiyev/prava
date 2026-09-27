@@ -783,6 +783,16 @@ public class AuthService {
     // ============================================
 
     public AuthResponse generateAuthResponse(User user, AcceptLanguage language) {
+        return generateAuthResponse(user, language, currentUserAgent(), currentClientIp());
+    }
+
+    /**
+     * Tokenlarni aniq qurilma ma'lumotlari bilan yaratadi (masalan QR juftlash: tokenlar tasdiqlagan
+     * telefonga emas, tashabbuskor desktop'ga tegishli — B-18). null bo'lsa joriy so'rovdan olinadi.
+     */
+    public AuthResponse generateAuthResponse(User user, AcceptLanguage language, String userAgent, String ipAddress) {
+        String ua = userAgent != null ? truncate(userAgent, 500) : currentUserAgent();
+        String ip = ipAddress != null ? truncate(ipAddress, 45) : currentClientIp();
         // Device limit enforcement: if limit reached, remove oldest session
         try {
             if (!deviceManagementService.canAddNewDevice(user.getId())) {
@@ -805,8 +815,8 @@ public class AuthService {
                 .tokenFamily(tokenFamily)
                 .expiresAt(LocalDateTime.now().plusDays(30))
                 .lastUsedAt(LocalDateTime.now())
-                .userAgent(currentUserAgent())
-                .ipAddress(currentClientIp())
+                .userAgent(ua)
+                .ipAddress(ip)
                 .build();
 
         refreshTokenRepository.save(refreshToken);
@@ -820,6 +830,10 @@ public class AuthService {
                 .expiresIn(jwtTokenProvider.getAccessTokenExpiration())
                 .user(userResponse)
                 .build();
+    }
+
+    private static String truncate(String s, int max) {
+        return s.length() > max ? s.substring(0, max) : s;
     }
 
     /** Qurilmalar ro'yxatida ko'rsatish uchun (so'rov konteksti bo'lmasa null). */

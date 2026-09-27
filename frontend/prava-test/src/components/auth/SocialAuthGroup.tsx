@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import GoogleLoginButton from "./GoogleLoginButton";
 import TelegramLoginButton from "./TelegramLoginButton";
 import classes from "./SocialAuthGroup.module.css";
+import { rememberPendingReturnTo, useReturnTo } from "../../auth/useReturnTo";
 
 interface SocialAuthGroupProps {
   mode: "login" | "register";
@@ -10,11 +11,12 @@ interface SocialAuthGroupProps {
 
 export const SocialAuthGroup: React.FC<SocialAuthGroupProps> = ({ mode }) => {
   const { t } = useTranslation();
+  const { returnTo } = useReturnTo();
 
   const botHintText =
     mode === "register"
-      ? t("authV2.register.botHint", "Telegram bot orqali tezkor ro'yxatdan o'tish:")
-      : t("authV2.login.botHint", "Telegram bot orqali tezkor kirish:");
+      ? t("authV2.register.botHint")
+      : t("authV2.login.botHint");
 
   const botStartParam = mode === "register" ? "register" : "login";
 
@@ -24,7 +26,7 @@ export const SocialAuthGroup: React.FC<SocialAuthGroupProps> = ({ mode }) => {
       <div className={classes.dividerRow} aria-hidden="true">
         <div className={classes.dividerLine} />
         <span className={classes.dividerText}>
-          {t("authV2.login.or", "yoki")}
+          {t("authV2.login.or")}
         </span>
         <div className={classes.dividerLine} />
       </div>
@@ -43,6 +45,8 @@ export const SocialAuthGroup: React.FC<SocialAuthGroupProps> = ({ mode }) => {
           target="_blank"
           rel="noopener noreferrer"
           className={classes.botLink}
+          // W-06: bot orqali qaytishda (telegram-callback) returnTo tiklanadi
+          onClick={() => rememberPendingReturnTo(returnTo)}
         >
           @pravaonlineuzbot
         </a>

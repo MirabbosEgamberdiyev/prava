@@ -72,22 +72,21 @@ export default function Downloads_Page() {
     {
       id: "windows",
       title: "Windows",
-      tag: t("dl.recommended", "Tavsiya etiladi"),
+      tag: t("dl.recommended"),
       badgeColor: "blue",
       icon: IconBrandWindows,
       version: "v2.4.0",
-      type: t("dl.windowsType", "64-bit Desktop (Offline & Online)"),
+      type: t("dl.windowsType"),
       desc: t(
-        "dl.windowsFullDesc",
-        "Internetsiz ishlovchi to'liq offline test bazasi, F1–F5 tezkor klaviatura tugmalari va real davlat imtihoni simulyatsiyasi."
+        "dl.windowsFullDesc"
       ),
       primaryAction: {
-        label: t("dl.downloadExe", "Windows uchun yuklab olish (.exe)"),
+        label: t("dl.downloadExe"),
         url: WINDOWS_DIRECT_URL,
         isExternal: false,
       },
       secondaryAction: {
-        label: t("dl.viewChecksum", "SHA-256 va o'zgarishlar"),
+        label: t("dl.viewChecksum"),
         action: () => {
           const winRelease = releases?.find((r) => r.platform === "WINDOWS");
           // Fallback when the releases API is unavailable: no fabricated
@@ -111,9 +110,9 @@ export default function Downloads_Page() {
         },
       },
       features: [
-        t("dl.winF1", "100% offline — internetsiz ishlaydi"),
-        t("dl.winF2", "Haqiqiy F1–F5 klaviatura imtihon boshqaruvi"),
-        t("dl.winF3", "Avtomatik ma'lumotlar bazasi yangilanishi"),
+        t("dl.winF1"),
+        t("dl.winF2"),
+        t("dl.winF3"),
       ],
     },
     {
@@ -123,10 +122,9 @@ export default function Downloads_Page() {
       badgeColor: "teal",
       icon: IconBrandAndroid,
       version: "v2.1.2",
-      type: t("dl.androidType", "Mobil ilova (Smartfon va Planshet)"),
+      type: t("dl.androidType"),
       desc: t(
-        "dl.androidFullDesc",
-        "Yo'lda, metroda yoki bo'sh vaqtingizda biletlarni yechish uchun qulay interfeys. Google Play yoki to'g'ridan-to'g'ri APK orqali o'rnating."
+        "dl.androidFullDesc"
       ),
       primaryAction: {
         label: "Google Play",
@@ -135,13 +133,13 @@ export default function Downloads_Page() {
         icon: IconBrandGooglePlay,
       },
       secondaryAction: {
-        label: t("dl.downloadApk", "To'g'ridan-to'g'ri APK yuklab olish"),
+        label: t("dl.downloadApk"),
         url: ANDROID_APK_URL,
       },
       features: [
-        t("dl.andF1", "Qorong'i va yorug' rejim to'liq moslashgan"),
-        t("dl.andF2", "Offline rejimda biletlarni yechish"),
-        t("dl.andF3", "Web hisob bilan avtomatik sinxronizatsiya"),
+        t("dl.andF1"),
+        t("dl.andF2"),
+        t("dl.andF3"),
       ],
     },
     {
@@ -151,10 +149,9 @@ export default function Downloads_Page() {
       badgeColor: "gray",
       icon: IconApple,
       version: "v2.1.0",
-      type: t("dl.iosType", "iPhone va iPad uchun"),
+      type: t("dl.iosType"),
       desc: t(
-        "dl.iosFullDesc",
-        "App Store orqali o'rnating yoki Safari brauzeridan 'Bosh ekranga qo'shish' tugmasi orqali tezkor PWA ilova sifatida foydalaning."
+        "dl.iosFullDesc"
       ),
       primaryAction: {
         label: "App Store",
@@ -164,15 +161,15 @@ export default function Downloads_Page() {
       },
       secondaryAction: {
         label: isInstallable
-          ? t("pwa.installApp", "Bosh ekranga o'rnatish")
-          : t("dl.iosGuide", "Safari PWA qo'llanmasi"),
+          ? t("pwa.installApp")
+          : t("dl.iosGuide"),
         action: isInstallable ? handlePwaInstall : undefined,
         url: !isInstallable ? "https://t.me/pravaonlineuz" : undefined,
       },
       features: [
-        t("dl.iosF1", "Retina ekranlar uchun yuqori sifatli rasmlar"),
-        t("dl.iosF2", "Haptics taktil javob qaytarish"),
-        t("dl.iosF3", "Barcha biletlar va statistika doimiy sinxron"),
+        t("dl.iosF1"),
+        t("dl.iosF2"),
+        t("dl.iosF3"),
       ],
     },
   ];
@@ -204,8 +201,8 @@ export default function Downloads_Page() {
   return (
     <>
       <SEO
-        title={t("seo.downloads.title", "Ilovalarni yuklab olish — Windows, Android, iOS | Prava Online")}
-        description={t("seo.downloads.desc", "Prava Online mobil va kompyuter ilovalarini yuklab oling. Internetisiz offline rejimda ham o'rganing.")}
+        title={t("seo.downloads.title")}
+        description={t("seo.downloads.desc")}
         keywords="prava online ilova, prava online dastur, prava online yuklab olish, prava desktop yuklash, prava online windows, haydovchilik testi dasturi, haydovchilik guvohnomasiga tayyorlanish dasturi, prava online android, prava app"
         canonical="/downloads"
         jsonLd={{
@@ -228,13 +225,12 @@ export default function Downloads_Page() {
         <div className="saas-header-block">
           <div className="saas-badge-pill">
             <IconSparkles size={13} />
-            <span>{t("dl.badge", "Ko'p platformali ekotizim")}</span>
+            <span>{t("dl.badge")}</span>
           </div>
-          <h1 className="saas-page-title">{t("dl.title", "Prava Online barcha qurilmalaringizda")}</h1>
+          <h1 className="saas-page-title">{t("dl.title")}</h1>
           <p className="saas-page-subtitle">
             {t(
-              "dl.subtitle",
-              "Kompyuteringizda internetsiz, telefoningizda yo'l-yo'lakay mashq qiling. Barcha progress va o'rganilgan biletlaringiz bulutda avtomatik sinxronlashadi."
+              "dl.subtitle"
             )}
           </p>
 
@@ -246,7 +242,7 @@ export default function Downloads_Page() {
               leftSection={<IconQrcode size={16} />}
               onClick={() => setQrModalOpened(true)}
             >
-              {t("dl.scanQr", "Mobil ilovani QR-kod orqali yuklash")}
+              {t("dl.scanQr")}
             </Button>
           </Group>
         </div>
@@ -358,18 +354,17 @@ export default function Downloads_Page() {
               </ThemeIcon>
               <div>
                 <Text fw={700} size="md">
-                  {t("dl.securityTitle", "100% Xavfsiz va Tekshirilgan")}
+                  {t("dl.securityTitle")}
                 </Text>
                 <Text size="sm" c="dimmed" maw={620} lh={1.5}>
                   {t(
-                    "dl.securityDesc",
-                    "Barcha distributivlarimiz rasmiy raqamli imzo bilan himoyalangan, viruslardan xoli va to'g'ridan-to'g'ri ishlab chiquvchi serveridan uzatiladi."
+                    "dl.securityDesc"
                   )}
                 </Text>
               </div>
             </Group>
             <Badge size="lg" color="teal" variant="outline">
-              {t("downloads.virusTotalVerified", "VirusTotal Verified")}
+              {t("downloads.virusTotalVerified")}
             </Badge>
           </Group>
         </div>
@@ -377,10 +372,10 @@ export default function Downloads_Page() {
         {/* System Requirements Table */}
         <div className="saas-card">
           <Text fw={700} size="md" mb="xs">
-            {t("dl.sysReqTitle", "Minimal tizim talablari")}
+            {t("dl.sysReqTitle")}
           </Text>
           <Text size="xs" c="dimmed" mb="md">
-            {t("dl.sysReqSub", "Dasturning barqaror va uzluksiz ishlashi uchun zarur bo'lgan parametrlar")}
+            {t("dl.sysReqSub")}
           </Text>
 
           {/* Desktop/Tablet Table View */}
@@ -389,11 +384,11 @@ export default function Downloads_Page() {
               <Table striped highlightOnHover withTableBorder={false} style={{ fontSize: 13 }}>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>{t("dl.tblPlatform", "Platforma")}</Table.Th>
-                    <Table.Th>{t("dl.tblOs", "Operatsion tizim")}</Table.Th>
-                    <Table.Th>{t("dl.tblRam", "Tezkor xotira (RAM)")}</Table.Th>
-                    <Table.Th>{t("dl.tblDisk", "Diskdagi joy")}</Table.Th>
-                    <Table.Th>{t("dl.tblExtra", "Qo'shimcha")}</Table.Th>
+                    <Table.Th>{t("dl.tblPlatform")}</Table.Th>
+                    <Table.Th>{t("dl.tblOs")}</Table.Th>
+                    <Table.Th>{t("dl.tblRam")}</Table.Th>
+                    <Table.Th>{t("dl.tblDisk")}</Table.Th>
+                    <Table.Th>{t("dl.tblExtra")}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -432,7 +427,7 @@ export default function Downloads_Page() {
                 <Stack gap={4}>
                   <Group justify="space-between">
                     <Text size="xs" c="dimmed">
-                      {t("dl.tblOs", "OS")}:
+                      {t("dl.tblOs")}:
                     </Text>
                     <Text size="xs" fw={500} ta="right" maw="60%">
                       {row.minOs}
@@ -440,7 +435,7 @@ export default function Downloads_Page() {
                   </Group>
                   <Group justify="space-between">
                     <Text size="xs" c="dimmed">
-                      {t("dl.tblDisk", "Disk")}:
+                      {t("dl.tblDisk")}:
                     </Text>
                     <Text size="xs" fw={500}>
                       {row.disk}
@@ -448,7 +443,7 @@ export default function Downloads_Page() {
                   </Group>
                   <Group justify="space-between">
                     <Text size="xs" c="dimmed">
-                      {t("dl.tblExtra", "Qo'shimcha")}:
+                      {t("dl.tblExtra")}:
                     </Text>
                     <Text size="xs" c="dimmed" ta="right" maw="60%">
                       {row.extra}
@@ -465,7 +460,7 @@ export default function Downloads_Page() {
       <Modal
         opened={qrModalOpened}
         onClose={() => setQrModalOpened(false)}
-        title={<Text fw={700}>{t("dl.qrModalTitle", "Telefon orqali o'rnatish")}</Text>}
+        title={<Text fw={700}>{t("dl.qrModalTitle")}</Text>}
         centered
         radius="md"
         size="sm"
@@ -476,12 +471,11 @@ export default function Downloads_Page() {
           </Box>
           <Text size="sm" c="dimmed">
             {t(
-              "dl.qrModalDesc",
-              "Telefoningiz kamerasini ushbu QR-kodga yo'naltiring va ilovani darhol yuklab oling."
+              "dl.qrModalDesc"
             )}
           </Text>
           <Button variant="light" fullWidth onClick={() => setQrModalOpened(false)}>
-            {t("common.close", "Yopish")}
+            {t("common.close")}
           </Button>
         </Stack>
       </Modal>
@@ -499,20 +493,20 @@ export default function Downloads_Page() {
           <Stack gap="md">
             {selectedRelease.fileSizeFormatted && (
               <Group justify="space-between">
-                <Text size="xs" c="dimmed">{t("dl.size", "Hajmi")}:</Text>
+                <Text size="xs" c="dimmed">{t("dl.size")}:</Text>
                 <Text size="sm" fw={600}>{selectedRelease.fileSizeFormatted}</Text>
               </Group>
             )}
             {selectedRelease.checksum && (
               <Box>
-                <Text size="xs" c="dimmed" mb={4}>{t("dl.sha256", "SHA-256 Nazorat summasi:")}</Text>
+                <Text size="xs" c="dimmed" mb={4}>{t("dl.sha256")}</Text>
                 <Group gap="xs" wrap="nowrap">
                   <Code style={{ fontSize: 10, wordBreak: "break-all", flex: 1 }}>
                     {selectedRelease.checksum}
                   </Code>
                   <CopyButton value={selectedRelease.checksum} timeout={2000}>
                     {({ copied, copy }) => (
-                      <Tooltip label={copied ? t("common.copied", "Nusxalandi!") : t("common.copy", "Nusxalash")}>
+                      <Tooltip label={copied ? t("common.copied") : t("common.copy")}>
                         <ActionIcon variant={copied ? "filled" : "default"} color={copied ? "green" : "gray"} size="sm" onClick={copy}>
                           {copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
                         </ActionIcon>
@@ -530,7 +524,7 @@ export default function Downloads_Page() {
               color="blue"
               leftSection={<IconDownload size={16} />}
             >
-              {t("dl.downloadNow", "Hoziroq yuklab olish")}
+              {t("dl.downloadNow")}
             </Button>
           </Stack>
         </Modal>

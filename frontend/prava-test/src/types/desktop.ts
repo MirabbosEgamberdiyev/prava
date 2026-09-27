@@ -26,6 +26,8 @@ export interface ExamResult {
   duration_seconds: number;
   exam_type: string;
   created_at: string;
+  /** Natija o'tganmi (yangi yozuvlar; eski yozuvlarda yo'q — isStoredResultPassed hisoblaydi). */
+  passed?: boolean | null;
 }
 
 export interface OfflineTopic {
@@ -75,6 +77,8 @@ export interface OfflineTicket {
   passing_score: number;
   question_count: number;
   is_blocked?: boolean;
+  /** Mehmonlar uchun ochiq (bepul) bilet — public endpoint beradi. */
+  is_free?: boolean;
 }
 
 export interface TicketStat {

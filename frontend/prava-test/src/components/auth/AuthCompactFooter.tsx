@@ -29,8 +29,7 @@ export const AuthCompactFooter: React.FC = () => {
           </span>
           <span className={classes.brandDesc}>
             {t(
-              "authV2.footer.slogan",
-              "Haydovchilikka ishonchli tayyorgarlik platformasi."
+              "authV2.footer.slogan"
             )}
           </span>
         </div>
@@ -38,28 +37,28 @@ export const AuthCompactFooter: React.FC = () => {
         {/* Center: Legal & Help links */}
         <nav
           className={classes.navSection}
-          aria-label={t("nav.footerNav", "Qo'shimcha sahifalar")}
+          aria-label={t("nav.footerNav")}
         >
           <Link to="/terms" className={classes.footerLink}>
-            {t("footer.terms", "Foydalanish shartlari")}
+            {t("footer.terms")}
           </Link>
           <span className={classes.footerSeparator} aria-hidden="true">
             |
           </span>
           <Link to="/privacy" className={classes.footerLink}>
-            {t("footer.privacy", "Maxfiylik siyosati")}
+            {t("footer.privacy")}
           </Link>
           <span className={classes.footerSeparator} aria-hidden="true">
             |
           </span>
           <Link to="/faq" className={classes.footerLink}>
-            {t("nav.faq", "Yordam")}
+            {t("nav.faq")}
           </Link>
           <span className={classes.footerSeparator} aria-hidden="true">
             |
           </span>
           <Link to="/contact" className={classes.footerLink}>
-            {t("nav.contact", "Biz bilan bog'lanish")}
+            {t("nav.contact")}
           </Link>
         </nav>
 

@@ -59,43 +59,43 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
   const navLinks = [
     {
       to: "/",
-      label: t("nav.home", "Bosh sahifa"),
+      label: t("nav.home"),
       icon: IconHome,
       isHash: false,
     },
     {
       to: getLandingUrl("/#benefits"),
-      label: t("nav.features", "Imkoniyatlar"),
+      label: t("nav.features"),
       icon: IconSparkles,
       isHash: true,
     },
     {
       to: "/partners",
-      label: t("nav.partners", "Avtomaktablar"),
+      label: t("nav.partners"),
       icon: IconBuildingCommunity,
       isHash: false,
     },
     {
       to: "/downloads",
-      label: t("nav.downloads", "Ilovalar"),
+      label: t("nav.downloads"),
       icon: IconDownload,
       isHash: false,
     },
     {
       to: "/about",
-      label: t("nav.about", "Biz haqimizda"),
+      label: t("nav.about"),
       icon: IconInfoCircle,
       isHash: false,
     },
     {
       to: "/faq",
-      label: t("nav.faq", "Ko'p so'raladigan savollar"),
+      label: t("nav.faq"),
       icon: IconHelpCircle,
       isHash: false,
     },
     {
       to: "/contact",
-      label: t("nav.contact", "Bog'lanish"),
+      label: t("nav.contact"),
       icon: IconPhone,
       isHash: false,
     },
@@ -131,7 +131,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
           overflow: "hidden",
         },
       }}
-      aria-label={t("nav.mobileMenuTitle", "Mobil menyu")}
+      aria-label={t("nav.mobileMenuTitle")}
     >
       {/* 1. Header Bar: Logo + Brand + Close Button */}
       <Box
@@ -185,7 +185,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
             size="lg"
             radius="md"
             onClick={onClose}
-            aria-label={t("common.close", "Yopish")}
+            aria-label={t("common.close")}
           >
             <IconX size={22} stroke={2} />
           </ActionIcon>
@@ -213,7 +213,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                 }}
                 rightSection={<IconArrowRight size={18} />}
               >
-                {t("nav.dashboard", "Boshqaruv paneli")}
+                {t("nav.dashboard")}
               </Button>
             ) : (
               <Button
@@ -231,7 +231,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                 }}
                 rightSection={<IconArrowRight size={18} />}
               >
-                {t("home.hero.startNow", "Boshlash / Kirish")}
+                {t("home.hero.startNow")}
               </Button>
             )}
 
@@ -248,7 +248,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
               leftSection={<IconPencil size={18} />}
               styles={{ root: { fontWeight: 600 } }}
             >
-              {t("guestExam.tryFree", "Bepul sinov imtihoni")}
+              {t("guestExam.tryFree")}
             </Button>
           </Stack>
 
@@ -262,7 +262,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
             c="dimmed"
             style={{ letterSpacing: "0.5px" }}
           >
-            {t("nav.sections", "Bo'limlar")}
+            {t("nav.sections")}
           </Text>
 
           <Stack gap={4}>
@@ -336,7 +336,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
             c="dimmed"
             style={{ letterSpacing: "0.5px" }}
           >
-            {t("nav.downloads", "Ilovalarni yuklab olish")}
+            {t("nav.downloads")}
           </Text>
 
           <SimpleGrid cols={2} spacing="xs">
@@ -420,7 +420,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                   onClick={onClose}
                   styles={{ root: { fontWeight: 600 } }}
                 >
-                  {user?.fullName || t("nav.dashboard", "Boshqaruv paneli")}
+                  {user?.fullName || t("nav.dashboard")}
                 </Button>
                 <Button
                   onClick={() => {
@@ -434,7 +434,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                   leftSection={<IconLogout size={16} />}
                   size="sm"
                 >
-                  {t("common.logout", "Chiqish")}
+                  {t("common.logout")}
                 </Button>
               </Stack>
             </Box>
@@ -451,7 +451,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                 textDecoration: "none",
               }}
             >
-              {t("footer.terms", "Foydalanish shartlari")}
+              {t("footer.terms")}
             </Link>
             <span style={{ color: "var(--border)" }}>•</span>
             <Link
@@ -463,7 +463,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                 textDecoration: "none",
               }}
             >
-              {t("footer.privacy", "Maxfiylik")}
+              {t("footer.privacy")}
             </Link>
             <span style={{ color: "var(--border)" }}>•</span>
             <Link
@@ -475,7 +475,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
                 textDecoration: "none",
               }}
             >
-              {t("footer.offer", "Oferta")}
+              {t("footer.offer")}
             </Link>
           </Group>
         </Stack>

@@ -6,6 +6,7 @@ import {
   IconBook2,
   IconTicket,
   IconRun,
+  IconFlame,
   IconPencil,
   IconChartBar,
   IconBookmark,
@@ -23,6 +24,7 @@ import {
   // IconDeviceGamepad2,
   IconGavel,
   IconBook,
+  IconScale,
 } from "@tabler/icons-react";
 import styles from "./Dashboard.module.css";
 
@@ -113,7 +115,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   const navItems = [
     {
       path: "/me",
-      label: t("dashboard.nav.home", "Bosh sahifa"),
+      label: t("dashboard.nav.home"),
       icon: IconHome2,
       action: () => {
         navigate("/me");
@@ -122,7 +124,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     },
     {
       path: "/topics",
-      label: t("dashboard.nav.topics", "Mavzular"),
+      label: t("dashboard.nav.topics"),
       icon: IconBook2,
       action: () => {
         navigate("/topics");
@@ -131,7 +133,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     },
     {
       path: "/tickets",
-      label: t("dashboard.nav.tickets", "Biletlar"),
+      label: t("dashboard.nav.tickets"),
       icon: IconTicket,
       action: () => {
         navigate("/tickets");
@@ -140,7 +142,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     },
     {
       path: "/marafon",
-      label: t("dashboard.nav.marathon", "Marafon"),
+      label: t("dashboard.nav.marathon"),
       icon: IconRun,
       action: () => {
         navigate("/marafon");
@@ -148,8 +150,17 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       },
     },
     {
+      path: "/survival",
+      label: t("dashboard.nav.survival"),
+      icon: IconFlame,
+      action: () => {
+        navigate("/survival");
+        onClose();
+      },
+    },
+    {
       path: "/exam",
-      label: t("dashboard.nav.exam", "Haqiqiy imtihon"),
+      label: t("dashboard.nav.exam"),
       icon: IconPencil,
       action: () => {
         onClose();
@@ -158,7 +169,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     },
     {
       path: "/signs",
-      label: t("dashboard.nav.signs", "Yo'l belgilari"),
+      label: t("dashboard.nav.signs"),
       icon: IconDirections,
       action: () => {
         navigate("/signs");
@@ -167,19 +178,10 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     },
     {
       path: "/markings",
-      label: t("dashboard.nav.markings", "Yo'l chiziqlari"),
+      label: t("dashboard.nav.markings"),
       icon: IconRoad,
       action: () => {
         navigate("/markings");
-        onClose();
-      },
-    },
-    {
-      path: "/practical-exam",
-      label: t("dashboard.nav.autodrom", "Avtodrom"),
-      icon: IconSteeringWheel,
-      action: () => {
-        navigate("/practical-exam");
         onClose();
       },
     },
@@ -195,7 +197,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     // },
     {
       path: "/exam-centers",
-      label: t("dashboard.nav.examCenters", "Imtihon markazlari"),
+      label: t("dashboard.nav.examCenters"),
       icon: IconBuildingSkyscraper,
       action: () => {
         navigate("/exam-centers");
@@ -204,7 +206,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     },
     {
       path: "/rules",
-      label: t("dashboard.nav.rules", "YHQ Qoidalari"),
+      label: t("dashboard.nav.rules"),
       icon: IconBook,
       action: () => {
         navigate("/rules");
@@ -213,7 +215,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     },
     {
       path: "/penalties",
-      label: t("dashboard.nav.penalties", "Jarimalar"),
+      label: t("dashboard.nav.penalties"),
       icon: IconGavel,
       action: () => {
         navigate("/penalties");
@@ -221,8 +223,17 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       },
     },
     {
+      path: "/fines",
+      label: t("dashboard.nav.trafficFines"),
+      icon: IconScale,
+      action: () => {
+        navigate("/fines");
+        onClose();
+      },
+    },
+    {
       path: "/statistics",
-      label: t("dashboard.nav.stats", "Statistika"),
+      label: t("dashboard.nav.stats"),
       icon: IconChartBar,
       action: () => {
         navigate("/statistics");
@@ -231,7 +242,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     },
     {
       path: "/saved-questions",
-      label: t("dashboard.nav.saved", "Saqlanganlar"),
+      label: t("dashboard.nav.saved"),
       icon: IconBookmark,
       action: () => {
         navigate("/saved-questions");
@@ -240,7 +251,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     },
     {
       path: "/leaderboard",
-      label: t("dashboard.nav.rating", "Reyting"),
+      label: t("dashboard.nav.rating"),
       icon: IconTrophy,
       action: () => {
         navigate("/leaderboard");
@@ -249,7 +260,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     },
     {
       path: "/settings",
-      label: t("dashboard.nav.settings", "Sozlamalar"),
+      label: t("dashboard.nav.settings"),
       icon: IconSettings,
       action: () => {
         navigate("/settings");
@@ -274,7 +285,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ""} ${
           isCollapsed ? styles.sidebarCollapsed : ""
         }`}
-        aria-label={t("dashboard.sidebarAria", "Asosiy navigatsiya")}
+        aria-label={t("dashboard.sidebarAria")}
         onWheel={onWheel}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -297,7 +308,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             type="button"
             className={styles.mobileDrawerCloseBtn}
             onClick={onClose}
-            aria-label={t("common.close", "Yopish")}
+            aria-label={t("common.close")}
           >
             <IconX size={20} stroke={2.2} />
           </button>
@@ -336,13 +347,13 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               onClick={onToggleCollapse}
               aria-label={
                 isCollapsed
-                  ? t("dashboard.expand", "Panelni ochish")
-                  : t("dashboard.collapse", "Panelni yig'ish")
+                  ? t("dashboard.expand")
+                  : t("dashboard.collapse")
               }
               title={
                 isCollapsed
-                  ? t("dashboard.expand", "Panelni ochish")
-                  : t("dashboard.collapse", "Panelni yig'ish")
+                  ? t("dashboard.expand")
+                  : t("dashboard.collapse")
               }
             >
               {isCollapsed ? (
@@ -351,7 +362,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 <>
                   <IconLayoutSidebarLeftCollapse size={19} stroke={2} />
                   <span className={styles.navLabel}>
-                    {t("dashboard.collapse", "Panelni yig'ish")}
+                    {t("dashboard.collapse")}
                   </span>
                 </>
               )}
@@ -369,8 +380,8 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 navigate("/packages");
                 onClose();
               }}
-              aria-label={t("dashboard.premium.title", "Premium imkoniyatlar")}
-              title={t("dashboard.premium.title", "Premium imkoniyatlar")}
+              aria-label={t("dashboard.premium.title")}
+              title={t("dashboard.premium.title")}
             >
               <IconCrown size={20} stroke={2.2} />
             </button>
@@ -379,14 +390,14 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           <div
             className={styles.sidebarBottomCard}
             role="region"
-            aria-label={t("dashboard.premium.title", "Premium imkoniyatlar")}
+            aria-label={t("dashboard.premium.title")}
           >
             <button
               type="button"
               className={styles.premiumCloseBtn}
               onClick={handleDismissPremium}
-              aria-label={t("dashboard.premium.close", "Yopish")}
-              title={t("dashboard.premium.close", "Yopish")}
+              aria-label={t("dashboard.premium.close")}
+              title={t("dashboard.premium.close")}
             >
               <IconX size={15} stroke={2.2} />
             </button>
@@ -394,10 +405,10 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               <IconCrown size={18} stroke={2.2} />
             </div>
             <h4 className={styles.premiumCardTitle}>
-              {t("dashboard.premium.title", "Premium imkoniyatlar")}
+              {t("dashboard.premium.title")}
             </h4>
             <p className={styles.premiumCardDesc}>
-              {t("dashboard.premium.desc", "Barcha funksiyalardan to'liq foydalaning!")}
+              {t("dashboard.premium.desc")}
             </p>
             <button
               type="button"
@@ -407,7 +418,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 onClose();
               }}
             >
-              <span>{t("dashboard.premium.btn", "Premium olish →")}</span>
+              <span>{t("dashboard.premium.btn")}</span>
               <IconArrowRight size={14} stroke={2.5} />
             </button>
           </div>
@@ -417,11 +428,11 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               type="button"
               className={styles.premiumReopenBtn}
               onClick={handleReopenPremium}
-              aria-label={t("dashboard.premium.reopen", "Premium imkoniyatlar")}
-              title={t("dashboard.premium.reopen", "Premium imkoniyatlar")}
+              aria-label={t("dashboard.premium.reopen")}
+              title={t("dashboard.premium.reopen")}
             >
               <IconCrown size={16} className={styles.reopenCrownIcon} stroke={2.2} />
-              <span>{t("dashboard.premium.title", "Premium")}</span>
+              <span>{t("dashboard.premium.title")}</span>
             </button>
           </div>
         )}

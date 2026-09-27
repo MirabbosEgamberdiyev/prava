@@ -44,7 +44,7 @@ export function PaymentButtons({
 
   const go = (url: unknown) => {
     if (!isAllowedPaymentRedirect(url)) {
-      setErr(t('payment.invalidRedirect', "To'lov sahifasi manzili noto'g'ri. Iltimos, keyinroq qayta urinib ko'ring."));
+      setErr(t('payment.invalidRedirect'));
       return;
     }
     if (openInNewTab) window.open(url, '_blank', 'noopener,noreferrer');
@@ -58,7 +58,7 @@ export function PaymentButtons({
       const r = await paymentApi.createClickInvoice(packageId);
       go(r.redirectUrl);
     } catch (e: any) {
-      setErr(e?.response?.data?.error ?? t('errors.serverError', 'Click xatosi'));
+      setErr(e?.response?.data?.error ?? t('errors.serverError'));
     } finally {
       setLoading(null);
     }
@@ -71,7 +71,7 @@ export function PaymentButtons({
       const r = await paymentApi.createPaymeInvoice(packageId);
       go(r.redirectUrl);
     } catch (e: any) {
-      setErr(e?.response?.data?.error ?? t('errors.serverError', 'Payme xatosi'));
+      setErr(e?.response?.data?.error ?? t('errors.serverError'));
     } finally {
       setLoading(null);
     }
@@ -82,7 +82,7 @@ export function PaymentButtons({
       <Stack gap="xs">
         <Title order={4}>{packageName}</Title>
         <Text fw={600} size="lg">
-          {priceSum.toLocaleString('uz-UZ')} {t('common.currency', "so'm")}
+          {priceSum.toLocaleString('uz-UZ')} {t('common.currency')}
         </Text>
         <Group grow mt="sm">
           <Button
@@ -91,7 +91,7 @@ export function PaymentButtons({
             disabled={!!loading}
             onClick={payClick}
           >
-            {t('payment.payWithClick', "Click orqali to'lash")}
+            {t('payment.payWithClick')}
           </Button>
           <Button
             color="teal"
@@ -99,7 +99,7 @@ export function PaymentButtons({
             disabled={!!loading}
             onClick={payPayme}
           >
-            {t('payment.payWithPayme', "Payme orqali to'lash")}
+            {t('payment.payWithPayme')}
           </Button>
         </Group>
         {err && (

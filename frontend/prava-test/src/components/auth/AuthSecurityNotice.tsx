@@ -11,19 +11,19 @@ export const AuthSecurityNotice: React.FC = () => {
     <div className={classes.securityNoticeRoot}>
       <div className={classes.securityBadge}>
         <IconShieldCheck size={16} stroke={2} />
-        <span>{t("authV2.login.securityNote", "Ma'lumotlaringiz xavfsizligi himoyalangan")}</span>
+        <span>{t("authV2.login.securityNote")}</span>
       </div>
 
       <p className={classes.termsText}>
-        <span>{t("authV2.login.termsPrefix", "Davom etish orqali siz ")}</span>
+        <span>{t("authV2.login.termsPrefix")}</span>
         <Link to="/terms" className={classes.termsLink}>
-          {t("authV2.login.termsLink", "Foydalanish shartlari")}
+          {t("authV2.login.termsLink")}
         </Link>
-        <span>{t("authV2.login.termsAnd", " va ")}</span>
+        <span>{t("authV2.login.termsAnd")}</span>
         <Link to="/privacy" className={classes.termsLink}>
-          {t("authV2.login.privacyLink", "Maxfiylik siyosati")}
+          {t("authV2.login.privacyLink")}
         </Link>
-        <span>{t("authV2.login.termsSuffix", " ga rozilik bildirasiz.")}</span>
+        <span>{t("authV2.login.termsSuffix")}</span>
       </p>
     </div>
   );

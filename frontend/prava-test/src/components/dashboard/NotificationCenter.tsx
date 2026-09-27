@@ -83,7 +83,7 @@ export default function NotificationCenter() {
         setBrowserPermission(perm);
         if (perm === "granted") {
           new Notification("PravaOnline", {
-            body: t("notifications.browserEnabledBody", "Brauzer bildirishnomalari muvaffaqiyatli yoqildi!"),
+            body: t("notifications.browserEnabledBody"),
             icon: "/logo.svg",
           });
         }
@@ -93,8 +93,8 @@ export default function NotificationCenter() {
 
   const handleSendTestNotification = useCallback(() => {
     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-      new Notification(t("notifications.testTitle", "PravaOnline — Eslatma"), {
-        body: t("notifications.testBody", "Bugungi mashg'ulotni boshlash vaqti bo'ldi!"),
+      new Notification(t("notifications.testTitle"), {
+        body: t("notifications.testBody"),
         icon: "/logo.svg",
       });
     }
@@ -119,12 +119,12 @@ export default function NotificationCenter() {
         <button
           type="button"
           className={styles.notificationBtn}
-          aria-label={t("dashboard.notificationsTitle", "Bildirishnomalar")}
-          title={t("dashboard.notificationsTitle", "Bildirishnomalar")}
+          aria-label={t("dashboard.notificationsTitle")}
+          title={t("dashboard.notificationsTitle")}
         >
           <IconBell size={19} stroke={1.8} />
           {unreadCount > 0 && (
-            <span className={styles.notificationBadge} aria-label={t("notifications.unreadCount", "{{count}} ta o'qilmagan", { count: unreadCount })}>
+            <span className={styles.notificationBadge} aria-label={t("notifications.unreadCount", { count: unreadCount })}>
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -145,11 +145,11 @@ export default function NotificationCenter() {
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
-              {t("dashboard.notificationsTitle", "Bildirishnomalar")}
+              {t("dashboard.notificationsTitle")}
             </span>
             {unreadCount > 0 && (
               <Badge size="xs" color="blue" variant="filled">
-                {unreadCount} {t("dashboard.unread", "yangi")}
+                {unreadCount} {t("dashboard.unread")}
               </Badge>
             )}
           </div>
@@ -171,10 +171,10 @@ export default function NotificationCenter() {
                 padding: "4px 6px",
                 borderRadius: 6,
               }}
-              title={t("notifications.markAllRead", "Barchasini o'qilgan deb belgilash")}
+              title={t("notifications.markAllRead")}
             >
               <IconChecks size={15} />
-              <span>{t("notifications.markAllReadShort", "Barchasi o'qildi")}</span>
+              <span>{t("notifications.markAllReadShort")}</span>
             </button>
           )}
         </div>
@@ -195,7 +195,7 @@ export default function NotificationCenter() {
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <IconBellRinging size={18} color="#0284c7" />
               <span style={{ fontSize: 11.5, color: "var(--text)", fontWeight: 500 }}>
-                {t("notifications.enableBrowser", "Brauzer bildirishnomalari")}
+                {t("notifications.enableBrowser")}
               </span>
             </div>
             <button
@@ -213,7 +213,7 @@ export default function NotificationCenter() {
                 whiteSpace: "nowrap",
               }}
             >
-              {t("notifications.allow", "Yoqish")}
+              {t("notifications.allow")}
             </button>
           </div>
         )}
@@ -231,7 +231,7 @@ export default function NotificationCenter() {
             }}
           >
             <span style={{ fontSize: 11, color: "#10b981", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
-              <IconCheck size={13} /> {t("notifications.browserActive", "Brauzer xabarlari faol")}
+              <IconCheck size={13} /> {t("notifications.browserActive")}
             </span>
             <button
               type="button"
@@ -246,7 +246,7 @@ export default function NotificationCenter() {
                 textDecoration: "underline",
               }}
             >
-              {t("notifications.sendTest", "Test xabar")}
+              {t("notifications.sendTest")}
             </button>
           </div>
         )}
@@ -257,7 +257,7 @@ export default function NotificationCenter() {
             <div style={{ padding: "32px 16px", textAlign: "center", color: "var(--text-muted)" }}>
               <IconBell size={32} stroke={1.5} style={{ opacity: 0.4, marginBottom: 8 }} />
               <p style={{ margin: 0, fontSize: 13 }}>
-                {t("notifications.empty", "Hozircha hech qanday bildirishnoma yo'q")}
+                {t("notifications.empty")}
               </p>
             </div>
           ) : (
@@ -364,7 +364,7 @@ export default function NotificationCenter() {
               }}
             >
               <IconTrash size={13} />
-              <span>{t("notifications.clearAll", "Tozalash")}</span>
+              <span>{t("notifications.clearAll")}</span>
             </button>
           </div>
         )}

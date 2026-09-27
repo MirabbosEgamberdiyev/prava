@@ -13,23 +13,23 @@ export function SimpleTypographyControl() {
         <Group gap="xs">
           <IconTypography size={20} style={{ color: "var(--primary)" }} />
           <Text fw={600} size="md">
-            {t("settings.typographyTitle", "Matn va Ko'rinish")}
+            {t("settings.typographyTitle")}
           </Text>
         </Group>
 
         {/* 1. Matn o'lchami (Kichik, Standart, Katta) */}
         <div>
           <Text size="sm" fw={500} mb="xs">
-            {t("settings.textSize", "Matn o'lchami")}
+            {t("settings.textSize")}
           </Text>
           <SegmentedControl
             fullWidth
             value={textSize}
             onChange={(val) => setTextSize(val as TextSize)}
             data={[
-              { label: t("settings.textSmall", "Kichik"), value: "small" },
-              { label: t("settings.textStandard", "Standart"), value: "standard" },
-              { label: t("settings.textLarge", "Katta"), value: "large" },
+              { label: t("settings.textSmall"), value: "small" },
+              { label: t("settings.textStandard"), value: "standard" },
+              { label: t("settings.textLarge"), value: "large" },
             ]}
           />
         </div>
@@ -40,18 +40,18 @@ export function SimpleTypographyControl() {
             <Group gap="xs">
               <IconBold size={16} style={{ color: "var(--primary)" }} />
               <Text size="sm" fw={500}>
-                {t("settings.boldText", "Qalin matn")}
+                {t("settings.boldText")}
               </Text>
             </Group>
             <Text size="xs" c="dimmed">
-              {t("settings.boldTextDesc", "O'qish qulayligi uchun barcha matnlarni qalinroq ko'rsatish")}
+              {t("settings.boldTextDesc")}
             </Text>
           </div>
           <Switch
             size="md"
             checked={boldText}
             onChange={(e) => setBoldText(e.currentTarget.checked)}
-            aria-label={t("settings.boldText", "Qalin matn")}
+            aria-label={t("settings.boldText")}
           />
         </Group>
 
@@ -65,10 +65,10 @@ export function SimpleTypographyControl() {
           }}
         >
           <Text size="xs" c="dimmed" mb={4}>
-            {t("settings.previewLabel", "Namuna ko'rinishi:")}
+            {t("settings.previewLabel")}
           </Text>
           <Text size="sm">
-            {t("settings.previewText", "Yo'l harakati qoidalari va rasmiy imtihon biletlari bilan muvaffaqiyatli tayyorlaning.")}
+            {t("settings.previewText")}
           </Text>
         </Box>
       </Stack>

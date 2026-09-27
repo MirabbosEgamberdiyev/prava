@@ -6,6 +6,7 @@ import { getTopics } from "../../services/desktopAdapter";
 import { useDesktopTheme } from "../../context/DesktopThemeContext";
 import { useLanguage } from "../../context/LanguageContext";
 import SEO from "../../components/common/SEO";
+import { reportError } from "../../utils/monitoring";
 import {
   IconSearch,
   IconBook2,
@@ -55,7 +56,7 @@ export default function Topics_Page() {
   useEffect(() => {
     getTopics()
       .then(setTopics)
-      .catch(() => {})
+      .catch((err: unknown) => reportError("topics.load", err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -73,8 +74,8 @@ export default function Topics_Page() {
   return (
     <>
       <SEO
-        title={t("seo.topics.title", "Mavzular — YHQ Qoidalari bo'yicha Testlar")}
-        description={t("seo.topics.desc", "Yo'l harakati qoidalari mavzulari bo'yicha testlar.")}
+        title={t("seo.topics.title")}
+        description={t("seo.topics.desc")}
         canonical="/topics"
         noIndex={true}
       />
@@ -83,18 +84,17 @@ export default function Topics_Page() {
           <div className={styles.innerPageHeaderLeft}>
             <div className={styles.innerPageTitleRow}>
               <h1 className={styles.innerPageTitle}>
-                {t("topics.title", "Mavzular")}
+                {t("topics.title")}
               </h1>
               {!loading && (
                 <span className={styles.innerPageCountChip}>
-                  {topics.length} {t("topics.unit", "ta mavzu")}
+                  {topics.length} {t("topics.unit")}
                 </span>
               )}
             </div>
             <p className={styles.innerPageSubtitle}>
               {t(
-                "topics.subtitle",
-                "Yo'l harakati qoidalarini mavzulashtirilgan tarzda tizimli o'rganing va testdan o'ting."
+                "topics.subtitle"
               )}
             </p>
           </div>
@@ -105,10 +105,10 @@ export default function Topics_Page() {
               <IconSearch size={16} className={styles.innerSearchIcon} />
               <input
                 className={styles.innerSearchInput}
-                placeholder={t("topics.search", "Mavzuni qidirish...")}
+                placeholder={t("topics.search")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                aria-label={t("topics.search", "Mavzuni qidirish")}
+                aria-label={t("topics.search")}
               />
               {search && (
                 <button
@@ -124,7 +124,7 @@ export default function Topics_Page() {
                     display: "flex",
                     alignItems: "center",
                   }}
-                  aria-label={t("common.clear", "Tozalash")}
+                  aria-label={t("common.clear")}
                 >
                   <IconX size={15} />
                 </button>
@@ -138,7 +138,7 @@ export default function Topics_Page() {
           <div className="loading-screen" style={{ minHeight: 320 }}>
             <div className="spinner" />
             <p style={{ marginTop: 12, color: "var(--text-muted)", fontSize: 14 }}>
-              {t("common.loading", "Mavzular yuklanmoqda...")}
+              {t("common.loading")}
             </p>
           </div>
         ) : filtered.length === 0 ? (
@@ -168,13 +168,13 @@ export default function Topics_Page() {
             </div>
             <h4 style={{ fontSize: 17, fontWeight: 700, margin: "8px 0 0", color: "var(--text)" }}>
               {search
-                ? t("topics.notFound", "Mavzu topilmadi")
-                : t("topics.noTopics", "Mavzular mavjud emas")}
+                ? t("topics.notFound")
+                : t("topics.noTopics")}
             </h4>
             <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: 0, maxWidth: 360 }}>
               {search
-                ? t("topics.tryAnotherSearch", "Qidiruv so'zini o'zgartirib ko'ring yoki tozalang.")
-                : t("topics.noTopicsDesc", "Hozircha tizimda mavzular mavjud emas.")}
+                ? t("topics.tryAnotherSearch")
+                : t("topics.noTopicsDesc")}
             </p>
             {search && (
               <button
@@ -192,7 +192,7 @@ export default function Topics_Page() {
                   cursor: "pointer",
                 }}
               >
-                {t("common.clearSearch", "Qidiruvni tozalash")}
+                {t("common.clearSearch")}
               </button>
             )}
           </div>
@@ -236,7 +236,7 @@ export default function Topics_Page() {
                   {/* Question count */}
                   <div className="tpc-meta">
                     <IconListNumbers size={13} />
-                    {topic.question_count} {t("common.questions", "savol")}
+                    {topic.question_count} {t("common.questions")}
                   </div>
 
                   {/* Test button */}
@@ -249,7 +249,7 @@ export default function Topics_Page() {
                     type="button"
                   >
                     <IconPlayerPlay size={14} />
-                    {t("topics.startTest", "Testni boshlash")}
+                    {t("topics.startTest")}
                   </button>
                 </div>
               );

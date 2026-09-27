@@ -8,7 +8,7 @@ import {
   IconListNumbers,
 } from "@tabler/icons-react";
 import type { OfflineTopic } from "../../types/desktop";
-import { getCachedTotalQuestions } from "../../services/desktopAdapter";
+import { useCurriculumCounts } from "../../hooks/useCurriculumCounts";
 
 export interface TestSetupCardProps {
   topics: OfflineTopic[];
@@ -20,6 +20,11 @@ export interface TestSetupCardProps {
   onStart: () => void;
   onBack: () => void;
   localizeTopic: (tp: OfflineTopic) => string;
+  /**
+   * "Barchasi" (0) varianti uchun yuqori chegara (W-15). Mavjud savollar shu
+   * sondan ko'p (yoki noma'lum) bo'lsa, tugmada "Barchasi" o'rniga shu son yoziladi.
+   */
+  allCap?: number;
 }
 
 export const TestSetupCard: React.FC<TestSetupCardProps> = ({
@@ -32,13 +37,14 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
   onStart,
   onBack,
   localizeTopic,
+  allCap,
 }) => {
   const { t } = useTranslation();
 
   const currentTopic =
     selectedTopicId != null ? topics.find((t) => t.id === selectedTopicId) : null;
 
-  const totalAllQuestions = getCachedTotalQuestions();
+  const { questions: totalAllQuestions } = useCurriculumCounts();
   const maxQ = currentTopic ? currentTopic.question_count : totalAllQuestions;
 
   // Strict Terminology Separation:
@@ -46,8 +52,8 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
   // All Topics -> "Katta Marafon"
   const isSingleTopic = selectedTopicId != null;
   const screenTitle = isSingleTopic
-    ? t("testSetup.topicTestTitle", "Mavzulashtirilgan test")
-    : t("testSetup.marathonTitle", "Katta Marafon");
+    ? t("testSetup.topicTestTitle")
+    : t("testSetup.marathonTitle");
 
   return (
     <div
@@ -83,7 +89,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
           <button
             type="button"
             onClick={onBack}
-            aria-label={t("common.back", "Ortga")}
+            aria-label={t("common.back")}
             style={{
               width: "38px",
               height: "38px",
@@ -147,7 +153,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
               marginBottom: "8px",
             }}
           >
-            {t("testSetup.selectTopic", "Mavzuni tanlang")}
+            {t("testSetup.selectTopic")}
           </label>
           <select
             id="setup-topic-select"
@@ -169,7 +175,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
               cursor: "pointer",
             }}
           >
-            <option value="">{t("testSetup.allTopics", "Barcha mavzular")}</option>
+            <option value="">{t("testSetup.allTopics")}</option>
             {topics.map((tp) => (
               <option key={tp.id} value={tp.id}>
                 {localizeTopic(tp)} ({tp.question_count})
@@ -195,8 +201,9 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
                 color: "var(--text)",
               }}
             >
-              {t("testSetup.questionCount", "Savollar soni")}
+              {t("testSetup.questionCount")}
             </label>
+            {maxQ > 0 && (
             <span
               style={{
                 fontSize: "12px",
@@ -208,8 +215,9 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
               }}
             >
               <IconListNumbers size={14} />
-              {t("testSetup.available", "Mavjud")}: {maxQ}
+              {t("testSetup.available")}: {maxQ}
             </span>
+            )}
           </div>
 
           <div
@@ -221,8 +229,11 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
           >
             {countOptions.map((n, idx) => {
               const isAll = n === 0;
+              const isCapped = isAll && allCap != null && (maxQ <= 0 || maxQ > allCap);
               const label = isAll
-                ? `${t("testSetup.allQuestions", "Barchasi")}`
+                ? isCapped
+                  ? String(allCap)
+                  : `${t("testSetup.allQuestions")}`
                 : String(n);
 
               // Dynamic Validation:
@@ -238,7 +249,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
                   disabled={isOptionExcessive}
                   title={
                     isOptionExcessive
-                      ? t("testSetup.limitExceededTooltip", "Bu mavzuda faqat {{count}} ta savol mavjud", {
+                      ? t("testSetup.limitExceededTooltip", {
                           count: maxQ,
                         })
                       : undefined
@@ -291,7 +302,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
           }}
         >
           <IconPlayerPlay size={19} stroke={2.5} />
-          <span>{t("testSetup.startTest", "Testni boshlash")}</span>
+          <span>{t("testSetup.startTest")}</span>
         </button>
       </div>
     </div>

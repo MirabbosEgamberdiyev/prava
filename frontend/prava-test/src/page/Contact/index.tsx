@@ -121,14 +121,14 @@ export default function Contact_Page() {
 
     if (!organization.trim() || organization.trim().length < 2) {
       setValidationError(
-        t("contact.errOrganization", "Tashkilot nomini kiriting (kamida 2 ta belgi)")
+        t("contact.errOrganization")
       );
       return false;
     }
 
     if (!fullName.trim() || fullName.trim().length < 2) {
       setValidationError(
-        t("contact.errFullName", "Mas'ul shaxs ismini kiriting (kamida 2 ta belgi)")
+        t("contact.errFullName")
       );
       return false;
     }
@@ -136,13 +136,13 @@ export default function Contact_Page() {
     const digitsOnly = phone.replace(/\D/g, "");
     if (digitsOnly.length < 12) {
       setValidationError(
-        t("contact.errPhone", "Telefon raqamini to'liq kiriting: +998 XX XXX XX XX")
+        t("contact.errPhone")
       );
       return false;
     }
 
     if (!organizationType) {
-      setValidationError(t("contact.errOrgType", "Tashkilot turini tanlang"));
+      setValidationError(t("contact.errOrgType"));
       return false;
     }
 
@@ -190,11 +190,10 @@ export default function Contact_Page() {
 
       notifications.show({
         title: isDelivered
-          ? t("contact.sentTitle", "So‘rovingiz qabul qilindi!")
-          : t("contact.ticketLabel", "Murojaat raqami") + ": #" + finalTicket,
+          ? t("contact.sentTitle")
+          : t("contact.ticketLabel") + ": #" + finalTicket,
         message: t(
-          "contact.successDesc",
-          "Mutaxassisimiz 1 ish kuni ichida siz bilan bog‘lanadi."
+          "contact.successDesc"
         ),
         color: "green",
         withBorder: true,
@@ -219,47 +218,47 @@ export default function Contact_Page() {
   const directChannels = [
     {
       icon: IconPhoneCall,
-      title: t("contact.phoneTitle", "Telefon raqami"),
+      title: t("contact.phoneTitle"),
       value: "+998 99 391 25 05",
-      desc: t("contact.phoneDesc", "24/7 qo‘ng‘iroqlar qabul qilinadi."),
+      desc: t("contact.phoneDesc"),
       link: "tel:+998993912505",
-      badge: t("contact.badgeDirectCall", "To'g'ridan-to'g'ri qo'ng'iroq"),
-      actionLabel: t("contact.callNow", "Qo'ng'iroq qilish"),
+      badge: t("contact.badgeDirectCall"),
+      actionLabel: t("contact.callNow"),
     },
     {
       icon: IconBrandTelegram,
-      title: t("contact.telegramTitle", "Telegram rasmiy aloqa"),
+      title: t("contact.telegramTitle"),
       value: "@pravaonlineuz",
-      desc: t("contact.telegramDesc", "O'rtacha javob vaqti: 5 daqiqa. 24/7 faol."),
+      desc: t("contact.telegramDesc"),
       link: "https://t.me/pravaonlineuz",
-      badge: t("contact.badgeFastReply", "Tezkor javob (5 daqiqa)"),
-      actionLabel: t("contact.openTelegram", "Telegramda yozish"),
+      badge: t("contact.badgeFastReply"),
+      actionLabel: t("contact.openTelegram"),
     },
     {
       icon: IconMail,
-      title: t("contact.emailTitle", "Elektron pochta"),
+      title: t("contact.emailTitle"),
       value: "info@pravaonline.uz",
-      desc: t("contact.emailDesc", "Rasmiy so'rovlar, shartnomalar va takliflar."),
+      desc: t("contact.emailDesc"),
       link: "mailto:info@pravaonline.uz",
-      badge: t("contact.badgeEmail", "Rasmiy xatlar"),
-      actionLabel: t("contact.sendEmail", "Xat yuborish"),
+      badge: t("contact.badgeEmail"),
+      actionLabel: t("contact.sendEmail"),
     },
     {
       icon: IconClock,
-      title: t("contact.hoursTitle", "Ish vaqti"),
+      title: t("contact.hoursTitle"),
       value: "24/7",
-      desc: t("contact.hoursDesc", "Sutka davomida murojaatlar qabul qilinadi."),
+      desc: t("contact.hoursDesc"),
       link: undefined,
-      badge: t("contact.badgeSchedule", "24/7 Faol"),
+      badge: t("contact.badgeSchedule"),
       actionLabel: null,
     },
     {
       icon: IconMapPin,
-      title: t("contact.locationTitle", "Hudud va Bosh ofis"),
-      value: t("contact.cityTashkent", "Toshkent shahri"),
-      desc: t("contact.locationDesc", "O'zbekiston Respublikasi, Toshkent shahri."),
+      title: t("contact.locationTitle"),
+      value: t("contact.cityTashkent"),
+      desc: t("contact.locationDesc"),
       link: undefined,
-      badge: t("contact.badgeHeadOffice", "Bosh ofis"),
+      badge: t("contact.badgeHeadOffice"),
       actionLabel: null,
     },
   ];
@@ -268,55 +267,49 @@ export default function Contact_Page() {
   const trustPillars = [
     {
       icon: IconSchool,
-      title: t("contact.trust1Title", "Avtomaktablar uchun yechimlar"),
+      title: t("contact.trust1Title"),
       desc: t(
-        "contact.trust1Desc",
-        "Nazariy imtihon sinflarini jihozlash, o'quvchilarga F1–F5 klaviatura ko'nikmalarini singdirish va YHXX imtihon simulyatori."
+        "contact.trust1Desc"
       ),
       color: "blue",
     },
     {
       icon: IconDeviceDesktop,
-      title: t("contact.trust2Title", "Desktop versiyani joriy qilish"),
+      title: t("contact.trust2Title"),
       desc: t(
-        "contact.trust2Desc",
-        "Prava Desktop Enterprise tizimini kompyuter sinfiga o'rnatish, lokal tarmoq (LAN) va 100% offline rejimni sozlash."
+        "contact.trust2Desc"
       ),
       color: "teal",
     },
     {
       icon: IconHeadset,
-      title: t("contact.trust3Title", "Kafolatlangan texnik yordam"),
+      title: t("contact.trust3Title"),
       desc: t(
-        "contact.trust3Desc",
-        "Dasturiy ta'minotning uzluksiz ishlashi, savollar bazasini yangilash va o'qituvchilarga amaliy yo'riqnoma berish."
+        "contact.trust3Desc"
       ),
       color: "grape",
     },
     {
       icon: IconTruck,
-      title: t("contact.trust4Title", "Korporativ hamkorlik"),
+      title: t("contact.trust4Title"),
       desc: t(
-        "contact.trust4Desc",
-        "Kompaniyalar va logistika avtoparklari haydovchilarining yo'l harakati bilimlarini davriy attestatsiyadan o'tkazish."
+        "contact.trust4Desc"
       ),
       color: "orange",
     },
     {
       icon: IconUsers,
-      title: t("contact.trust5Title", "Individual konsultatsiyalar"),
+      title: t("contact.trust5Title"),
       desc: t(
-        "contact.trust5Desc",
-        "Nomzod haydovchilar uchun imtihon qoidalari, biletlar tizimi va platformadan foydalanish bo'yicha maslahatlar."
+        "contact.trust5Desc"
       ),
       color: "indigo",
     },
     {
       icon: IconShieldCheck,
-      title: t("contact.trust6Title", "Rasmiy kafolat va shartnoma"),
+      title: t("contact.trust6Title"),
       desc: t(
-        "contact.trust6Desc",
-        "Har bir hamkorlik rasmiy shartnoma asosida amalga oshiriladi, hisob-faktura va to'liq hujjatlar taqdim etiladi."
+        "contact.trust6Desc"
       ),
       color: "cyan",
     },
@@ -324,68 +317,65 @@ export default function Contact_Page() {
 
   // Uzbekistan 14 regions
   const regionOptions = [
-    { value: "tashkent_city", label: t("contact.regTashkentCity", "Toshkent shahri") },
-    { value: "tashkent_reg", label: t("contact.regTashkentReg", "Toshkent viloyati") },
-    { value: "samarkand", label: t("contact.regSamarkand", "Samarqand viloyati") },
-    { value: "fergana", label: t("contact.regFergana", "Farg'ona viloyati") },
-    { value: "andijan", label: t("contact.regAndijan", "Andijon viloyati") },
-    { value: "namangan", label: t("contact.regNamangan", "Namangan viloyati") },
-    { value: "bukhara", label: t("contact.regBukhara", "Buxoro viloyati") },
-    { value: "khorezm", label: t("contact.regKhorezm", "Xorazm viloyati") },
-    { value: "kashkadarya", label: t("contact.regKashkadarya", "Qashqadaryo viloyati") },
-    { value: "surkhandarya", label: t("contact.regSurkhandarya", "Surxondaryo viloyati") },
-    { value: "navoi", label: t("contact.regNavoi", "Navoiy viloyati") },
-    { value: "jizzakh", label: t("contact.regJizzakh", "Jizzax viloyati") },
-    { value: "sirdarya", label: t("contact.regSirdarya", "Sirdaryo viloyati") },
+    { value: "tashkent_city", label: t("contact.regTashkentCity") },
+    { value: "tashkent_reg", label: t("contact.regTashkentReg") },
+    { value: "samarkand", label: t("contact.regSamarkand") },
+    { value: "fergana", label: t("contact.regFergana") },
+    { value: "andijan", label: t("contact.regAndijan") },
+    { value: "namangan", label: t("contact.regNamangan") },
+    { value: "bukhara", label: t("contact.regBukhara") },
+    { value: "khorezm", label: t("contact.regKhorezm") },
+    { value: "kashkadarya", label: t("contact.regKashkadarya") },
+    { value: "surkhandarya", label: t("contact.regSurkhandarya") },
+    { value: "navoi", label: t("contact.regNavoi") },
+    { value: "jizzakh", label: t("contact.regJizzakh") },
+    { value: "sirdarya", label: t("contact.regSirdarya") },
     {
       value: "karakalpakstan",
-      label: t("contact.regKarakalpakstan", "Qoraqalpog'iston Respublikasi"),
+      label: t("contact.regKarakalpakstan"),
     },
   ];
 
   // Organization Types
   const orgTypeOptions = [
-    { value: "school", label: t("contact.orgSchool", "Avtomaktab") },
-    { value: "center", label: t("contact.orgCenter", "O'quv markazi / Kollej") },
-    { value: "corporate", label: t("contact.orgCorporate", "Korporativ avtopark / Logistika") },
-    { value: "state", label: t("contact.orgState", "Davlat muassasasi") },
-    { value: "other", label: t("contact.orgOther", "Boshqa tashkilot") },
+    { value: "school", label: t("contact.orgSchool") },
+    { value: "center", label: t("contact.orgCenter") },
+    { value: "corporate", label: t("contact.orgCorporate") },
+    { value: "state", label: t("contact.orgState") },
+    { value: "other", label: t("contact.orgOther") },
   ];
 
   const getOrgTypeName = (type: string | null) => {
     const found = orgTypeOptions.find((o) => o.value === type);
-    return found ? found.label : type || t("contact.notSpecified", "Ko‘rsatilmagan");
+    return found ? found.label : type || t("contact.notSpecified");
   };
 
   const getRegionName = (val: string | null) => {
     const found = regionOptions.find((r) => r.value === val);
-    return found ? found.label : val || t("contact.notSpecified", "Ko‘rsatilmagan");
+    return found ? found.label : val || t("contact.notSpecified");
   };
 
   // Quick FAQ
   const quickResolutions = [
     {
       id: "quick-1",
-      question: t("contact.quick1Q", "Dasturni o'rnatish uchun nima talab qilinadi?"),
+      question: t("contact.quick1Q"),
       answer: t(
-        "contact.quick1A",
-        "Windows 7, 8, 10 yoki 11 operatsion tizimidagi oddiy kompyuterlar kifoya qiladi. Maxsus qimmatbaho server yoki kuchli protsessor talab etilmaydi. Mutaxassisimiz dasturni 1 kunda to'liq o'rnatib beradi."
+        "contact.quick1A"
       ),
     },
     {
       id: "quick-2",
-      question: t("contact.quick2Q", "Dastur internetsiz ishlaydimi?"),
+      question: t("contact.quick2Q"),
       answer: t(
-        "contact.quick2A",
-        "Ha. Prava Desktop Enterprise 100% offline ishlashga mo'ljallangan. Kompyuter sinfidagi qurilmalar ichki lokal tarmoq (LAN) orqali internet sarflamasdan o'zaro ma'lumot almashadi."
+        "contact.quick2A"
       ),
     },
     {
       id: "quick-3",
-      question: t("contact.quick3Q", "Hamkorlik so'rovi yuborilgach, qancha vaqtda bog'lanasiz?"),
+      question: t("contact.quick3Q"),
       answer: t(
-        "contact.quick3A",
-        "So'rovingiz qabul qilingach, mutaxassisimiz 1 ish kuni ichida (odatda bir necha soatda) siz ko'rsatgan telefon yoki Telegram orqali bog'lanadi."
+        "contact.quick3A"
       ),
     },
   ];
@@ -393,8 +383,8 @@ export default function Contact_Page() {
   return (
     <>
       <SEO
-        title={t("seo.contact.title", "Aloqa va Qo'llab-quvvatlash — Prava Online")}
-        description={t("seo.contact.desc", "Savollaringiz bormi? Biz bilan bog'laning: Telegram, telefon yoki murojaat shakli orqali.")}
+        title={t("seo.contact.title")}
+        description={t("seo.contact.desc")}
         keywords="prava online aloqa, avtomaktab hamkorlik, prava desktop o'rnatish, prava online qo'llab-quvvatlash, prava enterprise aloqa, prava online telegram"
         canonical="/contact"
         jsonLd={{
@@ -422,15 +412,14 @@ export default function Contact_Page() {
         <div className="saas-header-block">
           <div className="saas-badge-pill">
             <IconBuildingCommunity size={13} />
-            <span>{t("contact.badge", "Professional Aloqa va Hamkorlik Markazi")}</span>
+            <span>{t("contact.badge")}</span>
           </div>
           <h1 className="saas-page-title">
-            {t("contact.title", "Biz bilan bog'laning va hamkorlikni boshlang")}
+            {t("contact.title")}
           </h1>
           <p className="saas-page-subtitle">
             {t(
-              "contact.subtitle",
-              "Avtomaktablar, o'quv markazlari va korporativ hamkorlar uchun institutsional yechimlar, texnik yordam hamda tezkor konsultatsiya."
+              "contact.subtitle"
             )}
           </p>
         </div>
@@ -446,10 +435,10 @@ export default function Contact_Page() {
             mb={6}
             style={{ letterSpacing: "1px" }}
           >
-            {t("contact.directChannelsBadge", "To'g'ridan-to'g'ri aloqa kanallari")}
+            {t("contact.directChannelsBadge")}
           </Text>
           <Title order={2} ta="center" size="h4" mb="lg">
-            {t("contact.directChannelsTitle", "Forma to'ldirmasdan darhol bog'lanishingiz mumkin")}
+            {t("contact.directChannelsTitle")}
           </Title>
 
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
@@ -472,13 +461,13 @@ export default function Contact_Page() {
             <EnterpriseContactCard
               icon={IconSparkles}
               color="blue"
-              label={t("contact.routingTitle", "Bo'limlar bo'yicha yo'naltirish")}
-              value={t("contact.talkToDirector", "@pravaonlineuz ga yozish")}
-              sub={t("contact.techSupportDesc", "Dasturni o'rnatish va tarmoq sozlamalari.")}
+              label={t("contact.routingTitle")}
+              value={t("contact.talkToDirector")}
+              sub={t("contact.techSupportDesc")}
               href="https://t.me/pravaonlineuz"
               external
               badge="Direct"
-              ariaLabel={t("contact.routingTitle", "Bo'limlar bo'yicha yo'naltirish")}
+              ariaLabel={t("contact.routingTitle")}
             />
           </SimpleGrid>
         </div>
@@ -494,10 +483,10 @@ export default function Contact_Page() {
             mb={6}
             style={{ letterSpacing: "1px" }}
           >
-            {t("contact.trustBadge", "Ishonch va Hamkorlik")}
+            {t("contact.trustBadge")}
           </Text>
           <Title order={2} ta="center" size="h3" mb="xl">
-            {t("contact.trustTitle", "Nima uchun biz bilan bog'lanishadi?")}
+            {t("contact.trustTitle")}
           </Title>
 
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
@@ -551,7 +540,7 @@ export default function Contact_Page() {
                       <IconCircleCheck size={44} />
                     </ThemeIcon>
                     <Title order={3} size="h3" ta="center">
-                      {t("contact.successTitle", "So‘rovingiz muvaffaqiyatli qabul qilindi")}
+                      {t("contact.successTitle")}
                     </Title>
                     <Badge
                       size="xl"
@@ -560,12 +549,11 @@ export default function Contact_Page() {
                       radius="md"
                       style={{ fontFamily: "monospace", letterSpacing: 1 }}
                     >
-                      {t("contact.ticketLabel", "Murojaat raqami")}: #{ticketId}
+                      {t("contact.ticketLabel")}: #{ticketId}
                     </Badge>
                     <Text size="sm" c="dimmed" ta="center" maw={480} lh={1.6}>
                       {t(
-                        "contact.successDesc",
-                        "Mutaxassisimiz 1 ish kuni ichida siz bilan bog‘lanadi."
+                        "contact.successDesc"
                       )}
                     </Text>
 
@@ -589,36 +577,36 @@ export default function Contact_Page() {
                         mb="xs"
                         style={{ letterSpacing: "0.5px" }}
                       >
-                        {t("contact.summaryTitle", "Yuborilgan so'rov tafsilotlari:")}
+                        {t("contact.summaryTitle")}
                       </Text>
                       <Stack gap={6}>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("contact.orgName", "Tashkilot")}:</Text>
+                          <Text size="xs" c="dimmed">{t("contact.orgName")}:</Text>
                           <Text size="xs" fw={600}>{organization}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("contact.contactPerson", "Mas'ul shaxs")}:</Text>
+                          <Text size="xs" c="dimmed">{t("contact.contactPerson")}:</Text>
                           <Text size="xs" fw={600}>{fullName}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("contact.phone", "Telefon")}:</Text>
+                          <Text size="xs" c="dimmed">{t("contact.phone")}:</Text>
                           <Text size="xs" fw={600}>{phone}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("contact.orgType", "Tashkilot turi")}:</Text>
+                          <Text size="xs" c="dimmed">{t("contact.orgType")}:</Text>
                           <Text size="xs" fw={600}>{getOrgTypeName(organizationType)}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("contact.region", "Hudud")}:</Text>
+                          <Text size="xs" c="dimmed">{t("contact.region")}:</Text>
                           <Text size="xs" fw={600}>{getRegionName(region)}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("contact.telegramLabel", "Telegram:")}</Text>
-                          <Text size="xs" fw={600}>{telegram.trim() || t("contact.notSpecified", "Ko‘rsatilmagan")}</Text>
+                          <Text size="xs" c="dimmed">{t("contact.telegramLabel")}</Text>
+                          <Text size="xs" fw={600}>{telegram.trim() || t("contact.notSpecified")}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("contact.computerCount", "Kompyuterlar soni")}:</Text>
-                          <Text size="xs" fw={600}>{computerCount ? (computerCount + " ta") : t("contact.notSpecified", "Ko‘rsatilmagan")}</Text>
+                          <Text size="xs" c="dimmed">{t("contact.computerCount")}:</Text>
+                          <Text size="xs" fw={600}>{computerCount ? (computerCount + " ta") : t("contact.notSpecified")}</Text>
                         </Group>
                       </Stack>
                     </Box>
@@ -648,7 +636,7 @@ export default function Contact_Page() {
                           radius="md"
                           leftSection={<IconBrandTelegram size={16} />}
                         >
-                          {t("contact.btnTelegram", "Telegram orqali bog‘lanish")}
+                          {t("contact.btnTelegram")}
                         </Button>
                         <Button
                           component="a"
@@ -659,7 +647,7 @@ export default function Contact_Page() {
                           radius="md"
                           leftSection={<IconMail size={16} />}
                         >
-                          {t("contact.btnEmail", "Email yozish")}
+                          {t("contact.btnEmail")}
                         </Button>
                       </SimpleGrid>
                       <Button
@@ -670,7 +658,7 @@ export default function Contact_Page() {
                         leftSection={<IconRefresh size={14} />}
                         mt={4}
                       >
-                        {t("contact.sendAnother", "Yangi so'rov yuborish")}
+                        {t("contact.sendAnother")}
                       </Button>
                     </Stack>
                   </Stack>
@@ -679,15 +667,14 @@ export default function Contact_Page() {
                     <Box mb="lg">
                       <div className="saas-badge-pill" style={{ marginBottom: 8 }}>
                         <IconShieldCheck size={13} />
-                        <span>{t("contact.crmBadge", "Hamkorlik Markazi")}</span>
+                        <span>{t("contact.crmBadge")}</span>
                       </div>
                       <Title order={2} style={{ fontSize: "1.35rem", marginBottom: 6 }}>
-                        {t("contact.formMainTitle", "Hamkorlik so'rovini yuborish")}
+                        {t("contact.formMainTitle")}
                       </Title>
                       <Text size="xs" c="dimmed" lh={1.6}>
                         {t(
-                          "contact.formMainSubtitle",
-                          "Quyidagi ma'lumotlarni to'ldiring. So'rovingiz to'g'ridan-to'g'ri mas'ul mutaxassisga yo'naltiriladi va 1 ish kuni ichida aloqaga chiqiladi."
+                          "contact.formMainSubtitle"
                         )}
                       </Text>
                     </Box>
@@ -699,7 +686,7 @@ export default function Contact_Page() {
                             icon={<IconAlertCircle size={16} />}
                             color="red"
                             radius="md"
-                            title={t("common.error", "Xatolik")}
+                            title={t("common.error")}
                             py="xs"
                           >
                             {validationError}
@@ -709,16 +696,16 @@ export default function Contact_Page() {
                         {/* Organization & Contact Person */}
                         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                           <TextInput
-                            label={t("contact.orgName", "Tashkilot nomi")}
-                            placeholder={t("contact.orgNamePlaceholder", "Masalan: Avto-Lider MCHJ")}
+                            label={t("contact.orgName")}
+                            placeholder={t("contact.orgNamePlaceholder")}
                             required
                             value={organization}
                             onChange={(e) => setOrganization(e.currentTarget.value)}
                             leftSection={<IconBuildingCommunity size={16} />}
                           />
                           <TextInput
-                            label={t("contact.contactPerson", "Mas'ul shaxs (F.I.Sh.)")}
-                            placeholder={t("contact.contactPersonPlaceholder", "Ism va familiyangiz")}
+                            label={t("contact.contactPerson")}
+                            placeholder={t("contact.contactPersonPlaceholder")}
                             required
                             value={fullName}
                             onChange={(e) => setFullName(e.currentTarget.value)}
@@ -729,7 +716,7 @@ export default function Contact_Page() {
                         {/* Phone & Organization Type */}
                         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                           <TextInput
-                            label={t("contact.phone", "Telefon raqami")}
+                            label={t("contact.phone")}
                             placeholder="+998 90 123 45 67"
                             required
                             value={phone}
@@ -737,7 +724,7 @@ export default function Contact_Page() {
                             leftSection={<IconPhone size={16} />}
                           />
                           <Select
-                            label={t("contact.orgType", "Tashkilot turi")}
+                            label={t("contact.orgType")}
                             value={organizationType}
                             onChange={setOrganizationType}
                             data={orgTypeOptions}
@@ -750,9 +737,9 @@ export default function Contact_Page() {
                           <Select
                             label={
                               <Group gap={4}>
-                                <span>{t("contact.region", "Hudud")}</span>
+                                <span>{t("contact.region")}</span>
                                 <Text size="xs" c="dimmed" inherit>
-                                  {t("contact.optionalNotice", "(ixtiyoriy)")}
+                                  {t("contact.optionalNotice")}
                                 </Text>
                               </Group>
                             }
@@ -765,9 +752,9 @@ export default function Contact_Page() {
                           <TextInput
                             label={
                               <Group gap={4}>
-                                <span>{t("contact.telegram", "Telegram username")}</span>
+                                <span>{t("contact.telegram")}</span>
                                 <Text size="xs" c="dimmed" inherit>
-                                  {t("contact.optionalNotice", "(ixtiyoriy)")}
+                                  {t("contact.optionalNotice")}
                                 </Text>
                               </Group>
                             }
@@ -781,16 +768,16 @@ export default function Contact_Page() {
                         {/* Computer Workstations Count */}
                         <div>
                           <Text size="sm" fw={500} mb={6}>
-                            {t("contact.computerCount", "Kompyuterlar soni")}
+                            {t("contact.computerCount")}
                           </Text>
                           <SegmentedControl
                             fullWidth
                             value={computerCount}
                             onChange={setComputerCount}
                             data={[
-                              { label: t("contact.compOpt1", "1 – 10 ta"), value: "10" },
-                              { label: t("contact.compOpt2", "11 – 30 ta"), value: "30" },
-                              { label: t("contact.compOpt3", "30 tadan ortiq"), value: "50" },
+                              { label: t("contact.compOpt1"), value: "10" },
+                              { label: t("contact.compOpt2"), value: "30" },
+                              { label: t("contact.compOpt3"), value: "50" },
                             ]}
                           />
                         </div>
@@ -799,15 +786,14 @@ export default function Contact_Page() {
                         <Textarea
                           label={
                             <Group gap={4}>
-                              <span>{t("contact.comment", "Izoh yoki qo'shimcha talablar")}</span>
+                              <span>{t("contact.comment")}</span>
                               <Text size="xs" c="dimmed" inherit>
-                                {t("contact.optionalNotice", "(ixtiyoriy)")}
+                                {t("contact.optionalNotice")}
                               </Text>
                             </Group>
                           }
                           placeholder={t(
-                            "contact.commentPlaceholder",
-                            "Dasturni joriy qilish muddatlari, mavjud kompyuterlar xususiyatlari yoki savollaringiz..."
+                            "contact.commentPlaceholder"
                           )}
                           minRows={3}
                           value={comment}
@@ -827,8 +813,8 @@ export default function Contact_Page() {
                           mt="xs"
                         >
                           {isSubmitting
-                            ? t("contact.sending", "Yuborilmoqda...")
-                            : t("contact.submitBtn", "Hamkorlik so‘rovini yuborish")}
+                            ? t("contact.sending")
+                            : t("contact.submitBtn")}
                         </Button>
                       </Stack>
                     </form>
@@ -861,16 +847,15 @@ export default function Contact_Page() {
                       c="var(--primary)"
                       style={{ letterSpacing: "1px" }}
                     >
-                      {t("contact.contactHubBadge", "24/7 texnik va konsultativ yordam")}
+                      {t("contact.contactHubBadge")}
                     </Text>
                   </Group>
                   <Title order={3} size="h3" mb="xs">
-                    {t("contact.contactHubTitle", "Mutaxassis bilan bog‘lanish")}
+                    {t("contact.contactHubTitle")}
                   </Title>
                   <Text size="xs" c="dimmed" lh={1.6} mb="lg">
                     {t(
-                      "contact.contactHubDesc",
-                      "Hamkorlik, dasturni joriy etish, savollar va texnik yordam bo‘yicha to‘g‘ridan-to‘g‘ri bog‘laning."
+                      "contact.contactHubDesc"
                     )}
                   </Text>
 
@@ -879,9 +864,9 @@ export default function Contact_Page() {
                     <EnterpriseContactCard
                       icon={IconPhone}
                       color="blue"
-                      label={t("contact.contactPhoneLabel", "Telefon raqami")}
+                      label={t("contact.contactPhoneLabel")}
                       value="+998 99 391 25 05"
-                      sub={t("contact.contactPhoneSub", "24/7 qo‘ng‘iroqlar qabul qilinadi")}
+                      sub={t("contact.contactPhoneSub")}
                       href="tel:+998993912505"
                       ariaLabel="Telefon orqali bog'lanish"
                     />
@@ -890,9 +875,9 @@ export default function Contact_Page() {
                     <EnterpriseContactCard
                       icon={IconBrandTelegram}
                       color="blue"
-                      label={t("contact.contactTgLabel", "Telegram orqali aloqa")}
+                      label={t("contact.contactTgLabel")}
                       value="@pravaonlineuz"
-                      sub={t("contact.contactTgSub", "Tezkor yozishmalar va konsultatsiyalar")}
+                      sub={t("contact.contactTgSub")}
                       href="https://t.me/pravaonlineuz"
                       external
                       ariaLabel="Telegram orqali bog'lanish"
@@ -902,9 +887,9 @@ export default function Contact_Page() {
                     <EnterpriseContactCard
                       icon={IconMail}
                       color="blue"
-                      label={t("contact.contactEmailLabel", "Elektron pochta")}
+                      label={t("contact.contactEmailLabel")}
                       value="info@pravaonline.uz"
-                      sub={t("contact.contactEmailSub", "Rasmiy tijorat va hamkorlik murojaatlari")}
+                      sub={t("contact.contactEmailSub")}
                       href="mailto:info@pravaonline.uz"
                       ariaLabel="Email orqali bog'lanish"
                     />
@@ -913,10 +898,10 @@ export default function Contact_Page() {
                     <EnterpriseContactCard
                       icon={IconClock}
                       color="blue"
-                      label={t("contact.contactHoursLabel", "Ish vaqti")}
+                      label={t("contact.contactHoursLabel")}
                       value="24/7"
-                      badge={t("contact.activeBadge", "Faol")}
-                      sub={t("contact.contactHoursSub", "Sutka davomida murojaatlar qabul qilinadi")}
+                      badge={t("contact.activeBadge")}
+                      sub={t("contact.contactHoursSub")}
                       ariaLabel="Ish vaqti"
                     />
                   </Stack>
@@ -934,19 +919,19 @@ export default function Contact_Page() {
                     <Group gap="xs">
                       <IconCheck size={14} color="var(--primary)" />
                       <Text size="xs" c="dimmed">
-                        {t("contact.guarantee1", "Bepul konsultatsiya va demo namoyish")}
+                        {t("contact.guarantee1")}
                       </Text>
                     </Group>
                     <Group gap="xs">
                       <IconCheck size={14} color="var(--primary)" />
                       <Text size="xs" c="dimmed">
-                        {t("contact.guarantee2", "Tashkilot talablariga individual moslashuv")}
+                        {t("contact.guarantee2")}
                       </Text>
                     </Group>
                     <Group gap="xs">
                       <IconCheck size={14} color="var(--primary)" />
                       <Text size="xs" c="dimmed">
-                        {t("contact.guarantee3", "Rasmiy shartnoma va to'liq hujjatlar to'plami")}
+                        {t("contact.guarantee3")}
                       </Text>
                     </Group>
                   </Stack>
@@ -967,15 +952,14 @@ export default function Contact_Page() {
               mb={6}
               style={{ letterSpacing: "1px" }}
             >
-              {t("contact.faqSectionBadge", "Savol-Javoblar")}
+              {t("contact.faqSectionBadge")}
             </Text>
             <Title order={2} size="h3" mb="xs">
-              {t("contact.faqSectionTitle", "Ko'p beriladigan savollar")}
+              {t("contact.faqSectionTitle")}
             </Title>
             <Text size="sm" c="dimmed" maw={600} mx="auto" lh={1.6}>
               {t(
-                "contact.faqSectionSubtitle",
-                "Prava Online platformasi va Desktop dasturiy ta'minotiga oid asosiy savollarga javoblar"
+                "contact.faqSectionSubtitle"
               )}
             </Text>
           </Box>
@@ -1012,7 +996,7 @@ export default function Contact_Page() {
                 c="var(--primary)"
                 style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
               >
-                <span>{t("contact.viewAllFaq", "Barcha savol-javoblar (FAQ)")}</span>
+                <span>{t("contact.viewAllFaq")}</span>
                 <IconArrowRight size={14} />
               </Anchor>
             </Group>

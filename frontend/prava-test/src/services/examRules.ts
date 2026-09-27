@@ -182,3 +182,41 @@ export function isExamPassed(outcome: ExamOutcome, rules: ExamRules = getExamRul
   const percent = (correct / total) * 100;
   return percent >= passPercentFor(outcome.mode, rules);
 }
+
+/* ─────────────── Saqlangan natijalar (tarix/statistika) uchun ─────────────── */
+
+/** Tarixdagi `exam_type` qiymatini (server: "EXAM"/"TICKET"/…, lokal: "exam"/"ticket_5"/…) rejimga o'giradi. */
+export function modeFromExamType(examType: string | null | undefined): ExamMode {
+  const tp = String(examType ?? "").trim().toLowerCase();
+  if (tp === "exam" || tp === "real" || tp === "secure" || tp.startsWith("exam_") || tp === "official") return "real";
+  if (tp.startsWith("marathon") || tp === "marafon") return "marathon";
+  if (tp.startsWith("wrong")) return "wrong";
+  if (tp.startsWith("package")) return "package";
+  return "ticket";
+}
+
+export interface StoredResultLike {
+  exam_type?: string | null;
+  total_questions?: number | null;
+  correct_answers?: number | null;
+  score?: number | null;
+  /** Saqlangan paytdagi aniq natija (yangi yozuvlarda bor). */
+  passed?: boolean | null;
+}
+
+/**
+ * W-04: tarixdagi natija o'tganmi. Yangi yozuvlarda saqlangan `passed` ishlatiladi;
+ * eski yozuvlar uchun — rejimga mos yagona qoida (isExamPassed). Savollar soni
+ * noma'lum bo'lsa, foiz (`score`) bo'yicha bilet/marafon chegarasi.
+ */
+export function isStoredResultPassed(r: StoredResultLike, rules: ExamRules = getExamRulesSync()): boolean {
+  if (typeof r.passed === "boolean") return r.passed;
+  const mode = modeFromExamType(r.exam_type);
+  const total = Math.max(0, Math.round(Number(r.total_questions) || 0));
+  const correct = Math.max(0, Math.round(Number(r.correct_answers) || 0));
+  if (total > 0) {
+    return isExamPassed({ mode, total, correct, wrong: Math.max(0, total - correct), unanswered: 0 }, rules);
+  }
+  const score = Number(r.score);
+  return Number.isFinite(score) && score >= passPercentFor(mode === "real" ? "ticket" : mode, rules);
+}

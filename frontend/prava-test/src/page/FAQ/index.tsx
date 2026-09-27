@@ -24,6 +24,8 @@ import {
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
+import { useCurriculumCountParams } from "../../hooks/useCurriculumCounts";
+import { useExamRules } from "../../services/examRules";
 
 interface FAQItem {
   id: string;
@@ -68,6 +70,8 @@ function HighlightMatch({ text, query }: { text: string; query: string }) {
 
 export default function FAQ_Page() {
   const { t } = useTranslation();
+  const { tickets: ticketsCount, questions: questionsCount } = useCurriculumCountParams();
+  const { questionCount, secondsPerQuestion, maxWrong } = useExamRules().real;
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeTab, setActiveTab] = useState<string>("all");
@@ -85,116 +89,110 @@ export default function FAQ_Page() {
       {
         id: "exam-1",
         category: "exam",
-        question: t("faq.q1", "Savollar haqiqiy YHXBB imtihonidagiga 100% mos keladimi?"),
+        question: t("faq.q1"),
         answer: t(
           "faq.a1",
-          "Ha, bizning barcha 1200+ savollarimiz O'zbekiston Respublikasi IIV YHXXning 2026-yilgi amaldagi standartlariga va rasmiy test bazasiga to'liq asoslangan. Savol rasmlari, matnlari va javob variantlari haqiqiy imtihon kabi shakllantirilgan."
+          { tickets: ticketsCount, questions: questionsCount }
         ),
       },
       {
         id: "exam-2",
         category: "exam",
-        question: t("faq.q2", "Imtihondan o'tish shartlari qanday?"),
+        question: t("faq.q2"),
         answer: t(
           "faq.a2",
-          "Haqiqiy imtihondagi kabi 20 ta savolga 20 daqiqa vaqt beriladi. O'tish uchun kamida 17 ta savolga to'g'ri javob berishingiz kerak, ya'ni maksimal 3 tagacha xatoga yo'l qo'yiladi."
+          {
+            count: questionCount,
+            minutes: Math.round((questionCount * secondsPerQuestion) / 60),
+            minCorrect: Math.max(0, questionCount - maxWrong),
+            max: maxWrong,
+          }
         ),
       },
       {
         id: "exam-3",
         category: "exam",
-        question: t("faq.q3", "F1–F5 tugmalari orqali ishlash imkoni bormi?"),
-        answer: t(
-          "faq.a3",
-          "Ha! Haqiqiy YHXBB imtihon markazlarida klaviaturaning F1–F5 tugmalari orqali javob tanlanadi. Platformamizda va Desktop dasturimizda ham bu funksiya to'liq ishlaydi, bu esa imtihon oldidan qo'lingizni o'rgatishga yordam beradi."
-        ),
+        question: t("faq.q3"),
+        answer: t("faq.a3"),
       },
       {
         id: "exam-4",
         category: "exam",
-        question: t("faq.q4", "Marafon rejimi nima va u qanday ishlaydi?"),
+        question: t("faq.q4"),
         answer: t(
           "faq.a4",
-          "Marafon rejimida bazadagi barcha 1200 ta savol ketma-ket, to'xtovsiz beriladi. Bu sizga butun kurs bo'yicha bilimlaringizni sinovdan o'tkazish va zaif savollarni bir joyda aniqlash imkonini beradi."
+          { tickets: ticketsCount, questions: questionsCount }
         ),
       },
       {
         id: "exam-5",
         category: "exam",
-        question: t("faq.q12", "Xatolar ustida ishlash bo'limi qanday yordam beradi?"),
+        question: t("faq.q12"),
         answer: t(
-          "faq.a12",
-          "Har qanday test yoki bilet yechish paytida noto'g'ri belgilangan savollaringiz avtomatik tarzda 'Xatolar' daftarchasiga yozib boriladi. Siz barcha xatolaringizni alohida qayta yechib, ularning to'g'ri qoidasini mustahkamlashingiz mumkin."
+          "faq.a12"
         ),
       },
       // To'lov
       {
         id: "pay-1",
         category: "payment",
-        question: t("faq.q5", "To'lov usullari qanday?"),
+        question: t("faq.q5"),
         answer: t(
-          "faq.a5",
-          "Click, Payme, Uzum Bank va barcha Humo, Uzcard hamda Visa/Mastercard kartalari orqali to'lov qilishingiz mumkin. To'lov amalga oshishi bilanoq profilingizda premium imkoniyatlar avtomatik tarzda ochiladi."
+          "faq.a5"
         ),
       },
       {
         id: "pay-2",
         category: "payment",
-        question: t("faq.q6", "Bepul foydalanish imkoniyati bormi?"),
+        question: t("faq.q6"),
         answer: t(
-          "faq.a6",
-          "Ha! Har bir yangi foydalanuvchi platformani sinab ko'rishi uchun 1 ta bepul to'liq sinov imtihoni va asosiy yo'l harakati belgilari bo'yicha erkin mashq qilish imkoniyati beriladi."
+          "faq.a6"
         ),
       },
       {
         id: "pay-3",
         category: "payment",
-        question: t("faq.q7", "Aktivatsiya kodi nima va uni qayerdan olsam bo'ladi?"),
+        question: t("faq.q7"),
         answer: t(
-          "faq.a7",
-          "Aktivatsiya kodi — bu maxsus promo-kod bo'lib, uni hamkor avtomaktablardan yoki aksiyalarimiz orqali olishingiz mumkin. Kodni shaxsiy kabinet sozlamalarida kiritish orqali tarifni faollashtirasiz."
+          "faq.a7"
         ),
       },
       // Ilovalar & Offline
       {
         id: "app-1",
         category: "app",
-        question: t("faq.q8", "Internet yo'q paytda ham ishlatish mumkinmi?"),
+        question: t("faq.q8"),
         answer: t(
-          "faq.a8",
-          "Ha! Bizning kompyuterlar uchun mo'ljallangan Prava Desktop (Windows) ilovamiz to'liq offline rejimda ishlaydi. Barcha savollar bazasi kompyuteringizga yuklanadi va internet talab qilinmaydi."
+          "faq.a8"
         ),
       },
       {
         id: "app-2",
         category: "app",
-        question: t("faq.q9", "Telefon orqali kirsa bo'ladimi?"),
+        question: t("faq.q9"),
         answer: t(
-          "faq.a9",
-          "Albatta! Saytimiz barcha smartfon va planshetlar uchun to'liq moslashtirilgan. Shuningdek, Google Play dan Android ilovamizni yoki Safari/Chrome orqali PWA ilovasini o'rnatishingiz mumkin."
+          "faq.a9"
         ),
       },
       // Akkaunt
       {
         id: "acc-1",
         category: "account",
-        question: t("faq.q10", "Google yoki Telegram orqali ro'yxatdan o'tish mumkinmi?"),
+        question: t("faq.q10"),
         answer: t(
-          "faq.a10",
-          "Ha, siz Google akkauntingiz yoki Telegram botimiz orqali birgina tugmani bosib, hech qanday qo'shimcha parol eslab qolmasdan tizimga tez va xavfsiz kirishingiz mumkin."
+          "faq.a10"
         ),
       },
       {
         id: "acc-2",
         category: "account",
-        question: t("faq.q11", "Statistikam saqlanib qoladimi?"),
+        question: t("faq.q11"),
         answer: t(
-          "faq.a11",
-          "Barcha yechilgan testlaringiz, xatolar ro'yxati va erishilgan natijalar profilingizda xavfsiz saqlanadi. Istalgan qurilmadan (kompyuter, telefon, planshet) kirganingizda profilingiz sinxronlashadi."
+          "faq.a11"
         ),
       },
     ],
-    [t]
+    [t, ticketsCount, questionsCount, questionCount, secondsPerQuestion, maxWrong]
   );
 
   const filteredFaqs = useMemo(() => {
@@ -224,7 +222,7 @@ export default function FAQ_Page() {
 
   return (
     <>
-      <SEO title={t("seo.faq.title", "Ko'p so'raladigan savollar (FAQ)")} description={t("seo.faq.desc", "Eng ko'p beriladigan savollarga javoblar.")}
+      <SEO title={t("seo.faq.title")} description={t("seo.faq.desc")}
         keywords="prava online faq, haydovchilik imtihoni savollar javoblar, prava test qanday ishlaydi, YHXBB imtihon qoidalari"
         canonical="/faq"
         jsonLd={jsonLdData}
@@ -235,20 +233,19 @@ export default function FAQ_Page() {
         <div className="saas-header-block">
           <div className="saas-badge-pill">
             <IconSparkles size={13} />
-            <span>{t("faq.badge", "Ma'lumotlar markazi")}</span>
+            <span>{t("faq.badge")}</span>
           </div>
-          <h1 className="saas-page-title">{t("faq.pageTitle", "Ko'p so'raladigan savollar")}</h1>
+          <h1 className="saas-page-title">{t("faq.pageTitle")}</h1>
           <p className="saas-page-subtitle">
             {t(
-              "faq.pageSub",
-              "Sizni qiziqtirgan savolga javob toping yoki bevosita mutaxassislarimiz bilan bog'laning."
+              "faq.pageSub"
             )}
           </p>
 
           {/* Search Input */}
           <Box w="100%" maw={{ base: "100%", sm: 560, md: 680 }} mt="sm">
             <TextInput
-              placeholder={t("faq.searchPlaceholder", "Savolingizni qidiring...")}
+              placeholder={t("faq.searchPlaceholder")}
               size="md"
               radius="xl"
               leftSection={<IconSearch size={18} />}
@@ -259,7 +256,7 @@ export default function FAQ_Page() {
                     variant="subtle"
                     color="gray"
                     onClick={() => setSearch("")}
-                    aria-label={t("common.clear", "Tozalash")}
+                    aria-label={t("common.clear")}
                   >
                     <IconX size={14} />
                   </ActionIcon>
@@ -267,7 +264,7 @@ export default function FAQ_Page() {
               }
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              aria-label={t("faq.searchPlaceholder", "Savolingizni qidiring...")}
+              aria-label={t("faq.searchPlaceholder")}
             />
           </Box>
         </div>
@@ -281,11 +278,11 @@ export default function FAQ_Page() {
           mb="xl"
         >
           <Tabs.List justify="center" style={{ flexWrap: "wrap", justifyContent: "center", gap: 6 }}>
-            <Tabs.Tab value="all">{t("faq.tabAll", "Barchasi")}</Tabs.Tab>
-            <Tabs.Tab value="exam">{t("faq.tabExam", "Imtihon")}</Tabs.Tab>
-            <Tabs.Tab value="payment">{t("faq.tabPayment", "To'lov va Tariflar")}</Tabs.Tab>
-            <Tabs.Tab value="app">{t("faq.tabApp", "Ilovalar va Offline")}</Tabs.Tab>
-            <Tabs.Tab value="account">{t("faq.tabAccount", "Akkaunt")}</Tabs.Tab>
+            <Tabs.Tab value="all">{t("faq.tabAll")}</Tabs.Tab>
+            <Tabs.Tab value="exam">{t("faq.tabExam")}</Tabs.Tab>
+            <Tabs.Tab value="payment">{t("faq.tabPayment")}</Tabs.Tab>
+            <Tabs.Tab value="app">{t("faq.tabApp")}</Tabs.Tab>
+            <Tabs.Tab value="account">{t("faq.tabAccount")}</Tabs.Tab>
           </Tabs.List>
         </Tabs>
 
@@ -296,7 +293,7 @@ export default function FAQ_Page() {
               <Stack align="center" gap="xs">
                 <IconHelpCircle size={48} color="var(--text-muted)" style={{ opacity: 0.4 }} />
                 <Text c="dimmed" size="md">
-                  {t("faq.notFound", "Savol topilmadi. Qidiruv so'zini o'zgartirib ko'ring.")}
+                  {t("faq.notFound")}
                 </Text>
               </Stack>
             </Center>
@@ -352,17 +349,16 @@ export default function FAQ_Page() {
               <IconMessageCircleQuestion size={26} />
             </ThemeIcon>
             <Text fw={700} size="lg">
-              {t("faq.stillQuestions", "Savolingizga javob topmadingizmi?")}
+              {t("faq.stillQuestions")}
             </Text>
             <Text size="sm" c="dimmed" maw={480} lh={1.5}>
               {t(
-                "faq.stillQuestionsSub",
-                "Bizning qo'llab-quvvatlash guruhimiz sizga yordam berishdan mamnun bo'ladi."
+                "faq.stillQuestionsSub"
               )}
             </Text>
             <Group gap="sm" mt="xs">
               <Link to="/contact" className="saas-btn-primary">
-                {t("contact.title", "Biz bilan bog'laning")}
+                {t("contact.title")}
                 <IconArrowRight size={15} />
               </Link>
               <a

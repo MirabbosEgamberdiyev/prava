@@ -148,6 +148,14 @@
     <priority>0.80</priority>
   </url>
 
+  <!-- 14b. Yo'l harakati jarimalari (BHM) / Traffic fines -->
+  <url>
+    <loc>https://pravaonline.uz/fines</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
   <!-- 15. Imtihon markazlari / Exam centers -->
   <url>
     <loc>https://pravaonline.uz/exam-centers</loc>

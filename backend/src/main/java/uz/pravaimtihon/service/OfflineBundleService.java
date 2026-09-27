@@ -34,6 +34,7 @@ public class OfflineBundleService {
     private final uz.pravaimtihon.repository.TicketRepository ticketRepository;
     private final uz.pravaimtihon.repository.ExamPackageRepository packageRepository;
     private final uz.pravaimtihon.payment.repository.UserPackageAccessRepository accessRepository;
+    private final uz.pravaimtihon.repository.QuestionOptionRepository optionRepository;
 
     private volatile Bundle cached;
 
@@ -57,7 +58,10 @@ public class OfflineBundleService {
         // Savol, mavzu yoki bilet o'zgarsa versiya o'zgaradi (klientlar qayta yuklaydi).
         return "v2-" + part(questionRepository.activeQuestionsFingerprint())
                 + "-" + part(topicRepository.activeTopicsFingerprint())
-                + "-" + part(ticketRepository.activeTicketsFingerprint());
+                + "-" + part(ticketRepository.activeTicketsFingerprint())
+                // B-07: variant matni o'zgarsa yoki biletdagi savollar almashtirilsa ham versiya o'zgaradi.
+                + "-o" + part(optionRepository.optionsFingerprint())
+                + "-tq" + checksum(ticketRepository.ticketQuestionsChecksum());
     }
 
     private static String part(List<Object[]> rows) {
@@ -65,6 +69,16 @@ public class OfflineBundleService {
         long count = row[0] == null ? 0 : ((Number) row[0]).longValue();
         long updated = row[1] instanceof LocalDateTime t ? t.toEpochSecond(ZoneOffset.UTC) : 0;
         return count + "." + updated;
+    }
+
+    private static String checksum(List<Object[]> rows) {
+        if (rows.isEmpty() || rows.get(0) == null) return "0";
+        StringBuilder sb = new StringBuilder();
+        for (Object v : rows.get(0)) {
+            if (sb.length() > 0) sb.append('.');
+            sb.append(v == null ? "0" : v.toString());
+        }
+        return Integer.toHexString(sb.toString().hashCode());
     }
 
     @Transactional(readOnly = true)

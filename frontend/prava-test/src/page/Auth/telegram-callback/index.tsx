@@ -18,6 +18,8 @@ import api from "../../../api/api";
 import { IconBrandTelegram } from "@tabler/icons-react";
 import { ENV } from "../../../config/env";
 import SEO from "../../../components/common/SEO";
+import { loginPath, readReturnTo } from "../../../utils/returnTo";
+import { consumePendingReturnTo, DEFAULT_AFTER_LOGIN } from "../../../auth/useReturnTo";
 
 const REDIRECT_DELAY = 5;
 
@@ -29,6 +31,11 @@ const TelegramCallback = () => {
   const [error, setError] = useState<"expired" | "invalid" | null>(null);
   const [countdown, setCountdown] = useState(REDIRECT_DELAY);
   const hasProcessed = useRef(false);
+  // W-06: bot oqimidan qaytganda returnTo query'da bo'lmasligi mumkin — saqlangan qiymat
+  // (TelegramLoginButton yozadi) ishlatiladi. Bir marta o'qiladi.
+  const [returnTo] = useState<string | null>(
+    () => readReturnTo(searchParams) ?? consumePendingReturnTo(),
+  );
 
   // Countdown timer for redirect on error
   useEffect(() => {
@@ -38,7 +45,7 @@ const TelegramCallback = () => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate("/auth/login");
+          navigate(loginPath(returnTo));
           return 0;
         }
         return prev - 1;
@@ -46,7 +53,7 @@ const TelegramCallback = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [error, navigate]);
+  }, [error, navigate, returnTo]);
 
   // Process telegram token login
   useEffect(() => {
@@ -80,7 +87,7 @@ const TelegramCallback = () => {
             withBorder: true,
           });
 
-          navigate("/me");
+          navigate(returnTo ?? DEFAULT_AFTER_LOGIN, { replace: true });
         }
       } catch (err: unknown) {
         const status = (err as { response?: { status?: number } })?.response
@@ -108,7 +115,7 @@ const TelegramCallback = () => {
 
   return (
     <>
-    <SEO title={t("seo.telegramCallback.title", "Telegram orqali kirish")} description={t("seo.telegramCallback.desc", "Telegram orqali xavfsiz autentifikatsiya.")}
+    <SEO title={t("seo.telegramCallback.title")} description={t("seo.telegramCallback.desc")}
       canonical="/auth/telegram-callback"
       noIndex
     />

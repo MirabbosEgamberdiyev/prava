@@ -1,15 +1,22 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import { loginPath } from "../utils/returnTo";
 
 const ProtectedRoute: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {
-    // Agar foydalanuvchi tizimdan chiqsa, u turgan sahifa (location)
-    // state-ga yozib olinadi va Login sahifasiga yuboriladi.
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    // W-06: himoyalangan sahifa manzili `?returnTo=` sifatida login'ga uzatiladi
+    // (yagona manba; login/ro'yxatdan o'tish/Google/Telegram oqimlari shuni o'qiydi).
+    return (
+      <Navigate
+        to={loginPath(location.pathname + location.search)}
+        state={{ from: location }}
+        replace
+      />
+    );
   }
 
   return <Outlet />;

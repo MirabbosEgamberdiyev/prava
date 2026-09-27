@@ -13,6 +13,7 @@ import uz.pravaimtihon.dto.request.*;
 import uz.pravaimtihon.dto.response.exam.*;
 import uz.pravaimtihon.entity.*;
 import uz.pravaimtihon.enums.AcceptLanguage;
+import uz.pravaimtihon.enums.ExamMode;
 import uz.pravaimtihon.enums.ExamStatus;
 import uz.pravaimtihon.exception.BusinessException;
 import uz.pravaimtihon.exception.ResourceNotFoundException;
@@ -51,9 +52,8 @@ public class ExamServiceV2 {
     private final ExamResponseMapper mapper;
     private final ExamProperties examProperties;
     private final uz.pravaimtihon.payment.service.PaymentAccessService paymentAccessService;
-
-    // Default passing score for marathon mode
-    private static final int DEFAULT_PASSING_SCORE = 70;
+    /** Baholash va o'tish balining yagona manbasi (exam-rules). */
+    private final ExamGradingPolicy gradingPolicy;
 
     // ============================================
     // IMTIHON BOSHLASH - VISIBLE MODE
@@ -70,11 +70,13 @@ public class ExamServiceV2 {
     @Transactional
     public ExamResponse startExamVisible(ExamStartRequest request) {
         if (request.getPackageId() == null) {
-            int qCount = request.getQuestionCount() != null ? request.getQuestionCount() : 20;
+            int qCount = request.getQuestionCount() != null ? request.getQuestionCount()
+                    : examRules.getMarathon().getDefaultQuestionCount();
             int dur = request.getDurationMinutes() != null ? request.getDurationMinutes() : qCount;
             return startMarathonVisible(MarathonStartRequest.builder()
                     .questionCount(qCount)
                     .durationMinutes(dur)
+                    .mode(request.getMode())
                     .build());
         }
         return startExamInternal(request, true);
@@ -95,11 +97,13 @@ public class ExamServiceV2 {
     @Transactional
     public ExamResponse startExamSecure(ExamStartRequest request) {
         if (request.getPackageId() == null) {
-            int qCount = request.getQuestionCount() != null ? request.getQuestionCount() : 20;
+            int qCount = request.getQuestionCount() != null ? request.getQuestionCount()
+                    : examRules.getMarathon().getDefaultQuestionCount();
             int dur = request.getDurationMinutes() != null ? request.getDurationMinutes() : qCount;
             return startMarathonSecure(MarathonStartRequest.builder()
                     .questionCount(qCount)
                     .durationMinutes(dur)
+                    .mode(request.getMode())
                     .build());
         }
         return startExamInternal(request, false);
@@ -150,13 +154,15 @@ public class ExamServiceV2 {
         loadOptionsForQuestions(selectedQuestions);
 
         // Sessiya yaratish - har doim saqlanadi
-        ExamSession session = createSession(user, examPackage, selectedQuestions);
+        ExamSession session = createSession(user, examPackage, selectedQuestions, request.getMode());
+        ExamGradingPolicy.Grade preview = gradingPolicy.grade(session.getExamMode(), false,
+                examPackage.getPassingScore(), selectedQuestions.size(), 0);
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiresAt = now.plusMinutes(examPackage.getDurationMinutes());
 
-        log.info("Imtihon boshlandi: sessionId={}, questions={}, duration={}",
-                session.getId(), selectedQuestions.size(), examPackage.getDurationMinutes());
+        log.info("Imtihon boshlandi: sessionId={}, questions={}, duration={}, mode={}",
+                session.getId(), selectedQuestions.size(), examPackage.getDurationMinutes(), session.getExamMode());
 
         return ExamResponse.builder()
                 .sessionId(session.getId())
@@ -166,7 +172,9 @@ public class ExamServiceV2 {
                 .topicName(examPackage.getTopic() != null ? mapper.toTopicName(examPackage.getTopic()) : null)
                 .totalQuestions(selectedQuestions.size())
                 .durationMinutes(examPackage.getDurationMinutes())
-                .passingScore(examPackage.getPassingScore())
+                .passingScore(preview.passingScore())
+                .examMode(preview.mode())
+                .maxWrong(preview.maxWrong())
                 .startedAt(now)
                 .expiresAt(expiresAt)
                 .isMarathonMode(false)
@@ -212,8 +220,18 @@ public class ExamServiceV2 {
     private ExamResponse startMarathonInternal(MarathonStartRequest request, boolean visibleMode) {
         Long userId = getCurrentUserIdRequired();
 
-        log.info("Marafon boshlanmoqda: user={}, questions={}, topic={}, visible={}",
-                userId, request.getQuestionCount(), request.getTopicId(), visibleMode);
+        ExamMode mode = request.getMode();
+        // REAL: savollar soni va vaqtni SERVER belgilaydi (exam-rules.real) — klient qiymati e'tiborsiz.
+        int requestedCount = mode == ExamMode.REAL
+                ? examRules.getReal().getQuestionCount()
+                : (request.getQuestionCount() != null ? request.getQuestionCount()
+                        : examRules.getMarathon().getDefaultQuestionCount());
+        int secondsPerQuestion = mode == ExamMode.REAL
+                ? examRules.getReal().getSecondsPerQuestion()
+                : examRules.getMarathon().getSecondsPerQuestion();
+
+        log.info("Marafon boshlanmoqda: user={}, questions={}, topic={}, visible={}, mode={}",
+                userId, requestedCount, request.getTopicId(), visibleMode, mode);
 
         // Foydalanuvchini olish
         User user = userRepository.findById(userId)
@@ -235,7 +253,7 @@ public class ExamServiceV2 {
         //
         // Endi: DB tomonda random + LIMIT bilan faqat ID'lar olinadi, keyin
         // o'sha ID'lar uchun variantlar bitta so'rovda yuklanadi.
-        int fetchSize = request.getQuestionCount() * 2;
+        int fetchSize = requestedCount * 2;
         List<Long> candidateIds;
 
         if (request.getTopicId() != null) {
@@ -253,7 +271,7 @@ public class ExamServiceV2 {
                 ? new ArrayList<>()
                 : new ArrayList<>(questionRepository.findByIdsWithOptions(candidateIds));
 
-        int targetCount = Math.min(request.getQuestionCount(), availableQuestions.size());
+        int targetCount = Math.min(requestedCount, availableQuestions.size());
         if (targetCount == 0) {
             throw new BusinessException("error.marathon.insufficient.questions");
         }
@@ -270,15 +288,17 @@ public class ExamServiceV2 {
         // SECURITY: vaqt va o'tish balini SERVER belgilaydi (exam-rules). Avval klient istalgan
         // durationMinutes (masalan 10000) va passingScore (masalan 0) yuborishi mumkin edi.
         // Klient faqat QISQAROQ vaqt so'rashi mumkin.
-        int maxMinutes = Math.max(1, (int) Math.ceil(targetCount * examRules.getMarathon().getSecondsPerQuestion() / 60.0));
-        int durationMinutes = request.getDurationMinutes() != null
+        int maxMinutes = Math.max(1, (int) Math.ceil(targetCount * secondsPerQuestion / 60.0));
+        int durationMinutes = request.getDurationMinutes() != null && mode != ExamMode.REAL
                 ? Math.max(1, Math.min(request.getDurationMinutes(), maxMinutes))
                 : maxMinutes;
 
-        int passingScore = examRules.getMarathon().getPassPercent();
+        // O'tish bali natijadagi baholash bilan bir xil manbadan (REAL — maxWrong ekvivalenti).
+        ExamGradingPolicy.Grade preview = gradingPolicy.grade(mode, false, null, targetCount, 0);
+        int passingScore = preview.passingScore();
 
         // Sessiya yaratish - har doim saqlanadi
-        ExamSession session = createMarathonSession(user, selectedQuestions, durationMinutes, passingScore);
+        ExamSession session = createMarathonSession(user, selectedQuestions, durationMinutes, mode);
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiresAt = now.plusMinutes(durationMinutes);
@@ -296,6 +316,8 @@ public class ExamServiceV2 {
                 .totalQuestions(selectedQuestions.size())
                 .durationMinutes(durationMinutes)
                 .passingScore(passingScore)
+                .examMode(preview.mode())
+                .maxWrong(preview.maxWrong())
                 .startedAt(now)
                 .expiresAt(expiresAt)
                 .isMarathonMode(true)
@@ -493,6 +515,7 @@ public class ExamServiceV2 {
                 .finishedAt(finishedAt)
                 .expiresAt(finishedAt)
                 .clientSessionId(clientSessionId)
+                .examMode(request.getMode() != null ? request.getMode() : ExamMode.fromExamType(request.getExamType()))
                 .build();
 
         session = sessionRepository.save(session);
@@ -549,30 +572,14 @@ public class ExamServiceV2 {
         double percentage = totalQuestions > 0 ? (correctCount * 100.0) / totalQuestions : 0.0;
         int score = correctCount;
 
-        int passingScore = DEFAULT_PASSING_SCORE;
-        if (examPackage != null) {
-            passingScore = examPackage.getPassingScore();
-        } else if (ticket != null) {
-            passingScore = ticket.getPassingScore();
-        }
-
-        boolean isPassed;
-        if ("real".equalsIgnoreCase(request.getExamType())) {
-            int incorrectAndUnanswered = totalQuestions - correctCount;
-            // exam-rules: 20 savolga maxWrong ta xato, boshqa savol soniga proporsional.
-            int allowed = (int) Math.floor((double) examRules.getReal().getMaxWrong() * totalQuestions
-                    / Math.max(1, examRules.getReal().getQuestionCount()));
-            isPassed = incorrectAndUnanswered <= allowed;
-        } else {
-            isPassed = percentage >= passingScore;
-        }
-
         session.setAnsweredCount(answeredCount);
         session.setCorrectCount(correctCount);
         session.setWrongCount(wrongCount);
         session.setScore(score);
         session.setPercentage(percentage);
-        session.setIsPassed(isPassed);
+        // Baholash online submit bilan bir xil joyda (exam-rules): real — maxWrong (javobsiz = xato),
+        // bilet/marafon — 90%, paket — o'z bali.
+        boolean isPassed = gradingPolicy.applyTo(session).passed();
 
         session = sessionRepository.save(session);
 
@@ -888,10 +895,11 @@ public class ExamServiceV2 {
         }
     }
 
-    private ExamSession createSession(User user, ExamPackage examPackage, List<Question> questions) {
+    private ExamSession createSession(User user, ExamPackage examPackage, List<Question> questions, ExamMode mode) {
         ExamSession session = ExamSession.builder()
                 .user(user)
                 .examPackage(examPackage)
+                .examMode(mode)
                 .status(ExamStatus.NOT_STARTED)
                 .language(AcceptLanguage.UZL)
                 .durationMinutes(examPackage.getDurationMinutes())
@@ -908,10 +916,11 @@ public class ExamServiceV2 {
     }
 
     private ExamSession createMarathonSession(User user, List<Question> questions,
-                                               int durationMinutes, int passingScore) {
+                                               int durationMinutes, ExamMode mode) {
         ExamSession session = ExamSession.builder()
                 .user(user)
                 .examPackage(null)
+                .examMode(mode)
                 .status(ExamStatus.NOT_STARTED)
                 .language(AcceptLanguage.UZL)
                 .durationMinutes(durationMinutes)
@@ -959,13 +968,9 @@ public class ExamServiceV2 {
                 .average()
                 .orElse(0.0);
 
-        // Determine passing score
-        int passingScore = DEFAULT_PASSING_SCORE;
-        if (pkg != null) {
-            passingScore = pkg.getPassingScore();
-        } else if (ticket != null) {
-            passingScore = ticket.getPassingScore();
-        }
+        // O'tish bali — baholashda ishlatilgan qoidaning o'zi (exam-rules).
+        ExamGradingPolicy.Grade grade = gradingPolicy.grade(session);
+        int passingScore = grade.passingScore();
 
         return ExamResultResponse.builder()
                 .sessionId(session.getId())
@@ -984,6 +989,8 @@ public class ExamServiceV2 {
                 .percentage(session.getPercentage())
                 .isPassed(session.getIsPassed())
                 .passingScore(passingScore)
+                .examMode(grade.mode())
+                .maxWrong(grade.maxWrong())
                 .startedAt(session.getStartedAt())
                 .finishedAt(session.getFinishedAt())
                 .durationSeconds(session.getDurationSeconds())
@@ -1012,13 +1019,9 @@ public class ExamServiceV2 {
         double correctPercentage = totalQuestions > 0 ? (correctCount * 100.0) / totalQuestions : 0.0;
         double unansweredPercentage = totalQuestions > 0 ? (unansweredCount * 100.0) / totalQuestions : 0.0;
 
-        // Determine passing score
-        int passingScore = DEFAULT_PASSING_SCORE;
-        if (session.getExamPackage() != null) {
-            passingScore = session.getExamPackage().getPassingScore();
-        } else if (session.getTicket() != null) {
-            passingScore = session.getTicket().getPassingScore();
-        }
+        // O'tish bali — baholashda ishlatilgan qoidaning o'zi (exam-rules).
+        ExamGradingPolicy.Grade grade = gradingPolicy.grade(session);
+        int passingScore = grade.passingScore();
 
         return ExamStatisticsResponse.builder()
                 .sessionId(session.getId())
@@ -1031,6 +1034,8 @@ public class ExamServiceV2 {
                 .percentage(session.getPercentage())
                 .isPassed(session.getIsPassed())
                 .passingScore(passingScore)
+                .examMode(grade.mode())
+                .maxWrong(grade.maxWrong())
                 .durationSeconds(session.getDurationSeconds())
                 .averageTimePerQuestion(avgTime)
                 .fastestAnswerTime(fastestTime)

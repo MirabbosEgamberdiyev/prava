@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
 import { Button } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { rememberPendingReturnTo, useReturnTo } from "../../auth/useReturnTo";
 import { useAuth } from "../../auth/AuthContext";
 import { useTranslation } from "react-i18next";
 import api from "../../api/api";
@@ -49,19 +50,15 @@ const TelegramLoginButton = (_props: TelegramLoginButtonProps = {}) => {
   const { t, i18n } = useTranslation();
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [loading, setLoading] = useState(false);
-  const locationState = location.state as { from?: string | { pathname: string; search?: string } } | undefined;
-  let from = "/me";
-  if (typeof locationState?.from === "string") {
-    from = locationState.from;
-  } else if (locationState?.from?.pathname) {
-    from = locationState.from.pathname + (locationState.from.search || "");
-  }
+  // W-06: maqsadli manzil — `?returnTo=` (yagona manba), xavfsiz tekshirilgan
+  const { returnTo, destination: from } = useReturnTo();
 
   const handleTelegramLogin = useCallback(() => {
     // If on mobile devices, open Telegram app directly for native UX
     const isMobile = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    // Bot orqali qaytishda (telegram-callback) query yo'qoladi — returnTo vaqtincha saqlanadi.
+    rememberPendingReturnTo(returnTo);
     if (isMobile) {
       window.location.href = DIRECT_BOT_URL;
       return;
@@ -136,7 +133,7 @@ const TelegramLoginButton = (_props: TelegramLoginButtonProps = {}) => {
       };
       document.head.appendChild(script);
     }
-  }, [authLogin, navigate, t, i18n, from]);
+  }, [authLogin, navigate, t, i18n, from, returnTo]);
 
   return (
     <Button

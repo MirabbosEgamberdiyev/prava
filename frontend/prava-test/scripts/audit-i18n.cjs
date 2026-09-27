@@ -259,6 +259,114 @@ if (missingUsed === 0) {
   console.log('[PASS] All static t() keys exist in UZL, UZC and RU.');
 }
 
+// 5c. AST scan (W-13): hardcoded JSX text nodes, literal user-facing JSX attributes, and
+//     t() calls that don't pass the interpolation params their locale value needs.
+//     The simulator (src/page/Simulator/**, src/page/PracticalExam/Simulator/**) is disabled and
+//     excluded from the production build (routes/index.tsx SHOW_SIMULATOR=false), so it is skipped.
+let ts = null;
+try {
+  ts = require('typescript');
+} catch {
+  console.error('[ERROR] typescript is required for the JSX scan (npm install)');
+  totalErrors++;
+}
+
+const JSX_SKIP_DIRS = [
+  path.join('src', 'page', 'Simulator') + path.sep,
+  path.join('src', 'page', 'PracticalExam', 'Simulator') + path.sep,
+];
+const USER_FACING_ATTRS = new Set(['placeholder', 'title', 'aria-label', 'alt', 'label', 'description', 'tooltip', 'error', 'message']);
+// Brand / product names, key caps and technical tokens that are identical in every language.
+const JSX_BRAND_RE = new RegExp(
+  '^(' +
+    [
+      'Prava( Online)?\\.?', 'PravaOnline\\.?', 'PRAVA', 'Prava Online\\.?', 'pravaonline\\.uz', '@pravaonlineuzbot', '@\\w+',
+      'Telegram( Bot)?', 'Google( Play)?', 'App Store', 'Instagram', 'YouTube', 'Facebook',
+      'Click', 'Payme', 'Uzum Bank', 'Uzcard( / Humo)?', 'Humo', 'Visa( / Mastercard)?', 'Mastercard',
+      'Windows( \\(\\.exe\\))?', 'macOS', 'Linux', 'Android', 'iOS', 'PWA', 'APK', 'QR', 'SMS', 'OTP', 'ID', 'UZS',
+      // product version tags, e.g. "v2.0 • WebGL"
+      'v\\d+(\\.\\d+)*\\b.*',
+      'Enter', 'Esc', 'Space', 'Tab', 'Shift', 'Ctrl', 'Alt', '←', '→', '↑', '↓',
+    ].join('|') +
+    ')$'
+);
+
+function isAllowedJsxText(text) {
+  const tt = text.replace(/\s+/g, ' ').trim();
+  if (!tt) return true;
+  if (!/[A-Za-zЀ-ӿ]{2,}/.test(tt)) return true; // numbers, punctuation, symbols, single letters
+  if (JSX_BRAND_RE.test(tt)) return true;
+  if (isAllowedLiteral(tt)) return true;
+  return false;
+}
+
+let jsxIssues = 0;
+let paramIssues = 0;
+if (ts) {
+  for (const filePath of walkSource(SRC_DIR)) {
+    const rel = path.relative(ROOT, filePath);
+    if (JSX_SKIP_DIRS.some((d) => rel.startsWith(d))) continue;
+    if (rel.includes(`${path.sep}__tests__${path.sep}`)) continue;
+    const content = fs.readFileSync(filePath, 'utf8');
+    const isTsx = filePath.endsWith('.tsx');
+    const sf = ts.createSourceFile(filePath, content, ts.ScriptTarget.Latest, true, isTsx ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+    const lineOf = (node) => sf.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+    const visit = (node) => {
+      if (isTsx && ts.isJsxText(node) && !isAllowedJsxText(node.getText())) {
+        console.error(`[HARDCODED JSX TEXT] ${rel}:${lineOf(node)} -> "${node.getText().replace(/\s+/g, ' ').trim().slice(0, 80)}"`);
+        jsxIssues++;
+      }
+      if (isTsx && ts.isJsxAttribute(node) && node.initializer) {
+        const name = node.name.getText();
+        let literal = null;
+        if (ts.isStringLiteral(node.initializer)) literal = node.initializer.text;
+        else if (
+          ts.isJsxExpression(node.initializer) &&
+          node.initializer.expression &&
+          (ts.isStringLiteral(node.initializer.expression) || ts.isNoSubstitutionTemplateLiteral(node.initializer.expression))
+        ) literal = node.initializer.expression.text;
+        if (literal !== null && USER_FACING_ATTRS.has(name) && !isAllowedJsxText(literal)) {
+          console.error(`[HARDCODED JSX ATTRIBUTE] ${rel}:${lineOf(node)} -> ${name}="${literal.slice(0, 80)}"`);
+          jsxIssues++;
+        }
+      }
+      // t("key", opts): every {{placeholder}} of the uzl value must be passed in opts
+      if (ts.isCallExpression(node) && node.arguments.length >= 1) {
+        const callee = node.expression;
+        const isT = (ts.isIdentifier(callee) && callee.text === 't') || (ts.isPropertyAccessExpression(callee) && callee.name.text === 't');
+        const keyArg = node.arguments[0];
+        if (isT && ts.isStringLiteral(keyArg) && keyArg.text.includes('.')) {
+          const key = keyArg.text;
+          const value = flatUzl[key] ?? flatUzl[`${key}_other`] ?? flatUzl[`${key}_one`];
+          const needed = value ? [...value.matchAll(/\{\{\s*([\w]+)[^}]*\}\}/g)].map((m) => m[1]) : [];
+          if (needed.length) {
+            let opts = null;
+            for (const a of node.arguments.slice(1)) {
+              if (ts.isObjectLiteralExpression(a)) { opts = a; break; }
+              if (!(ts.isStringLiteral(a) || ts.isNoSubstitutionTemplateLiteral(a) || ts.isTemplateExpression(a))) { opts = 'dynamic'; break; }
+            }
+            let missing = [];
+            if (opts === null) missing = needed;
+            else if (opts !== 'dynamic' && !opts.properties.some((p) => ts.isSpreadAssignment(p))) {
+              const names = new Set(opts.properties.map((p) => (p.name ? p.name.getText().replace(/["']/g, '') : '')));
+              missing = needed.filter((n) => !names.has(n));
+            }
+            if (missing.length) {
+              console.error(`[MISSING PARAM] ${rel}:${lineOf(node)} -> t("${key}") needs {{${missing.join('}}, {{')}}}`);
+              paramIssues++;
+            }
+          }
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(sf);
+  }
+  totalErrors += jsxIssues + paramIssues;
+  if (jsxIssues === 0) console.log('[PASS] 0 hardcoded JSX text nodes / literal JSX attributes (brand names allowed).');
+  if (paramIssues === 0) console.log('[PASS] All static t() calls pass the interpolation params their locale values use.');
+}
+
 // 6. Summary and Exit Code
 console.log('\n======================================================');
 if (totalErrors === 0) {

@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../auth/AuthContext";
+import { scopedUserId } from "../../utils/userScope";
+import { reportError } from "../../utils/monitoring";
+import { isStoredResultPassed, modeFromExamType, passPercentFor, useExamRules } from "../../services/examRules";
+import { AVERAGE_GAP_PERCENT } from "../../services/desktopAdapter";
 import type {
   ExamResult,
   FullStats,
@@ -118,34 +122,34 @@ function ReadinessBadge({ r }: { r: string }) {
     return (
       <span className="rd-badge rd-ready">
         <IconCircleCheck size={11} />
-        {t("stats.ready", "Tayyor")}
+        {t("stats.ready")}
       </span>
     );
   if (r === "average")
     return (
       <span className="rd-badge rd-avg">
         <IconCircleHalf size={11} />
-        {t("stats.average", "O'rtacha")}
+        {t("stats.average")}
       </span>
     );
   if (r === "not_ready")
     return (
       <span className="rd-badge rd-bad">
         <IconCircleX size={11} />
-        {t("stats.notReady", "Tayyor emas")}
+        {t("stats.notReady")}
       </span>
     );
   if (r === "weak")
     return (
       <span className="rd-badge rd-bad">
         <IconCircleX size={11} />
-        {t("stats.weakLabel", "Kuchsiz")}
+        {t("stats.weakLabel")}
       </span>
     );
   return (
     <span className="rd-badge rd-none">
       <IconCircleDashed size={11} />
-      {t("stats.untouched", "Ko'rilmagan")}
+      {t("stats.untouched")}
     </span>
   );
 }
@@ -164,7 +168,10 @@ function DotProgress({ count, max }: { count: number; max: number }) {
 export default function Statistics_Page() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const userId = user?.id ? Number(user.id) : 1;
+  const userId = scopedUserId(user);
+  const rules = useExamRules();
+  const ticketPassPercent = passPercentFor("ticket", rules);
+  const ticketAvgPercent = Math.max(0, ticketPassPercent - AVERAGE_GAP_PERCENT);
 
   const [tab, setTab] = useState<Tab>("tickets");
   const [stats, setStats] = useState<FullStats | null>(null);
@@ -197,12 +204,23 @@ export default function Statistics_Page() {
     return tk.name_uzl || tk.name_ru || tk.name_uzc || `Bilet #${tk.ticket_id || ""}`;
   };
 
+  // Server ("EXAM"/"TICKET"/…) va lokal ("exam"/"ticket_5"/…) turlari — xom qiymat ko'rsatilmaydi
   const localizeExamType = (type: string): string => {
-    if (type === "exam") return t("exam.title", "Imtihon");
-    if (type === "marathon") return t("marathon.title", "Marafon");
-    if (type.startsWith("ticket_"))
-      return `${t("stats.ticket", "Bilet")} #${type.replace("ticket_", "")}`;
-    return type;
+    const raw = String(type || "");
+    const ticketNum = /^ticket_(\d+)$/i.exec(raw)?.[1];
+    if (ticketNum) return `${t("stats.ticket")} #${ticketNum}`;
+    switch (modeFromExamType(raw)) {
+      case "real":
+        return t("exam.title");
+      case "marathon":
+        return t("marathon.title");
+      case "wrong":
+        return t("nav.wrongAnswers");
+      case "package":
+        return t("nav.packages");
+      default:
+        return t("stats.ticket");
+    }
   };
 
   const localizeQuestion = (q: QuestionStatDetail): string => {
@@ -251,7 +269,7 @@ export default function Statistics_Page() {
         setStats(s);
         setHistory(h);
       })
-      .catch(() => {})
+      .catch((err: unknown) => reportError("statistics.load", err))
       .finally(() => setLoading(false));
   }, [userId]);
 
@@ -325,8 +343,8 @@ export default function Statistics_Page() {
   return (
     <>
       <SEO
-        title={t("seo.statistics.title", "Statistika va Tahlillar")}
-        description={t("seo.statistics.desc", "O'rganish darajangiz va tayyorgarlik statistikasi")}
+        title={t("seo.statistics.title")}
+        description={t("seo.statistics.desc")}
         canonical="/statistics"
         noIndex={true}
       />
@@ -353,12 +371,11 @@ export default function Statistics_Page() {
                 className="reset-modal-title"
                 style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.3, color: "var(--text)", marginBottom: 10 }}
               >
-                {t("stats.resetAll", "Barcha statistikani tozalash")}
+                {t("stats.resetAll")}
               </Modal.Title>
               <div className="reset-modal-msg">
                 {t(
-                  "stats.resetAllConfirm",
-                  "Haqiqatan ham barcha biletlar, savollar va imtihon tarixini qayta boshlamoqchimisiz?"
+                  "stats.resetAllConfirm"
                 )}
               </div>
               <div className="reset-modal-actions">
@@ -368,7 +385,7 @@ export default function Statistics_Page() {
                   disabled={resetting}
                   type="button"
                 >
-                  {t("common.cancel", "Bekor qilish")}
+                  {t("common.cancel")}
                 </button>
                 <button
                   className="reset-confirm-btn"
@@ -377,7 +394,7 @@ export default function Statistics_Page() {
                   type="button"
                 >
                   {resetting ? <span className="spinner-sm" /> : <IconTrash size={14} />}
-                  {resetting ? t("common.loading", "Yuklanmoqda...") : t("common.yes", "Ha, tozalash")}
+                  {resetting ? t("common.loading") : t("common.yes")}
                 </button>
               </div>
             </Modal.Body>
@@ -388,12 +405,11 @@ export default function Statistics_Page() {
         <div className={styles.innerPageHeader}>
           <div className={styles.innerPageHeaderLeft}>
             <div className={styles.innerPageTitleRow}>
-              <h1 className={styles.innerPageTitle}>{t("stats.title", "Statistika")}</h1>
+              <h1 className={styles.innerPageTitle}>{t("stats.title")}</h1>
             </div>
             <p className={styles.innerPageSubtitle}>
               {t(
-                "stats.subtitle",
-                "O'rganish darajangiz, savollar aniqligi va biletlar bo'yicha tayyorgarlik monitoringi."
+                "stats.subtitle"
               )}
             </p>
           </div>
@@ -402,12 +418,12 @@ export default function Statistics_Page() {
             <button
               className="stats-reset-btn"
               onClick={() => setResetConfirm(true)}
-              title={t("stats.resetAll", "Barcha statistikani tozalash")}
-              aria-label={t("stats.resetAll", "Barcha statistikani tozalash")}
+              title={t("stats.resetAll")}
+              aria-label={t("stats.resetAll")}
               type="button"
             >
               <IconTrash size={15} />
-              <span>{t("stats.resetAll", "Barcha statistikani tozalash")}</span>
+              <span>{t("stats.resetAll")}</span>
             </button>
           </div>
         </div>
@@ -420,7 +436,7 @@ export default function Statistics_Page() {
             type="button"
           >
             <IconTicket size={15} />
-            {t("stats.tabTickets", "Biletlar")}
+            {t("stats.tabTickets")}
           </button>
           <button
             className={`stats-tab-btn${tab === "questions" ? " active" : ""}`}
@@ -428,7 +444,7 @@ export default function Statistics_Page() {
             type="button"
           >
             <IconQuestionMark size={15} />
-            {t("stats.tabQuestions", "Savollar")}
+            {t("stats.tabQuestions")}
           </button>
           <button
             className={`stats-tab-btn${tab === "history" ? " active" : ""}`}
@@ -436,7 +452,7 @@ export default function Statistics_Page() {
             type="button"
           >
             <IconHistory size={15} />
-            {t("stats.tabHistory", "Tarix")}
+            {t("stats.tabHistory")}
           </button>
         </div>
 
@@ -460,7 +476,7 @@ export default function Statistics_Page() {
                           <IconTicket size={17} />
                         </span>
                         <span className="stats-section-title">
-                          {t("stats.ticketSection", "Biletlar bo'yicha tayyorgarlik")}
+                          {t("stats.ticketSection")}
                         </span>
                       </div>
 
@@ -472,28 +488,28 @@ export default function Statistics_Page() {
                       />
                       <div className="hbar-list">
                         <HBar
-                          label={t("stats.ready", "Tayyor")}
+                          label={t("stats.ready")}
                           count={stats.ticket_ready}
                           total={stats.ticket_total}
                           color="var(--correct)"
                           icon={<IconCircleCheck size={15} />}
                         />
                         <HBar
-                          label={t("stats.average", "O'rtacha")}
+                          label={t("stats.average")}
                           count={stats.ticket_average}
                           total={stats.ticket_total}
                           color="#f08c00"
                           icon={<IconCircleHalf size={15} />}
                         />
                         <HBar
-                          label={t("stats.notReady", "Tayyor emas")}
+                          label={t("stats.notReady")}
                           count={stats.ticket_not_ready}
                           total={stats.ticket_total}
                           color="var(--wrong)"
                           icon={<IconCircleX size={15} />}
                         />
                         <HBar
-                          label={t("stats.untouched", "Ko'rilmagan")}
+                          label={t("stats.untouched")}
                           count={stats.ticket_untouched}
                           total={stats.ticket_total}
                           color="var(--text-muted)"
@@ -503,15 +519,15 @@ export default function Statistics_Page() {
                       <div className="stats-condition-info">
                         <div className="condition-row ready">
                           <IconCircleCheck size={13} />
-                          {t("stats.conditionReady", "Kamida 1 marta 100% va <5 daqiqa")}
+                          {t("stats.conditionReady", { percent: ticketPassPercent })}
                         </div>
                         <div className="condition-row avg">
                           <IconCircleHalf size={13} />
-                          {t("stats.conditionAvg", "Kamida 1 marta o'tgan (>=70%)")}
+                          {t("stats.conditionAvg", { percent: ticketAvgPercent })}
                         </div>
                         <div className="condition-row bad">
                           <IconCircleX size={13} />
-                          {t("stats.conditionBad", "Ishlangan lekin o'ta olinmagan (<70%)")}
+                          {t("stats.conditionBad")}
                         </div>
                       </div>
                     </div>
@@ -521,7 +537,7 @@ export default function Statistics_Page() {
                   {!stats || stats.ticket_total === 0 ? (
                     <div className="stats-section-card">
                       <p className="stats-empty-hint">
-                        {t("stats.noTicketsYet", "Hozircha biletlar yechilmagan")}
+                        {t("stats.noTicketsYet")}
                       </p>
                     </div>
                   ) : (
@@ -591,7 +607,7 @@ export default function Statistics_Page() {
                           <IconQuestionMark size={17} />
                         </span>
                         <span className="stats-section-title">
-                          {t("stats.questionSection", "Savollar bo'yicha tayyorgarlik")}
+                          {t("stats.questionSection")}
                         </span>
                       </div>
                       <StackedBar
@@ -602,28 +618,28 @@ export default function Statistics_Page() {
                       />
                       <div className="hbar-list">
                         <HBar
-                          label={t("stats.ready", "Tayyor")}
+                          label={t("stats.ready")}
                           count={stats.question_readiness.ready}
                           total={stats.question_readiness.total}
                           color="var(--correct)"
                           icon={<IconCircleCheck size={15} />}
                         />
                         <HBar
-                          label={t("stats.average", "O'rtacha")}
+                          label={t("stats.average")}
                           count={stats.question_readiness.average}
                           total={stats.question_readiness.total}
                           color="#f08c00"
                           icon={<IconCircleHalf size={15} />}
                         />
                         <HBar
-                          label={t("stats.weakLabel", "Kuchsiz")}
+                          label={t("stats.weakLabel")}
                           count={stats.question_readiness.weak}
                           total={stats.question_readiness.total}
                           color="var(--wrong)"
                           icon={<IconCircleX size={15} />}
                         />
                         <HBar
-                          label={t("stats.untouched", "Ko'rilmagan")}
+                          label={t("stats.untouched")}
                           count={stats.question_readiness.untouched}
                           total={stats.question_readiness.total}
                           color="var(--text-muted)"
@@ -633,19 +649,19 @@ export default function Statistics_Page() {
                       <div className="stats-condition-info">
                         <div className="condition-row ready">
                           <IconCircleCheck size={13} />
-                          {t("stats.qConditionReady", "5+ marta to'g'ri yechilgan")}
+                          {t("stats.qConditionReady")}
                         </div>
                         <div className="condition-row avg">
                           <IconCircleHalf size={13} />
-                          {t("stats.qConditionAvg", "3-4 marta to'g'ri yechilgan")}
+                          {t("stats.qConditionAvg")}
                         </div>
                         <div className="condition-row bad">
                           <IconCircleX size={13} />
-                          {t("stats.qConditionBad", "1-2 marta to'g'ri yechilgan")}
+                          {t("stats.qConditionBad")}
                         </div>
                       </div>
                       <div className="stats-total-hint">
-                        {t("stats.totalQuestions", "Jami savollar")}:{" "}
+                        {t("stats.totalQuestions")}:{" "}
                         <strong>{stats.question_readiness.total}</strong>
                       </div>
                     </div>
@@ -664,11 +680,11 @@ export default function Statistics_Page() {
                           onClick={() => setQFilter(f)}
                           type="button"
                         >
-                          {f === "all" && t("stats.filterAll", "Barchasi")}
-                          {f === "ready" && t("stats.ready", "Tayyor")}
-                          {f === "average" && t("stats.average", "O'rtacha")}
-                          {f === "weak" && t("stats.weakLabel", "Kuchsiz")}
-                          {f === "untouched" && t("stats.untouched", "Ko'rilmagan")}
+                          {f === "all" && t("stats.filterAll")}
+                          {f === "ready" && t("stats.ready")}
+                          {f === "average" && t("stats.average")}
+                          {f === "weak" && t("stats.weakLabel")}
+                          {f === "untouched" && t("stats.untouched")}
                         </button>
                       ))}
                     </div>
@@ -685,7 +701,7 @@ export default function Statistics_Page() {
                         }
                       >
                         <option value="all">
-                          {t("stats.allTopics", "Barcha mavzular")}
+                          {t("stats.allTopics")}
                         </option>
                         {topicList.map((tp) => (
                           <option key={tp.id} value={tp.id}>
@@ -699,8 +715,7 @@ export default function Statistics_Page() {
                           type="text"
                           className="q-search-input"
                           placeholder={t(
-                            "stats.searchPlaceholder",
-                            "Savol matni bo'yicha qidirish..."
+                            "stats.searchPlaceholder"
                           )}
                           value={qSearch}
                           onChange={(e) => setQSearch(e.target.value)}
@@ -717,7 +732,7 @@ export default function Statistics_Page() {
                   ) : filteredQuestions.length === 0 ? (
                     <div className="stats-section-card">
                       <p className="stats-empty-hint">
-                        {t("stats.noResults", "Savollar topilmadi")}
+                        {t("stats.noResults")}
                       </p>
                     </div>
                   ) : (
@@ -749,7 +764,6 @@ export default function Statistics_Page() {
                       <div className="q-list-footer">
                         {t("stats.showingCount", {
                           count: filteredQuestions.length,
-                          defaultValue: `${filteredQuestions.length} ta savol`,
                         })}
                       </div>
                     </div>
@@ -767,17 +781,18 @@ export default function Statistics_Page() {
                       <IconTrophy size={17} />
                     </span>
                     <span className="stats-section-title">
-                      {t("stats.recentExams", "Oxirgi imtihonlar tarixi")}
+                      {t("stats.recentExams")}
                     </span>
                   </div>
                   {history.length === 0 ? (
                     <p className="stats-empty-hint">
-                      {t("stats.noExams", "Hozircha imtihonlar tarixi yo'q")}
+                      {t("stats.noExams")}
                     </p>
                   ) : (
                     <div className="stats-history-list">
                       {history.map((h) => {
-                        const passed = h.score >= 90;
+                        // W-04: rejim qoidasi (real: maxWrong; bilet/marafon: foiz) yoki saqlangan natija
+                        const passed = isStoredResultPassed(h, rules);
                         return (
                           <div
                             key={h.id}

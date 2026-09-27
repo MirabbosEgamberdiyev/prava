@@ -50,11 +50,13 @@ import {
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
+import { useCurriculumCountParams } from "../../hooks/useCurriculumCounts";
 import api from "../../api/api";
 import EnterpriseContactCard from "../../components/common/EnterpriseContactCard";
 
 export default function Partners_Page() {
   const { t } = useTranslation();
+  const countParams = useCurriculumCountParams();
 
   // Form State
   const [orgName, setOrgName] = useState("");
@@ -103,20 +105,20 @@ export default function Partners_Page() {
     setFormError("");
 
     if (!orgName.trim() || orgName.trim().length < 2) {
-      setFormError(t("partners.errOrganization", "Tashkilot nomini kiriting (kamida 2 ta belgi)"));
+      setFormError(t("partners.errOrganization"));
       return;
     }
     if (!contactPerson.trim() || contactPerson.trim().length < 2) {
-      setFormError(t("partners.errFullName", "Mas'ul shaxs ismini kiriting (kamida 2 ta belgi)"));
+      setFormError(t("partners.errFullName"));
       return;
     }
     const digitsOnly = phone.replace(/\D/g, "");
     if (digitsOnly.length < 12) {
-      setFormError(t("partners.errPhone", "Telefon raqamini to'liq kiriting: +998 XX XXX XX XX"));
+      setFormError(t("partners.errPhone"));
       return;
     }
     if (!orgType) {
-      setFormError(t("partners.errOrgType", "Tashkilot turini tanlang"));
+      setFormError(t("partners.errOrgType"));
       return;
     }
 
@@ -152,8 +154,8 @@ export default function Partners_Page() {
       setFormSubmitted(true);
 
       notifications.show({
-        title: t("partners.successTitle", "So‘rovingiz muvaffaqiyatli qabul qilindi"),
-        message: t("partners.successDesc", "Mutaxassisimiz murojaatingizni qabul qildi. Tez orada siz bilan bog‘lanamiz."),
+        title: t("partners.successTitle"),
+        message: t("partners.successDesc"),
         color: "green",
       });
     }
@@ -179,37 +181,33 @@ export default function Partners_Page() {
   const audienceSegments = [
     {
       icon: IconSchool,
-      title: t("partners.seg1Title", "Avtomaktablar"),
+      title: t("partners.seg1Title"),
       desc: t(
-        "partners.seg1Desc",
-        "Nazariy imtihon xonalarini jihozlash, o'quvchilarga F1–F5 klaviatura ko'nikmalarini singdirish va real davlat imtihoni muhitini yaratish."
+        "partners.seg1Desc"
       ),
       color: "blue",
     },
     {
       icon: IconBuildingCommunity,
-      title: t("partners.seg2Title", "O'quv markazlari va kollejlar"),
+      title: t("partners.seg2Title"),
       desc: t(
-        "partners.seg2Desc",
-        "Guruhlar kesimida test o'tkazish, o'quv dasturi bo'yicha oraliq nazoratlarni tashkil qilish va monitoring olib borish."
+        "partners.seg2Desc"
       ),
       color: "blue",
     },
     {
       icon: IconTruck,
-      title: t("partners.seg3Title", "Korporativ avtoparklar va logistika"),
+      title: t("partners.seg3Title"),
       desc: t(
-        "partners.seg3Desc",
-        "Kompaniya haydovchilarining yo'l harakati qoidalari bo'yicha bilim darajasini davriy tekshirish va attestatsiyadan o'tkazish."
+        "partners.seg3Desc"
       ),
       color: "blue",
     },
     {
       icon: IconShieldCheck,
-      title: t("partners.seg4Title", "Davlat va xususiy tashkilotlar"),
+      title: t("partners.seg4Title"),
       desc: t(
-        "partners.seg4Desc",
-        "Tashqi internetga ulanmasdan, ichki lokal tarmoq (LAN) doirasida xavfsiz va mustaqil attestatsiya tizimini joriy qilish."
+        "partners.seg4Desc"
       ),
       color: "blue",
     },
@@ -218,82 +216,74 @@ export default function Partners_Page() {
   const capabilities = [
     {
       icon: IconWifiOff,
-      title: t("partners.f1Title", "100% Offline va Barqaror Ishlash"),
+      title: t("partners.f1Title"),
       desc: t(
-        "partners.f1Desc",
-        "Dastur butunlay internetsiz ishlaydi. Internet tezligi yoki uzilishlari dars jarayoniga mutlaqo ta'sir qilmaydi."
+        "partners.f1Desc"
       ),
       color: "blue",
     },
     {
       icon: IconDatabase,
-      title: t("partners.f2Title", "Lokal Rasmiy Savollar Bazasi"),
+      title: t("partners.f2Title"),
       desc: t(
         "partners.f2Desc",
-        "IIV YHXXning 2026-yilgi amaldagi 1200+ rasmiy savollari, biletlar va yo'l chizmalari kompyuterga lokal o'rnatiladi."
+        countParams
       ),
       color: "blue",
     },
     {
       icon: IconDeviceDesktop,
-      title: t("partners.f3Title", "O'qituvchi va Nazoratchi Paneli"),
+      title: t("partners.f3Title"),
       desc: t(
-        "partners.f3Desc",
-        "O'qituvchi dars vaqtida har bir o'quvchining qaysi savolda turganini va to'plagan ballarini o'z monitorida ko'rib turadi."
+        "partners.f3Desc"
       ),
       color: "blue",
     },
     {
       icon: IconUsers,
-      title: t("partners.f4Title", "Guruhlar va Oqimlar Boshqaruvi"),
+      title: t("partners.f4Title"),
       desc: t(
-        "partners.f4Desc",
-        "O'quv guruhlarini shakllantirish, o'quvchilarni ro'yxatga olish va sinov muddatlarini belgilash imkoniyati."
+        "partners.f4Desc"
       ),
       color: "blue",
     },
     {
       icon: IconChartBar,
-      title: t("partners.f5Title", "Natijalar Tahlili va Monitoring"),
+      title: t("partners.f5Title"),
       desc: t(
-        "partners.f5Desc",
-        "Qaysi yo'l qoidalari yoki mavzularda xatolar ko'p bo'layotganini aniqlash va zaif mavzular bo'yicha tahliliy hisobot olish."
+        "partners.f5Desc"
       ),
       color: "blue",
     },
     {
       icon: IconNetwork,
-      title: t("partners.f6Title", "Ichki Tarmoqda (LAN) Ishlash"),
+      title: t("partners.f6Title"),
       desc: t(
-        "partners.f6Desc",
-        "Kompyuter sinfidagi barcha qurilmalar lokal tarmoq orqali o'qituvchi kompyuteriga ulanadi va tashqi trafik talab qilmaydi."
+        "partners.f6Desc"
       ),
       color: "blue",
     },
     {
       icon: IconKeyboard,
-      title: t("partners.f7Title", "F1–F5 Klaviatura Boshqaruvi"),
+      title: t("partners.f7Title"),
       desc: t(
-        "partners.f7Desc",
-        "YHXX imtihon markazlaridagi standart klaviatura boshqaruvi bilan to'liq bir xil, bu o'quvchida amaliy ko'nikma hosil qiladi."
+        "partners.f7Desc"
       ),
       color: "blue",
     },
     {
       icon: IconRefresh,
-      title: t("partners.f8Title", "Avtomatik Yangilanishlar"),
+      title: t("partners.f8Title"),
       desc: t(
-        "partners.f8Desc",
-        "Yo'l harakati qoidalariga rasmiy o'zgartirishlar kiritilganda dastur bazasini oson va xavfsiz yangilash mexanizmi."
+        "partners.f8Desc"
       ),
       color: "blue",
     },
     {
       icon: IconHeadset,
-      title: t("partners.f9Title", "Korporativ Texnik Qo'llab-quvvatlash"),
+      title: t("partners.f9Title"),
       desc: t(
-        "partners.f9Desc",
-        "Dasturni o'rnatish, kompyuterlarni sozlash va xodimlarni o'rgatish bo'yicha mas'ul mutaxassis ko'magi."
+        "partners.f9Desc"
       ),
       color: "blue",
     },
@@ -301,35 +291,31 @@ export default function Partners_Page() {
 
   const steps = [
     {
-      num: t("partners.step1Num", "01"),
-      title: t("partners.step1Title", "Murojaat va maslahatlashuv"),
+      num: t("partners.step1Num"),
+      title: t("partners.step1Title"),
       desc: t(
-        "partners.step1Desc",
-        "Tashkilotingiz talablari, kompyuterlar soni va sinflar infratuzilmasi tahlil qilinadi."
+        "partners.step1Desc"
       ),
     },
     {
-      num: t("partners.step2Num", "02"),
-      title: t("partners.step2Title", "Dasturni o'rnatish va sozlash"),
+      num: t("partners.step2Num"),
+      title: t("partners.step2Title"),
       desc: t(
-        "partners.step2Desc",
-        "Mutaxassislarimiz yordamida Prava Desktop Enterprise tizimi kompyuter sinfiga o'rnatiladi va lokal tarmoq sozlanadi."
+        "partners.step2Desc"
       ),
     },
     {
-      num: t("partners.step3Num", "03"),
-      title: t("partners.step3Title", "O'qituvchilarni yo'riqnoma bilan ta'minlash"),
+      num: t("partners.step3Num"),
+      title: t("partners.step3Title"),
       desc: t(
-        "partners.step3Desc",
-        "O'qituvchi va administratorlar uchun tizimdan foydalanish va guruhlarni boshqarish bo'yicha qisqa yo'riqnoma beriladi."
+        "partners.step3Desc"
       ),
     },
     {
-      num: t("partners.step4Num", "04"),
-      title: t("partners.step4Title", "Doimiy texnik kafolat"),
+      num: t("partners.step4Num"),
+      title: t("partners.step4Title"),
       desc: t(
-        "partners.step4Desc",
-        "Savollar bazasi yangilanishi va tizim barqarorligi doimiy nazorat qilib boriladi."
+        "partners.step4Desc"
       ),
     },
   ];
@@ -337,34 +323,30 @@ export default function Partners_Page() {
   const partnerFaq = [
     {
       id: "pfaq-1",
-      question: t("partners.q1", "Dastur ishlashi uchun internet doimiy bo'lishi shartmi?"),
+      question: t("partners.q1"),
       answer: t(
-        "partners.a1",
-        "Yo'q. Prava Desktop Enterprise tizimi 100% offline ishlashga mo'ljallangan. Barcha savollar bazasi va tekshiruv algoritmlari kompyuterning o'zida lokal saqlanadi. Kompyuter sinfidagi o'quvchilar va o'qituvchi o'rtasidagi ma'lumotlar ichki lokal tarmoq (LAN) orqali internet talab qilinmasdan uzatiladi."
+        "partners.a1"
       ),
     },
     {
       id: "pfaq-2",
-      question: t("partners.q2", "Kompyuterlarga qanday texnik talablar qo'yiladi?"),
+      question: t("partners.q2"),
       answer: t(
-        "partners.a2",
-        "Dastur resurs tejamkor bo'lib, Windows 7, 8, 10 va 11 operatsion tizimlarida barqaror ishlaydi. 2 GB tezkor xotira (RAM) va 500 MB disk maydoni kifoya qiladi. Maxsus qimmatbaho server yoki kuchli protsessor talab etilmaydi."
+        "partners.a2"
       ),
     },
     {
       id: "pfaq-3",
-      question: t("partners.q3", "Yangi yo'l qoidalari qabul qilinsa, savollar qanday yangilanadi?"),
+      question: t("partners.q3"),
       answer: t(
-        "partners.a3",
-        "Qonunchilikka yoki YHXX standartlariga o'zgartirish kiritilganda biz rasmiy yangilanish paketini taqdim etamiz. Yangilanish bitta tugma yoki lokal fayl orqali osonlik bilan o'rnatiladi."
+        "partners.a3"
       ),
     },
     {
       id: "pfaq-4",
-      question: t("partners.q4", "Dasturni joriy qilishdan oldin sinab ko'rish mumkinmi?"),
+      question: t("partners.q4"),
       answer: t(
-        "partners.a4",
-        "Albatta. Hamkorlik so'rovini qoldirganingizdan so'ng mutaxassislarimiz tashkilotingiz uchun sinov versiyasini taqdim etadi va imkoniyatlarni amalda ko'rsatib beradi."
+        "partners.a4"
       ),
     },
   ];
@@ -372,25 +354,25 @@ export default function Partners_Page() {
   const getOrgTypeName = (type: string | null) => {
     switch (type) {
       case "school":
-        return t("partners.orgTypeSchool", "Avtomaktab");
+        return t("partners.orgTypeSchool");
       case "center":
-        return t("partners.orgTypeCenter", "O'quv markazi / Kollej");
+        return t("partners.orgTypeCenter");
       case "corporate":
-        return t("partners.orgTypeCorporate", "Korporativ avtopark / Logistika");
+        return t("partners.orgTypeCorporate");
       case "state":
-        return t("partners.orgTypeState", "Davlat muassasasi");
+        return t("partners.orgTypeState");
       case "other":
-        return t("partners.orgTypeOther", "Boshqa tashkilot");
+        return t("partners.orgTypeOther");
       default:
-        return type || t("partners.notSpecified", "Ko‘rsatilmagan");
+        return type || t("partners.notSpecified");
     }
   };
 
   return (
     <>
       <SEO
-        title={t("seo.partners.title", "Avtomaktablar va Hamkorlar uchun Korporativ Yechimlar — Prava Online")}
-        description={t("seo.partners.desc", "Avtomaktablar uchun o'quvchilar monitoringi, kompyuter sinflari, guruh statistikasi va maxsus dasturiy yechimlar.")}
+        title={t("seo.partners.title")}
+        description={t("seo.partners.desc")}
         keywords="avtomaktablar uchun dastur, avtomaktab test dasturi, haydovchilik o'quv markazi dasturi, offline prava test, prava desktop enterprise, prava avtomaktab hamkorlik"
         canonical="/partners"
         jsonLd={{
@@ -415,20 +397,18 @@ export default function Partners_Page() {
         <div className="saas-header-block">
           <div className="saas-badge-pill">
             <IconSparkles size={13} />
-            <span>{t("partners.badge", "Avtomaktablar va Korporativ Hamkorlik")}</span>
+            <span>{t("partners.badge")}</span>
           </div>
 
           <Title order={1} className="saas-page-title">
             {t(
-              "partners.title",
-              "Ta'lim muassasalari va avtomaktablar uchun zamonaviy dasturiy majmua"
+              "partners.title"
             )}
           </Title>
 
           <Text size="md" c="var(--text-muted)" className="saas-page-subtitle">
             {t(
-              "partners.subtitle",
-              "Kompyuter sinflari, ichki tarmoq va to'liq offline rejimda ishlovchi rasmiy imtihon tizimi. O'quvchilarni davlat YHXX imtihoniga tayyorlash jarayonini markazlashgan holda boshqaring."
+              "partners.subtitle"
             )}
           </Text>
 
@@ -447,7 +427,7 @@ export default function Partners_Page() {
               onClick={scrollToForm}
               leftSection={<IconSend size={16} />}
             >
-              {t("partners.ctaConsult", "Hamkorlik so'rovini qoldirish")}
+              {t("partners.ctaConsult")}
             </Button>
             <Link to="/downloads" style={{ textDecoration: "none" }}>
               <Button
@@ -456,7 +436,7 @@ export default function Partners_Page() {
                 className="saas-btn-secondary"
                 leftSection={<IconDownload size={16} />}
               >
-                {t("partners.ctaDownload", "Desktop versiyani ko'rish")}
+                {t("partners.ctaDownload")}
               </Button>
             </Link>
           </Flex>
@@ -473,10 +453,10 @@ export default function Partners_Page() {
             mb={6}
             style={{ letterSpacing: "1px" }}
           >
-            {t("partners.segBadge", "Kimlar uchun mo'ljallangan?")}
+            {t("partners.segBadge")}
           </Text>
           <Title order={2} ta="center" size="h3" mb="xl">
-            {t("partners.segTitle", "Har qanday o'quv infratuzilmasiga moslashuvchan")}
+            {t("partners.segTitle")}
           </Title>
 
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
@@ -511,15 +491,14 @@ export default function Partners_Page() {
                 mb={6}
                 style={{ letterSpacing: "1px" }}
               >
-                {t("partners.featBadge", "Funksional Imkoniyatlar")}
+                {t("partners.featBadge")}
               </Text>
               <Title order={2} size="h3" mb="xs">
-                {t("partners.featTitle", "Prava Desktop Enterprise — Ta'lim jarayonini to'liq nazorat qilish")}
+                {t("partners.featTitle")}
               </Title>
               <Text size="xs" c="dimmed" maw={640} mx="auto">
                 {t(
-                  "partners.featSubtitle",
-                  "O'qituvchi va ma'muriyat uchun barcha zarur vositalar bitta dasturiy ta'minotda jamlangan."
+                  "partners.featSubtitle"
                 )}
               </Text>
             </Box>
@@ -558,10 +537,10 @@ export default function Partners_Page() {
             mb={6}
             style={{ letterSpacing: "1px" }}
           >
-            {t("partners.stepsBadge", "Joriy Qilish Bosqichlari")}
+            {t("partners.stepsBadge")}
           </Text>
           <Title order={2} ta="center" size="h3" mb="xl">
-            {t("partners.stepsTitle", "Hamkorlik qanday amalga oshiriladi?")}
+            {t("partners.stepsTitle")}
           </Title>
 
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
@@ -601,15 +580,14 @@ export default function Partners_Page() {
           <Box ta="center" mb="xl">
             <div className="saas-badge-pill" style={{ marginBottom: 12 }}>
               <IconFileCertificate size={13} />
-              <span>{t("partners.formBadge", "Hamkorlik So'rovi")}</span>
+              <span>{t("partners.formBadge")}</span>
             </div>
             <Title order={2} size="h2" mb="xs">
-              {t("partners.formTitle", "Hamkorlik bo'yicha so'rov yuboring")}
+              {t("partners.formTitle")}
             </Title>
             <Text size="sm" c="dimmed" maw={640} mx="auto" lh={1.6}>
               {t(
-                "partners.formSubtitle",
-                "Tashkilotingiz ma'lumotlarini qoldiring, mutaxassisimiz 1 ish kuni ichida siz bilan bog'lanib, batafsil ma'lumot beradi."
+                "partners.formSubtitle"
               )}
             </Text>
           </Box>
@@ -634,15 +612,14 @@ export default function Partners_Page() {
                       <IconCircleCheck size={44} />
                     </ThemeIcon>
                     <Title order={3} size="h3" ta="center">
-                      {t("partners.successTitle", "So‘rovingiz muvaffaqiyatli qabul qilindi")}
+                      {t("partners.successTitle")}
                     </Title>
                     <Badge size="xl" variant="filled" color="blue" radius="md" style={{ fontFamily: "monospace", letterSpacing: 1 }}>
-                      {t("partners.ticketLabel", "Murojaat raqami")}: #{ticketId}
+                      {t("partners.ticketLabel")}: #{ticketId}
                     </Badge>
                     <Text size="sm" c="dimmed" ta="center" maw={480} lh={1.6}>
                       {t(
-                        "partners.successDescNew",
-                        "Mutaxassisimiz murojaatingizni qabul qildi. Tez orada siz bilan bog‘lanamiz."
+                        "partners.successDescNew"
                       )}
                     </Text>
 
@@ -659,36 +636,36 @@ export default function Partners_Page() {
                       }}
                     >
                       <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb="xs" style={{ letterSpacing: "0.5px" }}>
-                        {t("partners.summaryTitle", "Yuborilgan so'rov tafsilotlari:")}
+                        {t("partners.summaryTitle")}
                       </Text>
                       <Stack gap={6}>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("partners.orgName", "Tashkilot")}:</Text>
+                          <Text size="xs" c="dimmed">{t("partners.orgName")}:</Text>
                           <Text size="xs" fw={600}>{orgName}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("partners.contactPerson", "Mas'ul shaxs")}:</Text>
+                          <Text size="xs" c="dimmed">{t("partners.contactPerson")}:</Text>
                           <Text size="xs" fw={600}>{contactPerson}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("partners.phone", "Telefon")}:</Text>
+                          <Text size="xs" c="dimmed">{t("partners.phone")}:</Text>
                           <Text size="xs" fw={600}>{phone}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("partners.orgType", "Tashkilot turi")}:</Text>
+                          <Text size="xs" c="dimmed">{t("partners.orgType")}:</Text>
                           <Text size="xs" fw={600}>{getOrgTypeName(orgType)}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("partners.city", "Shahar / Hudud")}:</Text>
-                          <Text size="xs" fw={600}>{city.trim() || t("partners.notSpecified", "Ko‘rsatilmagan")}</Text>
+                          <Text size="xs" c="dimmed">{t("partners.city")}:</Text>
+                          <Text size="xs" fw={600}>{city.trim() || t("partners.notSpecified")}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("contact.telegramLabel", "Telegram:")}</Text>
-                          <Text size="xs" fw={600}>{telegram.trim() || t("partners.notSpecified", "Ko‘rsatilmagan")}</Text>
+                          <Text size="xs" c="dimmed">{t("contact.telegramLabel")}</Text>
+                          <Text size="xs" fw={600}>{telegram.trim() || t("partners.notSpecified")}</Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="xs" c="dimmed">{t("partners.workstations", "O'quv kompyuterlari")}:</Text>
-                          <Text size="xs" fw={600}>{workstations ? `${workstations} ta` : t("partners.notSpecified", "Ko‘rsatilmagan")}</Text>
+                          <Text size="xs" c="dimmed">{t("partners.workstations")}:</Text>
+                          <Text size="xs" fw={600}>{workstations ? `${workstations} ta` : t("partners.notSpecified")}</Text>
                         </Group>
                       </Stack>
                     </Box>
@@ -718,7 +695,7 @@ export default function Partners_Page() {
                           radius="md"
                           leftSection={<IconBrandTelegram size={16} />}
                         >
-                          {t("partners.btnTelegram", "Telegram orqali bog‘lanish")}
+                          {t("partners.btnTelegram")}
                         </Button>
                         <Button
                           component="a"
@@ -729,7 +706,7 @@ export default function Partners_Page() {
                           radius="md"
                           leftSection={<IconMail size={16} />}
                         >
-                          {t("partners.btnEmail", "Email yozish")}
+                          {t("partners.btnEmail")}
                         </Button>
                       </Group>
                       <Button
@@ -740,7 +717,7 @@ export default function Partners_Page() {
                         leftSection={<IconRefresh size={14} />}
                         mt={4}
                       >
-                        {t("partners.sendAnother", "Yangi so‘rov yuborish")}
+                        {t("partners.sendAnother")}
                       </Button>
                     </Stack>
                   </Stack>
@@ -755,16 +732,16 @@ export default function Partners_Page() {
 
                       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                         <TextInput
-                          label={t("partners.orgName", "Tashkilot yoki avtomaktab nomi")}
-                          placeholder={t("partners.orgNamePlaceholder", "Masalan: Avto-Lider MCHJ")}
+                          label={t("partners.orgName")}
+                          placeholder={t("partners.orgNamePlaceholder")}
                           required
                           value={orgName}
                           onChange={(e) => setOrgName(e.currentTarget.value)}
                           leftSection={<IconBuildingCommunity size={16} />}
                         />
                         <TextInput
-                          label={t("partners.contactPerson", "Mas'ul shaxs (F.I.Sh.)")}
-                          placeholder={t("partners.contactPersonPlaceholder", "Ism va familiyangiz")}
+                          label={t("partners.contactPerson")}
+                          placeholder={t("partners.contactPersonPlaceholder")}
                           required
                           value={contactPerson}
                           onChange={(e) => setContactPerson(e.currentTarget.value)}
@@ -774,7 +751,7 @@ export default function Partners_Page() {
 
                       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                         <TextInput
-                          label={t("partners.phone", "Telefon raqami")}
+                          label={t("partners.phone")}
                           placeholder="+998 90 123 45 67"
                           required
                           value={phone}
@@ -782,30 +759,30 @@ export default function Partners_Page() {
                           leftSection={<IconPhone size={16} />}
                         />
                         <Select
-                          label={t("partners.orgType", "Tashkilot turi")}
+                          label={t("partners.orgType")}
                           required
                           value={orgType}
                           onChange={setOrgType}
                           data={[
-                            { value: "school", label: t("partners.orgTypeSchool", "Avtomaktab") },
-                            { value: "center", label: t("partners.orgTypeCenter", "O'quv markazi / Kollej") },
-                            { value: "corporate", label: t("partners.orgTypeCorporate", "Korporativ avtopark / Logistika") },
-                            { value: "state", label: t("partners.orgTypeState", "Davlat muassasasi") },
-                            { value: "other", label: t("partners.orgTypeOther", "Boshqa tashkilot") },
+                            { value: "school", label: t("partners.orgTypeSchool") },
+                            { value: "center", label: t("partners.orgTypeCenter") },
+                            { value: "corporate", label: t("partners.orgTypeCorporate") },
+                            { value: "state", label: t("partners.orgTypeState") },
+                            { value: "other", label: t("partners.orgTypeOther") },
                           ]}
                         />
                       </SimpleGrid>
 
                       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                         <TextInput
-                          label={t("partners.city", "Shahar / Hudud")}
-                          placeholder={t("partners.cityPlaceholder", "Toshkent shahri, Samarqand...")}
+                          label={t("partners.city")}
+                          placeholder={t("partners.cityPlaceholder")}
                           value={city}
                           onChange={(e) => setCity(e.currentTarget.value)}
                           leftSection={<IconMapPin size={16} />}
                         />
                         <TextInput
-                          label={t("contact.telegram", "Telegram username")}
+                          label={t("contact.telegram")}
                           placeholder="@username"
                           value={telegram}
                           onChange={(e) => handleTelegramChange(e.currentTarget.value)}
@@ -815,25 +792,24 @@ export default function Partners_Page() {
 
                       <div>
                         <Text size="sm" fw={500} mb={6}>
-                          {t("partners.workstations", "O'quv kompyuterlari soni")}
+                          {t("partners.workstations")}
                         </Text>
                         <SegmentedControl
                           fullWidth
                           value={workstations}
                           onChange={setWorkstations}
                           data={[
-                            { label: t("partners.workstationsOption1", "1 – 10 ta"), value: "10" },
-                            { label: t("partners.workstationsOption2", "11 – 30 ta"), value: "30" },
-                            { label: t("partners.workstationsOption3", "30 tadan ortiq"), value: "50" },
+                            { label: t("partners.workstationsOption1"), value: "10" },
+                            { label: t("partners.workstationsOption2"), value: "30" },
+                            { label: t("partners.workstationsOption3"), value: "50" },
                           ]}
                         />
                       </div>
 
                       <Textarea
-                        label={t("partners.notes", "Qo'shimcha izoh yoki talablar")}
+                        label={t("partners.notes")}
                         placeholder={t(
-                          "partners.notesPlaceholder",
-                          "Dasturni joriy qilish muddatlari, mavjud kompyuterlar xususiyatlari..."
+                          "partners.notesPlaceholder"
                         )}
                         minRows={3}
                         value={notes}
@@ -852,8 +828,8 @@ export default function Partners_Page() {
                         fw={700}
                       >
                         {isSubmitting
-                          ? t("partners.sending", "Yuborilmoqda...")
-                          : t("partners.submitBtn", "Hamkorlik so'rovini yuborish")}
+                          ? t("partners.sending")
+                          : t("partners.submitBtn")}
                       </Button>
                     </Stack>
                   </form>
@@ -879,16 +855,15 @@ export default function Partners_Page() {
                       <IconHeadset size={18} />
                     </ThemeIcon>
                     <Text size="xs" fw={700} tt="uppercase" c="var(--primary)" style={{ letterSpacing: "1px" }}>
-                      {t("partners.directContactBadge", "24/7 texnik va konsultativ yordam")}
+                      {t("partners.directContactBadge")}
                     </Text>
                   </Group>
                   <Title order={3} size="h3" mb="xs">
-                    {t("partners.directContactTitle", "Mutaxassis bilan bog‘lanish")}
+                    {t("partners.directContactTitle")}
                   </Title>
                   <Text size="xs" c="dimmed" lh={1.6} mb="lg">
                     {t(
-                      "partners.directContactDesc",
-                      "Hamkorlik, joriy etish, texnik maslahat va korporativ takliflar bo‘yicha biz bilan bog‘laning."
+                      "partners.directContactDesc"
                     )}
                   </Text>
 
@@ -897,9 +872,9 @@ export default function Partners_Page() {
                     <EnterpriseContactCard
                       icon={IconPhone}
                       color="blue"
-                      label={t("partners.contactPhoneLabel", "Telefon raqami")}
+                      label={t("partners.contactPhoneLabel")}
                       value="+998 99 391 25 05"
-                      sub={t("partners.contactPhoneSub", "24/7 qo‘ng‘iroqlar qabul qilinadi")}
+                      sub={t("partners.contactPhoneSub")}
                       href="tel:+998993912505"
                       ariaLabel="Telefon orqali bog'lanish"
                     />
@@ -908,9 +883,9 @@ export default function Partners_Page() {
                     <EnterpriseContactCard
                       icon={IconBrandTelegram}
                       color="blue"
-                      label={t("partners.contactTgLabel", "Telegram orqali aloqa")}
+                      label={t("partners.contactTgLabel")}
                       value="@pravaonlineuz"
-                      sub={t("partners.contactTgSub", "Tezkor yozishmalar va konsultatsiyalar")}
+                      sub={t("partners.contactTgSub")}
                       href="https://t.me/pravaonlineuz"
                       external
                       ariaLabel="Telegram orqali bog'lanish"
@@ -920,9 +895,9 @@ export default function Partners_Page() {
                     <EnterpriseContactCard
                       icon={IconMail}
                       color="blue"
-                      label={t("partners.contactEmailLabel", "Elektron pochta")}
+                      label={t("partners.contactEmailLabel")}
                       value="info@pravaonline.uz"
-                      sub={t("partners.contactEmailSub", "Rasmiy tijorat va hamkorlik murojaatlari")}
+                      sub={t("partners.contactEmailSub")}
                       href="mailto:info@pravaonline.uz"
                       ariaLabel="Email orqali bog'lanish"
                     />
@@ -931,10 +906,10 @@ export default function Partners_Page() {
                     <EnterpriseContactCard
                       icon={IconClock}
                       color="blue"
-                      label={t("partners.contactHoursLabel", "Ish vaqti")}
+                      label={t("partners.contactHoursLabel")}
                       value="24/7"
                       badge="Faol"
-                      sub={t("partners.contactHoursSub", "Sutka davomida murojaatlar qabul qilinadi")}
+                      sub={t("partners.contactHoursSub")}
                       ariaLabel="Ish vaqti"
                     />
                   </Stack>
@@ -951,15 +926,15 @@ export default function Partners_Page() {
                   <Stack gap={8}>
                     <Group gap="xs">
                       <IconCheck size={14} color="var(--primary)" />
-                      <Text size="xs" c="dimmed">{t("partners.guarantee1", "Bepul konsultatsiya va demo namoyish")}</Text>
+                      <Text size="xs" c="dimmed">{t("partners.guarantee1")}</Text>
                     </Group>
                     <Group gap="xs">
                       <IconCheck size={14} color="var(--primary)" />
-                      <Text size="xs" c="dimmed">{t("partners.guarantee2", "Tashkilot talablariga individual moslashuv")}</Text>
+                      <Text size="xs" c="dimmed">{t("partners.guarantee2")}</Text>
                     </Group>
                     <Group gap="xs">
                       <IconCheck size={14} color="var(--primary)" />
-                      <Text size="xs" c="dimmed">{t("partners.guarantee3", "Rasmiy shartnoma va to'liq hujjatlar to'plami")}</Text>
+                      <Text size="xs" c="dimmed">{t("partners.guarantee3")}</Text>
                     </Group>
                   </Stack>
                 </Box>
@@ -979,10 +954,10 @@ export default function Partners_Page() {
               mb={8}
               style={{ letterSpacing: "1px" }}
             >
-              {t("partners.faqBadge", "Ko'p So'raladigan Savollar")}
+              {t("partners.faqBadge")}
             </Text>
             <Title order={2} size="h3">
-              {t("partners.faqTitle", "Hamkorlik va joriy qilish bo'yicha savollar")}
+              {t("partners.faqTitle")}
             </Title>
           </Box>
 

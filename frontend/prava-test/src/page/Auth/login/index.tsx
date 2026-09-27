@@ -9,7 +9,9 @@ import {
   Stack,
   TextInput,
 } from "@mantine/core";
-import { Link, useNavigate, useLocation, Navigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
+import { useReturnTo } from "../../../auth/useReturnTo";
+import { registerPath } from "../../../utils/returnTo";
 import { useForm } from "@mantine/form";
 import { useTranslation } from "react-i18next";
 import {
@@ -36,21 +38,13 @@ const Login_Page: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const isCapsLock = useCapsLock();
 
-  const locationState = location.state as
-    | { from?: string | { pathname: string; search?: string } }
-    | undefined;
-  let from = "/me";
-  if (typeof locationState?.from === "string") {
-    from = locationState.from;
-  } else if (locationState?.from?.pathname) {
-    from = locationState.from.pathname + (locationState.from.search || "");
-  }
+  // W-06: maqsadli manzil — `?returnTo=` (yagona manba), xavfsiz tekshirilgan
+  const { returnTo, destination: from } = useReturnTo();
 
   const form = useForm({
     initialValues: {
@@ -97,18 +91,18 @@ const Login_Page: React.FC = () => {
         navigate(from, { replace: true });
 
         notifications.show({
-          title: t("auth.not_title", "Xush kelibsiz!"),
-          message: t("auth.not_massage", "Tizimga muvaffaqiyatli kirdingiz"),
+          title: t("auth.not_title"),
+          message: t("auth.not_massage"),
           color: "teal",
           withBorder: true,
         });
       }
     } catch (err: unknown) {
-      const msg = getErrorMessage(err, t("auth.loginError", "Login yoki parol noto'g'ri"));
+      const msg = getErrorMessage(err, t("auth.loginError"));
       setErrorMessage(msg);
       notifications.show({
         color: "red",
-        title: t("auth.errorTitle", "Xatolik"),
+        title: t("auth.errorTitle"),
         message: msg,
         withBorder: true,
       });
@@ -126,20 +120,19 @@ const Login_Page: React.FC = () => {
 
   return (
     <AuthLayout
-      seoTitle={t("seo.login.title", "Tizimga kirish")}
-      seoDescription={t("seo.login.desc", "Shaxsiy kabinetingizga kiring.")}
+      seoTitle={t("seo.login.title")}
+      seoDescription={t("seo.login.desc")}
       canonicalUrl="/auth/login"
     >
       <AuthCard
         icon={<img src="/logo.svg" alt="Prava Online" width={32} height={32} style={{ objectFit: "contain" }} />}
-        title={t("authV2.login.title", "Xush kelibsiz!")}
+        title={t("authV2.login.title")}
         subtitle={t(
-          "authV2.login.subtitle",
-          "Platformaga kirish uchun profilingiz ma'lumotlarini kiriting."
+          "authV2.login.subtitle"
         )}
-        switchPrompt={t("authV2.login.noAccount", "Akkaunt mavjud emasmi?")}
-        switchLinkText={t("authV2.login.registerLink", "Ro'yxatdan o'tish")}
-        switchLinkHref="/auth/register"
+        switchPrompt={t("authV2.login.noAccount")}
+        switchLinkText={t("authV2.login.registerLink")}
+        switchLinkHref={registerPath(returnTo)}
       >
         {errorMessage && (
           <Alert
@@ -164,10 +157,9 @@ const Login_Page: React.FC = () => {
           <Stack gap={8}>
             <TextInput
               id="login-identifier"
-              label={t("authV2.login.identifierLabel", "Email yoki telefon raqami")}
+              label={t("authV2.login.identifierLabel")}
               placeholder={t(
-                "authV2.login.identifierPlaceholder",
-                "Email yoki +998 90 123 45 67"
+                "authV2.login.identifierPlaceholder"
               )}
               required
               size="sm"
@@ -198,10 +190,9 @@ const Login_Page: React.FC = () => {
             <Box>
               <PasswordInput
                 id="login-password"
-                label={t("authV2.login.passwordLabel", "Parol")}
+                label={t("authV2.login.passwordLabel")}
                 placeholder={t(
-                  "authV2.login.passwordPlaceholder",
-                  "Parolingizni kiriting"
+                  "authV2.login.passwordPlaceholder"
                 )}
                 required
                 size="sm"
@@ -242,7 +233,7 @@ const Login_Page: React.FC = () => {
                 fw={600}
                 style={{ transition: "color 0.2s ease" }}
               >
-                {t("authV2.login.forgotPassword", "Parolni unutdingizmi?")}
+                {t("authV2.login.forgotPassword")}
               </Anchor>
             </Group>
 
@@ -263,8 +254,8 @@ const Login_Page: React.FC = () => {
               }}
             >
               {loading
-                ? t("authV2.login.submitting", "Kirish...")
-                : t("authV2.login.submit", "Tizimga kirish")}
+                ? t("authV2.login.submitting")
+                : t("authV2.login.submit")}
             </Button>
 
             <SocialAuthGroup mode="login" />

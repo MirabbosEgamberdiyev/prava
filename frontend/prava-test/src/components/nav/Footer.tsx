@@ -63,12 +63,11 @@ const Footer = React.memo(() => {
             </Group>
             <Text size="xs" c="var(--text-muted)" lh={1.6} maw={260}>
               {t(
-                "footer.brandDesc",
-                "Haydovchilik guvohnomasi nazariy imtihoniga mustaqil va sifatli tayyorlanish platformasi."
+                "footer.brandDesc"
               )}
             </Text>
             <Group gap={8} mt={4}>
-              <Tooltip label={t("footer.telegramChannel", "Telegram kanal")} withArrow>
+              <Tooltip label={t("footer.telegramChannel")} withArrow>
                 <ActionIcon
                   component="a"
                   href={TELEGRAM_CHANNEL_URL}
@@ -83,7 +82,7 @@ const Footer = React.memo(() => {
                   <IconBrandTelegram size={16} />
                 </ActionIcon>
               </Tooltip>
-              <Tooltip label={t("footer.telegramBot", "Telegram bot")} withArrow>
+              <Tooltip label={t("footer.telegramBot")} withArrow>
                 <ActionIcon
                   component="a"
                   href={TELEGRAM_BOT_URL}
@@ -93,7 +92,7 @@ const Footer = React.memo(() => {
                   color="cyan"
                   size="sm"
                   radius="md"
-                  aria-label={t("footer.telegramBot", "Telegram Bot")}
+                  aria-label={t("footer.telegramBot")}
                 >
                   <IconBrandTelegram size={16} />
                 </ActionIcon>
@@ -119,7 +118,7 @@ const Footer = React.memo(() => {
           {/* Column 2: Mahsulot */}
           <Stack gap={8}>
             <Text size="xs" fw={700} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
-              {t("footer.colProduct", "Mahsulot")}
+              {t("footer.colProduct")}
             </Text>
             <Anchor
               href={getWebAppUrl("/")}
@@ -129,7 +128,7 @@ const Footer = React.memo(() => {
               style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
             >
               <IconBrowser size={14} color="var(--primary)" />
-              <span>{t("footer.webApp", "Web ilova")}</span>
+              <span>{t("footer.webApp")}</span>
             </Anchor>
             <Anchor
               href={WINDOWS_DIRECT_URL}
@@ -140,7 +139,7 @@ const Footer = React.memo(() => {
               style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
             >
               <IconBrandWindows size={14} color="#2563eb" />
-              <span>{t("footer.windowsApp", "Windows (.exe)")}</span>
+              <span>{t("footer.windowsApp")}</span>
             </Anchor>
             <Anchor
               href={PLAY_STORE_URL}
@@ -152,7 +151,7 @@ const Footer = React.memo(() => {
               style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
             >
               <IconBrandGooglePlay size={14} color="#00e676" />
-              <span>{t("footer.androidApp", "Android (Google Play)")}</span>
+              <span>{t("footer.androidApp")}</span>
             </Anchor>
             <Anchor
               href={APP_STORE_URL}
@@ -164,7 +163,7 @@ const Footer = React.memo(() => {
               style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
             >
               <IconBrandApple size={14} />
-              <span>{t("footer.iosApp", "iOS (App Store)")}</span>
+              <span>{t("footer.iosApp")}</span>
             </Anchor>
             <Anchor
               href={TELEGRAM_BOT_URL}
@@ -183,35 +182,35 @@ const Footer = React.memo(() => {
           {/* Column 3: Yordam */}
           <Stack gap={8}>
             <Text size="xs" fw={700} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
-              {t("footer.colSupport", "Yordam")}
+              {t("footer.colSupport")}
             </Text>
             <Anchor component={Link} to="/faq" size="xs" c="var(--text)" underline="hover">
-              {t("footer.faq", "Ko'p so'raladigan savollar")}
+              {t("footer.faq")}
             </Anchor>
             <Anchor component={Link} to="/about" size="xs" c="var(--text)" underline="hover">
-              {t("footer.about", "Biz haqimizda")}
+              {t("footer.about")}
             </Anchor>
             <Anchor component={Link} to="/contact" size="xs" c="var(--text)" underline="hover">
-              {t("footer.contact", "Bog'lanish")}
+              {t("footer.contact")}
             </Anchor>
             <Anchor component={Link} to="/partners" size="xs" c="var(--text)" underline="hover">
-              {t("footer.corporate", "Avtomaktablar va hamkorlik")}
+              {t("footer.corporate")}
             </Anchor>
           </Stack>
 
           {/* Column 4: Huquqiy */}
           <Stack gap={8}>
             <Text size="xs" fw={700} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
-              {t("footer.colLegal", "Huquqiy")}
+              {t("footer.colLegal")}
             </Text>
             <Anchor component={Link} to="/terms" size="xs" c="var(--text)" underline="hover">
-              {t("footer.terms", "Foydalanish shartlari")}
+              {t("footer.terms")}
             </Anchor>
             <Anchor component={Link} to="/privacy" size="xs" c="var(--text)" underline="hover">
-              {t("footer.privacy", "Maxfiylik siyosati")}
+              {t("footer.privacy")}
             </Anchor>
             <Anchor component={Link} to="/offer" size="xs" c="var(--text)" underline="hover">
-              {t("footer.offer", "Ommaviy oferta")}
+              {t("footer.offer")}
             </Anchor>
           </Stack>
         </SimpleGrid>
@@ -231,10 +230,10 @@ const Footer = React.memo(() => {
             gap="xs"
           >
             <Text size="xs" c="dimmed">
-              © {new Date().getFullYear()} Prava Online. {t("footer.allRightsReserved", "Barcha huquqlar himoyalangan.")}
+              © {new Date().getFullYear()} Prava Online. {t("footer.allRightsReserved")}
             </Text>
             <Text size="xs" c="dimmed">
-              {t("footer.independentNotice", "Mustaqil ta'lim platformasi. Rasmiy davlat organi emas.")}
+              {t("footer.independentNotice")}
             </Text>
           </Flex>
         </Box>

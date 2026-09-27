@@ -46,16 +46,15 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
   return (
     <section
       className={styles.smartSection}
-      aria-label={t("dashboard.recommendation.title", "Aqlli tavsiya va xatolar ustida ishlash")}
+      aria-label={t("dashboard.recommendation.title")}
     >
       <div className={styles.sectionHeader}>
         <h3 className={styles.sectionTitle}>
-          {t("dashboard.recommendation.title", "Aqlli tavsiya va xatolar ustida ishlash")}
+          {t("dashboard.recommendation.title")}
         </h3>
         <p className={styles.sectionSubtitle}>
           {t(
-            "dashboard.recommendation.subtitle",
-            "Imtihon natijangizni oshirish uchun eng muhim mavzular va xatolarni tizimli bartaraf eting."
+            "dashboard.recommendation.subtitle"
           )}
         </p>
       </div>
@@ -66,7 +65,7 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
           <div className={styles.weakTopicsHeader}>
             <span className={styles.weakBadge}>
               <IconAlertTriangle size={13} stroke={2.5} />
-              <span>{t("dashboard.recommendation.weakTopicsBadge", "ZAIF MAVZULAR")}</span>
+              <span>{t("dashboard.recommendation.weakTopicsBadge")}</span>
             </span>
 
             <button
@@ -74,13 +73,13 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
               className={styles.weakViewAllLink}
               onClick={() => navigate("/topics")}
             >
-              <span>{t("dashboard.recommendation.viewAllLink", "Barchasini ko'rish →")}</span>
+              <span>{t("dashboard.recommendation.viewAllLink")}</span>
               <IconArrowRight size={14} stroke={2.5} />
             </button>
           </div>
 
           <h4 className={styles.weakTopicsTitle}>
-            {t("dashboard.recommendation.weakTopicsTitle", "Eng ko'p xato tushgan yo'nalishlar")}
+            {t("dashboard.recommendation.weakTopicsTitle")}
           </h4>
 
           {hasWeakTopics ? (
@@ -99,7 +98,6 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
                   <span className={styles.weakTopicMistakes}>
                     {t("dashboard.recommendation.mistakesCount", {
                       count: topic.wrongCount,
-                      defaultValue: `${topic.wrongCount} ta xato`,
                     })}
                   </span>
                   <IconChevronRight size={15} className={styles.weakTopicArrow} />
@@ -113,12 +111,11 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
                 <IconTargetArrow size={24} stroke={2} />
               </div>
               <h5 className={styles.weakEmptyTitle}>
-                {t("dashboard.recommendation.diagnosticEmptyTitle", "Hozircha xatolar mavjud emas")}
+                {t("dashboard.recommendation.diagnosticEmptyTitle")}
               </h5>
               <p className={styles.weakEmptyDesc}>
                 {t(
-                  "dashboard.recommendation.diagnosticEmptyDesc",
-                  "Zaif mavzularni aniqlash va o'quv rejangizni shakllantirish uchun dastlabki sinov testini topshiring."
+                  "dashboard.recommendation.diagnosticEmptyDesc"
                 )}
               </p>
               <button
@@ -126,7 +123,7 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
                 className={styles.weakEmptyBtn}
                 onClick={() => navigate("/exam")}
               >
-                <span>{t("dashboard.recommendation.startDiagnosticBtn", "Sinov testini boshlash →")}</span>
+                <span>{t("dashboard.recommendation.startDiagnosticBtn")}</span>
               </button>
             </div>
           ) : (
@@ -139,12 +136,11 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
                 <IconCheck size={24} stroke={2.5} />
               </div>
               <h5 className={styles.weakEmptyTitle}>
-                {t("dashboard.recommendation.masteryTitle", "Barcha mavzular o'zlashtirildi!")}
+                {t("dashboard.recommendation.masteryTitle")}
               </h5>
               <p className={styles.weakEmptyDesc}>
                 {t(
-                  "dashboard.recommendation.masteryDesc",
-                  "Sizda qayta ishlashni talab qiluvchi xatolar yo'q. Haqiqiy davlat imtihoni simulyatorida bilimingizni sinang."
+                  "dashboard.recommendation.masteryDesc"
                 )}
               </p>
               <button
@@ -153,7 +149,7 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
                 style={{ background: "#059669" }}
                 onClick={() => navigate("/exam")}
               >
-                <span>{t("dashboard.recommendation.startMockExamBtn", "Haqiqiy imtihon topshirish →")}</span>
+                <span>{t("dashboard.recommendation.startMockExamBtn")}</span>
               </button>
             </div>
           )}
@@ -167,22 +163,20 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
               <div>
                 <span className={styles.errorBadge}>
                   <IconFlame size={12} stroke={2.5} />
-                  <span>{t("dashboard.recommendation.quickFixBadge", "TEZKOR TUZATISH")}</span>
+                  <span>{t("dashboard.recommendation.quickFixBadge")}</span>
                 </span>
                 <h4 className={styles.errorTitle}>
                   {totalWrongs > 0
-                    ? `${totalWrongs} ${t("dashboard.recommendation.mistakesTitle", "ta xato javob")}`
-                    : t("dashboard.recommendation.noMistakesYet", "Xatolar mavjud emas")}
+                    ? `${totalWrongs} ${t("dashboard.recommendation.mistakesTitle")}`
+                    : t("dashboard.recommendation.noMistakesYet")}
                 </h4>
                 <p className={styles.errorDesc}>
                   {totalWrongs > 0
                     ? t(
-                        "dashboard.recommendation.mistakesDesc",
-                        "Xatolar ustida ishlash — muvaffaqiyatning eng qisqa yo'li. Quyidagi maxsus test orqali barcha xato javoblaringizni qayta takrorlang."
+                        "dashboard.recommendation.mistakesDesc"
                       )
                     : t(
-                        "dashboard.recommendation.noMistakesDesc",
-                        "Bilimlaringiz a'lo darajada. To'liq imtihon bilan o'zingizni sinab ko'ring."
+                        "dashboard.recommendation.noMistakesDesc"
                       )}
                 </p>
               </div>
@@ -216,8 +210,8 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
             >
               <span>
                 {totalWrongs > 0
-                  ? t("dashboard.recommendation.fixMistakesBtn", "Xatolar ustida ishlashni boshlash →")
-                  : t("dashboard.recommendation.startExamBtn", "Sinov imtihonini boshlash →")}
+                  ? t("dashboard.recommendation.fixMistakesBtn")
+                  : t("dashboard.recommendation.startExamBtn")}
               </span>
               <IconArrowRight size={16} stroke={2.5} />
             </button>
@@ -236,12 +230,11 @@ export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProp
             </div>
             <div className={styles.goalInfo}>
               <h5 className={styles.goalTitle}>
-                {t("dashboard.recommendation.goalTitle", "Sizning maqsadingiz")}
+                {t("dashboard.recommendation.goalTitle")}
               </h5>
               <p className={styles.goalDesc}>
                 {t(
-                  "dashboard.recommendation.goalDesc",
-                  "Nazariya bo'yicha kamida 90% natijaga erishish va imtihondan muvaffaqiyatli o'tish."
+                  "dashboard.recommendation.goalDesc"
                 )}
               </p>
             </div>

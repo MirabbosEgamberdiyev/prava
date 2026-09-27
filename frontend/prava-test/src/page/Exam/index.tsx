@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
@@ -23,8 +23,27 @@ import GamificationResult from "../../components/quiz/GamificationResult";
 import QuizReviewModal from "../../components/quiz/QuizReviewModal";
 import ConfirmFinishModal from "../../components/quiz/ConfirmFinishModal";
 import ExamTimerAnnouncer from "../../components/quiz/ExamTimerAnnouncer";
+import KeyboardHint from "../../components/quiz/KeyboardHint";
 import { useExamTimer } from "../../hooks/useExamTimer";
-import { useExamRules } from "../../services/examRules";
+import { useExamHotkeys } from "../../hooks/useExamHotkeys";
+import { useExamLeaveGuard } from "../../hooks/useExamLeaveGuard";
+import {
+  durationSecondsFor,
+  getExamRulesSync,
+  isExamPassed,
+  maxAllowedWrong,
+  useExamRules,
+} from "../../services/examRules";
+import {
+  buildExamLoaderKey,
+  clearExamSnapshot,
+  readExamSnapshot,
+  writeExamSnapshot,
+  type ExamSnapshot,
+} from "../../services/examSnapshot";
+import { errorKeyFor, getErrorMessage } from "../../types/errors";
+import { reportError } from "../../utils/monitoring";
+import { scopedUserId } from "../../utils/userScope";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -33,6 +52,7 @@ import {
   IconArrowLeft,
   IconSteeringWheel,
   IconAlertTriangle,
+  IconRefresh,
 } from "@tabler/icons-react";
 
 type Phase = "loading" | "exam" | "result";
@@ -46,6 +66,9 @@ interface Answer {
   correct: number;
 }
 
+/** Yuklash muvaffaqiyatsiz: savol yo'q yoki xato (xato obyekti — matn render paytida tarjima qilinadi). */
+type Failure = { kind: "empty" } | { kind: "error"; error: unknown };
+
 const isKnown = (a: Answer) => a.correct >= 0;
 const isRight = (a: Answer) => isKnown(a) && a.selected === a.correct;
 const isWrong = (a: Answer) => isKnown(a) && a.selected !== a.correct;
@@ -57,39 +80,51 @@ export default function Exam_Page() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const userId = user?.id ? Number(user.id) : 1;
+  const userId = scopedUserId(user);
 
-  const countParam = Number(searchParams.get("count"));
-  const questionCount = ALLOWED_EXAM_COUNTS.includes(countParam) ? countParam : 20;
   // Qoidalar serverdan (GET /api/v1/public/exam-rules), offline'da default.
-  // real.maxWrong rasmiy `real.questionCount` savolga nisbatan — boshqa sonlar uchun
-  // proporsional: 20→2, 40→4, 50→5, 60→6, 80→8, 100→10 (default qoidalarda).
   const rules = useExamRules();
-  const MAX_WRONG = Math.floor(
-    (rules.real.maxWrong * questionCount) / Math.max(1, rules.real.questionCount),
-  );
-  const examDurationSeconds = questionCount * rules.real.secondsPerQuestion;
+  // Standart savollar soni — rasmiy `real.questionCount` (mount paytidagi qiymat
+  // muzlatiladi: qoidalar kechikib yuklansa imtihon qayta boshlanmasin).
+  const [defaultCount] = useState(() => getExamRulesSync().real.questionCount);
+  const countParam = Number(searchParams.get("count"));
+  const questionCount = ALLOWED_EXAM_COUNTS.includes(countParam) ? countParam : defaultCount;
+  // Ruxsat etilgan xatolar: floor(real.maxWrong × savollar / real.questionCount)
+  // (default 3/20 qoidasida: 20→3, 40→6, 50→7, 60→9, 80→12, 100→15).
+  const MAX_WRONG = maxAllowedWrong(questionCount, rules);
 
   const [phase, setPhase] = useState<Phase>("loading");
   const [questions, setQuestions] = useState<OfflineQuestion[]>([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
   const [isTimeUp, setIsTimeUp] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [failure, setFailure] = useState<Failure | null>(null);
   const [zoomSrc, setZoomSrc] = useState<string | null>(null);
   const [savedScore, setSavedScore] = useState(0);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [confirmFinishOpen, setConfirmFinishOpen] = useState(false);
+  /** Taymer davomiyligi (soniya) — start/resume paytida absolyut deadline'dan hisoblanadi. */
+  const [timerSeconds, setTimerSeconds] = useState(0);
 
   const startTimeRef = useRef<number>(Date.now());
+  const deadlineRef = useRef<number | null>(null);
   const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // MAX_WRONG oshganda 700 ms kechiktirilgan yakunlash — unmount'da tozalanadi
   const finishDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const answersRef = useRef(answers);
   answersRef.current = answers;
+  const questionsRef = useRef(questions);
+  questionsRef.current = questions;
   // Server sessiya ID — komponent darajasida (modul global emas)
   const sessionIdRef = useRef<number | null>(null);
   const finishedRef = useRef(false);
+  // Eskirgan (bekor qilingan) yuklash javoblarini e'tiborsiz qoldirish uchun
+  const loadSeqRef = useRef(0);
+
+  // W-01: savollarni qayta yuklash FAQAT shu kalit o'zgarganda — til (t) unga kirmaydi.
+  const loaderKey = buildExamLoaderKey({ mode: "exam", userId, questionCount });
+
+  const guard = useExamLeaveGuard(phase === "exam", () => clearExamSnapshot("exam"));
 
   const onBack = () => navigate("/me");
 
@@ -101,152 +136,231 @@ export default function Exam_Page() {
     };
   }, []);
 
-  // Beforeunload listener during exam
-  useEffect(() => {
-    if (phase !== "exam") return;
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "";
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [phase]);
-
   // Scroll current question into view
   useEffect(() => {
     const el = document.getElementById(`qnum-${current}`);
     el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }, [current]);
 
-  const loadQuestions = useCallback(() => {
-    setPhase("loading");
+  const resetState = () => {
     setAnswers({});
     answersRef.current = {};
     setCurrent(0);
     setIsTimeUp(false);
-    setErrorMsg(null);
+    setFailure(null);
+    setReviewOpen(false);
     sessionIdRef.current = null;
+    deadlineRef.current = null;
     finishedRef.current = false;
+  };
+
+  const startFresh = () => {
+    const seq = ++loadSeqRef.current;
+    clearExamSnapshot("exam");
+    setPhase("loading");
+    resetState();
 
     // P1-W4: SECURE rejim — to'g'ri javoblar klientga yuklanmaydi,
     // baholash serverda (`/api/v2/exams/submit`).
     startSecureExamSession(questionCount)
       .then(({ sessionId, questions: qs }) => {
+        if (seq !== loadSeqRef.current) return;
         if (qs.length === 0 || !sessionId) {
-          setErrorMsg(t("exam.noQuestions", "Savollar topilmadi"));
+          setFailure({ kind: "empty" });
           setPhase("result");
           return;
         }
+        const total = durationSecondsFor(qs.length, getExamRulesSync().real.secondsPerQuestion);
+        const now = Date.now();
         sessionIdRef.current = sessionId;
+        startTimeRef.current = now;
+        deadlineRef.current = now + total * 1000;
+        setTimerSeconds(total);
         setQuestions(qs);
+        questionsRef.current = qs;
         setPhase("exam");
-        startTimeRef.current = Date.now();
       })
-      .catch(() => {
-        setErrorMsg(t("notification.startError", "Imtihonni boshlashda xatolik yuz berdi"));
+      .catch((err: unknown) => {
+        if (seq !== loadSeqRef.current) return;
+        // api.ts 5xx/tarmoq uchun global toast ko'rsatadi — bu yerda faqat inline xato + "Qayta urinish".
+        setFailure({ kind: "error", error: err });
         setPhase("result");
       });
-  }, [questionCount, t]);
+  };
 
-  useEffect(() => {
-    loadQuestions();
-  }, [loadQuestions]);
+  const triggerFinish = (timeUp = false) => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    clearExamSnapshot("exam");
+    if (finishDelayRef.current) {
+      clearTimeout(finishDelayRef.current);
+      finishDelayRef.current = null;
+    }
+    if (autoRef.current) {
+      clearTimeout(autoRef.current);
+      autoRef.current = null;
+    }
+    const qs = questionsRef.current;
+    const curAnswers = answersRef.current;
+    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
+    deadlineRef.current = null;
+    // Vaqtinchalik hisob (/check-answer asosida) — server natijasi kelsa almashtiriladi
+    const correct = Object.values(curAnswers).filter(isRight).length;
+    const total = qs.length || questionCount;
+    const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const answeredCount = Object.keys(curAnswers).length;
+    // Vaqtinchalik o'tdi/o'tmadi: tekshirilmagan javoblar to'g'ri deb hisoblanmaydi
+    const localPassed = isExamPassed(
+      {
+        mode: "real",
+        total,
+        correct,
+        wrong: Math.max(0, answeredCount - correct),
+        unanswered: Math.max(0, total - answeredCount),
+      },
+      rules,
+    );
+    setSavedScore(score);
+    setIsTimeUp(timeUp);
+    setPhase("result");
 
-  const triggerFinish = useCallback(
-    (timeUp = false) => {
-      if (finishedRef.current) return;
-      finishedRef.current = true;
-      if (finishDelayRef.current) {
-        clearTimeout(finishDelayRef.current);
-        finishDelayRef.current = null;
-      }
-      if (autoRef.current) {
-        clearTimeout(autoRef.current);
-        autoRef.current = null;
-      }
-      const curAnswers = answersRef.current;
-      const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      // Vaqtinchalik hisob (/check-answer asosida) — server natijasi kelsa almashtiriladi
-      const correct = Object.values(curAnswers).filter(isRight).length;
-      const total = questions.length || questionCount;
-      const score = total > 0 ? Math.round((correct / total) * 100) : 0;
-      setSavedScore(score);
-      if (!timeUp) setIsTimeUp(false);
-      setPhase("result");
+    const sessionId = sessionIdRef.current;
+    sessionIdRef.current = null;
+    if (!sessionId || qs.length === 0) return;
 
-      const sessionId = sessionIdRef.current;
-      sessionIdRef.current = null;
-      if (!sessionId || questions.length === 0) return;
-
-      const answersPayload = questions.map((q, idx) => ({
-        questionId: q.id,
-        selectedOptionIndex: curAnswers[idx]?.selected ?? null,
-      }));
-      // Xato bo'lsa submitExamSession o'zi navbatga qo'yadi va bildirishnoma ko'rsatadi
-      void submitExamSession(sessionId, answersPayload).then((outcome) => {
-        const result = outcome.ok ? outcome.result : null;
-        if (!result) {
-          // Server natijasi yo'q (navbatga qo'yildi) — lokal statistika vaqtinchalik hisob bilan
-          saveExamResult({
-            userId,
-            score,
-            totalQuestions: total,
-            correctAnswers: correct,
-            durationSeconds: duration,
-            examType: "exam",
-          }).catch(() => {});
-          return;
-        }
-
-        // Server natijasidagi to'g'ri javoblar bilan natija/review ma'lumotini yangilash
-        const byQid = new Map(
-          (result.answerDetails ?? []).map((d) => [d.questionId, d] as const),
-        );
-        setQuestions((prev) =>
-          prev.map((q) => {
-            const d = byQid.get(q.id);
-            return d && typeof d.correctOptionIndex === "number"
-              ? { ...q, correct_option: d.correctOptionIndex }
-              : q;
-          }),
-        );
-        const next: Record<number, Answer> = { ...answersRef.current };
-        questions.forEach((q, idx) => {
-          const d = byQid.get(q.id);
-          if (next[idx] && d && typeof d.correctOptionIndex === "number") {
-            next[idx] = { ...next[idx], correct: d.correctOptionIndex };
-          }
-        });
-        answersRef.current = next;
-        setAnswers(next);
-
-        const serverTotal = result.totalQuestions || total;
-        const serverScore =
-          result.percentage != null
-            ? Math.round(result.percentage)
-            : serverTotal > 0
-              ? Math.round((result.correctCount / serverTotal) * 100)
-              : 0;
-        setSavedScore(serverScore);
+    const answersPayload = qs.map((q, idx) => ({
+      questionId: q.id,
+      selectedOptionIndex: curAnswers[idx]?.selected ?? null,
+    }));
+    // Xato bo'lsa submitExamSession o'zi navbatga qo'yadi va bildirishnoma ko'rsatadi
+    void submitExamSession(sessionId, answersPayload).then((outcome) => {
+      const result = outcome.ok ? outcome.result : null;
+      if (!result) {
+        // Server natijasi yo'q (navbatga qo'yildi) — lokal statistika vaqtinchalik hisob bilan
         saveExamResult({
           userId,
-          score: serverScore,
-          totalQuestions: serverTotal,
-          correctAnswers: result.correctCount,
+          score,
+          totalQuestions: total,
+          correctAnswers: correct,
           durationSeconds: duration,
           examType: "exam",
-        }).catch(() => {});
+          passed: localPassed,
+        }).catch((e) => reportError("exam.saveResult", e));
+        return;
+      }
+
+      // Server natijasidagi to'g'ri javoblar bilan natija/review ma'lumotini yangilash
+      const byQid = new Map(
+        (result.answerDetails ?? []).map((d) => [d.questionId, d] as const),
+      );
+      setQuestions((prev) =>
+        prev.map((q) => {
+          const d = byQid.get(q.id);
+          return d && typeof d.correctOptionIndex === "number"
+            ? { ...q, correct_option: d.correctOptionIndex }
+            : q;
+        }),
+      );
+      const next: Record<number, Answer> = { ...answersRef.current };
+      qs.forEach((q, idx) => {
+        const d = byQid.get(q.id);
+        if (next[idx] && d && typeof d.correctOptionIndex === "number") {
+          next[idx] = { ...next[idx], correct: d.correctOptionIndex };
+        }
       });
-    },
-    [questions, questionCount, userId]
-  );
+      answersRef.current = next;
+      setAnswers(next);
+
+      const serverTotal = result.totalQuestions || total;
+      const serverScore =
+        result.percentage != null
+          ? Math.round(result.percentage)
+          : serverTotal > 0
+            ? Math.round((result.correctCount / serverTotal) * 100)
+            : 0;
+      setSavedScore(serverScore);
+      saveExamResult({
+        userId,
+        score: serverScore,
+        totalQuestions: serverTotal,
+        correctAnswers: result.correctCount,
+        durationSeconds: duration,
+        examType: "exam",
+        passed:
+          typeof result.isPassed === "boolean"
+            ? result.isPassed
+            : isExamPassed(
+                {
+                  mode: "real",
+                  total: serverTotal,
+                  correct: result.correctCount,
+                  wrong: result.incorrectCount,
+                  unanswered: result.unansweredCount,
+                },
+                rules,
+              ),
+      }).catch((e) => reportError("exam.saveResult", e));
+    });
+  };
+
+  /**
+   * W-07: sahifa yangilangan bo'lsa — sessionStorage snapshot'dan davom etish;
+   * muddati o'tgan bo'lsa darhol yakunlash (natija + submit); aks holda yangi imtihon.
+   */
+  const resumeOrStart = () => {
+    const snap = readExamSnapshot<OfflineQuestion, Answer>("exam", loaderKey);
+    if (snap.status === "none") {
+      startFresh();
+      return;
+    }
+    loadSeqRef.current++;
+    resetState();
+    const s = snap.snapshot;
+    sessionIdRef.current = s.sessionId;
+    startTimeRef.current = s.startedAt;
+    deadlineRef.current = s.deadline;
+    setQuestions(s.questions);
+    questionsRef.current = s.questions;
+    setAnswers(s.answers);
+    answersRef.current = s.answers;
+    setCurrent(s.current);
+    if (snap.status === "expired") {
+      triggerFinish(true);
+      return;
+    }
+    setTimerSeconds(snap.remainingSeconds);
+    setPhase("exam");
+  };
+
+  const initRef = useRef(resumeOrStart);
+  useEffect(() => {
+    initRef.current = resumeOrStart;
+  });
+  useEffect(() => {
+    initRef.current();
+  }, [loaderKey]);
+
+  // W-07: har javob / savol almashganda snapshot (absolyut deadline bilan)
+  useEffect(() => {
+    if (phase !== "exam" || finishedRef.current || deadlineRef.current == null) return;
+    const snapshot: Omit<ExamSnapshot<OfflineQuestion, Answer>, "v"> = {
+      kind: "exam",
+      scope: loaderKey,
+      sessionId: sessionIdRef.current,
+      questions,
+      answers,
+      current,
+      deadline: deadlineRef.current,
+      startedAt: startTimeRef.current,
+    };
+    writeExamSnapshot(snapshot);
+  }, [phase, questions, answers, current, loaderKey]);
 
   // P2-W5: deadline asosidagi taymer; onExpire bir marta, state updater tashqarisida.
   const { timeLeft, warning: timerWarning } = useExamTimer({
-    durationSeconds: examDurationSeconds,
+    durationSeconds: timerSeconds,
     running: phase === "exam",
     onExpire: () => {
-      setIsTimeUp(true);
       triggerFinish(true);
     },
   });
@@ -291,9 +405,11 @@ export default function Exam_Page() {
       const checkedQ: OfflineQuestion = { ...q, correct_option: res.correctOptionIndex };
       setQuestions((prev) => prev.map((pq, i) => (i === qIdx ? checkedQ : pq)));
       if (!res.isCorrect) {
-        addWrongAnswer(userId, checkedQ).catch(() => {});
+        addWrongAnswer(userId, checkedQ).catch((e) => reportError("exam.addWrongAnswer", e));
       }
-      recordQuestionAttempt(userId, q.id, res.isCorrect, "exam").catch(() => {});
+      recordQuestionAttempt(userId, q.id, res.isCorrect, "exam").catch((e) =>
+        reportError("exam.recordAttempt", e),
+      );
 
       const newAns: Record<number, Answer> = {
         ...answersRef.current,
@@ -302,7 +418,7 @@ export default function Exam_Page() {
       setAnswers(newAns);
       answersRef.current = newAns;
 
-      // MAX_WRONG limit check: (10 savolga 1 ta xato)
+      // Ruxsat etilgan xatolar soni oshdi — imtihon yakunlanadi
       const wrongNow = Object.values(newAns).filter(isWrong).length;
       if (wrongNow > MAX_WRONG) {
         if (finishDelayRef.current) clearTimeout(finishDelayRef.current);
@@ -316,39 +432,21 @@ export default function Exam_Page() {
     });
   };
 
-  // F1–F5 and 1–5 keyboard shortcuts
-  useEffect(() => {
-    if (phase !== "exam") return;
-    const handleKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-
-      // Tasdiqlash oynasi ochiq: klaviaturani Mantine Modal boshqaradi
-      // (Esc = davom etish, Enter = fokusdagi "Yakunlash" tugmasi).
-      if (confirmFinishOpen || zoomSrc) return;
-
-      const map: Record<string, number> = {
-        F1: 0, F2: 1, F3: 2, F4: 3, F5: 4,
-        "1": 0, "2": 1, "3": 2, "4": 3, "5": 4,
-      };
-      if (e.key in map) {
-        e.preventDefault();
-        handleSelect(map[e.key]);
+  // W-16: yagona klaviatura boshqaruvi (1–5 / A–D, ←/→, Enter)
+  const lastIdx = Math.max(0, questions.length - 1);
+  useExamHotkeys({
+    enabled: phase === "exam",
+    blocked: confirmFinishOpen || !!zoomSrc || guard.blocked,
+    optionCount: questions[current] ? parseOptions(questions[current].options_json).length : 0,
+    onSelect: handleSelect,
+    onPrev: () => setCurrent((c) => Math.max(0, c - 1)),
+    onNext: () => setCurrent((c) => Math.min(lastIdx, c + 1)),
+    onEnter: () => {
+      if (answers[current] !== undefined && current < lastIdx) {
+        setCurrent((c) => Math.min(lastIdx, c + 1));
       }
-      if (e.key === "Enter") {
-        if (answers[current] !== undefined && current < (questions.length || 1) - 1) {
-          e.preventDefault();
-          setCurrent((c) => Math.min((questions.length || 1) - 1, c + 1));
-          return;
-        }
-      }
-      if (e.key === "ArrowLeft") setCurrent((c) => Math.max(0, c - 1));
-      if (e.key === "ArrowRight")
-        setCurrent((c) => Math.min((questions.length || 1) - 1, c + 1));
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [phase, answers, current, questions.length, confirmFinishOpen, zoomSrc]);
+    },
+  });
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
@@ -364,7 +462,7 @@ export default function Exam_Page() {
     return (
       <div className="loading-screen">
         <div className="spinner" />
-        <p>{t("common.loading", "Yuklanmoqda...")}</p>
+        <p>{t("common.loading")}</p>
       </div>
     );
   }
@@ -378,18 +476,25 @@ export default function Exam_Page() {
     const unanswered = total - answered;
     const score = total > 0 ? Math.round((correct / total) * 100) : savedScore;
 
-    if (errorMsg) {
+    if (failure) {
+      const message =
+        failure.kind === "empty"
+          ? t("exam.noQuestions")
+          : getErrorMessage(failure.error, t(errorKeyFor(failure.error, "notification.startError")));
       return (
         <div className="exam-result-screen">
           <div className="exam-result-card">
             <div className="exam-result-icon failed">
               <IconAlertTriangle size={36} stroke={1.5} />
             </div>
-            <h2 className="exam-result-title failed">{t("common.error", "Xatolik")}</h2>
-            <p className="exam-result-sub">{errorMsg}</p>
+            <h2 className="exam-result-title failed">{t("common.error")}</h2>
+            <p className="exam-result-sub">{message}</p>
             <div className="exam-result-actions">
-              <button className="exam-result-btn primary" onClick={onBack} type="button">
-                <IconArrowLeft size={18} /> {t("common.backToHome", "Bosh sahifaga qaytish")}
+              <button className="exam-result-btn primary" onClick={startFresh} type="button">
+                <IconRefresh size={18} /> {t("common.retry")}
+              </button>
+              <button className="exam-result-btn" onClick={onBack} type="button">
+                <IconArrowLeft size={18} /> {t("common.backToHome")}
               </button>
             </div>
           </div>
@@ -400,12 +505,12 @@ export default function Exam_Page() {
     return (
       <>
         <SEO
-          title={t("activeTest.results", "Imtihon natijasi")}
-          description={t("activeTest.resultsDesc", "Imtihon natijalari va statistikasi")}
+          title={t("activeTest.results")}
+          description={t("activeTest.resultsDesc")}
           canonical="/exam"
           noIndex={true}
         />
-        <div style={{ height: "100vh", maxHeight: "100dvh", overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+        <div style={{ height: "100dvh", overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
           <GamificationResult
             mode="real"
             score={score}
@@ -413,10 +518,10 @@ export default function Exam_Page() {
             wrong={wrong}
             unanswered={unanswered}
             total={total}
-            title={t("exam.officialTitle", "Rasmiy DTM Imtihon Simulyatori")}
-            badge={`${total} ${t("activeTest.questionsCount", "savol")} • ${MAX_WRONG} ${t("exam.maxWrongAllowed", "tagacha xato")}`}
+            title={t("exam.officialTitle")}
+            badge={`${total} ${t("dashboard.questionsUnit")} • ${t("exam.maxWrongAllowed", { max: maxAllowedWrong(total, rules) })}`}
             isTimeUp={isTimeUp}
-            onRetry={loadQuestions}
+            onRetry={startFresh}
             onReviewMistakes={() => setReviewOpen(true)}
             onHome={onBack}
           />
@@ -451,8 +556,8 @@ export default function Exam_Page() {
   return (
     <>
       <SEO
-        title={t("seo.exam.title", "Rasmiy Sinov Imtihoni — Prava Online")}
-        description={t("seo.exam.desc", "YHXX rasmiy imtihoni bilan bir xil vaqt va qoidalardagi haqiqiy sinov simulyatsiyasi.")}
+        title={t("seo.exam.title")}
+        description={t("seo.exam.desc")}
         canonical="/exam"
         noIndex={true}
       />
@@ -467,12 +572,12 @@ export default function Exam_Page() {
               onClick={handleFinishClick}
               type="button"
             >
-              {t("exam.finish", "Yakunlash")} <IconX size={15} />
+              {t("exam.finish")} <IconX size={15} />
             </button>
             <span
               className={`exam-timer${timerIsRed ? " red" : timerIsYellow ? " yellow" : ""}`}
               role="timer"
-              aria-label={`${t("exam.timeLeft", "Qolgan vaqt")}: ${formatTime(timeLeft)}`}
+              aria-label={`${t("exam.timeLeft")}: ${formatTime(timeLeft)}`}
             >
               {formatTime(timeLeft)}
             </span>
@@ -522,7 +627,7 @@ export default function Exam_Page() {
                   disabled={answered !== undefined}
                   type="button"
                 >
-                  <span className="exam-option-key">F{idx + 1}</span>
+                  <span className="exam-option-key">{idx + 1}</span>
                   <span className="exam-option-text">{localizeOpt(opt)}</span>
                   {answered && isKnown(answered) && idx === answered.correct && (
                     <IconCheck size={15} className="opt-icon correct" />
@@ -563,8 +668,9 @@ export default function Exam_Page() {
               onClick={() => setCurrent((c) => Math.max(0, c - 1))}
               disabled={current === 0}
               type="button"
+              title={t("exam.prev")}
             >
-              <IconChevronLeft size={17} /> {t("exam.prev", "Oldingi")}
+              <IconChevronLeft size={17} /> <span>{t("exam.prev")}</span>
             </button>
 
             <div className="exam-qnums-wrap">
@@ -594,19 +700,22 @@ export default function Exam_Page() {
                 className="exam-nav-btn primary"
                 onClick={handleFinishClick}
                 type="button"
+                title={t("exam.finish")}
               >
-                {t("exam.finish", "Yakunlash")} <IconCheck size={17} />
+                <span>{t("exam.finish")}</span> <IconCheck size={17} />
               </button>
             ) : (
               <button
                 className="exam-nav-btn primary"
                 onClick={() => setCurrent((c) => Math.min(questions.length - 1, c + 1))}
                 type="button"
+                title={t("exam.next")}
               >
-                {t("exam.next", "Keyingi")} <IconChevronRight size={17} />
+                <span>{t("exam.next")}</span> <IconChevronRight size={17} />
               </button>
             )}
           </div>
+          <KeyboardHint />
         </div>
       </div>
 
@@ -618,6 +727,14 @@ export default function Exam_Page() {
           setConfirmFinishOpen(false);
           triggerFinish(false);
         }}
+      />
+
+      {/* W-07: faol imtihondan chiqishni tasdiqlash */}
+      <ConfirmFinishModal
+        variant="leave"
+        opened={guard.blocked}
+        onCancel={guard.stay}
+        onConfirm={guard.leave}
       />
     </>
   );

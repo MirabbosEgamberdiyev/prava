@@ -22,86 +22,80 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { getCachedTotalTickets, getCachedTotalQuestions } from "../../services/desktopAdapter";
+import { useCurriculumCountParams } from "../../hooks/useCurriculumCounts";
 import SEO from "../../components/common/SEO";
 
 export default function About_Page() {
   const { t } = useTranslation();
+  const countParams = useCurriculumCountParams();
 
   const values = [
     {
       icon: IconTarget,
-      title: t("about.val1Title", "100% Rasmiy andoza"),
+      title: t("about.val1Title"),
       desc: t(
         "about.val1Desc",
-        "Barcha 1200+ test savollari va biletlar O'zbekiston Respublikasi IIV YHXXning amaldagi yo'l harakati qoidalari va imtihon andozalariga to'liq mos keladi."
+        countParams
       ),
       color: "blue",
     },
     {
       icon: IconBrain,
-      title: t("about.val2Title", "Intellektual ta'lim"),
+      title: t("about.val2Title"),
       desc: t(
-        "about.val2Desc",
-        "Har bir noto'g'ri javobingiz tahlil qilinadi va maxsus 'Xatolar ustida ishlash' tizimi orqali zaif mavzularingiz mustahkamlanadi."
+        "about.val2Desc"
       ),
       color: "blue",
     },
     {
       icon: IconDeviceDesktop,
-      title: t("about.val3Title", "Online va Offline sinergiya"),
+      title: t("about.val3Title"),
       desc: t(
-        "about.val3Desc",
-        "Veb-sayt bilan bir qatorda mustaqil ishlaydigan tezkor Desktop ilovamiz yordamida internetsiz kompyuteringizda ham mashq qilishingiz mumkin."
+        "about.val3Desc"
       ),
       color: "blue",
     },
     {
       icon: IconShieldCheck,
-      title: t("about.val4Title", "Tizimli tayyorgarlik"),
+      title: t("about.val4Title"),
       desc: t(
         "about.val4Desc",
-        "Barcha {{count}} ta bilet bo'yicha to'liq tayyorgarlik ko'rgan o'quvchilarimiz haqiqiy davlat imtihonida ishonch bilan o'tishmoqda.",
-        { count: getCachedTotalTickets() }
+        { tickets: countParams.tickets }
       ),
       color: "blue",
     },
   ];
 
   const milestones = [
-    { number: `${getCachedTotalQuestions().toLocaleString()}+`, label: t("about.stat1", "Rasmiy savollar bazasi") },
-    { number: `${getCachedTotalTickets()}`, label: t("about.stat2", "Rasmiy imtihon biletlari") },
-    { number: "24/7", label: t("about.stat3", "Uzluksiz online tayyorgarlik") },
-    { number: "3", label: t("about.stat4", "O'rganish tillari (Lotin, Kirill, Rus)") },
+    { number: countParams.questions, label: t("about.stat1") },
+    { number: countParams.tickets, label: t("about.stat2") },
+    { number: "24/7", label: t("about.stat3") },
+    { number: "3", label: t("about.stat4") },
   ];
 
   const reasons = [
     {
-      title: t("about.reason1Title", "Savollarni shunchaki yodlamaysiz — tushunasiz"),
+      title: t("about.reason1Title"),
       desc: t(
-        "about.reason1Desc",
-        "Oddiy test saytlaridan farqli o'laroq, har bir savolda rasmiy YHQ moddasi, batafsil qoida izohi va ko'rgazmali yo'l vaziyatlari tushuntiriladi."
+        "about.reason1Desc"
       ),
     },
     {
-      title: t("about.reason2Title", "Haqiqiy YHXX imtihon muhiti"),
+      title: t("about.reason2Title"),
       desc: t(
-        "about.reason2Desc",
-        "Davlat markazlaridagi kabi 20 ta savol, 20 daqiqa vaqt nazorati, maksimal 3 tagacha xato chegarasi va 1–5 klaviatura tezkor tugmalari orqali mashq qilasiz."
+        "about.reason2Desc"
       ),
     },
     {
-      title: t("about.reason3Title", "Intellektual xatolar tahlili"),
+      title: t("about.reason3Title"),
       desc: t(
-        "about.reason3Desc",
-        "Tizim siz adashgan savollarni alohida 'Xatolar' daftarchasiga jamlaydi va zaif tomonlaringizni 100% o'zlashtirmaguningizcha mashq qildiradi."
+        "about.reason3Desc"
       ),
     },
     {
-      title: t("about.reason4Title", "Barcha qurilmalarda sinxron"),
+      title: t("about.reason4Title"),
       desc: t(
-        "about.reason4Desc",
-        "Telefoningizda boshlagan biletni kompyuterda davom ettiring. Windows, Android, iOS va Web ekotizimi orqali har joyda tayyorlaning."
+        "about.reason4Desc"
       ),
     },
   ];
@@ -109,8 +103,8 @@ export default function About_Page() {
   return (
     <>
       <SEO
-        title={t("seo.about.title", "Biz haqimizda — Prava Online professional ta'lim platformasi")}
-        description={t("seo.about.desc", "Prava Online — O'zbekistonda haydovchilik guvohnomasi nazariy imtihoniga zamonaviy tayyorgarlik tizimi.")}
+        title={t("seo.about.title")}
+        description={t("seo.about.desc")}
         keywords="prava online biz haqimizda, haydovchilik imtihoniga tayyorlanish platformasi, avtomaktab online test, prava online missiyasi, haydovchilik guvohnomasi o'qitish tizimi"
         canonical="/about"
         jsonLd={{
@@ -133,15 +127,14 @@ export default function About_Page() {
         <div className="saas-header-block">
           <div className="saas-badge-pill">
             <IconSparkles size={13} />
-            <span>{t("about.badge", "Ishonchli va Zamonaviy")}</span>
+            <span>{t("about.badge")}</span>
           </div>
           <h1 className="saas-page-title">
-            {t("about.title", "Prava Online — Haydovchilikka ishonchli qadam")}
+            {t("about.title")}
           </h1>
           <p className="saas-page-subtitle">
             {t(
-              "about.subtitle",
-              "Biz haydovchilik guvohnomasi imtihoniga tayyorlanish jarayonini sodda, qulay va har bir o'quvchi uchun kafolatlangan natijali qilish maqsadida yaratildik."
+              "about.subtitle"
             )}
           </p>
         </div>
@@ -151,24 +144,21 @@ export default function About_Page() {
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Stack gap="md">
               <Badge color="blue" variant="light" size="md" w="fit-content">
-                {t("about.missionBadge", "Bizning Missiyamiz")}
+                {t("about.missionBadge")}
               </Badge>
               <Title order={2} style={{ fontSize: "clamp(1.5rem, 2.2vw, 2rem)", lineHeight: 1.25 }}>
                 {t(
-                  "about.missionTitle",
-                  "Yo'llarda xavfsizlik — puxta nazariy bilimdan boshlanadi"
+                  "about.missionTitle"
                 )}
               </Title>
               <Text size="md" c="dimmed" lh={1.7}>
                 {t(
-                  "about.storyP1",
-                  "Prava Online — bu shunchaki test sayti emas. Bu har bir bo'lajak haydovchiga yo'l harakati qoidalarini yodlash emas, balki chuqur tushunish imkonini beruvchi interaktiv o'quv tizimidir."
+                  "about.storyP1"
                 )}
               </Text>
               <Text size="md" c="dimmed" lh={1.7}>
                 {t(
-                  "about.storyP2",
-                  "Platformamiz IIV YHXXning 2026-yilgi eng so'nggi talablariga to'liq javob beradi: haqiqiy imtihondagi kabi 20 daqiqa vaqt chegarasi, 20 ta tasodifiy savollar, ruxsat etilgan xatolar me'yori va 1–5 klaviatura tezkor tugmalari orqali xuddi imtihon xonasida o'tirgandek amaliyot qilasiz."
+                  "about.storyP2"
                 )}
               </Text>
             </Stack>
@@ -182,10 +172,10 @@ export default function About_Page() {
                 </ThemeIcon>
                 <div>
                   <Text fw={700} size="lg">
-                    {t("about.cardTitle", "Kafolatlangan Sifat")}
+                    {t("about.cardTitle")}
                   </Text>
                   <Text size="sm" c="dimmed">
-                    {t("about.cardSub", "Rasmiy IIV YHXX talablariga 100% mos")}
+                    {t("about.cardSub")}
                   </Text>
                 </div>
               </Group>
@@ -210,12 +200,11 @@ export default function About_Page() {
         <Box mb={64}>
           <div className="saas-header-block" style={{ marginBottom: 32 }}>
             <h2 className="saas-page-title" style={{ fontSize: "clamp(1.5rem, 2.2vw, 2rem)" }}>
-              {t("about.valuesTitle", "Nima uchun aynan Prava Online?")}
+              {t("about.valuesTitle")}
             </h2>
             <p className="saas-page-subtitle">
               {t(
-                "about.valuesSub",
-                "O'zbekistondagi boshqa manbalardan ajratib turuvchi asosiy afzalliklarimiz."
+                "about.valuesSub"
               )}
             </p>
           </div>
@@ -246,10 +235,10 @@ export default function About_Page() {
           <Stack gap="xl">
             <div>
               <Badge color="teal" variant="light" size="md" mb="xs">
-                {t("about.problemBadge", "Qanday muammoni hal qilamiz?")}
+                {t("about.problemBadge")}
               </Badge>
               <Title order={2} style={{ fontSize: "clamp(1.35rem, 2vw, 1.75rem)" }}>
-                {t("about.problemTitle", "Nega ko'pchilik birinchi imtihondan o'ta olmaydi?")}
+                {t("about.problemTitle")}
               </Title>
             </div>
 
@@ -285,12 +274,11 @@ export default function About_Page() {
         >
           <Stack align="center" gap="md" maw={640} mx="auto">
             <h2 className="saas-page-title" style={{ fontSize: "clamp(1.5rem, 2.2vw, 2rem)" }}>
-              {t("about.ctaTitle", "Haydovchilik orzuyingizni haqiqatga aylantiring")}
+              {t("about.ctaTitle")}
             </h2>
             <p className="saas-page-subtitle">
               {t(
-                "about.ctaDesc",
-                "Bugunoq bepul ro'yxatdan o'ting yoki sinov imtihonida o'z kuchingizni sinab ko'ring."
+                "about.ctaDesc"
               )}
             </p>
             <Flex
@@ -302,11 +290,11 @@ export default function About_Page() {
               w={{ base: "100%", sm: "auto" }}
             >
               <Link to="/auth/register" className="saas-btn-primary">
-                {t("home.hero.startFree", "Bepul boshlash")}
+                {t("home.hero.startFree")}
                 <IconArrowRight size={16} />
               </Link>
               <Link to="/partners" className="saas-btn-secondary">
-                {t("nav.corporate", "Hamkorlik imkoniyatlari")}
+                {t("nav.corporate")}
               </Link>
             </Flex>
           </Stack>

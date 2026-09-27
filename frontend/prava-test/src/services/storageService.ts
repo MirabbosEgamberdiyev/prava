@@ -31,6 +31,7 @@ export interface StoredExamResult {
   durationSeconds: number;
   examType: string;
   createdAt: string;
+  passed?: boolean;
 }
 
 export interface StoredTicketStat {
@@ -234,6 +235,7 @@ export const storageService = {
     correctAnswers: number;
     durationSeconds: number;
     examType: string;
+    passed?: boolean;
   }): StoredExamResult {
     const list = this.getExamHistory();
     const entry: StoredExamResult = {

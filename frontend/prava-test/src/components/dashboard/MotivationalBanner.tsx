@@ -15,7 +15,7 @@ export const MotivationalBanner: React.FC = () => {
   return (
     <section
       className={styles.motivationalCard}
-      aria-label={t("dashboard.motivationalTitle", "Motivatsion banner")}
+      aria-label={t("dashboard.motivationalTitle")}
     >
       <div className={styles.motivationalLeft}>
         <div className={styles.motivationalTitleWrap}>
@@ -25,14 +25,12 @@ export const MotivationalBanner: React.FC = () => {
           <div>
             <h3 className={styles.motivationalHeading}>
               {t(
-                "dashboard.banner.title",
-                "Haydovchilik orzularingiz endilikda yanada yaqin!"
+                "dashboard.banner.title"
               )}
             </h3>
             <p className={styles.motivationalSubtitle}>
               {t(
-                "dashboard.banner.subtitle",
-                "Muntazam o'qish, to'g'ri tahlil va amaliy testlar bilan siz albatta maqsadingizga erishasiz!"
+                "dashboard.banner.subtitle"
               )}
             </p>
           </div>
@@ -44,7 +42,7 @@ export const MotivationalBanner: React.FC = () => {
           onClick={() => navigate("/topics")}
         >
           <span>
-            {t("dashboard.banner.continueBtn", "O'qishni davom ettirish")}
+            {t("dashboard.banner.continueBtn")}
           </span>
           <IconArrowRight size={16} stroke={2.5} />
         </button>
@@ -52,22 +50,22 @@ export const MotivationalBanner: React.FC = () => {
         <div className={styles.motivationalFeatures}>
           <div className={styles.motivationalFeatureItem}>
             <IconCheck size={16} stroke={3} className={styles.motivationalFeatureCheck} />
-            <span>{t("dashboard.banner.benefit1", "Rasmiy savollar bazasi")}</span>
+            <span>{t("dashboard.banner.benefit1")}</span>
           </div>
           <div className={styles.motivationalFeatureItem}>
             <IconCheck size={16} stroke={3} className={styles.motivationalFeatureCheck} />
-            <span>{t("dashboard.banner.benefit2", "Doimiy yangilanish")}</span>
+            <span>{t("dashboard.banner.benefit2")}</span>
           </div>
           <div className={styles.motivationalFeatureItem}>
             <IconCheck size={16} stroke={3} className={styles.motivationalFeatureCheck} />
-            <span>{t("dashboard.banner.benefit3", "Natija kafolatlanadi")}</span>
+            <span>{t("dashboard.banner.benefit3")}</span>
           </div>
         </div>
       </div>
 
       <div className={styles.motivationalRightGraphic}>
         <div className={styles.speechBubble}>
-          {t("dashboard.banner.quote", "Bilim haydovchilik erkinligiga olib boradi!")}
+          {t("dashboard.banner.quote")}
         </div>
 
         {/* Scenic Road Vector Illustration */}

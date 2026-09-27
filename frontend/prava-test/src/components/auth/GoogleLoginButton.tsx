@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { Button } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useReturnTo } from "../../auth/useReturnTo";
 import { useAuth } from "../../auth/AuthContext";
 import { useTranslation } from "react-i18next";
 import api from "../../api/api";
@@ -26,15 +27,9 @@ const GoogleLoginButton = (_props: GoogleLoginButtonProps = {}) => {
   const { t, i18n } = useTranslation();
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [loading, setLoading] = useState(false);
-  const locationState = location.state as { from?: string | { pathname: string; search?: string } } | undefined;
-  let from = "/me";
-  if (typeof locationState?.from === "string") {
-    from = locationState.from;
-  } else if (locationState?.from?.pathname) {
-    from = locationState.from.pathname + (locationState.from.search || "");
-  }
+  // W-06: maqsadli manzil — `?returnTo=` (yagona manba), xavfsiz tekshirilgan
+  const { destination: from } = useReturnTo();
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {

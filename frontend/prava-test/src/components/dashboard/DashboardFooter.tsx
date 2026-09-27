@@ -40,8 +40,7 @@ export const DashboardFooter: React.FC = () => {
             </div>
             <p className={styles.footerBrandDesc}>
               {t(
-                "dashboard.footer.slogan",
-                "Haydovchilikka ishonchli tayyorgarlik platformasi."
+                "dashboard.footer.slogan"
               )}
             </p>
             <div className={styles.footerSocialIcons}>
@@ -84,7 +83,7 @@ export const DashboardFooter: React.FC = () => {
           {/* Column 2: Mahsulot */}
           <div>
             <h5 className={styles.footerColTitle}>
-              {t("dashboard.footer.product", "MAHSULOT")}
+              {t("dashboard.footer.product")}
             </h5>
             <ul className={styles.footerLinksList}>
               <li>
@@ -93,7 +92,7 @@ export const DashboardFooter: React.FC = () => {
                   className={styles.footerLink}
                   onClick={() => navigate("/topics")}
                 >
-                  {t("dashboard.nav.topics", "Mavzular")}
+                  {t("dashboard.nav.topics")}
                 </button>
               </li>
               <li>
@@ -102,7 +101,7 @@ export const DashboardFooter: React.FC = () => {
                   className={styles.footerLink}
                   onClick={() => navigate("/tickets")}
                 >
-                  {t("dashboard.nav.tickets", "Biletlar")}
+                  {t("dashboard.nav.tickets")}
                 </button>
               </li>
               <li>
@@ -111,7 +110,16 @@ export const DashboardFooter: React.FC = () => {
                   className={styles.footerLink}
                   onClick={() => navigate("/marafon")}
                 >
-                  {t("dashboard.nav.marathon", "Marafon")}
+                  {t("dashboard.nav.marathon")}
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className={styles.footerLink}
+                  onClick={() => navigate("/survival")}
+                >
+                  {t("dashboard.nav.survival")}
                 </button>
               </li>
               <li>
@@ -120,7 +128,7 @@ export const DashboardFooter: React.FC = () => {
                   className={styles.footerLink}
                   onClick={() => navigate("/exam")}
                 >
-                  {t("dashboard.nav.exam", "Haqiqiy imtihon")}
+                  {t("dashboard.nav.exam")}
                 </button>
               </li>
             </ul>
@@ -129,7 +137,7 @@ export const DashboardFooter: React.FC = () => {
           {/* Column 3: Yordam & Ma'lumot */}
           <div>
             <h5 className={styles.footerColTitle}>
-              {t("dashboard.footer.help", "YORDAM")}
+              {t("dashboard.footer.help")}
             </h5>
             <ul className={styles.footerLinksList}>
               <li>
@@ -138,7 +146,7 @@ export const DashboardFooter: React.FC = () => {
                   className={styles.footerLink}
                   onClick={() => navigate("/faq")}
                 >
-                  {t("nav.faq", "Tez-tez so'raladigan savollar")}
+                  {t("nav.faq")}
                 </button>
               </li>
               <li>
@@ -147,7 +155,7 @@ export const DashboardFooter: React.FC = () => {
                   className={styles.footerLink}
                   onClick={() => navigate("/about")}
                 >
-                  {t("nav.about", "Biz haqimizda")}
+                  {t("nav.about")}
                 </button>
               </li>
               <li>
@@ -156,7 +164,7 @@ export const DashboardFooter: React.FC = () => {
                   className={styles.footerLink}
                   onClick={() => navigate("/contact")}
                 >
-                  {t("nav.contact", "Bog'lanish")}
+                  {t("nav.contact")}
                 </button>
               </li>
               <li>
@@ -165,7 +173,7 @@ export const DashboardFooter: React.FC = () => {
                   className={styles.footerLink}
                   onClick={() => navigate("/terms")}
                 >
-                  {t("dashboard.footer.terms", "Foydalanish shartlari")}
+                  {t("dashboard.footer.terms")}
                 </button>
               </li>
             </ul>
@@ -174,18 +182,18 @@ export const DashboardFooter: React.FC = () => {
           {/* Column 4: Xavfsizlik & Rasmiy Standart */}
           <div>
             <h5 className={styles.footerColTitle}>
-              {t("dashboard.footer.safetyTitle", "XAVFSIZLIK")}
+              {t("dashboard.footer.safetyTitle")}
             </h5>
             <div className={styles.footerSafetyCard}>
               <div className={styles.footerSafetyIconWrap}>
                 <IconSteeringWheel size={22} stroke={2} />
               </div>
               <div className={styles.footerSafetyText}>
-                {t("dashboard.footer.safety", "Xavfsiz yo'l — yorqin kelajak!")}
+                {t("dashboard.footer.safety")}
               </div>
             </div>
             <p className={styles.footerTrustNote}>
-              {t("dashboard.footer.trustNote", "O'zbekiston Respublikasi IIV YHXBB rasmiy imtihon standartlariga muvofiq.")}
+              {t("dashboard.footer.trustNote")}
             </p>
           </div>
         </div>
@@ -194,7 +202,7 @@ export const DashboardFooter: React.FC = () => {
         <div className={styles.footerBottomBar}>
           <span>
             © {currentYear} PravaOnline.{" "}
-            {t("dashboard.footer.rights", "Barcha huquqlar himoyalangan.")}
+            {t("dashboard.footer.rights")}
           </span>
           <span style={{ fontSize: "11px", opacity: 0.7 }}>
             v2.0 Enterprise EdTech

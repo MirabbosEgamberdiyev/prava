@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { errorKeyFor } from "../types/errors";
 import {
   IconArrowLeft,
   IconCheck,
@@ -39,7 +40,7 @@ export default function PaymentSuccessPage() {
   // Error is stored as a code (not a translated string) so the polling effect
   // does not depend on `t` and does not restart when the language changes.
   const [error, setError] = useState<
-    { kind: 'missingId' | 'invalidId' } | { kind: 'server'; message?: string } | null
+    { kind: 'missingId' | 'invalidId' } | { kind: 'server'; messageKey: string } | null
   >(null);
   const [polling, setPolling] = useState(true);
   const [timedOut, setTimedOut] = useState(false);
@@ -88,7 +89,8 @@ export default function PaymentSuccessPage() {
         timer = setTimeout(tick, 3000);
       } catch (e: any) {
         if (cancelled) return;
-        setError({ kind: 'server', message: e?.response?.data?.error });
+        // W-05: backend'ning xom xato matni ko'rsatilmaydi — xato turiga mos lokal matn
+        setError({ kind: 'server', messageKey: errorKeyFor(e, "common.unknownError") });
         setPolling(false);
       }
     };
@@ -109,10 +111,12 @@ export default function PaymentSuccessPage() {
   const errorText = !error
     ? null
     : error.kind === 'missingId'
-    ? t("payment.failedDesc", "To'lov identifikatori topilmadi")
+    ? t("payment.missingId")
     : error.kind === 'invalidId'
-    ? t("payment.invalidPaymentId", "To'lov identifikatori noto'g'ri")
-    : (error.kind === 'server' && error.message) || t("common.unknownError", "Xatolik yuz berdi");
+    ? t("payment.invalidPaymentId")
+    : error.kind === 'server'
+    ? t(error.messageKey)
+    : t("common.unknownError");
 
   const isSuccess = status?.state === 'PERFORMED';
   const isFailed =
@@ -123,15 +127,15 @@ export default function PaymentSuccessPage() {
   const getStateLabel = (state: string) => {
     switch (state) {
       case 'PERFORMED':
-        return t("payment.statePerformed", "Muvaffaqiyatli");
+        return t("payment.statePerformed");
       case 'CANCELLED':
-        return t("payment.stateCancelled", "Bekor qilingan");
+        return t("payment.stateCancelled");
       case 'REFUNDED':
-        return t("payment.stateRefunded", "Qaytarilgan");
+        return t("payment.stateRefunded");
       case 'FAILED':
-        return t("payment.stateFailed", "Xatolik");
+        return t("payment.stateFailed");
       default:
-        return t("payment.statePending", "Kutilmoqda");
+        return t("payment.statePending");
     }
   };
 
@@ -144,9 +148,9 @@ export default function PaymentSuccessPage() {
           onClick={() => navigate('/me')}
         >
           <IconArrowLeft size={16} />
-          <span>{t("common.back", "Bosh sahifaga")}</span>
+          <span>{t("examResult.backToDashboard")}</span>
         </button>
-        <span className="review-header-title">{t("payment.statusTitle", "To'lov holati")}</span>
+        <span className="review-header-title">{t("payment.statusTitle")}</span>
       </header>
 
       <main
@@ -173,10 +177,10 @@ export default function PaymentSuccessPage() {
               <Stack align="center" gap="sm" py="xl">
                 <Loader size="lg" color="blue" />
                 <Title order={3} ta="center" size="h4">
-                  {t("payment.verifying", "To'lov tasdiqlanmoqda...")}
+                  {t("payment.verifying")}
                 </Title>
                 <Text size="sm" c="dimmed" ta="center">
-                  {t("payment.verifyingDesc", "Iltimos kuting, to'lov tizimi bilan sinxronlanmoqda.")}
+                  {t("payment.verifyingDesc")}
                 </Text>
               </Stack>
             )}
@@ -210,17 +214,17 @@ export default function PaymentSuccessPage() {
                 <Stack gap={4} align="center">
                   <Title order={2} size="h3" ta="center">
                     {isSuccess
-                      ? t("payment.successTitle", "To'lov muvaffaqiyatli amalga oshirildi!")
+                      ? t("payment.successTitle")
                       : isFailed
-                      ? t("payment.failedTitle", "To'lov amalga oshmadi")
-                      : t("payment.statusTitle", "To'lov holati")}
+                      ? t("payment.failedTitle")
+                      : t("payment.statusTitle")}
                   </Title>
                   <Text size="sm" c="dimmed" ta="center">
                     {isSuccess
-                      ? t("payment.successDesc", "To'lov muvaffaqiyatli! Paketga kirish ochildi.")
+                      ? t("payment.successDesc")
                       : isFailed
-                      ? t("payment.failedDesc", "To'lov amalga oshmadi yoki bekor qilindi.")
-                      : t("payment.verifying", "To'lov tasdiqlanmoqda...")}
+                      ? t("payment.failedDesc")
+                      : t("payment.verifying")}
                   </Text>
                 </Stack>
 
@@ -229,12 +233,11 @@ export default function PaymentSuccessPage() {
                     <Stack gap="xs">
                       <Text size="sm">
                         {t(
-                          "payment.stillVerifying",
-                          "To'lov hali tasdiqlanmoqda. Bu biroz vaqt olishi mumkin — holatni qo'lda yangilang."
+                          "payment.stillVerifying"
                         )}
                       </Text>
                       <Button size="xs" variant="light" color="orange" onClick={handleManualRefresh}>
-                        {t("payment.refreshStatus", "Holatni yangilash")}
+                        {t("payment.refreshStatus")}
                       </Button>
                     </Stack>
                   </Alert>
@@ -256,12 +259,12 @@ export default function PaymentSuccessPage() {
                   }}
                 >
                   <Text size="xs" fw={600} tt="uppercase" c="dimmed">
-                    {t("payment.amount", "To'langan summa")}
+                    {t("payment.amount")}
                   </Text>
                   <Text size="28px" fw={800} c={isSuccess ? "green.6" : isFailed ? "red.6" : "blue.6"}>
                     {Number(status.amount).toLocaleString('uz-UZ')}{" "}
                     <span style={{ fontSize: "16px", fontWeight: 600 }}>
-                      {t("payment.currency", "so'm")}
+                      {t("payment.currency")}
                     </span>
                   </Text>
                 </Box>
@@ -271,7 +274,7 @@ export default function PaymentSuccessPage() {
                   <Stack gap="xs">
                     <Group justify="space-between">
                       <Text size="sm" c="dimmed">
-                        {t("payment.paymentId", "To'lov ID")}:
+                        {t("payment.paymentId")}:
                       </Text>
                       <Text size="sm" fw={600} style={{ fontFamily: "monospace" }}>
                         #{status.paymentId}
@@ -280,7 +283,7 @@ export default function PaymentSuccessPage() {
                     <Divider />
                     <Group justify="space-between">
                       <Text size="sm" c="dimmed">
-                        {t("payment.provider", "To'lov tizimi")}:
+                        {t("payment.provider")}:
                       </Text>
                       <Badge variant="light" color="blue" size="sm">
                         {status.provider}
@@ -289,7 +292,7 @@ export default function PaymentSuccessPage() {
                     <Divider />
                     <Group justify="space-between">
                       <Text size="sm" c="dimmed">
-                        {t("payment.status", "Holat")}:
+                        {t("payment.status")}:
                       </Text>
                       <Badge
                         variant="filled"
@@ -314,7 +317,7 @@ export default function PaymentSuccessPage() {
                         rightSection={<IconSparkles size={16} />}
                         onClick={() => navigate('/packages')}
                       >
-                        {t("payment.startLearning", "O'rganishni boshlash")}
+                        {t("payment.startLearning")}
                       </Button>
                       <Button
                         size="md"
@@ -323,7 +326,7 @@ export default function PaymentSuccessPage() {
                         fullWidth
                         onClick={() => navigate('/me')}
                       >
-                        {t("nav.dashboard", "Boshqaruv paneli")}
+                        {t("nav.dashboard")}
                       </Button>
                     </>
                   ) : (
@@ -336,7 +339,7 @@ export default function PaymentSuccessPage() {
                         leftSection={<IconCreditCard size={16} />}
                         onClick={() => navigate('/me')}
                       >
-                        {t("payment.retry", "Qayta urinib ko'rish")}
+                        {t("payment.retry")}
                       </Button>
                       <Button
                         size="md"
@@ -345,7 +348,7 @@ export default function PaymentSuccessPage() {
                         fullWidth
                         onClick={() => navigate('/me')}
                       >
-                        {t("common.backToHome", "Bosh sahifaga")}
+                        {t("common.backToHome")}
                       </Button>
                     </>
                   )}
@@ -355,7 +358,7 @@ export default function PaymentSuccessPage() {
 
             {error && !status && (
               <Button size="md" radius="md" fullWidth onClick={() => navigate('/me')}>
-                {t("common.backToHome", "Bosh sahifaga")}
+                {t("common.backToHome")}
               </Button>
             )}
           </Stack>

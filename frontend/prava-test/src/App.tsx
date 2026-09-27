@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { BrowserRouter, useLocation } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, useLocation } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { DesktopThemeProvider } from "./context/DesktopThemeContext";
 import { TypographyProvider } from "./context/TypographyContext";
@@ -37,25 +37,25 @@ function ApiErrorListener() {
 
       if (detail.status === 403) {
         notifications.show({
-          title: t("common.error", "Xatolik"),
-          message: detail.message || t("errors.accessDenied", "Ruxsat etilmagan amal"),
+          title: t("common.error"),
+          message: detail.message || t("errors.accessDenied"),
           color: "orange",
           autoClose: 5000,
         });
       } else if (detail.status >= 500) {
         notifications.show({
-          title: t("common.error", "Xatolik"),
-          message: detail.message || t("errors.serverError", "Serverda nosozlik yuz berdi. Iltimos keyinroq qayta urinib ko'ring."),
+          title: t("common.error"),
+          message: detail.message || t("errors.serverError"),
           color: "red",
           autoClose: 5000,
         });
       } else if (detail.status === 0) {
         const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
         notifications.show({
-          title: isOffline ? t("errors.noInternetTitle", "Internet aloqasi yo'q") : t("common.error", "Xatolik"),
+          title: isOffline ? t("errors.noInternetTitle") : t("common.error"),
           message: isOffline
-            ? (detail.message || t("errors.networkError", "Internet tarmog'iga ulanishda xatolik yuz berdi."))
-            : t("errors.serverUnreachable", "Server bilan aloqa o'rnatilmadi. Iltimos, keyinroq qayta urinib ko'ring."),
+            ? (detail.message || t("errors.networkError"))
+            : t("errors.serverUnreachable"),
           color: "red",
           autoClose: 5000,
         });
@@ -94,12 +94,16 @@ function AppInner() {
   );
 }
 
+/*
+ * Data router (createBrowserRouter): `useBlocker` (imtihon davomida sahifadan
+ * chiqishni tasdiqlash, W-07) faqat data router ichida ishlaydi. Barcha
+ * marshrutlar avvalgidek `AppRoutes` ichidagi <Routes> da — bu yerda faqat
+ * bitta catch-all marshrut.
+ */
+const router = createBrowserRouter([{ path: "*", element: <AppInner /> }]);
+
 function App() {
-  return (
-    <BrowserRouter>
-      <AppInner />
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

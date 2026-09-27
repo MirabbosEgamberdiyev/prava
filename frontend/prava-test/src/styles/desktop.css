@@ -3574,7 +3574,11 @@ body:has(.app) {
   color: var(--text);
   cursor: pointer;
   transition: all 0.15s;
-  white-space: nowrap;
+  /* W-25: tor ekranda (320px) uzun tarjimalar sig'ishi uchun qatorga o'tadi */
+  white-space: normal;
+  text-align: center;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .quiz-result-btn:hover {
   border-color: var(--primary);
@@ -4509,6 +4513,13 @@ body:has(.app) {
   white-space: nowrap;
   flex-shrink: 0;
 }
+/* W-25: yorliq <span> ichida — joy yetmasa "…" bilan qisqaradi (to'liq matn title'da) */
+.exam-nav-btn > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .exam-nav-btn:hover:not(:disabled) {
   border-color: var(--primary);
   color: var(--primary);
@@ -4669,7 +4680,11 @@ body:has(.app) {
   color: var(--text);
   cursor: pointer;
   transition: all 0.15s;
-  white-space: nowrap;
+  /* W-25: tor ekranda (320px) uzun tarjimalar sig'ishi uchun qatorga o'tadi */
+  white-space: normal;
+  text-align: center;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .exam-result-btn:hover {
   border-color: var(--primary);
@@ -5810,6 +5825,20 @@ body:has(.app) {
     color 0.15s,
     border-color 0.15s;
 }
+/* W-25: 320px — tablar gorizontal aylantiriladi, tugma ichidagi joy qisqartiriladi */
+@media (max-width: 360px) {
+  .stats-tab-btn {
+    padding: 10px 8px;
+    gap: 4px;
+    font-size: 11px;
+  }
+  .lang-btn {
+    padding: 0 8px;
+  }
+  .lang-btn-label {
+    max-width: 56px;
+  }
+}
 .stats-tab-btn.active {
   color: var(--primary);
   border-bottom-color: var(--primary);
@@ -6549,6 +6578,10 @@ body:has(.app) {
     padding: 8px 10px;
     font-size: 12.5px;
     min-height: 40px;
+    /* W-25: 320px da savol raqamlari uchun joy qolsin */
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 34vw;
   }
   .exam-qnum {
     width: 30px;

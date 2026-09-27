@@ -10,8 +10,8 @@ const Packages_Page = () => {
   return (
     <>
       <SEO
-        title={t("seo.packages.title", "Imtihon Paketlari — PravaOnline")}
-        description={t("seo.packages.desc", "Mavzular va toifalar bo'yicha imtihon paketlari to'plami.")}
+        title={t("seo.packages.title")}
+        description={t("seo.packages.desc")}
         canonical="/packages"
         noIndex={true}
       />
@@ -25,13 +25,12 @@ const Packages_Page = () => {
                 stroke={2}
                 style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }}
               />
-              {t("packages.title", "Imtihon paketlari")}
+              {t("packages.title")}
             </h1>
           </div>
           <p className={styles.innerPageSubtitle}>
             {t(
-              "packages.subtitle",
-              "Mavzular va yo'nalishlar bo'yicha saralangan maxsus savollar to'plami."
+              "packages.subtitle"
             )}
           </p>
         </div>

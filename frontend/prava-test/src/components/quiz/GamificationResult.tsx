@@ -84,8 +84,8 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
         icon: <IconTrophy size={42} stroke={1.8} color="#fff" />,
         badgeBg: "linear-gradient(135deg, #fcc419, #f59f00)",
         color: "#f59f00",
-        message: t("gamification.tierGold", "Ajoyib natija! Imtihonga deyarli tayyorsiz!"),
-        title: title || t("gamification.tierGoldTitle", "Ajoyib natija!"),
+        message: t("gamification.tierGold"),
+        title: title || t("gamification.tierGoldTitle"),
       }
     : isTargetTier
     ? {
@@ -93,16 +93,16 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
         icon: <IconTargetArrow size={42} stroke={1.8} color="#fff" />,
         badgeBg: "linear-gradient(135deg, #38d9a9, #0c8599)",
         color: "#0c8599",
-        message: t("gamification.tierTarget", "Yaxshi ko'rsatkich! Yana bir oz mashq qilsangiz yetarli."),
-        title: title || t("gamification.tierTargetTitle", "Yaxshi ko'rsatkich!"),
+        message: t("gamification.tierTarget"),
+        title: title || t("gamification.tierTargetTitle"),
       }
     : {
         tier: "retry",
         icon: <IconRotate size={42} stroke={1.8} color="#fff" />,
         badgeBg: "linear-gradient(135deg, #ffa94d, #e8590c)",
         color: "#e8590c",
-        message: t("gamification.tierRetry", "Taslim bo'lmang! Xatolar ustida ishlab, qayta topshiring."),
-        title: title || t("gamification.tierRetryTitle", "Taslim bo'lmang!"),
+        message: t("gamification.tierRetry"),
+        title: title || t("gamification.tierRetryTitle"),
       };
 
   return (
@@ -178,7 +178,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
               }}
             >
               {passed ? <IconCircleCheck size={16} stroke={2.4} /> : <IconCircleX size={16} stroke={2.4} />}
-              <span>{passed ? t("gamification.passed", "O'tdi") : t("gamification.failed", "O'tmadi")}</span>
+              <span>{passed ? t("gamification.passed") : t("gamification.failed")}</span>
             </span>
           </div>
         )}
@@ -193,7 +193,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
             letterSpacing: "-0.3px",
           }}
         >
-          {errorMsg ? t("common.error", "Xatolik") : tierConfig.title}
+          {errorMsg ? t("common.error") : tierConfig.title}
         </h2>
 
         {/* Motivational Message */}
@@ -247,7 +247,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
                   <span>{correct}</span>
                 </div>
                 <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: 4, fontWeight: 600 }}>
-                  {t("common.correct", "To'g'ri")}
+                  {t("common.correct")}
                 </div>
               </div>
 
@@ -265,7 +265,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
                   <span>{wrong}</span>
                 </div>
                 <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: 4, fontWeight: 600 }}>
-                  {t("common.wrong", "Noto'g'ri")}
+                  {t("common.wrong")}
                 </div>
               </div>
 
@@ -284,7 +284,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
                     <span>{unanswered}</span>
                   </div>
                   <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: 4, fontWeight: 600 }}>
-                    {t("exam.unanswered", "Javobsiz")}
+                    {t("exam.unanswered")}
                   </div>
                 </div>
               )}
@@ -318,7 +318,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
               }}
             >
               <IconSearch size={18} stroke={2.2} />
-              <span>{t("gamification.reviewMistakes", "Xatolarni tahlil qilish")}</span>
+              <span>{t("gamification.reviewMistakes")}</span>
             </button>
           )}
 
@@ -345,7 +345,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
               }}
             >
               <IconAlertTriangle size={18} stroke={2.2} />
-              <span>{t("gamification.solveMistakes", "Faqat xatolar bo'yicha test")} ({wrong})</span>
+              <span>{t("gamification.solveMistakes")} ({wrong})</span>
             </button>
           )}
 
@@ -366,7 +366,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
               }}
             >
               <IconSparkles size={16} />
-              <span>{t("gamification.allCorrect", "Barcha savollarga to'g'ri javob berildi!")}</span>
+              <span>{t("gamification.allCorrect")}</span>
             </div>
           )}
 
@@ -392,7 +392,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
             }}
           >
             <IconRefresh size={17} stroke={2} />
-            <span>{t("gamification.retryTest", "Qayta urinish")}</span>
+            <span>{t("gamification.retryTest")}</span>
           </button>
 
           {/* 3. Tertiary: Back to Home */}
@@ -417,7 +417,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
             }}
           >
             <IconArrowLeft size={16} />
-            <span>{t("gamification.backHome", "Bosh sahifaga qaytish")}</span>
+            <span>{t("gamification.backHome")}</span>
           </button>
         </div>
       </div>

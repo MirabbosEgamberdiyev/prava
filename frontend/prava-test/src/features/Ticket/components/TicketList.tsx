@@ -141,11 +141,11 @@ export function TicketList() {
         <EmptyState
           icon={<IconTicket size={48} color="var(--primary)" style={{ opacity: 0.75 }} />}
           title={t("ticket.notFound")}
-          description={t("ticket.emptyDesc", "Tanlangan filtr bo'yicha biletlar topilmadi. Barcha biletlarni ko'rish uchun filtrni tozalang.")}
+          description={t("ticket.emptyDesc")}
           action={
             selectedTopicId ? (
               <Button variant="light" onClick={() => setSelectedTopicId(null)} mt="xs">
-                {t("common.resetFilter", "Filtrni tozalash")}
+                {t("common.resetFilter")}
               </Button>
             ) : undefined
           }

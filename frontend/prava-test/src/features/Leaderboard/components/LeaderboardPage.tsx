@@ -49,7 +49,7 @@ export function LeaderboardPage({ hideTitle = true }: { hideTitle?: boolean } = 
   );
 
   const topicOptions = [
-    { value: "", label: t("leaderboard.global", "Umumiy reyting") },
+    { value: "", label: t("leaderboard.global") },
     ...topics.map((topic: any) => ({
       // Backend /leaderboard/{topic} mavzu KODI bo'yicha qidiradi (ID emas) — avval filtr bo'sh natija berardi.
       value: String(topic.code ?? topic.id),

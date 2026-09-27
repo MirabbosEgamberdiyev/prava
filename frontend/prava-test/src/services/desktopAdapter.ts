@@ -21,16 +21,42 @@ import {
   notifySubmitQueued,
 } from "./pendingSubmits";
 import { curriculumApi } from "./curriculumApi";
-import { fetchExamRules, durationMinutesFor } from "./examRules";
+import { fetchExamRules, durationMinutesFor, getExamRulesSync, passPercentFor } from "./examRules";
+import { GUEST_USER_ID } from "../utils/userScope";
+
+/** "O'rtacha" tayyorlik chegarasi: o'tish foizidan shuncha punkt past. */
+export const AVERAGE_GAP_PERCENT = 20;
 import { normalizeLanguage, type AppLanguage } from "../context/LanguageContext";
 import { latinToCyrillic, cyrillicToLatin } from "../utils/transliterate";
 
-let cachedTotalQuestions = 1234;
-let cachedTotalTickets = 63;
+/*
+ * W-10: bilet/savol soni faqat serverdan (curriculum stats).
+ * Avval 63/1234 kabi qattiq default'lar bor edi — server boshqa son qaytarsa
+ * foydalanuvchi noto'g'ri raqamni ko'rardi. Endi noma'lum = 0: UI raqamni
+ * ko'rsatmaydi (yoki yuklanish holatini ko'rsatadi).
+ */
+const COUNTS_STORAGE_KEY = "prava_curriculum_counts";
 
-// Kurs statistikasi (savol/bilet soni) LAZY yuklanadi — avval modul import
-// qilinishi bilanoq (hatto landing/login sahifasida ham) so'rov ketardi.
-// Endi birinchi foydalanishda bir marta so'raladi; javob kelguncha default.
+/** Serverdan oldin olingan (haqiqiy) sonlar — takroriy tashrifda darhol ko'rsatiladi. */
+function readPersistedCounts(): { q: number; t: number } {
+  try {
+    const raw = localStorage.getItem(COUNTS_STORAGE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as { q?: unknown; t?: unknown }) : null;
+    const q = Number(parsed?.q);
+    const t = Number(parsed?.t);
+    return { q: Number.isFinite(q) && q > 0 ? q : 0, t: Number.isFinite(t) && t > 0 ? t : 0 };
+  } catch {
+    return { q: 0, t: 0 };
+  }
+}
+
+const persistedCounts = typeof window !== "undefined" ? readPersistedCounts() : { q: 0, t: 0 };
+let cachedTotalQuestions = persistedCounts.q;
+let cachedTotalTickets = persistedCounts.t;
+const statsListeners = new Set<() => void>();
+
+// Kurs statistikasi (savol/bilet soni) LAZY yuklanadi — birinchi foydalanishda
+// bir marta so'raladi. Xatoda promise tozalanadi (keyingi chaqiruvda qayta urinadi).
 let statsPromise: Promise<void> | null = null;
 
 export function ensureCurriculumStats(): Promise<void> {
@@ -40,10 +66,30 @@ export function ensureCurriculumStats(): Promise<void> {
       .then((s) => {
         if (s?.totalQuestions) cachedTotalQuestions = s.totalQuestions;
         if (s?.totalTickets) cachedTotalTickets = s.totalTickets;
+        try {
+          localStorage.setItem(
+            COUNTS_STORAGE_KEY,
+            JSON.stringify({ q: cachedTotalQuestions, t: cachedTotalTickets }),
+          );
+        } catch {
+          // storage bloklangan — faqat xotirada
+        }
+        statsListeners.forEach((fn) => fn());
       })
-      .catch(() => {});
+      .catch((err: unknown) => {
+        statsPromise = null;
+        if (import.meta.env.DEV) console.warn("curriculum stats unavailable", err);
+      });
   }
   return statsPromise;
+}
+
+/** Statistika yuklanganda xabar beradi (useCurriculumCounts uchun). */
+export function subscribeCurriculumStats(fn: () => void): () => void {
+  statsListeners.add(fn);
+  return () => {
+    statsListeners.delete(fn);
+  };
 }
 
 export function getCachedTotalQuestions(): number {
@@ -99,23 +145,35 @@ export function parseOptions(json: string): QuestionOption[] {
   }
 }
 
+/*
+ * W-18: kirill (uzc) matni bo'lmasa lotin matni ko'rsatilmaydi — u
+ * latinToCyrillic orqali transliteratsiya qilinadi (LanguageContext.localize
+ * bilan bir xil qoida).
+ */
+const uzcOrTranslit = (uzc: string | null | undefined, uzl: string | null | undefined): string => {
+  if (uzc && uzc.trim()) return uzc;
+  return uzl ? latinToCyrillic(uzl) : "";
+};
+
 export function localizeQ(q: OfflineQuestion): string {
   const lang = getLang();
-  if (lang === "uzc") return q.text_uzc || q.text_uzl;
+  if (lang === "uzc") return uzcOrTranslit(q.text_uzc, q.text_uzl);
   if (lang === "ru") return q.text_ru || q.text_uzl;
   return q.text_uzl;
 }
 
 export function localizeOpt(opt: QuestionOption): string {
   const lang = getLang();
-  if (lang === "uzc") return opt.uzc || opt.uzl;
+  if (lang === "uzc") return uzcOrTranslit(opt.uzc, opt.uzl);
   if (lang === "ru") return opt.ru || opt.uzl;
   return opt.uzl;
 }
 
 export function localizeExp(q: OfflineQuestion): string | null {
   const lang = getLang();
-  if (lang === "uzc" && q.explanation_uzc) return q.explanation_uzc;
+  if (lang === "uzc" && (q.explanation_uzc || q.explanation_uzl)) {
+    return uzcOrTranslit(q.explanation_uzc, q.explanation_uzl);
+  }
   if (lang === "ru" && q.explanation_ru) return q.explanation_ru;
   return q.explanation_uzl ?? null;
 }
@@ -330,87 +388,92 @@ export async function startSecureExamSession(count = 20): Promise<StartedSession
   return { sessionId: res.data?.data?.sessionId ?? null, questions };
 }
 
+/**
+ * Marafon sessiyasini boshlaydi. Tarmoq/server xatosida THROW qiladi —
+ * sahifa lokalizatsiyalangan xato + "Qayta urinish" ko'rsatadi (W-05).
+ */
 export async function startMarathonSession(topicId?: number, count = 100): Promise<StartedSession> {
   if (!(count && count > 0)) await ensureCurriculumStats();
   const actualCount = count && count > 0 ? count : cachedTotalQuestions;
   // Biznes qoidasi: marafon davomiyligi = savollar soni × 1 daqiqa (exam-rules)
   const rules = await fetchExamRules();
-  try {
-    const res = await api.post<{
-      data: { sessionId?: number; questions: any[] };
-    }>("/api/v2/exams/marathon/start-visible", {
-      questionCount: actualCount,
-      durationMinutes: durationMinutesFor(actualCount, rules.marathon.secondsPerQuestion),
-      topicId,
-    });
-    return {
-      sessionId: res.data?.data?.sessionId ?? null,
-      questions: (res.data?.data?.questions ?? []).map(normalizeQuestion),
-    };
-  } catch (err: any) {
-    console.warn("startMarathonSession error:", err?.response?.data || err?.message || err);
-  }
-  return { sessionId: null, questions: [] };
+  const res = await api.post<{
+    data: { sessionId?: number; questions: any[] };
+  }>("/api/v2/exams/marathon/start-visible", {
+    questionCount: actualCount,
+    durationMinutes: durationMinutesFor(actualCount, rules.marathon.secondsPerQuestion),
+    topicId,
+  });
+  return {
+    sessionId: res.data?.data?.sessionId ?? null,
+    questions: (res.data?.data?.questions ?? []).map(normalizeQuestion),
+  };
 }
 
+/** Server bilet DTO'sini OfflineTicket ga o'giradi (yetishmagan qiymatlar — exam-rules'dan). */
+export function mapTicketDto(tk: any): OfflineTicket {
+  const rules = getExamRulesSync();
+  const num = tk.ticketNumber ?? tk.number ?? tk.id;
+  const nameObj =
+    typeof tk.name === "object" && tk.name ? tk.name : typeof tk.title === "object" && tk.title ? tk.title : null;
+  const plainName = typeof tk.name === "string" ? tk.name : typeof tk.title === "string" ? tk.title : null;
+  const questionCount = Number(tk.questionCount ?? tk.questionsCount) || rules.real.questionCount;
+  return {
+    id: tk.id,
+    topic_id: tk.topicId ?? tk.topic?.id ?? null,
+    ticket_number: num,
+    name_uzl: nameObj?.uzl || plainName || `${num}-bilet`,
+    name_uzc: nameObj?.uzc || tk.nameUzc || `${num}-билет`,
+    name_en: nameObj?.en || tk.nameEn || `Ticket #${num}`,
+    name_ru: nameObj?.ru || tk.nameRu || `Билет #${num}`,
+    duration_minutes:
+      Number(tk.durationMinutes) || durationMinutesFor(questionCount, rules.ticket.secondsPerQuestion),
+    passing_score: Number(tk.passingScore) || rules.ticket.passPercent,
+    question_count: questionCount,
+    is_blocked: tk.isBlocked ?? false,
+    is_free: typeof tk.isFree === "boolean" ? tk.isFree : undefined,
+  };
+}
+
+/**
+ * Biletlar ro'yxati. Xatoda THROW qiladi (W-08/W-15) — avval 63 ta soxta
+ * bilet "fallback" sifatida ko'rsatilardi, ular bosilganda esa mavjud
+ * bo'lmagan ID bilan sessiya ochishga urinilardi.
+ */
 export async function getTickets(): Promise<OfflineTicket[]> {
-  try {
-    const res = await api.get<{
-      data: { content?: any[]; tickets?: any[] };
-    }>("/api/v2/tickets?page=0&size=100&sortBy=ticketNumber&direction=ASC");
-    const list = res.data?.data?.content || res.data?.data?.tickets || [];
-    if (list.length > 0) {
-      return list.map((tk: any) => ({
-        id: tk.id,
-        topic_id: tk.topicId ?? null,
-        ticket_number: tk.ticketNumber ?? tk.number ?? tk.id,
-        name_uzl: typeof tk.name === "object" ? tk.name?.uzl : (tk.name || `${tk.ticketNumber}-bilet`),
-        name_uzc: typeof tk.name === "object" ? tk.name?.uzc : (tk.nameUzc || `${tk.ticketNumber}-билет`),
-        name_en: typeof tk.name === "object" ? tk.name?.en : (tk.nameEn || `Ticket #${tk.ticketNumber}`),
-        name_ru: typeof tk.name === "object" ? tk.name?.ru : (tk.nameRu || `Билет #${tk.ticketNumber}`),
-        duration_minutes: tk.durationMinutes ?? 20,
-        passing_score: tk.passingScore ?? 90,
-        question_count: tk.questionCount ?? 20,
-        is_blocked: tk.isBlocked ?? false,
-      }));
-    }
-  } catch {
-    // fallback: 63 official tickets
-  }
-
-  // Standalone fallback: 63 bilet (1234 savol, 63 rasmiy bilet)
-  const fallbackTickets: OfflineTicket[] = [];
-  for (let i = 1; i <= 63; i++) {
-    fallbackTickets.push({
-      id: i,
-      topic_id: null,
-      ticket_number: i,
-      name_uzl: `${i}-bilet`,
-      name_uzc: `${i}-билет`,
-      name_en: `Ticket #${i}`,
-      name_ru: `Билет #${i}`,
-      duration_minutes: 20,
-      passing_score: 90,
-      question_count: 20,
-      is_blocked: false,
-    });
-  }
-  return fallbackTickets;
+  const res = await api.get<{
+    data: { content?: any[]; tickets?: any[] };
+  }>("/api/v2/tickets?page=0&size=100&sortBy=ticketNumber&direction=ASC");
+  const list = res.data?.data?.content || res.data?.data?.tickets || [];
+  return list.map(mapTicketDto);
 }
 
-export async function startTicketSession(ticketId: number): Promise<StartedSession> {
+/**
+ * Mehmonlar uchun ochiq biletlar ro'yxati (GET /api/v1/public/tickets).
+ * Endpoint hali mavjud bo'lmasa (404/401/403) — null qaytaradi, sahifa login CTA ko'rsatadi.
+ */
+export async function getPublicTickets(): Promise<OfflineTicket[] | null> {
   try {
-    const res = await api.post<{
-      data: { sessionId?: number; questions: any[] };
-    }>("/api/v2/tickets/start-visible", { ticketId });
-    return {
-      sessionId: res.data?.data?.sessionId ?? null,
-      questions: (res.data?.data?.questions ?? []).map(normalizeQuestion),
-    };
+    const res = await api.get<{ data?: any }>("/api/v1/public/tickets");
+    const body = res.data?.data ?? res.data;
+    const list = Array.isArray(body) ? body : body?.content || body?.tickets || [];
+    return (list as any[]).map(mapTicketDto);
   } catch (err: any) {
-    console.warn("startTicketSession start-visible error:", err?.response?.data || err?.message || err);
+    const status = err?.response?.status;
+    if (status === 404 || status === 401 || status === 403) return null;
+    throw err;
   }
-  return { sessionId: null, questions: [] };
+}
+
+/** Bilet sessiyasini boshlaydi. Xatoda THROW qiladi (W-05). */
+export async function startTicketSession(ticketId: number): Promise<StartedSession> {
+  const res = await api.post<{
+    data: { sessionId?: number; questions: any[] };
+  }>("/api/v2/tickets/start-visible", { ticketId });
+  return {
+    sessionId: res.data?.data?.sessionId ?? null,
+    questions: (res.data?.data?.questions ?? []).map(normalizeQuestion),
+  };
 }
 
 export async function getTopics(): Promise<OfflineTopic[]> {
@@ -423,8 +486,19 @@ export async function getTopics(): Promise<OfflineTopic[]> {
       if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
         rawList = res.data.data;
       }
-    } catch {
-      // ignore
+    } catch (err: any) {
+      // Mehmon (401/403): ochiq endpoint (GET /api/v1/public/topics) — mavjud bo'lsa.
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        try {
+          const pub = await api.get<{ data?: any }>("/api/v1/public/topics");
+          const body = pub.data?.data ?? pub.data;
+          const list = Array.isArray(body) ? body : body?.content || [];
+          if (Array.isArray(list)) rawList = list;
+        } catch {
+          // ochiq endpoint hali yo'q — rasmiy mavzular ro'yxati (OFFICIAL_TOPICS) ishlatiladi
+        }
+      }
     }
 
     if (rawList.length > 0) {
@@ -469,7 +543,7 @@ export async function getTopics(): Promise<OfflineTopic[]> {
           name_uzc: nameUzc,
           name_en: nameEn,
           name_ru: nameRu,
-          question_count: tp.questionCount ?? tp.questionsCount ?? official?.question_count ?? 20,
+          question_count: tp.questionCount ?? tp.questionsCount ?? official?.question_count ?? 0,
         };
       });
     }
@@ -487,6 +561,9 @@ export async function getFullStats(_userId?: number): Promise<FullStats> {
   const storedTicketStats = storageService.getTicketStats();
   const ticketStats: TicketReadinessStat[] = [];
   const totalTickets = cachedTotalTickets;
+  // "Tayyor" = bilet o'tish foizi (exam-rules); "o'rtacha" = undan AVERAGE_GAP_PERCENT punkt past.
+  const ticketPass = passPercentFor("ticket");
+  const ticketAverageThreshold = Math.max(0, ticketPass - AVERAGE_GAP_PERCENT);
 
   // Try fetching live statistics from backend
   let serverStats: any = null;
@@ -531,13 +608,13 @@ export async function getFullStats(_userId?: number): Promise<FullStats> {
     } else if (
       midGood >= 1 ||
       fastPerfect >= 1 ||
-      (lastScore != null && lastScore >= 90) ||
-      (serverTk?.bestScore != null && serverTk.bestScore >= 90)
+      (lastScore != null && lastScore >= ticketPass) ||
+      (serverTk?.bestScore != null && serverTk.bestScore >= ticketPass)
     ) {
       readiness = "ready";
     } else if (
-      (lastScore != null && lastScore >= 70) ||
-      (serverTk?.averageScore != null && serverTk.averageScore >= 70)
+      (lastScore != null && lastScore >= ticketAverageThreshold) ||
+      (serverTk?.averageScore != null && serverTk.averageScore >= ticketAverageThreshold)
     ) {
       readiness = "average";
     } else {
@@ -658,13 +735,14 @@ export async function getExamHistory(userId?: number, _limit?: number): Promise<
     if (Array.isArray(serverExams) && serverExams.length > 0) {
       return serverExams.map((item: any) => ({
         id: item.sessionId || item.id,
-        user_id: userId ?? 1,
+        user_id: userId ?? GUEST_USER_ID,
         score: item.score ?? Math.round(item.percentage ?? 0),
-        total_questions: item.totalQuestions ?? 20,
+        total_questions: item.totalQuestions ?? 0,
         correct_answers: item.correctCount ?? item.correctAnswers ?? 0,
         duration_seconds: item.durationSeconds ?? 0,
         exam_type: item.examType || "EXAM",
         created_at: item.finishedAt || item.startedAt || item.createdAt || new Date().toISOString(),
+        passed: typeof item.isPassed === "boolean" ? item.isPassed : typeof item.passed === "boolean" ? item.passed : null,
       }));
     }
   } catch {
@@ -674,13 +752,14 @@ export async function getExamHistory(userId?: number, _limit?: number): Promise<
   const list = storageService.getExamHistory();
   return list.map((item) => ({
     id: item.id,
-    user_id: userId ?? 1,
+    user_id: userId ?? GUEST_USER_ID,
     score: item.score,
     total_questions: item.totalQuestions,
     correct_answers: item.correctAnswers,
     duration_seconds: item.durationSeconds,
     exam_type: item.examType,
     created_at: item.createdAt,
+    passed: typeof item.passed === "boolean" ? item.passed : null,
   }));
 }
 
@@ -691,6 +770,8 @@ export async function saveExamResult(params: {
   correctAnswers: number;
   durationSeconds: number;
   examType: string;
+  /** Rejim qoidasi bo'yicha aniq natija (isExamPassed) — tarixda qayta hisoblanmaydi. */
+  passed?: boolean;
 }): Promise<ExamResult> {
   const res = storageService.saveExamResult({
     score: params.score,
@@ -698,6 +779,7 @@ export async function saveExamResult(params: {
     correctAnswers: params.correctAnswers,
     durationSeconds: params.durationSeconds,
     examType: params.examType,
+    passed: params.passed,
   });
   return {
     id: res.id,
@@ -708,6 +790,7 @@ export async function saveExamResult(params: {
     duration_seconds: res.durationSeconds,
     exam_type: res.examType,
     created_at: res.createdAt,
+    passed: res.passed ?? null,
   };
 }
 

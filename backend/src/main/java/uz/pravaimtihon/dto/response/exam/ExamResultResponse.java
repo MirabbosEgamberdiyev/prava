@@ -78,6 +78,12 @@ public class ExamResultResponse {
      */
     private Integer passingScore;
 
+    /** Baholashda qo'llangan rejim (REAL, TICKET, MARATHON, ...). Faqat qo'shimcha maydon. */
+    private uz.pravaimtihon.enums.ExamMode examMode;
+
+    /** REAL/SURVIVAL: ruxsat etilgan xato + javobsizlar soni (boshqa rejimlarda null). */
+    private Integer maxWrong;
+
     // ============================================
     // Vaqt ma'lumotlari
     // ============================================

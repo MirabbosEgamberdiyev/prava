@@ -32,6 +32,8 @@ import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
 import SafeHtml from "../../components/common/SafeHtml";
 import { AppImage } from "../../components/common/AppImage";
+import { errorKeyFor } from "../../types/errors";
+import { pickLocalized } from "../../data/curriculumLocale";
 
 const CATEGORIES = [
   { id: "all", key: "curriculum.all" },
@@ -50,7 +52,7 @@ export default function RoadSigns_Page() {
 
   const [signs, setSigns] = useState<RoadSign[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [selectedSign, setSelectedSign] = useState<RoadSign | null>(null);
@@ -61,57 +63,52 @@ export default function RoadSigns_Page() {
     curriculumApi
       .getSigns()
       .then((data) => {
-        setSigns(Array.isArray(data) ? data : []);
+        setSigns(data);
       })
-      .catch((err) => {
-        console.error("Failed to load signs:", err);
-        setError(t("curriculum.signsLoadError", "Yo'l belgilarini yuklashda xatolik yuz berdi. Qayta urinib ko'ring."));
+      .catch((err: unknown) => {
+        // 5xx/tarmoq xatolari uchun global toast api.ts'da chiqadi — bu yerda faqat inline xato.
+        setError(err);
         setSigns([]);
       })
       .finally(() => setLoading(false));
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     fetchSigns();
   }, [fetchSigns]);
 
-  const safeSigns = useMemo(() => (Array.isArray(signs) ? signs : []), [signs]);
+  const getLocalizedTitle = (s: RoadSign) => pickLocalized(lang, s.title_uzl, s.title_uzc, s.title_ru);
 
-  const getLocalizedTitle = (s: RoadSign) => {
-    if (lang === "ru" && s.title_ru) return s.title_ru;
-    if (lang === "uzc" && s.title_uzc) return s.title_uzc;
-    return s.title_uzl;
-  };
+  const getLocalizedDesc = (s: RoadSign) =>
+    pickLocalized(lang, s.description_uzl, s.description_uzc, s.description_ru);
 
-  const getLocalizedDesc = (s: RoadSign) => {
-    if (lang === "ru" && s.description_ru) return s.description_ru;
-    if (lang === "uzc" && s.description_uzc) return s.description_uzc;
-    return s.description_uzl || "";
+  /** Backend kategoriya nomi (o'zbekcha lotin) -> tarjima qilingan yorliq; noma'lum bo'lsa — asl qiymat. */
+  const getCategoryLabel = (category?: string) => {
+    if (!category) return "";
+    const match = CATEGORIES.find((c) => c.id !== "all" && c.id.toLowerCase() === category.toLowerCase());
+    return match ? t(match.key) : category;
   };
 
   const filteredSigns = useMemo(() => {
-    return safeSigns.filter((s) => {
+    const q = search.trim().toLowerCase();
+    return signs.filter((s) => {
       if (!s) return false;
       const matchCat =
         activeCategory === "all" ||
         (s.category && s.category.toLowerCase() === activeCategory.toLowerCase());
 
-      const q = search.trim().toLowerCase();
       const matchSearch =
         !q ||
         (s.code && s.code.toLowerCase().includes(q)) ||
-        getLocalizedTitle(s).toLowerCase().includes(q);
+        pickLocalized(lang, s.title_uzl, s.title_uzc, s.title_ru).toLowerCase().includes(q);
 
       return matchCat && matchSearch;
     });
-  }, [safeSigns, activeCategory, search, lang]);
+  }, [signs, activeCategory, search, lang]);
 
   return (
     <Container size="xl" py="xl">
-      <SEO
-        title={t("seo.signsTitle", "Yo'l belgilari katalogi — Rasmiy YHXX Yo'l Belgilari")}
-        description={t("seo.signsDesc", "O'zbekiston Respublikasi Yo'l Harakati Qoidalaridagi barcha rasmiy yo'l belgilari, ta'riflari va rasmlari.")}
-      />
+      <SEO title={t("seo.signsTitle")} description={t("seo.signsDesc")} />
 
       <Stack gap="lg">
         <div>
@@ -124,15 +121,18 @@ export default function RoadSigns_Page() {
                 {t("curriculum.signsSubtitle")}
               </Text>
             </div>
-            <Badge size="lg" variant="filled" color="blue" leftSection={<IconDirections size={14} />}>
-              {filteredSigns.length} {t("curriculum.signsCount")}
-            </Badge>
+            {!loading && !error && (
+              <Badge size="lg" variant="filled" color="blue" leftSection={<IconDirections size={14} />}>
+                {t("curriculum.signsCount", { count: filteredSigns.length })}
+              </Badge>
+            )}
           </Group>
         </div>
 
         {/* Search Input */}
         <TextInput
           placeholder={t("curriculum.searchSigns")}
+          aria-label={t("curriculum.searchSigns")}
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
           leftSection={<IconSearch size={18} />}
@@ -158,30 +158,6 @@ export default function RoadSigns_Page() {
           </Tabs.List>
         </Tabs>
 
-        {/* Error State with Retry Button */}
-        {error && (
-          <Alert
-            icon={<IconAlertTriangle size={18} />}
-            title={t("common.error")}
-            color="red"
-            variant="light"
-            radius="md"
-          >
-            <Group justify="space-between" align="center">
-              <Text size="sm">{error}</Text>
-              <Button
-                size="xs"
-                color="red"
-                variant="light"
-                leftSection={<IconRefresh size={14} />}
-                onClick={fetchSigns}
-              >
-                {t("common.refresh")}
-              </Button>
-            </Group>
-          </Alert>
-        )}
-
         {/* Content */}
         {loading ? (
           <SimpleGrid cols={{ base: 2, sm: 3, md: 4, lg: 5 }} spacing="md">
@@ -193,12 +169,34 @@ export default function RoadSigns_Page() {
               </Card>
             ))}
           </SimpleGrid>
+        ) : error ? (
+          <Alert
+            icon={<IconAlertTriangle size={18} />}
+            title={t("common.error")}
+            color="red"
+            variant="light"
+            radius="md"
+            role="alert"
+          >
+            <Group justify="space-between" align="center">
+              <Text size="sm">{t(errorKeyFor(error, "curriculum.signsLoadError"))}</Text>
+              <Button
+                size="xs"
+                color="red"
+                variant="light"
+                leftSection={<IconRefresh size={14} />}
+                onClick={fetchSigns}
+              >
+                {t("common.retry")}
+              </Button>
+            </Group>
+          </Alert>
         ) : filteredSigns.length === 0 ? (
           <Center py={60}>
             <Stack align="center" gap="xs">
               <IconAlertTriangle size={40} color="gray" />
               <Text c="dimmed" fw={500}>
-                Mos keluvchi belgilar topilmadi
+                {t("curriculum.emptySigns")}
               </Text>
               {(search || activeCategory !== "all") && (
                 <Button
@@ -209,7 +207,7 @@ export default function RoadSigns_Page() {
                     setActiveCategory("all");
                   }}
                 >
-                  Filtrlarni tozalash
+                  {t("curriculum.clearFilters")}
                 </Button>
               )}
             </Stack>
@@ -248,7 +246,7 @@ export default function RoadSigns_Page() {
                     {sign.code}
                   </Badge>
                   <Text size="xs" c="dimmed" lineClamp={1}>
-                    {sign.category}
+                    {getCategoryLabel(sign.category)}
                   </Text>
                 </Group>
 
@@ -297,7 +295,7 @@ export default function RoadSigns_Page() {
             </Box>
             <Box w="100%">
               <Badge variant="outline" color="gray" mb="xs">
-                {selectedSign.category}
+                {getCategoryLabel(selectedSign.category)}
               </Badge>
               <SafeHtml
                 style={{ fontSize: "0.95rem", lineHeight: 1.6, color: "var(--mantine-color-text)" }}

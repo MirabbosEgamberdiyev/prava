@@ -41,7 +41,8 @@ public class UserAppController {
         String etag = "\"" + offlineBundleService.currentVersionFor(userId) + "\"";
         // private: shaxsiy (huquqqa bog'liq) javob — umumiy/proxy keshlarda saqlanmasin.
         org.springframework.http.CacheControl cc = org.springframework.http.CacheControl.noCache().cachePrivate();
-        if (etag.equals(ifNoneMatch)) {
+        // B-07: proxy/CDN gzip qilganda ETag "W/" bilan zaiflashadi — solishtirishda olib tashlanadi.
+        if (uz.pravaimtihon.util.ETags.matches(ifNoneMatch, etag)) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_MODIFIED).eTag(etag).cacheControl(cc).build();
         }
         return ResponseEntity.ok().eTag(etag).cacheControl(cc)

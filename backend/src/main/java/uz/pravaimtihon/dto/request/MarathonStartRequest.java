@@ -37,4 +37,9 @@ public class MarathonStartRequest {
     @Min(value = 1, message = "validation.marathon.passingScore.min")
     @Max(value = 100, message = "validation.marathon.passingScore.max")
     private Integer passingScore;
+
+    @Schema(description = "Imtihon rejimi (ixtiyoriy): REAL | TICKET | MARATHON | SURVIVAL | TOPIC | PACKAGE. "
+            + "REAL — davlat imtihoni formati: savollar soni va vaqt exam-rules.real'dan, baholash maxWrong bo'yicha. "
+            + "null — eski xatti-harakat (marafon qoidalari).", example = "REAL", nullable = true)
+    private uz.pravaimtihon.enums.ExamMode mode;
 }

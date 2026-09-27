@@ -30,13 +30,10 @@ export function OfflineBanner() {
         p="xs"
       >
         <Text size="sm" fw={600}>
-          {t("errors.noInternetTitle", { defaultValue: "Internet aloqasi yo'q" })}
+          {t("errors.noInternetTitle")}
         </Text>
         <Text size="xs">
-          {t("exam.offlineAnswersSafe", {
-            defaultValue:
-              "Javoblaringiz qurilmangizda saqlanmoqda. Aloqa tiklangach avtomatik yuboriladi.",
-          })}
+          {t("exam.offlineAnswersSafe")}
         </Text>
       </Alert>
     );
@@ -54,9 +51,7 @@ export function OfflineBanner() {
         p="xs"
       >
         <Text size="sm">
-          {t("exam.backOnline", {
-            defaultValue: "Internet aloqasi tiklandi.",
-          })}
+          {t("exam.backOnline")}
         </Text>
       </Alert>
     );

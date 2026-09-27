@@ -84,14 +84,14 @@ const Settings_Page = () => {
       await api.delete(`${DEVICES_KEY}/${encodeURIComponent(pendingRemove.deviceId)}`);
       notifications.show({
         color: "green",
-        message: t("settings.deviceRemoved", "Qurilma chiqarildi"),
+        message: t("settings.deviceRemoved"),
       });
       setPendingRemove(null);
       await refreshDevices();
     } catch {
       notifications.show({
         color: "red",
-        message: t("settings.deviceRemoveError", "Qurilmani chiqarib bo'lmadi. Qayta urinib ko'ring."),
+        message: t("settings.deviceRemoveError"),
       });
     } finally {
       setRemoving(false);
@@ -101,8 +101,8 @@ const Settings_Page = () => {
   return (
     <>
       <SEO
-        title={t("seo.settings.title", "Sozlamalar va Profil — PravaOnline")}
-        description={t("seo.settings.desc", "Profil sozlamalari, xavfsizlik va ulangan qurilmalar.")}
+        title={t("seo.settings.title")}
+        description={t("seo.settings.desc")}
         canonical="/settings"
         noIndex={true}
       />
@@ -116,13 +116,12 @@ const Settings_Page = () => {
                   stroke={2}
                   style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }}
                 />
-                {t("settings.title", "Sozlamalar va Profil")}
+                {t("settings.title")}
               </h1>
             </div>
             <p className={styles.innerPageSubtitle}>
               {t(
-                "settings.subtitle",
-                "Hisob ma'lumotlari, xavfsizlik paroli va tizimga ulangan qurilmalarni boshqaring."
+                "settings.subtitle"
               )}
             </p>
           </div>
@@ -198,7 +197,7 @@ const Settings_Page = () => {
                 {deviceList.length > 0 && (
                   <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
                     {deviceList.map((device) => {
-                      const name = device.deviceName || t("settings.unknownDevice", "Noma'lum qurilma");
+                      const name = device.deviceName || t("settings.unknownDevice");
                       const isMobile = /mobile|android|iphone|ios/i.test(name);
                       return (
                         <Paper
@@ -219,20 +218,20 @@ const Settings_Page = () => {
                                   </Text>
                                   {device.isCurrent && (
                                     <Badge size="sm" variant="light">
-                                      {t("settings.thisDevice", "Shu qurilma")}
+                                      {t("settings.thisDevice")}
                                     </Badge>
                                   )}
                                 </Group>
                                 <Text size="xs" c="dimmed">
-                                  {t("settings.lastActive", "Oxirgi faollik")}: {formatLastActive(device.lastActiveAt)}
+                                  {t("settings.lastActive")}: {formatLastActive(device.lastActiveAt)}
                                 </Text>
                               </div>
                             </Group>
                             <Tooltip
                               label={
                                 device.isCurrent
-                                  ? t("settings.cannotRemoveCurrent", "Joriy qurilmani chiqarib bo'lmaydi")
-                                  : t("settings.removeDevice", "Qurilmani chiqarish")
+                                  ? t("settings.cannotRemoveCurrent")
+                                  : t("settings.removeDevice")
                               }
                             >
                               <ActionIcon
@@ -240,7 +239,7 @@ const Settings_Page = () => {
                                 color="red"
                                 size="lg"
                                 disabled={device.isCurrent}
-                                aria-label={t("settings.removeDevice", "Qurilmani chiqarish")}
+                                aria-label={t("settings.removeDevice")}
                                 onClick={() => setPendingRemove(device)}
                               >
                                 <IconTrash size={18} />
@@ -270,22 +269,21 @@ const Settings_Page = () => {
       onClose={() => {
         if (!removing) setPendingRemove(null);
       }}
-      title={t("settings.removeDeviceTitle", "Qurilmani chiqarish")}
+      title={t("settings.removeDeviceTitle")}
     >
       <Stack gap="md">
         <Text size="sm">
           {t(
             "settings.removeDeviceConfirm",
-            "\"{{name}}\" qurilmasidagi sessiya yakunlanadi. Davom etasizmi?",
-            { name: pendingRemove?.deviceName || t("settings.unknownDevice", "Noma'lum qurilma") },
+            { name: pendingRemove?.deviceName || t("settings.unknownDevice") },
           )}
         </Text>
         <Group justify="flex-end">
           <Button variant="default" onClick={() => setPendingRemove(null)} disabled={removing}>
-            {t("common.cancel", "Bekor qilish")}
+            {t("common.cancel")}
           </Button>
           <Button color="red" onClick={() => void confirmRemove()} loading={removing}>
-            {t("settings.removeDevice", "Qurilmani chiqarish")}
+            {t("settings.removeDevice")}
           </Button>
         </Group>
       </Stack>

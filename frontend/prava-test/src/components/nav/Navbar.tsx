@@ -37,7 +37,7 @@ const Navbar = ({ close }: { close: () => void }) => {
       <Box pb="sm" style={{ borderBottom: "1px solid var(--border)" }}>
         <Group justify="space-between" align="center">
           <Text size="xs" fw={700} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
-            {t("userMenu.settings", "Sozlamalar")}
+            {t("userMenu.settings")}
           </Text>
           <Group gap="xs">
             <ColorMode />
@@ -65,7 +65,7 @@ const Navbar = ({ close }: { close: () => void }) => {
             }}
             rightSection={<IconArrowRight size={18} />}
           >
-            {isAuthenticated ? t("nav.dashboard", "Boshqaruv paneli") : t("home.hero.startNow", "Boshlash")}
+            {isAuthenticated ? t("nav.dashboard") : t("home.hero.startNow")}
           </Button>
 
           {/* 2. Free Guest Exam */}
@@ -82,13 +82,13 @@ const Navbar = ({ close }: { close: () => void }) => {
             leftSection={<IconPencil size={18} />}
             styles={{ root: { fontWeight: 600 } }}
           >
-            {t("guestExam.tryFree", "Bepul sinov imtihoni")}
+            {t("guestExam.tryFree")}
           </Button>
 
           <Box my={4} style={{ height: 1, backgroundColor: "var(--border)" }} />
 
           <Text size="xs" fw={700} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.5px" }}>
-            {t("nav.downloads", "Ilovalar")}
+            {t("nav.downloads")}
           </Text>
 
           {/* 3. Downloads */}
@@ -174,7 +174,7 @@ const Navbar = ({ close }: { close: () => void }) => {
               justify="flex-start"
               styles={{ root: { fontWeight: 500 } }}
             >
-              {t("nav.home", "Bosh sahifa")}
+              {t("nav.home")}
             </Button>
             <Button
               component="a"
@@ -187,7 +187,7 @@ const Navbar = ({ close }: { close: () => void }) => {
               justify="flex-start"
               styles={{ root: { fontWeight: 500 } }}
             >
-              {t("nav.features", "Imkoniyatlar")}
+              {t("nav.features")}
             </Button>
             <Button
               component={Link}
@@ -200,7 +200,7 @@ const Navbar = ({ close }: { close: () => void }) => {
               justify="flex-start"
               styles={{ root: { fontWeight: 500 } }}
             >
-              {t("nav.partners", "Avtomaktablar")}
+              {t("nav.partners")}
             </Button>
             <Button
               component={Link}
@@ -213,7 +213,7 @@ const Navbar = ({ close }: { close: () => void }) => {
               justify="flex-start"
               styles={{ root: { fontWeight: 500 } }}
             >
-              {t("nav.downloads", "Ilovalar (Windows, Mobile)")}
+              {t("nav.downloads")}
             </Button>
             <Button
               component={Link}
@@ -226,7 +226,7 @@ const Navbar = ({ close }: { close: () => void }) => {
               justify="flex-start"
               styles={{ root: { fontWeight: 500 } }}
             >
-              {t("nav.about", "Biz haqimizda")}
+              {t("nav.about")}
             </Button>
             <Button
               component={Link}
@@ -239,7 +239,7 @@ const Navbar = ({ close }: { close: () => void }) => {
               justify="flex-start"
               styles={{ root: { fontWeight: 500 } }}
             >
-              {t("nav.faq", "Ko'p so'raladigan savollar")}
+              {t("nav.faq")}
             </Button>
             <Button
               component={Link}
@@ -252,18 +252,18 @@ const Navbar = ({ close }: { close: () => void }) => {
               justify="flex-start"
               styles={{ root: { fontWeight: 500 } }}
             >
-              {t("nav.contact", "Bog'lanish")}
+              {t("nav.contact")}
             </Button>
           </Stack>
 
           {/* Legal Links */}
           <Group gap="md" mt="sm" justify="center">
             <Link to="/terms" onClick={close} style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-              {t("footer.terms", "Foydalanish shartlari")}
+              {t("footer.terms")}
             </Link>
             <span style={{ color: "var(--border)" }}>•</span>
             <Link to="/privacy" onClick={close} style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-              {t("footer.privacy", "Maxfiylik")}
+              {t("footer.privacy")}
             </Link>
           </Group>
         </Stack>
@@ -286,7 +286,7 @@ const Navbar = ({ close }: { close: () => void }) => {
               onClick={close}
               styles={{ root: { fontWeight: 600 } }}
             >
-              {user?.fullName || t("nav.dashboard", "Boshqaruv paneli")}
+              {user?.fullName || t("nav.dashboard")}
             </Button>
             <Button
               onClick={() => {
@@ -300,7 +300,7 @@ const Navbar = ({ close }: { close: () => void }) => {
               leftSection={<IconLogout size={16} />}
               size="xs"
             >
-              {t("common.logout", "Chiqish")}
+              {t("common.logout")}
             </Button>
           </Stack>
         </Box>

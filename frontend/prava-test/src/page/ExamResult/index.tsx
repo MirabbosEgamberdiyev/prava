@@ -6,7 +6,7 @@ const ExamResult_Page = () => {
   const { t } = useTranslation();
   return (
     <>
-      <SEO title={t("seo.examResult.title", "Imtihon Natijasi")} description={t("seo.examResult.desc", "Topshirilgan imtihonning batafsil tahlili.")}
+      <SEO title={t("seo.examResult.title")} description={t("seo.examResult.desc")}
         noIndex={true}
       />
 

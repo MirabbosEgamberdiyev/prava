@@ -93,112 +93,68 @@ export interface TrafficRule {
   content_html_ru?: string;
 }
 
+/**
+ * Curriculum API. Barcha getterlar tarmoq/server xatolarida THROW qiladi (xatoni yutib
+ * bo'sh ro'yxat qaytarmaydi) — sahifalar "yuklanmoqda / xato + qayta urinish / bo'sh"
+ * holatlarini alohida ko'rsatishi uchun.
+ */
+function unwrap(res: { data?: unknown }): unknown {
+  const body = res?.data as { data?: unknown } | undefined;
+  return body && typeof body === "object" && "data" in body ? body.data : body;
+}
+
+function asArray<T>(payload: unknown): T[] {
+  return Array.isArray(payload) ? (payload as T[]) : [];
+}
+
 export const curriculumApi = {
   getStats: async (): Promise<CurriculumStats> => {
-    try {
-      const res = await api.get("/api/v1/curriculum/stats");
-      const data = res.data?.data ?? res.data;
-      return (
-        data && typeof data === "object"
-          ? data
-          : {
-              totalQuestions: 1234,
-              totalTickets: 63,
-              totalTopics: 44,
-              totalSigns: 297,
-              totalMarkings: 47,
-              totalExamCenters: 14,
-              totalPracticalExercises: 12,
-              totalPenalties: 32,
-            }
-      );
-    } catch {
-      return {
-        totalQuestions: 1234,
-        totalTickets: 63,
-        totalTopics: 44,
-        totalSigns: 297,
-        totalMarkings: 47,
-        totalExamCenters: 14,
-        totalPracticalExercises: 12,
-        totalPenalties: 32,
-      };
+    const res = await api.get("/api/v1/curriculum/stats");
+    const data = unwrap(res);
+    if (!data || typeof data !== "object") {
+      throw new Error("Invalid curriculum stats payload");
     }
+    return data as CurriculumStats;
   },
 
   getSigns: async (category?: string, search?: string): Promise<RoadSign[]> => {
-    try {
-      const res = await api.get("/api/v1/curriculum/signs", {
-        params: { category, search },
-      });
-      const payload = res.data?.data ?? res.data;
-      return Array.isArray(payload) ? payload : [];
-    } catch (err) {
-      console.error("Error in getSigns:", err);
-      return [];
-    }
+    const res = await api.get("/api/v1/curriculum/signs", {
+      params: { category, search },
+    });
+    return asArray<RoadSign>(unwrap(res));
   },
 
   getMarkings: async (type?: string): Promise<RoadMarking[]> => {
-    try {
-      const res = await api.get("/api/v1/curriculum/markings", {
-        params: { type },
-      });
-      const payload = res.data?.data ?? res.data;
-      return Array.isArray(payload) ? payload : [];
-    } catch (err) {
-      console.error("Error in getMarkings:", err);
-      return [];
-    }
+    const res = await api.get("/api/v1/curriculum/markings", {
+      params: { type },
+    });
+    return asArray<RoadMarking>(unwrap(res));
   },
 
   getExamCenters: async (): Promise<ExamCenter[]> => {
-    try {
-      const res = await api.get("/api/v1/curriculum/exam-centers");
-      const payload = res.data?.data ?? res.data;
-      return Array.isArray(payload) ? payload : [];
-    } catch (err) {
-      console.error("Error in getExamCenters:", err);
-      return [];
-    }
+    const res = await api.get("/api/v1/curriculum/exam-centers");
+    return asArray<ExamCenter>(unwrap(res));
   },
 
   getPracticalExam: async (): Promise<{
     exercises: PracticalExercise[];
     penalties: PracticalPenalty[];
   }> => {
-    try {
-      const res = await api.get("/api/v1/curriculum/practical-exam");
-      const payload = res.data?.data ?? res.data;
-      return {
-        exercises: Array.isArray(payload?.exercises) ? payload.exercises : [],
-        penalties: Array.isArray(payload?.penalties) ? payload.penalties : [],
-      };
-    } catch (err) {
-      console.error("Error in getPracticalExam:", err);
-      return { exercises: [], penalties: [] };
-    }
+    const res = await api.get("/api/v1/curriculum/practical-exam");
+    const payload = unwrap(res) as { exercises?: unknown; penalties?: unknown } | null | undefined;
+    return {
+      exercises: asArray<PracticalExercise>(payload?.exercises),
+      penalties: asArray<PracticalPenalty>(payload?.penalties),
+    };
   },
 
   getPenalties: async (): Promise<PracticalPenalty[]> => {
-    try {
-      const res = await api.get("/api/v1/curriculum/penalties");
-      const payload = res.data?.data ?? res.data;
-      return Array.isArray(payload) ? payload : [];
-    } catch (err) {
-      console.error("Error in getPenalties:", err);
-      return [];
-    }
+    const res = await api.get("/api/v1/curriculum/penalties");
+    return asArray<PracticalPenalty>(unwrap(res));
   },
 
   getRules: async (): Promise<TrafficRule[]> => {
-    try {
-      const res = await api.get("/api/v1/curriculum/rules");
-      const payload = res.data?.data ?? res.data;
-      return Array.isArray(payload) ? payload : [];
-    } catch (err) {
-      console.error("Error in getRules:", err);
-      return [];
-    }
+    const res = await api.get("/api/v1/curriculum/rules");
+    return asArray<TrafficRule>(unwrap(res));
   },
 };

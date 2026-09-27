@@ -21,6 +21,8 @@ import { useLanguage } from "../../../hooks/useLanguage";
 import type { Ticket } from "../types";
 import type { TicketStatus } from "../types";
 import classes from "./TicketCard.module.css";
+import { passPercentFor, useExamRules } from "../../../services/examRules";
+import { AVERAGE_GAP_PERCENT } from "../../../services/desktopAdapter";
 import type { LocalizedText } from "../../../types";
 
 interface TicketStats {
@@ -65,6 +67,9 @@ const borderColorMap: Record<TicketStatus, string> = {
 export function TicketCard({ ticket, onClick, stats }: TicketCardProps) {
   const { t } = useTranslation();
   const { localize } = useLanguage();
+  // W-15: ranglar bilet o'tish foizidan (exam-rules) — qattiq 70 emas
+  const passPercent = passPercentFor("ticket", useExamRules());
+  const avgThreshold = Math.max(0, passPercent - AVERAGE_GAP_PERCENT);
 
   const status = getTicketStatus(stats);
   const hasStats = stats && stats.totalExams > 0;
@@ -73,7 +78,7 @@ export function TicketCard({ ticket, onClick, stats }: TicketCardProps) {
       ? clamp(Math.round(stats.averageScore))
       : 0;
   const scoreColor =
-    avgScore >= 70 ? "green" : avgScore >= 50 ? "yellow" : "red";
+    avgScore >= passPercent ? "green" : avgScore >= avgThreshold ? "yellow" : "red";
   const passRate = hasStats
     ? clamp(Math.round((stats.passedExams / stats.totalExams) * 100))
     : 0;
@@ -177,7 +182,7 @@ export function TicketCard({ ticket, onClick, stats }: TicketCardProps) {
                 <Text
                   size="xs"
                   fw={600}
-                  c={clamp(Math.round(stats.bestScore)) >= 70 ? "green" : "red"}
+                  c={clamp(Math.round(stats.bestScore)) >= passPercent ? "green" : "red"}
                 >
                   {clamp(Math.round(stats.bestScore))}%
                 </Text>

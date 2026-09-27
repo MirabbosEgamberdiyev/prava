@@ -28,110 +28,119 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { getCachedTotalTickets, getCachedTotalQuestions } from "../../services/desktopAdapter";
+import { useCurriculumCountParams, useCurriculumCounts } from "../../hooks/useCurriculumCounts";
 import SEO from "../../components/common/SEO";
 import { getWebAppUrl } from "../../utils/domain";
 
+/** To'lov tizimlari nomlari (brend nomlari — tarjima qilinmaydi). */
+const PAYMENT_BRANDS = [
+  { name: "Payme", color: "blue" },
+  { name: "Click", color: "cyan" },
+  { name: "Uzum Bank", color: "grape" },
+  { name: "Uzcard / Humo", color: "gray" },
+  { name: "Visa / Mastercard", color: "indigo" },
+] as const;
+
+const BUTTON_LABEL_STYLE = { overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 } as const;
+
 export default function Pricing_Page() {
   const { t } = useTranslation();
+  const countParams = useCurriculumCountParams();
+  const counts = useCurriculumCounts();
   const [billingCycle, setBillingCycle] = useState<string>("monthly");
 
   const isQuarterly = billingCycle === "quarterly";
 
   const comparisonFeatures = [
     {
-      name: t("pricing.feat1", "Rasmiy IIV YHXX savollari"),
-      free: t("pricing.feat1Free", "20 ta savol (1 bilet)"),
-      standard: t("pricing.feat1Full", "Barcha {{count}}+ savol", { count: getCachedTotalQuestions() }),
-      premium: t("pricing.feat1Full", "Barcha {{count}}+ savol", { count: getCachedTotalQuestions() }),
+      name: t("pricing.feat1"),
+      free: t("pricing.feat1Free"),
+      standard: t("pricing.feat1Full", { count: counts.questions }),
+      premium: t("pricing.feat1Full", { count: counts.questions }),
     },
     {
-      name: t("pricing.feat2", "Rasmiy biletlar soni"),
-      free: t("pricing.feat2Free", "1 ta sinov bileti"),
-      standard: t("pricing.feat2Full", "Barcha {{count}} ta bilet", { count: getCachedTotalTickets() }),
-      premium: t("pricing.feat2Full", "Barcha {{count}} ta bilet", { count: getCachedTotalTickets() }),
+      name: t("pricing.feat2"),
+      free: t("pricing.feat2Free"),
+      standard: t("pricing.feat2Full", { count: counts.tickets }),
+      premium: t("pricing.feat2Full", { count: counts.tickets }),
     },
     {
-      name: t("pricing.feat3", "Davlat imtihoni simulyatori (20 daqiqa)"),
-      free: t("pricing.feat3Free", "1 marta bepul"),
-      standard: t("pricing.featUnlimited", "Cheksiz"),
-      premium: t("pricing.featUnlimited", "Cheksiz"),
+      name: t("pricing.feat3"),
+      free: t("pricing.feat3Free"),
+      standard: t("pricing.featUnlimited"),
+      premium: t("pricing.featUnlimited"),
     },
     {
-      name: t("pricing.feat4", "F1–F5 klaviatura boshqaruvi"),
+      name: t("pricing.feat4"),
       free: true,
       standard: true,
       premium: true,
     },
     {
-      name: t("pricing.feat5", "Xatolar ustida ishlash bo'limi"),
+      name: t("pricing.feat5"),
       free: false,
       standard: true,
       premium: true,
     },
     {
-      name: t("pricing.feat6", "Mavzulashtirilgan testlar"),
+      name: t("pricing.feat6"),
       free: false,
       standard: true,
       premium: true,
     },
     {
-      name: t("pricing.feat7", "To'xtovsiz Marafon rejimi (1000+ savol)"),
+      name: t("pricing.feat7"),
       free: false,
       standard: false,
       premium: true,
     },
     {
-      name: t("pricing.feat8", "Windows Desktop (.exe) 100% Offline litsenziya"),
+      name: t("pricing.feat8"),
       free: false,
       standard: false,
       premium: true,
     },
     {
-      name: t("pricing.feat9", "AI intellektual xatolar tahlili va tavsiyalar"),
+      name: t("pricing.feat9"),
       free: false,
       standard: false,
       premium: true,
     },
     {
-      name: t("pricing.feat10", "Ustuvor 24/7 texnik yordam"),
+      name: t("pricing.feat10"),
       free: false,
-      standard: t("pricing.standardSupport", "Standart"),
-      premium: t("pricing.vipSupport", "VIP Ustuvor"),
+      standard: t("pricing.standardSupport"),
+      premium: t("pricing.vipSupport"),
     },
   ];
 
   const pricingFaqs = [
     {
       id: "pr-1",
-      question: t("pricing.faq1Q", "To'lov amalga oshirilgach, tarif qachon faollashadi?"),
+      question: t("pricing.faq1Q"),
       answer: t(
-        "pricing.faq1A",
-        "To'lov tasdiqlanishi bilan profilingizda barcha imkoniyatlar avtomatik tarzda, soniyalar ichida faollashadi. Qo'shimcha kutish yoki operator tasdig'i talab etilmaydi."
+        "pricing.faq1A"
       ),
     },
     {
       id: "pr-2",
-      question: t("pricing.faq2Q", "Qanday to'lov usullari mavjud?"),
+      question: t("pricing.faq2Q"),
       answer: t(
-        "pricing.faq2A",
-        "O'zbekistonning barcha asosiy to'lov tizimlari: Payme, Click, Uzum Bank orqali Uzcard va Humo kartalari, shuningdek Visa va Mastercard xalqaro kartalari qo'llab-quvvatlanadi."
+        "pricing.faq2A"
       ),
     },
     {
       id: "pr-3",
-      question: t("pricing.faq3Q", "Bitta tarif orqali telefon va kompyuterda foydalanish mumkinmi?"),
+      question: t("pricing.faq3Q"),
       answer: t(
-        "pricing.faq3A",
-        "Ha! Siz o'z profilingizga istalgan qurilmadan (kompyuter brauzeri, mobil telefon, planshet) kirishingiz mumkin. Barcha statistikangiz va natijalaringiz real vaqtda sinxronlashadi."
+        "pricing.faq3A"
       ),
     },
     {
       id: "pr-4",
-      question: t("pricing.faq4Q", "Avtomaktablar uchun alohida shartlar bormi?"),
+      question: t("pricing.faq4Q"),
       answer: t(
-        "pricing.faq4A",
-        "Ha, avtomaktablar va o'quv markazlari uchun kompyuter sinflariga moslashtirilgan offline tizim, o'qituvchi nazorat paneli va maxsus ommaviy litsenziya tariflari taqdim etiladi. Batafsil ma'lumotni 'Avtomaktablar va hamkorlik' bo'limida ko'rishingiz mumkin."
+        "pricing.faq4A"
       ),
     },
   ];
@@ -139,11 +148,8 @@ export default function Pricing_Page() {
   return (
     <>
       <SEO
-        title={t("seo.pricing.title", "Tariflar va Narxlar — Prava Online")}
-        description={t(
-          "seo.pricing.desc",
-          "Haydovchilik imtihoniga tayyorlanish uchun qulay va shaffof tariflar. Barcha 70 ta bilet, haqiqiy imtihon simulyatori va xatolar ustida ishlash."
-        )}
+        title={t("seo.pricing.title")}
+        description={t("seo.pricing.desc", countParams)}
         keywords="prava online narxlar, prava test tariflar, haydovchilik imtihoni obuna, avtomaktab test narxi, prava desktop litsenziya"
         canonical="/pricing"
       />
@@ -153,18 +159,15 @@ export default function Pricing_Page() {
         <div className="saas-header-block">
           <div className="saas-badge-pill">
             <IconSparkles size={13} />
-            <span>{t("pricing.badge", "Shaffof va Qulay Tariflar")}</span>
+            <span>{t("pricing.badge")}</span>
           </div>
 
           <Title order={1} className="saas-page-title">
-            {t("pricing.title", "Imtihonga tayyorgarlik uchun o'zingizga mos tarifni tanlang")}
+            {t("pricing.title")}
           </Title>
 
           <Text size="md" c="var(--text-muted)" className="saas-page-subtitle">
-            {t(
-              "pricing.subtitle",
-              "Yashirin to'lovlar yo'q. Barcha 70 ta bilet, xatolar ustida ishlash va rasmiy davlat imtihoni simulyatori."
-            )}
+            {t("pricing.subtitle", countParams)}
           </Text>
 
           {/* Billing Cycle Switcher */}
@@ -175,11 +178,11 @@ export default function Pricing_Page() {
               radius="xl"
               size="md"
               data={[
-                { label: t("pricing.monthly", "Oylik to'lov"), value: "monthly" },
+                { label: t("pricing.monthly"), value: "monthly" },
                 {
                   label: (
                     <Center style={{ gap: 8 }}>
-                      <span>{t("pricing.quarterly", "3 Oylik to'liq kurs")}</span>
+                      <span>{t("pricing.quarterly")}</span>
                       <Badge size="xs" color="teal" variant="filled">
                         -25%
                       </Badge>
@@ -207,13 +210,13 @@ export default function Pricing_Page() {
           >
             <Box mb="md">
               <Badge color="gray" variant="light" size="sm" mb="xs">
-                {t("pricing.freeBadge", "Sinov")}
+                {t("pricing.freeBadge")}
               </Badge>
               <Text fw={800} size="xl">
-                {t("pricing.freePlanName", "Bepul Sinov")}
+                {t("pricing.freePlanName")}
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                {t("pricing.freePlanDesc", "Platforma bilan yaqindan tanishish")}
+                {t("pricing.freePlanDesc")}
               </Text>
             </Box>
 
@@ -222,7 +225,7 @@ export default function Pricing_Page() {
                 0 <span style={{ fontSize: "1rem", fontWeight: 600 }}>UZS</span>
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                {t("pricing.foreverFree", "Doimiy bepul")}
+                {t("pricing.foreverFree")}
               </Text>
             </Box>
 
@@ -234,7 +237,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.freeF1", "1 ta to'liq sinov imtihoni")}
+                  {t("pricing.freeF1")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -242,7 +245,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.freeF2", "20 ta savol / 20 daqiqa reglamenti")}
+                  {t("pricing.freeF2")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -250,7 +253,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.freeF3", "F1–F5 klaviatura boshqaruvi")}
+                  {t("pricing.freeF3")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -258,7 +261,7 @@ export default function Pricing_Page() {
                   <IconX size={12} />
                 </ThemeIcon>
                 <Text size="xs" c="dimmed" lh={1.4}>
-                  {t("pricing.freeF4Locked", "{{count}} ta bilet (yopiq)", { count: getCachedTotalTickets() })}
+                  {t("pricing.freeF4Locked", { count: counts.tickets })}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -266,12 +269,13 @@ export default function Pricing_Page() {
                   <IconX size={12} />
                 </ThemeIcon>
                 <Text size="xs" c="dimmed" lh={1.4}>
-                  {t("pricing.freeF5Locked", "Xatolar ustida ishlash (yopiq)")}
+                  {t("pricing.freeF5Locked")}
                 </Text>
               </Group>
             </Stack>
 
             <Button
+              title={t("pricing.tryFreeBtn")}
               component={Link}
               to="/try-exam"
               variant="default"
@@ -279,7 +283,7 @@ export default function Pricing_Page() {
               fullWidth
               size="sm"
             >
-              {t("pricing.tryFreeBtn", "Sinab ko'rish")}
+              <span style={BUTTON_LABEL_STYLE}>{t("pricing.tryFreeBtn")}</span>
             </Button>
           </div>
 
@@ -300,14 +304,14 @@ export default function Pricing_Page() {
             <Box mb="md">
               <Group justify="space-between" align="center">
                 <Badge color="blue" variant="filled" size="sm" leftSection={<IconFlame size={12} />}>
-                  {t("pricing.popularBadge", "Ommabop")}
+                  {t("pricing.popularBadge")}
                 </Badge>
               </Group>
               <Text fw={800} size="xl" mt="xs">
-                {t("pricing.stdPlanName", "Standart")}
+                {t("pricing.stdPlanName")}
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                {t("pricing.stdPlanDesc", "1 oylik to'liq mustaqil tayyorgarlik")}
+                {t("pricing.stdPlanDesc")}
               </Text>
             </Box>
 
@@ -317,7 +321,7 @@ export default function Pricing_Page() {
                 <span style={{ fontSize: "1rem", fontWeight: 600, color: "var(--text)" }}>UZS</span>
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                {isQuarterly ? t("pricing.perMonthQuarterly", "oyiga (jami 117 000)") : t("pricing.perMonth", "oyiga")}
+                {isQuarterly ? t("pricing.perMonthQuarterly") : t("pricing.perMonth")}
               </Text>
             </Box>
 
@@ -329,9 +333,9 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4} fw={600}>
-                  {t("pricing.stdF1", "Barcha {{ticketsCount}} ta rasmiy bilet ({{questionsCount}}+ savol)", {
-                    ticketsCount: getCachedTotalTickets(),
-                    questionsCount: getCachedTotalQuestions(),
+                  {t("pricing.stdF1", {
+                    ticketsCount: countParams.tickets,
+                    questionsCount: countParams.questions,
                   })}
                 </Text>
               </Group>
@@ -340,7 +344,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.stdF2", "Cheksiz davlat imtihoni simulyatsiyasi")}
+                  {t("pricing.stdF2")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -348,7 +352,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.stdF3", "Xatolar ustida ishlash bo'limi")}
+                  {t("pricing.stdF3")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -356,7 +360,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.stdF4", "Mavzulashtirilgan batafsil testlar")}
+                  {t("pricing.stdF4")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -364,12 +368,13 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.stdF5", "Web va Mobil ilovada to'liq kirish")}
+                  {t("pricing.stdF5")}
                 </Text>
               </Group>
             </Stack>
 
             <Button
+              title={t("pricing.stdChooseBtn")}
               component="a"
               href={getWebAppUrl("/packages")}
               className="saas-btn-primary"
@@ -377,7 +382,7 @@ export default function Pricing_Page() {
               fullWidth
               size="sm"
             >
-              {t("pricing.stdChooseBtn", "Standartni tanlash")}
+              <span style={BUTTON_LABEL_STYLE}>{t("pricing.stdChooseBtn")}</span>
             </Button>
           </div>
 
@@ -395,13 +400,13 @@ export default function Pricing_Page() {
           >
             <Box mb="md">
               <Badge color="violet" variant="light" size="sm" mb="xs" leftSection={<IconStar size={12} />}>
-                {t("pricing.bestValueBadge", "Maksimal foyda")}
+                {t("pricing.bestValueBadge")}
               </Badge>
               <Text fw={800} size="xl">
-                {t("pricing.vipPlanName", "Premium VIP")}
+                {t("pricing.vipPlanName")}
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                {t("pricing.vipPlanDesc", "100% o'tish kafolati va to'liq to'plam")}
+                {t("pricing.vipPlanDesc")}
               </Text>
             </Box>
 
@@ -411,7 +416,7 @@ export default function Pricing_Page() {
                 <span style={{ fontSize: "1rem", fontWeight: 600 }}>UZS</span>
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                {isQuarterly ? t("pricing.per3Months", "3 oylik to'liq kirish") : t("pricing.perMonth", "oyiga")}
+                {isQuarterly ? t("pricing.per3Months") : t("pricing.perMonth")}
               </Text>
             </Box>
 
@@ -423,7 +428,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4} fw={600}>
-                  {t("pricing.vipF1", "Standart tarifning barcha imkoniyatlari")}
+                  {t("pricing.vipF1")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -431,7 +436,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.vipF2", "1000+ savolli to'xtovsiz Marafon rejimi")}
+                  {t("pricing.vipF2")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -439,7 +444,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.vipF3", "Windows Desktop (.exe) 100% offline litsenziya")}
+                  {t("pricing.vipF3")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -447,7 +452,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.vipF4", "AI intellektual xatolar tahlili")}
+                  {t("pricing.vipF4")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -455,12 +460,13 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.vipF5", "VIP ustuvor 24/7 texnik qo'llab-quvvatlash")}
+                  {t("pricing.vipF5")}
                 </Text>
               </Group>
             </Stack>
 
             <Button
+              title={t("pricing.vipChooseBtn")}
               component="a"
               href={getWebAppUrl("/packages")}
               variant="light"
@@ -469,7 +475,7 @@ export default function Pricing_Page() {
               fullWidth
               size="sm"
             >
-              {t("pricing.vipChooseBtn", "Premiumga ulanish")}
+              <span style={BUTTON_LABEL_STYLE}>{t("pricing.vipChooseBtn")}</span>
             </Button>
           </div>
 
@@ -486,22 +492,22 @@ export default function Pricing_Page() {
           >
             <Box mb="md">
               <Badge color="orange" variant="light" size="sm" mb="xs" leftSection={<IconSchool size={12} />}>
-                {t("pricing.corpBadge", "Avtomaktablar")}
+                {t("pricing.corpBadge")}
               </Badge>
               <Text fw={800} size="xl">
-                {t("pricing.corpPlanName", "Korporativ")}
+                {t("pricing.corpPlanName")}
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                {t("pricing.corpPlanDesc", "Kompyuter sinflari va guruhlar uchun")}
+                {t("pricing.corpPlanDesc")}
               </Text>
             </Box>
 
             <Box my="sm">
               <Text fw={900} size="1.6rem" style={{ lineHeight: 1.2 }}>
-                {t("pricing.corpPrice", "Shartnoma asosida")}
+                {t("pricing.corpPrice")}
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                {t("pricing.corpSub", "Kompyuterlar soniga qarab")}
+                {t("pricing.corpSub")}
               </Text>
             </Box>
 
@@ -513,7 +519,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.corpF1", "10–100 kompyuter uchun offline litsenziyalar")}
+                  {t("pricing.corpF1")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -521,7 +527,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.corpF2", "O'qituvchi va nazoratchi boshqaruv paneli")}
+                  {t("pricing.corpF2")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -529,7 +535,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.corpF3", "Guruhlar statistikasi va monitoring")}
+                  {t("pricing.corpF3")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -537,7 +543,7 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.corpF4", "Lokal LAN tarmoqda internetsiz ishlash")}
+                  {t("pricing.corpF4")}
                 </Text>
               </Group>
               <Group gap={8} align="flex-start" wrap="nowrap">
@@ -545,12 +551,13 @@ export default function Pricing_Page() {
                   <IconCheck size={12} />
                 </ThemeIcon>
                 <Text size="xs" lh={1.4}>
-                  {t("pricing.corpF5", "Rasmiy shartnoma va hisob-faktura")}
+                  {t("pricing.corpF5")}
                 </Text>
               </Group>
             </Stack>
 
             <Button
+              title={t("pricing.corpConsultBtn")}
               component={Link}
               to="/partners"
               variant="outline"
@@ -559,7 +566,7 @@ export default function Pricing_Page() {
               fullWidth
               size="sm"
             >
-              {t("pricing.corpConsultBtn", "Hamkorlik so'rovi")}
+              <span style={BUTTON_LABEL_STYLE}>{t("pricing.corpConsultBtn")}</span>
             </Button>
           </div>
         </SimpleGrid>
@@ -567,20 +574,20 @@ export default function Pricing_Page() {
         {/* Feature Comparison Matrix Table */}
         <div className="saas-card" style={{ padding: "32px 24px", marginBottom: 64, borderRadius: 20 }}>
           <Title order={2} size="h3" mb="xs" ta="center">
-            {t("pricing.matrixTitle", "Barcha imkoniyatlarni taqqoslash")}
+            {t("pricing.matrixTitle")}
           </Title>
           <Text size="sm" c="dimmed" ta="center" mb="xl">
-            {t("pricing.matrixSub", "Tariflar bo'yicha batafsil funksional imkoniyatlar ro'yxati")}
+            {t("pricing.matrixSub")}
           </Text>
 
           <Box style={{ overflowX: "auto" }}>
             <Table striped highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th style={{ width: "40%" }}>{t("pricing.tableColFeat", "Xususiyatlar")}</Table.Th>
-                  <Table.Th style={{ textAlign: "center", width: "20%" }}>{t("pricing.freePlanName", "Bepul Sinov")}</Table.Th>
-                  <Table.Th style={{ textAlign: "center", width: "20%" }}>{t("pricing.stdPlanName", "Standart")}</Table.Th>
-                  <Table.Th style={{ textAlign: "center", width: "20%" }}>{t("pricing.vipPlanName", "Premium VIP")}</Table.Th>
+                  <Table.Th style={{ width: "40%" }}>{t("pricing.tableColFeat")}</Table.Th>
+                  <Table.Th style={{ textAlign: "center", width: "20%" }}>{t("pricing.freePlanName")}</Table.Th>
+                  <Table.Th style={{ textAlign: "center", width: "20%" }}>{t("pricing.stdPlanName")}</Table.Th>
+                  <Table.Th style={{ textAlign: "center", width: "20%" }}>{t("pricing.vipPlanName")}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -670,33 +677,22 @@ export default function Pricing_Page() {
               </ThemeIcon>
               <Box>
                 <Text fw={700} size="sm">
-                  {t("pricing.secTitle", "100% Xavfsiz to'lov va kafolatlangan kirish")}
+                  {t("pricing.secTitle")}
                 </Text>
                 <Text size="xs" c="dimmed">
                   {t(
-                    "pricing.secDesc",
-                    "To'lovlar Markaziy Bank tomonidan sertifikatlangan shlyuzlar (PCI-DSS) orqali amalga oshiriladi."
+                    "pricing.secDesc"
                   )}
                 </Text>
               </Box>
             </Group>
 
             <Group gap="sm" wrap="wrap" justify="center">
-              <Badge variant="outline" color="blue" size="lg" radius="md">
-                Payme
-              </Badge>
-              <Badge variant="outline" color="cyan" size="lg" radius="md">
-                Click
-              </Badge>
-              <Badge variant="outline" color="grape" size="lg" radius="md">
-                Uzum Bank
-              </Badge>
-              <Badge variant="outline" color="gray" size="lg" radius="md">
-                Uzcard / Humo
-              </Badge>
-              <Badge variant="outline" color="indigo" size="lg" radius="md">
-                Visa / MC
-              </Badge>
+              {PAYMENT_BRANDS.map((brand) => (
+                <Badge key={brand.name} variant="outline" color={brand.color} size="lg" radius="md">
+                  {brand.name}
+                </Badge>
+              ))}
             </Group>
           </Flex>
         </div>
@@ -704,7 +700,7 @@ export default function Pricing_Page() {
         {/* Pricing FAQs */}
         <div className="saas-card" style={{ padding: "36px 28px", borderRadius: 20 }}>
           <Title order={3} size="h4" mb="md">
-            {t("pricing.faqHeading", "Tariflar bo'yicha ko'p beriladigan savollar")}
+            {t("pricing.faqHeading")}
           </Title>
           <Accordion variant="separated" radius="md">
             {pricingFaqs.map((item) => (

@@ -32,4 +32,8 @@ public class ExamStartRequest {
 
     @Schema(description = "Savollar soni (ixtiyoriy)", example = "20")
     private Integer questionCount;
+
+    @Schema(description = "Imtihon rejimi (ixtiyoriy): REAL | TICKET | MARATHON | SURVIVAL | TOPIC | PACKAGE. "
+            + "null — eski xatti-harakat.", example = "REAL", nullable = true)
+    private uz.pravaimtihon.enums.ExamMode mode;
 }

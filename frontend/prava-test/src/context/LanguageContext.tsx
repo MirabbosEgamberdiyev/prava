@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
+  useRef,
   type ReactNode,
 } from "react";
 import Cookies from "js-cookie";
@@ -115,14 +116,35 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
  * 4. Browser Navigator Language
  * 5. Fallback: "uzl"
  */
-function resolveInitialLanguage(userPreferred?: string | null): AppLanguage {
+/*
+ * W-26: til uchun YAGONA localStorage kaliti — "prava_lang" (i18next detector ham
+ * shu kalitni o'qiydi/yozadi). Eski "i18nextLng" faqat bir martalik migratsiya uchun
+ * o'qiladi va o'chiriladi. Cookie "i18next" — subdomenlar (pravaonline.uz ↔
+ * web.pravaonline.uz) o'rtasida til bir xil bo'lishi uchun qoldirilgan.
+ */
+export const LANG_STORAGE_KEY = "prava_lang";
+const LEGACY_LANG_KEY = "i18nextLng";
+
+export function readStoredLanguage(): string | null {
   try {
-    const fromLocal =
-      localStorage.getItem("prava_lang") || localStorage.getItem("i18nextLng");
-    if (fromLocal) return normalizeLanguage(fromLocal);
+    const current = localStorage.getItem(LANG_STORAGE_KEY);
+    if (current) return current;
+    const legacy = localStorage.getItem(LEGACY_LANG_KEY);
+    if (legacy) {
+      const normalized = normalizeLanguage(legacy);
+      localStorage.setItem(LANG_STORAGE_KEY, normalized);
+      localStorage.removeItem(LEGACY_LANG_KEY);
+      return normalized;
+    }
   } catch {
-    // ignore
+    // storage bloklangan
   }
+  return null;
+}
+
+function resolveInitialLanguage(userPreferred?: string | null): AppLanguage {
+  const fromLocal = readStoredLanguage();
+  if (fromLocal) return normalizeLanguage(fromLocal);
 
   if (userPreferred) {
     return normalizeLanguage(userPreferred);
@@ -146,23 +168,12 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     return initial;
   });
 
-  // Sync with user's preferred language on initial login ONLY if localStorage doesn't have an explicit user choice
+  // Synchronize i18next instance on initial mount (faqat bir marta — keyingi
+  // o'zgarishlar setLanguage orqali i18n bilan birga bajariladi).
+  const initialLanguageRef = useRef(language);
   useEffect(() => {
-    if (user?.preferredLanguage) {
-      const explicitChoice = localStorage.getItem("prava_lang") || localStorage.getItem("i18nextLng");
-      if (!explicitChoice) {
-        const userLang = normalizeLanguage(user.preferredLanguage);
-        if (userLang !== language) {
-          setLanguage(userLang);
-        }
-      }
-    }
-  }, [user?.preferredLanguage]);
-
-  // Synchronize i18next instance on initial mount
-  useEffect(() => {
-    if (i18n.language !== language) {
-      i18n.changeLanguage(language);
+    if (i18n.language !== initialLanguageRef.current) {
+      void i18n.changeLanguage(initialLanguageRef.current);
     }
   }, []);
 
@@ -184,8 +195,8 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     // 2. Persist to localStorage
     try {
-      localStorage.setItem("prava_lang", normalized);
-      localStorage.setItem("i18nextLng", normalized);
+      localStorage.setItem(LANG_STORAGE_KEY, normalized);
+      localStorage.removeItem(LEGACY_LANG_KEY);
     } catch {
       // ignore
     }
@@ -215,6 +226,16 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       persistLanguageToProfile(normalized);
     }
   }, [isLoggedIn]);
+
+  // Sync with user's preferred language on login ONLY if there is no explicit local choice
+  useEffect(() => {
+    if (!user?.preferredLanguage) return;
+    if (readStoredLanguage()) return;
+    const userLang = normalizeLanguage(user.preferredLanguage);
+    if (userLang !== language) {
+      void setLanguage(userLang);
+    }
+  }, [user?.preferredLanguage, language, setLanguage]);
 
   // Listen to external i18n language changes (e.g. from tests or third-party adapters)
   useEffect(() => {
@@ -461,7 +482,7 @@ export function getLocalizedText(item: any, fieldPrefix: string, lang?: string):
   const l = normalizeLanguage(
     lang ||
       (typeof window !== "undefined"
-        ? localStorage.getItem("prava_lang") || localStorage.getItem("i18nextLng")
+        ? readStoredLanguage()
         : undefined) ||
       i18n.language ||
       "uzl"

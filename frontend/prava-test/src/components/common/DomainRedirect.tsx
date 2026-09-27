@@ -27,7 +27,7 @@ export function DomainRedirectToWebApp({
   return (
     <div
       style={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -39,7 +39,7 @@ export function DomainRedirectToWebApp({
     >
       <div className="spinner" />
       <span style={{ fontSize: "14px", opacity: 0.8 }}>
-        {t("common.redirectingToApp", "Ilovaga yo'naltirilmoqda...")}
+        {t("common.redirectingToApp")}
       </span>
     </div>
   );
@@ -63,7 +63,7 @@ export function DomainRedirectToLanding({
   return (
     <div
       style={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -75,7 +75,7 @@ export function DomainRedirectToLanding({
     >
       <div className="spinner" />
       <span style={{ fontSize: "14px", opacity: 0.8 }}>
-        {t("common.redirectingToLanding", "Bosh sahifaga yo'naltirilmoqda...")}
+        {t("common.redirectingToLanding")}
       </span>
     </div>
   );

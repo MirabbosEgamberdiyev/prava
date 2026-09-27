@@ -39,4 +39,8 @@ public interface QuestionOptionRepository extends JpaRepository<QuestionOption, 
      * ✅ NEW: Check if option exists
      */
     boolean existsByQuestionIdAndOptionIndex(Long questionId, Integer optionIndex);
+
+    /** Offline to'plam versiyasi (B-07): variantlar soni va oxirgi o'zgarish vaqti. */
+    @Query("SELECT COUNT(o), MAX(o.updatedAt) FROM QuestionOption o WHERE o.deleted = false")
+    List<Object[]> optionsFingerprint();
 }

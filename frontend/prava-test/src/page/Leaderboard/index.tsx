@@ -10,8 +10,8 @@ const Leaderboard_Page = () => {
   return (
     <>
       <SEO
-        title={t("seo.leaderboard.title", "Peshqadamlar Reytingi — PravaOnline")}
-        description={t("seo.leaderboard.desc", "Eng yaxshi natijalar va o'quvchilar reytingi.")}
+        title={t("seo.leaderboard.title")}
+        description={t("seo.leaderboard.desc")}
         canonical="/leaderboard"
         noIndex={true}
       />
@@ -25,13 +25,12 @@ const Leaderboard_Page = () => {
                 stroke={2}
                 style={{ color: "#f59f00", verticalAlign: "middle", marginRight: 8 }}
               />
-              {t("leaderboard.title", "Peshqadamlar reytingi")}
+              {t("leaderboard.title")}
             </h1>
           </div>
           <p className={styles.innerPageSubtitle}>
             {t(
-              "leaderboard.subtitle",
-              "Eng yuqori natija ko'rsatgan o'quvchilar va mavzular bo'yicha umumiy reyting."
+              "leaderboard.subtitle"
             )}
           </p>
         </div>

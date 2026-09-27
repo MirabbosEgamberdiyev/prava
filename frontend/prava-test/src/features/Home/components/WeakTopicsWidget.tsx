@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { reportError } from "../../../utils/monitoring";
 import { useNavigate } from "react-router-dom";
 import {
   IconAlertTriangle,
@@ -38,7 +39,7 @@ export default function WeakTopicsWidget({ userId }: Props) {
       const [wrongs, topics, stats] = await Promise.all([
         getWrongAnswers(userId),
         getTopics(),
-        getFullStats(userId).catch(() => null),
+        getFullStats(userId).catch((err: unknown) => (reportError("weakTopics.fullStats", err), null)),
       ]);
 
       const validWrongs = Array.isArray(wrongs)
@@ -121,7 +122,7 @@ export default function WeakTopicsWidget({ userId }: Props) {
   // If user has 0 mistakes, show Variant B (Dynamic Welcome & Topic 1 Focus)
   if (totalWrongs === 0) {
     return (
-      <section className="next-best-action-wrapper" aria-label={t("dashboard.weakTopics.nextRecommendation", "Keyingi tavsiya")}>
+      <section className="next-best-action-wrapper" aria-label={t("dashboard.weakTopics.nextRecommendation")}>
         <div className="next-best-action-card variant-newbie">
           <div className="nba-newbie-content">
             <div className="nba-newbie-icon">
@@ -130,15 +131,14 @@ export default function WeakTopicsWidget({ userId }: Props) {
             <div className="nba-newbie-text">
               <div className="nba-badge success">
                 <IconCheck size={13} stroke={2.5} />
-                <span>{t("home.startStepBadge", "Boshlang'ich qadam")}</span>
+                <span>{t("home.startStepBadge")}</span>
               </div>
               <h3 className="nba-title">
-                {t("home.startTopic1Title", "1-Mavzudan o‘rganishni boshlang")}
+                {t("home.startTopic1Title")}
               </h3>
               <p className="nba-desc">
                 {t(
-                  "home.startTopic1Desc",
-                  "Yo'l harakati qoidalarini noldan, qulay va tizimli o'rganing. 1200+ rasmiy test savollari va qoidalar sizni kutmoqda."
+                  "home.startTopic1Desc"
                 )}
               </p>
             </div>
@@ -148,7 +148,7 @@ export default function WeakTopicsWidget({ userId }: Props) {
             className="nba-cta-btn primary"
             type="button"
           >
-            <span>{t("home.startTopic1Btn", "1-Mavzuni boshlash")}</span>
+            <span>{t("home.startTopic1Btn")}</span>
             <IconArrowRight size={18} stroke={2.5} />
           </button>
         </div>
@@ -158,20 +158,20 @@ export default function WeakTopicsWidget({ userId }: Props) {
 
   // Variant A: Mistakes exist - Unified Focus Block
   return (
-    <section className="next-best-action-wrapper" aria-label={t("dashboard.weakTopics.mainFocusBlock", "Asosiy fokus bloki")}>
+    <section className="next-best-action-wrapper" aria-label={t("dashboard.weakTopics.mainFocusBlock")}>
       <div className="next-best-action-card variant-focus">
         {/* Left Column: Topics Requiring Attention */}
         <div className="nba-focus-col nba-col-topics">
           <div className="nba-col-header">
             <div className="nba-badge warning">
               <IconAlertTriangle size={13} stroke={2.5} />
-              <span>{t("home.attentionTopicsBadge", "DIQQAT TALAB QILADIGAN MAVZULAR")}</span>
+              <span>{t("home.attentionTopicsBadge")}</span>
             </div>
             <h3 className="nba-col-title">
-              {t("home.weakTopicsHeader", "Zaif mavzular ro'yxati")}
+              {t("home.weakTopicsHeader")}
             </h3>
             <p className="nba-col-desc">
-              {t("home.weakTopicsSub", "Mavzuni tanlang va aynan shu bo'yicha bilimlarni mustahkamlang:")}
+              {t("home.weakTopicsSub")}
             </p>
           </div>
 
@@ -188,7 +188,7 @@ export default function WeakTopicsWidget({ userId }: Props) {
                 >
                   <span className="nba-topic-name">{topicName}</span>
                   <span className="nba-topic-count">
-                    {topic.count} {t("home.mistakesCountLabel", "ta xato")}
+                    {topic.count} {t("home.mistakesCountLabel")}
                   </span>
                   <IconArrowRight size={15} className="nba-topic-arrow" />
                 </button>
@@ -202,22 +202,21 @@ export default function WeakTopicsWidget({ userId }: Props) {
           <div className="nba-col-header">
             <div className="nba-badge info">
               <IconClipboardList size={13} stroke={2.5} />
-              <span>{t("home.mistakesPracticeBadge", "XATOLAR USTIDA ISHLASH")}</span>
+              <span>{t("home.mistakesPracticeBadge")}</span>
             </div>
             <h3 className="nba-col-title">
-              {t("home.mistakesCountTitle", "Jami xato javoblar: {{count}} ta", { count: totalWrongs })}
+              {t("home.mistakesCountTitle", { count: totalWrongs })}
             </h3>
             <p className="nba-col-desc">
               {t(
-                "home.mistakesPracticeDesc",
-                "Xatolar ustida muntazam ishlash haqiqiy davlat imtihonidan birinchi urinishda o'tish ehtimolini 94% ga oshiradi."
+                "home.mistakesPracticeDesc"
               )}
             </p>
           </div>
 
           <div className="nba-progress-box">
             <div className="nba-progress-header">
-              <span className="nba-progress-label">{t("home.readinessProgress", "O'zlashtirish ko'rsatkichi:")}</span>
+              <span className="nba-progress-label">{t("home.readinessProgress")}</span>
               <span className="nba-progress-value">{progressPct}%</span>
             </div>
             <div className="nba-progress-track">
@@ -233,7 +232,7 @@ export default function WeakTopicsWidget({ userId }: Props) {
             onClick={() => navigate("/wrong-answers")}
             type="button"
           >
-            <span>{t("home.retakeWeakest20Btn", "Eng zaif 20 ta savolni qayta ishlash")}</span>
+            <span>{t("home.retakeWeakest20Btn")}</span>
             <IconArrowRight size={18} stroke={2.5} />
           </button>
         </div>

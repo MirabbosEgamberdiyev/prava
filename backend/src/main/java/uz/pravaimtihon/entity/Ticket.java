@@ -119,14 +119,14 @@ public class Ticket extends BaseEntity {
      */
     @Column(name = "duration_minutes", nullable = false)
     @Builder.Default
-    private Integer durationMinutes = 15;
+    private Integer durationMinutes = 20; // exam-rules: 20 savol x 60 s (faqat yangi biletlar)
 
     /**
      * O'tish bali (foiz) - default 70
      */
     @Column(name = "passing_score", nullable = false)
     @Builder.Default
-    private Integer passingScore = 70;
+    private Integer passingScore = 90; // exam-rules ticket.passPercent (baholash exam-rules bo'yicha)
 
     /**
      * Faol holati
@@ -141,7 +141,7 @@ public class Ticket extends BaseEntity {
      */
     @Column(name = "question_count", nullable = false)
     @Builder.Default
-    private Integer targetQuestionCount = 10;
+    private Integer targetQuestionCount = 20; // exam-rules ticket.questionCount
 
     /**
      * Minimal savollar soni

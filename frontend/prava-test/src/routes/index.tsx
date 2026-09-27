@@ -13,7 +13,13 @@ import {
 } from "../components/common/DomainRedirect";
 import { useAuth } from "../auth/AuthContext";
 
+// Simulator visibility flag (temporarily set to false per user request)
+const SHOW_SIMULATOR = false;
+const NullPage = () => null;
+
 const Home_Page = lazy(() => import("../page/Home"));
+const GuestHome_Page = lazy(() => import("../page/GuestHome"));
+const Survival_Page = lazy(() => import("../page/Survival"));
 const Login_Page = lazy(() => import("../page/Auth/login"));
 const Register_Page = lazy(() => import("../page/Auth/register"));
 const ForgotPassword_Page = lazy(() => import("../page/Auth/forgot-password"));
@@ -52,16 +58,22 @@ const RoadSigns_Page      = lazy(() => import("../page/RoadSigns"));
 const RoadMarkings_Page   = lazy(() => import("../page/RoadMarkings"));
 const ExamCenters_Page    = lazy(() => import("../page/ExamCenters"));
 const PracticalExam_Page  = lazy(() => import("../page/PracticalExam"));
-const SimulatorDashboard_Page = lazy(() => import("../page/Simulator"));
-const SimulatorTraining_Page = lazy(() => import("../page/Simulator/Training"));
-const SimulatorPractice_Page = lazy(() => import("../page/Simulator/Practice"));
-const SimulatorExercisePractice_Page = lazy(() => import("../page/Simulator/Practice/ExercisePractice"));
-const SimulatorExam_Page = lazy(() => import("../page/Simulator/Exam"));
-const SimulatorResult_Page = lazy(() => import("../page/Simulator/Result"));
-const SimulatorMistakes_Page = lazy(() => import("../page/Simulator/Mistakes"));
-const SimulatorStatistics_Page = lazy(() => import("../page/Simulator/Statistics"));
+/*
+ * W-21: simulyator vaqtincha o'chirilgan. Lazy import'lar SHOW_SIMULATOR orqasida —
+ * flag `false` bo'lganda dinamik import'lar build'dan butunlay chiqib ketadi
+ * (three.js va simulyator chunk'lari yaratilmaydi).
+ */
+const SimulatorDashboard_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator")) : NullPage;
+const SimulatorTraining_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Training")) : NullPage;
+const SimulatorPractice_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Practice")) : NullPage;
+const SimulatorExercisePractice_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Practice/ExercisePractice")) : NullPage;
+const SimulatorExam_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Exam")) : NullPage;
+const SimulatorResult_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Result")) : NullPage;
+const SimulatorMistakes_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Mistakes")) : NullPage;
+const SimulatorStatistics_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Statistics")) : NullPage;
 const TrafficRules_Page   = lazy(() => import("../page/TrafficRules"));
 const Penalties_Page      = lazy(() => import("../page/Penalties"));
+const TrafficFines_Page   = lazy(() => import("../page/TrafficFines"));
 
 function RootLoadingFallback() {
   useEffect(() => {
@@ -74,7 +86,7 @@ function RootLoadingFallback() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -87,17 +99,16 @@ function RootLoadingFallback() {
 }
 
 /**
- * Web Application Entry Gateway:
- * - If user is authenticated -> /me (dashboard)
- * - If user is unauthenticated -> /auth/login
+ * Web Application Entry Gateway (W-06, guest-first):
+ * - authenticated -> /me (dashboard)
+ * - guest -> public guest home (tickets/topics/rules/signs...); login is asked only
+ *   when a protected workflow is started (ProtectedRoute adds ?returnTo=).
  */
 function WebAppRoot() {
   const { isAuthenticated } = useAuth();
-  return <Navigate to={isAuthenticated ? "/me" : "/auth/login"} replace />;
+  return isAuthenticated ? <Navigate to="/me" replace /> : <GuestHome_Page />;
 }
 
-// Simulator visibility flag (temporarily set to false per user request)
-const SHOW_SIMULATOR = false;
 
 export default function AppRoutes() {
   const isLanding = isLandingDomain();
@@ -155,6 +166,7 @@ export default function AppRoutes() {
               )}
               <Route path="rules" element={<TrafficRules_Page />} />
               <Route path="penalties" element={<Penalties_Page />} />
+              <Route path="fines" element={<TrafficFines_Page />} />
             </Route>
 
             {/* Public Free Guest Trial Exam */}
@@ -170,6 +182,7 @@ export default function AppRoutes() {
             <Route path="/topics" element={<DomainRedirectToWebApp targetPath="/topics" />} />
             <Route path="/topics/*" element={<DomainRedirectToWebApp />} />
             <Route path="/marafon" element={<DomainRedirectToWebApp targetPath="/marafon" />} />
+            <Route path="/survival" element={<DomainRedirectToWebApp targetPath="/survival" />} />
             <Route path="/exam" element={<DomainRedirectToWebApp targetPath="/exam" />} />
             <Route path="/exam/*" element={<DomainRedirectToWebApp />} />
             <Route path="/wrong-answers" element={<DomainRedirectToWebApp targetPath="/wrong-answers" />} />
@@ -194,8 +207,6 @@ export default function AppRoutes() {
         {/* ================================================================= */}
         {!isLanding && !isLocalUnified && (
           <>
-            {/* Web App Root - authenticated -> /me, unauthenticated -> /auth/login */}
-            <Route path="/" element={<WebAppRoot />} />
 
             {/* Public Free Guest Trial Exam */}
             <Route path="/try-exam" element={<GuestExam_Page />} />
@@ -218,6 +229,8 @@ export default function AppRoutes() {
 
             {/* Curriculum Routes with Adaptive Layout (User_Layout when authenticated, App_Layout when guest) */}
             <Route element={<AdaptiveLayout />}>
+              {/* Web App Root - authenticated -> /me, guest -> guest home */}
+              <Route path="/" element={<WebAppRoot />} />
               <Route path="/signs" element={<RoadSigns_Page />} />
               <Route path="/markings" element={<RoadMarkings_Page />} />
               <Route path="/exam-centers" element={<ExamCenters_Page />} />
@@ -244,6 +257,11 @@ export default function AppRoutes() {
               )}
               <Route path="/rules" element={<TrafficRules_Page />} />
               <Route path="/penalties" element={<Penalties_Page />} />
+              <Route path="/fines" element={<TrafficFines_Page />} />
+              {/* W-06: ro'yxatlar mehmonlar uchun ochiq; biletni boshlash (/tickets/:id) himoyalangan */}
+              <Route path="/tickets" element={<Tickets_Page />} />
+              <Route path="/topics" element={<Topics_Page />} />
+              <Route path="/topics/:topicCode" element={<TopicDetail_Page />} />
             </Route>
 
             {/* Auth Routes */}
@@ -271,15 +289,12 @@ export default function AppRoutes() {
               <Route element={<User_Layout />}>
                 <Route path="/me" element={<User_Page />} />
                 <Route path="/packages" element={<Packages_Page />} />
-                <Route path="/tickets" element={<Tickets_Page />} />
                 <Route path="/history" element={<History_Page />} />
                 <Route path="/leaderboard" element={<Leaderboard_Page />} />
                 <Route path="/statistics" element={<Statistics_Page />} />
                 <Route path="/settings" element={<Settings_Page />} />
                 <Route path="/wrong-answers" element={<WrongAnswers_Page />} />
                 <Route path="/saved-questions" element={<SavedQuestions_Page />} />
-                <Route path="/topics" element={<Topics_Page />} />
-                <Route path="/topics/:topicCode" element={<TopicDetail_Page />} />
 
                 {/* Sub-route aliases under /me */}
                 <Route path="/me/topics" element={<Navigate to="/topics" replace />} />
@@ -307,6 +322,7 @@ export default function AppRoutes() {
                 <Route path="/tickets/:id" element={<TicketExamPage />} />
                 <Route path="/packages/:id" element={<PackageExamPage />} />
                 <Route path="/marafon" element={<Marafon_Page />} />
+                <Route path="/survival" element={<Survival_Page />} />
                 <Route path="/exam" element={<Exam_Page />} />
                 <Route path="/wrong-exam" element={<WrongExam_Page />} />
                 <Route path="/exam/result/:sessionId" element={<ExamResult_Page />} />
@@ -370,6 +386,11 @@ export default function AppRoutes() {
               )}
               <Route path="/rules" element={<TrafficRules_Page />} />
               <Route path="/penalties" element={<Penalties_Page />} />
+              <Route path="/fines" element={<TrafficFines_Page />} />
+              {/* W-06: ro'yxatlar mehmonlar uchun ochiq; biletni boshlash (/tickets/:id) himoyalangan */}
+              <Route path="/tickets" element={<Tickets_Page />} />
+              <Route path="/topics" element={<Topics_Page />} />
+              <Route path="/topics/:topicCode" element={<TopicDetail_Page />} />
             </Route>
 
             <Route path="/try-exam" element={<GuestExam_Page />} />
@@ -399,15 +420,12 @@ export default function AppRoutes() {
               <Route element={<User_Layout />}>
                 <Route path="/me" element={<User_Page />} />
                 <Route path="/packages" element={<Packages_Page />} />
-                <Route path="/tickets" element={<Tickets_Page />} />
                 <Route path="/history" element={<History_Page />} />
                 <Route path="/leaderboard" element={<Leaderboard_Page />} />
                 <Route path="/statistics" element={<Statistics_Page />} />
                 <Route path="/settings" element={<Settings_Page />} />
                 <Route path="/wrong-answers" element={<WrongAnswers_Page />} />
                 <Route path="/saved-questions" element={<SavedQuestions_Page />} />
-                <Route path="/topics" element={<Topics_Page />} />
-                <Route path="/topics/:topicCode" element={<TopicDetail_Page />} />
 
                 {/* Sub-route aliases under /me */}
                 <Route path="/me/topics" element={<Navigate to="/topics" replace />} />
@@ -436,6 +454,7 @@ export default function AppRoutes() {
                 <Route path="/tickets/:id" element={<TicketExamPage />} />
                 <Route path="/packages/:id" element={<PackageExamPage />} />
                 <Route path="/marafon" element={<Marafon_Page />} />
+                <Route path="/survival" element={<Survival_Page />} />
                 <Route path="/exam" element={<Exam_Page />} />
                 <Route path="/wrong-exam" element={<WrongExam_Page />} />
                 <Route path="/exam/result/:sessionId" element={<ExamResult_Page />} />

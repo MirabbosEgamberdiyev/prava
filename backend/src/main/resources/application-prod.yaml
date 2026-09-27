@@ -89,7 +89,7 @@ app:
 
   # Production CORS — faqat real domains
   security:
-    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:5174,https://pravaonline.uz,https://www.pravaonline.uz,https://web.pravaonline.uz,https://admin.pravaonline.uz}
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:5174,https://pravaonline.uz,https://www.pravaonline.uz,https://web.pravaonline.uz,https://admin.pravaonline.uz,http://tauri.localhost,tauri://localhost}
     oauth:
       google:
         enabled: true

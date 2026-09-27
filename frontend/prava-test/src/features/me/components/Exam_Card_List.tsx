@@ -2,6 +2,7 @@ import { Box, Button, Card, Grid, Text } from "@mantine/core";
 import {
   IconBoltFilled,
   IconBook2,
+  IconFlameFilled,
   IconPlayerPlayFilled,
   IconStarsFilled,
   IconTicket,
@@ -23,6 +24,13 @@ const PAGE_ITEMS = [
     url: "/marafon",
     icon: IconStarsFilled,
     gradient: "linear-gradient(135deg, var(--mantine-color-pink-5) 0%, var(--mantine-color-red-6) 100%)",
+    color: "white",
+  },
+  {
+    nameKey: "survival.title",
+    url: "/survival",
+    icon: IconFlameFilled,
+    gradient: "linear-gradient(135deg, var(--mantine-color-orange-5) 0%, var(--mantine-color-red-7) 100%)",
     color: "white",
   },
   {

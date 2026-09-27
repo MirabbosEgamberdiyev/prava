@@ -25,8 +25,8 @@ export const AnalyticsToolsSection: React.FC<AnalyticsToolsSectionProps> = ({
   const tools = [
     {
       id: "saved",
-      title: t("dashboard.tools.savedTitle", "Saqlanganlar"),
-      desc: t("dashboard.tools.savedDesc", "Xatcho'p qo'yilgan savollar"),
+      title: t("dashboard.tools.savedTitle"),
+      desc: t("dashboard.tools.savedDesc"),
       icon: IconBookmark,
       gradient: "linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)",
       route: "/saved-questions",
@@ -34,30 +34,29 @@ export const AnalyticsToolsSection: React.FC<AnalyticsToolsSectionProps> = ({
         savedCount != null && savedCount > 0
           ? t("dashboard.tools.savedCount", {
               count: savedCount,
-              defaultValue: `${savedCount} ta`,
             })
           : undefined,
     },
     {
       id: "stats",
-      title: t("dashboard.tools.statsTitle", "Statistika"),
-      desc: t("dashboard.tools.statsDesc", "Batafsil o'rganish statistikasi"),
+      title: t("dashboard.tools.statsTitle"),
+      desc: t("dashboard.tools.statsDesc"),
       icon: IconChartBar,
       gradient: "linear-gradient(135deg, #34d399 0%, #059669 100%)",
       route: "/statistics",
     },
     {
       id: "leaderboard",
-      title: t("dashboard.tools.ratingTitle", "Reyting"),
-      desc: t("dashboard.tools.ratingDesc", "O'quvchilar reytingidagi o'rningiz"),
+      title: t("dashboard.tools.ratingTitle"),
+      desc: t("dashboard.tools.ratingDesc"),
       icon: IconTrophy,
       gradient: "linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)",
       route: "/leaderboard",
     },
     {
       id: "history",
-      title: t("dashboard.tools.historyTitle", "Imtihon tarixi"),
-      desc: t("dashboard.tools.historyDesc", "Avvalgi imtihon natijalari"),
+      title: t("dashboard.tools.historyTitle"),
+      desc: t("dashboard.tools.historyDesc"),
       icon: IconCalendarEvent,
       gradient: "linear-gradient(135deg, #fbbf24 0%, #d97706 100%)",
       route: "/history",
@@ -65,7 +64,6 @@ export const AnalyticsToolsSection: React.FC<AnalyticsToolsSectionProps> = ({
         lastExamScore != null
           ? t("dashboard.tools.lastScore", {
               score: lastExamScore,
-              defaultValue: `Oxirgi: ${lastExamScore}%`,
             })
           : undefined,
     },
@@ -74,16 +72,15 @@ export const AnalyticsToolsSection: React.FC<AnalyticsToolsSectionProps> = ({
   return (
     <section
       className={styles.toolsSection}
-      aria-label={t("dashboard.tools.title", "Tahlil va shaxsiy vositalar")}
+      aria-label={t("dashboard.tools.title")}
     >
       <div className={styles.sectionHeader}>
         <h3 className={styles.sectionTitle}>
-          {t("dashboard.tools.title", "Tahlil va shaxsiy vositalar")}
+          {t("dashboard.tools.title")}
         </h3>
         <p className={styles.sectionSubtitle}>
           {t(
-            "dashboard.tools.subtitle",
-            "Shaxsiy o'sish, natijalar va sinovlar monitoringi"
+            "dashboard.tools.subtitle"
           )}
         </p>
       </div>

@@ -10,7 +10,7 @@ import {
   CTA_Section,
 } from "../../features/Home";
 import SEO from "../../components/common/SEO";
-import { getCachedTotalTickets, getCachedTotalQuestions } from "../../services/desktopAdapter";
+import { useCurriculumCountParams } from "../../hooks/useCurriculumCounts";
 
 const homeJsonLd = {
   "@context": "https://schema.org",
@@ -45,17 +45,15 @@ const homeJsonLd = {
 
 const Home_Page = () => {
   const { t } = useTranslation();
-  const totalTickets = getCachedTotalTickets();
-  const totalQuestions = getCachedTotalQuestions();
+  const { tickets: totalTickets, questions: totalQuestions } = useCurriculumCountParams();
 
   return (
     <Box className="page-transition-wrapper">
       <SEO
-        title={t("seo.home.title", "Prava Test — Haydovchilik guvohnomasi imtihoniga tayyorgarlik | Prava Online")}
+        title={t("seo.home.title")}
         description={t("seo.home.desc", {
           ticketsCount: totalTickets,
-          questionsCount: totalQuestions.toLocaleString(),
-          defaultValue: `O'zbekistonda haydovchilik guvohnomasi imtihoni uchun online testlar: ${totalTickets} ta bilet, ${totalQuestions.toLocaleString()} ta rasmiy YHXBB savollari, yo'l harakati qoidalari (YHQ) va davlat imtihoni simulyatori.`
+          questionsCount: totalQuestions,
         })}
         keywords={`prava, prava test, prava imtihon, prava imtihoni, prava olish, prava test ishlash, haydovchilik imtihoni, haydovchilik testi, haydovchilik guvohnomasi testi, imtihon testlari, yo'l harakati qoidalari testi, YHQ test, ${totalTickets} ta bilet, prava savollari, YHXBB test, avtotest, avtomobil testlari, avtomaktab testlari, online prava test, prava online test, driving test uzbekistan, экзамен ПДД, тест ПДД онлайн, правила дорожного движения`}
         canonical="/"

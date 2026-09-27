@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { IconBook2, IconCheck, IconChartBar } from "@tabler/icons-react";
-import { getCachedTotalQuestions } from "../../services/desktopAdapter";
+import { formatCount, useCurriculumCounts } from "../../hooks/useCurriculumCounts";
 import styles from "./Dashboard.module.css";
 
 interface ProgressStatsProps {
@@ -30,9 +30,10 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
   onNavigate,
 }) => {
   const { t } = useTranslation();
+  const counts = useCurriculumCounts();
 
   return (
-    <section className={styles.progressGrid} aria-label={t("dashboard.metricsAria", "Metrikalar")}>
+    <section className={styles.progressGrid} aria-label={t("dashboard.metricsAria")}>
       {/* 1. Kunlik reja */}
       <article
         className={styles.progressCard}
@@ -53,7 +54,7 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
               {dailyDone} / {dailyTarget}
             </div>
             <div className={styles.progressLabel}>
-              {t("dashboard.stats.dailyPlanTitle", "Kunlik reja (savol)")}
+              {t("dashboard.stats.dailyPlanTitle")}
             </div>
           </div>
           <span className={styles.progressBadgePercent} style={{ color: "#ea580c" }}>
@@ -76,23 +77,21 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
             <span style={{ color: "#ea580c", fontWeight: 700 }}>
               🎉 {t("dashboard.stats.dailyPlanOverflow", {
                 count: dailyDone - dailyTarget,
-                defaultValue: `+${dailyDone - dailyTarget} ta reja ortig'i bilan!`,
               })}
             </span>
           ) : dailyPercent >= 100 ? (
             <span style={{ color: "#ea580c", fontWeight: 700 }}>
-              🎉 {t("dashboard.stats.dailyPlanDone", "Ajoyib! Bugungi rejangiz to'liq bajarildi.")}
+              🎉 {t("dashboard.stats.dailyPlanDone")}
             </span>
           ) : streakDays > 0 ? (
             <span style={{ color: "#ea580c", fontWeight: 700 }}>
               🔥 {t("dashboard.stats.streakDays", {
                 count: streakDays,
-                defaultValue: `${streakDays} kunlik seriya`,
               })}
             </span>
           ) : (
             <span style={{ color: "#ea580c", fontWeight: 600 }}>
-              ✨ {t("dashboard.stats.startStreakToday", "Bugun test ishlab seriyani boshlang!")}
+              ✨ {t("dashboard.stats.startStreakToday")}
             </span>
           )}
         </div>
@@ -118,7 +117,7 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
               {qPracticed} / {qTotal}
             </div>
             <div className={styles.progressLabel}>
-              {t("dashboard.stats.solvedQuestionsTitle", "Yechilgan savollar")}
+              {t("dashboard.stats.solvedQuestionsTitle")}
             </div>
           </div>
           <span className={styles.progressBadgePercent} style={{ color: "#0284c7" }}>
@@ -140,9 +139,8 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
           <span>
             {t(
               "dashboard.stats.solvedQuestionsFootnote",
-              "Jami {{count}} ta rasmiy savoldan",
               {
-                count: qTotal || getCachedTotalQuestions() || 1234,
+                questions: formatCount(qTotal || counts.questions),
               }
             )}
           </span>
@@ -167,7 +165,7 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
           <div className={styles.progressContent}>
             <div className={styles.progressValue}>{readinessPercent}%</div>
             <div className={styles.progressLabel}>
-              {t("dashboard.stats.overallReadinessTitle", "Umumiy tayyorgarlik")}
+              {t("dashboard.stats.overallReadinessTitle")}
             </div>
           </div>
           <span
@@ -192,10 +190,9 @@ export const ProgressStats: React.FC<ProgressStatsProps> = ({
         </div>
 
         <div className={styles.progressCardBottom}>
-          <span title={t("dashboard.stats.readinessExplanation", "To'liq o'zlashtirilgan savollar va test aniqligi asosida hisoblangan")}>
+          <span title={t("dashboard.stats.readinessExplanation")}>
             {t(
-              "dashboard.stats.readinessFootnote",
-              "O'zlashtirilgan savollar va test aniqligi asosida"
+              "dashboard.stats.readinessFootnote"
             )}
           </span>
         </div>
