@@ -20,7 +20,6 @@ import {
   IconDirections,
   IconRoad,
   IconBuildingSkyscraper,
-  IconSteeringWheel,
   // IconDeviceGamepad2,
   IconGavel,
   IconBook,
