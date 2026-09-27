@@ -1,1 +1,11 @@
-{"image_count":747,"question_count":1190,"ticket_count":60,"ticket_question_count":1190,"topic_count":10,"version":2}
+{
+  "version": "v2-1264.1790421533-44.1790241145-64.1790241145-o4135.1790243469-tq27cf01ca",
+  "generated_at": "2026-09-27T18:14:11.335Z",
+  "source": "web.pravaonline.uz",
+  "counts": {
+    "questions": 1264,
+    "topics": 44,
+    "tickets": 64,
+    "ticket_questions": 1264
+  }
+}
