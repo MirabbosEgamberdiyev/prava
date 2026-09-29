@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Anchor,
   Box,
@@ -9,7 +9,7 @@ import {
   Text,
   ThemeIcon,
 } from "@mantine/core";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useReturnTo } from "../../../auth/useReturnTo";
 import { registerPath } from "../../../utils/returnTo";
 import { useTranslation } from "react-i18next";
@@ -23,11 +23,13 @@ import AuthCard from "@/components/auth/AuthCard";
 import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
 import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
 import AuthSecurityNotice from "@/components/auth/AuthSecurityNotice";
+import WebQrLoginModal from "@/components/auth/WebQrLoginModal";
 
 const Login_Page: React.FC = () => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const { returnTo, destination: from } = useReturnTo();
+  const [qrModalOpen, setQrModalOpen] = useState(false);
 
   if (isAuthenticated) {
     return <Navigate to={from} replace />;
@@ -94,8 +96,8 @@ const Login_Page: React.FC = () => {
           />
 
           <Button
-            component={Link}
-            to="/auth/pair"
+            type="button"
+            onClick={() => setQrModalOpen(true)}
             variant="light"
             color="gray"
             size="sm"
@@ -146,6 +148,11 @@ const Login_Page: React.FC = () => {
           <AuthSecurityNotice />
         </Stack>
       </AuthCard>
+
+      <WebQrLoginModal
+        opened={qrModalOpen}
+        onClose={() => setQrModalOpen(false)}
+      />
     </AuthLayout>
   );
 };

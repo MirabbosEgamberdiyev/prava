@@ -190,21 +190,36 @@ export default function PairPage() {
             <Stack gap="md">
               <Alert
                 icon={<IconAlertCircle size={18} />}
-                title={t("pair.errorTitle")}
-                color="red"
+                title={!sessionId || !challenge ? t("pair.infoTitle", "QR ulanish qo'llanmasi") : t("pair.errorTitle")}
+                color={!sessionId || !challenge ? "blue" : "red"}
                 variant="light"
                 radius="md"
               >
-                {error}
+                {!sessionId || !challenge
+                  ? t(
+                      "pair.missingParamsDesc",
+                      "Ushbu sahifa mobil telefon orqali kompyuterdagi QR kodni skanerlaganda yangi qurilmani hisobingizga ulash uchun mo'ljallangan. Agar kompyuteringizdan tizimga kirmoqchi bo'lsangiz, kirish sahifasidan 'QR bilan kirish' tugmasini bosing yoki to'g'ridan-to'g'ri Google / Telegram orqali kiring."
+                    )
+                  : error}
               </Alert>
-              <Button
-                variant="default"
-                fullWidth
-                radius="md"
-                onClick={() => navigate("/")}
-              >
-                {t("pair.goHome")}
-              </Button>
+              <Group gap="sm" grow>
+                <Button
+                  component={Link}
+                  to="/auth/login"
+                  variant="filled"
+                  color="blue"
+                  radius="md"
+                >
+                  {t("authV2.login.title", "Tizimga kirish")}
+                </Button>
+                <Button
+                  variant="default"
+                  radius="md"
+                  onClick={() => navigate("/")}
+                >
+                  {t("pair.goHome", "Bosh sahifa")}
+                </Button>
+              </Group>
             </Stack>
           )}
 
