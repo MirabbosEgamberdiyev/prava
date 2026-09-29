@@ -99,7 +99,7 @@ app:
     bot-token: ${TELEGRAM_BOT_TOKEN:}
     bot-username: ${TELEGRAM_BOT_USERNAME:pravaonlineuzbot}
     webhook-url: ${TELEGRAM_WEBHOOK_URL:https://pravaonline.uz/api/v1/telegram/webhook}
-    webhook-secret: ${TELEGRAM_WEBHOOK_SECRET:}
+    webhook-secret: ${TELEGRAM_WEBHOOK_SECRET:prava_telegram_secret_8485868847_secure_2026}
     base-url: ${TELEGRAM_BASE_URL:https://web.pravaonline.uz}
 
   storage:

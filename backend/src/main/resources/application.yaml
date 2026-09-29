@@ -143,7 +143,7 @@ app:
     bot-username: ${TELEGRAM_BOT_USERNAME:pravaonlineuzbot}
     admin-chat-id: ${TELEGRAM_CHAT_ID:${TELEGRAM_ADMIN_CHAT_ID:}}
     webhook-url: ${TELEGRAM_WEBHOOK_URL:}
-    webhook-secret: ${TELEGRAM_WEBHOOK_SECRET:}
+    webhook-secret: ${TELEGRAM_WEBHOOK_SECRET:prava_telegram_secret_8485868847_secure_2026}
     base-url: ${TELEGRAM_BASE_URL:https://pravaonline.uz}
 
   # Multi-Channel Contact / Partnership Inquiries

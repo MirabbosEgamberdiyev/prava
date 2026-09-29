@@ -51,9 +51,8 @@ public class User extends BaseEntity {
     @Column(name = "email", unique = true, length = 100)
     private String email;
 
-    @NotBlank
     @JsonIgnore
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)

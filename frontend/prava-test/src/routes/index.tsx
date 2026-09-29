@@ -13,8 +13,8 @@ import {
 } from "../components/common/DomainRedirect";
 import { useAuth } from "../auth/AuthContext";
 
-// Simulator visibility flag (temporarily set to false per user request)
-const SHOW_SIMULATOR = false;
+// Simulator visibility flag
+const SHOW_SIMULATOR = true;
 const NullPage = () => null;
 
 const Home_Page = lazy(() => import("../page/Home"));

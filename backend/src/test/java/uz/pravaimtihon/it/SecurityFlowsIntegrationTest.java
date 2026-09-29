@@ -64,22 +64,26 @@ class SecurityFlowsIntegrationTest {
     @Autowired UserRepository users;
     @Autowired PasswordEncoder encoder;
 
+    @Autowired uz.pravaimtihon.service.TelegramTokenStore telegramTokenStore;
+
     private String email;
-    private static final String PASSWORD = "Str0ngPassw0rd!";
+    private Long telegramUserId;
 
     @BeforeEach
     void createUser() {
+        telegramUserId = 100000000L + Math.abs(UUID.randomUUID().hashCode() % 1000000);
         email = "it-" + UUID.randomUUID() + "@example.com";
         users.save(User.builder()
                 .firstName("Test").email(email)
-                .passwordHash(encoder.encode(PASSWORD))
+                .telegramId(String.valueOf(telegramUserId))
                 .role(Role.USER).isActive(true).isEmailVerified(true)
                 .build());
     }
 
     private MvcResult login(boolean cookieMode) throws Exception {
-        var req = post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"identifier\":\"" + email + "\",\"password\":\"" + PASSWORD + "\"}");
+        String token = telegramTokenStore.generateToken(telegramUserId, "Test", "User", "testuser");
+        var req = post("/api/v1/auth/telegram/token-login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"token\":\"" + token + "\"}");
         if (cookieMode) req.header("X-Auth-Mode", "cookie");
         return mvc.perform(req).andExpect(status().isOk()).andReturn();
     }
