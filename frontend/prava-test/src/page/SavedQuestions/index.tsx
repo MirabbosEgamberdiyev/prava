@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { resolveUserScopeId } from "@/utils/userScope";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { Modal, Button } from "@mantine/core";
 import { useAuth } from "../../auth/AuthContext";
-import { scopedUserId } from "../../utils/userScope";
-import { reportError } from "../../utils/monitoring";
 import type { SavedQuestionEntry } from "../../types/desktop";
 import {
   getSavedQuestions,
@@ -14,146 +14,233 @@ import {
   localizeExp,
 } from "../../services/desktopAdapter";
 import {
+  IconArrowLeft,
   IconBookmark,
   IconBookmarkOff,
+  IconTrash,
   IconCheck,
   IconX,
   IconBulb,
+  IconSearch,
 } from "@tabler/icons-react";
 import ImageZoomModal, { ZoomableImage } from "../../components/common/ImageZoomModal";
 import SEO from "../../components/common/SEO";
-import styles from "../../components/dashboard/Dashboard.module.css";
+import { GuestGate } from "../../components/common/GuestEmptyState";
+import { showToast } from "../../utils/notificationUtils";
 
-export default function SavedQuestions_Page() {
+function SavedQuestionsContent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const userId = scopedUserId(user);
+  const userId = resolveUserScopeId(user);
 
   const [entries, setEntries] = useState<SavedQuestionEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [zoomSrc, setZoomSrc] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [clearModalOpen, setClearModalOpen] = useState(false);
 
-  const loadData = useCallback(() => {
+  const loadData = () => {
     getSavedQuestions(userId)
-      .then((data) => setEntries(Array.isArray(data) ? data.filter((e) => e && e.question) : []))
-      .catch((err: unknown) => reportError("savedQuestions.load", err))
+      .then((savedData) => {
+        setEntries(Array.isArray(savedData) ? savedData.filter((e) => e && e.question) : []);
+      })
+      .catch(() => {})
       .finally(() => setLoading(false));
-  }, [userId]);
+  };
 
   useEffect(() => {
     loadData();
     const onStorage = () => loadData();
     window.addEventListener("prava-storage-changed", onStorage);
     return () => window.removeEventListener("prava-storage-changed", onStorage);
-  }, [loadData]);
+  }, [userId]);
 
   const handleRemove = async (questionId: number) => {
-    await toggleSavedQuestion(userId, questionId).catch((err: unknown) => reportError("savedQuestions.remove", err));
+    const target = entries.find((e) => e.question.id === questionId);
+    if (!target) return;
+    await toggleSavedQuestion(userId, target.question).catch(() => {});
     setEntries((prev) => prev.filter((e) => e?.question?.id !== questionId));
   };
+
+  const handleClearAll = async () => {
+    for (const entry of entries) {
+      await toggleSavedQuestion(userId, entry.question).catch(() => {});
+    }
+    setEntries([]);
+    setClearModalOpen(false);
+    showToast({
+      id: "clear-saved-success",
+      title: t("common.success", "Tozalandi"),
+      message: t("saved.clearedAll", "Barcha saqlangan savollar tozalandi"),
+      color: "teal",
+    });
+  };
+
+  const onBack = () => navigate("/me");
+
+  // Filtered Entries based on search
+  const filteredEntries = useMemo(() => {
+    if (!search.trim()) return entries;
+    const query = search.trim().toLowerCase();
+    return entries.filter((e) => {
+      const text = localizeQ(e.question).toLowerCase();
+      return text.includes(query);
+    });
+  }, [entries, search]);
 
   return (
     <>
       <SEO
-        title={t("seo.savedQuestions.title")}
-        description={t("seo.savedQuestions.desc")}
+        title={t("saved.title", "Saqlangan savollar")}
+        description={t("seo.savedDesc", "Muhim savollar va biletlarni tanlanganlar ro'yxatida saqlang va takrorlang.")}
         canonical="/saved-questions"
-        noIndex={true}
       />
-      {/* Page Header */}
-        <div className={styles.innerPageHeader}>
-          <div className={styles.innerPageHeaderLeft}>
-            <div className={styles.innerPageTitleRow}>
-              <h1 className={styles.innerPageTitle}>{t("saved.title")}</h1>
-              {!loading && entries.length > 0 && (
-                <span className={styles.innerPageCountChip}>
-                  {entries.length} {t("common.questions")}
-                </span>
-              )}
-            </div>
-            <p className={styles.innerPageSubtitle}>
-              {t(
-                "saved.subtitle"
-              )}
-            </p>
-          </div>
-        </div>
 
-        <div style={{ maxWidth: 960, width: "100%", margin: "0 auto" }}>
+      <div className="review-screen">
+        <header className="review-header">
+          <button className="review-back-btn" onClick={onBack} type="button">
+            <IconArrowLeft size={18} stroke={2} />
+            {t("common.back", "Orqaga")}
+          </button>
+          <div className="review-header-title">
+            <IconBookmark size={20} stroke={2} color="#1971c2" />
+            <span>{t("saved.title", "Saqlangan savollar")}</span>
+          </div>
+
+          {entries.length > 0 && (
+            <div className="topics-search-wrap">
+              <IconSearch size={15} className="topics-search-icon" />
+              <input
+                className="topics-search-input"
+                placeholder={t("saved.searchPlaceholder", "Qidirish...")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          )}
+
+          <div className="review-header-count">
+            {filteredEntries.length} {t("common.questions", "savol")}
+          </div>
+
+          {entries.length > 0 && (
+            <button
+              type="button"
+              className="review-back-btn"
+              style={{ color: "#e03131", borderColor: "rgba(224, 49, 49, 0.3)" }}
+              onClick={() => setClearModalOpen(true)}
+              title={t("saved.clearAll", "Barchasini tozalash")}
+            >
+              <IconTrash size={16} />
+              {t("common.clear", "Tozalash")}
+            </button>
+          )}
+        </header>
+
+        <main className="review-content">
           {loading ? (
-            <div className="loading-screen" style={{ minHeight: 320 }}>
+            <div className="loading-screen">
               <div className="spinner" />
-              <p style={{ marginTop: 12, color: "var(--text-muted)", fontSize: 14 }}>
-                {t("common.loading")}
-              </p>
             </div>
           ) : entries.length === 0 ? (
-            <div className="review-empty" style={{ padding: "60px 20px" }}>
-              <IconBookmark size={56} stroke={1.5} color="var(--primary)" />
-              <h3>{t("saved.emptyTitle")}</h3>
-              <p style={{ maxWidth: 420, margin: "0 auto", color: "var(--text-muted)", fontSize: 14 }}>
+            <div className="review-empty">
+              <IconBookmark size={56} stroke={1.5} color="#1971c2" />
+              <h3>{t("saved.emptyTitle", "Hali saqlangan savollar yo'q")}</h3>
+              <p>
                 {t(
-                  "saved.emptyDesc"
+                  "saved.emptySub",
+                  "Testlar yoki biletlar davomida istalgan savolni belgilar (bookmark) orqali saqlab qo'yishingiz mumkin."
                 )}
               </p>
-              <button
-                type="button"
-                className="saas-btn-primary"
-                onClick={() => navigate("/tickets")}
-                style={{ marginTop: 16 }}
-              >
-                {t("nav.tickets")}
+            </div>
+          ) : filteredEntries.length === 0 ? (
+            <div className="review-empty">
+              <p>{t("saved.noFilterMatch", "Tanlangan qidiruv bo'yicha savol topilmadi.")}</p>
+              <button className="review-back-btn" onClick={() => setSearch("")} type="button">
+                {t("common.resetFilter", "Filtrni tozalash")}
               </button>
             </div>
           ) : (
             <div className="review-list">
-              {entries.map((entry) => {
+              {filteredEntries.map((entry) => {
                 const q = entry.question;
                 const opts = parseOptions(q.options_json);
                 const isOpen = expanded === q.id;
+                const explanation = localizeExp(q);
+
                 return (
                   <div key={q.id} className={`review-card ${isOpen ? "open" : ""}`}>
-                    <div
-                      className="review-card-top"
-                      onClick={() => setExpanded(isOpen ? null : q.id)}
-                    >
+                    <div className="review-card-top" onClick={() => setExpanded(isOpen ? null : q.id)}>
                       <div className="review-card-badge saved-badge">
                         <IconBookmark size={14} stroke={2} />
                       </div>
                       <p className="review-card-text">{localizeQ(q)}</p>
                       <button
+                        type="button"
                         className="review-remove-btn"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleRemove(q.id);
                         }}
-                        title={t("saved.remove")}
-                        type="button"
+                        title={t("saved.remove", "Olib tashlash")}
                       >
                         <IconBookmarkOff size={14} stroke={2} />
                       </button>
                     </div>
+
                     {isOpen && (
                       <div className="review-card-body">
                         <div className="review-card-options">
-                          {opts.map((opt) => (
+                          {opts.map((opt, optIdx) => {
+                            const isCorrect = (opt.index ?? optIdx) === q.correct_option;
+                            return (
+                              <div
+                                key={opt.index ?? optIdx}
+                                className={`review-option ${isCorrect ? "correct" : ""}`}
+                              >
+                                {isCorrect ? (
+                                  <IconCheck size={14} stroke={2.5} />
+                                ) : (
+                                  <IconX size={14} stroke={2.5} />
+                                )}
+                                <span>{localizeOpt(opt)}</span>
+                              </div>
+                            );
+                          })}
+
+                          {explanation && (
                             <div
-                              key={opt.index}
-                              className={`review-option ${
-                                opt.index === q.correct_option ? "correct" : ""
-                              }`}
+                              style={{
+                                marginTop: 8,
+                                padding: "10px 14px",
+                                borderRadius: 8,
+                                background: "rgba(31, 125, 211, 0.08)",
+                                border: "1px solid rgba(31, 125, 211, 0.2)",
+                                fontSize: 12.5,
+                                color: "var(--text)",
+                                lineHeight: 1.5,
+                              }}
                             >
-                              {opt.index === q.correct_option ? (
-                                <IconCheck size={14} stroke={2.5} />
-                              ) : (
-                                <IconX size={14} stroke={2.5} />
-                              )}
-                              {localizeOpt(opt)}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                  color: "var(--primary)",
+                                  fontWeight: 700,
+                                  marginBottom: 3,
+                                }}
+                              >
+                                <IconBulb size={15} />
+                                <span>{t("quiz.explanationTitle", "Qoida sharhi:")}</span>
+                              </div>
+                              <p style={{ margin: 0 }}>{explanation}</p>
                             </div>
-                          ))}
+                          )}
                         </div>
+
                         {q.image_path && (
                           <div className="review-card-img-wrap">
                             <ZoomableImage
@@ -163,17 +250,6 @@ export default function SavedQuestions_Page() {
                             />
                           </div>
                         )}
-                        {localizeExp(q) && (
-                          <div className="quiz-explanation-wrap" style={{ marginTop: 10 }}>
-                            <div className="quiz-explanation-text" style={{ display: "block" }}>
-                              <strong>
-                                <IconBulb size={15} style={{ verticalAlign: "middle", marginRight: 4 }} />
-                                {t("exam.explanation")}:
-                              </strong>{" "}
-                              {localizeExp(q)}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>
@@ -181,8 +257,52 @@ export default function SavedQuestions_Page() {
               })}
             </div>
           )}
-        </div>
-        <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />
+        </main>
+
+        {/* Clear All Confirmation Modal */}
+        <Modal
+          opened={clearModalOpen}
+          onClose={() => setClearModalOpen(false)}
+          title={t("saved.confirmClearTitle", "Tanlanganlarni tozalash")}
+          centered
+          radius="md"
+        >
+          <div style={{ padding: "8px 0" }}>
+            <p style={{ fontSize: 14, color: "var(--text)", margin: "0 0 20px" }}>
+              {t("saved.confirmClearMsg", "Haqiqatan ham barcha saqlangan savollarni tozalab tashlamoqchimisiz?")}
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <Button variant="default" onClick={() => setClearModalOpen(false)}>
+                {t("common.cancel", "Bekor qilish")}
+              </Button>
+              <Button color="red" onClick={handleClearAll}>
+                {t("common.delete", "Tozalash")}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Image Zoom Modal */}
+        {zoomSrc && (
+          <ImageZoomModal
+            onClose={() => setZoomSrc(null)}
+            src={zoomSrc}
+          />
+        )}
+      </div>
     </>
+  );
+}
+
+export default function SavedQuestions_Page() {
+  const { t } = useTranslation();
+  return (
+    <GuestGate
+      pageTitle={t("saved.title", "Tanlangan savollar")}
+      title={t("saved.title", "Tanlangan savollar")}
+      description={t("saved.guestDesc", "Savollarni saqlash va ko'rish uchun tizimga kiring")}
+    >
+      <SavedQuestionsContent />
+    </GuestGate>
   );
 }

@@ -146,7 +146,7 @@ function walkDir(dir, fileList = []) {
 }
 
 const ALLOWED_BRAND_WORDS = new Set([
-  'PRAVA', 'ONLINE', 'PRAVAONLINE', 'PravaOnline', 'Chevrolet', 'Cobalt', 'Gentra', 'Malibu',
+  'PRAVA', 'ONLINE', 'PRAVAONLINE', 'PravaOnline', 'PRAVA ONLINE', 'Chevrolet', 'Spark', 'Cobalt', 'Gentra', 'Malibu',
   'Telegram', 'Instagram', 'YouTube', 'Facebook', 'Google', 'Google Play', 'App Store', 'Windows',
   'JSON', 'SMS', 'OTP', 'ID', 'URL', 'API', 'UUID', 'VIP', 'PWA', 'IIV', 'YHXX', 'YHQ',
   'km/h', 'W', 'A', 'S', 'D', 'SPACE', 'ENTER', 'ESC', 'px', 'rem', 'auto', 'none', 'inherit',
@@ -280,13 +280,14 @@ const USER_FACING_ATTRS = new Set(['placeholder', 'title', 'aria-label', 'alt', 
 const JSX_BRAND_RE = new RegExp(
   '^(' +
     [
-      'Prava( Online)?\\.?', 'PravaOnline\\.?', 'PRAVA', 'Prava Online\\.?', 'pravaonline\\.uz', '@pravaonlineuzbot', '@\\w+',
+      'Prava( Online)?\\.?', 'PravaOnline\\.?', 'PRAVA', 'PRAVA ONLINE', 'Prava Online\\.?', 'pravaonline\\.uz', '@pravaonlineuzbot', '@\\w+',
       'Telegram( Bot)?', 'Google( Play)?', 'App Store', 'Instagram', 'YouTube', 'Facebook',
       'Click', 'Payme', 'Uzum Bank', 'Uzcard( / Humo)?', 'Humo', 'Visa( / Mastercard)?', 'Mastercard',
       'Windows( \\(\\.exe\\))?', 'macOS', 'Linux', 'Android', 'iOS', 'PWA', 'APK', 'QR', 'SMS', 'OTP', 'ID', 'UZS',
+      'Chevrolet', 'Spark', 'Cobalt', 'Gentra', 'Malibu',
       // product version tags, e.g. "v2.0 • WebGL"
       'v\\d+(\\.\\d+)*\\b.*',
-      'Enter', 'Esc', 'Space', 'Tab', 'Shift', 'Ctrl', 'Alt', '←', '→', '↑', '↓',
+      'Enter( ↵)?', 'Esc', 'Space( ↵)?', 'Tab', 'Shift(\\+[A-Za-z0-9]+)?', 'Ctrl(\\+[A-Za-z0-9]+)?', 'Alt(\\+[A-Za-z0-9]+)?', '←', '→', '↑', '↓',
     ].join('|') +
     ')$'
 );

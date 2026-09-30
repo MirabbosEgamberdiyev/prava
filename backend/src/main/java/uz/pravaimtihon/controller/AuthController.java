@@ -46,6 +46,33 @@ public class AuthController {
         return r;
     }
 
+    @PostMapping("/login")
+    @Operation(
+            summary = "Xodimlar va foydalanuvchilar uchun login (email/telefon va parol)",
+            description = "Email yoki telefon raqami hamda parol orqali tizimga kirish"
+    )
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Autentifikatsiya muvaffaqiyatli",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AuthResponse.class)
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Login yoki parol noto'g'ri",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
+            @Valid @RequestBody LoginRequest request,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        AuthResponse response = authService.login(request, language);
+        return ResponseEntity.ok(ApiResponse.success(messageService.getMessage("success.auth.login", language), response));
+    }
+
     @PostMapping("/google")
     @Operation(
             summary = "Google OAuth orqali kirish",

@@ -171,3 +171,17 @@ export function cyrillicToLatin(text: string | null | undefined): string {
   }
   return out;
 }
+
+/**
+ * Canonical form for matching: Latin script, lower case, apostrophe variants removed,
+ * whitespace collapsed. "Йўл белгилари" and "Yo'l belgilari" both → "yol belgilari".
+ */
+export function normalizeSearchText(text: string | null | undefined): string {
+  if (!text) return "";
+  return cyrillicToLatin(text)
+    .toLowerCase()
+    .replace(/['‘’`ʼʻ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+

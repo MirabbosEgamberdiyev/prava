@@ -1,0 +1,330 @@
+/* ==========================================================================
+   PRAVA ONLINE — PACKAGES & TARIFFS DESIGN SYSTEM
+   6-Plan Dynamic Duration Selector, Comparison Matrix & Instant Checkout
+   ========================================================================== */
+
+.po-pricing-wrapper {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 16px 48px;
+}
+
+.po-pricing-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.po-pricing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  background: rgba(14, 165, 233, 0.12);
+  color: #0284c7;
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  margin-bottom: 12px;
+}
+
+.po-pricing-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--g-text, #0f172a);
+  margin: 0 0 10px;
+  letter-spacing: -0.5px;
+}
+
+.po-pricing-subtitle {
+  font-size: 15px;
+  color: var(--g-text-muted, #64748b);
+  margin: 0 auto;
+  max-width: 580px;
+  line-height: 1.55;
+}
+
+/* 6-Plan Duration Selector Grid */
+.po-durations-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 860px) {
+  .po-durations-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .po-durations-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.po-duration-card {
+  position: relative;
+  background: var(--g-surface, #ffffff);
+  border: 2px solid var(--g-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 16px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justifyContent: center;
+  user-select: none;
+}
+
+.po-duration-card:hover {
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.po-duration-card.is-selected {
+  border-color: #0284c7;
+  background: rgba(14, 165, 233, 0.06);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18), 0 8px 24px rgba(2, 132, 199, 0.12);
+}
+
+.po-card-badge {
+  position: absolute;
+  top: -9px;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.po-card-badge.popular {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+.po-card-badge.discount {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.po-duration-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--g-text, #0f172a);
+  margin-bottom: 4px;
+}
+
+.po-duration-price {
+  font-size: 16px;
+  font-weight: 900;
+  color: #0284c7;
+  margin-bottom: 3px;
+}
+
+.po-duration-per-day {
+  font-size: 11px;
+  color: var(--g-text-muted, #64748b);
+  font-weight: 600;
+}
+
+/* Feature Comparison Table */
+.po-compare-card {
+  background: var(--g-surface, #ffffff);
+  border: 1px solid var(--g-border, #e2e8f0);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  margin-bottom: 28px;
+}
+
+.po-compare-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.po-compare-th {
+  padding: 16px 20px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1.5px solid var(--g-border, #e2e8f0);
+  background: var(--g-bg, #f8fafc);
+}
+
+.po-compare-th.feature-col {
+  text-align: left;
+  color: var(--g-text, #0f172a);
+}
+
+.po-compare-th.free-col {
+  text-align: center;
+  color: var(--g-text-muted, #64748b);
+  width: 30%;
+}
+
+.po-compare-th.pro-col {
+  text-align: center;
+  color: #0284c7;
+  background: rgba(14, 165, 233, 0.09);
+  width: 38%;
+}
+
+.po-compare-row {
+  border-bottom: 1px solid var(--g-border, #e2e8f0);
+}
+
+.po-compare-row:last-child {
+  border-bottom: none;
+}
+
+.po-compare-row:hover {
+  background: rgba(14, 165, 233, 0.02);
+}
+
+.po-compare-td {
+  padding: 14px 20px;
+  font-size: 13.5px;
+}
+
+.po-compare-td.feature-title {
+  font-weight: 600;
+  color: var(--g-text, #0f172a);
+}
+
+.po-compare-td.free-val {
+  text-align: center;
+  color: var(--g-text-muted, #64748b);
+}
+
+.po-compare-td.pro-val {
+  text-align: center;
+  font-weight: 700;
+  color: var(--g-text, #0f172a);
+  background: rgba(14, 165, 233, 0.04);
+}
+
+.po-val-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+}
+
+.po-val-badge.locked {
+  color: #ef4444;
+}
+
+.po-val-badge.open {
+  color: #10b981;
+}
+
+/* Checkout Bar */
+.po-checkout-card {
+  background: var(--g-surface, #ffffff);
+  border: 1px solid var(--g-border, #e2e8f0);
+  border-radius: 18px;
+  padding: 24px 28px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.po-checkout-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.po-checkout-label {
+  font-size: 13px;
+  color: var(--g-text-muted, #64748b);
+  font-weight: 600;
+}
+
+.po-checkout-sum {
+  font-size: 26px;
+  font-weight: 900;
+  color: #0284c7;
+  letter-spacing: -0.5px;
+}
+
+.po-checkout-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.po-btn-click {
+  background: #0073ff;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 22px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 115, 255, 0.3);
+}
+
+.po-btn-click:hover {
+  background: #005fdb;
+  transform: translateY(-1px);
+}
+
+.po-btn-payme {
+  background: #00cccc;
+  color: #064040;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 22px;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 204, 204, 0.3);
+}
+
+.po-btn-payme:hover {
+  background: #00b3b3;
+  transform: translateY(-1px);
+}
+
+/* Trust Badges */
+.po-trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.po-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--g-text-muted, #64748b);
+  font-weight: 600;
+}

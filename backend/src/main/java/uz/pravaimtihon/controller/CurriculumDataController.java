@@ -42,6 +42,7 @@ public class CurriculumDataController {
             Long totalExamCenters = jdbcTemplate.queryForObject("SELECT count(*) FROM exam_centers", Long.class);
             Long totalPracticalExercises = jdbcTemplate.queryForObject("SELECT count(*) FROM practical_exercises", Long.class);
             Long totalPenalties = jdbcTemplate.queryForObject("SELECT count(*) FROM practical_penalties", Long.class);
+            Long totalFines = jdbcTemplate.queryForObject("SELECT count(*) FROM traffic_fines WHERE active = true", Long.class);
 
             stats.put("totalQuestions", totalQuestions != null ? totalQuestions : 0L);
             stats.put("totalTickets", totalTickets != null ? totalTickets : 0L);
@@ -51,6 +52,7 @@ public class CurriculumDataController {
             stats.put("totalExamCenters", totalExamCenters != null ? totalExamCenters : 0L);
             stats.put("totalPracticalExercises", totalPracticalExercises != null ? totalPracticalExercises : 0L);
             stats.put("totalPenalties", totalPenalties != null ? totalPenalties : 0L);
+            stats.put("totalFines", totalFines != null ? totalFines : 0L);
 
             return ResponseEntity.ok(ApiResponse.success(stats));
         } catch (Exception e) {

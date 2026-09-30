@@ -1,310 +1,167 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  Container,
-  Title,
-  Text,
-  TextInput,
-  Tabs,
-  SimpleGrid,
-  Card,
-  Badge,
-  Group,
-  Stack,
-  Modal,
-  Center,
-  ActionIcon,
-  Box,
-  rem,
-  Button,
-  Skeleton,
-  Alert,
-} from "@mantine/core";
-import {
-  IconSearch,
-  IconX,
-  IconAlertTriangle,
-  IconDirections,
-  IconRefresh,
-} from "@tabler/icons-react";
-import { curriculumApi, type RoadSign } from "../../services/curriculumApi";
-import { useLanguage } from "../../context/LanguageContext";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { IconDirections } from "@tabler/icons-react";
 import SEO from "../../components/common/SEO";
-import SafeHtml from "../../components/common/SafeHtml";
-import { AppImage } from "../../components/common/AppImage";
-import { errorKeyFor } from "../../types/errors";
-import { pickLocalized } from "../../data/curriculumLocale";
+import type { RoadSign } from "../../api/curriculumApi";
+import { useCurriculum } from "../../features/Curriculum/useCurriculum";
+import CatalogPage, { type CatalogCategory } from "../../features/Curriculum/components/CatalogPage";
 
-const CATEGORIES = [
-  { id: "all", key: "curriculum.all" },
-  { id: "Ogohlantiruvchi belgilar", key: "curriculum.warning" },
-  { id: "Imtiyozli belgilar", key: "curriculum.priority" },
-  { id: "Taqiqlovchi belgilar", key: "curriculum.prohibitory" },
-  { id: "Buyuruvchi belgilar", key: "curriculum.mandatory" },
-  { id: "Axborot-ishora belgilari", key: "curriculum.informative" },
-  { id: "Servis belgilari", key: "curriculum.service" },
-  { id: "Qo'shimcha axborot belgilari", key: "curriculum.additional" },
+const normalizeCategory = (cat?: string): string =>
+  (cat || "")
+    .toLowerCase()
+    .replace(/[`ʻ'"]/g, "'")
+    .trim();
+
+/**
+ * Official categories with aliases matching backend database rows,
+ * Cyrillic/Latin variants, and official YHQ nomenclature.
+ */
+const CATEGORIES: {
+  id: string;
+  key: string;
+  fallback: string;
+  aliases: string[];
+}[] = [
+  { id: "all", key: "curriculum.all", fallback: "Barchasi", aliases: [] },
+  {
+    id: "warning",
+    key: "curriculum.warning",
+    fallback: "Ogohlantiruvchi",
+    aliases: [
+      "ogohlantiruvchi belgilar",
+      "ogohlantiruvchi belgilari",
+      "ogohlantiruvchi",
+      "предупреждающие знаки",
+    ],
+  },
+  {
+    id: "priority",
+    key: "curriculum.priority",
+    fallback: "Imtiyozli",
+    aliases: [
+      "imtiyoz belgilari",
+      "imtiyozli belgilar",
+      "imtiyozli belgilari",
+      "imtiyozli",
+      "imtiyoz",
+      "знаки приоритета",
+    ],
+  },
+  {
+    id: "prohibitory",
+    key: "curriculum.prohibitory",
+    fallback: "Taqiqlovchi",
+    aliases: [
+      "taqiqlovchi belgilar",
+      "taqiqlovchi belgilari",
+      "taqiqlovchi",
+      "запрещающие знаки",
+    ],
+  },
+  {
+    id: "mandatory",
+    key: "curriculum.mandatory",
+    fallback: "Buyuruvchi",
+    aliases: [
+      "buyuruvchi belgilar",
+      "buyuruvchi belgilari",
+      "buyuruvchi",
+      "предписывающие знаки",
+    ],
+  },
+  {
+    id: "informative",
+    key: "curriculum.informative",
+    fallback: "Axborot-ishora",
+    aliases: [
+      "axborot-ko'rsatgich belgilari",
+      "axborot-korsatgich belgilari",
+      "axborot-ko'rsatkich belgilari",
+      "axborot-korsatkich belgilari",
+      "axborot-ishora belgilari",
+      "axborot-ishora",
+      "axborot ko'rsatgich belgilari",
+      "информационно-указательные знаки",
+    ],
+  },
+  {
+    id: "service",
+    key: "curriculum.service",
+    fallback: "Servis",
+    aliases: [
+      "servis belgilari",
+      "servis",
+      "знаки сервиса",
+    ],
+  },
+  {
+    id: "additional",
+    key: "curriculum.additional",
+    fallback: "Qo'shimcha",
+    aliases: [
+      "qo'shimcha axborot belgilari",
+      "qoshimcha axborot belgilari",
+      "qo'shimcha",
+      "qoshimcha",
+      "знаки дополнительной информации",
+    ],
+  },
 ];
 
 export default function RoadSigns_Page() {
-  const { lang } = useLanguage();
   const { t } = useTranslation();
+  const { data, error, isLoading, refresh, refreshing, savedAt, fromCache } = useCurriculum("signs");
+  const signs = useMemo(() => data ?? [], [data]);
 
-  const [signs, setSigns] = useState<RoadSign[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
-  const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [search, setSearch] = useState("");
-  const [selectedSign, setSelectedSign] = useState<RoadSign | null>(null);
-
-  const fetchSigns = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    curriculumApi
-      .getSigns()
-      .then((data) => {
-        setSigns(data);
-      })
-      .catch((err: unknown) => {
-        // 5xx/tarmoq xatolari uchun global toast api.ts'da chiqadi — bu yerda faqat inline xato.
-        setError(err);
-        setSigns([]);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    fetchSigns();
-  }, [fetchSigns]);
-
-  const getLocalizedTitle = (s: RoadSign) => pickLocalized(lang, s.title_uzl, s.title_uzc, s.title_ru);
-
-  const getLocalizedDesc = (s: RoadSign) =>
-    pickLocalized(lang, s.description_uzl, s.description_uzc, s.description_ru);
-
-  /** Backend kategoriya nomi (o'zbekcha lotin) -> tarjima qilingan yorliq; noma'lum bo'lsa — asl qiymat. */
-  const getCategoryLabel = (category?: string) => {
-    if (!category) return "";
-    const match = CATEGORIES.find((c) => c.id !== "all" && c.id.toLowerCase() === category.toLowerCase());
-    return match ? t(match.key) : category;
-  };
-
-  const filteredSigns = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return signs.filter((s) => {
-      if (!s) return false;
-      const matchCat =
-        activeCategory === "all" ||
-        (s.category && s.category.toLowerCase() === activeCategory.toLowerCase());
-
-      const matchSearch =
-        !q ||
-        (s.code && s.code.toLowerCase().includes(q)) ||
-        pickLocalized(lang, s.title_uzl, s.title_uzc, s.title_ru).toLowerCase().includes(q);
-
-      return matchCat && matchSearch;
-    });
-  }, [signs, activeCategory, search, lang]);
+  const categories: CatalogCategory<RoadSign>[] = useMemo(() => {
+    return CATEGORIES.map((c) => ({
+      id: c.id,
+      label: t(c.key, c.fallback),
+      match:
+        c.id === "all"
+          ? () => true
+          : (s: RoadSign) => {
+              const norm = normalizeCategory(s.category);
+              return c.aliases.some((alias) => norm === alias || norm.includes(alias));
+            },
+    }));
+  }, [t]);
 
   return (
-    <Container size="xl" py="xl">
-      <SEO title={t("seo.signsTitle")} description={t("seo.signsDesc")} />
-
-      <Stack gap="lg">
-        <div>
-          <Group justify="space-between" align="flex-start">
-            <div>
-              <Title order={1} fw={900} style={{ letterSpacing: "-0.5px" }}>
-                {t("curriculum.signsTitle")}
-              </Title>
-              <Text c="dimmed" size="sm" mt={4}>
-                {t("curriculum.signsSubtitle")}
-              </Text>
-            </div>
-            {!loading && !error && (
-              <Badge size="lg" variant="filled" color="blue" leftSection={<IconDirections size={14} />}>
-                {t("curriculum.signsCount", { count: filteredSigns.length })}
-              </Badge>
-            )}
-          </Group>
-        </div>
-
-        {/* Search Input */}
-        <TextInput
-          placeholder={t("curriculum.searchSigns")}
-          aria-label={t("curriculum.searchSigns")}
-          value={search}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          leftSection={<IconSearch size={18} />}
-          rightSection={
-            search ? (
-              <ActionIcon variant="subtle" color="gray" onClick={() => setSearch("")} aria-label={t("curriculum.clean")}>
-                <IconX size={16} />
-              </ActionIcon>
-            ) : null
-          }
-          size="md"
-          radius="md"
-        />
-
-        {/* Categories Tabs */}
-        <Tabs value={activeCategory} onChange={(val) => setActiveCategory(val || "all")}>
-          <Tabs.List>
-            {CATEGORIES.map((cat) => (
-              <Tabs.Tab key={cat.id} value={cat.id} style={{ fontWeight: 600 }}>
-                {t(cat.key)}
-              </Tabs.Tab>
-            ))}
-          </Tabs.List>
-        </Tabs>
-
-        {/* Content */}
-        {loading ? (
-          <SimpleGrid cols={{ base: 2, sm: 3, md: 4, lg: 5 }} spacing="md">
-            {Array.from({ length: 10 }).map((_, idx) => (
-              <Card key={idx} shadow="sm" padding="md" radius="md" withBorder>
-                <Skeleton height={110} mb="sm" radius="md" />
-                <Skeleton height={16} width="50%" mb="xs" />
-                <Skeleton height={20} width="90%" />
-              </Card>
-            ))}
-          </SimpleGrid>
-        ) : error ? (
-          <Alert
-            icon={<IconAlertTriangle size={18} />}
-            title={t("common.error")}
-            color="red"
-            variant="light"
-            radius="md"
-            role="alert"
-          >
-            <Group justify="space-between" align="center">
-              <Text size="sm">{t(errorKeyFor(error, "curriculum.signsLoadError"))}</Text>
-              <Button
-                size="xs"
-                color="red"
-                variant="light"
-                leftSection={<IconRefresh size={14} />}
-                onClick={fetchSigns}
-              >
-                {t("common.retry")}
-              </Button>
-            </Group>
-          </Alert>
-        ) : filteredSigns.length === 0 ? (
-          <Center py={60}>
-            <Stack align="center" gap="xs">
-              <IconAlertTriangle size={40} color="gray" />
-              <Text c="dimmed" fw={500}>
-                {t("curriculum.emptySigns")}
-              </Text>
-              {(search || activeCategory !== "all") && (
-                <Button
-                  size="xs"
-                  variant="subtle"
-                  onClick={() => {
-                    setSearch("");
-                    setActiveCategory("all");
-                  }}
-                >
-                  {t("curriculum.clearFilters")}
-                </Button>
-              )}
-            </Stack>
-          </Center>
-        ) : (
-          <SimpleGrid cols={{ base: 2, sm: 3, md: 4, lg: 5 }} spacing="md">
-            {filteredSigns.map((sign) => (
-              <Card
-                key={sign.id}
-                shadow="sm"
-                padding="md"
-                radius="md"
-                withBorder
-                style={{ cursor: "pointer", transition: "transform 0.15s ease, box-shadow 0.15s ease" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                }}
-                onClick={() => setSelectedSign(sign)}
-              >
-                <Card.Section p="sm" bg="var(--mantine-color-gray-1)">
-                  <Center h={110}>
-                    <AppImage
-                      src={sign.imageUrl}
-                      alt={getLocalizedTitle(sign)}
-                      fit="contain"
-                      h={95}
-                    />
-                  </Center>
-                </Card.Section>
-
-                <Group justify="space-between" mt="sm" mb={4}>
-                  <Badge variant="light" color="blue" size="sm">
-                    {sign.code}
-                  </Badge>
-                  <Text size="xs" c="dimmed" lineClamp={1}>
-                    {getCategoryLabel(sign.category)}
-                  </Text>
-                </Group>
-
-                <Text fw={600} size="sm" lineClamp={2} title={getLocalizedTitle(sign)}>
-                  {getLocalizedTitle(sign)}
-                </Text>
-              </Card>
-            ))}
-          </SimpleGrid>
+    <>
+      <SEO
+        title={t("curriculum.signsTitle", "Yo'l belgilari")}
+        description={t("curriculum.signsSubtitle", "")}
+        canonical="/signs"
+        noIndex
+      />
+      <CatalogPage
+        section="signs"
+        title={t("curriculum.signsTitle", "Yo'l belgilari")}
+        subtitle={t("curriculum.signsSubtitle", "")}
+        countBadge={(n) => (
+          <span className="cur-badge">
+            <IconDirections size={14} /> {t("curriculum.signsCount", { count: n })}
+          </span>
         )}
-      </Stack>
-
-      {/* Detail Modal */}
-      <Modal
-        opened={!!selectedSign}
-        onClose={() => setSelectedSign(null)}
-        title={
-          selectedSign && (
-            <Group gap="xs">
-              <Badge color="blue" size="lg">
-                {selectedSign.code}
-              </Badge>
-              <Text fw={700} size="md">
-                {getLocalizedTitle(selectedSign)}
-              </Text>
-            </Group>
-          )
-        }
-        size="lg"
-        centered
-      >
-        {selectedSign && (
-          <Stack gap="md" align="center">
-            <Box
-              p="lg"
-              bg="var(--mantine-color-gray-0)"
-              style={{ borderRadius: rem(8), width: "100%", display: "flex", justifyContent: "center" }}
-            >
-              <AppImage
-                src={selectedSign.imageUrl}
-                alt={getLocalizedTitle(selectedSign)}
-                fit="contain"
-                h={180}
-                style={{ maxWidth: 220 }}
-              />
-            </Box>
-            <Box w="100%">
-              <Badge variant="outline" color="gray" mb="xs">
-                {getCategoryLabel(selectedSign.category)}
-              </Badge>
-              <SafeHtml
-                style={{ fontSize: "0.95rem", lineHeight: 1.6, color: "var(--mantine-color-text)" }}
-                html={getLocalizedDesc(selectedSign)}
-              />
-            </Box>
-          </Stack>
-        )}
-      </Modal>
-    </Container>
+        items={signs}
+        loading={isLoading}
+        error={error}
+        savedAt={savedAt}
+        fromCache={fromCache}
+        refreshing={refreshing}
+        onRefresh={refresh}
+        categories={categories}
+        searchPlaceholder={t("curriculum.searchSigns", "Belgi kodi yoki nomini qidiring...")}
+        emptyText={t("learn.noSignsFound", "Mos keluvchi belgilar topilmadi")}
+        itemMeta={(s) => {
+          const norm = normalizeCategory(s.category);
+          const matched = CATEGORIES.find((c) =>
+            c.aliases.some((alias) => norm === alias || norm.includes(alias))
+          );
+          return matched ? t(matched.key, matched.fallback) : s.category || "";
+        }}
+      />
+    </>
   );
 }

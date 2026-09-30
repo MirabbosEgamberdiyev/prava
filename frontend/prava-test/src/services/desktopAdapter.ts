@@ -1,3 +1,7 @@
+import { GUEST_USER_KEY, statsCacheKey, type UserScopeId } from "@/utils/userScope";
+import { durationMinutesFor, getExamRules, isExamPassed, passPercentFor, type ExamMode } from "./examRules";
+import { examModeFromType } from "./examOutcome";
+import { showToast } from "../utils/notificationUtils";
 import i18n from "i18next";
 import type {
   OfflineQuestion,
@@ -11,36 +15,42 @@ import type {
   WrongAnswerEntry,
   SavedQuestionEntry,
 } from "../types/desktop";
-import { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP, findOfficialTopic } from "../constants/topics";
-export { OFFICIAL_TOPICS, OFFICIAL_TOPIC_MAP, findOfficialTopic };
 import storageService, { type StoredQuestion } from "./storageService";
 import api from "../api/api";
-import {
-  enqueuePendingSubmit,
-  isRetryableSubmitError,
-  notifySubmitQueued,
-} from "./pendingSubmits";
-import { curriculumApi } from "./curriculumApi";
-import { fetchExamRules, durationMinutesFor, getExamRulesSync, passPercentFor } from "./examRules";
-import { GUEST_USER_ID } from "../utils/userScope";
-
-/** "O'rtacha" tayyorlik chegarasi: o'tish foizidan shuncha punkt past. */
-export const AVERAGE_GAP_PERCENT = 20;
 import { normalizeLanguage, type AppLanguage } from "../context/LanguageContext";
-import { latinToCyrillic, cyrillicToLatin } from "../utils/transliterate";
+import {
+  dbClient,
+  type DbQuestion,
+  questionRepository,
+  ticketRepository,
+  topicRepository,
+} from "../database";
+import { OutboxQueue } from "../sync/outboxQueue";
+import { networkModeManager } from "../sync/networkModeManager";
+import { offlineDatasetManager } from "./offlineDatasetManager";
+import { buildTicketReadiness, legacyTickets, type ReadinessTicket } from "./ticketReadiness";
+import {
+  buildRecordOfflinePayload,
+  isFakeLocalSessionId,
+  isRecordablePayload,
+  RECORD_OFFLINE_URL,
+  type IndexedAnswers,
+  type OfflineExamType,
+} from "./offlineExamRecord";
+import { errorMessage } from "./safeError";
 
-/*
- * W-10: bilet/savol soni faqat serverdan (curriculum stats).
- * Avval 63/1234 kabi qattiq default'lar bor edi — server boshqa son qaytarsa
- * foydalanuvchi noto'g'ri raqamni ko'rardi. Endi noma'lum = 0: UI raqamni
- * ko'rsatmaydi (yoki yuklanish holatini ko'rsatadi).
- */
+export function getLang(): AppLanguage {
+  const l = i18n.resolvedLanguage || i18n.language;
+  return normalizeLanguage(l);
+}
+
+export const AVERAGE_GAP_PERCENT = 20;
+
 const COUNTS_STORAGE_KEY = "prava_curriculum_counts";
 
-/** Serverdan oldin olingan (haqiqiy) sonlar — takroriy tashrifda darhol ko'rsatiladi. */
 function readPersistedCounts(): { q: number; t: number } {
   try {
-    const raw = localStorage.getItem(COUNTS_STORAGE_KEY);
+    const raw = typeof localStorage !== "undefined" ? localStorage.getItem(COUNTS_STORAGE_KEY) : null;
     const parsed = raw ? (JSON.parse(raw) as { q?: unknown; t?: unknown }) : null;
     const q = Number(parsed?.q);
     const t = Number(parsed?.t);
@@ -54,37 +64,49 @@ const persistedCounts = typeof window !== "undefined" ? readPersistedCounts() : 
 let cachedTotalQuestions = persistedCounts.q;
 let cachedTotalTickets = persistedCounts.t;
 const statsListeners = new Set<() => void>();
-
-// Kurs statistikasi (savol/bilet soni) LAZY yuklanadi — birinchi foydalanishda
-// bir marta so'raladi. Xatoda promise tozalanadi (keyingi chaqiruvda qayta urinadi).
 let statsPromise: Promise<void> | null = null;
 
 export function ensureCurriculumStats(): Promise<void> {
+  if (cachedTotalQuestions > 0 && cachedTotalTickets > 0) {
+    return Promise.resolve();
+  }
   if (!statsPromise) {
-    statsPromise = curriculumApi
-      .getStats()
-      .then((s) => {
-        if (s?.totalQuestions) cachedTotalQuestions = s.totalQuestions;
-        if (s?.totalTickets) cachedTotalTickets = s.totalTickets;
+    statsPromise = api
+      .get("/api/v1/curriculum/stats", { silent: true } as any)
+      .then((res) => {
+        const body = res.data as { data?: unknown } | undefined;
+        const payload =
+          body && typeof body === "object" && "data" in body && body.data && typeof body.data === "object"
+            ? (body.data as Record<string, unknown>)
+            : (body as Record<string, unknown> | undefined);
+        const q = Number(payload?.totalQuestions);
+        const t = Number(payload?.totalTickets);
+        if (Number.isFinite(q) && q > 0) cachedTotalQuestions = q;
+        if (Number.isFinite(t) && t > 0) cachedTotalTickets = t;
         try {
           localStorage.setItem(
             COUNTS_STORAGE_KEY,
-            JSON.stringify({ q: cachedTotalQuestions, t: cachedTotalTickets }),
+            JSON.stringify({ q: cachedTotalQuestions, t: cachedTotalTickets })
           );
         } catch {
-          // storage bloklangan — faqat xotirada
+          // ignore
         }
-        statsListeners.forEach((fn) => fn());
+        statsListeners.forEach((fn) => {
+          try {
+            fn();
+          } catch {
+            // ignore
+          }
+        });
       })
-      .catch((err: unknown) => {
+      .catch(() => {})
+      .finally(() => {
         statsPromise = null;
-        if (import.meta.env.DEV) console.warn("curriculum stats unavailable", err);
       });
   }
   return statsPromise;
 }
 
-/** Statistika yuklanganda xabar beradi (useCurriculumCounts uchun). */
 export function subscribeCurriculumStats(fn: () => void): () => void {
   statsListeners.add(fn);
   return () => {
@@ -93,48 +115,28 @@ export function subscribeCurriculumStats(fn: () => void): () => void {
 }
 
 export function getCachedTotalQuestions(): number {
-  void ensureCurriculumStats();
   return cachedTotalQuestions;
 }
 
 export function getCachedTotalTickets(): number {
-  void ensureCurriculumStats();
   return cachedTotalTickets;
 }
 
-export function getLang(): AppLanguage {
-  const l = i18n.resolvedLanguage || i18n.language;
-  return normalizeLanguage(l);
+/**
+ * Pick the variant of a localized DATA field (question text, ticket / topic name…) for the current
+ * UI language; falls back to the Uzbek Latin value when the variant is missing or empty.
+ */
+export function pickLocalized<T>(
+  variants: { uzl: T } & Partial<Record<Exclude<AppLanguage, "uzl">, T | null | undefined>>,
+  lang: AppLanguage = getLang()
+): T {
+  const v = (variants as Partial<Record<AppLanguage, T | null | undefined>>)[lang];
+  return v ? v : variants.uzl;
 }
 
-export function localizeTopic(
-  tp: OfflineTopic | null | undefined,
-  overrideLang?: AppLanguage
-): string {
+export function localizeTopic(tp: OfflineTopic | null | undefined): string {
   if (!tp) return "";
-  const lang = overrideLang || getLang();
-  const official = findOfficialTopic(tp);
-  const hasCyrillic = (s: any) => typeof s === "string" && /[\u0400-\u04FF]/.test(s);
-
-  if (lang === "uzc") {
-    if (official?.name_uzc) return official.name_uzc;
-    if (tp.name_uzc && hasCyrillic(tp.name_uzc)) return tp.name_uzc;
-    if (tp.name_uzl && String(tp.name_uzl).trim()) return latinToCyrillic(String(tp.name_uzl));
-    return tp.name_ru || official?.name_uzc || "";
-  }
-  if (lang === "ru") {
-    if (official?.name_ru) return official.name_ru;
-    if (tp.name_ru && hasCyrillic(tp.name_ru)) return tp.name_ru;
-    if (tp.name_ru) return tp.name_ru;
-    return official?.name_ru || tp.name_uzl || "";
-  }
-  return (
-    official?.name_uzl ||
-    tp.name_uzl ||
-    (tp.name_uzc ? cyrillicToLatin(tp.name_uzc) : "") ||
-    tp.name_ru ||
-    ""
-  );
+  return pickLocalized({ uzl: tp.name_uzl || tp.name_uzc || tp.name_ru || "", uzc: tp.name_uzc, ru: tp.name_ru });
 }
 
 export function parseOptions(json: string): QuestionOption[] {
@@ -145,37 +147,27 @@ export function parseOptions(json: string): QuestionOption[] {
   }
 }
 
-/*
- * W-18: kirill (uzc) matni bo'lmasa lotin matni ko'rsatilmaydi — u
- * latinToCyrillic orqali transliteratsiya qilinadi (LanguageContext.localize
- * bilan bir xil qoida).
- */
-const uzcOrTranslit = (uzc: string | null | undefined, uzl: string | null | undefined): string => {
-  if (uzc && uzc.trim()) return uzc;
-  return uzl ? latinToCyrillic(uzl) : "";
-};
-
 export function localizeQ(q: OfflineQuestion): string {
-  const lang = getLang();
-  if (lang === "uzc") return uzcOrTranslit(q.text_uzc, q.text_uzl);
-  if (lang === "ru") return q.text_ru || q.text_uzl;
-  return q.text_uzl;
+  return pickLocalized({ uzl: q.text_uzl, uzc: q.text_uzc, ru: q.text_ru });
 }
 
 export function localizeOpt(opt: QuestionOption): string {
-  const lang = getLang();
-  if (lang === "uzc") return uzcOrTranslit(opt.uzc, opt.uzl);
-  if (lang === "ru") return opt.ru || opt.uzl;
-  return opt.uzl;
+  return pickLocalized({ uzl: opt.uzl, uzc: opt.uzc, ru: opt.ru });
 }
 
 export function localizeExp(q: OfflineQuestion): string | null {
-  const lang = getLang();
-  if (lang === "uzc" && (q.explanation_uzc || q.explanation_uzl)) {
-    return uzcOrTranslit(q.explanation_uzc, q.explanation_uzl);
-  }
-  if (lang === "ru" && q.explanation_ru) return q.explanation_ru;
-  return q.explanation_uzl ?? null;
+  return pickLocalized<string | null>({ uzl: q.explanation_uzl ?? null, uzc: q.explanation_uzc, ru: q.explanation_ru });
+}
+
+/** Ticket / topic metadata defaults when the source does not provide them (derived from the exam rules). */
+function defaultTicketMeta(questionCount?: number | null) {
+  const rules = getExamRules();
+  const count = questionCount && questionCount > 0 ? questionCount : rules.real.questionCount;
+  return {
+    question_count: count,
+    duration_minutes: durationMinutesFor("ticket", count, rules),
+    passing_score: passPercentFor("ticket", rules),
+  };
 }
 
 export function normalizeQuestion(q: any): OfflineQuestion {
@@ -270,54 +262,69 @@ export function fromStoredQuestion(sq: StoredQuestion): OfflineQuestion {
   };
 }
 
-// ── EXAM SESSIONS ─────────────────────────────────────────────────────────────
-//
-// Sessiya ID endi modul-darajasidagi global o'zgaruvchida saqlanmaydi (P1-W5):
-// start funksiyalari `{ sessionId, questions }` qaytaradi va sahifa uni o'z
-// state/ref'ida saqlaydi. Shu sababli ikki imtihon bir-birining sessiyasini
-// ustiga yozib yubormaydi.
-
-export interface StartedSession {
-  sessionId: number | null;
-  questions: OfflineQuestion[];
+export function dbQuestionToOfflineQuestion(dbq: DbQuestion): OfflineQuestion {
+  return {
+    id: dbq.id,
+    topic_id: dbq.topic_id,
+    order_num: dbq.order_num,
+    text_uzl: dbq.text_uzl,
+    text_uzc: dbq.text_uzc,
+    text_en: null,
+    text_ru: dbq.text_ru,
+    image_path: dbq.image_url,
+    options_json: dbq.options_json,
+    correct_option: dbq.correct_option,
+    explanation_uzl: dbq.explanation_uzl,
+    explanation_uzc: dbq.explanation_uzc,
+    explanation_en: null,
+    explanation_ru: dbq.explanation_ru,
+  };
 }
 
-export interface SubmitAnswerDetail {
-  questionId: number;
-  selectedOptionIndex: number | null;
-  correctOptionIndex: number | null;
-  isCorrect: boolean | null;
+export function offlineQuestionToDbQuestion(q: OfflineQuestion, ticketId?: number | null): DbQuestion {
+  return {
+    id: q.id,
+    ticket_id: ticketId ?? null,
+    topic_id: q.topic_id,
+    order_num: q.order_num,
+    text_uzl: q.text_uzl,
+    text_uzc: q.text_uzc,
+    text_ru: q.text_ru,
+    explanation_uzl: q.explanation_uzl,
+    explanation_uzc: q.explanation_uzc,
+    explanation_ru: q.explanation_ru,
+    image_url: q.image_path,
+    options_json: q.options_json,
+    correct_option: q.correct_option,
+    updated_at: Date.now(),
+  };
 }
 
-export interface SubmitResult {
-  sessionId: number;
-  totalQuestions: number;
-  answeredCount: number;
-  correctCount: number;
-  incorrectCount: number;
-  unansweredCount: number;
-  percentage: number | null;
-  isPassed: boolean | null;
-  answerDetails: SubmitAnswerDetail[];
+// ── ACTIVE SESSION TRACKING ───────────────────────────────────────────────────
+// These hold REAL server session ids only (from a server start-visible call).
+// Locally sourced exams leave them null and are reported via record-offline.
+let activeExamSessionId: number | null = null;
+let activeTicketSessionId: number | null = null;
+let activeMarathonSessionId: number | null = null;
+
+export function getActiveExamSessionId(): number | null {
+  return activeExamSessionId;
 }
 
-export type SubmitOutcome =
-  | { ok: true; result: SubmitResult | null }
-  | { ok: false; queued: boolean };
+export function getActiveTicketSessionId(): number | null {
+  return activeTicketSessionId;
+}
 
-const SUBMIT_ENDPOINT = "/api/v2/exams/submit";
+export function getActiveMarathonSessionId(): number | null {
+  return activeMarathonSessionId;
+}
 
-/**
- * Sessiya javoblarini serverga yuboradi. Hech qachon throw qilmaydi:
- * tarmoq/5xx xatosida so'rov `pendingSubmits` navbatiga yoziladi va
- * foydalanuvchiga bildirishnoma ko'rsatiladi.
- */
 export async function submitExamSession(
-  sessionId: number | null | undefined,
+  sessionId: number,
   answers: { questionId: number; selectedOptionIndex?: number | null; timeSpentSeconds?: number }[]
-): Promise<SubmitOutcome> {
-  if (!sessionId || !answers || answers.length === 0) return { ok: false, queued: false };
-  const body = {
+): Promise<boolean> {
+  if (!sessionId || !answers || answers.length === 0) return false;
+  const payload = {
     sessionId,
     answers: answers.map((a) => ({
       questionId: a.questionId,
@@ -325,318 +332,574 @@ export async function submitExamSession(
       timeSpentSeconds: a.timeSpentSeconds || 0,
     })),
   };
-  try {
-    const res = await api.post<{ data?: SubmitResult }>(SUBMIT_ENDPOINT, body);
-    window.dispatchEvent(new Event("prava-storage-changed"));
-    return { ok: true, result: res.data?.data ?? null };
-  } catch (err) {
-    console.warn("Failed to submit exam session to backend:", err);
-    if (isRetryableSubmitError(err)) {
-      enqueuePendingSubmit(SUBMIT_ENDPOINT, body);
-      notifySubmitQueued();
-      return { ok: false, queued: true };
+
+  // STRICT OFFLINE MODE: ZERO remote network calls!
+  if (networkModeManager.isOfflineOnly()) {
+    try {
+      await OutboxQueue.enqueue("SUBMIT_EXAM", "/api/v2/exams/submit", "POST", payload);
+    } catch (e) {
+      console.error("OutboxQueue xatosi:", errorMessage(e));
     }
-    return { ok: false, queued: false };
+    try {
+      await dbClient.completeExamSession(String(sessionId), {
+        status: "COMPLETED",
+        completed_at: Date.now(),
+      });
+    } catch {
+      // ignore
+    }
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("prava-storage-changed"));
+    }
+    return true;
   }
+
+  let isOnlineSuccess = false;
+  try {
+    await api.post("/api/v2/exams/submit", payload);
+    isOnlineSuccess = true;
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("prava-storage-changed"));
+    }
+  } catch (err) {
+    console.warn("Serverga imtihon natijasini yuborib bo'lmadi, OutboxQueue navbatiga joylanmoqda:", errorMessage(err));
+    try {
+      await OutboxQueue.enqueue("SUBMIT_EXAM", "/api/v2/exams/submit", "POST", payload);
+    } catch (e) {
+      console.error("OutboxQueue xatosi:", errorMessage(e));
+    }
+  }
+
+  // Crash recovery va lokal saqlash
+  try {
+    dbClient.completeExamSession(String(sessionId), {
+      status: "COMPLETED",
+      completed_at: Date.now(),
+    }).catch(() => {});
+  } catch {
+    // ignore
+  }
+
+  return isOnlineSuccess;
+}
+
+export interface ReportExamResultParams {
+  /** Real server session id (only when the exam was started on the server). */
+  serverSessionId: number | null;
+  /** Stable local session id (exam_sessions.local_id) → clientSessionId. */
+  localSessionId: string;
+  examType: OfflineExamType;
+  targetId?: number | null;
+  questions: ReadonlyArray<{ id: number }>;
+  answers: IndexedAnswers;
+  durationSeconds: number;
+  completedAt?: number;
 }
 
 /**
- * Bitta javobni server orqali tekshirish (secure rejim uchun).
- * `null` — tekshirib bo'lmadi (tarmoq xatosi).
+ * Report a finished exam to the server.
+ *  - real server session → /api/v2/exams/submit (unchanged);
+ *  - locally graded exam → /api/v2/exams/record-offline through the outbox (idempotent).
+ * Never throws; returns the transport used (or "skipped").
  */
-export async function checkExamAnswer(
-  questionId: number,
-  selectedOptionIndex: number
-): Promise<{ isCorrect: boolean; correctOptionIndex: number } | null> {
+export async function reportExamResult(
+  params: ReportExamResultParams
+): Promise<"submit" | "record-offline" | "skipped" | "failed"> {
+  const { serverSessionId, questions, answers } = params;
+  if (!questions || questions.length === 0) return "skipped";
+
+  if (serverSessionId && !isFakeLocalSessionId(serverSessionId)) {
+    const list = questions.map((q, idx) => ({
+      questionId: q.id,
+      selectedOptionIndex: answers[idx]?.selected ?? null,
+    }));
+    await submitExamSession(serverSessionId, list).catch(() => false);
+    return "submit";
+  }
+
+  const payload = buildRecordOfflinePayload({
+    clientSessionId: params.localSessionId,
+    examType: params.examType,
+    targetId: params.targetId ?? null,
+    durationSeconds: params.durationSeconds,
+    completedAt: params.completedAt ?? Date.now(),
+    questions,
+    answers,
+  });
+  if (!isRecordablePayload(payload)) {
+    console.info("[reportExamResult] Exam kept local-only (question count outside 1..200)");
+    return "skipped";
+  }
+  // The outbox retries delivery; if even the enqueue fails (IndexedDB busy), try once more.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      await OutboxQueue.enqueue("RECORD_OFFLINE_EXAM", RECORD_OFFLINE_URL, "POST", payload);
+      return "record-offline";
+    } catch (e) {
+      console.error("OutboxQueue xatosi (record-offline):", e instanceof Error ? e.message : "enqueue failed");
+      if (attempt === 0) await new Promise((r) => setTimeout(r, ENQUEUE_RETRY_DELAY_MS));
+    }
+  }
+  return "failed";
+}
+
+const ENQUEUE_RETRY_DELAY_MS = 1500;
+
+// ── DATA FETCHING APIS (OFFLINE-FIRST) ────────────────────────────────────────
+
+export async function getExamQuestions(count = getExamRules().real.questionCount): Promise<OfflineQuestion[]> {
+  // 1. LOCAL DATABASE FIRST (Primary Runtime Source of Truth)
   try {
-    const res = await api.post<{
-      data?: { isCorrect?: boolean; correctOptionIndex?: number };
-    }>("/api/v2/exams/check-answer", { questionId, selectedOptionIndex });
-    const d = res.data?.data;
-    if (d && typeof d.correctOptionIndex === "number") {
-      return {
-        isCorrect: d.isCorrect ?? d.correctOptionIndex === selectedOptionIndex,
-        correctOptionIndex: d.correctOptionIndex,
-      };
+    let localDbQuestions = await questionRepository.getRandomQuestions(count);
+    if (!localDbQuestions || localDbQuestions.length === 0) {
+      // Auto-seed if local database is empty
+      await offlineDatasetManager.autoSeedIfEmpty();
+      localDbQuestions = await questionRepository.getRandomQuestions(count);
+    }
+    if (localDbQuestions && localDbQuestions.length > 0) {
+      activeExamSessionId = null; // graded locally → record-offline
+      return localDbQuestions.map(dbQuestionToOfflineQuestion);
+    }
+  } catch (err) {
+    console.warn("Lokal DB dan imtihon savollarini olishda xatolik:", errorMessage(err));
+  }
+
+  // If in OFFLINE mode, DO NOT attempt network fetch! Zero network requests rule.
+  if (networkModeManager.isOfflineOnly()) {
+    return [];
+  }
+
+  // 2. If Local DB is empty and online allowed, attempt on-demand fetch from backend
+  if (navigator.onLine && networkModeManager.isOnlineAllowed()) {
+    try {
+      const res = await api.post<{
+        data: { sessionId?: number; questions: any[] };
+      }>("/api/v2/exams/marathon/start-visible", {
+        questionCount: count,
+        durationMinutes: durationMinutesFor("real", count),
+      });
+      if (res.data?.data?.sessionId) {
+        activeExamSessionId = res.data.data.sessionId;
+      }
+      if (res.data?.data?.questions && res.data.data.questions.length > 0) {
+        const questions = res.data.data.questions.map(normalizeQuestion);
+        questionRepository.saveQuestions(questions.map((q) => offlineQuestionToDbQuestion(q))).catch(() => {});
+        return questions;
+      }
+    } catch {
+      try {
+        const res2 = await api.post<{
+          data: { sessionId?: number; questions: any[] };
+        }>("/api/v2/exams/start-visible", {
+          questionCount: count,
+          durationMinutes: durationMinutesFor("real", count),
+        });
+        if (res2.data?.data?.sessionId) {
+          activeExamSessionId = res2.data.data.sessionId;
+        }
+        if (res2.data?.data?.questions && res2.data.data.questions.length > 0) {
+          const questions = res2.data.data.questions.map(normalizeQuestion);
+          questionRepository.saveQuestions(questions.map((q) => offlineQuestionToDbQuestion(q))).catch(() => {});
+          return questions;
+        }
+      } catch {
+        // Backend unavailable
+      }
+    }
+  }
+
+  return [];
+}
+
+export async function getMarathonQuestions(topicId?: number, count = 100): Promise<OfflineQuestion[]> {
+  const dynamicTotal = (await questionRepository.getQuestionCount().catch(() => 0)) || 1000;
+  const actualCount = count && count > 0 ? count : dynamicTotal;
+
+  // 1. LOCAL DATABASE FIRST (Primary Runtime Source of Truth)
+  try {
+    let localDbQuestions = await questionRepository.getRandomQuestions(actualCount, topicId);
+    if (!localDbQuestions || localDbQuestions.length === 0) {
+      await offlineDatasetManager.autoSeedIfEmpty();
+      localDbQuestions = await questionRepository.getRandomQuestions(actualCount, topicId);
+    }
+    if (localDbQuestions && localDbQuestions.length > 0) {
+      activeMarathonSessionId = null; // graded locally → record-offline
+      return localDbQuestions.map(dbQuestionToOfflineQuestion);
+    }
+  } catch (err) {
+    console.warn("Lokal DB dan marafon savollarini olishda xatolik:", errorMessage(err));
+  }
+
+  // If in OFFLINE mode, DO NOT attempt network fetch! Zero network requests rule.
+  if (networkModeManager.isOfflineOnly()) {
+    return [];
+  }
+
+  // 2. If Local DB is empty and online allowed, attempt on-demand fetch from backend
+  if (navigator.onLine && networkModeManager.isOnlineAllowed()) {
+    try {
+      const res = await api.post<{
+        data: { sessionId?: number; questions: any[] };
+      }>("/api/v2/exams/marathon/start-visible", {
+        questionCount: actualCount,
+        durationMinutes: durationMinutesFor("marathon", actualCount),
+        topicId,
+      });
+      if (res.data?.data?.sessionId) {
+        activeMarathonSessionId = res.data.data.sessionId;
+      }
+      if (res.data?.data?.questions && res.data.data.questions.length > 0) {
+        const questions = res.data.data.questions.map(normalizeQuestion);
+        questionRepository.saveQuestions(questions.map((q) => offlineQuestionToDbQuestion(q, null))).catch(() => {});
+        return questions;
+      }
+    } catch (err: any) {
+      console.warn("Marafon savollarini serverdan olishda xatolik:", errorMessage(err));
+    }
+  }
+
+  return [];
+}
+
+// ── OFFLINE CACHE HELPERS ───────────────────────────────────────────────────
+const OFFLINE_CACHE_KEYS = {
+  TOPICS: "prava_cache_topics_v1",
+  TICKETS: "prava_cache_tickets_v1",
+};
+
+
+function getCachedData<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedData<T>(key: string, data: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // quota exceeded or private mode
+  }
+}
+
+
+export async function getTickets(): Promise<OfflineTicket[]> {
+  // 1. LOCAL DATABASE FIRST
+  try {
+    let dbTickets = await ticketRepository.getAllTickets();
+    if (!dbTickets || dbTickets.length === 0) {
+      await offlineDatasetManager.autoSeedIfEmpty();
+      dbTickets = await ticketRepository.getAllTickets();
+    }
+    if (dbTickets && dbTickets.length > 0) {
+      return dbTickets.map((t) => ({
+        id: t.id,
+        topic_id: t.topic_id ?? null,
+        ticket_number: t.ticket_number,
+        name_uzl: t.name_uzl || `${t.ticket_number}-bilet`,
+        name_uzc: t.name_uzc || `${t.ticket_number}-билет`,
+        name_en: t.name_en || `Ticket #${t.ticket_number}`,
+        name_ru: t.name_ru || `Билет #${t.ticket_number}`,
+        ...(() => {
+          const d = defaultTicketMeta(t.question_ids?.length || t.question_count);
+          return {
+            duration_minutes: t.duration_minutes || d.duration_minutes,
+            passing_score: t.passing_score || d.passing_score,
+            question_count: d.question_count,
+          };
+        })(),
+        is_blocked: false,
+      }));
     }
   } catch {
-    // offline yoki server xatosi
+    // ignore
   }
-  return null;
+
+  // 2. Fetch from backend if online AND online allowed
+  if (typeof navigator !== "undefined" && navigator.onLine && networkModeManager.isOnlineAllowed()) {
+    try {
+      const res = await api.get<{
+        data: { content?: any[]; tickets?: any[] };
+      }>("/api/v2/tickets?page=0&size=100&sortBy=ticketNumber&direction=ASC");
+      const list = res.data?.data?.content || res.data?.data?.tickets || [];
+      if (list.length > 0) {
+        const tickets: OfflineTicket[] = list.map((tk: any) => ({
+          id: tk.id,
+          topic_id: tk.topicId ?? null,
+          ticket_number: tk.ticketNumber ?? tk.number ?? tk.id,
+          name_uzl: typeof tk.name === "object" ? tk.name?.uzl : (tk.name || `${tk.ticketNumber}-bilet`),
+          name_uzc: typeof tk.name === "object" ? tk.name?.uzc : (tk.nameUzc || `${tk.ticketNumber}-билет`),
+          name_en: typeof tk.name === "object" ? tk.name?.en : (tk.nameEn || `Ticket #${tk.ticketNumber}`),
+          name_ru: typeof tk.name === "object" ? tk.name?.ru : (tk.nameRu || `Билет #${tk.ticketNumber}`),
+          duration_minutes: tk.durationMinutes ?? defaultTicketMeta(tk.questionCount).duration_minutes,
+          passing_score: tk.passingScore ?? defaultTicketMeta(tk.questionCount).passing_score,
+          question_count: defaultTicketMeta(tk.questionCount).question_count,
+          is_blocked: tk.isBlocked ?? false,
+        }));
+        setCachedData(OFFLINE_CACHE_KEYS.TICKETS, tickets);
+        ticketRepository.saveTickets(
+          tickets.map((t) => ({
+            id: t.id,
+            ticket_number: t.ticket_number,
+            question_count: t.question_count,
+            updated_at: Date.now(),
+          }))
+        ).catch(() => {});
+        return tickets;
+      }
+    } catch {
+      // Backend unavailable
+    }
+  }
+
+  const cached = getCachedData<OfflineTicket[]>(OFFLINE_CACHE_KEYS.TICKETS);
+  if (cached && cached.length > 0) {
+    return cached;
+  }
+
+  // Hech qaysi manbada bilet yo'q (birinchi ishga tushish + oflayn): soxta biletlar YASALMAYDI —
+  // sahifa bo'sh holatni ko'rsatadi, sinxronizatsiyadan keyin haqiqiy biletlar paydo bo'ladi.
+  return [];
 }
 
-// ── DATA FETCHING APIS ────────────────────────────────────────────────────────
-
-/**
- * Rasmiy imtihon simulyatsiyasi — SECURE rejim (P1-W4).
- * To'g'ri javoblar yuklab olinmaydi: `correct_option` = -1 (noma'lum),
- * baholash serverda `/api/v2/exams/submit` orqali.
- */
-export async function startSecureExamSession(count = 20): Promise<StartedSession> {
-  const rules = await fetchExamRules();
-  const res = await api.post<{
-    data: { sessionId?: number; questions: any[] };
-  }>("/api/v2/exams/marathon/start-secure", {
-    questionCount: count,
-    // Qoida: savol soni × real.secondsPerQuestion (default 60 s → 20 savol = 20 daqiqa)
-    durationMinutes: durationMinutesFor(count, rules.real.secondsPerQuestion),
-  });
-  const questions = (res.data?.data?.questions ?? []).map((q) => ({
-    ...normalizeQuestion(q),
-    correct_option: -1,
-  }));
-  return { sessionId: res.data?.data?.sessionId ?? null, questions };
-}
-
-/**
- * Marafon sessiyasini boshlaydi. Tarmoq/server xatosida THROW qiladi —
- * sahifa lokalizatsiyalangan xato + "Qayta urinish" ko'rsatadi (W-05).
- */
-export async function startMarathonSession(topicId?: number, count = 100): Promise<StartedSession> {
-  if (!(count && count > 0)) await ensureCurriculumStats();
-  const actualCount = count && count > 0 ? count : cachedTotalQuestions;
-  // Biznes qoidasi: marafon davomiyligi = savollar soni × 1 daqiqa (exam-rules)
-  const rules = await fetchExamRules();
-  const res = await api.post<{
-    data: { sessionId?: number; questions: any[] };
-  }>("/api/v2/exams/marathon/start-visible", {
-    questionCount: actualCount,
-    durationMinutes: durationMinutesFor(actualCount, rules.marathon.secondsPerQuestion),
-    topicId,
-  });
-  return {
-    sessionId: res.data?.data?.sessionId ?? null,
-    questions: (res.data?.data?.questions ?? []).map(normalizeQuestion),
-  };
-}
-
-/** Server bilet DTO'sini OfflineTicket ga o'giradi (yetishmagan qiymatlar — exam-rules'dan). */
-export function mapTicketDto(tk: any): OfflineTicket {
-  const rules = getExamRulesSync();
-  const num = tk.ticketNumber ?? tk.number ?? tk.id;
-  const nameObj =
-    typeof tk.name === "object" && tk.name ? tk.name : typeof tk.title === "object" && tk.title ? tk.title : null;
-  const plainName = typeof tk.name === "string" ? tk.name : typeof tk.title === "string" ? tk.title : null;
-  const questionCount = Number(tk.questionCount ?? tk.questionsCount) || rules.real.questionCount;
-  return {
-    id: tk.id,
-    topic_id: tk.topicId ?? tk.topic?.id ?? null,
-    ticket_number: num,
-    name_uzl: nameObj?.uzl || plainName || `${num}-bilet`,
-    name_uzc: nameObj?.uzc || tk.nameUzc || `${num}-билет`,
-    name_en: nameObj?.en || tk.nameEn || `Ticket #${num}`,
-    name_ru: nameObj?.ru || tk.nameRu || `Билет #${num}`,
-    duration_minutes:
-      Number(tk.durationMinutes) || durationMinutesFor(questionCount, rules.ticket.secondsPerQuestion),
-    passing_score: Number(tk.passingScore) || rules.ticket.passPercent,
-    question_count: questionCount,
-    is_blocked: tk.isBlocked ?? false,
-    is_free: typeof tk.isFree === "boolean" ? tk.isFree : undefined,
-  };
-}
-
-/**
- * Biletlar ro'yxati. Xatoda THROW qiladi (W-08/W-15) — avval 63 ta soxta
- * bilet "fallback" sifatida ko'rsatilardi, ular bosilganda esa mavjud
- * bo'lmagan ID bilan sessiya ochishga urinilardi.
- */
-export async function getTickets(): Promise<OfflineTicket[]> {
-  const res = await api.get<{
-    data: { content?: any[]; tickets?: any[] };
-  }>("/api/v2/tickets?page=0&size=100&sortBy=ticketNumber&direction=ASC");
-  const list = res.data?.data?.content || res.data?.data?.tickets || [];
-  return list.map(mapTicketDto);
-}
-
-/**
- * Mehmonlar uchun ochiq biletlar ro'yxati (GET /api/v1/public/tickets).
- * Endpoint hali mavjud bo'lmasa (404/401/403) — null qaytaradi, sahifa login CTA ko'rsatadi.
- */
-export async function getPublicTickets(): Promise<OfflineTicket[] | null> {
+/** Single ticket (official server id) — falls back to a synthetic ticket numbered like the id. */
+export async function getTicketInfo(ticketId: number): Promise<OfflineTicket> {
   try {
-    const res = await api.get<{ data?: any }>("/api/v1/public/tickets");
-    const body = res.data?.data ?? res.data;
-    const list = Array.isArray(body) ? body : body?.content || body?.tickets || [];
-    return (list as any[]).map(mapTicketDto);
-  } catch (err: any) {
-    const status = err?.response?.status;
-    if (status === 404 || status === 401 || status === 403) return null;
-    throw err;
+    const list = await getTickets();
+    const found = list.find((t) => t.id === ticketId);
+    if (found) return found;
+  } catch {
+    // ignore
   }
+  return {
+    id: ticketId,
+    topic_id: null,
+    ticket_number: ticketId,
+    name_uzl: `${ticketId}-bilet`,
+    name_uzc: `${ticketId}-билет`,
+    name_en: `Ticket #${ticketId}`,
+    name_ru: `Билет #${ticketId}`,
+    ...defaultTicketMeta(),
+    is_blocked: false,
+  };
 }
 
-/** Bilet sessiyasini boshlaydi. Xatoda THROW qiladi (W-05). */
-export async function startTicketSession(ticketId: number): Promise<StartedSession> {
-  const res = await api.post<{
-    data: { sessionId?: number; questions: any[] };
-  }>("/api/v2/tickets/start-visible", { ticketId });
-  return {
-    sessionId: res.data?.data?.sessionId ?? null,
-    questions: (res.data?.data?.questions ?? []).map(normalizeQuestion),
-  };
+export async function getQuestionsByTicket(ticketId: number): Promise<OfflineQuestion[]> {
+  // 1. LOCAL DATABASE FIRST (Primary Runtime Source of Truth)
+  try {
+    let localDbQuestions = await questionRepository.getQuestionsByTicket(ticketId);
+    if (!localDbQuestions || localDbQuestions.length === 0) {
+      await offlineDatasetManager.autoSeedIfEmpty();
+      localDbQuestions = await questionRepository.getQuestionsByTicket(ticketId);
+    }
+    if (localDbQuestions && localDbQuestions.length > 0) {
+      activeTicketSessionId = null; // graded locally → record-offline
+      return localDbQuestions.map(dbQuestionToOfflineQuestion);
+    }
+  } catch (err) {
+    console.warn(`Lokal DB dan ${ticketId}-bilet savollarini olishda xatolik:`, errorMessage(err));
+  }
+
+  // If in OFFLINE mode, DO NOT attempt network fetch! Zero network requests rule.
+  if (networkModeManager.isOfflineOnly()) {
+    return [];
+  }
+
+  // 2. If Local DB is empty and online allowed, attempt on-demand fetch from backend
+  if (navigator.onLine && networkModeManager.isOnlineAllowed()) {
+    try {
+      const res = await api.post<{
+        data: { sessionId?: number; questions: any[] };
+      }>("/api/v2/tickets/start-visible", { ticketId });
+      if (res.data?.data?.sessionId) {
+        activeTicketSessionId = res.data.data.sessionId;
+      }
+      if (res.data?.data?.questions && res.data.data.questions.length > 0) {
+        const questions = res.data.data.questions.map(normalizeQuestion);
+        questionRepository.saveQuestions(questions.map((q) => offlineQuestionToDbQuestion(q, ticketId))).catch(() => {});
+        return questions;
+      }
+    } catch {
+      try {
+        const res2 = await api.post<{
+          data: { sessionId?: number; questions: any[] };
+        }>("/api/v2/tickets/start-secure", { ticketId });
+        if (res2.data?.data?.sessionId) {
+          activeTicketSessionId = res2.data.data.sessionId;
+        }
+        if (res2.data?.data?.questions && res2.data.data.questions.length > 0) {
+          const questions = res2.data.data.questions.map(normalizeQuestion);
+          questionRepository.saveQuestions(questions.map((q) => offlineQuestionToDbQuestion(q, ticketId))).catch(() => {});
+          return questions;
+        }
+      } catch {
+        // Backend unavailable
+      }
+    }
+  }
+
+  return [];
+}
+
+export async function getQuestionsByTopic(topicId: number): Promise<OfflineQuestion[]> {
+  try {
+    let localDbQuestions = await questionRepository.getQuestionsByTopic(topicId);
+    if (!localDbQuestions || localDbQuestions.length === 0) {
+      await offlineDatasetManager.autoSeedIfEmpty();
+      localDbQuestions = await questionRepository.getQuestionsByTopic(topicId);
+    }
+    if (localDbQuestions && localDbQuestions.length > 0) {
+      return localDbQuestions.map(dbQuestionToOfflineQuestion);
+    }
+  } catch (err) {
+    console.warn(`Lokal DB dan ${topicId}-mavzu savollarini olishda xatolik:`, errorMessage(err));
+  }
+
+  if (networkModeManager.isOfflineOnly()) {
+    return [];
+  }
+
+  if (navigator.onLine && networkModeManager.isOnlineAllowed()) {
+    try {
+      const res = await api.get<{ data: { content?: any[]; questions?: any[] } }>(
+        `/api/v1/questions/topic/${topicId}?size=100`
+      );
+      const list = (res.data?.data as any)?.content || (res.data?.data as any)?.questions || res.data?.data || [];
+      if (Array.isArray(list) && list.length > 0) {
+        return list.map(normalizeQuestion);
+      }
+    } catch {
+      // Backend unavailable
+    }
+  }
+
+  return [];
 }
 
 export async function getTopics(): Promise<OfflineTopic[]> {
+  // 1. LOCAL DATABASE FIRST
   try {
-    let rawList: any[] = [];
-    try {
-      const res = await api.get<{ data: any[] }>("/api/v1/app/topics", {
-        headers: { "Accept-Language": getLang() },
-      });
-      if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
-        rawList = res.data.data;
-      }
-    } catch (err: any) {
-      // Mehmon (401/403): ochiq endpoint (GET /api/v1/public/topics) — mavjud bo'lsa.
-      const status = err?.response?.status;
-      if (status === 401 || status === 403) {
-        try {
-          const pub = await api.get<{ data?: any }>("/api/v1/public/topics");
-          const body = pub.data?.data ?? pub.data;
-          const list = Array.isArray(body) ? body : body?.content || [];
-          if (Array.isArray(list)) rawList = list;
-        } catch {
-          // ochiq endpoint hali yo'q — rasmiy mavzular ro'yxati (OFFICIAL_TOPICS) ishlatiladi
-        }
-      }
+    let dbTopics = await topicRepository.getAllTopics();
+    if (!dbTopics || dbTopics.length === 0) {
+      await offlineDatasetManager.autoSeedIfEmpty();
+      dbTopics = await topicRepository.getAllTopics();
     }
-
-    if (rawList.length > 0) {
-      return rawList.map((tp: any) => {
-        const official = findOfficialTopic(tp);
-        const hasCyr = (s: any) => typeof s === "string" && /[\u0400-\u04FF]/.test(s);
-        const rawUzc =
-          (typeof tp.name === "object" ? tp.name?.uzc : null) ||
-          tp.nameUzc ||
-          tp.name_uzc;
-        const rawUzl =
-          (typeof tp.name === "object" ? tp.name?.uzl : null) ||
-          tp.nameUzl ||
-          tp.name_uzl ||
-          tp.name;
-        const rawRu =
-          (typeof tp.name === "object" ? tp.name?.ru : null) ||
-          tp.nameRu ||
-          tp.name_ru;
-
-        const nameUzl = official?.name_uzl || (typeof rawUzl === "string" ? rawUzl : "") || "";
-        const nameUzc =
-          official?.name_uzc ||
-          (rawUzc && hasCyr(rawUzc) ? rawUzc : null) ||
-          (nameUzl ? latinToCyrillic(nameUzl) : "");
-        const nameRu =
-          official?.name_ru ||
-          (rawRu && hasCyr(rawRu) ? rawRu : null) ||
-          rawRu ||
-          nameUzl;
-        const nameEn =
-          official?.name_en ||
-          (typeof tp.name === "object" ? tp.name?.en : null) ||
-          tp.nameEn ||
-          tp.name_en ||
-          "";
-
-        return {
-          id: tp.id,
-          code: tp.code || official?.code || null,
-          name_uzl: nameUzl,
-          name_uzc: nameUzc,
-          name_en: nameEn,
-          name_ru: nameRu,
-          question_count: tp.questionCount ?? tp.questionsCount ?? official?.question_count ?? 0,
-        };
-      });
+    if (dbTopics && dbTopics.length > 0) {
+      return dbTopics.map((tp) => ({
+        id: tp.id,
+        code: tp.code,
+        name_uzl: tp.name_uzl,
+        name_uzc: tp.name_uzc,
+        name_en: tp.name_en || tp.name_uzl,
+        name_ru: tp.name_ru,
+        question_count: tp.question_count,
+        question_ids: tp.question_ids,
+      }));
     }
   } catch {
-    // fallback
+    // ignore
   }
-  return OFFICIAL_TOPICS;
+
+  // 2. Fetch from backend if online AND online allowed
+  if (typeof navigator !== "undefined" && navigator.onLine && networkModeManager.isOnlineAllowed()) {
+    try {
+      let list: any[] = [];
+      try {
+        const res = await api.get<{ data: any[] }>("/api/v1/admin/topics/active");
+        if (Array.isArray(res.data?.data)) {
+          list = res.data.data;
+        }
+      } catch {
+        try {
+          const res2 = await api.get<{ data: any[] }>("/api/v1/admin/topics/with-questions");
+          if (Array.isArray(res2.data?.data)) {
+            list = res2.data.data;
+          }
+        } catch {
+          const res3 = await api.get<{ data: any[] }>("/api/v1/admin/topics/simple");
+          if (Array.isArray(res3.data?.data)) {
+            list = res3.data.data;
+          }
+        }
+      }
+
+      if (list.length > 0) {
+        const topics: OfflineTopic[] = list.map((tp: any) => ({
+          id: tp.id,
+          code: tp.code || null,
+          name_uzl: typeof tp.name === "object" ? tp.name?.uzl : (tp.name || tp.nameUzl || ""),
+          name_uzc: typeof tp.name === "object" ? tp.name?.uzc : (tp.nameUzc || ""),
+          name_en: typeof tp.name === "object" ? tp.name?.en : (tp.nameEn || ""),
+          name_ru: typeof tp.name === "object" ? tp.name?.ru : (tp.nameRu || ""),
+          question_count: tp.questionCount ?? tp.questionsCount ?? getExamRules().real.questionCount,
+        }));
+        setCachedData(OFFLINE_CACHE_KEYS.TOPICS, topics);
+        topicRepository.saveTopics(
+          topics.map((tp) => ({
+            id: tp.id,
+            code: tp.code || `topic_${tp.id}`,
+            name_uzl: tp.name_uzl,
+            name_uzc: tp.name_uzc,
+            name_ru: tp.name_ru,
+            order_num: tp.id,
+            question_count: tp.question_count,
+            updated_at: Date.now(),
+          }))
+        ).catch(() => {});
+        return topics;
+      }
+    } catch {
+      // Backend unavailable
+    }
+  }
+
+  const cached = getCachedData<OfflineTopic[]>(OFFLINE_CACHE_KEYS.TOPICS);
+  if (cached && cached.length > 0) {
+    return cached;
+  }
+
+  return [];
 }
 
 // ── STATS & STORAGE WRAPPERS ──────────────────────────────────────────────────
 
-export async function getFullStats(_userId?: number): Promise<FullStats> {
-  // Umumiy savol/bilet soni aniq bo'lishi uchun lazy statistikani kutamiz (bir marta).
-  await ensureCurriculumStats();
+export async function getFullStats(_userId?: UserScopeId): Promise<FullStats> {
   const storedTicketStats = storageService.getTicketStats();
-  const ticketStats: TicketReadinessStat[] = [];
-  const totalTickets = cachedTotalTickets;
-  // "Tayyor" = bilet o'tish foizi (exam-rules); "o'rtacha" = undan AVERAGE_GAP_PERCENT punkt past.
-  const ticketPass = passPercentFor("ticket");
-  const ticketAverageThreshold = Math.max(0, ticketPass - AVERAGE_GAP_PERCENT);
 
-  // Try fetching live statistics from backend
+  // Try fetching live statistics from backend if online mode allowed
   let serverStats: any = null;
-  try {
-    const res = await api.get("/api/v2/my-statistics");
-    if (res.data?.data) {
-      serverStats = res.data.data;
-    }
-  } catch {
-    // Offline or unauthenticated fallback
-  }
-
-  const serverTicketMap = new Map<number, any>();
-  if (serverStats?.ticketStats && Array.isArray(serverStats.ticketStats)) {
-    for (const item of serverStats.ticketStats) {
-      if (item.ticketNumber) {
-        serverTicketMap.set(item.ticketNumber, item);
+  if (networkModeManager.isOnlineAllowed()) {
+    try {
+      const res = await api.get("/api/v2/my-statistics");
+      if (res.data?.data) {
+        serverStats = res.data.data;
+        setCachedData(statsCacheKey(), serverStats);
       }
+    } catch {
+      // Offline or unauthenticated fallback: load last cached statistics
+      serverStats = getCachedData<any>(statsCacheKey());
     }
+  } else {
+    serverStats = getCachedData<any>(statsCacheKey());
   }
 
-  for (let num = 1; num <= totalTickets; num++) {
-    const stat = storedTicketStats[num];
-    const serverTk = serverTicketMap.get(num);
-
-    const localTimesDone = stat?.timesDone || 0;
-    const serverTimesDone = Number(serverTk?.totalExams || 0);
-    const timesDone = Math.max(localTimesDone, serverTimesDone);
-
-    const localPassed = stat?.timesPassed || 0;
-    const serverPassed = Number(serverTk?.passedExams || 0);
-    const midGood = Math.max(localPassed, serverPassed);
-
-    const fastPerfect = stat?.fastPerfectCount || (serverTk?.bestScore === 100 ? 1 : 0);
-    const slowPoor = Math.max(0, timesDone - midGood);
-    const lastScore = stat?.lastScore ?? (serverTk?.bestScore ?? null);
-    const lastDuration = stat?.lastDuration ?? null;
-
-    let readiness: "ready" | "average" | "not_ready" | "untouched" = "untouched";
-    if (timesDone === 0) {
-      readiness = "untouched";
-    } else if (
-      midGood >= 1 ||
-      fastPerfect >= 1 ||
-      (lastScore != null && lastScore >= ticketPass) ||
-      (serverTk?.bestScore != null && serverTk.bestScore >= ticketPass)
-    ) {
-      readiness = "ready";
-    } else if (
-      (lastScore != null && lastScore >= ticketAverageThreshold) ||
-      (serverTk?.averageScore != null && serverTk.averageScore >= ticketAverageThreshold)
-    ) {
-      readiness = "average";
-    } else {
-      readiness = "not_ready";
-    }
-
-    ticketStats.push({
-      ticket_id: num,
-      ticket_number: num,
-      name_uzl: `${num}-bilet`,
-      name_uzc: `${num}-билет`,
-      name_en: `Ticket #${num}`,
-      name_ru: `Билет #${num}`,
-      times_done: timesDone,
-      fast_perfect_count: fastPerfect,
-      mid_good_count: midGood,
-      slow_poor_count: slowPoor,
-      last_score: lastScore,
-      last_duration: lastDuration,
-      readiness,
-    });
+  // Rows come from the local tickets store (official ids + numbers): local stats are keyed by
+  // ticket id since offline bundle v2, server stats by ticket number (see ticketReadiness.ts).
+  let localTickets: ReadinessTicket[] = [];
+  try {
+    localTickets = await ticketRepository.getAllTickets();
+  } catch {
+    localTickets = [];
   }
+  const ticketStats: TicketReadinessStat[] = buildTicketReadiness(
+    localTickets.length > 0 ? localTickets : legacyTickets(),
+    storedTicketStats,
+    Array.isArray(serverStats?.ticketStats) ? serverStats.ticketStats : null
+  );
+  const totalTickets = ticketStats.length;
 
   const ticketReady = ticketStats.filter((t) => t.readiness === "ready").length;
   const ticketAverage = ticketStats.filter((t) => t.readiness === "average").length;
@@ -652,21 +915,26 @@ export async function getFullStats(_userId?: number): Promise<FullStats> {
   for (const qId of attemptKeys) {
     const att = attempts[Number(qId)];
     if (att && att.total > 0) {
-      if (att.correct >= 3) readyQ++;
-      else if (att.correct >= 1) averageQ++;
-      else weakQ++;
+      if (att.correct >= 5) readyQ++;
+      else if (att.correct >= 3) averageQ++;
+      else weakQ++; // Questions attempted with low or 0 correct count
     }
   }
 
-  const totalQ = cachedTotalQuestions;
+  const dbQCount = (await questionRepository.getQuestionCount().catch(() => 0)) || 0;
+  const ticketsSumQ = localTickets.reduce((sum, tk) => sum + (tk.question_count || 0), 0);
+  const serverTotalQ = Number(serverStats?.summary?.totalQuestions || 0);
+  const totalQ = dbQCount || ticketsSumQ || serverTotalQ || (attemptKeys.length > 0 ? attemptKeys.length : 1000);
 
-  // Accurately reflect questions answered from live server stats
+  // If local questions attempts are empty, reflect questions answered on server
   if (readyQ + averageQ + weakQ === 0 && serverStats?.summary) {
     const correctAns = Number(serverStats.summary.correctAnswers || 0);
     const wrongAns = Number(serverStats.summary.wrongAnswers || 0);
-    readyQ = Math.min(correctAns, totalQ);
-    weakQ = Math.min(wrongAns, Math.max(0, totalQ - readyQ));
-    averageQ = 0;
+    if (correctAns > 0 || wrongAns > 0) {
+      readyQ = Math.min(Math.floor(correctAns * 0.4), Math.floor(totalQ * 0.7));
+      averageQ = Math.min(Math.floor(correctAns * 0.6), totalQ - readyQ);
+      weakQ = Math.min(wrongAns, totalQ - (readyQ + averageQ));
+    }
   }
 
   const untouchedQ = Math.max(0, totalQ - (readyQ + averageQ + weakQ));
@@ -689,7 +957,7 @@ export async function getFullStats(_userId?: number): Promise<FullStats> {
   };
 }
 
-export async function getQuestionStats(_userId?: number): Promise<QuestionStatDetail[]> {
+export async function getQuestionStats(_userId?: UserScopeId): Promise<QuestionStatDetail[]> {
   const attempts = storageService.getQuestionAttempts();
   const wrongAnswers = storageService.getWrongAnswers();
   const savedQuestions = storageService.getSavedQuestions();
@@ -728,59 +996,119 @@ export async function getQuestionStats(_userId?: number): Promise<QuestionStatDe
   return list;
 }
 
-export async function getExamHistory(userId?: number, _limit?: number): Promise<ExamResult[]> {
-  try {
-    const res = await api.get<{ data: any }>("/api/v2/exams/history?page=0&size=50");
-    const serverExams = res.data?.data?.content || res.data?.data?.recentExams;
-    if (Array.isArray(serverExams) && serverExams.length > 0) {
-      return serverExams.map((item: any) => ({
-        id: item.sessionId || item.id,
-        user_id: userId ?? GUEST_USER_ID,
-        score: item.score ?? Math.round(item.percentage ?? 0),
-        total_questions: item.totalQuestions ?? 0,
-        correct_answers: item.correctCount ?? item.correctAnswers ?? 0,
-        duration_seconds: item.durationSeconds ?? 0,
-        exam_type: item.examType || "EXAM",
-        created_at: item.finishedAt || item.startedAt || item.createdAt || new Date().toISOString(),
-        passed: typeof item.isPassed === "boolean" ? item.isPassed : typeof item.passed === "boolean" ? item.passed : null,
-      }));
+export async function getExamHistory(userId?: UserScopeId, _limit?: number): Promise<ExamResult[]> {
+  if (networkModeManager.isOnlineAllowed()) {
+    try {
+      const res = await api.get<{ data: any }>("/api/v2/exams/history?page=0&size=50");
+      const serverExams = res.data?.data?.content || res.data?.data?.recentExams;
+      if (Array.isArray(serverExams) && serverExams.length > 0) {
+        return serverExams.map((item: any) => ({
+          id: item.sessionId || item.id,
+          user_id: userId ?? GUEST_USER_KEY,
+          score: item.score ?? Math.round(item.percentage ?? 0),
+          total_questions: item.totalQuestions ?? getExamRules().real.questionCount,
+          correct_answers: item.correctCount ?? item.correctAnswers ?? 0,
+          duration_seconds: item.durationSeconds ?? 0,
+          exam_type: item.examType || "EXAM",
+          created_at: item.finishedAt || item.startedAt || item.createdAt || new Date().toISOString(),
+        }));
+      }
+    } catch {
+      // offline fallback
     }
-  } catch {
-    // offline fallback
   }
 
   const list = storageService.getExamHistory();
   return list.map((item) => ({
     id: item.id,
-    user_id: userId ?? GUEST_USER_ID,
+    user_id: userId ?? GUEST_USER_KEY,
     score: item.score,
     total_questions: item.totalQuestions,
     correct_answers: item.correctAnswers,
     duration_seconds: item.durationSeconds,
     exam_type: item.examType,
     created_at: item.createdAt,
+    mode: item.mode ?? null,
     passed: typeof item.passed === "boolean" ? item.passed : null,
+    wrong_answers: item.wrongAnswers,
+    unanswered: item.unanswered,
   }));
 }
 
-export async function saveExamResult(params: {
-  userId: number;
+export interface SaveExamResultParams {
+  userId: UserScopeId;
   score: number;
   totalQuestions: number;
   correctAnswers: number;
   durationSeconds: number;
   examType: string;
-  /** Rejim qoidasi bo'yicha aniq natija (isExamPassed) — tarixda qayta hisoblanmaydi. */
+  /** Unified mode; derived from examType when omitted. */
+  mode?: ExamMode;
+  wrongAnswers?: number;
+  unanswered?: number;
+  /** Verdict at finish time; computed with isExamPassed when omitted. */
   passed?: boolean;
-}): Promise<ExamResult> {
+}
+
+/** Outcome fields persisted with every local exam record (D-02). */
+export function buildExamOutcomeFields(params: SaveExamResultParams): {
+  mode: ExamMode | null;
+  passed: boolean;
+  wrongAnswers: number;
+  unanswered: number;
+} {
+  const mode = params.mode ?? examModeFromType(params.examType);
+  const total = Math.max(0, params.totalQuestions);
+  const correct = Math.max(0, params.correctAnswers);
+  const unanswered = Math.max(0, params.unanswered ?? 0);
+  const wrongAnswers = Math.max(0, params.wrongAnswers ?? total - correct - unanswered);
+  const rules = getExamRules();
+  const passed =
+    typeof params.passed === "boolean"
+      ? params.passed
+      : mode
+        ? isExamPassed({ mode, total, correct, wrong: wrongAnswers, unanswered }, rules)
+        : total > 0 && (correct / total) * 100 >= rules.ticket.passPercent;
+  return { mode, passed, wrongAnswers, unanswered };
+}
+
+export async function saveExamResult(params: SaveExamResultParams): Promise<ExamResult> {
+  const outcome = buildExamOutcomeFields(params);
   const res = storageService.saveExamResult({
     score: params.score,
     totalQuestions: params.totalQuestions,
     correctAnswers: params.correctAnswers,
     durationSeconds: params.durationSeconds,
     examType: params.examType,
-    passed: params.passed,
+    mode: outcome.mode,
+    passed: outcome.passed,
+    wrongAnswers: outcome.wrongAnswers,
+    unanswered: outcome.unanswered,
   });
+
+  // Local SQLite / IndexedDB session persistance
+  dbClient
+    .saveExamSession({
+      local_id: String(res.id),
+      server_id: null,
+      exam_type: (params.examType as any) || "EXAM",
+      status: "COMPLETED",
+      total_questions: params.totalQuestions,
+      correct_answers: params.correctAnswers,
+      score: params.score,
+      duration_seconds: params.durationSeconds,
+      time_remaining_seconds: 0,
+      started_at: Date.now() - params.durationSeconds * 1000,
+      completed_at: Date.now(),
+      answers_json: "{}",
+      synced: 0,
+      mode: outcome.mode,
+      passed: outcome.passed,
+      wrong_answers: outcome.wrongAnswers,
+      unanswered: outcome.unanswered,
+    })
+    .catch(() => {});
+
   return {
     id: res.id,
     user_id: params.userId,
@@ -790,24 +1118,59 @@ export async function saveExamResult(params: {
     duration_seconds: res.durationSeconds,
     exam_type: res.examType,
     created_at: res.createdAt,
-    passed: res.passed ?? null,
+    mode: outcome.mode,
+    passed: outcome.passed,
+    wrong_answers: outcome.wrongAnswers,
+    unanswered: outcome.unanswered,
   };
 }
 
-export async function addWrongAnswer(_userId: number, question: OfflineQuestion | number): Promise<boolean> {
+/** Non-blocking notice: the local save or the sync queue failed (the outbox retries later). */
+export function notifyResultNotSaved(): void {
+  showToast({
+    id: "exam-result-not-saved",
+    dedupeKey: "exam-result-not-saved",
+    color: "orange",
+    title: i18n.t("exam.resultNotSavedTitle", "Natija saqlanmadi"),
+    message: i18n.t("exam.resultNotSaved", "Natija saqlanmadi, keyinroq sinxronlanadi"),
+  });
+}
+
+/**
+ * Persist a finished exam locally (history + outcome) and queue it for the server.
+ * Never throws; failures surface as a toast instead of being swallowed.
+ */
+export async function finalizeExamResult(
+  local: SaveExamResultParams,
+  report: ReportExamResultParams
+): Promise<void> {
+  let ok = true;
+  try {
+    await saveExamResult(local);
+  } catch {
+    ok = false;
+  }
+  const transport = await reportExamResult(report).catch(() => "failed" as const);
+  if (transport === "failed") ok = false;
+  if (!ok) notifyResultNotSaved();
+}
+
+export async function addWrongAnswer(_userId: UserScopeId, question: OfflineQuestion | number): Promise<boolean> {
   const qId = typeof question === "number" ? question : question.id;
   if (typeof question !== "number") {
     storageService.addWrongAnswer(toStoredQuestion(question));
   }
+  dbClient.recordWrongAnswer(qId).catch(() => {});
   try {
     await api.post(`/api/v1/app/wrong-answers/${qId}`);
   } catch {
-    // offline
+    // Offline: enqueue into OutboxQueue for server sync
+    OutboxQueue.enqueue("UPDATE_PROGRESS", `/api/v1/app/wrong-answers/${qId}`, "POST", { questionId: qId }).catch(() => {});
   }
   return true;
 }
 
-export async function getWrongAnswers(_userId?: number): Promise<WrongAnswerEntry[]> {
+export async function getWrongAnswers(_userId?: UserScopeId): Promise<WrongAnswerEntry[]> {
   try {
     const res = await api.get<{ data: any[] }>("/api/v1/app/wrong-answers");
     if (res.data && Array.isArray(res.data.data)) {
@@ -837,18 +1200,27 @@ export async function getWrongAnswers(_userId?: number): Promise<WrongAnswerEntr
   }));
 }
 
-export async function removeWrongAnswer(_userId: number, questionId: number): Promise<boolean> {
+export async function removeWrongAnswer(_userId: UserScopeId, questionId: number): Promise<boolean> {
   storageService.removeWrongAnswer(questionId);
   try {
     await api.delete(`/api/v1/app/wrong-answers/${questionId}`);
   } catch {
-    // offline
+    // Offline: enqueue into OutboxQueue for server sync
+    OutboxQueue.enqueue("UPDATE_PROGRESS", `/api/v1/app/wrong-answers/${questionId}`, "DELETE", { questionId }).catch(() => {});
   }
   return true;
 }
 
-export async function toggleSavedQuestion(_userId: number, question: OfflineQuestion | number): Promise<boolean> {
+const toggleLocks = new Set<number>();
+
+export async function toggleSavedQuestion(_userId: UserScopeId, question: OfflineQuestion | number): Promise<boolean> {
   const qId = typeof question === "number" ? question : question.id;
+  if (toggleLocks.has(qId)) {
+    return storageService.getSavedQuestions().some((s) => s.question.id === qId);
+  }
+  toggleLocks.add(qId);
+  setTimeout(() => toggleLocks.delete(qId), 300);
+
   let saved = false;
   if (typeof question === "number") {
     storageService.removeSavedQuestion(question);
@@ -856,15 +1228,33 @@ export async function toggleSavedQuestion(_userId: number, question: OfflineQues
   } else {
     saved = storageService.toggleSavedQuestion(toStoredQuestion(question));
   }
+
+  // Persist bookmark state to SQLite / IndexedDB
+  dbClient.setQuestionSaved(qId, saved).catch(() => {});
+
   try {
-    await api.post(`/api/v1/app/saved-questions/${qId}?toggle=true`);
+    if (saved) {
+      await api.post(`/api/v1/app/saved-questions/${qId}`);
+    } else {
+      await api.delete(`/api/v1/app/saved-questions/${qId}`);
+    }
   } catch {
-    // offline
+    // Offline mutation -> enqueue into OutboxQueue for automatic background sync
+    try {
+      await OutboxQueue.enqueue(
+        saved ? "SAVE_QUESTION" : "UNSAVE_QUESTION",
+        `/api/v1/app/saved-questions/${qId}`,
+        saved ? "POST" : "DELETE",
+        { questionId: qId }
+      );
+    } catch (e) {
+      console.error("Outbox enqueue error for saved question:", errorMessage(e));
+    }
   }
   return saved;
 }
 
-export async function getSavedQuestions(_userId?: number): Promise<SavedQuestionEntry[]> {
+export async function getSavedQuestions(_userId?: UserScopeId): Promise<SavedQuestionEntry[]> {
   const localList = storageService.getSavedQuestions();
   try {
     const res = await api.get<{ data: any[] }>("/api/v1/app/saved-questions");
@@ -878,25 +1268,67 @@ export async function getSavedQuestions(_userId?: number): Promise<SavedQuestion
     // fallback
   }
 
-  return localList.map((s) => ({
-    saved_at: s.date,
-    question: fromStoredQuestion(s.question),
-  }));
+  if (localList.length > 0) {
+    return localList.map((s) => ({
+      saved_at: s.date,
+      question: fromStoredQuestion(s.question),
+    }));
+  }
+
+  // Check dbClient active saved questions
+  try {
+    const savedIds = await dbClient.getActiveSavedQuestions();
+    if (savedIds.length > 0) {
+      const allQ = await dbClient.getAllQuestions();
+      const qMap = new Map(allQ.map((q) => [q.id, q]));
+      const entries: SavedQuestionEntry[] = [];
+      for (const id of savedIds) {
+        const q = qMap.get(id);
+        if (q) {
+          entries.push({
+            saved_at: new Date().toISOString(),
+            question: dbQuestionToOfflineQuestion(q),
+          });
+        }
+      }
+      return entries;
+    }
+  } catch {
+    // ignore
+  }
+
+  return [];
 }
 
 export async function saveTicketStat(
-  _userId: number,
+  _userId: UserScopeId,
   ticketId: number,
   durationSeconds: number,
   correctCount: number,
   score: number,
-  passed: boolean
+  passed: boolean,
+  totalQuestions: number = getExamRules().real.questionCount
 ): Promise<boolean> {
   storageService.saveTicketStat(ticketId, durationSeconds, correctCount, score, passed);
+
+  // Local SQLite / IndexedDB user progress persistence
+  dbClient
+    .saveUserProgress({
+      progress_key: `ticket_${ticketId}`,
+      progress_type: "TICKET",
+      total_items: totalQuestions,
+      completed_items: totalQuestions,
+      correct_count: correctCount,
+      best_score: score,
+      passed: passed ? 1 : 0,
+      updated_at: Date.now(),
+    })
+    .catch(() => {});
+
   return true;
 }
 
-export async function getTicketStats(_userId?: number) {
+export async function getTicketStats(_userId?: UserScopeId) {
   const map = storageService.getTicketStats();
   return Object.values(map).map((s) => ({
     ticket_id: s.ticketId,
@@ -910,7 +1342,7 @@ export async function getTicketStats(_userId?: number) {
 }
 
 export async function recordQuestionAttempt(
-  _userId: number,
+  _userId: UserScopeId,
   questionId: number,
   isCorrect: boolean,
   _source: string
@@ -919,6 +1351,6 @@ export async function recordQuestionAttempt(
   return true;
 }
 
-export async function resetAllStats(_userId?: number): Promise<void> {
+export async function resetAllStats(_userId?: UserScopeId): Promise<void> {
   storageService.resetAllStats();
 }

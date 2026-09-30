@@ -1,295 +1,488 @@
-import {
-  Stack,
-  Tabs,
-  Paper,
-  Text,
-  Group,
-  Badge,
-  Center,
-  Loader,
-  SimpleGrid,
-  Button,
-  ActionIcon,
-  Modal,
-  Tooltip,
-} from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import { useState } from "react";
+import { Modal, Switch } from "@mantine/core";
 import {
   IconUser,
-  IconLock,
-  IconDevices,
-  IconDeviceMobile,
-  IconDeviceDesktop,
-  IconSettings,
-  IconTypography,
-  IconTrash,
+  IconLanguage,
+  IconDatabase,
+  IconInfoCircle,
+  IconMoon,
+  IconSun,
+  IconArrowLeft,
+  IconChevronRight,
+  IconBell,
+  IconDownload,
+  IconMessageCircle,
+  IconFileText,
+  IconCheck,
 } from "@tabler/icons-react";
-import api from "../../api/api";
 import { useTranslation } from "react-i18next";
-import useSWR from "swr";
+import { useNavigate } from "react-router-dom";
+import { showToast } from "../../utils/notificationUtils";
 import { ProfileInfoCard } from "../../features/me/components/ProfileInfoCard";
 import { ChangePasswordForm } from "../../features/me/components/ChangePasswordForm";
-import { SimpleTypographyControl } from "../../components/common/SimpleTypographyControl";
 import SEO from "../../components/common/SEO";
+import { useLanguage, type AppLanguage } from "../../context/LanguageContext";
+import { useDesktopTheme } from "../../context/DesktopThemeContext";
+import OfflinePreparationModal from "../../components/offline/OfflinePreparationModal";
+import TermsModal from "../../components/auth/TermsModal";
 
-import styles from "../../components/dashboard/Dashboard.module.css";
-
-interface DeviceItem {
-  deviceId: string;
-  deviceName: string;
-  lastActiveAt: string;
-  isCurrent: boolean;
-}
-
-interface DeviceInfo {
-  /** Yangi backend maydoni. */
-  activeDevices?: number;
-  /** Eski backend maydoni (moslik uchun). */
-  currentDevices?: number;
-  maxDevices: number;
-  devices?: DeviceItem[];
-}
-
-const DEVICES_KEY = "/api/v2/my-statistics/devices";
-
-const Settings_Page = () => {
+export default function Settings_Page() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { lang, setLanguage } = useLanguage();
+  const { theme, setTheme } = useDesktopTheme();
 
-  const {
-    data: deviceResponse,
-    isLoading: devicesLoading,
-    mutate: refreshDevices,
-  } = useSWR<{
-    data: DeviceInfo;
-  }>(DEVICES_KEY);
+  // Modals state
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [offlineModalOpen, setOfflineModalOpen] = useState(false);
+  const [storageModalOpen, setStorageModalOpen] = useState(false);
+  const [aboutModalOpen, setAboutModalOpen] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [languageModalOpen, setLanguageModalOpen] = useState(false);
 
-  const deviceInfo = deviceResponse?.data;
-  const deviceList = deviceInfo?.devices ?? [];
-  const activeCount = deviceInfo?.activeDevices ?? deviceInfo?.currentDevices ?? deviceList.length;
+  // Notification toggle
+  const [notifications, setNotifications] = useState(() => {
+    return localStorage.getItem("prava_notifications_enabled") !== "false";
+  });
 
-  // Qurilmani o'chirish (sessiyani bekor qilish) — Mantine modal orqali tasdiqlash
-  const [pendingRemove, setPendingRemove] = useState<DeviceItem | null>(null);
-  const [removing, setRemoving] = useState(false);
-
-  const formatLastActive = (iso: string) => {
-    const d = new Date(iso);
-    return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString();
+  const toggleNotifications = (checked: boolean) => {
+    setNotifications(checked);
+    localStorage.setItem("prava_notifications_enabled", checked ? "true" : "false");
+    showToast({
+      id: "notifications-toggled",
+      title: checked ? t("common.enabled", "Yoqildi") : t("common.disabled", "O'chirildi"),
+      message: checked
+        ? t("settings.notificationsOn", "Bildirishnomalar faollashtirildi")
+        : t("settings.notificationsOff", "Bildirishnomalar o'chirildi"),
+      color: checked ? "teal" : "gray",
+    });
   };
 
-  const confirmRemove = async () => {
-    if (!pendingRemove || pendingRemove.isCurrent) return;
-    setRemoving(true);
-    try {
-      await api.delete(`${DEVICES_KEY}/${encodeURIComponent(pendingRemove.deviceId)}`);
-      notifications.show({
-        color: "green",
-        message: t("settings.deviceRemoved"),
-      });
-      setPendingRemove(null);
-      await refreshDevices();
-    } catch {
-      notifications.show({
-        color: "red",
-        message: t("settings.deviceRemoveError"),
-      });
-    } finally {
-      setRemoving(false);
-    }
+  // Theme toggle
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
   };
+
+  // Language display name
+  const getLanguageLabel = () => {
+    if (lang === "uzl") return "O'zbek (Lotin)";
+    if (lang === "uzc") return "Ўзбек (Кирилл)";
+    if (lang === "ru") return "Русский";
+    return "O'zbek (Lotin)";
+  };
+
+  const onBack = () => navigate("/me");
 
   return (
     <>
       <SEO
-        title={t("seo.settings.title")}
-        description={t("seo.settings.desc")}
+        title={`${t("settings.title", "Sozlamalar")} - Prava Online`}
+        description={t("settings.subtitle", "Ilova va hisob sozlamalari")}
         canonical="/settings"
-        noIndex={true}
       />
-      {/* Page Header */}
-        <div className={styles.innerPageHeader}>
-          <div className={styles.innerPageHeaderLeft}>
-            <div className={styles.innerPageTitleRow}>
-              <h1 className={styles.innerPageTitle}>
-                <IconSettings
-                  size={24}
-                  stroke={2}
-                  style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }}
-                />
-                {t("settings.title")}
-              </h1>
+
+      <div className="ds-page-wrapper">
+        <div className="ds-page-container" style={{ maxWidth: 680 }}>
+          {/* Header */}
+          <div className="ds-page-header">
+            <div className="ds-header-left">
+              <button
+                type="button"
+                className="ds-back-btn"
+                onClick={onBack}
+                aria-label={t("common.back", "Orqaga")}
+              >
+                <IconArrowLeft size={18} />
+              </button>
+              <div>
+                <h1 className="ds-page-title">{t("settings.title", "Sozlamalar")}</h1>
+              </div>
             </div>
-            <p className={styles.innerPageSubtitle}>
-              {t(
-                "settings.subtitle"
-              )}
-            </p>
+          </div>
+
+          {/* ── GROUP 1: Account ── */}
+          <div className="ref-settings-section">
+            <div className="ref-settings-section-title">
+              {t("settings.sectionAccount", "Account")}
+            </div>
+            <div className="ref-settings-card">
+              {/* Profil ma'lumotlari */}
+              <div
+                className="ref-settings-row"
+                onClick={() => setProfileModalOpen(true)}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="ref-settings-row-left">
+                  <div
+                    className="ref-settings-row-icon"
+                    style={{ background: "linear-gradient(135deg, #0284c7, #2563eb)" }}
+                  >
+                    <IconUser size={20} />
+                  </div>
+                  <span className="ref-settings-row-title">
+                    {t("settings.profileInfo", "Profil ma'lumotlari")}
+                  </span>
+                </div>
+                <div className="ref-settings-row-right">
+                  <IconChevronRight size={18} />
+                </div>
+              </div>
+
+              {/* Til */}
+              <div
+                className="ref-settings-row"
+                onClick={() => setLanguageModalOpen(true)}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="ref-settings-row-left">
+                  <div
+                    className="ref-settings-row-icon"
+                    style={{ background: "linear-gradient(135deg, #8b5cf6, #7c3aed)" }}
+                  >
+                    <IconLanguage size={20} />
+                  </div>
+                  <span className="ref-settings-row-title">
+                    {t("settings.language", "Til")}
+                  </span>
+                </div>
+                <div className="ref-settings-row-right">
+                  <span>{getLanguageLabel()}</span>
+                  <IconChevronRight size={18} />
+                </div>
+              </div>
+
+              {/* Mavzu */}
+              <div
+                className="ref-settings-row"
+                onClick={toggleTheme}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="ref-settings-row-left">
+                  <div
+                    className="ref-settings-row-icon"
+                    style={{ background: "linear-gradient(135deg, #6366f1, #4f46e5)" }}
+                  >
+                    {theme === "dark" ? <IconMoon size={20} /> : <IconSun size={20} />}
+                  </div>
+                  <span className="ref-settings-row-title">
+                    {t("settings.theme", "Mavzu")}
+                  </span>
+                </div>
+                <div className="ref-settings-row-right">
+                  <span>
+                    {theme === "dark"
+                      ? t("settings.themeTungi", "Tungi")
+                      : t("settings.themeKunduzgi", "Kunduzgi")}
+                  </span>
+                  <IconChevronRight size={18} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── GROUP 2: Ilova ── */}
+          <div className="ref-settings-section">
+            <div className="ref-settings-section-title">
+              {t("settings.sectionApp", "Ilova")}
+            </div>
+            <div className="ref-settings-card">
+              {/* Bildirishnomalar */}
+              <div className="ref-settings-row" style={{ cursor: "default" }}>
+                <div className="ref-settings-row-left">
+                  <div
+                    className="ref-settings-row-icon"
+                    style={{ background: "linear-gradient(135deg, #06b6d4, #0891b2)" }}
+                  >
+                    <IconBell size={20} />
+                  </div>
+                  <span className="ref-settings-row-title">
+                    {t("settings.notifications", "Bildirishnomalar")}
+                  </span>
+                </div>
+                <div className="ref-settings-row-right">
+                  <Switch
+                    checked={notifications}
+                    onChange={(e) => toggleNotifications(e.currentTarget.checked)}
+                    size="md"
+                    color="blue"
+                  />
+                </div>
+              </div>
+
+              {/* Ma'lumotlarni yuklab olish */}
+              <div
+                className="ref-settings-row"
+                onClick={() => setOfflineModalOpen(true)}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="ref-settings-row-left">
+                  <div
+                    className="ref-settings-row-icon"
+                    style={{ background: "linear-gradient(135deg, #10b981, #059669)" }}
+                  >
+                    <IconDownload size={20} />
+                  </div>
+                  <span className="ref-settings-row-title">
+                    {t("settings.downloadData", "Ma'lumotlarni yuklab olish")}
+                  </span>
+                </div>
+                <div className="ref-settings-row-right">
+                  <IconChevronRight size={18} />
+                </div>
+              </div>
+
+              {/* Xotira boshqaruvi */}
+              <div
+                className="ref-settings-row"
+                onClick={() => setStorageModalOpen(true)}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="ref-settings-row-left">
+                  <div
+                    className="ref-settings-row-icon"
+                    style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}
+                  >
+                    <IconDatabase size={20} />
+                  </div>
+                  <span className="ref-settings-row-title">
+                    {t("settings.storageManagement", "Xotira boshqaruvi")}
+                  </span>
+                </div>
+                <div className="ref-settings-row-right">
+                  <IconChevronRight size={18} />
+                </div>
+              </div>
+
+              {/* Ilova ma'lumotlari */}
+              <div
+                className="ref-settings-row"
+                onClick={() => setAboutModalOpen(true)}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="ref-settings-row-left">
+                  <div
+                    className="ref-settings-row-icon"
+                    style={{ background: "linear-gradient(135deg, #64748b, #475569)" }}
+                  >
+                    <IconInfoCircle size={20} />
+                  </div>
+                  <span className="ref-settings-row-title">
+                    {t("settings.appInfo", "Ilova ma'lumotlari")}
+                  </span>
+                </div>
+                <div className="ref-settings-row-right">
+                  <span>{t("settings.aboutVersionVal", "v2.0.0")}</span>
+                  <IconChevronRight size={18} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── GROUP 3: Yordam ── */}
+          <div className="ref-settings-section">
+            <div className="ref-settings-section-title">
+              {t("settings.sectionHelp", "Yordam")}
+            </div>
+            <div className="ref-settings-card">
+              {/* Biz bilan bog'lanish */}
+              <a
+                href="https://t.me/pravaonline_support"
+                target="_blank"
+                rel="noreferrer"
+                className="ref-settings-row"
+              >
+                <div className="ref-settings-row-left">
+                  <div
+                    className="ref-settings-row-icon"
+                    style={{ background: "linear-gradient(135deg, #059669, #047857)" }}
+                  >
+                    <IconMessageCircle size={20} />
+                  </div>
+                  <span className="ref-settings-row-title">
+                    {t("settings.contactUs", "Biz bilan bog'lanish")}
+                  </span>
+                </div>
+                <div className="ref-settings-row-right">
+                  <IconChevronRight size={18} />
+                </div>
+              </a>
+
+              {/* Foydalanish shartlari */}
+              <div
+                className="ref-settings-row"
+                onClick={() => setTermsModalOpen(true)}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="ref-settings-row-left">
+                  <div
+                    className="ref-settings-row-icon"
+                    style={{ background: "linear-gradient(135deg, #f43f5e, #e11d48)" }}
+                  >
+                    <IconFileText size={20} />
+                  </div>
+                  <span className="ref-settings-row-title">
+                    {t("settings.termsOfService", "Foydalanish shartlari")}
+                  </span>
+                </div>
+                <div className="ref-settings-row-right">
+                  <IconChevronRight size={18} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Content Container */}
-        <div style={{ maxWidth: 1200, width: "100%", margin: "0" }}>
-          <Tabs defaultValue="profile">
-            <div
-              style={{
-                overflowX: "auto",
-                WebkitOverflowScrolling: "touch",
-                scrollbarWidth: "none",
-                marginBottom: 16,
-              }}
-            >
-              <Tabs.List style={{ flexWrap: "nowrap", minWidth: "max-content" }}>
-                <Tabs.Tab value="profile" leftSection={<IconUser size={16} />}>
-                  {t("settings.profile")}
-                </Tabs.Tab>
-                <Tabs.Tab value="appearance" leftSection={<IconTypography size={16} />}>
-                  {t("settings.appearance")}
-                </Tabs.Tab>
-                <Tabs.Tab value="security" leftSection={<IconLock size={16} />}>
-                  {t("settings.security")}
-                </Tabs.Tab>
-                <Tabs.Tab value="devices" leftSection={<IconDevices size={16} />}>
-                  {t("settings.devices")}
-                </Tabs.Tab>
-              </Tabs.List>
-            </div>
-
-        <Tabs.Panel value="profile">
-          <Stack gap="lg">
+        {/* ── Profile Info Modal ── */}
+        <Modal
+          opened={profileModalOpen}
+          onClose={() => setProfileModalOpen(false)}
+          title={t("settings.profileInfo", "Profil ma'lumotlari")}
+          centered
+          size="lg"
+          radius="md"
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <ProfileInfoCard />
-          </Stack>
-        </Tabs.Panel>
-
-        <Tabs.Panel value="appearance">
-          <Stack gap="lg">
-            <SimpleTypographyControl />
-          </Stack>
-        </Tabs.Panel>
-
-        <Tabs.Panel value="security">
-          <Stack gap="lg">
             <ChangePasswordForm />
-          </Stack>
-        </Tabs.Panel>
+          </div>
+        </Modal>
 
-        <Tabs.Panel value="devices">
-          <Stack gap="lg">
-            {devicesLoading && (
-              <Center py="xl">
-                <Loader size="sm" />
-              </Center>
-            )}
-
-            {deviceInfo && (
-              <>
-                <Paper p="lg" radius="md" withBorder shadow="sm">
-                  <Group justify="space-between" mb="md">
-                    <Text fw={600}>{t("settings.activeDevices")}</Text>
-                    <Badge size="lg" variant="light">
-                      {activeCount}/{deviceInfo.maxDevices}
-                    </Badge>
-                  </Group>
-                  <Text size="sm" c="dimmed">
-                    {t("settings.deviceLimitDesc")}
-                  </Text>
-                </Paper>
-
-                {deviceList.length > 0 && (
-                  <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
-                    {deviceList.map((device) => {
-                      const name = device.deviceName || t("settings.unknownDevice");
-                      const isMobile = /mobile|android|iphone|ios/i.test(name);
-                      return (
-                        <Paper
-                          key={device.deviceId}
-                          p="md"
-                          radius="md"
-                          withBorder
-                          shadow="sm"
-                          style={device.isCurrent ? { borderColor: "var(--primary)" } : undefined}
-                        >
-                          <Group justify="space-between" wrap="nowrap" gap="sm">
-                            <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
-                              {isMobile ? <IconDeviceMobile size={20} /> : <IconDeviceDesktop size={20} />}
-                              <div style={{ minWidth: 0 }}>
-                                <Group gap={6} wrap="wrap">
-                                  <Text size="sm" fw={600} truncate>
-                                    {name}
-                                  </Text>
-                                  {device.isCurrent && (
-                                    <Badge size="sm" variant="light">
-                                      {t("settings.thisDevice")}
-                                    </Badge>
-                                  )}
-                                </Group>
-                                <Text size="xs" c="dimmed">
-                                  {t("settings.lastActive")}: {formatLastActive(device.lastActiveAt)}
-                                </Text>
-                              </div>
-                            </Group>
-                            <Tooltip
-                              label={
-                                device.isCurrent
-                                  ? t("settings.cannotRemoveCurrent")
-                                  : t("settings.removeDevice")
-                              }
-                            >
-                              <ActionIcon
-                                variant="light"
-                                color="red"
-                                size="lg"
-                                disabled={device.isCurrent}
-                                aria-label={t("settings.removeDevice")}
-                                onClick={() => setPendingRemove(device)}
-                              >
-                                <IconTrash size={18} />
-                              </ActionIcon>
-                            </Tooltip>
-                          </Group>
-                        </Paper>
-                      );
-                    })}
-                  </SimpleGrid>
+        {/* ── Language Picker Modal ── */}
+        <Modal
+          opened={languageModalOpen}
+          onClose={() => setLanguageModalOpen(false)}
+          title={t("settings.language", "Tilni tanlang")}
+          centered
+          radius="md"
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { code: "uzl", label: "O‘zbekcha (Lotin)" },
+              { code: "uzc", label: "Ўзбекча (Кирилл)" },
+              { code: "ru", label: "Русский" },
+            ].map((item) => (
+              <div
+                key={item.code}
+                className="ref-wrong-card"
+                onClick={() => {
+                  setLanguage(item.code as AppLanguage);
+                  setLanguageModalOpen(false);
+                }}
+                style={{
+                  padding: "14px 18px",
+                  borderColor: lang === item.code ? "var(--g-primary-light)" : "var(--g-border)",
+                  background: lang === item.code ? "rgba(2, 132, 199, 0.12)" : "var(--g-surface)",
+                }}
+              >
+                <div style={{ flex: 1, fontWeight: 700, color: "var(--g-text)" }}>
+                  {item.label}
+                </div>
+                {lang === item.code && (
+                  <IconCheck size={18} style={{ color: "var(--g-primary-light)" }} />
                 )}
-              </>
-            )}
+              </div>
+            ))}
+          </div>
+        </Modal>
 
-            {!devicesLoading && !deviceInfo && (
-              <Paper p="xl" radius="md" withBorder ta="center">
-                <Text c="dimmed">{t("settings.noDeviceData")}</Text>
-              </Paper>
-            )}
-          </Stack>
-        </Tabs.Panel>
-      </Tabs>
-    </div>
+        {/* ── Offline Dataset Preparation Modal ── */}
+        <OfflinePreparationModal
+          opened={offlineModalOpen}
+          onClose={() => setOfflineModalOpen(false)}
+        />
 
-    <Modal
-      opened={pendingRemove !== null}
-      onClose={() => {
-        if (!removing) setPendingRemove(null);
-      }}
-      title={t("settings.removeDeviceTitle")}
-    >
-      <Stack gap="md">
-        <Text size="sm">
-          {t(
-            "settings.removeDeviceConfirm",
-            { name: pendingRemove?.deviceName || t("settings.unknownDevice") },
-          )}
-        </Text>
-        <Group justify="flex-end">
-          <Button variant="default" onClick={() => setPendingRemove(null)} disabled={removing}>
-            {t("common.cancel")}
-          </Button>
-          <Button color="red" onClick={() => void confirmRemove()} loading={removing}>
-            {t("settings.removeDevice")}
-          </Button>
-        </Group>
-      </Stack>
-    </Modal>
-  </>
+        {/* ── Storage Management Modal ── */}
+        <Modal
+          opened={storageModalOpen}
+          onClose={() => setStorageModalOpen(false)}
+          title={t("settings.storageManagement", "Xotira boshqaruvi")}
+          centered
+          radius="md"
+        >
+          <div style={{ padding: "8px 0" }}>
+            <p style={{ fontSize: 13.5, color: "var(--g-text-muted)", marginBottom: 20 }}>
+              {t("settings.storageDesc", "Offline saqlangan keshlar, rasmlar va lokal bazani boshqarish.")}
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 16px",
+                  borderRadius: "var(--g-radius-md)",
+                  background: "var(--g-surface-muted)",
+                }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--g-text)" }}>
+                  {t("settings.storageLocalDB", "Lokal savollar bazasi")}
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--g-primary-light)" }}>
+                  1190 {t("common.questions", "ta savol")}
+                </span>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 16px",
+                  borderRadius: "var(--g-radius-md)",
+                  background: "var(--g-surface-muted)",
+                }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--g-text)" }}>
+                  {t("settings.storageStatus", "Sinxron holati")}
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--g-success)" }}>
+                  {t("settings.storageSynced", "To'liq yangilangan")}
+                </span>
+              </div>
+            </div>
+          </div>
+        </Modal>
+
+        {/* ── About Modal ── */}
+        <Modal
+          opened={aboutModalOpen}
+          onClose={() => setAboutModalOpen(false)}
+          title={t("settings.appInfo", "Ilova ma'lumotlari")}
+          centered
+          radius="md"
+        >
+          <div style={{ textAlign: "center", padding: "12px 0" }}>
+            <img src="/logo.png" width={48} height={48} alt="Prava" style={{ marginBottom: 12 }} />
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--g-text)", margin: "0 0 4px" }}>
+              PRAVA ONLINE
+            </h3>
+            <p style={{ fontSize: 13, color: "var(--g-primary-light)", fontWeight: 700, marginBottom: 16 }}>
+              {t("settings.aboutVersionVal", "v2.0.0 Production Release (2026)")}
+            </p>
+            <p style={{ fontSize: 13.5, color: "var(--g-text-muted)", lineHeight: 1.6, marginBottom: 20 }}>
+              {t("settings.aboutAppDesc", "O'zbekiston Respublikasi Yo'l Harakati Qoidalarini o'rganish va YHXBB imtihonlariga tayyorlanish bo'yicha maxsus dasturiy ta'minot.")}
+            </p>
+            <div style={{ fontSize: 12, color: "var(--g-text-subtle)" }}>
+              {t("settings.aboutCopyright", "© 2026 Prava Online. Barcha huquqlar himoyalangan.")}
+            </div>
+          </div>
+        </Modal>
+
+        {/* ── Terms of Service Modal ── */}
+        <TermsModal
+          opened={termsModalOpen}
+          onClose={() => setTermsModalOpen(false)}
+          type="terms"
+        />
+      </div>
+    </>
   );
-};
-
-export default Settings_Page;
+}

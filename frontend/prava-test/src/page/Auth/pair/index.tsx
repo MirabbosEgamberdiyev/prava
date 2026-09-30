@@ -1,54 +1,50 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  Alert,
-  Badge,
   Box,
   Button,
   Card,
-  Center,
   Container,
-  Divider,
   Group,
   Loader,
-  Paper,
   Stack,
   Text,
-  ThemeIcon,
+  TextInput,
+  PasswordInput,
   Title,
+  Alert,
 } from "@mantine/core";
-import {
-  IconAlertCircle,
-  IconCheck,
-  IconDeviceDesktop,
-  IconShieldCheck,
-  IconUserCheck,
-  IconX,
-} from "@tabler/icons-react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { errorKeyFor, getErrorMessage } from "../../../types/errors";
-import { useAuth } from "../../../auth/AuthContext";
+import {
+  IconDeviceLaptop,
+  IconCheck,
+  IconX,
+  IconAlertCircle,
+  IconLock,
+  IconUser,
+} from "@tabler/icons-react";
 import api from "../../../api/api";
-import SEO from "../../../components/common/SEO";
+import { useAuth } from "../../../auth/AuthContext";
+import { useAuthModal } from "../../../auth/AuthModalContext";
+import { showToast } from "../../../utils/notificationUtils";
+import { normalizeUzPhone } from "../../../utils/phoneUtils";
+import GoogleLoginButton from "../../../components/auth/GoogleLoginButton";
 
 interface SessionInfo {
   sessionId: string;
-  status: string;
-  deviceUuid: string;
-  deviceName: string;
-  platform: string;
-  appVersion: string;
-  ipAddress?: string;
-  createdAt: string | number;
-  expiresAt: string | number;
-  expired?: boolean;
+  deviceName?: string;
+  clientType?: string;
+  clientVersion?: string;
+  status?: string;
+  isExpired?: boolean;
 }
 
-export default function PairPage() {
-  const { t } = useTranslation();
+export default function QrPairingPage() {
+  const { t, i18n } = useTranslation();
+  const { isAuthenticated, login } = useAuth();
+  const { executePending } = useAuthModal();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
 
   const sessionId = searchParams.get("sessionId") || "";
   const challenge = searchParams.get("challenge") || "";
@@ -59,6 +55,11 @@ export default function PairPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Form states if not authenticated
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!sessionId || !challenge) {
       setError(t("pair.invalidUrl"));
@@ -66,316 +67,390 @@ export default function PairPage() {
       return;
     }
 
-    let isMounted = true;
-    const fetchSessionInfo = async () => {
+    const fetchSession = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        setLoading(true);
-        setError(null);
-        const res = await api.get<any>(
-          `/api/v1/auth/qr/session-info?sessionId=${encodeURIComponent(
-            sessionId
-          )}&challenge=${encodeURIComponent(challenge)}`
-        );
-        if (isMounted) {
-          const sessionData: SessionInfo = (res.data as any)?.data || res.data;
-          setSessionInfo(sessionData);
-
-          if (sessionData.status === "APPROVED" || sessionData.status === "CONSUMED") {
-            setSuccess(true);
-          } else if (sessionData.status === "REJECTED" || sessionData.status === "CANCELLED") {
-            setError(t("pair.cancelled"));
-          } else if (sessionData.status === "EXPIRED" || sessionData.expired) {
-            setError(
-              t("pair.expired")
-            );
-          }
+        const res = await api.get("/api/v1/auth/qr/session-info", {
+          params: { sessionId, challenge },
+        });
+        if (res.data?.success && res.data?.data) {
+          setSessionInfo(res.data.data);
+        } else {
+          setError(t("pair.sessionNotFound"));
         }
       } catch (err: any) {
-        if (isMounted) {
-          setError(getErrorMessage(err, t("pair.expired")));
-        }
+        setError(err?.response?.data?.message || t("pair.sessionNotFound"));
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
-    fetchSessionInfo();
-
-    return () => {
-      isMounted = false;
-    };
+    fetchSession();
   }, [sessionId, challenge, t]);
 
   const handleApprove = async () => {
-    if (!sessionId || !challenge) return;
+    setActionLoading(true);
+    setError(null);
     try {
-      setActionLoading(true);
-      setError(null);
-      await api.post("/api/v1/auth/qr/approve", {
+      const res = await api.post("/api/v1/auth/qr/approve", {
         sessionId,
         challenge,
       });
-      setSuccess(true);
+
+      if (res.data?.success) {
+        setSuccess(true);
+        showToast({
+          id: "qr-paired-success",
+          title: t("common.success"),
+          message: t("pair.computerConnected"),
+          color: "teal",
+        });
+      }
     } catch (err: any) {
-      setError(getErrorMessage(err, t(errorKeyFor(err, "common.errorOccurred"))));
+      setError(err?.response?.data?.message || t("pair.approveError"));
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleReject = async () => {
-    if (!sessionId || !challenge) return;
+    setActionLoading(true);
     try {
-      setActionLoading(true);
-      await api.post("/api/v1/auth/qr/reject", {
-        sessionId,
-        challenge,
-      });
-      setError(t("pair.cancelled"));
+      await api.post("/api/v1/auth/qr/reject", { sessionId, challenge });
     } catch {
-      setError(t("pair.cancelled"));
+      // ignore
+    }
+    navigate("/me", { replace: true });
+  };
+
+  const handleLoginAndApprove = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!identifier.trim() || !password) {
+      setAuthError(t("pair.enterCredentials"));
+      return;
+    }
+
+    setActionLoading(true);
+    setAuthError(null);
+
+    let cleanId = identifier.trim();
+    const digitsOnly = cleanId.replace(/\D/g, "");
+    if (digitsOnly.length >= 9 && !cleanId.includes("@")) {
+      cleanId = normalizeUzPhone(cleanId);
+    }
+
+    try {
+      const loginRes = await api.post("/api/v1/auth/login", {
+        identifier: cleanId,
+        password,
+      });
+
+      if (loginRes.data?.success) {
+        const userLang = loginRes.data.data.user?.preferredLanguage;
+        if (userLang) i18n.changeLanguage(userLang);
+        login(loginRes.data.data);
+
+        // Approve after successful login
+        const approveRes = await api.post(
+          "/api/v1/auth/qr/approve",
+          { sessionId, challenge },
+          { headers: { Authorization: `Bearer ${loginRes.data.data.accessToken}` } }
+        );
+
+        if (approveRes.data?.success) {
+          setSuccess(true);
+        }
+      }
+    } catch (err: any) {
+      setAuthError(err?.response?.data?.message || t("auth.loginError"));
     } finally {
       setActionLoading(false);
     }
   };
 
-  const currentPairUrl = `/auth/pair?sessionId=${encodeURIComponent(
-    sessionId
-  )}&challenge=${encodeURIComponent(challenge)}`;
+  if (loading) {
+    return (
+      <Container size={440} py={60}>
+        <Card withBorder radius={20} p={32} style={{ textAlign: "center" }}>
+          <Stack align="center" gap={16}>
+            <Loader size="md" color="#0284c7" />
+            <Text fz={14} c="dimmed">
+              {t("pair.checking")}
+            </Text>
+          </Stack>
+        </Card>
+      </Container>
+    );
+  }
+
+  if (success) {
+    return (
+      <Container size={440} py={60}>
+        <Card
+          withBorder
+          radius={24}
+          p={36}
+          style={{
+            textAlign: "center",
+            boxShadow: "0 12px 36px rgba(10, 37, 64, 0.08)",
+          }}
+        >
+          <Stack align="center" gap={18}>
+            <Box
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: 24,
+                backgroundColor: "#dcfce7",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <IconCheck size={38} color="#16a34a" aria-hidden="true" />
+            </Box>
+
+            <Title order={2} fw={800} fz={22}>
+              {t("pair.computerConnected")}
+            </Title>
+
+            <Text c="dimmed" fz={14} maw={340}>
+              {t("pair.computerConnectedDesc")}
+            </Text>
+
+            <Button
+              fullWidth
+              size="md"
+              radius={14}
+              color="#0284c7"
+              h={46}
+              onClick={() => executePending()}
+            >
+              {t("pair.goToCabinet")}
+            </Button>
+          </Stack>
+        </Card>
+      </Container>
+    );
+  }
+
+  if (error && !sessionInfo) {
+    return (
+      <Container size={440} py={60}>
+        <Card withBorder radius={24} p={32} style={{ textAlign: "center" }}>
+          <Stack align="center" gap={16}>
+            <Box
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 20,
+                backgroundColor: "#fee2e2",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <IconAlertCircle size={32} color="#dc2626" aria-hidden="true" />
+            </Box>
+
+            <Title order={3} fw={700} fz={20}>
+              {t("pair.connectError")}
+            </Title>
+
+            <Text c="dimmed" fz={13.5}>
+              {error}
+            </Text>
+
+            <Button
+              variant="default"
+              radius={12}
+              onClick={() => navigate("/auth/login")}
+            >
+              {t("forgotPassword.backToLogin")}
+            </Button>
+          </Stack>
+        </Card>
+      </Container>
+    );
+  }
 
   return (
-    <>
-      <SEO
-        title={`${t("pair.title")} — PRAVA`}
-        description={t("pair.subtitle")}
-        canonical="/auth/pair"
-        noIndex={true}
-      />
-      <Container size="xs" py={{ base: "md", sm: "xl" }} px={{ base: "xs", sm: "md" }}>
-        <Paper
-          radius="lg"
-          p={{ base: "md", sm: "xl" }}
-          withBorder
-          shadow="sm"
-          style={{ background: "var(--surface)", borderColor: "var(--border)" }}
-        >
-          <Center mb="md">
-            <ThemeIcon size={64} radius="xl" color="blue" variant="light">
-              <IconDeviceDesktop size={36} />
-            </ThemeIcon>
-          </Center>
+    <Container size={460} py={40}>
+      <Card
+        withBorder
+        shadow="md"
+        radius={24}
+        p={32}
+        style={{
+          backgroundColor: "var(--card-bg, #ffffff)",
+          boxShadow: "0 12px 36px rgba(10, 37, 64, 0.08)",
+        }}
+      >
+        <Stack align="center" gap={18} style={{ textAlign: "center" }}>
+          {/* Laptop Icon Header */}
+          <Box
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: 22,
+              backgroundColor: "rgba(2, 132, 199, 0.1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <IconDeviceLaptop size={40} color="#0284c7" aria-hidden="true" />
+          </Box>
 
-          <Title order={2} ta="center" mb="xs" size="1.4rem" fw={800}>
-            {t("pair.title")}
-          </Title>
+          <Box>
+            <Title order={2} fw={800} fz={22}>
+              {t("pair.requestTitle")}
+            </Title>
+            <Text c="dimmed" fz={13.5} mt={4}>
+              {isAuthenticated ? t("pair.requestAuthed") : t("pair.requestGuest")}
+            </Text>
+          </Box>
 
-          <Text c="dimmed" size="xs" ta="center" mb="xl" maw={380} mx="auto" style={{ lineHeight: 1.5 }}>
-            {t("pair.subtitle")}
-          </Text>
-
-          {loading && (
-            <Center py="xl">
-              <Stack align="center" gap="xs">
-                <Loader size="md" />
-                <Text size="sm" c="dimmed">
-                  {t("pair.checking")}
+          {/* Device Details Card */}
+          <Card
+            withBorder
+            p={18}
+            radius={16}
+            style={{
+              width: "100%",
+              backgroundColor: "var(--surface, #f8fafc)",
+              textAlign: "left",
+            }}
+          >
+            <Stack gap={10}>
+              <Group justify="space-between">
+                <Text fz={13} c="dimmed" fw={600}>
+                  💻 {t("pair.deviceLabel")}
                 </Text>
-              </Stack>
-            </Center>
-          )}
+                <Text fz={13.5} fw={700}>
+                  {sessionInfo?.deviceName || "—"}
+                </Text>
+              </Group>
 
-          {!loading && error && !success && (
-            <Stack gap="md">
-              <Alert
-                icon={<IconAlertCircle size={18} />}
-                title={!sessionId || !challenge ? t("pair.infoTitle", "QR ulanish qo'llanmasi") : t("pair.errorTitle")}
-                color={!sessionId || !challenge ? "blue" : "red"}
-                variant="light"
-                radius="md"
-              >
-                {!sessionId || !challenge
-                  ? t(
-                      "pair.missingParamsDesc",
-                      "Ushbu sahifa mobil telefon orqali kompyuterdagi QR kodni skanerlaganda yangi qurilmani hisobingizga ulash uchun mo'ljallangan. Agar kompyuteringizdan tizimga kirmoqchi bo'lsangiz, kirish sahifasidan 'QR bilan kirish' tugmasini bosing yoki to'g'ridan-to'g'ri Google / Telegram orqali kiring."
-                    )
-                  : error}
-              </Alert>
-              <Group gap="sm" grow>
-                <Button
-                  component={Link}
-                  to="/auth/login"
-                  variant="filled"
-                  color="blue"
-                  radius="md"
-                >
-                  {t("authV2.login.title", "Tizimga kirish")}
-                </Button>
-                <Button
-                  variant="default"
-                  radius="md"
-                  onClick={() => navigate("/")}
-                >
-                  {t("pair.goHome", "Bosh sahifa")}
-                </Button>
+              <Group justify="space-between">
+                <Text fz={13} c="dimmed" fw={600}>
+                  🕒 {t("pair.timeLabel")}
+                </Text>
+                <Text fz={13.5} fw={700}>
+                  {new Date().toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Text>
               </Group>
             </Stack>
+          </Card>
+
+          {error && (
+            <Alert
+              icon={<IconAlertCircle size={16} />}
+              color="red"
+              radius="md"
+              style={{ width: "100%", textAlign: "left" }}
+            >
+              {error}
+            </Alert>
           )}
 
-          {!loading && success && (
-            <Stack gap="md" align="center" py="md">
-              <ThemeIcon size={60} radius="xl" color="green" variant="filled">
-                <IconCheck size={36} />
-              </ThemeIcon>
-              <Title order={3} ta="center" c="green.7" size="1.25rem" fw={800}>
-                {t("pair.successTitle")}
-              </Title>
-              <Text size="xs" ta="center" c="dimmed" maw={380} style={{ lineHeight: 1.5 }}>
-                {t("pair.successDesc")}
-              </Text>
+          {/* If Authenticated: Approve & Reject Buttons */}
+          {isAuthenticated ? (
+            <Group gap={12} style={{ width: "100%" }} mt={8}>
               <Button
-                component={Link}
-                to="/me"
-                variant="filled"
-                color="blue"
-                fullWidth
-                mt="md"
-                radius="md"
+                flex={1}
+                variant="outline"
+                color="red"
+                radius={14}
+                h={48}
+                onClick={handleReject}
+                disabled={actionLoading}
+                leftSection={<IconX size={18} />}
+                style={{ fontWeight: 700 }}
               >
-                {t("pair.goToCabinet")}
+                {t("pair.reject")}
               </Button>
-            </Stack>
-          )}
 
-          {!loading && !error && !success && sessionInfo && (
-            <Stack gap="lg">
-              <Card
-                withBorder
-                radius="md"
-                p="md"
-                style={{ background: "var(--surface-muted)", borderColor: "var(--border)" }}
+              <Button
+                flex={1}
+                color="#0284c7"
+                radius={14}
+                h={48}
+                onClick={handleApprove}
+                loading={actionLoading}
+                leftSection={<IconCheck size={18} />}
+                style={{ fontWeight: 700 }}
               >
-                <Group justify="space-between" mb="xs">
-                  <Text size="xs" fw={700} c="dimmed" tt="uppercase" style={{ letterSpacing: 0.5 }}>
-                    {t("pair.deviceInfo")}
-                  </Text>
-                  <Badge color="blue" variant="light" size="sm">
-                    {sessionInfo.platform || "Desktop"}
-                  </Badge>
-                </Group>
-                <Group gap="sm" mb="xs">
-                  <IconDeviceDesktop size={20} color="var(--mantine-color-blue-6)" />
-                  <Text fw={600} size="sm">
-                    {sessionInfo.deviceName || "PRAVA Desktop"}
-                  </Text>
-                </Group>
-                {sessionInfo.appVersion && (
-                  <Text size="xs" c="dimmed">
-                    {t("pair.appVersion")}: v{sessionInfo.appVersion}
-                  </Text>
-                )}
-              </Card>
-
-              {isAuthenticated ? (
-                <Stack gap="md">
-                  <Paper
-                    withBorder
-                    p="sm"
-                    radius="md"
-                    style={{ background: "var(--mantine-color-blue-0)", borderColor: "var(--mantine-color-blue-2)" }}
-                  >
-                    <Group gap="xs">
-                      <IconUserCheck size={20} color="var(--mantine-color-blue-7)" />
-                      <Box>
-                        <Text size="xs" c="dimmed">
-                          {t("pair.targetAccount")}
-                        </Text>
-                        <Text size="sm" fw={700} c="blue.9">
-                          {user?.fullName || user?.phoneNumber || user?.email || "Foydalanuvchi"}
-                        </Text>
-                      </Box>
-                    </Group>
-                  </Paper>
-
-                  <Group gap="xs" align="flex-start">
-                    <IconShieldCheck
-                      size={20}
-                      color="var(--mantine-color-green-6)"
-                      style={{ marginTop: 2, flexShrink: 0 }}
-                    />
-                    <Text size="xs" c="dimmed" style={{ lineHeight: 1.4 }}>
-                      {t("pair.notice")}
-                    </Text>
-                  </Group>
-
-                  <Divider />
-
-                  <Group grow>
-                    <Button
-                      variant="default"
-                      color="gray"
-                      radius="md"
-                      leftSection={<IconX size={16} />}
-                      onClick={handleReject}
-                      disabled={actionLoading}
-                    >
-                      {t("pair.reject")}
-                    </Button>
-                    <Button
-                      variant="filled"
-                      color="green"
-                      radius="md"
-                      leftSection={<IconCheck size={16} />}
-                      onClick={handleApprove}
-                      loading={actionLoading}
-                    >
-                      {t("pair.approve")}
-                    </Button>
-                  </Group>
-                </Stack>
-              ) : (
-                <Stack gap="md">
-                  <Alert
-                    icon={<IconAlertCircle size={18} />}
-                    title={t("pair.authRequired")}
-                    color="blue"
-                    variant="light"
-                    radius="md"
-                  >
-                    {t("pair.authRequiredDesc")}
+                {t("pair.approve")}
+              </Button>
+            </Group>
+          ) : (
+            /* If Not Authenticated: Quick Login Form */
+            <Box
+              component="form"
+              onSubmit={handleLoginAndApprove}
+              style={{ width: "100%", textAlign: "left" }}
+            >
+              <Stack gap={12}>
+                {authError && (
+                  <Alert icon={<IconAlertCircle size={16} />} color="red" radius="md">
+                    {authError}
                   </Alert>
+                )}
 
-                  <Button
-                    component={Link}
-                    to="/auth/login"
-                    state={{ from: currentPairUrl }}
-                    variant="filled"
-                    color="blue"
-                    fullWidth
-                    size="md"
-                    radius="md"
-                  >
-                    {t("pair.loginExisting")}
-                  </Button>
+                <TextInput
+                  label={t("auth.identifier", { defaultValue: "Telefon yoki Email" })}
+                  placeholder={t("auth.identifierPlaceholder")}
+                  required
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.currentTarget.value)}
+                  leftSection={<IconUser size={16} />}
+                  radius="md"
+                />
 
-                  <Button
-                    component={Link}
-                    to="/auth/register"
-                    state={{ from: currentPairUrl }}
-                    variant="outline"
-                    color="blue"
-                    fullWidth
-                    radius="md"
-                  >
-                    {t("pair.registerNew")}
-                  </Button>
-                </Stack>
-              )}
-            </Stack>
+                <PasswordInput
+                  label={t("auth.password", { defaultValue: "Parol" })}
+                  placeholder="••••••••"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.currentTarget.value)}
+                  leftSection={<IconLock size={16} />}
+                  radius="md"
+                />
+
+                <Button
+                  type="submit"
+                  fullWidth
+                  color="#0284c7"
+                  radius={14}
+                  h={46}
+                  loading={actionLoading}
+                  mt={4}
+                  style={{ fontWeight: 700 }}
+                >
+                  {t("pair.loginAndApprove")}
+                </Button>
+
+                <GoogleLoginButton compact />
+
+                <Button
+                  variant="subtle"
+                  color="gray"
+                  fullWidth
+                  radius={12}
+                  onClick={() => navigate("/auth/login")}
+                >
+                  {t("common.cancel")}
+                </Button>
+              </Stack>
+            </Box>
           )}
-        </Paper>
-      </Container>
-    </>
+        </Stack>
+      </Card>
+    </Container>
   );
 }

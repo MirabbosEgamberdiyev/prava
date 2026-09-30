@@ -28,4 +28,10 @@ public class UserResponse {
     private String profileImageUrl;
     private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;
+
+    // Subscription & Package access
+    private Boolean hasSubscription;
+    private Boolean packageActive;
+    private String subscriptionPlan;
+    private LocalDateTime subscriptionExpiresAt;
 }

@@ -1,503 +1,479 @@
-import { useState, useEffect, useRef } from "react";
+import { resolveUserScopeId } from "@/utils/userScope";
+import {
+  getExamRules,
+  maxWrongFor,
+  durationSecondsFor,
+  isExamPassed,
+  clampExamQuestionCount,
+} from "@/services/examRules";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import type { OfflineQuestion } from "../../types/desktop";
 import {
-  startSecureExamSession,
-  checkExamAnswer,
-  saveExamResult,
+  getExamQuestions,
+  finalizeExamResult,
   addWrongAnswer,
   recordQuestionAttempt,
-  localizeQ,
-  localizeOpt,
   parseOptions,
-  submitExamSession,
+  getActiveExamSessionId,
+  toggleSavedQuestion,
 } from "../../services/desktopAdapter";
-import SecureImage from "../../components/common/SecureImage";
-import ImageZoomModal from "../../components/common/ImageZoomModal";
-import ColorMode from "../../components/other/ColorMode";
-import LanguagePicker from "../../components/language/LanguagePicker";
+import { isFakeLocalSessionId } from "../../services/offlineExamRecord";
+import storageService from "../../services/storageService";
+import { remainingSecondsUntil } from "../../components/quiz/ExamTimerDisplay";
+import { ExamDesktopView, useDebouncedSave, isMistakeLimitExceeded, countResults } from "../../features/ExamDesktop";
+import "../../styles/exam-desktop.css";
 import SEO from "../../components/common/SEO";
 import GamificationResult from "../../components/quiz/GamificationResult";
 import QuizReviewModal from "../../components/quiz/QuizReviewModal";
-import ConfirmFinishModal from "../../components/quiz/ConfirmFinishModal";
-import ExamTimerAnnouncer from "../../components/quiz/ExamTimerAnnouncer";
-import KeyboardHint from "../../components/quiz/KeyboardHint";
-import { useExamTimer } from "../../hooks/useExamTimer";
-import { useExamHotkeys } from "../../hooks/useExamHotkeys";
-import { useExamLeaveGuard } from "../../hooks/useExamLeaveGuard";
-import {
-  durationSecondsFor,
-  getExamRulesSync,
-  isExamPassed,
-  maxAllowedWrong,
-  useExamRules,
-} from "../../services/examRules";
-import {
-  buildExamLoaderKey,
-  clearExamSnapshot,
-  readExamSnapshot,
-  writeExamSnapshot,
-  type ExamSnapshot,
-} from "../../services/examSnapshot";
-import { errorKeyFor, getErrorMessage } from "../../types/errors";
-import { reportError } from "../../utils/monitoring";
-import { scopedUserId } from "../../utils/userScope";
-import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconCheck,
-  IconX,
-  IconArrowLeft,
-  IconSteeringWheel,
-  IconAlertTriangle,
-  IconRefresh,
-} from "@tabler/icons-react";
+import { dbClient } from "../../database";
+import { generateUUID } from "../../sync/outboxQueue";
+import { showToast } from "../../utils/notificationUtils";
+import OfflinePreparationModal from "../../components/offline/OfflinePreparationModal";
+import { IconArrowLeft, IconAlertTriangle, IconDownload, IconRefresh } from "@tabler/icons-react";
+import { errorMessage } from "../../services/safeError";
 
 type Phase = "loading" | "exam" | "result";
 
-/**
- * `correct` = -1 — to'g'ri javob hali noma'lum (secure rejim: server
- * `/check-answer` javobi kelmagan yoki tarmoq xatosi).
- */
 interface Answer {
   selected: number;
   correct: number;
 }
-
-/** Yuklash muvaffaqiyatsiz: savol yo'q yoki xato (xato obyekti — matn render paytida tarjima qilinadi). */
-type Failure = { kind: "empty" } | { kind: "error"; error: unknown };
-
-const isKnown = (a: Answer) => a.correct >= 0;
-const isRight = (a: Answer) => isKnown(a) && a.selected === a.correct;
-const isWrong = (a: Answer) => isKnown(a) && a.selected !== a.correct;
-
-const ALLOWED_EXAM_COUNTS = [20, 40, 50, 60, 80, 100];
 
 export default function Exam_Page() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const userId = scopedUserId(user);
+  const userId = resolveUserScopeId(user);
 
-  // Qoidalar serverdan (GET /api/v1/public/exam-rules), offline'da default.
-  const rules = useExamRules();
-  // Standart savollar soni — rasmiy `real.questionCount` (mount paytidagi qiymat
-  // muzlatiladi: qoidalar kechikib yuklansa imtihon qayta boshlanmasin).
-  const [defaultCount] = useState(() => getExamRulesSync().real.questionCount);
-  const countParam = Number(searchParams.get("count"));
-  const questionCount = ALLOWED_EXAM_COUNTS.includes(countParam) ? countParam : defaultCount;
-  // Ruxsat etilgan xatolar: floor(real.maxWrong × savollar / real.questionCount)
-  // (default 3/20 qoidasida: 20→3, 40→6, 50→7, 60→9, 80→12, 100→15).
-  const MAX_WRONG = maxAllowedWrong(questionCount, rules);
+  // Exam rules (server-driven, cached; defaults: 20 savol, 60 s/savol, max 3 xato — 4-xato imtihonni tugatadi) — fixed for this page's lifetime
+  const [rules] = useState(getExamRules);
+  // ?count= is bounded to [1, MAX_EXAM_QUESTION_COUNT]; anything else → the official count.
+  const questionCount = clampExamQuestionCount(searchParams.get("count"), rules);
+  const MAX_WRONG = maxWrongFor(questionCount, rules); // 20→3 (default rules), scaled for other counts
+  const EXAM_SECONDS = durationSecondsFor("real", questionCount, rules);
 
   const [phase, setPhase] = useState<Phase>("loading");
   const [questions, setQuestions] = useState<OfflineQuestion[]>([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
+  /** Absolute deadline (epoch ms) — persisted for crash recovery. */
+  const [deadline, setDeadline] = useState<number>(() => Date.now() + EXAM_SECONDS * 1000);
   const [isTimeUp, setIsTimeUp] = useState(false);
-  const [failure, setFailure] = useState<Failure | null>(null);
-  const [zoomSrc, setZoomSrc] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [savedScore, setSavedScore] = useState(0);
   const [reviewOpen, setReviewOpen] = useState(false);
-  const [confirmFinishOpen, setConfirmFinishOpen] = useState(false);
-  /** Taymer davomiyligi (soniya) — start/resume paytida absolyut deadline'dan hisoblanadi. */
-  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [showOfflineModal, setShowOfflineModal] = useState(false);
+  const [savedIds, setSavedIds] = useState<Set<number>>(() => {
+    try {
+      const list = storageService.getSavedQuestions();
+      return new Set(list.map((s) => s.question.id));
+    } catch {
+      return new Set();
+    }
+  });
+
+  const handleToggleSave = useCallback(
+    (q: OfflineQuestion) => {
+      toggleSavedQuestion(userId, q);
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(q.id)) next.delete(q.id);
+        else next.add(q.id);
+        return next;
+      });
+    },
+    [userId]
+  );
 
   const startTimeRef = useRef<number>(Date.now());
-  const deadlineRef = useRef<number | null>(null);
   const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // MAX_WRONG oshganda 700 ms kechiktirilgan yakunlash — unmount'da tozalanadi
-  const finishDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const answersRef = useRef(answers);
   answersRef.current = answers;
   const questionsRef = useRef(questions);
   questionsRef.current = questions;
-  // Server sessiya ID — komponent darajasida (modul global emas)
-  const sessionIdRef = useRef<number | null>(null);
+  const deadlineRef = useRef(deadline);
+  deadlineRef.current = deadline;
+  const serverSessionIdRef = useRef<number | null>(null);
   const finishedRef = useRef(false);
-  // Eskirgan (bekor qilingan) yuklash javoblarini e'tiborsiz qoldirish uchun
-  const loadSeqRef = useRef(0);
-
-  // W-01: savollarni qayta yuklash FAQAT shu kalit o'zgarganda — til (t) unga kirmaydi.
-  const loaderKey = buildExamLoaderKey({ mode: "exam", userId, questionCount });
-
-  const guard = useExamLeaveGuard(phase === "exam", () => clearExamSnapshot("exam"));
 
   const onBack = () => navigate("/me");
 
-  // Unmount: kutilayotgan barcha taymerlarni tozalash
+  // Beforeunload listener during exam
   useEffect(() => {
-    return () => {
-      if (autoRef.current) clearTimeout(autoRef.current);
-      if (finishDelayRef.current) clearTimeout(finishDelayRef.current);
+    if (phase !== "exam") return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
     };
-  }, []);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [phase]);
 
-  // Scroll current question into view
-  useEffect(() => {
-    const el = document.getElementById(`qnum-${current}`);
-    el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-  }, [current]);
+  const localSessionIdRef = useRef<string>(generateUUID());
+  const questionsJsonRef = useRef<string>("[]");
+  const currentRef = useRef(current);
+  currentRef.current = current;
 
-  const resetState = () => {
-    setAnswers({});
-    answersRef.current = {};
-    setCurrent(0);
-    setIsTimeUp(false);
-    setFailure(null);
-    setReviewOpen(false);
-    sessionIdRef.current = null;
-    deadlineRef.current = null;
-    finishedRef.current = false;
-  };
-
-  const startFresh = () => {
-    const seq = ++loadSeqRef.current;
-    clearExamSnapshot("exam");
-    setPhase("loading");
-    resetState();
-
-    // P1-W4: SECURE rejim — to'g'ri javoblar klientga yuklanmaydi,
-    // baholash serverda (`/api/v2/exams/submit`).
-    startSecureExamSession(questionCount)
-      .then(({ sessionId, questions: qs }) => {
-        if (seq !== loadSeqRef.current) return;
-        if (qs.length === 0 || !sessionId) {
-          setFailure({ kind: "empty" });
-          setPhase("result");
-          return;
-        }
-        const total = durationSecondsFor(qs.length, getExamRulesSync().real.secondsPerQuestion);
-        const now = Date.now();
-        sessionIdRef.current = sessionId;
-        startTimeRef.current = now;
-        deadlineRef.current = now + total * 1000;
-        setTimerSeconds(total);
-        setQuestions(qs);
-        questionsRef.current = qs;
-        setPhase("exam");
-      })
-      .catch((err: unknown) => {
-        if (seq !== loadSeqRef.current) return;
-        // api.ts 5xx/tarmoq uchun global toast ko'rsatadi — bu yerda faqat inline xato + "Qayta urinish".
-        setFailure({ kind: "error", error: err });
-        setPhase("result");
-      });
-  };
-
-  const triggerFinish = (timeUp = false) => {
-    if (finishedRef.current) return;
-    finishedRef.current = true;
-    clearExamSnapshot("exam");
-    if (finishDelayRef.current) {
-      clearTimeout(finishDelayRef.current);
-      finishDelayRef.current = null;
-    }
-    if (autoRef.current) {
-      clearTimeout(autoRef.current);
-      autoRef.current = null;
-    }
+  /** Debounced (~500 ms) crash-recovery progress write. */
+  const progressSaver = useDebouncedSave((snap: { answers: Record<number, Answer>; index: number }) => {
     const qs = questionsRef.current;
-    const curAnswers = answersRef.current;
-    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
-    deadlineRef.current = null;
-    // Vaqtinchalik hisob (/check-answer asosida) — server natijasi kelsa almashtiriladi
-    const correct = Object.values(curAnswers).filter(isRight).length;
-    const total = qs.length || questionCount;
-    const score = total > 0 ? Math.round((correct / total) * 100) : 0;
-    const answeredCount = Object.keys(curAnswers).length;
-    // Vaqtinchalik o'tdi/o'tmadi: tekshirilmagan javoblar to'g'ri deb hisoblanmaydi
-    const localPassed = isExamPassed(
-      {
-        mode: "real",
-        total,
-        correct,
-        wrong: Math.max(0, answeredCount - correct),
-        unanswered: Math.max(0, total - answeredCount),
-      },
-      rules,
-    );
-    setSavedScore(score);
-    setIsTimeUp(timeUp);
-    setPhase("result");
+    const { correct: correctSoFar } = countResults(snap.answers);
+    return dbClient
+      .saveExamSession({
+        local_id: localSessionIdRef.current,
+        server_id: serverSessionIdRef.current,
+        exam_type: "EXAM",
+        status: "IN_PROGRESS",
+        total_questions: qs.length,
+        correct_answers: correctSoFar,
+        score: qs.length > 0 ? Math.round((correctSoFar / qs.length) * 100) : 0,
+        duration_seconds: Math.floor((Date.now() - startTimeRef.current) / 1000),
+        time_remaining_seconds: remainingSecondsUntil(deadlineRef.current),
+        deadline_at: deadlineRef.current,
+        started_at: startTimeRef.current,
+        completed_at: null,
+        answers_json: JSON.stringify(snap.answers),
+        questions_json: questionsJsonRef.current,
+        current_index: snap.index,
+        synced: 0,
+      })
+      .catch(() => {});
+  });
 
-    const sessionId = sessionIdRef.current;
-    sessionIdRef.current = null;
-    if (!sessionId || qs.length === 0) return;
+  /** Grade + persist + report. Uses refs so it also works right after a crash restore. */
+  const triggerFinish = useCallback(
+    (timeUp = false) => {
+      if (finishedRef.current) return;
+      finishedRef.current = true;
+      progressSaver.cancel();
+      if (autoRef.current) {
+        clearTimeout(autoRef.current);
+        autoRef.current = null;
+      }
+      const curAnswers = answersRef.current;
+      const qs = questionsRef.current;
+      const now = Date.now();
+      const duration = Math.max(0, Math.floor((Math.min(now, deadlineRef.current) - startTimeRef.current) / 1000));
+      const correct = Object.values(curAnswers).filter((a) => a.selected === a.correct).length;
+      const total = qs.length || questionCount;
+      const answeredCount = Object.keys(curAnswers).length;
+      const wrong = answeredCount - correct;
+      const unanswered = Math.max(0, total - answeredCount);
+      const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+      const passed = isExamPassed({ mode: "real", total, correct, wrong, unanswered }, rules);
+      setSavedScore(score);
+      setIsTimeUp(timeUp);
+      setPhase("result");
 
-    const answersPayload = qs.map((q, idx) => ({
-      questionId: q.id,
-      selectedOptionIndex: curAnswers[idx]?.selected ?? null,
-    }));
-    // Xato bo'lsa submitExamSession o'zi navbatga qo'yadi va bildirishnoma ko'rsatadi
-    void submitExamSession(sessionId, answersPayload).then((outcome) => {
-      const result = outcome.ok ? outcome.result : null;
-      if (!result) {
-        // Server natijasi yo'q (navbatga qo'yildi) — lokal statistika vaqtinchalik hisob bilan
-        saveExamResult({
+      // Mark session completed in local crash-recovery database (outcome persisted with the record)
+      dbClient
+        .completeExamSession(localSessionIdRef.current, {
+          status: "COMPLETED",
+          correct_answers: correct,
+          score,
+          duration_seconds: duration,
+          completed_at: now,
+          mode: "real",
+          passed,
+          wrong_answers: wrong,
+          unanswered,
+        })
+        .catch(() => {});
+
+      // Local history + server report (/submit or /record-offline via the outbox); failures → toast.
+      void finalizeExamResult(
+        {
           userId,
           score,
           totalQuestions: total,
           correctAnswers: correct,
           durationSeconds: duration,
           examType: "exam",
-          passed: localPassed,
-        }).catch((e) => reportError("exam.saveResult", e));
-        return;
-      }
-
-      // Server natijasidagi to'g'ri javoblar bilan natija/review ma'lumotini yangilash
-      const byQid = new Map(
-        (result.answerDetails ?? []).map((d) => [d.questionId, d] as const),
-      );
-      setQuestions((prev) =>
-        prev.map((q) => {
-          const d = byQid.get(q.id);
-          return d && typeof d.correctOptionIndex === "number"
-            ? { ...q, correct_option: d.correctOptionIndex }
-            : q;
-        }),
-      );
-      const next: Record<number, Answer> = { ...answersRef.current };
-      qs.forEach((q, idx) => {
-        const d = byQid.get(q.id);
-        if (next[idx] && d && typeof d.correctOptionIndex === "number") {
-          next[idx] = { ...next[idx], correct: d.correctOptionIndex };
+          mode: "real",
+          wrongAnswers: wrong,
+          unanswered,
+          passed,
+        },
+        {
+          serverSessionId: serverSessionIdRef.current,
+          localSessionId: localSessionIdRef.current,
+          examType: "real",
+          targetId: null,
+          questions: qs,
+          answers: curAnswers,
+          durationSeconds: duration,
+          completedAt: now,
         }
-      });
-      answersRef.current = next;
-      setAnswers(next);
-
-      const serverTotal = result.totalQuestions || total;
-      const serverScore =
-        result.percentage != null
-          ? Math.round(result.percentage)
-          : serverTotal > 0
-            ? Math.round((result.correctCount / serverTotal) * 100)
-            : 0;
-      setSavedScore(serverScore);
-      saveExamResult({
-        userId,
-        score: serverScore,
-        totalQuestions: serverTotal,
-        correctAnswers: result.correctCount,
-        durationSeconds: duration,
-        examType: "exam",
-        passed:
-          typeof result.isPassed === "boolean"
-            ? result.isPassed
-            : isExamPassed(
-                {
-                  mode: "real",
-                  total: serverTotal,
-                  correct: result.correctCount,
-                  wrong: result.incorrectCount,
-                  unanswered: result.unansweredCount,
-                },
-                rules,
-              ),
-      }).catch((e) => reportError("exam.saveResult", e));
-    });
-  };
-
-  /**
-   * W-07: sahifa yangilangan bo'lsa — sessionStorage snapshot'dan davom etish;
-   * muddati o'tgan bo'lsa darhol yakunlash (natija + submit); aks holda yangi imtihon.
-   */
-  const resumeOrStart = () => {
-    const snap = readExamSnapshot<OfflineQuestion, Answer>("exam", loaderKey);
-    if (snap.status === "none") {
-      startFresh();
-      return;
-    }
-    loadSeqRef.current++;
-    resetState();
-    const s = snap.snapshot;
-    sessionIdRef.current = s.sessionId;
-    startTimeRef.current = s.startedAt;
-    deadlineRef.current = s.deadline;
-    setQuestions(s.questions);
-    questionsRef.current = s.questions;
-    setAnswers(s.answers);
-    answersRef.current = s.answers;
-    setCurrent(s.current);
-    if (snap.status === "expired") {
-      triggerFinish(true);
-      return;
-    }
-    setTimerSeconds(snap.remainingSeconds);
-    setPhase("exam");
-  };
-
-  const initRef = useRef(resumeOrStart);
-  useEffect(() => {
-    initRef.current = resumeOrStart;
-  });
-  useEffect(() => {
-    initRef.current();
-  }, [loaderKey]);
-
-  // W-07: har javob / savol almashganda snapshot (absolyut deadline bilan)
-  useEffect(() => {
-    if (phase !== "exam" || finishedRef.current || deadlineRef.current == null) return;
-    const snapshot: Omit<ExamSnapshot<OfflineQuestion, Answer>, "v"> = {
-      kind: "exam",
-      scope: loaderKey,
-      sessionId: sessionIdRef.current,
-      questions,
-      answers,
-      current,
-      deadline: deadlineRef.current,
-      startedAt: startTimeRef.current,
-    };
-    writeExamSnapshot(snapshot);
-  }, [phase, questions, answers, current, loaderKey]);
-
-  // P2-W5: deadline asosidagi taymer; onExpire bir marta, state updater tashqarisida.
-  const { timeLeft, warning: timerWarning } = useExamTimer({
-    durationSeconds: timerSeconds,
-    running: phase === "exam",
-    onExpire: () => {
-      triggerFinish(true);
-    },
-  });
-
-  const handleSelect = (optIdx: number) => {
-    if (answers[current] !== undefined || finishedRef.current) return;
-    const qIdx = current;
-    const q = questions[qIdx];
-    if (!q) return;
-    const opts = parseOptions(q.options_json);
-    if (optIdx >= opts.length) return;
-    if (autoRef.current) {
-      clearTimeout(autoRef.current);
-      autoRef.current = null;
-    }
-
-    // Javob darhol qayd etiladi; to'g'riligi serverdan (/check-answer) so'raladi.
-    const pendingAns: Record<number, Answer> = {
-      ...answersRef.current,
-      [qIdx]: { selected: optIdx, correct: -1 },
-    };
-    setAnswers(pendingAns);
-    answersRef.current = pendingAns;
-
-    const advance = () => {
-      if (finishedRef.current) return;
-      if (qIdx < questions.length - 1) {
-        autoRef.current = setTimeout(
-          () => setCurrent((c) => (c === qIdx ? c + 1 : c)),
-          700,
-        );
-      }
-    };
-
-    void checkExamAnswer(q.id, optIdx).then((res) => {
-      if (finishedRef.current) return;
-      if (!res) {
-        // Tekshirib bo'lmadi (offline) — baho submit paytida serverda hisoblanadi
-        advance();
-        return;
-      }
-      const checkedQ: OfflineQuestion = { ...q, correct_option: res.correctOptionIndex };
-      setQuestions((prev) => prev.map((pq, i) => (i === qIdx ? checkedQ : pq)));
-      if (!res.isCorrect) {
-        addWrongAnswer(userId, checkedQ).catch((e) => reportError("exam.addWrongAnswer", e));
-      }
-      recordQuestionAttempt(userId, q.id, res.isCorrect, "exam").catch((e) =>
-        reportError("exam.recordAttempt", e),
       );
+    },
+    [questionCount, rules, userId, progressSaver]
+  );
+
+  const loadQuestions = useCallback(
+    async (forceFresh = false) => {
+      setPhase("loading");
+      setAnswers({});
+      answersRef.current = {};
+      setCurrent(0);
+      setIsTimeUp(false);
+      setErrorMsg(null);
+      finishedRef.current = false;
+
+      // Crash recovery: check for existing active exam session in SQLite / IndexedDB
+      if (!forceFresh) {
+        try {
+          const active = await dbClient.getActiveExamSession("EXAM");
+          if (active && active.questions_json && Date.now() - active.started_at < 24 * 60 * 60 * 1000) {
+            const restoredQs: OfflineQuestion[] = JSON.parse(active.questions_json);
+            const restoredAns: Record<number, Answer> = JSON.parse(active.answers_json || "{}");
+            const restoredDeadline =
+              active.deadline_at ??
+              active.started_at + durationSecondsFor("real", restoredQs.length || questionCount, rules) * 1000;
+
+            if (restoredQs.length > 0) {
+              localSessionIdRef.current = active.local_id;
+              serverSessionIdRef.current =
+                active.server_id != null && !isFakeLocalSessionId(active.server_id) ? active.server_id : null;
+              setQuestions(restoredQs);
+              questionsRef.current = restoredQs;
+              questionsJsonRef.current = active.questions_json;
+              setAnswers(restoredAns);
+              answersRef.current = restoredAns;
+              setCurrent(active.current_index || 0);
+              startTimeRef.current = active.started_at;
+              setDeadline(restoredDeadline);
+              deadlineRef.current = restoredDeadline;
+
+              if (restoredDeadline <= Date.now()) {
+                // Time ran out while the app was closed → submit what was answered.
+                triggerFinish(true);
+                return;
+              }
+              setPhase("exam");
+
+              showToast({
+                id: "exam-crash-restored",
+                dedupeKey: "exam-crash-restored",
+                title: t("exam.sessionRestored", "Sessiya tiklandi"),
+                message: t(
+                  "exam.sessionRestoredDesc",
+                  "Avvalgi yakunlanmagan imtihon holati avtomatik tiklandi"
+                ),
+                color: "blue",
+              });
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn("Lokal imtihon tiklashda xatolik:", errorMessage(err));
+        }
+      }
+
+      // Fresh exam session
+      try {
+        const qs = await getExamQuestions(questionCount);
+        if (qs.length === 0) {
+          setErrorMsg(t("exam.noQuestions", "Savollar topilmadi"));
+          setPhase("result");
+          return;
+        }
+
+        const newId = generateUUID();
+        const startedAt = Date.now();
+        const examSeconds = durationSecondsFor("real", qs.length, rules);
+        const newDeadline = startedAt + examSeconds * 1000;
+        localSessionIdRef.current = newId;
+        serverSessionIdRef.current = getActiveExamSessionId();
+        setQuestions(qs);
+        questionsRef.current = qs;
+        questionsJsonRef.current = JSON.stringify(qs);
+        startTimeRef.current = startedAt;
+        setDeadline(newDeadline);
+        deadlineRef.current = newDeadline;
+        setPhase("exam");
+
+        await dbClient.saveExamSession({
+          local_id: newId,
+          server_id: serverSessionIdRef.current,
+          exam_type: "EXAM",
+          status: "IN_PROGRESS",
+          total_questions: qs.length,
+          correct_answers: 0,
+          score: 0,
+          duration_seconds: 0,
+          time_remaining_seconds: examSeconds,
+          deadline_at: newDeadline,
+          started_at: startedAt,
+          completed_at: null,
+          answers_json: "{}",
+          questions_json: questionsJsonRef.current,
+          current_index: 0,
+          synced: 0,
+        });
+      } catch (e) {
+        console.warn("Imtihon savollarini yuklab bo'lmadi:", e instanceof Error ? e.message : e);
+        setErrorMsg(t("exam.loadFailed", "Savollarni yuklab bo'lmadi. Qayta urinib ko'ring."));
+        setPhase("result");
+      }
+    },
+    [questionCount, rules, t, triggerFinish]
+  );
+
+  useEffect(() => {
+    loadQuestions();
+  }, [loadQuestions]);
+
+  const handleSelect = useCallback(
+    (optIdx: number) => {
+      if (phase !== "exam" || finishedRef.current) return;
+      const idx = currentRef.current;
+      if (answersRef.current[idx] !== undefined) return;
+      const q = questionsRef.current[idx];
+      if (!q) return;
+      const opts = parseOptions(q.options_json);
+      if (optIdx >= opts.length) return;
+
+      const isCorrect = optIdx === q.correct_option;
+      if (!isCorrect) {
+        addWrongAnswer(userId, q).catch(() => {});
+      }
+      recordQuestionAttempt(userId, q.id, isCorrect, "exam").catch(() => {});
 
       const newAns: Record<number, Answer> = {
         ...answersRef.current,
-        [qIdx]: { selected: optIdx, correct: res.correctOptionIndex },
+        [idx]: { selected: optIdx, correct: q.correct_option },
       };
       setAnswers(newAns);
       answersRef.current = newAns;
 
-      // Ruxsat etilgan xatolar soni oshdi — imtihon yakunlanadi
-      const wrongNow = Object.values(newAns).filter(isWrong).length;
-      if (wrongNow > MAX_WRONG) {
-        if (finishDelayRef.current) clearTimeout(finishDelayRef.current);
-        finishDelayRef.current = setTimeout(() => {
-          finishDelayRef.current = null;
-          triggerFinish(false);
-        }, 700);
-        return;
-      }
-      advance();
-    });
-  };
+      // Persist progress immediately after every answer (crash resistance)
+      void progressSaver.saveNow({ answers: newAns, index: idx });
 
-  // W-16: yagona klaviatura boshqaruvi (1–5 / A–D, ←/→, Enter)
-  const lastIdx = Math.max(0, questions.length - 1);
-  useExamHotkeys({
-    enabled: phase === "exam",
-    blocked: confirmFinishOpen || !!zoomSrc || guard.blocked,
-    optionCount: questions[current] ? parseOptions(questions[current].options_json).length : 0,
-    onSelect: handleSelect,
-    onPrev: () => setCurrent((c) => Math.max(0, c - 1)),
-    onNext: () => setCurrent((c) => Math.min(lastIdx, c + 1)),
-    onEnter: () => {
-      if (answers[current] !== undefined && current < lastIdx) {
-        setCurrent((c) => Math.min(lastIdx, c + 1));
+      // Up to MAX_WRONG mistakes are allowed; the next one (default rules: the 4th) ends the exam.
+      if (isMistakeLimitExceeded(countResults(newAns).wrong, MAX_WRONG)) {
+        autoRef.current = setTimeout(() => triggerFinish(false), 900);
       }
     },
-  });
+    [phase, userId, progressSaver, MAX_WRONG, triggerFinish]
+  );
 
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
-  };
+  const handleGoto = useCallback(
+    (i: number) => {
+      setCurrent(i);
+      progressSaver.schedule({ answers: answersRef.current, index: i });
+    },
+    [progressSaver]
+  );
+  const handleFinish = useCallback(() => triggerFinish(false), [triggerFinish]);
+  const persistProgress = useCallback(
+    () => progressSaver.saveNow({ answers: answersRef.current, index: currentRef.current }),
+    [progressSaver]
+  );
+  const handleExit = useCallback(() => navigate("/me"), [navigate]);
+  const handleTimeUp = useCallback(() => triggerFinish(true), [triggerFinish]);
+  const examLabel = useMemo(() => t("examDesktop.modeReal", "Imtihon"), [t]);
 
-  const timerIsRed = timeLeft <= 60;
-  const timerIsYellow = !timerIsRed && timeLeft <= 300;
+  useEffect(
+    () => () => {
+      if (autoRef.current) clearTimeout(autoRef.current);
+    },
+    []
+  );
 
   // ─── LOADING ───
   if (phase === "loading") {
     return (
       <div className="loading-screen">
         <div className="spinner" />
-        <p>{t("common.loading")}</p>
+        <p>{t("common.loading", "Yuklanmoqda...")}</p>
       </div>
     );
   }
 
   // ─── RESULT ───
   if (phase === "result") {
-    const correct = Object.values(answers).filter(isRight).length;
-    const wrong = Object.values(answers).filter(isWrong).length;
+    const correct = Object.values(answers).filter((a) => a.selected === a.correct).length;
+    const wrong = Object.values(answers).length - correct;
     const total = questions.length || questionCount;
     const answered = Object.keys(answers).length;
     const unanswered = total - answered;
     const score = total > 0 ? Math.round((correct / total) * 100) : savedScore;
 
-    if (failure) {
-      const message =
-        failure.kind === "empty"
-          ? t("exam.noQuestions")
-          : getErrorMessage(failure.error, t(errorKeyFor(failure.error, "notification.startError")));
+    if (errorMsg) {
       return (
         <div className="exam-result-screen">
-          <div className="exam-result-card">
+          <div className="exam-result-card" style={{ maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
             <div className="exam-result-icon failed">
               <IconAlertTriangle size={36} stroke={1.5} />
             </div>
-            <h2 className="exam-result-title failed">{t("common.error")}</h2>
-            <p className="exam-result-sub">{message}</p>
-            <div className="exam-result-actions">
-              <button className="exam-result-btn primary" onClick={startFresh} type="button">
-                <IconRefresh size={18} /> {t("common.retry")}
+            <h2 className="exam-result-title failed">{t("common.error", "Xatolik")}</h2>
+            <p className="exam-result-sub" style={{ marginBottom: 20 }}>
+              {errorMsg === t("exam.noQuestions", "Savollar topilmadi")
+                ? t("offline.questionsNotPreloaded", "Lokal bazada savollar topilmadi yoki to'liq tayyorlanmagan.")
+                : errorMsg}
+            </p>
+            <div className="exam-result-actions" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button
+                className="exam-result-btn primary"
+                onClick={() => loadQuestions()}
+                type="button"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "12px 20px",
+                  fontWeight: 600,
+                  borderRadius: 10,
+                }}
+              >
+                <IconRefresh size={18} /> {t("common.retry", "Qayta urinish")}
               </button>
-              <button className="exam-result-btn" onClick={onBack} type="button">
-                <IconArrowLeft size={18} /> {t("common.backToHome")}
+              <button
+                className="exam-result-btn secondary"
+                onClick={() => setShowOfflineModal(true)}
+                type="button"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "12px 20px",
+                  fontWeight: 600,
+                  borderRadius: 10,
+                }}
+              >
+                <IconDownload size={18} /> {t("offline.prepareDataset", "Offline bazani tayyorlash / yuklash")}
+              </button>
+              <button
+                className="exam-result-btn secondary"
+                onClick={onBack}
+                type="button"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "10px 20px",
+                  borderRadius: 10,
+                }}
+              >
+                <IconArrowLeft size={18} /> {t("common.backToHome", "Bosh sahifaga qaytish")}
               </button>
             </div>
           </div>
+          <OfflinePreparationModal
+            opened={showOfflineModal}
+            onClose={() => setShowOfflineModal(false)}
+            onSuccess={() => {
+              setShowOfflineModal(false);
+              loadQuestions(true);
+            }}
+          />
         </div>
       );
     }
@@ -505,23 +481,22 @@ export default function Exam_Page() {
     return (
       <>
         <SEO
-          title={t("activeTest.results")}
-          description={t("activeTest.resultsDesc")}
+          title={t("activeTest.results", "Imtihon natijasi")}
+          description={t("exam.resultSeoDesc", "Imtihon natijalari va statistikasi")}
           canonical="/exam"
-          noIndex={true}
         />
-        <div style={{ height: "100dvh", overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+        <div style={{ height: "100%", flex: 1, minHeight: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <GamificationResult
-            mode="real"
             score={score}
             correct={correct}
             wrong={wrong}
             unanswered={unanswered}
             total={total}
-            title={t("exam.officialTitle")}
-            badge={`${total} ${t("dashboard.questionsUnit")} • ${t("exam.maxWrongAllowed", { max: maxAllowedWrong(total, rules) })}`}
+            title={t("exam.officialTitle", "Rasmiy DTM Imtihon Simulyatori")}
+            badge={`${total} ${t("activeTest.questionsCount", "savol")} • ${t("exam.maxWrongAllowed", { max: MAX_WRONG })}`}
             isTimeUp={isTimeUp}
-            onRetry={startFresh}
+            passed={isExamPassed({ mode: "real", total, correct, wrong, unanswered }, rules)}
+            onRetry={() => loadQuestions(true)}
             onReviewMistakes={() => setReviewOpen(true)}
             onHome={onBack}
           />
@@ -532,209 +507,34 @@ export default function Exam_Page() {
           onClose={() => setReviewOpen(false)}
           questions={questions}
           answers={answers}
+          onToggleSave={handleToggleSave}
+          savedIds={savedIds}
         />
       </>
     );
   }
 
   // ─── EXAM ───
-  const q = questions[current];
-  const options = parseOptions(q.options_json);
-  const answered = answers[current];
-  const correct = Object.values(answers).filter(isRight).length;
-  const wrong = Object.values(answers).filter(isWrong).length;
-
-  const handleFinishClick = () => {
-    const answeredCount = Object.keys(answers).length;
-    if (answeredCount < questions.length) {
-      setConfirmFinishOpen(true);
-    } else {
-      triggerFinish(false);
-    }
-  };
-
   return (
     <>
-      <SEO
-        title={t("seo.exam.title")}
-        description={t("seo.exam.desc")}
-        canonical="/exam"
-        noIndex={true}
-      />
-      <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />
-      <ExamTimerAnnouncer warning={timerWarning} />
-      <div className="exam-screen">
-        {/* ── Top bar ── */}
-        <div className="exam-topbar">
-          <div className="exam-topbar-left">
-            <button
-              className="exam-finish-btn"
-              onClick={handleFinishClick}
-              type="button"
-            >
-              {t("exam.finish")} <IconX size={15} />
-            </button>
-            <span
-              className={`exam-timer${timerIsRed ? " red" : timerIsYellow ? " yellow" : ""}`}
-              role="timer"
-              aria-label={`${t("exam.timeLeft")}: ${formatTime(timeLeft)}`}
-            >
-              {formatTime(timeLeft)}
-            </span>
-          </div>
-
-          <div className="exam-topbar-center">
-            <span className="exam-counter">
-              {current + 1} / {questions.length}
-            </span>
-          </div>
-
-          <div className="exam-topbar-right">
-            <span className="exam-score-chip green">
-              <IconCheck size={13} /> {correct}
-            </span>
-            <span className="exam-score-chip red">
-              <IconX size={13} /> {wrong} / {MAX_WRONG}
-            </span>
-            <ColorMode />
-            <LanguagePicker />
-          </div>
-        </div>
-
-        {/* ── Question text ── */}
-        <div className="exam-question-header">
-          <p className="exam-question-text">{localizeQ(q)}</p>
-        </div>
-
-        {/* ── Two-column body ── */}
-        <div className="exam-two-col">
-          {/* Left: options */}
-          <div className="exam-col-options">
-            {options.map((opt, idx) => {
-              let cls = "exam-option";
-              if (answered) {
-                if (!isKnown(answered)) {
-                  // Server tekshiruvi kutilmoqda / noma'lum
-                  if (idx === answered.selected) cls += " selected";
-                } else if (idx === answered.correct) cls += " correct";
-                else if (idx === answered.selected) cls += " wrong";
-              }
-              return (
-                <button
-                  key={idx}
-                  className={cls}
-                  onClick={() => handleSelect(idx)}
-                  disabled={answered !== undefined}
-                  type="button"
-                >
-                  <span className="exam-option-key">{idx + 1}</span>
-                  <span className="exam-option-text">{localizeOpt(opt)}</span>
-                  {answered && isKnown(answered) && idx === answered.correct && (
-                    <IconCheck size={15} className="opt-icon correct" />
-                  )}
-                  {answered &&
-                    isKnown(answered) &&
-                    idx === answered.selected &&
-                    idx !== answered.correct && (
-                      <IconX size={15} className="opt-icon wrong" />
-                    )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Right: image or placeholder */}
-          <div className="exam-col-image">
-            {q.image_path ? (
-              <SecureImage
-                path={q.image_path}
-                className="exam-question-img"
-                onOpen={(src) => setZoomSrc(src)}
-              />
-            ) : (
-              <div className="exam-img-placeholder">
-                <IconSteeringWheel size={52} stroke={1} color="var(--border)" />
-                <span className="exam-placeholder-text">pravaonline.uz</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Bottom: question numbers + nav ── */}
-        <div className="exam-bottom">
-          <div className="exam-bottom-row">
-            <button
-              className="exam-nav-btn"
-              onClick={() => setCurrent((c) => Math.max(0, c - 1))}
-              disabled={current === 0}
-              type="button"
-              title={t("exam.prev")}
-            >
-              <IconChevronLeft size={17} /> <span>{t("exam.prev")}</span>
-            </button>
-
-            <div className="exam-qnums-wrap">
-              <div className="exam-qnums scrollable">
-                {questions.map((_, i) => {
-                  const a = answers[i];
-                  let cls = "exam-qnum";
-                  if (i === current) cls += " active";
-                  else if (a) cls += !isKnown(a) ? " answered" : isRight(a) ? " correct" : " wrong";
-                  return (
-                    <button
-                      key={i}
-                      className={cls}
-                      onClick={() => setCurrent(i)}
-                      id={`qnum-${i}`}
-                      type="button"
-                    >
-                      {i + 1}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {current === questions.length - 1 ? (
-              <button
-                className="exam-nav-btn primary"
-                onClick={handleFinishClick}
-                type="button"
-                title={t("exam.finish")}
-              >
-                <span>{t("exam.finish")}</span> <IconCheck size={17} />
-              </button>
-            ) : (
-              <button
-                className="exam-nav-btn primary"
-                onClick={() => setCurrent((c) => Math.min(questions.length - 1, c + 1))}
-                type="button"
-                title={t("exam.next")}
-              >
-                <span>{t("exam.next")}</span> <IconChevronRight size={17} />
-              </button>
-            )}
-          </div>
-          <KeyboardHint />
-        </div>
-      </div>
-
-      {/* Early finish confirmation modal (Mantine Modal — P2-W6) */}
-      <ConfirmFinishModal
-        opened={confirmFinishOpen}
-        onCancel={() => setConfirmFinishOpen(false)}
-        onConfirm={() => {
-          setConfirmFinishOpen(false);
-          triggerFinish(false);
-        }}
-      />
-
-      {/* W-07: faol imtihondan chiqishni tasdiqlash */}
-      <ConfirmFinishModal
-        variant="leave"
-        opened={guard.blocked}
-        onCancel={guard.stay}
-        onConfirm={guard.leave}
+      <SEO title={t("exam.seoTitle", "Imtihon topshirish")} description={t("exam.seoDesc", "Prava Online haydovchilik imtihoni.")} canonical="/exam" />
+      <ExamDesktopView
+        mode="real"
+        label={examLabel}
+        questions={questions}
+        current={current}
+        answers={answers}
+        onSelect={handleSelect}
+        onGoto={handleGoto}
+        onFinish={handleFinish}
+        deadline={deadline}
+        onTimeUp={handleTimeUp}
+        maxMistakes={MAX_WRONG}
+        autoAdvance="always"
+        bookmarkedIds={savedIds}
+        onToggleBookmark={handleToggleSave}
+        onExit={handleExit}
+        persistProgress={persistProgress}
       />
     </>
   );

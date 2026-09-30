@@ -13,13 +13,13 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useAuth } from "../../../auth/AuthContext";
+import { useAuthModal } from "../../../auth/AuthModalContext";
+import { getPendingReturnUrl, returnUrlQuery } from "../../../auth/pendingAuthRedirect";
 import { useTranslation } from "react-i18next";
 import api from "../../../api/api";
 import { IconBrandTelegram } from "@tabler/icons-react";
 import { ENV } from "../../../config/env";
 import SEO from "../../../components/common/SEO";
-import { loginPath, readReturnTo } from "../../../utils/returnTo";
-import { consumePendingReturnTo, DEFAULT_AFTER_LOGIN } from "../../../auth/useReturnTo";
 
 const REDIRECT_DELAY = 5;
 
@@ -27,15 +27,11 @@ const TelegramCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { executePending } = useAuthModal();
   const { t, i18n } = useTranslation();
   const [error, setError] = useState<"expired" | "invalid" | null>(null);
   const [countdown, setCountdown] = useState(REDIRECT_DELAY);
   const hasProcessed = useRef(false);
-  // W-06: bot oqimidan qaytganda returnTo query'da bo'lmasligi mumkin — saqlangan qiymat
-  // (TelegramLoginButton yozadi) ishlatiladi. Bir marta o'qiladi.
-  const [returnTo] = useState<string | null>(
-    () => readReturnTo(searchParams) ?? consumePendingReturnTo(),
-  );
 
   // Countdown timer for redirect on error
   useEffect(() => {
@@ -45,7 +41,7 @@ const TelegramCallback = () => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate(loginPath(returnTo));
+          navigate(`/auth/login${returnUrlQuery(getPendingReturnUrl())}`);
           return 0;
         }
         return prev - 1;
@@ -53,7 +49,7 @@ const TelegramCallback = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [error, navigate, returnTo]);
+  }, [error, navigate]);
 
   // Process telegram token login
   useEffect(() => {
@@ -87,7 +83,8 @@ const TelegramCallback = () => {
             withBorder: true,
           });
 
-          navigate(returnTo ?? DEFAULT_AFTER_LOGIN, { replace: true });
+          // Restores the intended destination (returnUrl / pending action), else /me (D-03).
+          executePending();
         }
       } catch (err: unknown) {
         const status = (err as { response?: { status?: number } })?.response
@@ -115,7 +112,9 @@ const TelegramCallback = () => {
 
   return (
     <>
-    <SEO title={t("seo.telegramCallback.title")} description={t("seo.telegramCallback.desc")}
+    <SEO
+      title={t("auth.loginWithTelegram")}
+      description={t("auth.seo.loginDescription")}
       canonical="/auth/telegram-callback"
       noIndex
     />
@@ -144,6 +143,7 @@ const TelegramCallback = () => {
                   <Anchor
                     href={`https://t.me/${ENV.TELEGRAM_BOT_USERNAME}`}
                     target="_blank"
+                    rel="noopener noreferrer"
                   >
                     <Button
                       leftSection={<IconBrandTelegram size={20} />}
@@ -162,7 +162,7 @@ const TelegramCallback = () => {
               </>
             ) : (
               <>
-                <IconBrandTelegram size={48} color="#229ED9" />
+                <IconBrandTelegram size={48} color="#229ED9" aria-hidden="true" />
                 <Loader size="md" color="#229ED9" />
                 <Text c="dimmed">
                   {t("auth.telegramCallbackProcessing")}

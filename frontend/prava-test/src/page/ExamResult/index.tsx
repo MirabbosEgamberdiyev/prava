@@ -1,12 +1,14 @@
-import { useTranslation } from 'react-i18next';
 import { ExamResultPage } from "../../features/ExamResult";
 import SEO from "../../components/common/SEO";
+import { useTranslation } from "react-i18next";
 
 const ExamResult_Page = () => {
   const { t } = useTranslation();
   return (
     <>
-      <SEO title={t("seo.examResult.title")} description={t("seo.examResult.desc")}
+      <SEO
+        title={t("activeTest.results", "Imtihon natijasi")}
+        description={t("exam.resultPageSeoDesc", "Imtihon natijalaringizni batafsil ko'ring va xatolaringizni tahlil qiling.")}
         noIndex={true}
       />
 

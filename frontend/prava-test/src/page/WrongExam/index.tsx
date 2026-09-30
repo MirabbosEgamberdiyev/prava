@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { resolveUserScopeId } from "@/utils/userScope";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
@@ -7,47 +8,24 @@ import {
   getWrongAnswers,
   removeWrongAnswer,
   addWrongAnswer,
-  saveExamResult,
+  finalizeExamResult,
   recordQuestionAttempt,
-  localizeQ,
-  localizeOpt,
-  localizeExp,
   parseOptions,
+  toggleSavedQuestion,
+  getSavedQuestions,
 } from "../../services/desktopAdapter";
-import ColorMode from "../../components/other/ColorMode";
-import LanguagePicker from "../../components/language/LanguagePicker";
-import ImageZoomModal, { ZoomableImage } from "../../components/common/ImageZoomModal";
+import { durationSecondsFor, getExamRules, isExamPassed } from "../../services/examRules";
+import { dbClient } from "../../database/dbClient";
+import { generateUUID } from "../../sync/outboxQueue";
+import { showToast } from "../../utils/notificationUtils";
 import SEO from "../../components/common/SEO";
 import GamificationResult from "../../components/quiz/GamificationResult";
 import QuizReviewModal from "../../components/quiz/QuizReviewModal";
-import ConfirmFinishModal from "../../components/quiz/ConfirmFinishModal";
-import ExamTimerAnnouncer from "../../components/quiz/ExamTimerAnnouncer";
-import KeyboardHint from "../../components/quiz/KeyboardHint";
-import { useExamTimer } from "../../hooks/useExamTimer";
-import { useExamHotkeys } from "../../hooks/useExamHotkeys";
-import { useExamLeaveGuard } from "../../hooks/useExamLeaveGuard";
-import { durationSecondsFor, getExamRulesSync, isExamPassed } from "../../services/examRules";
-import {
-  buildExamLoaderKey,
-  clearExamSnapshot,
-  readExamSnapshot,
-  writeExamSnapshot,
-  type ExamSnapshot,
-} from "../../services/examSnapshot";
-import { errorKeyFor, getErrorMessage } from "../../types/errors";
-import { reportError } from "../../utils/monitoring";
-import { scopedUserId } from "../../utils/userScope";
-import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconCheck,
-  IconX,
-  IconArrowLeft,
-  IconSteeringWheel,
-  IconAlertTriangle,
-  IconBulb,
-  IconRefresh,
-} from "@tabler/icons-react";
+import { remainingSecondsUntil } from "../../components/quiz/ExamTimerDisplay";
+import { ExamDesktopView, useDebouncedSave, countResults } from "../../features/ExamDesktop";
+import "../../styles/exam-desktop.css";
+import { IconCheck, IconArrowLeft, IconAlertTriangle, IconRefresh } from "@tabler/icons-react";
+import { errorMessage } from "../../services/safeError";
 
 type Phase = "loading" | "exam" | "result";
 
@@ -56,297 +34,335 @@ interface Answer {
   correct: number;
 }
 
-/** Yuklash natijasi: xatolar ro'yxati bo'sh yoki xato (matn render paytida tarjima qilinadi). */
-type Failure = { kind: "empty" } | { kind: "error"; error: unknown };
-
+/** Smart review: wrong answers are repeated until answered correctly (a correct answer removes them). */
 export default function WrongExam_Page() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const userId = scopedUserId(user);
+  const userId = resolveUserScopeId(user);
 
   const [phase, setPhase] = useState<Phase>("loading");
   const [questions, setQuestions] = useState<OfflineQuestion[]>([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
+  /** Absolute deadline (epoch ms) — 1 min per question; the countdown renders in isolation. */
+  const [deadline, setDeadline] = useState<number>(0);
   const [isTimeUp, setIsTimeUp] = useState(false);
-  const [failure, setFailure] = useState<Failure | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  /** Loading failed (vs. "no wrong answers left", which is a success state). */
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [rules] = useState(getExamRules);
   const [savedScore, setSavedScore] = useState(0);
-  const [showExp, setShowExp] = useState(false);
-  const [zoomSrc, setZoomSrc] = useState<string | null>(null);
-  const [fixedCount, setFixedCount] = useState(0);
   const [reviewOpen, setReviewOpen] = useState(false);
-  const [confirmFinishOpen, setConfirmFinishOpen] = useState(false);
-  /**
-   * Amaliyot taymeri: savol soni × secondsPerQuestion (exam-rules, default 60 s).
-   * Start/resume paytida absolyut deadline'dan hisoblanadi.
-   */
-  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
 
+  const localSessionIdRef = useRef<string>(generateUUID());
   const startTimeRef = useRef<number>(Date.now());
-  const deadlineRef = useRef<number | null>(null);
-  const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const answersRef = useRef(answers);
   answersRef.current = answers;
   const questionsRef = useRef(questions);
   questionsRef.current = questions;
+  const deadlineRef = useRef(deadline);
+  deadlineRef.current = deadline;
+  const currentRef = useRef(current);
+  currentRef.current = current;
+  const questionsJsonRef = useRef<string>("[]");
   const finishedRef = useRef(false);
-  const loadSeqRef = useRef(0);
-
-  // W-01: qayta yuklash FAQAT shu kalit o'zgarganda — til (t) unga kirmaydi.
-  const loaderKey = buildExamLoaderKey({ mode: "wrong", userId });
-
-  const guard = useExamLeaveGuard(phase === "exam", () => clearExamSnapshot("wrong"));
 
   const onBack = () => navigate("/wrong-answers");
 
-  // Unmount: kutilayotgan auto-advance taymerini tozalash
+  // Beforeunload listener during exam
   useEffect(() => {
-    return () => {
-      if (autoRef.current) clearTimeout(autoRef.current);
+    if (phase !== "exam") return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
     };
-  }, []);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [phase]);
 
-  const resetState = () => {
-    setAnswers({});
-    answersRef.current = {};
-    setCurrent(0);
-    setFailure(null);
-    setFixedCount(0);
-    setIsTimeUp(false);
-    setReviewOpen(false);
-    deadlineRef.current = null;
-    finishedRef.current = false;
-  };
+  useEffect(() => {
+    getSavedQuestions(userId)
+      .then((entries) => setSavedIds(new Set(entries.map((e) => e.question.id))))
+      .catch(() => {});
+  }, [userId]);
 
-  const startFresh = () => {
-    const seq = ++loadSeqRef.current;
-    clearExamSnapshot("wrong");
-    setPhase("loading");
-    resetState();
+  /** Debounced (~500 ms) crash-recovery progress write. */
+  const progressSaver = useDebouncedSave((snap: { answers: Record<number, Answer>; index: number }) => {
+    const qs = questionsRef.current;
+    const { correct: correctSoFar } = countResults(snap.answers);
+    return dbClient
+      .saveExamSession({
+        local_id: localSessionIdRef.current,
+        server_id: null,
+        exam_type: "WRONG_EXAM",
+        status: "IN_PROGRESS",
+        total_questions: qs.length,
+        correct_answers: correctSoFar,
+        score: qs.length > 0 ? Math.round((correctSoFar / qs.length) * 100) : 0,
+        duration_seconds: Math.floor((Date.now() - startTimeRef.current) / 1000),
+        time_remaining_seconds: remainingSecondsUntil(deadlineRef.current),
+        deadline_at: deadlineRef.current,
+        started_at: startTimeRef.current,
+        completed_at: null,
+        answers_json: JSON.stringify(snap.answers),
+        questions_json: questionsJsonRef.current,
+        current_index: snap.index,
+        synced: 0,
+      })
+      .catch(() => {});
+  });
 
-    getWrongAnswers(userId)
-      .then((entries) => {
-        if (seq !== loadSeqRef.current) return;
+  const loadQuestions = useCallback(
+    async (forceFresh = false) => {
+      setPhase("loading");
+      setAnswers({});
+      answersRef.current = {};
+      setCurrent(0);
+      setErrorMsg(null);
+      setLoadFailed(false);
+      setIsTimeUp(false);
+      finishedRef.current = false;
+
+      // Crash recovery: check for existing active wrong answers practice session
+      if (!forceFresh) {
+        try {
+          const active = await dbClient.getActiveExamSession("WRONG_EXAM");
+          if (active && active.questions_json && Date.now() - active.started_at < 24 * 60 * 60 * 1000) {
+            const restoredQs: OfflineQuestion[] = JSON.parse(active.questions_json);
+            const restoredAns: Record<number, Answer> = JSON.parse(active.answers_json || "{}");
+
+            if (restoredQs.length > 0) {
+              localSessionIdRef.current = active.local_id;
+              setQuestions(restoredQs);
+              questionsRef.current = restoredQs;
+              questionsJsonRef.current = active.questions_json;
+              setAnswers(restoredAns);
+              answersRef.current = restoredAns;
+              setCurrent(active.current_index || 0);
+              const remaining =
+                active.time_remaining_seconds && active.time_remaining_seconds > 0
+                  ? active.time_remaining_seconds
+                  : durationSecondsFor("ticket", restoredQs.length, rules);
+              const restoredDeadline = active.deadline_at ?? Date.now() + remaining * 1000;
+              setDeadline(restoredDeadline);
+              deadlineRef.current = restoredDeadline;
+              startTimeRef.current = active.started_at || Date.now();
+              setPhase("exam");
+
+              showToast({
+                id: "wrong-exam-restored",
+                dedupeKey: "wrong-exam-restored",
+                title: t("wrongAnswers.sessionRestored", "Mashg'ulot tiklandi"),
+                message: t(
+                  "wrongAnswers.sessionRestoredDesc",
+                  "Avvalgi yakunlanmagan xatolar mashg'uloti avtomatik tiklandi"
+                ),
+                color: "blue",
+              });
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn("Lokal xatolar sessiyasini tiklashda xatolik:", errorMessage(err));
+        }
+      }
+
+      localSessionIdRef.current = generateUUID();
+      try {
+        const entries = await getWrongAnswers(userId);
         const qs = entries.map((e) => e.question);
         if (qs.length === 0) {
-          setFailure({ kind: "empty" });
+          setErrorMsg(t("wrongAnswers.emptySub", "Xatolar mavjud emas"));
           setPhase("result");
           return;
         }
-        const total = durationSecondsFor(qs.length, getExamRulesSync().ticket.secondsPerQuestion);
-        const now = Date.now();
-        startTimeRef.current = now;
-        deadlineRef.current = now + total * 1000;
-        setTimerSeconds(total);
+        const startedAt = Date.now();
+        const initialTime = durationSecondsFor("ticket", qs.length, rules);
+        const newDeadline = startedAt + initialTime * 1000;
         setQuestions(qs);
         questionsRef.current = qs;
+        questionsJsonRef.current = JSON.stringify(qs);
+        setDeadline(newDeadline);
+        deadlineRef.current = newDeadline;
+        startTimeRef.current = startedAt;
         setPhase("exam");
-      })
-      .catch((err: unknown) => {
-        if (seq !== loadSeqRef.current) return;
-        setFailure({ kind: "error", error: err });
+
+        dbClient
+          .saveExamSession({
+            local_id: localSessionIdRef.current,
+            server_id: null,
+            exam_type: "WRONG_EXAM",
+            status: "IN_PROGRESS",
+            total_questions: qs.length,
+            correct_answers: 0,
+            score: 0,
+            duration_seconds: 0,
+            time_remaining_seconds: initialTime,
+            deadline_at: newDeadline,
+            started_at: startedAt,
+            completed_at: null,
+            answers_json: "{}",
+            questions_json: questionsJsonRef.current,
+            current_index: 0,
+            synced: 0,
+          })
+          .catch(() => {});
+      } catch (e) {
+        console.warn("Xatolar mashg'ulotini yuklab bo'lmadi:", e instanceof Error ? e.message : e);
+        setLoadFailed(true);
+        setErrorMsg(t("exam.loadFailed", "Savollarni yuklab bo'lmadi. Qayta urinib ko'ring."));
         setPhase("result");
-      });
-  };
+      }
+    },
+    [userId, rules, t]
+  );
 
   useEffect(() => {
-    setShowExp(false);
-  }, [current]);
+    loadQuestions();
+  }, [loadQuestions]);
 
-  const handleToggleExp = () => {
-    const willOpen = !showExp;
-    setShowExp(willOpen);
-    if (willOpen) {
-      if (autoRef.current) {
-        clearTimeout(autoRef.current);
-        autoRef.current = null;
-      }
-    } else if (current < questions.length - 1) {
-      autoRef.current = setTimeout(() => setCurrent((c) => c + 1), 500);
-    }
-  };
+  const triggerFinish = useCallback(
+    (timeUp = false) => {
+      if (finishedRef.current) return;
+      finishedRef.current = true;
+      progressSaver.cancel();
+      const curAnswers = answersRef.current;
+      const qs = questionsRef.current;
+      const now = Date.now();
+      const duration = Math.floor((now - startTimeRef.current) / 1000);
+      const { correct, wrong, answered: answeredCount } = countResults(curAnswers);
+      const total = qs.length;
+      const unanswered = Math.max(0, total - answeredCount);
+      const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+      const passed = isExamPassed({ mode: "wrong", total, correct, wrong, unanswered }, rules);
+      setSavedScore(score);
+      setIsTimeUp(timeUp);
+      setPhase("result");
 
-  const triggerFinish = (timeUp = false) => {
-    // Ikki marta yakunlanmasin (taymer + tugma bir vaqtda)
-    if (finishedRef.current) return;
-    finishedRef.current = true;
-    clearExamSnapshot("wrong");
-    if (autoRef.current) {
-      clearTimeout(autoRef.current);
-      autoRef.current = null;
-    }
-    const curAnswers = answersRef.current;
-    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
-    deadlineRef.current = null;
-    const correct = Object.values(curAnswers).filter((a) => a.selected === a.correct).length;
-    const total = questionsRef.current.length;
-    const score = total > 0 ? Math.round((correct / total) * 100) : 0;
-    setSavedScore(score);
-    setIsTimeUp(timeUp);
-    setPhase("result");
-
-    saveExamResult({
-      userId,
-      score,
-      totalQuestions: total,
-      correctAnswers: correct,
-      durationSeconds: duration,
-      examType: "wrong_practice",
-      passed: isExamPassed(
-        {
+      dbClient
+        .completeExamSession(localSessionIdRef.current, {
+          status: "COMPLETED",
+          correct_answers: correct,
+          score,
+          duration_seconds: duration,
+          completed_at: now,
           mode: "wrong",
-          total,
-          correct,
-          wrong: Math.max(0, Object.keys(curAnswers).length - correct),
-          unanswered: Math.max(0, total - Object.keys(curAnswers).length),
+          passed,
+          wrong_answers: wrong,
+          unanswered,
+        })
+        .catch(() => {});
+
+      // Local history + /api/v2/exams/record-offline via the outbox (all questions, unanswered = null)
+      void finalizeExamResult(
+        {
+          userId,
+          score,
+          totalQuestions: total,
+          correctAnswers: correct,
+          durationSeconds: duration,
+          examType: "wrong_practice",
+          mode: "wrong",
+          wrongAnswers: wrong,
+          unanswered,
+          passed,
         },
-        getExamRulesSync(),
-      ),
-    }).catch((e) => reportError("wrongExam.saveResult", e));
-  };
-
-  /**
-   * W-07: sahifa yangilangan bo'lsa — sessionStorage snapshot'dan davom etish;
-   * muddati o'tgan bo'lsa darhol yakunlash; aks holda xatolar ro'yxatini yuklash.
-   */
-  const resumeOrStart = () => {
-    const snap = readExamSnapshot<OfflineQuestion, Answer>("wrong", loaderKey);
-    if (snap.status === "none") {
-      startFresh();
-      return;
-    }
-    loadSeqRef.current++;
-    resetState();
-    const s = snap.snapshot;
-    startTimeRef.current = s.startedAt;
-    deadlineRef.current = s.deadline;
-    setQuestions(s.questions);
-    questionsRef.current = s.questions;
-    setAnswers(s.answers);
-    answersRef.current = s.answers;
-    setCurrent(s.current);
-    const fixed = Number(s.extra?.fixedCount);
-    setFixedCount(Number.isFinite(fixed) && fixed > 0 ? fixed : 0);
-    if (snap.status === "expired") {
-      triggerFinish(true);
-      return;
-    }
-    setTimerSeconds(snap.remainingSeconds);
-    setPhase("exam");
-  };
-
-  const initRef = useRef(resumeOrStart);
-  useEffect(() => {
-    initRef.current = resumeOrStart;
-  });
-  useEffect(() => {
-    initRef.current();
-  }, [loaderKey]);
-
-  // W-07: har javob / savol almashganda snapshot (absolyut deadline bilan)
-  useEffect(() => {
-    if (phase !== "exam" || finishedRef.current || deadlineRef.current == null) return;
-    const snapshot: Omit<ExamSnapshot<OfflineQuestion, Answer>, "v"> = {
-      kind: "wrong",
-      scope: loaderKey,
-      sessionId: null,
-      questions,
-      answers,
-      current,
-      deadline: deadlineRef.current,
-      startedAt: startTimeRef.current,
-      extra: { fixedCount },
-    };
-    writeExamSnapshot(snapshot);
-  }, [phase, questions, answers, current, fixedCount, loaderKey]);
-
-  // P2-W5: deadline asosidagi taymer; onExpire bir marta, state updater tashqarisida.
-  const { timeLeft, warning: timerWarning } = useExamTimer({
-    durationSeconds: timerSeconds,
-    running: phase === "exam",
-    onExpire: () => {
-      triggerFinish(true);
+        {
+          serverSessionId: null,
+          localSessionId: localSessionIdRef.current,
+          examType: "wrong",
+          targetId: null,
+          questions: qs,
+          answers: curAnswers,
+          durationSeconds: duration,
+          completedAt: now,
+        }
+      );
     },
-  });
+    [userId, rules, progressSaver]
+  );
 
-  useEffect(() => {
-    document.getElementById(`wrong-qnum-${current}`)?.scrollIntoView({
-      block: "nearest",
-      inline: "center",
-      behavior: "smooth",
-    });
-  }, [current]);
-
-  const handleSelect = (optIdx: number) => {
-    if (answers[current] !== undefined || finishedRef.current) return;
-    const q = questions[current];
-    if (!q) return;
-    const opts = parseOptions(q.options_json);
-    if (optIdx >= opts.length) return;
-    if (autoRef.current) {
-      clearTimeout(autoRef.current);
-      autoRef.current = null;
-    }
-    const isCorrect = optIdx === q.correct_option;
-    if (isCorrect) {
-      removeWrongAnswer(userId, q.id).catch((e) => reportError("wrongExam.removeWrongAnswer", e));
-      setFixedCount((c) => c + 1);
-    } else {
-      addWrongAnswer(userId, q).catch((e) => reportError("wrongExam.addWrongAnswer", e));
-    }
-    recordQuestionAttempt(userId, q.id, isCorrect, "wrong_practice").catch((e) =>
-      reportError("wrongExam.recordAttempt", e),
-    );
-
-    const newAns: Record<number, Answer> = {
-      ...answers,
-      [current]: { selected: optIdx, correct: q.correct_option },
-    };
-    setAnswers(newAns);
-    answersRef.current = newAns;
-
-    if (current < questions.length - 1) {
-      autoRef.current = setTimeout(() => setCurrent((c) => c + 1), 700);
-    }
-  };
-
-  // W-16: yagona klaviatura boshqaruvi (1–5 / A–D, ←/→, Enter, Space — izoh)
-  const lastIdx = Math.max(0, questions.length - 1);
-  useExamHotkeys({
-    enabled: phase === "exam",
-    blocked: confirmFinishOpen || !!zoomSrc || guard.blocked,
-    optionCount: questions[current] ? parseOptions(questions[current].options_json).length : 0,
-    onSelect: handleSelect,
-    onPrev: () => setCurrent((c) => Math.max(0, c - 1)),
-    onNext: () => setCurrent((c) => Math.min(lastIdx, c + 1)),
-    onEnter: () => {
-      if (answers[current] !== undefined && current < lastIdx) {
-        setCurrent((c) => Math.min(lastIdx, c + 1));
+  const handleSelect = useCallback(
+    (optIdx: number) => {
+      if (phase !== "exam" || finishedRef.current) return;
+      const idx = currentRef.current;
+      if (answersRef.current[idx] !== undefined) return;
+      const q = questionsRef.current[idx];
+      if (!q) return;
+      const opts = parseOptions(q.options_json);
+      if (optIdx >= opts.length) return;
+      const isCorrect = optIdx === q.correct_option;
+      if (isCorrect) {
+        // Answered correctly → leaves the review list.
+        removeWrongAnswer(userId, q.id).catch(() => {});
+      } else {
+        addWrongAnswer(userId, q).catch(() => {});
       }
-    },
-    onSpace: () => {
-      if (answers[current] !== undefined && questions[current] && localizeExp(questions[current])) {
-        handleToggleExp();
-      }
-    },
-  });
+      recordQuestionAttempt(userId, q.id, isCorrect, "wrong_practice").catch(() => {});
 
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
-  };
+      const newAns: Record<number, Answer> = {
+        ...answersRef.current,
+        [idx]: { selected: optIdx, correct: q.correct_option },
+      };
+      setAnswers(newAns);
+      answersRef.current = newAns;
+      // Persist immediately after every answer (crash resistance)
+      void progressSaver.saveNow({ answers: newAns, index: idx });
+    },
+    [phase, userId, progressSaver]
+  );
 
-  const timerIsRed = timeLeft <= 60;
-  const timerIsYellow = !timerIsRed && timeLeft <= 60 * 3;
+  const handleToggleSave = useCallback(
+    (q: OfflineQuestion) => {
+      toggleSavedQuestion(userId, q);
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(q.id)) next.delete(q.id);
+        else next.add(q.id);
+        return next;
+      });
+    },
+    [userId]
+  );
+
+  const handleGoto = useCallback(
+    (i: number) => {
+      setCurrent(i);
+      progressSaver.schedule({ answers: answersRef.current, index: i });
+    },
+    [progressSaver]
+  );
+  const handleFinish = useCallback(() => triggerFinish(false), [triggerFinish]);
+  const persistProgress = useCallback(
+    () => progressSaver.saveNow({ answers: answersRef.current, index: currentRef.current }),
+    [progressSaver]
+  );
+  const handleExit = useCallback(() => navigate("/wrong-answers"), [navigate]);
+  const handleTimeUp = useCallback(() => triggerFinish(true), [triggerFinish]);
+
+  const { correct: fixedCount } = useMemo(() => countResults(answers), [answers]);
+  const remainingToFix = Math.max(0, questions.length - fixedCount);
+  const reviewLabel = useMemo(() => t("examDesktop.modeWrong", "Xatolar ustida ishlash"), [t]);
+  const remainingChip = useMemo(
+    () => (
+      <span
+        className="xd-chip xd-chip--info"
+        title={t("examDesktop.reviewRemainingHint", "To'g'ri javob berilgan savollar ro'yxatdan chiqariladi")}
+      >
+        {t("examDesktop.reviewRemaining", "{{count}} qoldi", { count: remainingToFix })}
+      </span>
+    ),
+    [t, remainingToFix]
+  );
 
   // ─── LOADING ───
   if (phase === "loading") {
     return (
       <div className="loading-screen">
         <div className="spinner" />
-        <p>{t("common.loading")}</p>
+        <p>{t("common.loading", "Yuklanmoqda...")}</p>
       </div>
     );
   }
@@ -360,22 +376,21 @@ export default function WrongExam_Page() {
     const unanswered = total - answered;
     const score = total > 0 ? Math.round((correct / total) * 100) : savedScore;
 
-    if (failure?.kind === "error") {
-      const message = getErrorMessage(failure.error, t(errorKeyFor(failure.error, "common.loadError")));
+    if (loadFailed) {
       return (
         <div className="exam-result-screen">
           <div className="exam-result-card">
             <div className="exam-result-icon failed">
               <IconAlertTriangle size={36} stroke={1.5} />
             </div>
-            <h2 className="exam-result-title failed">{t("common.error")}</h2>
-            <p className="exam-result-sub">{message}</p>
+            <h2 className="exam-result-title failed">{t("common.error", "Xatolik")}</h2>
+            <p className="exam-result-sub">{errorMsg}</p>
             <div className="exam-result-actions">
-              <button className="exam-result-btn primary" onClick={startFresh} type="button">
-                <IconRefresh size={18} /> {t("common.retry")}
+              <button className="exam-result-btn primary" onClick={() => loadQuestions()} type="button">
+                <IconRefresh size={18} /> {t("common.retry", "Qayta urinish")}
               </button>
-              <button className="exam-result-btn" onClick={onBack} type="button">
-                <IconArrowLeft size={18} /> {t("common.back")}
+              <button className="exam-result-btn secondary" onClick={onBack} type="button">
+                <IconArrowLeft size={18} /> {t("common.back", "Orqaga")}
               </button>
             </div>
           </div>
@@ -383,7 +398,7 @@ export default function WrongExam_Page() {
       );
     }
 
-    if (failure?.kind === "empty" || questions.length === 0) {
+    if (errorMsg || questions.length === 0) {
       return (
         <div className="exam-result-screen">
           <div className="exam-result-card">
@@ -391,14 +406,14 @@ export default function WrongExam_Page() {
               <IconCheck size={36} stroke={1.5} />
             </div>
             <h2 className="exam-result-title passed">
-              {t("wrongAnswers.emptyTitle")}
+              {t("wrongAnswers.emptyTitle", "Xatolar yo'q!")}
             </h2>
             <p className="exam-result-sub">
-              {t("wrongAnswers.emptySub")}
+              {errorMsg || t("wrongAnswers.emptySub", "Xatolar mavjud emas")}
             </p>
             <div className="exam-result-actions">
               <button className="exam-result-btn primary" onClick={onBack} type="button">
-                <IconArrowLeft size={18} /> {t("common.backToHome")}
+                <IconArrowLeft size={18} /> {t("common.backToHome", "Bosh sahifaga qaytish")}
               </button>
             </div>
           </div>
@@ -409,25 +424,24 @@ export default function WrongExam_Page() {
     return (
       <>
         <SEO
-          title={t("wrongAnswers.title")}
-          description={t("seo.wrongExam.desc")}
+          title={t("wrongAnswers.title", "Xatolar ustida ishlash")}
+          description={t("wrongAnswers.resultSeoDesc", "Xatolar ustida ishlash natijalari")}
           canonical="/wrong-exam"
-          noIndex={true}
         />
-        <div style={{ height: "100dvh", overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+        <div style={{ height: "100%", flex: 1, minHeight: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <GamificationResult
-            mode="wrong"
             score={score}
             correct={correct}
             wrong={wrong}
             unanswered={unanswered}
             total={total}
-            title={t("wrongAnswers.title")}
-            badge={`${total} ${t("dashboard.questionsUnit")}${
-              fixedCount > 0 ? ` • ${fixedCount} ${t("wrongAnswers.fixedShort")}` : ""
+            title={t("wrongAnswers.title", "Xatolar ustida ishlash")}
+            badge={`${total} ${t("activeTest.questionsCount", "savol")}${
+              fixedCount > 0 ? ` • ${fixedCount} ${t("wrongAnswers.fixedShort", "to'g'rilandi")}` : ""
             }`}
             isTimeUp={isTimeUp}
-            onRetry={startFresh}
+            passed={isExamPassed({ mode: "wrong", total, correct, wrong, unanswered }, rules)}
+            onRetry={() => loadQuestions(true)}
             onReviewMistakes={() => setReviewOpen(true)}
             onHome={onBack}
           />
@@ -444,222 +458,31 @@ export default function WrongExam_Page() {
   }
 
   // ─── EXAM ───
-  const q = questions[current];
-  const options = parseOptions(q.options_json);
-  const answered = answers[current];
-  const explanation = answered !== undefined ? localizeExp(q) : null;
-  const correct = Object.values(answers).filter((a) => a.selected === a.correct).length;
-  const wrong = Object.values(answers).length - correct;
-
-  const handleFinishClick = () => {
-    const answeredCount = Object.keys(answers).length;
-    if (answeredCount < questions.length) {
-      setConfirmFinishOpen(true);
-    } else {
-      triggerFinish();
-    }
-  };
-
   return (
     <>
       <SEO
-        title={t("seo.wrongExam.title")}
-        description={t("seo.wrongExam.desc")}
+        title={t("wrongAnswers.title", "Xatolar ustida ishlash")}
+        description={t("wrongAnswers.title", "Xatolar ustida ishlash")}
         canonical="/wrong-exam"
-        noIndex={true}
       />
-      <ExamTimerAnnouncer warning={timerWarning} />
-      <div className="exam-screen">
-        {/* ── Top bar ── */}
-        <div className="exam-topbar">
-          <div className="exam-topbar-left">
-            <button
-              className="exam-finish-btn"
-              onClick={handleFinishClick}
-              type="button"
-            >
-              {t("exam.finish")} <IconX size={15} />
-            </button>
-            <span
-              className={`exam-timer${timerIsRed ? " red" : timerIsYellow ? " yellow" : ""}`}
-              role="timer"
-              aria-label={`${t("exam.timeLeft")}: ${formatTime(timeLeft)}`}
-            >
-              {formatTime(timeLeft)}
-            </span>
-          </div>
-
-          <div className="exam-topbar-center">
-            <span className="exam-ticket-label">
-              <IconAlertTriangle size={14} /> {t("wrongAnswers.title")}
-            </span>
-            <span className="exam-counter">
-              {current + 1} / {questions.length}
-            </span>
-          </div>
-
-          <div className="exam-topbar-right">
-            <span className="exam-score-chip green">
-              <IconCheck size={13} /> {correct}
-            </span>
-            <span className="exam-score-chip red">
-              <IconX size={13} /> {wrong}
-            </span>
-            <ColorMode />
-            <LanguagePicker />
-          </div>
-        </div>
-
-        {/* ── Question text ── */}
-        <div className="exam-question-header">
-          <p className="exam-question-text">{localizeQ(q)}</p>
-        </div>
-
-        {/* ── Two-column body ── */}
-        <div className="exam-two-col">
-          {/* Left: options + explanation */}
-          <div className="exam-col-options">
-            {options.map((opt, idx) => {
-              let cls = "exam-option";
-              if (answered) {
-                if (idx === q.correct_option) cls += " correct";
-                else if (idx === answered.selected) cls += " wrong";
-              }
-              return (
-                <button
-                  key={idx}
-                  className={cls}
-                  onClick={() => handleSelect(idx)}
-                  disabled={!!answered}
-                  type="button"
-                >
-                  <span className="exam-option-key">{idx + 1}</span>
-                  <span className="exam-option-text">{localizeOpt(opt)}</span>
-                  {answered && idx === q.correct_option && (
-                    <IconCheck size={15} className="opt-icon correct" />
-                  )}
-                  {answered &&
-                    idx === answered.selected &&
-                    idx !== q.correct_option && (
-                      <IconX size={15} className="opt-icon wrong" />
-                    )}
-                </button>
-              );
-            })}
-
-            {explanation && (
-              <div className="quiz-explanation-wrap" style={{ marginTop: 10 }}>
-                <button
-                  className="quiz-explanation-toggle"
-                  onClick={handleToggleExp}
-                  type="button"
-                >
-                  <IconBulb size={15} />
-                  {showExp
-                    ? t("marathon.hideExplanation")
-                    : t("marathon.showExplanation")}
-                </button>
-                {showExp && (
-                  <div className="quiz-explanation-text">{explanation}</div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Right: image or placeholder */}
-          <div className="exam-col-image">
-            {q.image_path ? (
-              <ZoomableImage
-                path={q.image_path}
-                className="exam-question-img"
-                onOpen={(src) => setZoomSrc(src)}
-              />
-            ) : (
-              <div className="exam-img-placeholder">
-                <IconSteeringWheel size={52} stroke={1} color="var(--border)" />
-                <span className="exam-placeholder-text">pravaonline.uz</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />
-
-        {/* ── Bottom: question numbers + nav ── */}
-        <div className="exam-bottom">
-          <div className="exam-bottom-row">
-            <button
-              className="exam-nav-btn"
-              onClick={() => setCurrent((c) => Math.max(0, c - 1))}
-              disabled={current === 0}
-              type="button"
-              title={t("exam.prev")}
-            >
-              <IconChevronLeft size={17} /> <span>{t("exam.prev")}</span>
-            </button>
-
-            <div className="exam-qnums-wrap">
-              <div className="exam-qnums scrollable">
-                {questions.map((_, i) => {
-                  const a = answers[i];
-                  let cls = "exam-qnum";
-                  if (i === current) cls += " active";
-                  else if (a) cls += a.selected === a.correct ? " correct" : " wrong";
-                  return (
-                    <button
-                      key={i}
-                      id={`wrong-qnum-${i}`}
-                      className={cls}
-                      onClick={() => setCurrent(i)}
-                      type="button"
-                    >
-                      {i + 1}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {current === questions.length - 1 ? (
-              <button
-                className="exam-nav-btn primary"
-                onClick={handleFinishClick}
-                type="button"
-                title={t("exam.finish")}
-              >
-                <span>{t("exam.finish")}</span> <IconCheck size={17} />
-              </button>
-            ) : (
-              <button
-                className="exam-nav-btn primary"
-                onClick={() => setCurrent((c) => Math.min(questions.length - 1, c + 1))}
-                type="button"
-                title={t("exam.next")}
-              >
-                <span>{t("exam.next")}</span> <IconChevronRight size={17} />
-              </button>
-            )}
-          </div>
-          <KeyboardHint />
-        </div>
-      </div>
-
-      {/* Early finish confirmation modal (Mantine Modal — P2-W6) */}
-      <ConfirmFinishModal
-        opened={confirmFinishOpen}
-        onCancel={() => setConfirmFinishOpen(false)}
-        onConfirm={() => {
-          setConfirmFinishOpen(false);
-          triggerFinish();
-        }}
-      />
-
-      {/* W-07: faol mashg'ulotdan chiqishni tasdiqlash */}
-      <ConfirmFinishModal
-        variant="leave"
-        opened={guard.blocked}
-        onCancel={guard.stay}
-        onConfirm={guard.leave}
+      <ExamDesktopView
+        mode="wrong"
+        label={reviewLabel}
+        questions={questions}
+        current={current}
+        answers={answers}
+        onSelect={handleSelect}
+        onGoto={handleGoto}
+        onFinish={handleFinish}
+        deadline={deadline > 0 ? deadline : null}
+        onTimeUp={handleTimeUp}
+        showExplanation
+        autoAdvance="correct"
+        bookmarkedIds={savedIds}
+        onToggleBookmark={handleToggleSave}
+        headerExtra={remainingChip}
+        onExit={handleExit}
+        persistProgress={persistProgress}
       />
     </>
   );

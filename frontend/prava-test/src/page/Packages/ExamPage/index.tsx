@@ -21,11 +21,6 @@ import { QuizNav, type QuizNavHandle } from "../../../components/quiz/QuizNav";
 import { QuizContent } from "../../../components/quiz/QuizContent";
 import SEO from "../../../components/common/SEO";
 import { useAutoSave, restoreAnswers } from "../../../hooks/useAutoSave";
-import { OfflineBanner } from "../../../components/common/OfflineBanner";
-import ConfirmFinishModal from "../../../components/quiz/ConfirmFinishModal";
-import { useExamLeaveGuard } from "../../../hooks/useExamLeaveGuard";
-import { errorKeyFor, getErrorMessage } from "../../../types/errors";
-import { reportError } from "../../../utils/monitoring";
 import type { PackageExamData, AnswersMap } from "../../../types";
 
 interface ActiveExamInfo {
@@ -47,13 +42,11 @@ const PackageExamPage = () => {
     location.state?.examData || null,
   );
   const [loading, setLoading] = useState(!examData);
-  /** Start xatosi (obyekt) — matn render paytida joriy tilda tarjima qilinadi (W-05). */
-  const [error, setError] = useState<{ error: unknown } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [activeConflict, setActiveConflict] = useState<ActiveExamInfo | null>(null);
   const [answers, setAnswers] = useState<AnswersMap>({});
 
   const submittedRef = useRef(false);
-  const [submitted, setSubmitted] = useState(false);
   const sessionIdRef = useRef<number | null>(null);
   const quizNavRef = useRef<QuizNavHandle>(null);
 
@@ -80,7 +73,7 @@ const PackageExamPage = () => {
         // Active exam cache ni yangilaymiz
         mutate("/api/v2/exams/active", null, false);
       }
-    } catch (err: unknown) {
+    } catch {
       // Active session bor-yo'qligini tekshirish
       try {
         const activeRes = await api.get<{ data: ActiveExamInfo | null }>("/api/v2/exams/active");
@@ -88,16 +81,15 @@ const PackageExamPage = () => {
           setActiveConflict(activeRes.data.data);
           return;
         }
-      } catch (checkErr) {
-        // Active tekshiruv ham xato — asl start xatosi ko'rsatiladi
-        reportError("packageExam.checkActive", checkErr);
+      } catch {
+        // Active tekshiruv ham xato — generic error
       }
 
-      setError({ error: err });
+      setError(t("notification.startError"));
     } finally {
       setLoading(false);
     }
-  }, [id, isSecureMode]);
+  }, [id, isSecureMode, t]);
 
   useEffect(() => {
     if (!examData && id) {
@@ -121,19 +113,14 @@ const PackageExamPage = () => {
     enabled: !!examData && !submittedRef.current,
   });
 
-  // W-07: imtihon davomida ilova ichidagi navigatsiyani va sahifani yopishni to'sish.
-  // QuizNav submit/"Chiqish" dan keyin o'zi navigatsiya qiladi — undan oldin `release()`.
-  const guard = useExamLeaveGuard(!!examData && !submitted);
-
   const handleAbandonAndRestart = async () => {
     if (!activeConflict) return;
     setLoading(true);
     try {
       await api.delete(`/api/v2/exams/${activeConflict.sessionId}/abandon`);
       mutate("/api/v2/exams/active", { data: null }, false);
-    } catch (abandonErr) {
+    } catch {
       // Abandon xatosi — baribir qayta urinib ko'ramiz
-      reportError("packageExam.abandon", abandonErr);
     }
     setActiveConflict(null);
     await startExam();
@@ -160,14 +147,12 @@ const PackageExamPage = () => {
 
   const handleSubmitSuccess = () => {
     submittedRef.current = true;
-    guard.release();
-    setSubmitted(true);
   };
 
   // Yuklash
   if (loading) {
     return (
-      <Center h="100dvh">
+      <Center style={{ height: "100%", flex: 1, minHeight: 0 }}>
         <Box ta="center">
           <Loader size="lg" mb="md" />
           <Text c="dimmed">{t("exam.loading")}</Text>
@@ -179,7 +164,7 @@ const PackageExamPage = () => {
   // Tugallanmagan imtihon bor — conflict UI
   if (activeConflict) {
     return (
-      <Center h="100dvh">
+      <Center style={{ height: "100%", flex: 1, minHeight: 0 }}>
         <Container size="xs">
           <Paper p="xl" radius="md" withBorder shadow="md" ta="center">
             <ThemeIcon size={64} radius="xl" color="orange" variant="light" mb="md" mx="auto">
@@ -189,7 +174,9 @@ const PackageExamPage = () => {
               {t("me.stats.resumeExam")}
             </Title>
             <Text c="dimmed" mb="xl" size="sm">
-              {t("exam.activeSessionDesc")}
+              {t("exam.activeSessionDesc", {
+                defaultValue: "Boshqa imtihon tugallanmagan. Uni yakunlab yoki bekor qilib, yangi imtihon boshlashingiz mumkin.",
+              })}
             </Text>
             <Stack gap="sm">
               <Button
@@ -197,7 +184,7 @@ const PackageExamPage = () => {
                 leftSection={<IconPlayerPlay size={18} />}
                 onClick={handleAbandonAndRestart}
               >
-                {t("exam.abandonAndRestart")}
+                {t("exam.abandonAndRestart", { defaultValue: "Bekor qilib, yangi boshlash" })}
               </Button>
               {activeConflict.packageId && (
                 <Button
@@ -232,13 +219,13 @@ const PackageExamPage = () => {
   // Xato
   if (error) {
     return (
-      <Center h="100dvh">
+      <Center style={{ height: "100%", flex: 1, minHeight: 0 }}>
         <Box ta="center">
           <Title order={3} c="red" mb="md">
             {t("common.errorOccurred")}
           </Title>
           <Text c="dimmed" mb="lg">
-            {getErrorMessage(error.error, t(errorKeyFor(error.error, "notification.startError")))}
+            {error}
           </Text>
           <Group justify="center">
             <Button variant="outline" onClick={() => navigate("/packages")}>
@@ -253,7 +240,7 @@ const PackageExamPage = () => {
 
   if (!examData) {
     return (
-      <Center h="100dvh">
+      <Center style={{ height: "100%", flex: 1, minHeight: 0 }}>
         <Box ta="center">
           <Title order={3} mb="md">
             {t("exam.notFound")}
@@ -272,8 +259,11 @@ const PackageExamPage = () => {
   return (
     <>
       <SEO
-        title={`${t("seo.packageExam.title")} — ${examData.data.totalQuestions} ${t("dashboard.questionsUnit")}`}
-        description={`${t("seo.packageExam.desc")} — ${examData.data.totalQuestions} ${t("dashboard.questionsUnit")}, ${examData.data.durationMinutes} ${t("dashboard.minutesUnit")}.`}
+        title={t("packages.examSeoTitle", "Imtihon — {{count}} ta savol", { count: examData.data.totalQuestions })}
+        description={t("packages.examSeoDesc", "Haydovchilik guvohnomasi imtihoni — {{count}} ta savol, {{minutes}} daqiqa.", {
+          count: examData.data.totalQuestions,
+          minutes: examData.data.durationMinutes,
+        })}
         canonical={`/packages/${id}`}
         noIndex
       />
@@ -288,23 +278,14 @@ const PackageExamPage = () => {
         backUrl="/packages"
         isSecureMode={isSecureMode}
         onSubmitSuccess={handleSubmitSuccess}
-        onBeforeExit={guard.release}
       />
-      <OfflineBanner />
       <QuizContent
         questions={examData.data.questions}
         onAnswerSelect={handleAnswerSelect}
         onFinish={handleFinish}
         selectedAnswers={answers}
         isSecureMode={isSecureMode}
-      />
-
-      {/* W-07: faol imtihondan chiqishni tasdiqlash */}
-      <ConfirmFinishModal
-        variant="leave"
-        opened={guard.blocked}
-        onCancel={guard.stay}
-        onConfirm={guard.leave}
+        onExit={() => navigate("/packages")}
       />
     </>
   );

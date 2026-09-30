@@ -256,10 +256,21 @@ public class SecurityConfig {
                     "aniq domenlar ro'yxatini ko'rsating (ALLOWED_ORIGINS).");
         }
 
-        log.info("Configuring CORS with allowed origins: {}", origins);
+        java.util.Set<String> expandedOrigins = new java.util.LinkedHashSet<>();
+        for (String o : origins) {
+            expandedOrigins.add(o);
+            if (o.contains("localhost")) {
+                expandedOrigins.add(o.replace("localhost", "127.0.0.1"));
+            } else if (o.contains("127.0.0.1")) {
+                expandedOrigins.add(o.replace("127.0.0.1", "localhost"));
+            }
+        }
+        List<String> finalOrigins = new java.util.ArrayList<>(expandedOrigins);
+
+        log.info("Configuring CORS with allowed origins: {}", finalOrigins);
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(origins);
+        configuration.setAllowedOrigins(finalOrigins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Accept-Language", "X-Requested-With", "X-Auth-Mode",
                 "X-QR-Poll-Secret", "If-None-Match"));

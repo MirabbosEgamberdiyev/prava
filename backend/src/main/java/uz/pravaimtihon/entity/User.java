@@ -154,6 +154,9 @@ public class User extends BaseEntity {
     }
 
     public void incrementFailedLoginAttempts() {
+        if (this.failedLoginAttempts == null) {
+            this.failedLoginAttempts = 0;
+        }
         this.failedLoginAttempts++;
         if (this.failedLoginAttempts >= 5) {
             this.accountLockedUntil = LocalDateTime.now().plusMinutes(30);

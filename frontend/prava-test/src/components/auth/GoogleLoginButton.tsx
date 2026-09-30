@@ -9,9 +9,13 @@ import { useTranslation } from "react-i18next";
 import api from "../../api/api";
 import { getErrorMessage } from "../../types/errors";
 
-interface GoogleLoginButtonProps {
+export interface GoogleLoginButtonProps {
   mode?: "login" | "register";
   compact?: boolean;
+  h?: number | string;
+  radius?: number | string;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 const GoogleIcon = () => (
@@ -23,7 +27,7 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const GoogleLoginButton = (_props: GoogleLoginButtonProps = {}) => {
+const GoogleLoginButton = ({ h = 44, radius = "md", className, style }: GoogleLoginButtonProps = {}) => {
   const { t, i18n } = useTranslation();
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
@@ -83,11 +87,12 @@ const GoogleLoginButton = (_props: GoogleLoginButtonProps = {}) => {
     <Button
       leftSection={<GoogleIcon />}
       variant="default"
-      className="auth-social-btn-google"
+      className={`auth-social-btn-google ${className || ""}`}
+      style={style}
       size="sm"
-      h={44}
+      h={h}
       fullWidth
-      radius="md"
+      radius={radius}
       loading={loading}
       onClick={() => googleLogin()}
     >

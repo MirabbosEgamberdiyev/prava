@@ -103,19 +103,46 @@ export function fetchExamRules(): Promise<ExamRules> {
   return rulesPromise;
 }
 
+export type ExamRulesMode = "real" | "ticket" | "marathon";
+export const MAX_EXAM_QUESTION_COUNT = 100;
+
 /** Sinxron o'qish: yuklangan bo'lsa server qoidalari, aks holda default. */
 export function getExamRulesSync(): ExamRules {
   return cachedRules ?? DEFAULT_EXAM_RULES;
 }
+export const getExamRules = getExamRulesSync;
+export const loadExamRules = fetchExamRules;
+
+export function secondsPerQuestion(mode: ExamRulesMode, rules: ExamRules = getExamRulesSync()): number {
+  return (rules[mode] as any)?.secondsPerQuestion ?? 60;
+}
 
 /** Savollar soni × savolga ajratilgan soniya → umumiy soniya. */
-export function durationSecondsFor(questionCount: number, secondsPerQuestion: number): number {
-  return Math.max(0, Math.round(questionCount * secondsPerQuestion));
+export function durationSecondsFor(
+  arg1: ExamRulesMode | number,
+  arg2: number,
+  rules: ExamRules = getExamRulesSync()
+): number {
+  if (typeof arg1 === "string") {
+    const sec = (rules[arg1] as any)?.secondsPerQuestion ?? 60;
+    return Math.max(1, Math.round(arg2 * sec));
+  }
+  return Math.max(0, Math.round(arg1 * arg2));
 }
 
 /** Backend `durationMinutes` maydoni uchun (butun daqiqa, kamida 1). */
-export function durationMinutesFor(questionCount: number, secondsPerQuestion: number): number {
-  return Math.max(1, Math.ceil((questionCount * secondsPerQuestion) / 60));
+export function durationMinutesFor(
+  arg1: ExamRulesMode | number,
+  arg2: number,
+  rules: ExamRules = getExamRulesSync()
+): number {
+  return Math.max(1, Math.ceil(durationSecondsFor(arg1 as any, arg2, rules) / 60));
+}
+
+export function clampExamQuestionCount(raw: unknown, rules: ExamRules = getExamRulesSync()): number {
+  const n = typeof raw === "number" ? raw : raw == null || raw === "" ? NaN : Number(raw);
+  if (!Number.isFinite(n) || n < 1) return rules.real.questionCount;
+  return Math.min(MAX_EXAM_QUESTION_COUNT, Math.floor(n));
 }
 
 /** React hook: darhol default/kesh qiymatini beradi, server javobi kelganda yangilanadi. */
@@ -155,6 +182,7 @@ export function maxAllowedWrong(count: number, rules: ExamRules = getExamRulesSy
   const base = Math.max(1, rules.real.questionCount);
   return Math.floor((rules.real.maxWrong * Math.max(0, count)) / base);
 }
+export const maxWrongFor = maxAllowedWrong;
 
 /** Foizli rejimlar uchun o'tish chegarasi (%). */
 export function passPercentFor(mode: ExamMode, rules: ExamRules = getExamRulesSync()): number {

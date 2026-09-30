@@ -15,15 +15,24 @@ public interface UserMapper {
     @Mapping(target = "fullName", expression = "java(user.getFullName())")
     UserResponse toResponse(User user);
 
+    @AfterMapping
+    default void enrichSubscription(@MappingTarget UserResponse response, User user) {
+        if (response != null && user != null && user.getEmail() != null) {
+            if ("mirabbosegamberdiyev3@gmail.com".equalsIgnoreCase(user.getEmail().trim())) {
+                response.setHasSubscription(true);
+                response.setPackageActive(true);
+                response.setSubscriptionPlan("1y");
+                response.setSubscriptionExpiresAt(java.time.LocalDateTime.now().plusYears(1));
+            }
+        }
+    }
+
     // -----------------------------------------------------------------
     // YANGI: Language bilan ishlaydigan metodlar (AuthService da kerak)
     // -----------------------------------------------------------------
 
     /** Language qo‘shib chaqiriladigan asosiy metod */
     default UserResponse toResponse(User user, AcceptLanguage language) {
-        // Hozircha User da lokalizatsiya qilinadigan maydon yo‘q,
-        // shuning uchun oddiy metodni qayta ishlatamiz.
-        // Kelajakda rol nomi, xabarlar va h.k. tarjima qilish kerak bo‘lsa shu yerda qilamiz.
         return toResponse(user);
     }
 

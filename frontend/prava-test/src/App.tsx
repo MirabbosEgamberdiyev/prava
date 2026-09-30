@@ -11,6 +11,10 @@ import { isGoogleOneTapAllowed } from "./utils/domain";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import { ScrollManager } from "./components/common/ScrollManager";
+import { AuthModalProvider } from "./auth/AuthModalContext";
+import { TariffPaywallProvider } from "./context/TariffPaywallContext";
+import DesktopAuthModal from "./components/auth/DesktopAuthModal";
+import TariffPaywallModal from "./components/common/TariffPaywallModal";
 
 /**
  * Global API error listener with deduplication cooldown.
@@ -80,14 +84,20 @@ function AppInner() {
     <DesktopThemeProvider>
       <TypographyProvider>
         <AuthProvider>
-          <LanguageProvider>
-            <ApiErrorListener />
-            {allowGoogleOneTap && <GoogleOneTap />}
-            <ScrollManager />
-            <ErrorBoundary resetKey={location.pathname}>
-              <AppRoutes />
-            </ErrorBoundary>
-          </LanguageProvider>
+          <AuthModalProvider>
+            <TariffPaywallProvider>
+              <LanguageProvider>
+                <ApiErrorListener />
+                {allowGoogleOneTap && <GoogleOneTap />}
+                <ScrollManager />
+                <DesktopAuthModal />
+                <TariffPaywallModal />
+                <ErrorBoundary resetKey={location.pathname}>
+                  <AppRoutes />
+                </ErrorBoundary>
+              </LanguageProvider>
+            </TariffPaywallProvider>
+          </AuthModalProvider>
         </AuthProvider>
       </TypographyProvider>
     </DesktopThemeProvider>

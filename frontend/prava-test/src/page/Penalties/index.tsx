@@ -1,192 +1,109 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  Container,
-  Title,
-  Text,
-  Paper,
-  Table,
-  Badge,
-  Group,
-  Stack,
-  Center,
-  TextInput,
-  ActionIcon,
-  Button,
-  Skeleton,
-  Alert,
-} from "@mantine/core";
-import { IconGavel, IconSearch, IconX, IconAlertTriangle, IconRefresh } from "@tabler/icons-react";
-import { curriculumApi, type PracticalPenalty } from "../../services/curriculumApi";
-import { useLanguage } from "../../context/LanguageContext";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { IconGavel } from "@tabler/icons-react";
 import SEO from "../../components/common/SEO";
-import { errorKeyFor } from "../../types/errors";
-import { pickLocalized } from "../../data/curriculumLocale";
+import { useCurriculum } from "../../features/Curriculum/useCurriculum";
+import { CurriculumSearch, CurriculumShell, CurriculumState } from "../../features/Curriculum/components/CurriculumShell";
+import SidebarList from "../../features/Curriculum/components/SidebarList";
+import PenaltyTable, { penaltySeverity, type PenaltySeverity } from "../../features/Curriculum/components/PenaltyTable";
+import { normalizeSearchText } from "../../utils/transliterate";
+
+type Filter = "all" | PenaltySeverity;
 
 export default function Penalties_Page() {
-  const { lang } = useLanguage();
   const { t } = useTranslation();
-
-  const [penalties, setPenalties] = useState<PracticalPenalty[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
+  const { data, error, isLoading, refresh, refreshing, savedAt, fromCache } = useCurriculum("penalties");
+  const penalties = useMemo(() => [...(data ?? [])].sort((a, b) => a.penalty_number - b.penalty_number), [data]);
+  const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
-
-  const fetchPenalties = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    curriculumApi
-      .getPenalties()
-      .then((data) => {
-        setPenalties(data);
-      })
-      .catch((err: unknown) => {
-        // 5xx/tarmoq xatolari uchun global toast api.ts'da chiqadi — bu yerda faqat inline xato.
-        setError(err);
-        setPenalties([]);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
+  const searchRef = useRef<HTMLInputElement>(null);
+  const [params] = useSearchParams();
+  const deepQ = params.get("q");
   useEffect(() => {
-    fetchPenalties();
-  }, [fetchPenalties]);
+    if (deepQ) {
+      setFilter("all");
+      setSearch(deepQ);
+    }
+  }, [deepQ]);
 
-  const localized = useMemo(
-    () =>
-      penalties
-        .filter((p): p is PracticalPenalty => !!p)
-        .map((p) => ({ penalty: p, text: pickLocalized(lang, p.text_uzl, p.text_uzc, p.text_ru) })),
-    [penalties, lang],
+  const index = useMemo(
+    () => new Map(penalties.map((p) => [p.id, normalizeSearchText(`${p.text_uzl} ${p.text_uzc ?? ""} ${p.text_ru ?? ""}`)])),
+    [penalties]
   );
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return localized;
-    return localized.filter(
-      ({ penalty, text }) =>
-        text.toLowerCase().includes(q) ||
-        (penalty.penalty_number != null && penalty.penalty_number.toString().includes(q)),
-    );
-  }, [localized, search]);
+    const q = normalizeSearchText(search);
+    return penalties.filter((p) => {
+      if (filter !== "all" && penaltySeverity(p.points) !== filter) return false;
+      if (!q) return true;
+      // A bare number is the penalty number (deep links from Ctrl+K use it).
+      if (/^\d+$/.test(search.trim())) return String(p.penalty_number) === search.trim();
+      return (index.get(p.id) || "").includes(q);
+    });
+  }, [penalties, filter, search, index]);
+
+  const count = (f: Filter) => (f === "all" ? penalties.length : penalties.filter((p) => penaltySeverity(p.points) === f).length);
+  const sidebarItems = [
+    { id: "all", label: t("curriculum.all", "Barchasi"), count: count("all") },
+    { id: "fail", label: t("curriculum.severityMajor", "Imtihondan yiqitish"), count: count("fail") },
+    { id: "major", label: t("curriculum.severityMedium", "Qo'pol"), count: count("major") },
+    { id: "minor", label: t("curriculum.severityMinor", "Kichik"), count: count("minor") },
+  ];
 
   return (
-    <Container size="xl" py="xl">
-      <SEO title={t("seo.penaltiesTitle")} description={t("seo.penaltiesDesc")} />
-
-      <Stack gap="lg">
-        <Group justify="space-between" align="flex-start">
-          <div>
-            <Title order={1} fw={900} style={{ letterSpacing: "-0.5px" }}>
-              {t("curriculum.finesTitle")}
-            </Title>
-            <Text c="dimmed" size="sm" mt={4}>
-              {t("curriculum.finesSubtitle")}
-            </Text>
-          </div>
-          {!loading && !error && (
-            <Badge size="lg" variant="filled" color="red" leftSection={<IconGavel size={14} />}>
-              {t("curriculum.finesCount", { count: filtered.length })}
-            </Badge>
-          )}
-        </Group>
-
-        <TextInput
-          placeholder={t("curriculum.searchFines")}
-          aria-label={t("curriculum.searchFines")}
+    <>
+      <SEO title={t("curriculum.finesTitle", "Amaliy imtihon jarima ballari")} description={t("curriculum.finesSubtitle", "")} canonical="/penalties" noIndex />
+      <CurriculumShell
+        section="penalties"
+        title={t("curriculum.finesTitle", "Amaliy imtihon jarima ballari")}
+        subtitle={t("curriculum.finesSubtitle", "")}
+        badge={
+          <span className="cur-badge">
+            <IconGavel size={14} /> {t("curriculum.finesCount", { count: filtered.length })}
+          </span>
+        }
+        savedAt={savedAt}
+        fromCache={fromCache}
+        refreshing={refreshing}
+        onRefresh={refresh}
+        searchRef={searchRef}
+        sidebar={
+          <>
+            <div className="cur-sidebar-head">{t("learn.severity", "Og'irlik darajasi")}</div>
+            <SidebarList items={sidebarItems} value={filter} onChange={(id) => setFilter(id as Filter)} ariaLabel={t("learn.severity", "Og'irlik darajasi")} />
+          </>
+        }
+      >
+        <CurriculumSearch
+          inputRef={searchRef}
           value={search}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          leftSection={<IconSearch size={18} />}
-          rightSection={
-            search ? (
-              <ActionIcon variant="subtle" color="gray" onClick={() => setSearch("")} aria-label={t("curriculum.clean")}>
-                <IconX size={16} />
-              </ActionIcon>
-            ) : null
-          }
-          size="md"
-          radius="md"
+          onChange={setSearch}
+          placeholder={t("curriculum.searchFines", "Xato turi bo'yicha qidiring...")}
+          resultCount={filtered.length}
         />
-
-        {loading ? (
-          <Stack gap="xs" aria-busy="true" aria-label={t("common.loading")}>
-            {Array.from({ length: 8 }).map((_, idx) => (
-              <Skeleton key={idx} height={42} radius="sm" />
-            ))}
-          </Stack>
-        ) : error ? (
-          <Alert
-            icon={<IconAlertTriangle size={18} />}
-            title={t("common.error")}
-            color="red"
-            variant="light"
-            radius="md"
-            role="alert"
-          >
-            <Group justify="space-between" align="center">
-              <Text size="sm">{t(errorKeyFor(error, "curriculum.loadPenaltiesError"))}</Text>
-              <Button
-                size="xs"
-                color="red"
-                variant="light"
-                leftSection={<IconRefresh size={14} />}
-                onClick={fetchPenalties}
-              >
-                {t("common.retry")}
-              </Button>
-            </Group>
-          </Alert>
-        ) : filtered.length === 0 ? (
-          <Center py={60}>
-            <Stack align="center" gap="xs">
-              <IconAlertTriangle size={40} color="gray" />
-              <Text c="dimmed">{t("curriculum.emptyFines")}</Text>
-              {search && (
-                <Button size="xs" variant="subtle" onClick={() => setSearch("")}>
-                  {t("curriculum.clearSearch")}
-                </Button>
-              )}
-            </Stack>
-          </Center>
-        ) : (
-          <Paper withBorder radius="md" p="md">
-            <Table.ScrollContainer minWidth={560}>
-              <Table striped highlightOnHover verticalSpacing="sm">
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th style={{ width: 60 }}>{t("curriculum.colNumber")}</Table.Th>
-                    <Table.Th>{t("curriculum.colViolation")}</Table.Th>
-                    <Table.Th style={{ width: 220 }}>{t("curriculum.colPoints")}</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {filtered.map(({ penalty: p, text }) => (
-                    <Table.Tr key={p.id}>
-                      <Table.Td fw={700}>{p.penalty_number}</Table.Td>
-                      <Table.Td style={{ fontSize: "0.95rem" }}>{text}</Table.Td>
-                      <Table.Td>
-                        {p.points >= 100 ? (
-                          <Badge color="red" variant="filled">
-                            {t("curriculum.fail100")}
-                          </Badge>
-                        ) : p.points >= 20 ? (
-                          <Badge color="orange" variant="filled">
-                            {t("curriculum.pointsValue", { count: p.points })}
-                          </Badge>
-                        ) : (
-                          <Badge color="yellow" variant="light">
-                            {t("curriculum.pointsValue", { count: p.points })}
-                          </Badge>
-                        )}
-                      </Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
-            </Table.ScrollContainer>
-          </Paper>
-        )}
-      </Stack>
-    </Container>
+        <CurriculumState
+          loading={isLoading}
+          error={error}
+          empty={filtered.length === 0}
+          onRetry={refresh}
+          emptyText={t("curriculum.emptyFines", "Mos keluvchi jarima ballari topilmadi")}
+          onClear={
+            penalties.length > 0 && (search || filter !== "all")
+              ? () => {
+                  setSearch("");
+                  setFilter("all");
+                }
+              : undefined
+          }
+        >
+          <div className="cur-panel">
+            <div className="cur-panel-scroll">
+              <PenaltyTable penalties={filtered} />
+            </div>
+          </div>
+        </CurriculumState>
+      </CurriculumShell>
+    </>
   );
 }

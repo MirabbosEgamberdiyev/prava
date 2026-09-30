@@ -1,54 +1,45 @@
-import { useState, useEffect, useRef } from "react";
+import { resolveUserScopeId } from "@/utils/userScope";
+import { getExamRules, durationSecondsFor, isExamPassed } from "@/services/examRules";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import type { OfflineQuestion, OfflineTopic } from "../../types/desktop";
 import {
-  startMarathonSession,
+  getMarathonQuestions,
   getTopics,
   addWrongAnswer,
-  saveExamResult,
+  finalizeExamResult,
   toggleSavedQuestion,
   getSavedQuestions,
   recordQuestionAttempt,
-  localizeQ,
-  localizeOpt,
-  localizeExp,
   localizeTopic,
   parseOptions,
-  submitExamSession,
+  getActiveMarathonSessionId,
 } from "../../services/desktopAdapter";
-import ColorMode from "../../components/other/ColorMode";
-import LanguagePicker from "../../components/language/LanguagePicker";
-import ImageZoomModal, { ZoomableImage } from "../../components/common/ImageZoomModal";
+import { isFakeLocalSessionId } from "../../services/offlineExamRecord";
+import { remainingSecondsUntil } from "../../components/quiz/ExamTimerDisplay";
+import { ExamDesktopView, useDebouncedSave, countResults } from "../../features/ExamDesktop";
+import "../../styles/exam-desktop.css";
 import GamificationResult from "../../components/quiz/GamificationResult";
 import QuizReviewModal from "../../components/quiz/QuizReviewModal";
-import TestSetupCard from "../../components/quiz/TestSetupCard";
-import ConfirmFinishModal from "../../components/quiz/ConfirmFinishModal";
-import ExamTimerAnnouncer from "../../components/quiz/ExamTimerAnnouncer";
+import { dbClient } from "../../database";
+import { generateUUID } from "../../sync/outboxQueue";
+import { showToast } from "../../utils/notificationUtils";
 import SEO from "../../components/common/SEO";
-import KeyboardHint from "../../components/quiz/KeyboardHint";
-import { useExamTimer } from "../../hooks/useExamTimer";
-import { useExamHotkeys } from "../../hooks/useExamHotkeys";
-import { useExamLeaveGuard } from "../../hooks/useExamLeaveGuard";
-import { formatCount, useCurriculumCounts } from "../../hooks/useCurriculumCounts";
-import { durationSecondsFor, isExamPassed, useExamRules } from "../../services/examRules";
-import { errorKeyFor, getErrorMessage } from "../../types/errors";
-import { reportError } from "../../utils/monitoring";
-import { scopedUserId } from "../../utils/userScope";
 import {
-  IconChevronLeft,
+  IconAlertTriangle,
+  IconArrowLeft,
+  IconDownload,
+  IconFlame,
+  IconRefresh,
   IconChevronRight,
-  IconCheck,
-  IconX,
-  IconSteeringWheel,
-  IconBulb,
-  IconBookmark,
-  IconBookmarkFilled,
   IconPlayerPlay,
-  IconTrash,
-  IconRotateClockwise,
+  IconBook2,
+  IconTarget,
 } from "@tabler/icons-react";
+import OfflinePreparationModal from "../../components/offline/OfflinePreparationModal";
+import { errorMessage } from "../../services/safeError";
 
 type Phase = "setup" | "loading" | "exam" | "result";
 
@@ -57,180 +48,89 @@ interface Answer {
   correct: number;
 }
 
-const COUNT_OPTIONS = [10, 20, 30, 50, 0]; // 0 = barchasi (MARATHON_MAX_QUESTIONS bilan cheklangan)
-
-/**
- * W-15: bitta marafon sessiyasidagi savollar soni chegarasi. Tugallanmagan
- * sessiya (resume uchun) localStorage'ga TO'LIQ savollar bilan yoziladi — serverda
- * savollarni ID bo'yicha qayta olish API'si yo'q, shuning uchun "faqat ID" saqlash
- * resume'ni buzadi. ~1200 ta to'liq savol (3 tilda matn, izohlar) localStorage
- * kvotasiga (~5 MB) sig'maydi va har javobda qayta yoziladi; shu sababli
- * "Barchasi" ham ko'pi bilan 100 ta savol bilan cheklanadi.
- */
-const MARATHON_MAX_QUESTIONS = 100;
+const COUNT_OPTIONS = [10, 20, 30, 50, 0]; // 0 = barchasi
+const BADGE_COLORS = [
+  "linear-gradient(135deg, #0284c7, #2563eb)",
+  "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+  "linear-gradient(135deg, #10b981, #059669)",
+  "linear-gradient(135deg, #f59e0b, #d97706)",
+  "linear-gradient(135deg, #ef4444, #dc2626)",
+  "linear-gradient(135deg, #06b6d4, #0891b2)",
+];
 
 export default function Marafon_Page() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const userId = scopedUserId(user);
-  const { questions: totalQuestionsKnown } = useCurriculumCounts();
+  const userId = resolveUserScopeId(user);
 
   const location = useLocation();
-  const rawTopicId = searchParams.get("topicId") || (location.state as { topicId?: number | string } | null)?.topicId;
+  const rawTopicId = searchParams.get("topicId") || (location.state as any)?.topicId;
   const initialTopicId = rawTopicId ? Number(rawTopicId) : null;
+  // Rules (marathon = TIMED, secondsPerQuestion each) — fixed for this page's lifetime
+  const [rules] = useState(getExamRules);
 
   // Setup state
   const [topics, setTopics] = useState<OfflineTopic[]>([]);
   const [selTopic, setSelTopic] = useState<number | null>(initialTopicId);
   const [countIdx, setCountIdx] = useState(0);
-
-  const MARATHON_STORAGE_KEY = `prava_marathon_active_session_${userId}`;
+  const [activeTab, setActiveTab] = useState<"all" | "byTopic">(initialTopicId ? "byTopic" : "all");
 
   // Exam state
   const [phase, setPhase] = useState<Phase>("setup");
   const [questions, setQuestions] = useState<OfflineQuestion[]>([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
-  const [showExp, setShowExp] = useState(false);
-  /** Start xatosi (obyekt) — matn render paytida joriy tilda tarjima qilinadi. */
-  const [failure, setFailure] = useState<{ kind: "empty" } | { kind: "error"; error: unknown } | null>(null);
+  /** Absolute deadline (epoch ms): count × marathon.secondsPerQuestion, persisted for crash recovery. */
+  const [deadline, setDeadline] = useState<number>(0);
+  const [isTimeUp, setIsTimeUp] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
-  const [zoomSrc, setZoomSrc] = useState<string | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
-  const [confirmFinishOpen, setConfirmFinishOpen] = useState(false);
-  const [savedSession, setSavedSession] = useState<{
-    questions: OfflineQuestion[];
-    current: number;
-    answers: Record<number, Answer>;
-    selTopic: number | null;
-    countIdx: number;
-    timestamp: number;
-    sessionId?: number | null;
-    /** Marafon vaqti tugaydigan absolyut vaqt (ms, epoch) — resume qolgan vaqtdan davom etadi. */
-    deadline?: number;
-  } | null>(null);
-
-  // Marafon vaqtli: savollar soni × marathon.secondsPerQuestion (exam-rules)
-  const rules = useExamRules();
-  /** Taymer davomiyligi (soniya) — start/resume paytida deadline'dan hisoblanadi. */
-  const [timerSeconds, setTimerSeconds] = useState(0);
-  const deadlineRef = useRef<number | null>(null);
+  const [showOfflineModal, setShowOfflineModal] = useState(false);
 
   const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sessionIdRef = useRef<number | null>(null);
   const answersRef = useRef(answers);
-  const questionsRef = useRef(questions);
-  const activeQnumRef = useRef<HTMLButtonElement | null>(null);
-  const finishedRef = useRef(false);
   answersRef.current = answers;
+  const questionsRef = useRef(questions);
   questionsRef.current = questions;
+  const deadlineRef = useRef(deadline);
+  deadlineRef.current = deadline;
+  const startTimeRef = useRef<number>(Date.now());
+  const serverSessionIdRef = useRef<number | null>(null);
+  const finishedRef = useRef(false);
+  const selTopicRef = useRef(selTopic);
+  selTopicRef.current = selTopic;
 
-  // Unmount: kutilayotgan auto-advance taymerini tozalash
   useEffect(() => {
-    return () => {
-      if (autoRef.current) clearTimeout(autoRef.current);
-    };
-  }, []);
-
-  // Check for saved uncompleted marathon session on mount
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(MARATHON_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (
-          Array.isArray(parsed.questions) &&
-          parsed.questions.length > 0 &&
-          parsed.answers &&
-          Object.keys(parsed.answers).length > 0
-        ) {
-          setSavedSession(parsed);
-        }
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (phase === "exam" && Object.keys(answers).length > 0) {
+        e.preventDefault();
+        e.returnValue = "";
       }
-    } catch {}
-  }, [MARATHON_STORAGE_KEY]);
-
-  const handleResumeMarathon = () => {
-    if (!savedSession) return;
-    setQuestions(savedSession.questions);
-    setAnswers(savedSession.answers);
-    answersRef.current = savedSession.answers;
-    setCurrent(Math.min(savedSession.current || 0, savedSession.questions.length - 1));
-    setSelTopic(savedSession.selTopic ?? null);
-    setCountIdx(savedSession.countIdx || 0);
-    sessionIdRef.current = savedSession.sessionId ?? null;
-    questionsRef.current = savedSession.questions;
-
-    // Absolyut deadline saqlangan — qolgan vaqtdan davom etamiz. Eski (deadline'siz)
-    // sessiyalar uchun: javob berilmagan savollar × secondsPerQuestion.
-    const now = Date.now();
-    const answeredCount = Object.keys(savedSession.answers || {}).length;
-    const deadline =
-      typeof savedSession.deadline === "number" && Number.isFinite(savedSession.deadline)
-        ? savedSession.deadline
-        : now +
-          durationSecondsFor(
-            Math.max(0, savedSession.questions.length - answeredCount),
-            rules.marathon.secondsPerQuestion,
-          ) *
-            1000;
-    deadlineRef.current = deadline;
-    const remaining = Math.ceil((deadline - now) / 1000);
-    finishedRef.current = false;
-    if (remaining <= 0) {
-      // Vaqt resume'dan oldin tugagan — darhol yakunlab yuboramiz.
-      triggerFinish();
-      return;
-    }
-    setTimerSeconds(remaining);
-    setPhase("exam");
-  };
-
-  // /me dagi "Davom ettirish" kartasidan (?resume=1) kelinganda — avtomatik davom ettirish
-  const autoResumedRef = useRef(false);
-  useEffect(() => {
-    if (autoResumedRef.current || !savedSession || phase !== "setup") return;
-    if (searchParams.get("resume") !== "1") return;
-    autoResumedRef.current = true;
-    handleResumeMarathon();
-  });
-
-  const handleDiscardSavedMarathon = () => {
-    try {
-      localStorage.removeItem(MARATHON_STORAGE_KEY);
-    } catch {}
-    setSavedSession(null);
-  };
-
-  // W-07: faol marafon davomida ilova ichidagi navigatsiya va sahifani yopish to'siladi.
-  // Tugallanmagan sessiya localStorage'da qoladi — keyinroq davom ettirish mumkin.
-  const guard = useExamLeaveGuard(phase === "exam");
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [phase, answers]);
 
   const onBack = () => {
     if (phase === "setup") {
       navigate("/me");
     } else {
-      // Exam'dan chiqilganda saqlangan sessiya (deadline bilan) setup'da resume uchun ko'rinsin
-      if (phase === "exam") {
-        try {
-          const raw = localStorage.getItem(MARATHON_STORAGE_KEY);
-          const parsed = raw ? JSON.parse(raw) : null;
-          if (parsed && Array.isArray(parsed.questions) && parsed.questions.length > 0) {
-            setSavedSession(parsed);
-          }
-        } catch {}
-      }
       setPhase("setup");
     }
   };
 
   useEffect(() => {
-    getTopics()
-      .then((data) => setTopics(Array.isArray(data) ? data : []))
-      .catch((e) => reportError("marathon.loadTopics", e));
+    getTopics().then((data) => setTopics(Array.isArray(data) ? data : [])).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (initialTopicId !== null && !isNaN(initialTopicId)) {
+      setSelTopic(initialTopicId);
+    }
+  }, [initialTopicId]);
 
   useEffect(() => {
     getSavedQuestions(userId)
@@ -239,429 +139,652 @@ export default function Marafon_Page() {
           setSavedIds(new Set(entries.filter((e) => e?.question?.id != null).map((e) => e.question.id)));
         }
       })
-      .catch((e) => reportError("marathon.loadSaved", e));
+      .catch(() => {});
   }, [userId]);
 
-  useEffect(() => {
-    setShowExp(false);
-  }, [current]);
+  const localSessionIdRef = useRef<string>(generateUUID());
+  const questionsJsonRef = useRef<string>("[]");
+  const currentRef = useRef(current);
+  currentRef.current = current;
 
-  useEffect(() => {
-    activeQnumRef.current?.scrollIntoView({
-      block: "nearest",
-      inline: "center",
-      behavior: "smooth",
-    });
-  }, [current]);
-
-  const startExam = () => {
-    setPhase("loading");
-    setAnswers({});
-    answersRef.current = {};
-    setCurrent(0);
-    setFailure(null);
-
-    const maxQ =
-      selTopic != null
-        ? topics.find((tp) => tp.id === selTopic)?.question_count ?? 0
-        : totalQuestionsKnown;
-
-    const chosenOption = COUNT_OPTIONS[countIdx];
-    // "Barchasi" — mavjud savollar, lekin MARATHON_MAX_QUESTIONS dan oshmaydi (W-15)
-    const wanted = chosenOption === 0 ? MARATHON_MAX_QUESTIONS : chosenOption;
-    const limit = maxQ > 0 ? Math.min(wanted, maxQ) : wanted;
-
-    sessionIdRef.current = null;
-    startMarathonSession(selTopic ?? undefined, limit)
-      .then(({ sessionId, questions: qs }) => {
-        if (qs.length === 0) {
-          setFailure({ kind: "empty" });
-          setPhase("result");
-          return;
-        }
-        sessionIdRef.current = sessionId;
-        const total = durationSecondsFor(qs.length, rules.marathon.secondsPerQuestion);
-        deadlineRef.current = Date.now() + total * 1000;
-        finishedRef.current = false;
-        setTimerSeconds(total);
-        setQuestions(qs);
-        questionsRef.current = qs;
-        setPhase("exam");
+  /**
+   * Debounced (~500 ms) crash-recovery progress write (keeps the ORIGINAL started_at / deadline).
+   * The (large) questions JSON is serialized once per session, not on every answer.
+   */
+  const progressSaver = useDebouncedSave((snap: { answers: Record<number, Answer>; index: number }) => {
+    const qs = questionsRef.current;
+    const { correct: correctSoFar } = countResults(snap.answers);
+    return dbClient
+      .saveExamSession({
+        local_id: localSessionIdRef.current,
+        server_id: serverSessionIdRef.current,
+        exam_type: "MARATHON",
+        target_id: selTopicRef.current,
+        status: "IN_PROGRESS",
+        total_questions: qs.length,
+        correct_answers: correctSoFar,
+        score: qs.length > 0 ? Math.round((correctSoFar / qs.length) * 100) : 0,
+        duration_seconds: Math.floor((Date.now() - startTimeRef.current) / 1000),
+        time_remaining_seconds: remainingSecondsUntil(deadlineRef.current),
+        deadline_at: deadlineRef.current,
+        started_at: startTimeRef.current,
+        completed_at: null,
+        answers_json: JSON.stringify(snap.answers),
+        questions_json: questionsJsonRef.current,
+        current_index: snap.index,
+        synced: 0,
       })
-      .catch((err: unknown) => {
-        // desktopAdapter xatoda THROW qiladi (W-05). 5xx/tarmoq — api.ts global toast
-        // ko'rsatadi; bu yerda faqat lokalizatsiyalangan inline xato + "Qayta urinish".
-        setFailure({ kind: "error", error: err });
-        setPhase("result");
-      });
-  };
-
-  function triggerFinish() {
-    if (finishedRef.current) return; // taymer + tugma bir vaqtda — ikki marta yuborilmasin
-    finishedRef.current = true;
-    if (autoRef.current) {
-      clearTimeout(autoRef.current);
-      autoRef.current = null;
-    }
-    const questions = questionsRef.current;
-    const curAnswers = answersRef.current;
-    const correct = Object.values(curAnswers).filter((a) => a.selected === a.correct).length;
-    const total = questions.length;
-    const score = total > 0 ? Math.round((correct / total) * 100) : 0;
-    const planned = durationSecondsFor(total, rules.marathon.secondsPerQuestion);
-    const remaining = deadlineRef.current
-      ? Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000))
-      : planned;
-    deadlineRef.current = null;
-    setPhase("result");
-    saveExamResult({
-      userId,
-      score,
-      totalQuestions: total,
-      correctAnswers: correct,
-      durationSeconds: Math.max(0, planned - remaining),
-      examType: "marathon",
-      passed: isExamPassed(
-        {
-          mode: "marathon",
-          total,
-          correct,
-          wrong: Math.max(0, Object.keys(curAnswers).length - correct),
-          unanswered: Math.max(0, total - Object.keys(curAnswers).length),
-        },
-        rules,
-      ),
-    }).catch((e) => reportError("marathon.saveResult", e));
-
-    const activeId = sessionIdRef.current;
-    if (activeId && questions.length > 0) {
-      sessionIdRef.current = null; // ikki marta yuborilmasin
-      const submitList = questions.map((q, idx) => ({
-        questionId: q.id,
-        selectedOptionIndex: curAnswers[idx]?.selected ?? null,
-      }));
-      // Xato bo'lsa submitExamSession o'zi navbatga qo'yadi va bildirishnoma ko'rsatadi
-      void submitExamSession(activeId, submitList);
-    }
-
-    try {
-      localStorage.removeItem(MARATHON_STORAGE_KEY);
-    } catch {}
-    setSavedSession(null);
-  }
-
-  // Marafon taymeri (Exam sahifasi bilan bir xil hook) — tugaganda avtomatik yakunlash
-  const { timeLeft, warning: timerWarning } = useExamTimer({
-    durationSeconds: timerSeconds,
-    running: phase === "exam",
-    onExpire: () => triggerFinish(),
+      .catch(() => {});
   });
 
-  const handleSelect = (optIdx: number) => {
-    if (answers[current] !== undefined || finishedRef.current) return;
-    const q = questions[current];
-    if (!q) return;
-    const opts = parseOptions(q.options_json);
-    if (optIdx >= opts.length) return;
-    if (autoRef.current) {
-      clearTimeout(autoRef.current);
-      autoRef.current = null;
-    }
-
-    const isCorrect = optIdx === q.correct_option;
-    if (!isCorrect) addWrongAnswer(userId, q).catch((e) => reportError("marathon.addWrongAnswer", e));
-    recordQuestionAttempt(userId, q.id, isCorrect, "marathon").catch((e) =>
-      reportError("marathon.recordAttempt", e),
-    );
-
-    const newAns = {
-      ...answers,
-      [current]: { selected: optIdx, correct: q.correct_option },
-    };
-    setAnswers(newAns);
-    answersRef.current = newAns;
-
-    const nextQ = current < questions.length - 1 ? current + 1 : current;
-    try {
-      localStorage.setItem(
-        MARATHON_STORAGE_KEY,
-        JSON.stringify({
-          questions,
-          current: nextQ,
-          answers: newAns,
-          selTopic,
-          countIdx,
-          timestamp: Date.now(),
-          sessionId: sessionIdRef.current,
-          deadline: deadlineRef.current ?? undefined,
-        })
-      );
-    } catch {}
-
-    if (current < questions.length - 1) {
-      autoRef.current = setTimeout(() => setCurrent((c) => c + 1), 800);
-    }
-  };
-
-  const handleToggleExp = () => {
-    const willOpen = !showExp;
-    setShowExp(willOpen);
-    if (willOpen) {
+  const triggerFinish = useCallback(
+    (timeUp = false) => {
+      if (finishedRef.current) return;
+      finishedRef.current = true;
+      progressSaver.cancel();
       if (autoRef.current) {
         clearTimeout(autoRef.current);
         autoRef.current = null;
       }
-    } else if (current < questions.length - 1) {
-      autoRef.current = setTimeout(() => setCurrent((c) => c + 1), 500);
-    }
-  };
+      const curAnswers = answersRef.current;
+      const qs = questionsRef.current;
+      const now = Date.now();
+      const endAt = deadlineRef.current > 0 ? Math.min(now, deadlineRef.current) : now;
+      const duration = Math.max(0, Math.floor((endAt - startTimeRef.current) / 1000));
+      const correct = Object.values(curAnswers).filter((a) => a.selected === a.correct).length;
+      const total = qs.length;
+      const answeredCount = Object.keys(curAnswers).length;
+      const wrong = answeredCount - correct;
+      const unanswered = Math.max(0, total - answeredCount);
+      const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+      const passed = isExamPassed({ mode: "marathon", total, correct, wrong, unanswered }, rules);
+      setIsTimeUp(timeUp);
+      setPhase("result");
 
-  const handleToggleSave = (q: OfflineQuestion) => {
-    if (autoRef.current) {
-      clearTimeout(autoRef.current);
-      autoRef.current = null;
-    }
-    toggleSavedQuestion(userId, q).catch((e) => reportError("marathon.toggleSaved", e));
-    setSavedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(q.id)) next.delete(q.id);
-      else next.add(q.id);
-      return next;
-    });
-  };
+      // Mark session completed in local database (outcome persisted with the record)
+      dbClient
+        .completeExamSession(localSessionIdRef.current, {
+          status: "COMPLETED",
+          correct_answers: correct,
+          score,
+          duration_seconds: duration,
+          completed_at: now,
+          mode: "marathon",
+          passed,
+          wrong_answers: wrong,
+          unanswered,
+        })
+        .catch(() => {});
 
-  // W-16: yagona klaviatura boshqaruvi (1–5 / A–D, ←/→, Enter, Space — izoh)
-  const lastIdx = Math.max(0, questions.length - 1);
-  useExamHotkeys({
-    enabled: phase === "exam",
-    blocked: confirmFinishOpen || !!zoomSrc || guard.blocked,
-    optionCount: questions[current] ? parseOptions(questions[current].options_json).length : 0,
-    onSelect: handleSelect,
-    onPrev: () => setCurrent((c) => Math.max(0, c - 1)),
-    onNext: () => setCurrent((c) => Math.min(lastIdx, c + 1)),
-    onEnter: () => {
-      if (answers[current] !== undefined && current < lastIdx) {
-        setCurrent((c) => Math.min(lastIdx, c + 1));
+      void finalizeExamResult(
+        {
+          userId,
+          score,
+          totalQuestions: total,
+          correctAnswers: correct,
+          durationSeconds: duration,
+          examType: "marathon",
+          mode: "marathon",
+          wrongAnswers: wrong,
+          unanswered,
+          passed,
+        },
+        {
+          serverSessionId: serverSessionIdRef.current,
+          localSessionId: localSessionIdRef.current,
+          examType: "marathon",
+          targetId: null,
+          questions: qs,
+          answers: curAnswers,
+          durationSeconds: duration,
+          completedAt: now,
+        }
+      );
+    },
+    [userId, rules, progressSaver]
+  );
+
+  const startExam = useCallback(
+    async (forceFresh = false) => {
+      setPhase("loading");
+      setAnswers({});
+      answersRef.current = {};
+      setCurrent(0);
+      setErrorMsg(null);
+      setIsTimeUp(false);
+      finishedRef.current = false;
+
+      // Crash recovery: resume an unfinished marathon with its ORIGINAL absolute deadline
+      if (!forceFresh) {
+        try {
+          const active = await dbClient.getActiveExamSession("MARATHON");
+          if (active && active.questions_json && Date.now() - active.started_at < 24 * 60 * 60 * 1000) {
+            const restoredQs: OfflineQuestion[] = JSON.parse(active.questions_json);
+            const restoredAns: Record<number, Answer> = JSON.parse(active.answers_json || "{}");
+
+            if (restoredQs.length > 0) {
+              const restoredDeadline =
+                active.deadline_at ??
+                active.started_at + durationSecondsFor("marathon", restoredQs.length, rules) * 1000;
+              localSessionIdRef.current = active.local_id;
+              serverSessionIdRef.current =
+                active.server_id != null && !isFakeLocalSessionId(active.server_id) ? active.server_id : null;
+              setQuestions(restoredQs);
+              questionsRef.current = restoredQs;
+              questionsJsonRef.current = active.questions_json;
+              setAnswers(restoredAns);
+              answersRef.current = restoredAns;
+              setCurrent(active.current_index || 0);
+              startTimeRef.current = active.started_at;
+              setDeadline(restoredDeadline);
+              deadlineRef.current = restoredDeadline;
+
+              if (restoredDeadline <= Date.now()) {
+                // Expired while the app was closed → auto-submit what was answered.
+                triggerFinish(true);
+                return;
+              }
+              setPhase("exam");
+
+              showToast({
+                id: "marathon-crash-restored",
+                dedupeKey: "marathon-crash-restored",
+                title: t("marathon.sessionRestored", "Marafon tiklandi"),
+                message: t(
+                  "marathon.sessionRestoredDesc",
+                  "Avvalgi yakunlanmagan marafon holati avtomatik tiklandi"
+                ),
+                color: "blue",
+              });
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn("Lokal marafon sessiyasini tiklashda xatolik:", errorMessage(err));
+        }
+      }
+
+      // Fresh marathon session
+      try {
+        const maxQ =
+          selTopic != null
+            ? topics.find((tp) => tp.id === selTopic)?.question_count ?? 0
+            : topics.reduce((s, tp) => s + (tp.question_count || 0), 0);
+
+        const chosenOption = COUNT_OPTIONS[countIdx];
+        const limit =
+          chosenOption === 0
+            ? maxQ > 0 ? maxQ : 0 // 0 → every question in the local bank
+            : maxQ > 0 ? Math.min(chosenOption, maxQ) : chosenOption;
+
+        const qs = await getMarathonQuestions(selTopic ?? undefined, limit);
+        if (qs.length === 0) {
+          setErrorMsg(t("marathon.noQuestions", "Savollar topilmadi"));
+          setPhase("result");
+          return;
+        }
+
+        // A deliberately fresh start supersedes an unfinished marathon.
+        const stale = await dbClient.getActiveExamSession("MARATHON").catch(() => null);
+        if (stale) await dbClient.abandonExamSession(stale.local_id).catch(() => {});
+
+        const newId = generateUUID();
+        const startedAt = Date.now();
+        const seconds = durationSecondsFor("marathon", qs.length, rules);
+        const newDeadline = startedAt + seconds * 1000;
+        localSessionIdRef.current = newId;
+        serverSessionIdRef.current = getActiveMarathonSessionId();
+        setQuestions(qs);
+        questionsRef.current = qs;
+        questionsJsonRef.current = JSON.stringify(qs);
+        startTimeRef.current = startedAt;
+        setDeadline(newDeadline);
+        deadlineRef.current = newDeadline;
+        setPhase("exam");
+
+        await dbClient.saveExamSession({
+          local_id: newId,
+          server_id: serverSessionIdRef.current,
+          exam_type: "MARATHON",
+          target_id: selTopic,
+          status: "IN_PROGRESS",
+          total_questions: qs.length,
+          correct_answers: 0,
+          score: 0,
+          duration_seconds: 0,
+          time_remaining_seconds: seconds,
+          deadline_at: newDeadline,
+          started_at: startedAt,
+          completed_at: null,
+          answers_json: "{}",
+          questions_json: questionsJsonRef.current,
+          current_index: 0,
+          synced: 0,
+        });
+      } catch (e) {
+        console.warn("Marafon savollarini yuklab bo'lmadi:", e instanceof Error ? e.message : e);
+        setErrorMsg(t("exam.loadFailed", "Savollarni yuklab bo'lmadi. Qayta urinib ko'ring."));
+        setPhase("result");
       }
     },
-    onSpace: () => {
-      if (answers[current] !== undefined && questions[current] && localizeExp(questions[current])) {
-        handleToggleExp();
-      }
-    },
-  });
+    [selTopic, countIdx, topics, rules, t, triggerFinish]
+  );
 
-  // Marafon uzun bo'lishi mumkin (1000+ savol = 1000+ daqiqa) — soat ham ko'rsatiladi.
-  const formatTime = (s: number) => {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    const mmss = `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
-    return h > 0 ? `${h}:${mmss}` : mmss;
-  };
-  const timerIsRed = timeLeft <= 60;
-  const timerIsYellow = !timerIsRed && timeLeft <= 300;
+  // Resume an interrupted marathon automatically on page open (crash recovery).
+  useEffect(() => {
+    let alive = true;
+    dbClient
+      .getActiveExamSession("MARATHON")
+      .then((active) => {
+        if (alive && active && active.questions_json && Date.now() - active.started_at < 24 * 60 * 60 * 1000) {
+          startExam(false);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const handleSelect = useCallback(
+    (optIdx: number) => {
+      if (phase !== "exam" || finishedRef.current) return;
+      const idx = currentRef.current;
+      if (answersRef.current[idx] !== undefined) return;
+      const q = questionsRef.current[idx];
+      if (!q) return;
+      const opts = parseOptions(q.options_json);
+      if (optIdx >= opts.length) return;
+
+      const isCorrect = optIdx === q.correct_option;
+      if (!isCorrect) addWrongAnswer(userId, q).catch(() => {});
+      recordQuestionAttempt(userId, q.id, isCorrect, "marathon").catch(() => {});
+
+      const newAns = {
+        ...answersRef.current,
+        [idx]: { selected: optIdx, correct: q.correct_option },
+      };
+      setAnswers(newAns);
+      answersRef.current = newAns;
+      // Persist immediately after every answer (crash resistance)
+      void progressSaver.saveNow({ answers: newAns, index: idx });
+    },
+    [phase, userId, progressSaver]
+  );
+
+  const handleToggleSave = useCallback(
+    (q: OfflineQuestion) => {
+      toggleSavedQuestion(userId, q);
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(q.id)) next.delete(q.id);
+        else next.add(q.id);
+        return next;
+      });
+    },
+    [userId]
+  );
+
+  const handleGoto = useCallback(
+    (i: number) => {
+      setCurrent(i);
+      progressSaver.schedule({ answers: answersRef.current, index: i });
+    },
+    [progressSaver]
+  );
+  const handleFinish = useCallback(() => triggerFinish(false), [triggerFinish]);
+  const persistProgress = useCallback(
+    () => progressSaver.saveNow({ answers: answersRef.current, index: currentRef.current }),
+    [progressSaver]
+  );
+  const handleExit = useCallback(() => navigate("/me"), [navigate]);
+  const handleTimeUp = useCallback(() => triggerFinish(true), [triggerFinish]);
+  const activeTopic = selTopic != null ? topics.find((tp) => tp.id === selTopic) ?? null : null;
+  const activeTopicName = activeTopic ? localizeTopic(activeTopic) : "";
+  const runLabel = useMemo(
+    () =>
+      activeTopicName
+        ? t("examDesktop.modeTopic", "Mavzu: {{name}}", { name: activeTopicName })
+        : t("examDesktop.modeMarathon", "Marafon"),
+    [t, activeTopicName]
+  );
 
   // ─── SETUP ───
   if (phase === "setup") {
-    const isSingleTopic = selTopic != null;
-    const pageTitle = isSingleTopic
-      ? t("testSetup.topicTestTitle")
-      : t("testSetup.marathonTitle");
-
     return (
-      <div className="marathon-setup-wrapper" style={{ display: "flex", flexDirection: "column" }}>
+      <>
         <SEO
-          title={`${pageTitle} — ${t("seo.marathon.title")}`}
-          description={t("seo.marathon.desc", { questions: formatCount(totalQuestionsKnown) })}
+          title={`${t("marathon.title", "Marafon")} - Prava Online`}
+          description={t("marathon.seoDesc", "Yo'l harakati qoidalari bo'yicha mustahkamlash testi")}
           canonical="/marafon"
-          noIndex={true}
         />
-        {/* Top Minimal Bar */}
-        <header
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "14px 24px",
-            borderBottom: "1px solid var(--border)",
-            background: "var(--surface)",
-          }}
-        >
-          <button
-            onClick={onBack}
-            type="button"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "transparent",
-              border: "none",
-              color: "var(--text)",
-              fontSize: 15,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            <IconChevronLeft size={20} />
-            <span>{t("common.back")}</span>
-          </button>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <ColorMode />
-            <LanguagePicker />
-          </div>
-        </header>
-
-        <main style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "28px 16px" }}>
-          <div style={{ maxWidth: 840, width: "100%", margin: "0 auto" }}>
-            {savedSession && (
-              <div
-                style={{
-                  background: "var(--surface)",
-                  border: "1px solid var(--primary)",
-                  borderRadius: 16,
-                  padding: "20px 24px",
-                  marginBottom: 24,
-                  boxShadow: "0 8px 24px -4px rgba(var(--primary-rgb), 0.15)",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 12,
-                        background: "rgba(var(--primary-rgb), 0.12)",
-                        color: "var(--primary)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <IconRotateClockwise size={24} />
-                    </div>
-                    <div>
-                      <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "var(--text)" }}>
-                        {t("marathon.resumeTitle")}
-                      </h3>
-                      <p style={{ margin: "3px 0 0", fontSize: 13, color: "var(--text-secondary)" }}>
-                        {t(
-                          "marathon.resumeDesc",
-                          {
-                            answered: Object.keys(savedSession.answers || {}).length,
-                            total: savedSession.questions?.length || 0,
-                          }
-                        )}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <button
-                      type="button"
-                      onClick={handleDiscardSavedMarathon}
-                      style={{
-                        padding: "9px 16px",
-                        borderRadius: 10,
-                        border: "1px solid var(--border)",
-                        background: "var(--surface)",
-                        color: "var(--text-secondary)",
-                        fontSize: 13,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                      }}
-                    >
-                      <IconTrash size={16} />
-                      <span>{t("marathon.discardResume")}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleResumeMarathon}
-                      style={{
-                        padding: "10px 20px",
-                        borderRadius: 10,
-                        border: "none",
-                        background: "var(--primary)",
-                        color: "#fff",
-                        fontSize: 14,
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 8,
-                        boxShadow: "0 4px 14px rgba(var(--primary-rgb), 0.35)",
-                      }}
-                    >
-                      <IconPlayerPlay size={18} />
-                      <span>{t("marathon.resumeButton")}</span>
-                    </button>
+        <div className="ds-page-wrapper">
+          <div className="ds-page-container" style={{ maxWidth: 760 }}>
+            {/* Page Header */}
+            <div className="ds-page-header">
+              <div className="ds-header-left">
+                <button
+                  type="button"
+                  className="ds-back-btn"
+                  onClick={onBack}
+                  aria-label={t("common.back", "Orqaga")}
+                >
+                  <IconArrowLeft size={18} />
+                </button>
+                <div>
+                  <h1 className="ds-page-title">{t("marathon.title", "Marafon")}</h1>
+                  <div className="ds-page-desc">
+                    {t("marathon.setupDesc", "Marafon imtihon sozlamalarini tanlang")}
                   </div>
                 </div>
+              </div>
+            </div>
 
-                {/* Progress bar */}
-                <div style={{ width: "100%", height: 6, background: "var(--border)", borderRadius: 99, overflow: "hidden" }}>
+            {/* Mode Switcher Tabs */}
+            <div className="ds-tabs-row" role="tablist" style={{ marginBottom: 24 }}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "all"}
+                className={`ds-tab-pill ${activeTab === "all" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("all")}
+              >
+                {t("marathon.tabAll", "Barcha savollar")}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "byTopic"}
+                className={`ds-tab-pill ${activeTab === "byTopic" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("byTopic")}
+              >
+                {t("marathon.tabByTopic", "Mavzular bo'yicha")}
+              </button>
+            </div>
+
+            {/* TAB 1: Barcha savollar (4 Mode Cards from Screen 8) */}
+            {activeTab === "all" && (
+              <div className="ref-marafon-grid">
+                {/* 1. Kunlik marafon */}
+                <div
+                  className="ref-marafon-card"
+                  onClick={() => {
+                    setSelTopic(null);
+                    setCountIdx(3); // 50 questions
+                    startExam(true);
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      setSelTopic(null);
+                      setCountIdx(3);
+                      startExam(true);
+                    }
+                  }}
+                >
                   <div
-                    style={{
-                      height: "100%",
-                      width: `${
-                        savedSession.questions?.length > 0
-                          ? Math.min(
-                              100,
-                              Math.round(
-                                (Object.keys(savedSession.answers || {}).length /
-                                  savedSession.questions.length) *
-                                  100
-                              )
-                            )
-                          : 0
-                      }%`,
-                      background: "var(--primary)",
-                      borderRadius: 99,
-                      transition: "width 0.3s ease",
-                    }}
-                  />
+                    className="ref-marafon-icon-wrap"
+                    style={{ background: "linear-gradient(135deg, #0284c7, #2563eb)" }}
+                  >
+                    <IconPlayerPlay size={24} />
+                  </div>
+                  <div className="ref-marafon-info">
+                    <div className="ref-marafon-title">{t("marathon.dailyTitle", "Kunlik marafon")}</div>
+                    <div className="ref-marafon-subtitle">{t("marathon.dailySubtitle", "50 ta tasodifiy savol")}</div>
+                  </div>
+                  <IconChevronRight size={20} className="ref-marafon-chevron" />
+                </div>
+
+                {/* 2. Xatogacha marafon */}
+                <div
+                  className="ref-marafon-card"
+                  onClick={() => navigate("/survival")}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") navigate("/survival");
+                  }}
+                >
+                  <div
+                    className="ref-marafon-icon-wrap"
+                    style={{ background: "linear-gradient(135deg, #d946ef, #a855f7)" }}
+                  >
+                    <IconFlame size={24} />
+                  </div>
+                  <div className="ref-marafon-info">
+                    <div className="ref-marafon-title">{t("marathon.survivalTitle", "Xatogacha marafon")}</div>
+                    <div className="ref-marafon-subtitle">{t("marathon.survivalSubtitle", "Xato qilmaguningizcha")}</div>
+                  </div>
+                  <IconChevronRight size={20} className="ref-marafon-chevron" />
+                </div>
+
+                {/* 3. Mavzu marafoni */}
+                <div
+                  className="ref-marafon-card"
+                  onClick={() => setActiveTab("byTopic")}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") setActiveTab("byTopic");
+                  }}
+                >
+                  <div
+                    className="ref-marafon-icon-wrap"
+                    style={{ background: "linear-gradient(135deg, #10b981, #059669)" }}
+                  >
+                    <IconBook2 size={24} />
+                  </div>
+                  <div className="ref-marafon-info">
+                    <div className="ref-marafon-title">{t("marathon.topicTitle", "Mavzu marafoni")}</div>
+                    <div className="ref-marafon-subtitle">{t("marathon.topicSubtitle", "Tanlangan mavzu bo'yicha")}</div>
+                  </div>
+                  <IconChevronRight size={20} className="ref-marafon-chevron" />
+                </div>
+
+                {/* 4. Qiyin savollar marafoni */}
+                <div
+                  className="ref-marafon-card"
+                  onClick={() => {
+                    setSelTopic(null);
+                    setCountIdx(1); // 20 questions
+                    startExam(true);
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      setSelTopic(null);
+                      setCountIdx(1);
+                      startExam(true);
+                    }
+                  }}
+                >
+                  <div
+                    className="ref-marafon-icon-wrap"
+                    style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}
+                  >
+                    <IconTarget size={24} />
+                  </div>
+                  <div className="ref-marafon-info">
+                    <div className="ref-marafon-title">{t("marathon.hardTitle", "Qiyin savollar marafoni")}</div>
+                    <div className="ref-marafon-subtitle">{t("marathon.hardSubtitle", "Faqat qiyin savollar")}</div>
+                  </div>
+                  <IconChevronRight size={20} className="ref-marafon-chevron" />
                 </div>
               </div>
             )}
 
-            <TestSetupCard
-              topics={topics}
-              selectedTopicId={selTopic}
-              onSelectTopic={(id) => setSelTopic(id)}
-              countOptions={COUNT_OPTIONS}
-              selectedCountIdx={countIdx}
-              onSelectCountIdx={(idx) => setCountIdx(idx)}
-              onStart={startExam}
-              onBack={onBack}
-              localizeTopic={localizeTopic}
-              allCap={MARATHON_MAX_QUESTIONS}
-            />
+            {/* TAB 2: Mavzular bo'yicha */}
+            {activeTab === "byTopic" && (
+              <div>
+                {/* Count selector pills */}
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--g-text-muted)", marginBottom: 8 }}>
+                    {t("marathon.questionCount", "Savollar soni")}:
+                  </div>
+                  <div className="ds-tabs-row" style={{ gap: 8 }}>
+                    {COUNT_OPTIONS.map((count, idx) => (
+                      <button
+                        key={count}
+                        type="button"
+                        className={`ds-tab-pill ${countIdx === idx ? "is-active" : ""}`}
+                        onClick={() => setCountIdx(idx)}
+                      >
+                        {count === 0 ? t("marathon.allQuestions", "Barchasi") : `${count} ${t("marathon.questions", "ta")}`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Topics list */}
+                <div className="ref-marafon-grid">
+                  {topics.map((tp, idx) => (
+                    <div
+                      key={tp.id}
+                      className="ref-marafon-card"
+                      onClick={() => {
+                        setSelTopic(tp.id);
+                        startExam(true);
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          setSelTopic(tp.id);
+                          startExam(true);
+                        }
+                      }}
+                    >
+                      <div
+                        className="ref-marafon-icon-wrap"
+                        style={{
+                          background: BADGE_COLORS[idx % BADGE_COLORS.length],
+                          fontWeight: 800,
+                          fontSize: 16,
+                        }}
+                      >
+                        {idx + 1}
+                      </div>
+                      <div className="ref-marafon-info">
+                        <div className="ref-marafon-title">{localizeTopic(tp)}</div>
+                        <div className="ref-marafon-subtitle">
+                          {tp.question_count || tp.question_ids?.length || 0} {t("marathon.questions", "ta savol")}
+                        </div>
+                      </div>
+                      <IconChevronRight size={20} className="ref-marafon-chevron" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </main>
-      </div>
+        </div>
+      </>
     );
   }
 
   // ─── LOADING ───
   if (phase === "loading") {
     return (
-      <div className="loading-screen">
-        <div className="spinner" />
-        <p>{t("common.loading")}</p>
+      <div className="ds-page-wrapper">
+        <div className="ds-empty-state" style={{ minHeight: "80vh" }}>
+          <div className="ds-spinner" />
+          <p style={{ marginTop: 16, color: "var(--g-text-muted)" }}>{t("common.loading", "Yuklanmoqda...")}</p>
+        </div>
       </div>
     );
   }
 
   // ─── RESULT ───
   if (phase === "result") {
+    if (errorMsg) {
+      return (
+        <div className="ds-page-wrapper" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: 24 }}>
+          <div className="ref-result-card" style={{ maxWidth: 480, width: "100%" }}>
+            <div style={{ margin: "0 auto 16px", color: "var(--g-danger)" }}>
+              <IconAlertTriangle size={44} stroke={1.5} />
+            </div>
+            <h2 className="ref-result-title" style={{ color: "var(--g-danger)" }}>{t("common.error", "Xatolik")}</h2>
+            <p className="ref-result-sub">
+              {errorMsg === t("marathon.noQuestions", "Savollar topilmadi")
+                ? t("offline.questionsNotPreloaded", "Lokal bazada savollar topilmadi yoki to'liq tayyorlanmagan.")
+                : errorMsg}
+            </p>
+            <div className="exam-result-actions" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button
+                className="exam-result-btn primary"
+                onClick={() => startExam(false)}
+                type="button"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "12px 20px",
+                  fontWeight: 600,
+                  borderRadius: 10,
+                  background: "var(--primary, #228be6)",
+                  color: "#fff",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                <IconRefresh size={18} /> {t("common.retry", "Qayta urinish")}
+              </button>
+              <button
+                className="exam-result-btn secondary"
+                onClick={() => setShowOfflineModal(true)}
+                type="button"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "12px 20px",
+                  fontWeight: 600,
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  background: "transparent",
+                  color: "var(--text)",
+                  cursor: "pointer",
+                }}
+              >
+                <IconDownload size={18} /> {t("offline.prepareDataset", "Offline bazani tayyorlash / yuklash")}
+              </button>
+              <button
+                className="exam-result-btn secondary"
+                onClick={() => setPhase("setup")}
+                type="button"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "10px 20px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  background: "transparent",
+                  color: "var(--text)",
+                  cursor: "pointer",
+                }}
+              >
+                <IconArrowLeft size={18} /> {t("common.back", "Orqaga")}
+              </button>
+            </div>
+          </div>
+          <OfflinePreparationModal
+            opened={showOfflineModal}
+            onClose={() => setShowOfflineModal(false)}
+            onSuccess={() => {
+              setShowOfflineModal(false);
+              startExam(true);
+            }}
+          />
+        </div>
+      );
+    }
+
     const answeredCount = Object.values(answers).length;
     const correct = Object.values(answers).filter((a) => a.selected === a.correct).length;
     const total = questions.length;
@@ -671,356 +794,73 @@ export default function Marafon_Page() {
 
     const isSingleTopic = selTopic != null;
     const screenTitle = isSingleTopic
-      ? t("testSetup.topicTestTitle")
-      : t("testSetup.marathonTitle");
+      ? t("testSetup.topicTestTitle", "Mavzulashtirilgan test")
+      : t("testSetup.marathonTitle", "Katta Marafon");
 
     return (
       <>
         <SEO
-          title={`${screenTitle} — ${t("seo.examResult.title")}`}
-          description={t("seo.marathon.desc", { questions: formatCount(totalQuestionsKnown) })}
+          title={t("exam.resultTitleOf", "{{title}} natijasi", { title: screenTitle })}
+          description={t("marathon.resultSeoDesc", "Prava Online test natijalari va statistikasi")}
           canonical="/marafon"
-          noIndex={true}
         />
-        <div style={{ height: "100dvh", overflowY: "auto", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
-          <header className="home-header">
-            <div className="home-header-inner">
-              <div
-                className="home-header-logo"
-                style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
-                onClick={() => navigate("/me")}
-              >
-                <img src="/logo.svg" width={32} height={32} alt="Prava" />
-                <span className="home-header-brand">PRAVA<span className="brand-accent">ONLINE</span></span>
-              </div>
-              <div className="home-header-right">
-                <LanguagePicker />
-                <ColorMode />
-              </div>
-            </div>
-          </header>
-
-          <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 12px" }}>
+        <div className="ds-page-wrapper">
+          <div className="ds-page-container" style={{ maxWidth: 760, padding: "32px 16px" }}>
             <GamificationResult
-              mode="marathon"
               score={score}
               correct={correct}
               wrong={wrong}
               unanswered={unanswered}
               totalQuestions={total}
-              errorMsg={
-                failure == null
-                  ? null
-                  : failure.kind === "empty"
-                    ? t("marathon.noQuestions")
-                    : getErrorMessage(failure.error, t(errorKeyFor(failure.error, "notification.startError")))
-              }
+              errorMsg={errorMsg}
+              isTimeUp={isTimeUp}
+              passed={isExamPassed({ mode: "marathon", total, correct, wrong, unanswered }, rules)}
               onReviewMistakes={() => setReviewOpen(true)}
               onRetry={() => {
                 setPhase("setup");
               }}
               onBackHome={() => navigate("/me")}
-              title={t("testSetup.resultTitle", { title: screenTitle })}
+              title={t("exam.resultTitleOf", "{{title}} natijasi", { title: screenTitle })}
             />
-          </main>
 
-          <QuizReviewModal
-            opened={reviewOpen}
-            onClose={() => setReviewOpen(false)}
-            questions={questions}
-            answers={answers}
-          />
+            <QuizReviewModal
+              opened={reviewOpen}
+              onClose={() => setReviewOpen(false)}
+              questions={questions}
+              answers={answers}
+            />
+          </div>
         </div>
       </>
     );
   }
 
   // ─── EXAM ───
-  const q = questions[current];
-  const options = parseOptions(q.options_json);
-  const answered = answers[current];
-  const explanation = answered !== undefined ? localizeExp(q) : null;
-  const correct = Object.values(answers).filter((a) => a.selected === a.correct).length;
-  const wrong = Object.values(answers).length - correct;
-
   return (
     <>
       <SEO
-        title={`${t("seo.marathon.title")} — ${t("activeTest.questionsCount")}: ${correct + wrong}`}
-        description={t("seo.marathon.desc", { questions: formatCount(totalQuestionsKnown) })}
+        title={t("marathon.inProgressTitle", "Marafon davom etmoqda")}
+        description={t("marathon.inProgressSeoDesc", "Prava Online marafon testi")}
         canonical="/marafon"
-        noIndex={true}
       />
-      <ExamTimerAnnouncer warning={timerWarning} />
-      <div className="exam-screen">
-        {/* ── Top bar ── */}
-        <div className="exam-topbar">
-          <div className="exam-topbar-left">
-            <button
-              className="exam-finish-btn"
-              onClick={() => {
-                const answeredCount = Object.keys(answers).length;
-                if (answeredCount < questions.length) {
-                  setConfirmFinishOpen(true);
-                } else {
-                  triggerFinish();
-                }
-              }}
-              type="button"
-            >
-              {t("activeTest.finishTest")} <IconX size={15} />
-            </button>
-            <span
-              className={`exam-timer${timerIsRed ? " red" : timerIsYellow ? " yellow" : ""}`}
-              role="timer"
-              aria-label={`${t("exam.timeLeft")}: ${formatTime(timeLeft)}`}
-            >
-              {formatTime(timeLeft)}
-            </span>
-          </div>
-
-          <div className="exam-topbar-center">
-            <span className="exam-counter">
-              {current + 1} / {questions.length}
-            </span>
-          </div>
-
-          <div className="exam-topbar-right">
-            <span className="exam-score-chip green">
-              <IconCheck size={13} /> {correct}
-            </span>
-            <span className="exam-score-chip red">
-              <IconX size={13} /> {wrong}
-            </span>
-            <ColorMode />
-            <LanguagePicker />
-          </div>
-        </div>
-
-        {/* ── Question text ── */}
-        <div className="exam-question-header">
-          <p className="exam-question-text">{localizeQ(q)}</p>
-          <button
-            className={`exam-bookmark-btn${savedIds.has(q.id) ? " saved" : ""}`}
-            onClick={() => handleToggleSave(q)}
-            aria-pressed={savedIds.has(q.id)}
-            aria-label={
-              savedIds.has(q.id)
-                ? t("saved.remove")
-                : t("common.save")
-            }
-            title={
-              savedIds.has(q.id)
-                ? t("saved.remove")
-                : t("common.save")
-            }
-            type="button"
-          >
-            {savedIds.has(q.id) ? (
-              <IconBookmarkFilled size={18} />
-            ) : (
-              <IconBookmark size={18} />
-            )}
-          </button>
-        </div>
-
-        {/* ── Two-column body ── */}
-        <div className="exam-two-col">
-          {/* Left: options + explanation */}
-          <div className="exam-col-options">
-            {options.map((opt, idx) => {
-              let cls = "exam-option";
-              if (answered) {
-                if (idx === q.correct_option) cls += " correct";
-                else if (idx === answered.selected) cls += " wrong";
-              }
-              return (
-                <button
-                  key={idx}
-                  className={cls}
-                  onClick={() => handleSelect(idx)}
-                  disabled={!!answered}
-                  type="button"
-                >
-                  <span className="exam-option-key">{idx + 1}</span>
-                  <span className="exam-option-text">{localizeOpt(opt)}</span>
-                  {answered && idx === q.correct_option && (
-                    <IconCheck size={15} className="opt-icon correct" />
-                  )}
-                  {answered &&
-                    idx === answered.selected &&
-                    idx !== q.correct_option && (
-                      <IconX size={15} className="opt-icon wrong" />
-                    )}
-                </button>
-              );
-            })}
-
-            {/* Explanation toggle */}
-            {explanation && (
-              <div className="quiz-explanation-wrap" style={{ marginTop: 10 }}>
-                <button
-                  className="quiz-explanation-toggle"
-                  onClick={handleToggleExp}
-                  type="button"
-                >
-                  <IconBulb size={15} />
-                  {showExp
-                    ? t("marathon.hideExplanation")
-                    : t("marathon.showExplanation")}
-                </button>
-                {showExp && (
-                  <div className="quiz-explanation-text">{explanation}</div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Right: image or placeholder */}
-          <div className="exam-col-image">
-            {q.image_path ? (
-              <ZoomableImage
-                path={q.image_path}
-                className="exam-question-img"
-                onOpen={(src) => setZoomSrc(src)}
-              />
-            ) : (
-              <div className="exam-img-placeholder">
-                <IconSteeringWheel size={52} stroke={1} color="var(--border)" />
-                <span className="exam-placeholder-text">pravaonline.uz</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Zoom modal */}
-        <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />
-
-        {/* ── Bottom: question numbers + nav ── */}
-        <div className="exam-bottom">
-          <div className="exam-bottom-row">
-            <button
-              className="exam-nav-btn"
-              onClick={() => setCurrent((c) => Math.max(0, c - 1))}
-              disabled={current === 0}
-              type="button"
-              title={t("exam.prev")}
-            >
-              <IconChevronLeft size={17} /> <span>{t("exam.prev")}</span>
-            </button>
-
-            <div className="exam-qnums-wrap">
-              <div className="exam-qnums scrollable">
-                {(() => {
-                  const total = questions.length;
-                  const windowSize = 60;
-                  let startIdx = 0;
-                  let endIdx = total;
-                  if (total > windowSize) {
-                    startIdx = Math.max(0, current - Math.floor(windowSize / 2));
-                    endIdx = Math.min(total, startIdx + windowSize);
-                    if (endIdx - startIdx < windowSize) {
-                      startIdx = Math.max(0, endIdx - windowSize);
-                    }
-                  }
-                  const visibleIndices: number[] = [];
-                  for (let i = startIdx; i < endIdx; i++) {
-                    visibleIndices.push(i);
-                  }
-                  return (
-                    <>
-                      {startIdx > 0 && (
-                        <button
-                          className="exam-qnum"
-                          onClick={() => setCurrent(0)}
-                          type="button"
-                          title={t("exam.firstQuestion")}
-                        >
-                          1..
-                        </button>
-                      )}
-                      {visibleIndices.map((i) => {
-                        const a = answers[i];
-                        let cls = "exam-qnum";
-                        if (i === current) cls += " active";
-                        else if (a) cls += a.selected === a.correct ? " correct" : " wrong";
-                        return (
-                          <button
-                            key={i}
-                            ref={i === current ? activeQnumRef : undefined}
-                            className={cls}
-                            onClick={() => setCurrent(i)}
-                            type="button"
-                          >
-                            {i + 1}
-                          </button>
-                        );
-                      })}
-                      {endIdx < total && (
-                        <button
-                          className="exam-qnum"
-                          onClick={() => setCurrent(total - 1)}
-                          type="button"
-                          title={t("exam.questionN", { n: total })}
-                        >
-                          ..{total}
-                        </button>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
-            </div>
-
-            {current === questions.length - 1 ? (
-              <button
-                className="exam-nav-btn primary"
-                onClick={() => {
-                  const answeredCount = Object.keys(answers).length;
-                  if (answeredCount < questions.length) {
-                    setConfirmFinishOpen(true);
-                  } else {
-                    triggerFinish();
-                  }
-                }}
-                type="button"
-                title={t("activeTest.finishTest")}
-              >
-                <span>{t("activeTest.finishTest")}</span> <IconCheck size={17} />
-              </button>
-            ) : (
-              <button
-                className="exam-nav-btn primary"
-                onClick={() => setCurrent((c) => Math.min(questions.length - 1, c + 1))}
-                type="button"
-                title={t("exam.next")}
-              >
-                <span>{t("exam.next")}</span> <IconChevronRight size={17} />
-              </button>
-            )}
-          </div>
-          <KeyboardHint />
-        </div>
-
-        {/* Confirmation Modal before early finish (Mantine Modal — P2-W6) */}
-        <ConfirmFinishModal
-          opened={confirmFinishOpen}
-          onCancel={() => setConfirmFinishOpen(false)}
-          onConfirm={() => {
-            setConfirmFinishOpen(false);
-            triggerFinish();
-          }}
-        />
-
-        {/* W-07: faol marafondan chiqishni tasdiqlash (javoblar saqlanib qoladi) */}
-        <ConfirmFinishModal
-          variant="leave"
-          description={t("marathon.leaveDesc")}
-          opened={guard.blocked}
-          onCancel={guard.stay}
-          onConfirm={guard.leave}
-        />
-      </div>
+      <ExamDesktopView
+        mode={activeTopic ? "topic" : "marathon"}
+        label={runLabel}
+        questions={questions}
+        current={current}
+        answers={answers}
+        onSelect={handleSelect}
+        onGoto={handleGoto}
+        onFinish={handleFinish}
+        deadline={deadline > 0 ? deadline : null}
+        onTimeUp={handleTimeUp}
+        showExplanation
+        autoAdvance="correct"
+        bookmarkedIds={savedIds}
+        onToggleBookmark={handleToggleSave}
+        onExit={handleExit}
+        persistProgress={persistProgress}
+      />
     </>
   );
 }

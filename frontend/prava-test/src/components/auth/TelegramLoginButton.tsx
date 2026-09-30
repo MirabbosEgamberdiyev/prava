@@ -9,9 +9,14 @@ import api from "../../api/api";
 import { ENV } from "../../config/env";
 import { getErrorMessage } from "../../types/errors";
 
-interface TelegramLoginButtonProps {
+export interface TelegramLoginButtonProps {
   mode?: "login" | "register";
   compact?: boolean;
+  h?: number | string;
+  radius?: number | string;
+  className?: string;
+  style?: React.CSSProperties;
+  hideBotOption?: boolean;
 }
 
 interface TelegramUser {
@@ -46,7 +51,7 @@ const TelegramIcon = () => (
   </svg>
 );
 
-const TelegramLoginButton = (_props: TelegramLoginButtonProps = {}) => {
+const TelegramLoginButton = ({ h = 44, radius = "md", className, style }: TelegramLoginButtonProps = {}) => {
   const { t, i18n } = useTranslation();
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
@@ -139,11 +144,12 @@ const TelegramLoginButton = (_props: TelegramLoginButtonProps = {}) => {
     <Button
       leftSection={<TelegramIcon />}
       variant="filled"
-      className="auth-social-btn-telegram"
+      className={`auth-social-btn-telegram ${className || ""}`}
+      style={style}
       size="sm"
-      h={44}
+      h={h}
       fullWidth
-      radius="md"
+      radius={radius}
       loading={loading}
       onClick={handleTelegramLogin}
     >

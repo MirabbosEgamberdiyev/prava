@@ -64,6 +64,7 @@ interface QuizContentProps {
   onFinishExam?: (navigateTo: string) => Promise<void>;
   examSessionId?: number;
   onErrorLimitReached?: () => void;
+  onExit?: () => void;
 }
 
 export function QuizContent({

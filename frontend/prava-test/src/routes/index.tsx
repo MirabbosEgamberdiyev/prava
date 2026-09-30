@@ -6,6 +6,7 @@ import App_Layout from "../layout/App_Layout";
 import User_Layout from "../layout/User_Layout";
 import Exam_Layout from "../layout/Exam_Layout";
 import AdaptiveLayout from "../layout/AdaptiveLayout";
+import { WebAuthLayout } from "../layout/WebAuthLayout";
 import { isLandingDomain } from "../utils/domain";
 import {
   DomainRedirectToWebApp,
@@ -13,8 +14,8 @@ import {
 } from "../components/common/DomainRedirect";
 import { useAuth } from "../auth/AuthContext";
 
-// Simulator visibility flag
-const SHOW_SIMULATOR = true;
+// Simulator visibility flag: disabled on web (only for desktop and mobile apps)
+const SHOW_SIMULATOR = false;
 const NullPage = () => null;
 
 const Home_Page = lazy(() => import("../page/Home"));
@@ -64,13 +65,13 @@ const PracticalExam_Page  = lazy(() => import("../page/PracticalExam"));
  * (three.js va simulyator chunk'lari yaratilmaydi).
  */
 const SimulatorDashboard_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator")) : NullPage;
-const SimulatorTraining_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Training")) : NullPage;
-const SimulatorPractice_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Practice")) : NullPage;
-const SimulatorExercisePractice_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Practice/ExercisePractice")) : NullPage;
-const SimulatorExam_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Exam")) : NullPage;
-const SimulatorResult_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Result")) : NullPage;
-const SimulatorMistakes_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Mistakes")) : NullPage;
-const SimulatorStatistics_Page = SHOW_SIMULATOR ? lazy(() => import("../page/Simulator/Statistics")) : NullPage;
+const SimulatorTraining_Page = SimulatorDashboard_Page;
+const SimulatorPractice_Page = SimulatorDashboard_Page;
+const SimulatorExercisePractice_Page = SimulatorDashboard_Page;
+const SimulatorExam_Page = SimulatorDashboard_Page;
+const SimulatorResult_Page = SimulatorDashboard_Page;
+const SimulatorMistakes_Page = SimulatorDashboard_Page;
+const SimulatorStatistics_Page = SimulatorDashboard_Page;
 const TrafficRules_Page   = lazy(() => import("../page/TrafficRules"));
 const Penalties_Page      = lazy(() => import("../page/Penalties"));
 const TrafficFines_Page   = lazy(() => import("../page/TrafficFines"));
@@ -265,7 +266,7 @@ export default function AppRoutes() {
             </Route>
 
             {/* Auth Routes */}
-            <Route path="/auth" element={<App_Layout />}>
+            <Route path="/auth" element={<WebAuthLayout />}>
               <Route path="login" element={<Login_Page />} />
               <Route path="register" element={<Register_Page />} />
               <Route path="forgot-password" element={<ForgotPassword_Page />} />
@@ -396,7 +397,7 @@ export default function AppRoutes() {
             <Route path="/try-exam" element={<GuestExam_Page />} />
 
             {/* Auth Routes */}
-            <Route path="/auth" element={<App_Layout />}>
+            <Route path="/auth" element={<WebAuthLayout />}>
               <Route path="login" element={<Login_Page />} />
               <Route path="register" element={<Register_Page />} />
               <Route path="forgot-password" element={<ForgotPassword_Page />} />

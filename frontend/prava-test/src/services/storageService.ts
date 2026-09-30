@@ -1,5 +1,3 @@
-import Cookies from "js-cookie";
-
 export interface StoredOption {
   uzl: string;
   uzc?: string;
@@ -31,7 +29,11 @@ export interface StoredExamResult {
   durationSeconds: number;
   examType: string;
   createdAt: string;
-  passed?: boolean;
+  /** Persisted outcome (records saved after the D-02 fix; absent on older records). */
+  mode?: "real" | "ticket" | "marathon" | "wrong" | "package" | null;
+  passed?: boolean | null;
+  wrongAnswers?: number;
+  unanswered?: number;
 }
 
 export interface StoredTicketStat {
@@ -44,6 +46,28 @@ export interface StoredTicketStat {
   fastPerfectCount: number;
 }
 
+import Cookies from "js-cookie";
+import { GUEST_USER_KEY, scopedStorageKey } from "@/utils/userScope";
+
+function getCurrentUserId(): string {
+  try {
+    const rawCookie = typeof Cookies !== "undefined" ? Cookies.get("userData") : null;
+    const raw = rawCookie || (typeof localStorage !== "undefined" ? localStorage.getItem("userData") : null);
+    if (raw) {
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (parsed?.id) return String(parsed.id);
+    }
+  } catch {
+    // ignore
+  }
+  return GUEST_USER_KEY;
+}
+
+function getScopedKey(baseKey: string): string {
+  // Guests get their own namespace (never the unscoped/legacy key, never user id 1).
+  return scopedStorageKey(baseKey, getCurrentUserId());
+}
+
 const STORAGE_KEYS = {
   WRONG_ANSWERS: "prava_wrong_answers_v1",
   SAVED_QUESTIONS: "prava_saved_questions_v1",
@@ -52,48 +76,19 @@ const STORAGE_KEYS = {
   QUESTION_ATTEMPTS: "prava_question_attempts_v1",
 };
 
-function getActiveUserId(): string {
-  try {
-    const raw = Cookies.get("userData");
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed?.id) return String(parsed.id);
-    }
-  } catch {}
-  return "guest";
-}
-
-const LEGACY_MIGRATED_SUFFIX = "__legacy_migrated";
-
-function getScopedKey(baseKey: string): string {
-  const uid = getActiveUserId();
-  return `${baseKey}_${uid}`;
-}
-
 function safeGet<T>(baseKey: string, defaultValue: T): T {
   try {
     const scopedKey = getScopedKey(baseKey);
-    const raw = localStorage.getItem(scopedKey);
-    if (raw) return JSON.parse(raw);
+    const rawScoped = localStorage.getItem(scopedKey);
+    if (rawScoped) return JSON.parse(rawScoped);
 
-    // Backward compatibility: migrate legacy un-scoped data ONCE, to the first
-    // signed-in user who reads it, then delete the legacy copy so it can never
-    // leak into another account (or a guest) on the same device.
-    const migratedFlag = `${baseKey}${LEGACY_MIGRATED_SUFFIX}`;
-    if (getActiveUserId() !== "guest" && !localStorage.getItem(migratedFlag)) {
-      const legacy = localStorage.getItem(baseKey);
-      localStorage.setItem(migratedFlag, "1");
-      if (legacy) {
-        localStorage.removeItem(baseKey);
-        try {
-          const parsed = JSON.parse(legacy);
-          localStorage.setItem(scopedKey, legacy);
-          return parsed;
-        } catch {
-          // corrupt legacy data — drop it
-        }
-      }
+    // Legacy un-scoped key was written by guests in older builds — only the guest
+    // namespace may inherit it; a logged-in user must never see another person's data.
+    if (getCurrentUserId() === GUEST_USER_KEY) {
+      const rawLegacy = localStorage.getItem(baseKey);
+      if (rawLegacy) return JSON.parse(rawLegacy);
     }
+
     return defaultValue;
   } catch {
     return defaultValue;
@@ -210,7 +205,7 @@ export const storageService = {
       fastPerfectCount: 0,
     };
 
-    const isFastPerfect = correct >= 20 && duration <= 600;
+    const isFastPerfect = isPassed && score === 100 && duration <= 600;
 
     map[ticketId] = {
       ticketId,
@@ -235,7 +230,10 @@ export const storageService = {
     correctAnswers: number;
     durationSeconds: number;
     examType: string;
-    passed?: boolean;
+    mode?: StoredExamResult["mode"];
+    passed?: boolean | null;
+    wrongAnswers?: number;
+    unanswered?: number;
   }): StoredExamResult {
     const list = this.getExamHistory();
     const entry: StoredExamResult = {
@@ -250,17 +248,30 @@ export const storageService = {
 
   // ── RESET ALL STATS ──
   resetAllStats(): void {
-    // Data lives under `${key}_${userId}` — remove the CURRENT user's scoped keys
-    // (plus any leftover legacy un-scoped copy, so it cannot be re-migrated).
-    Object.values(STORAGE_KEYS).forEach((baseKey) => {
+    const keys = [
+      STORAGE_KEYS.WRONG_ANSWERS,
+      STORAGE_KEYS.SAVED_QUESTIONS,
+      STORAGE_KEYS.EXAM_HISTORY,
+      STORAGE_KEYS.TICKET_STATS,
+      STORAGE_KEYS.QUESTION_ATTEMPTS,
+    ];
+    for (const key of keys) {
+      localStorage.removeItem(key); // legacy unscoped key
+      localStorage.removeItem(getScopedKey(key));
+    }
+    window.dispatchEvent(new Event("prava-storage-changed"));
+  },
+
+  /** Logout: drop this user's locally cached progress (other users / guest untouched). */
+  clearUserData(userId: string | number): void {
+    if (scopedStorageKey("x", userId) === scopedStorageKey("x", GUEST_USER_KEY)) return;
+    for (const key of Object.values(STORAGE_KEYS)) {
       try {
-        localStorage.removeItem(getScopedKey(baseKey));
-        localStorage.removeItem(baseKey);
+        localStorage.removeItem(scopedStorageKey(key, userId));
       } catch {
         // ignore
       }
-    });
-    window.dispatchEvent(new Event("prava-storage-changed"));
+    }
   },
 };
 

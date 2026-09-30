@@ -1,398 +1,398 @@
 [
   {
-    "id": 5,
-    "code": "topic_5",
-    "name_uzl": "Ogohlantiruvchi belgilar",
-    "name_uzc": "Огоҳлантирувчи белгилар",
-    "name_en": "Warning Signs",
-    "name_ru": "Предупреждающие знаки",
-    "question_count": 35
-  },
-  {
-    "id": 6,
-    "code": "topic_6",
-    "name_uzl": "Imtiyoz belgilari",
-    "name_uzc": "Имтиёз белгилари",
-    "name_en": "Priority Signs",
-    "name_ru": "Знаки приоритета",
-    "question_count": 22
-  },
-  {
-    "id": 7,
-    "code": "topic_7",
-    "name_uzl": "Taqiqlovchi belgilar",
-    "name_uzc": "Тақиқловчи белгилар",
-    "name_en": "Prohibitory Signs",
-    "name_ru": "Запрещающие знаки",
-    "question_count": 54
-  },
-  {
-    "id": 8,
-    "code": "topic_8",
-    "name_uzl": "Buyuruvchi belgilar",
-    "name_uzc": "Буюрувчи белгилар",
-    "name_en": "Mandatory Signs",
-    "name_ru": "Предписывающие знаки",
-    "question_count": 31
-  },
-  {
-    "id": 9,
-    "code": "topic_9",
-    "name_uzl": "Axborot-koʻrsatkich belgilari",
-    "name_uzc": "Ахборот-кўрсаткич белгилари",
-    "name_en": "Information and Direction Signs",
-    "name_ru": "Информационно-указательные знаки",
-    "question_count": 58
-  },
-  {
-    "id": 10,
-    "code": "topic_10",
-    "name_uzl": "Servis belgilari",
-    "name_uzc": "Сервис белгилари",
-    "name_en": "Service Signs",
-    "name_ru": "Знаки сервиса",
-    "question_count": 1
-  },
-  {
-    "id": 11,
-    "code": "topic_11",
-    "name_uzl": "Qoʻshimcha axborot belgilari",
-    "name_uzc": "Қўшимча ахборот белгилари",
-    "name_en": "Additional Information Signs",
-    "name_ru": "Знаки дополнительной информации (таблички)",
-    "question_count": 34
-  },
-  {
-    "id": 22,
-    "code": "topic_22",
-    "name_uzl": "Chorrahalarda harakatlanish",
-    "name_uzc": "Чорраҳаларда ҳаракатланиш",
-    "name_en": "Intersections",
-    "name_ru": "Проезд перекрёстков",
-    "question_count": 14
-  },
-  {
-    "id": 23,
-    "code": "topic_23",
-    "name_uzl": "Tartibga solingan chorrahalar",
-    "name_uzc": "Тартибга солинган чорраҳалар",
-    "name_en": "Regulated Intersections",
-    "name_ru": "Регулируемые перекрёстки",
-    "question_count": 18
-  },
-  {
-    "id": 25,
-    "code": "topic_25",
-    "name_uzl": "Tartibga solinmagan teng ahamiyatli chorrahalar",
-    "name_uzc": "Тартибга солинмаган тенг аҳамиятли чорраҳалар",
-    "name_en": "Unregulated Intersections of Equivalent Roads",
-    "name_ru": "Нерегулируемые перекрёстки равнозначных дорог",
-    "question_count": 45
-  },
-  {
-    "id": 24,
-    "code": "topic_24",
-    "name_uzl": "Tartibga solinmagan chorrahalar (asosiy yoʻl toʻgʻri yoʻnalishda)",
-    "name_uzc": "Тартибга солинмаган чорраҳалар (асосий йўл тўғри йўналишда)",
-    "name_en": "Unregulated Intersections (Main Road Straight)",
-    "name_ru": "Нерегулируемые перекрёстки (главная дорога в прямом направлении)",
-    "question_count": 18
-  },
-  {
-    "id": 26,
-    "code": "topic_26",
-    "name_uzl": "Tartibga solinmagan chorrahalar (asosiy yoʻl yoʻnalishi oʻzgarishi)",
-    "name_uzc": "Тартибга солинмаган чорраҳалар (асосий йўл йўналиши ўзгариши)",
-    "name_en": "Unregulated Intersections (Main Road Direction Change)",
-    "name_ru": "Нерегулируемые перекрёстки (изменение направления главной дороги)",
-    "question_count": 27
-  },
-  {
-    "id": 14,
-    "code": "topic_14",
-    "name_uzl": "Svetofor ishoralari",
-    "name_uzc": "Светофор ишоралари",
-    "name_en": "Traffic Light Signals",
-    "name_ru": "Сигналы светофора",
-    "question_count": 33
-  },
-  {
-    "id": 15,
-    "code": "topic_15",
-    "name_uzl": "Tartibga soluvchining ishoralari",
-    "name_uzc": "Тартибга солувчининг ишоралари",
-    "name_en": "Signals of Traffic Controller",
-    "name_ru": "Сигналы регулировщика",
-    "question_count": 26
-  },
-  {
-    "id": 16,
-    "code": "topic_16",
-    "name_uzl": "Ogohlantiruvchi va avariya ishoralari",
-    "name_uzc": "Огоҳлантирувчи ва авария ишоралари",
-    "name_en": "Warning and Hazard Signals",
-    "name_ru": "Предупредительные и аварийные сигналы",
-    "question_count": 22
-  },
-  {
-    "id": 12,
-    "code": "topic_12",
-    "name_uzl": "Yotiq chiziqlar",
-    "name_uzc": "Ётиқ чизиқлар",
-    "name_en": "Horizontal Markings",
-    "name_ru": "Горизонтальная разметка",
-    "question_count": 71
-  },
-  {
-    "id": 13,
-    "code": "topic_13",
-    "name_uzl": "Tik chiziqlar",
-    "name_uzc": "Тик чизиқлар",
-    "name_en": "Vertical Markings",
-    "name_ru": "Вертикальная разметка",
-    "question_count": 5
-  },
-  {
-    "id": 17,
-    "code": "topic_17",
-    "name_uzl": "Harakatlanishni boshlash, manyovr qilish",
-    "name_uzc": "Ҳаракатланишни бошлаш, манёвр қилиш",
-    "name_en": "Starting Movement, Maneuvering",
-    "name_ru": "Начало движения, маневрирование",
-    "question_count": 52
-  },
-  {
-    "id": 18,
-    "code": "topic_18",
-    "name_uzl": "Yoʻlning qatnov qismida transport vositalarining joylashuvi",
-    "name_uzc": "Йўлнинг қатнов қисмида транспорт воситаларининг жойлашуви",
-    "name_en": "Position of Vehicles on Roadway",
-    "name_ru": "Расположение транспортных средств на проезжей части",
-    "question_count": 38
-  },
-  {
-    "id": 19,
-    "code": "topic_19",
-    "name_uzl": "Harakatlanish tezligi",
-    "name_uzc": "Ҳаракатланиш тезлиги",
-    "name_en": "Speed of Movement",
-    "name_ru": "Скорость движения",
-    "question_count": 12
-  },
-  {
-    "id": 20,
-    "code": "topic_20",
-    "name_uzl": "Quvib oʻtish",
-    "name_uzc": "Қувиб ўтиш",
-    "name_en": "Overtaking",
-    "name_ru": "Обгон",
-    "question_count": 33
-  },
-  {
-    "id": 21,
-    "code": "topic_21",
-    "name_uzl": "Toʻxtash va toʻxtab turish",
-    "name_uzc": "Тўхташ ва тўхтаб туриш",
-    "name_en": "Stopping and Parking",
-    "name_ru": "Остановка и стоянка",
-    "question_count": 52
-  },
-  {
-    "id": 27,
-    "code": "topic_27",
-    "name_uzl": "Piyodalar oʻtish joylari va yoʻnalishli transport vositalari bekatlari",
-    "name_uzc": "Пиёдалар ўтиш жойлари ва йўналишли транспорт воситалари бекатлари",
-    "name_en": "Pedestrian Crossings and Transit Stops",
-    "name_ru": "Пешеходные переходы и остановки маршрутных транспортных средств",
-    "question_count": 14
-  },
-  {
-    "id": 28,
-    "code": "topic_28",
-    "name_uzl": "Temir yoʻl kesishmalari orqali harakatlanish",
-    "name_uzc": "Темир йўл кесишмалари орқали ҳаракатланиш",
-    "name_en": "Level Crossings",
-    "name_ru": "Движение через железнодорожные пути",
-    "question_count": 13
-  },
-  {
-    "id": 29,
-    "code": "topic_29",
-    "name_uzl": "Avtomagistrallarda harakatlanish",
-    "name_uzc": "Автомагистралларда ҳаракатланиш",
-    "name_en": "Motorway Driving",
-    "name_ru": "Движение по автомагистралям",
-    "question_count": 13
-  },
-  {
-    "id": 30,
-    "code": "topic_30",
-    "name_uzl": "Turar joy dahalarida harakatlanish",
-    "name_uzc": "Турар жой даҳаларида ҳаракатланиш",
-    "name_en": "Residential Zones",
-    "name_ru": "Движение в жилых зонах",
-    "question_count": 9
-  },
-  {
-    "id": 31,
-    "code": "topic_31",
-    "name_uzl": "Tik balandlik va nishabliklarda harakatlanish",
-    "name_uzc": "Тик баландлик ва нишабликларда ҳаракатланиш",
-    "name_en": "Driving on Steep Slopes",
-    "name_ru": "Движение на крутых спусках и подъёмах",
-    "question_count": 3
-  },
-  {
-    "id": 32,
-    "code": "topic_32",
-    "name_uzl": "Yoʻnalishli transport vositalarining imtiyozlari",
-    "name_uzc": "Йўналишли транспорт воситаларининг имтиёзлари",
-    "name_en": "Priority of Route Vehicles",
-    "name_ru": "Приоритет маршрутных транспортных средств",
-    "question_count": 21
-  },
-  {
-    "id": 4,
-    "code": "topic_4",
-    "name_uzl": "Maxsus transport vositalarining imtiyozlari",
-    "name_uzc": "Махсус транспорт воситаларининг имтиёзлари",
-    "name_en": "Priority of Special Vehicles",
-    "name_ru": "Приоритет специальных транспортных средств",
-    "question_count": 10
-  },
-  {
-    "id": 33,
-    "code": "topic_33",
-    "name_uzl": "Tashqi yoritish asboblaridan foydalanish",
-    "name_uzc": "Ташқи ёритиш асбобларидан фойдаланиш",
-    "name_en": "Use of External Lighting",
-    "name_ru": "Пользование внешними световыми приборами",
-    "question_count": 16
-  },
-  {
     "id": 1,
     "code": "topic_1",
     "name_uzl": "Umumiy qoidalar",
-    "name_uzc": "Умумий қоидалар",
-    "name_en": "General Provisions",
-    "name_ru": "Общие положения",
-    "question_count": 35
+    "name_uzc": "Umumiy qoidalar",
+    "name_en": "Umumiy qoidalar",
+    "name_ru": "Umumiy qoidalar",
+    "question_count": 43
   },
   {
     "id": 2,
     "code": "topic_2",
     "name_uzl": "Haydovchilarning umumiy vazifalari",
-    "name_uzc": "Ҳайдовчиларнинг умумий вазифалари",
-    "name_en": "General Duties of Drivers",
-    "name_ru": "Общие обязанности водителей",
+    "name_uzc": "Haydovchilarning umumiy vazifalari",
+    "name_en": "Haydovchilarning umumiy vazifalari",
+    "name_ru": "Haydovchilarning umumiy vazifalari",
     "question_count": 13
   },
   {
     "id": 3,
     "code": "topic_3",
     "name_uzl": "Piyodalarning umumiy vazifalari",
-    "name_uzc": "Пиёдаларнинг умумий вазифалари",
-    "name_en": "Duties of Pedestrians",
-    "name_ru": "Обязанности пешеходов",
-    "question_count": 17
+    "name_uzc": "Piyodalarning umumiy vazifalari",
+    "name_en": "Piyodalarning umumiy vazifalari",
+    "name_ru": "Piyodalarning umumiy vazifalari",
+    "question_count": 18
+  },
+  {
+    "id": 4,
+    "code": "topic_4",
+    "name_uzl": "Maxsus transport vositalarining imtiyozlari",
+    "name_uzc": "Maxsus transport vositalarining imtiyozlari",
+    "name_en": "Maxsus transport vositalarining imtiyozlari",
+    "name_ru": "Maxsus transport vositalarining imtiyozlari",
+    "question_count": 10
+  },
+  {
+    "id": 5,
+    "code": "topic_5",
+    "name_uzl": "Ogohlantiruvchi belgilar",
+    "name_uzc": "Ogohlantiruvchi belgilar",
+    "name_en": "Ogohlantiruvchi belgilar",
+    "name_ru": "Ogohlantiruvchi belgilar",
+    "question_count": 38
+  },
+  {
+    "id": 6,
+    "code": "topic_6",
+    "name_uzl": "Imtiyoz belgilari",
+    "name_uzc": "Imtiyoz belgilari",
+    "name_en": "Imtiyoz belgilari",
+    "name_ru": "Imtiyoz belgilari",
+    "question_count": 23
+  },
+  {
+    "id": 7,
+    "code": "topic_7",
+    "name_uzl": "Taqiqlovchi belgilar",
+    "name_uzc": "Taqiqlovchi belgilar",
+    "name_en": "Taqiqlovchi belgilar",
+    "name_ru": "Taqiqlovchi belgilar",
+    "question_count": 59
+  },
+  {
+    "id": 8,
+    "code": "topic_8",
+    "name_uzl": "Buyuruvchi belgilar",
+    "name_uzc": "Buyuruvchi belgilar",
+    "name_en": "Buyuruvchi belgilar",
+    "name_ru": "Buyuruvchi belgilar",
+    "question_count": 33
+  },
+  {
+    "id": 9,
+    "code": "topic_9",
+    "name_uzl": "Axborot-koʻrsatkich belgilari",
+    "name_uzc": "Axborot-koʻrsatkich belgilari",
+    "name_en": "Axborot-koʻrsatkich belgilari",
+    "name_ru": "Axborot-koʻrsatkich belgilari",
+    "question_count": 60
+  },
+  {
+    "id": 10,
+    "code": "topic_10",
+    "name_uzl": "Servis belgilari",
+    "name_uzc": "Servis belgilari",
+    "name_en": "Servis belgilari",
+    "name_ru": "Servis belgilari",
+    "question_count": 1
+  },
+  {
+    "id": 11,
+    "code": "topic_11",
+    "name_uzl": "Qoʻshimcha axborot belgilari",
+    "name_uzc": "Qoʻshimcha axborot belgilari",
+    "name_en": "Qoʻshimcha axborot belgilari",
+    "name_ru": "Qoʻshimcha axborot belgilari",
+    "question_count": 38
+  },
+  {
+    "id": 12,
+    "code": "topic_12",
+    "name_uzl": "Yotiq chiziqlar",
+    "name_uzc": "Yotiq chiziqlar",
+    "name_en": "Yotiq chiziqlar",
+    "name_ru": "Yotiq chiziqlar",
+    "question_count": 74
+  },
+  {
+    "id": 13,
+    "code": "topic_13",
+    "name_uzl": "Tik chiziqlar",
+    "name_uzc": "Tik chiziqlar",
+    "name_en": "Tik chiziqlar",
+    "name_ru": "Tik chiziqlar",
+    "question_count": 5
+  },
+  {
+    "id": 14,
+    "code": "topic_14",
+    "name_uzl": "Svetofor ishoralari",
+    "name_uzc": "Svetofor ishoralari",
+    "name_en": "Svetofor ishoralari",
+    "name_ru": "Svetofor ishoralari",
+    "question_count": 34
+  },
+  {
+    "id": 15,
+    "code": "topic_15",
+    "name_uzl": "Tartibga soluvchining ishoralari",
+    "name_uzc": "Tartibga soluvchining ishoralari",
+    "name_en": "Tartibga soluvchining ishoralari",
+    "name_ru": "Tartibga soluvchining ishoralari",
+    "question_count": 29
+  },
+  {
+    "id": 16,
+    "code": "topic_16",
+    "name_uzl": "Ogohlantiruvchi va avariya ishoralari",
+    "name_uzc": "Ogohlantiruvchi va avariya ishoralari",
+    "name_en": "Ogohlantiruvchi va avariya ishoralari",
+    "name_ru": "Ogohlantiruvchi va avariya ishoralari",
+    "question_count": 26
+  },
+  {
+    "id": 17,
+    "code": "topic_17",
+    "name_uzl": "Harakatlanishni boshlash, manyovr qilish",
+    "name_uzc": "Harakatlanishni boshlash, manyovr qilish",
+    "name_en": "Harakatlanishni boshlash, manyovr qilish",
+    "name_ru": "Harakatlanishni boshlash, manyovr qilish",
+    "question_count": 53
+  },
+  {
+    "id": 18,
+    "code": "topic_18",
+    "name_uzl": "Yoʻlning qatnov qismida transport vositalarining joylashuvi",
+    "name_uzc": "Yoʻlning qatnov qismida transport vositalarining joylashuvi",
+    "name_en": "Yoʻlning qatnov qismida transport vositalarining joylashuvi",
+    "name_ru": "Yoʻlning qatnov qismida transport vositalarining joylashuvi",
+    "question_count": 42
+  },
+  {
+    "id": 19,
+    "code": "topic_19",
+    "name_uzl": "Harakatlanish tezligi",
+    "name_uzc": "Harakatlanish tezligi",
+    "name_en": "Harakatlanish tezligi",
+    "name_ru": "Harakatlanish tezligi",
+    "question_count": 36
+  },
+  {
+    "id": 20,
+    "code": "topic_20",
+    "name_uzl": "Quvib oʻtish",
+    "name_uzc": "Quvib oʻtish",
+    "name_en": "Quvib oʻtish",
+    "name_ru": "Quvib oʻtish",
+    "question_count": 37
+  },
+  {
+    "id": 21,
+    "code": "topic_21",
+    "name_uzl": "Toʻxtash va toʻxtab turish",
+    "name_uzc": "Toʻxtash va toʻxtab turish",
+    "name_en": "Toʻxtash va toʻxtab turish",
+    "name_ru": "Toʻxtash va toʻxtab turish",
+    "question_count": 69
+  },
+  {
+    "id": 22,
+    "code": "topic_22",
+    "name_uzl": "Chorrahalarda harakatlanish",
+    "name_uzc": "Chorrahalarda harakatlanish",
+    "name_en": "Chorrahalarda harakatlanish",
+    "name_ru": "Chorrahalarda harakatlanish",
+    "question_count": 14
+  },
+  {
+    "id": 23,
+    "code": "topic_23",
+    "name_uzl": "Tartibga solingan chorrahalar",
+    "name_uzc": "Tartibga solingan chorrahalar",
+    "name_en": "Tartibga solingan chorrahalar",
+    "name_ru": "Tartibga solingan chorrahalar",
+    "question_count": 20
+  },
+  {
+    "id": 24,
+    "code": "topic_24",
+    "name_uzl": "Tartibga solinmagan chorrahalar (asosiy yoʻl toʻgʻri yoʻnalishda)",
+    "name_uzc": "Tartibga solinmagan chorrahalar (asosiy yoʻl toʻgʻri yoʻnalishda)",
+    "name_en": "Tartibga solinmagan chorrahalar (asosiy yoʻl toʻgʻri yoʻnalishda)",
+    "name_ru": "Tartibga solinmagan chorrahalar (asosiy yoʻl toʻgʻri yoʻnalishda)",
+    "question_count": 19
+  },
+  {
+    "id": 25,
+    "code": "topic_25",
+    "name_uzl": "Tartibga solinmagan teng ahamiyatli chorrahalar",
+    "name_uzc": "Tartibga solinmagan teng ahamiyatli chorrahalar",
+    "name_en": "Tartibga solinmagan teng ahamiyatli chorrahalar",
+    "name_ru": "Tartibga solinmagan teng ahamiyatli chorrahalar",
+    "question_count": 49
+  },
+  {
+    "id": 26,
+    "code": "topic_26",
+    "name_uzl": "Tartibga solinmagan chorrahalar (asosiy yoʻl yoʻnalishi oʻzgarishi)",
+    "name_uzc": "Tartibga solinmagan chorrahalar (asosiy yoʻl yoʻnalishi oʻzgarishi)",
+    "name_en": "Tartibga solinmagan chorrahalar (asosiy yoʻl yoʻnalishi oʻzgarishi)",
+    "name_ru": "Tartibga solinmagan chorrahalar (asosiy yoʻl yoʻnalishi oʻzgarishi)",
+    "question_count": 28
+  },
+  {
+    "id": 27,
+    "code": "topic_27",
+    "name_uzl": "Piyodalar oʻtish joylari va yoʻnalishli transport vositalari bekatlari",
+    "name_uzc": "Piyodalar oʻtish joylari va yoʻnalishli transport vositalari bekatlari",
+    "name_en": "Piyodalar oʻtish joylari va yoʻnalishli transport vositalari bekatlari",
+    "name_ru": "Piyodalar oʻtish joylari va yoʻnalishli transport vositalari bekatlari",
+    "question_count": 14
+  },
+  {
+    "id": 28,
+    "code": "topic_28",
+    "name_uzl": "Temir yoʻl kesishmalari orqali harakatlanish",
+    "name_uzc": "Temir yoʻl kesishmalari orqali harakatlanish",
+    "name_en": "Temir yoʻl kesishmalari orqali harakatlanish",
+    "name_ru": "Temir yoʻl kesishmalari orqali harakatlanish",
+    "question_count": 19
+  },
+  {
+    "id": 29,
+    "code": "topic_29",
+    "name_uzl": "Avtomagistrallarda harakatlanish",
+    "name_uzc": "Avtomagistrallarda harakatlanish",
+    "name_en": "Avtomagistrallarda harakatlanish",
+    "name_ru": "Avtomagistrallarda harakatlanish",
+    "question_count": 14
+  },
+  {
+    "id": 30,
+    "code": "topic_30",
+    "name_uzl": "Turar joy dahalarida harakatlanish",
+    "name_uzc": "Turar joy dahalarida harakatlanish",
+    "name_en": "Turar joy dahalarida harakatlanish",
+    "name_ru": "Turar joy dahalarida harakatlanish",
+    "question_count": 9
+  },
+  {
+    "id": 31,
+    "code": "topic_31",
+    "name_uzl": "Tik balandlik va nishabliklarda harakatlanish",
+    "name_uzc": "Tik balandlik va nishabliklarda harakatlanish",
+    "name_en": "Tik balandlik va nishabliklarda harakatlanish",
+    "name_ru": "Tik balandlik va nishabliklarda harakatlanish",
+    "question_count": 3
+  },
+  {
+    "id": 32,
+    "code": "topic_32",
+    "name_uzl": "Yoʻnalishli transport vositalarining imtiyozlari",
+    "name_uzc": "Yoʻnalishli transport vositalarining imtiyozlari",
+    "name_en": "Yoʻnalishli transport vositalarining imtiyozlari",
+    "name_ru": "Yoʻnalishli transport vositalarining imtiyozlari",
+    "question_count": 21
+  },
+  {
+    "id": 33,
+    "code": "topic_33",
+    "name_uzl": "Tashqi yoritish asboblaridan foydalanish",
+    "name_uzc": "Tashqi yoritish asboblaridan foydalanish",
+    "name_en": "Tashqi yoritish asboblaridan foydalanish",
+    "name_ru": "Tashqi yoritish asboblaridan foydalanish",
+    "question_count": 24
   },
   {
     "id": 34,
     "code": "topic_34",
     "name_uzl": "Mexanik transport vositalarini shatakka olish",
-    "name_uzc": "Механик транспорт воситаларини шатакка олиш",
-    "name_en": "Towing Mechanical Vehicles",
-    "name_ru": "Буксировка механических транспортных средств",
-    "question_count": 22
+    "name_uzc": "Mexanik transport vositalarini shatakka olish",
+    "name_en": "Mexanik transport vositalarini shatakka olish",
+    "name_ru": "Mexanik transport vositalarini shatakka olish",
+    "question_count": 28
   },
   {
     "id": 35,
     "code": "topic_35",
     "name_uzl": "Transport vositalarini boshqarishni oʻrgatish",
-    "name_uzc": "Транспорт воситаларини бошқаришни ўргатиш",
-    "name_en": "Driver Training",
-    "name_ru": "Обучение вождению транспортных средств",
-    "question_count": 5
+    "name_uzc": "Transport vositalarini boshqarishni oʻrgatish",
+    "name_en": "Transport vositalarini boshqarishni oʻrgatish",
+    "name_ru": "Transport vositalarini boshqarishni oʻrgatish",
+    "question_count": 7
   },
   {
     "id": 36,
     "code": "topic_36",
     "name_uzl": "Odam tashish",
-    "name_uzc": "Одам ташиш",
-    "name_en": "Passenger Transport",
-    "name_ru": "Перевозка людей",
-    "question_count": 13
+    "name_uzc": "Odam tashish",
+    "name_en": "Odam tashish",
+    "name_ru": "Odam tashish",
+    "question_count": 20
   },
   {
     "id": 37,
     "code": "topic_37",
     "name_uzl": "Yuk tashish",
-    "name_uzc": "Юк ташиш",
-    "name_en": "Cargo Transport",
-    "name_ru": "Перевозка грузов",
-    "question_count": 7
+    "name_uzc": "Yuk tashish",
+    "name_en": "Yuk tashish",
+    "name_ru": "Yuk tashish",
+    "question_count": 16
   },
   {
     "id": 38,
     "code": "topic_38",
     "name_uzl": "Velosiped, moped va aravalar harakatlanishiga hamda hayvonlarni haydab oʻtishga doir qoʻshimcha talablar",
-    "name_uzc": "Велосипед, мопед ва аравалар ҳаракатланишига ҳамда ҳайвонларни ҳайдаб ўтишга доир қўшимча талаблар",
-    "name_en": "Rules for Bicycles, Mopeds and Carts",
-    "name_ru": "Дополнительные требования к движению велосипедов, мопедов, гужевых повозок и прогону животных",
-    "question_count": 8
-  },
-  {
-    "id": 42,
-    "code": "topic_42",
-    "name_uzl": "Birinchi tibbiy yordam",
-    "name_uzc": "Биринчи тиббий ёрдам",
-    "name_en": "First Medical Aid",
-    "name_ru": "Первая медицинская помощь",
-    "question_count": 31
-  },
-  {
-    "id": 41,
-    "code": "topic_41",
-    "name_uzl": "Harakat xavfsizligi asoslari",
-    "name_uzc": "Ҳаракат хавфсизлиги асослари",
-    "name_en": "Traffic Safety Basics",
-    "name_ru": "Основы безопасности движения",
-    "question_count": 67
-  },
-  {
-    "id": 40,
-    "code": "topic_40",
-    "name_uzl": "Transport vositalaridan foydalanishni taqiqlovchi shartlar",
-    "name_uzc": "Транспорт воситаларидан фойдаланишни тақиқловчи шартлар",
-    "name_en": "Conditions Prohibiting Vehicle Operation",
-    "name_ru": "Условия, запрещающие эксплуатацию транспортных средств",
-    "question_count": 31
+    "name_uzc": "Velosiped, moped va aravalar harakatlanishiga hamda hayvonlarni haydab oʻtishga doir qoʻshimcha talablar",
+    "name_en": "Velosiped, moped va aravalar harakatlanishiga hamda hayvonlarni haydab oʻtishga doir qoʻshimcha talablar",
+    "name_ru": "Velosiped, moped va aravalar harakatlanishiga hamda hayvonlarni haydab oʻtishga doir qoʻshimcha talablar",
+    "question_count": 12
   },
   {
     "id": 39,
     "code": "topic_39",
     "name_uzl": "Taniqli belgilar",
-    "name_uzc": "Таниқли белгилар",
-    "name_en": "Identification Signs",
-    "name_ru": "Опознавательные знаки транспортных средств",
-    "question_count": 11
+    "name_uzc": "Taniqli belgilar",
+    "name_en": "Taniqli belgilar",
+    "name_ru": "Taniqli belgilar",
+    "question_count": 12
+  },
+  {
+    "id": 40,
+    "code": "topic_40",
+    "name_uzl": "Transport vositalaridan foydalanishni taqiqlovchi shartlar",
+    "name_uzc": "Transport vositalaridan foydalanishni taqiqlovchi shartlar",
+    "name_en": "Transport vositalaridan foydalanishni taqiqlovchi shartlar",
+    "name_ru": "Transport vositalaridan foydalanishni taqiqlovchi shartlar",
+    "question_count": 48
+  },
+  {
+    "id": 41,
+    "code": "topic_41",
+    "name_uzl": "Harakat xavfsizligi asoslari",
+    "name_uzc": "Harakat xavfsizligi asoslari",
+    "name_en": "Harakat xavfsizligi asoslari",
+    "name_ru": "Harakat xavfsizligi asoslari",
+    "question_count": 69
+  },
+  {
+    "id": 42,
+    "code": "topic_42",
+    "name_uzl": "Birinchi tibbiy yordam",
+    "name_uzc": "Birinchi tibbiy yordam",
+    "name_en": "Birinchi tibbiy yordam",
+    "name_ru": "Birinchi tibbiy yordam",
+    "question_count": 34
   },
   {
     "id": 43,
     "code": "topic_43",
-    "name_uzl": "Murakkab savollar",
-    "name_uzc": "Мураккаб саволлар",
-    "name_en": "Complex Questions",
-    "name_ru": "Сложные вопросы",
+    "name_uzl": null,
+    "name_uzc": null,
+    "name_en": null,
+    "name_ru": null,
     "question_count": 31
   },
   {
     "id": 44,
     "code": "topic_44",
     "name_uzl": "Raqamli savollar",
-    "name_uzc": "Рақамли саволлар",
-    "name_en": "Numerical Questions",
-    "name_ru": "Цифровые вопросы",
+    "name_uzc": "Raqamli savollar",
+    "name_en": "Raqamli savollar",
+    "name_ru": "Raqamli savollar",
     "question_count": 117
   }
 ]

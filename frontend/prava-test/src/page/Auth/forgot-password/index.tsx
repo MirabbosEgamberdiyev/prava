@@ -1,91 +1,73 @@
-import React from "react";
 import {
   Box,
-  Button,
-  Group,
+  Divider,
   Stack,
   Text,
-  ThemeIcon,
+  Title,
+  Button,
 } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  IconArrowLeft,
-  IconShieldCheck,
-} from "@tabler/icons-react";
-import AuthLayout from "@/components/auth/AuthLayout";
-import AuthCard from "@/components/auth/AuthCard";
-import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
-import TelegramLoginButton from "@/components/auth/TelegramLoginButton";
-import AuthSecurityNotice from "@/components/auth/AuthSecurityNotice";
+import GoogleLoginButton from "../../../components/auth/GoogleLoginButton";
+import TelegramLoginButton from "../../../components/auth/TelegramLoginButton";
+import SEO from "../../../components/common/SEO";
+import AuthSecurityBadge from "../../../components/auth/AuthSecurityBadge";
 
-const ForgotPassword_Page: React.FC = () => {
+const ForgotPassword_Page = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
-    <AuthLayout
-      seoTitle={t("seo.forgotPassword.title", "Parolni tiklash - Prava Online")}
-      seoDescription={t("seo.forgotPassword.desc", "Prava Online tizimiga Google va Telegram orqali parolsiz kiring.")}
-      canonicalUrl="/auth/forgot-password"
-    >
-      <AuthCard
-        icon={<img src="/logo.svg" alt="Prava Online" width={34} height={34} style={{ objectFit: "contain" }} />}
-        title={t("auth.passwordlessNoticeTitle", "Parol kerak emas")}
-        subtitle={t(
-          "auth.passwordlessNoticeDesc",
-          "Tizimimizda parollar butunlay bekor qilingan. Profilingizga Google yoki Telegram orqali to'g'ridan-to'g'ri kiring"
-        )}
-        switchPrompt={t("auth.needHelp", "Yordam kerakmi?")}
-        switchLinkText={t("auth.backToLogin", "Kirishga qaytish")}
-        switchLinkHref="/auth/login"
-      >
-        <Stack gap={14}>
-          <Box
-            p="md"
-            style={{
-              background: "rgba(16, 185, 129, 0.08)",
-              border: "1px solid rgba(16, 185, 129, 0.25)",
-              borderRadius: "12px",
-            }}
-          >
-            <Group gap={10} mb={6}>
-              <ThemeIcon size={24} radius="xl" color="teal" variant="light">
-                <IconShieldCheck size={16} stroke={2.5} />
-              </ThemeIcon>
-              <Text fw={700} size="sm" c="teal.8">
-                {t("auth.passwordlessSecure", "100% xavfsiz va parolsiz kirish")}
-              </Text>
-            </Group>
-            <Text size="xs" c="dimmed">
-              {t(
-                "auth.passwordlessExplanation",
-                "Eski telefon yoki parollarni eslab qolish shart emas. Shunchaki o'zingizning Google yoki Telegram hisobingiz orqali bir bosishda profilingizga kiring."
-              )}
-            </Text>
-          </Box>
+    <Box style={{ width: "100%", maxWidth: 460, margin: "0 auto" }}>
+      <SEO
+        title={t("auth.passwordlessNoticeTitle", { defaultValue: "Parol talab etilmaydi - Prava Online" })}
+        description={t("auth.passwordlessNoticeDesc", {
+          defaultValue: "Prava Online platformasida autentifikatsiya to'liq Google va Telegram orqali xavfsiz ishlaydi.",
+        })}
+        canonical="/auth/forgot-password"
+      />
 
-          <Stack gap={10}>
-            <GoogleLoginButton mode="login" />
-            <TelegramLoginButton mode="login" />
-          </Stack>
+      {/* Header section */}
+      <Stack gap={6} align="center" mb={18} ta="center">
+        <Title
+          order={2}
+          size="1.45rem"
+          fw={800}
+          style={{ letterSpacing: "-0.02em", color: "var(--text)" }}
+        >
+          {t("auth.passwordlessNoticeTitle", { defaultValue: "Parol talab etilmaydi" })}
+        </Title>
 
-          <Button
-            variant="subtle"
-            color="gray"
-            size="sm"
-            h={38}
-            radius="md"
-            leftSection={<IconArrowLeft size={16} />}
-            onClick={() => navigate("/auth/login")}
-          >
-            {t("auth.backToLogin", "Kirish sahifasiga qaytish")}
-          </Button>
+        <Text size="xs" c="dimmed" maw={380}>
+          {t("auth.passwordlessNoticeDesc", {
+            defaultValue: "Tizimimizda parollar butunlay bekor qilingan. Profilingizga Google yoki Telegram orqali to'g'ridan-to'g'ri kiring",
+          })}
+        </Text>
+      </Stack>
 
-          <AuthSecurityNotice />
-        </Stack>
-      </AuthCard>
-    </AuthLayout>
+      {/* Social Logins */}
+      <Stack gap={10} mb={16}>
+        <GoogleLoginButton mode="login" h={44} radius={10} />
+        <TelegramLoginButton mode="login" h={44} radius={10} />
+      </Stack>
+
+      <Divider my={14} />
+
+      {/* Back to login */}
+      <Stack align="center" mt={12}>
+        <Button
+          variant="light"
+          size="xs"
+          onClick={() => navigate("/auth/login")}
+        >
+          {t("auth.backToLogin", { defaultValue: "Kirish sahifasiga o'tish" })}
+        </Button>
+      </Stack>
+
+      <Box mt={16}>
+        <AuthSecurityBadge compact />
+      </Box>
+    </Box>
   );
 };
 

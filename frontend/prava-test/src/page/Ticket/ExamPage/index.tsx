@@ -1,82 +1,47 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { resolveUserScopeId } from "@/utils/userScope";
+import { getExamRules, durationSecondsFor, durationMinutesFor, passPercentFor, isExamPassed } from "@/services/examRules";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../auth/AuthContext";
 import type { OfflineQuestion, OfflineTicket } from "../../../types/desktop";
 import {
-  startTicketSession,
-  saveExamResult,
+  getQuestionsByTicket,
+  getTicketInfo,
+  finalizeExamResult,
   addWrongAnswer,
   saveTicketStat,
   toggleSavedQuestion,
   getSavedQuestions,
+  getTicketStats,
   recordQuestionAttempt,
-  localizeQ,
-  localizeOpt,
-  localizeExp,
   parseOptions,
-  submitExamSession,
-  getLang,
+  getActiveTicketSessionId,
+  pickLocalized,
 } from "../../../services/desktopAdapter";
-import ColorMode from "../../../components/other/ColorMode";
-import LanguagePicker from "../../../components/language/LanguagePicker";
-import ImageZoomModal, { ZoomableImage } from "../../../components/common/ImageZoomModal";
+import PerfectCelebration from "../../../components/PerfectCelebration";
+import { isFakeLocalSessionId } from "../../../services/offlineExamRecord";
+import { remainingSecondsUntil } from "../../../components/quiz/ExamTimerDisplay";
+import { ExamDesktopView, useDebouncedSave, countResults } from "../../../features/ExamDesktop";
+import "../../../styles/exam-desktop.css";
 import SEO from "../../../components/common/SEO";
 import GamificationResult from "../../../components/quiz/GamificationResult";
 import QuizReviewModal from "../../../components/quiz/QuizReviewModal";
-import ConfirmFinishModal from "../../../components/quiz/ConfirmFinishModal";
-import ExamTimerAnnouncer from "../../../components/quiz/ExamTimerAnnouncer";
-import KeyboardHint from "../../../components/quiz/KeyboardHint";
-import { useExamTimer } from "../../../hooks/useExamTimer";
-import { useExamHotkeys } from "../../../hooks/useExamHotkeys";
-import { useExamLeaveGuard } from "../../../hooks/useExamLeaveGuard";
-import {
-  durationMinutesFor,
-  durationSecondsFor,
-  getExamRulesSync,
-  isExamPassed,
-  useExamRules,
-} from "../../../services/examRules";
-import {
-  buildExamLoaderKey,
-  clearExamSnapshot,
-  readExamSnapshot,
-  writeExamSnapshot,
-  type ExamSnapshot,
-} from "../../../services/examSnapshot";
-import { errorKeyFor, getErrorMessage } from "../../../types/errors";
-import { reportError } from "../../../utils/monitoring";
-import { scopedUserId } from "../../../utils/userScope";
-import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconCheck,
-  IconX,
-  IconArrowLeft,
-  IconSteeringWheel,
-  IconTicket,
-  IconBookmark,
-  IconBookmarkFilled,
-  IconBulb,
-  IconAlertTriangle,
-  IconRefresh,
-} from "@tabler/icons-react";
+import { dbClient, type DbExamSession } from "../../../database";
+import { ConfirmDialog } from "../../../features/ExamDesktop/components/ConfirmDialog";
+import { generateUUID } from "../../../sync/outboxQueue";
+import { IconArrowLeft, IconAlertTriangle, IconDownload, IconRefresh } from "@tabler/icons-react";
+import OfflinePreparationModal from "../../../components/offline/OfflinePreparationModal";
 
-type Phase = "loading" | "exam" | "result";
+/** "resume" = an unfinished attempt of this ticket exists → ask "Continue / Start over". */
+type Phase = "loading" | "resume" | "exam" | "result";
+
+/** Saved attempts older than this are ignored (not offered for resume). */
+const RESUME_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 interface Answer {
   selected: number;
   correct: number;
-}
-
-/** Yuklash muvaffaqiyatsiz: savol yo'q yoki xato (matn render paytida tarjima qilinadi). */
-type Failure = { kind: "empty" } | { kind: "error"; error: unknown };
-
-/** URL'dagi bilet ID: faqat musbat butun son; aks holda `null` (W-15). */
-function parseTicketId(raw: string | undefined): number | null {
-  if (!raw || !/^\d{1,9}$/.test(raw)) return null;
-  const n = Number(raw);
-  return n > 0 ? n : null;
 }
 
 export default function TicketExamPage() {
@@ -84,361 +49,445 @@ export default function TicketExamPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const userId = scopedUserId(user);
+  const userId = resolveUserScopeId(user);
 
-  // Bilet qoidalari (exam-rules): savolga secondsPerQuestion, o'tish foizi passPercent
-  const rules = useExamRules();
-
-  const ticketId = parseTicketId(id);
+  // Official server ticket id (offline bundle v2) — name/number come from the local DB.
+  const parsedId = Number(id);
+  const ticketId = Number.isInteger(parsedId) && parsedId > 0 ? parsedId : 1;
+  const [rules] = useState(getExamRules);
+  const [ticketInfo, setTicketInfo] = useState<OfflineTicket | null>(null);
+  useEffect(() => {
+    let alive = true;
+    getTicketInfo(ticketId)
+      .then((tk) => {
+        if (alive) setTicketInfo(tk);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [ticketId]);
 
   const [phase, setPhase] = useState<Phase>("loading");
   const [questions, setQuestions] = useState<OfflineQuestion[]>([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
+  /** Absolute deadline (epoch ms) — persisted for crash recovery. */
+  const [deadline, setDeadline] = useState<number>(
+    () => Date.now() + durationSecondsFor("ticket", ticketInfo?.question_count ?? rules.real.questionCount, rules) * 1000
+  );
+  const [resumeCandidate, setResumeCandidate] = useState<DbExamSession | null>(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
-  const [failure, setFailure] = useState<Failure | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [savedScore, setSavedScore] = useState(0);
   const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
-  const [showExp, setShowExp] = useState(false);
-  const [zoomSrc, setZoomSrc] = useState<string | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
-  const [confirmFinishOpen, setConfirmFinishOpen] = useState(false);
-  /** Taymer davomiyligi (soniya) — start/resume paytida absolyut deadline'dan hisoblanadi. */
-  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [showOfflineModal, setShowOfflineModal] = useState(false);
+  const [celebrate, setCelebrate] = useState<{ firstTime: boolean; fast: boolean } | null>(null);
+  const wasPerfectBeforeRef = useRef(false);
 
-  // Bilet metama'lumoti — sehrli sonlar o'rniga exam-rules va yuklangan savollar soni (W-15).
-  const ticket: OfflineTicket = useMemo(() => {
-    const num = ticketId ?? 0;
-    const questionCount = questions.length || rules.real.questionCount;
-    return {
-      id: num,
-      topic_id: null,
-      ticket_number: num,
-      name_uzl: `${num}-bilet`,
-      name_uzc: `${num}-билет`,
-      name_en: `Ticket #${num}`,
-      name_ru: `Билет #${num}`,
-      duration_minutes: durationMinutesFor(questionCount, rules.ticket.secondsPerQuestion),
-      passing_score: rules.ticket.passPercent,
-      question_count: questionCount,
-    };
-  }, [ticketId, questions.length, rules]);
-
-  const localizeName = (tk: OfflineTicket): string => {
-    const l = getLang();
-    if (l === "uzc" && tk.name_uzc) return tk.name_uzc;
-    if (l === "ru" && tk.name_ru) return tk.name_ru;
-    return tk.name_uzl;
+  const fallbackName = t("examDesktop.modeTicket", "Bilet #{{n}}", { n: ticketId });
+  const ticket: OfflineTicket = {
+    id: ticketId,
+    topic_id: ticketInfo?.topic_id ?? null,
+    ticket_number: ticketInfo?.ticket_number ?? ticketId,
+    name_uzl: ticketInfo?.name_uzl ?? fallbackName,
+    name_uzc: ticketInfo?.name_uzc ?? fallbackName,
+    name_en: ticketInfo?.name_en ?? fallbackName,
+    name_ru: ticketInfo?.name_ru ?? fallbackName,
+    duration_minutes: durationMinutesFor(
+      "ticket",
+      ticketInfo?.question_count ?? (questions.length || rules.real.questionCount),
+      rules
+    ),
+    passing_score: passPercentFor("ticket", rules),
+    question_count: ticketInfo?.question_count ?? (questions.length || 0),
   };
 
+  const localizeName = (tk: OfflineTicket): string =>
+    pickLocalized({ uzl: tk.name_uzl, uzc: tk.name_uzc, ru: tk.name_ru });
+
   const startTimeRef = useRef<number>(Date.now());
-  const deadlineRef = useRef<number | null>(null);
   const autoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sessionIdRef = useRef<number | null>(null);
   const answersRef = useRef(answers);
   answersRef.current = answers;
   const questionsRef = useRef(questions);
   questionsRef.current = questions;
-  const ticketRef = useRef(ticket);
-  ticketRef.current = ticket;
+  const deadlineRef = useRef(deadline);
+  deadlineRef.current = deadline;
+  const serverSessionIdRef = useRef<number | null>(null);
   const finishedRef = useRef(false);
-  // Eskirgan (bekor qilingan) yuklash javoblarini e'tiborsiz qoldirish uchun
-  const loadSeqRef = useRef(0);
-
-  // W-01: qayta yuklash FAQAT shu kalit o'zgarganda — til (t) unga kirmaydi.
-  const loaderKey = buildExamLoaderKey({ mode: "ticket", userId, ticketId });
-
-  const guard = useExamLeaveGuard(phase === "exam", () => clearExamSnapshot("ticket"));
 
   const onBack = () => navigate("/tickets");
 
-  // W-15: yaroqsiz / raqam bo'lmagan ID — biletlar ro'yxatiga (tarixga yozmasdan)
+  // Beforeunload listener during exam
   useEffect(() => {
-    if (ticketId == null) navigate("/tickets", { replace: true });
-  }, [ticketId, navigate]);
-
-  // Unmount: kutilayotgan auto-advance taymerini tozalash
-  useEffect(() => {
-    return () => {
-      if (autoRef.current) clearTimeout(autoRef.current);
+    if (phase !== "exam") return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
     };
-  }, []);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [phase]);
 
-  const resetState = () => {
-    setAnswers({});
-    answersRef.current = {};
-    setCurrent(0);
-    setIsTimeUp(false);
-    setFailure(null);
-    setReviewOpen(false);
-    sessionIdRef.current = null;
-    deadlineRef.current = null;
-    finishedRef.current = false;
-  };
+  // Bu bilet avval 100% bajarilganmi — to'liq yoki qisqa tabrik tanlash uchun
+  useEffect(() => {
+    getTicketStats(userId)
+      .then((stats) => {
+        const s = stats.find((x) => x.ticket_id === ticketId);
+        wasPerfectBeforeRef.current = !!s && s.best_correct >= (ticket.question_count || 10);
+      })
+      .catch(() => {});
+  }, [userId, ticketId, ticket.question_count]);
 
-  const startFresh = () => {
-    if (ticketId == null) return;
-    const seq = ++loadSeqRef.current;
-    clearExamSnapshot("ticket");
-    setPhase("loading");
-    resetState();
+  const localSessionIdRef = useRef<string>(generateUUID());
+  const ticketKey = `ticket_${ticketId}` as const;
+  const questionsJsonRef = useRef<string>("[]");
+  const currentRef = useRef(current);
+  currentRef.current = current;
 
-    // desktopAdapter.startTicketSession xatoda THROW qiladi (W-05)
-    startTicketSession(ticketId)
-      .then(({ sessionId, questions: qs }) => {
-        if (seq !== loadSeqRef.current) return;
+  /** Debounced (~500 ms) crash-recovery progress write. */
+  const progressSaver = useDebouncedSave((snap: { answers: Record<number, Answer>; index: number }) => {
+    const qs = questionsRef.current;
+    const { correct: correctSoFar } = countResults(snap.answers);
+    return dbClient
+      .saveExamSession({
+        local_id: localSessionIdRef.current,
+        server_id: serverSessionIdRef.current,
+        exam_type: ticketKey,
+        target_id: ticketId,
+        status: "IN_PROGRESS",
+        total_questions: qs.length,
+        correct_answers: correctSoFar,
+        score: qs.length > 0 ? Math.round((correctSoFar / qs.length) * 100) : 0,
+        duration_seconds: Math.floor((Date.now() - startTimeRef.current) / 1000),
+        time_remaining_seconds: remainingSecondsUntil(deadlineRef.current),
+        deadline_at: deadlineRef.current,
+        started_at: startTimeRef.current,
+        completed_at: null,
+        answers_json: JSON.stringify(snap.answers),
+        questions_json: questionsJsonRef.current,
+        current_index: snap.index,
+        synced: 0,
+      })
+      .catch(() => {});
+  });
+
+  const triggerFinish = useCallback(
+    (timeUp = false) => {
+      if (finishedRef.current) return;
+      finishedRef.current = true;
+      progressSaver.cancel();
+      if (autoRef.current) {
+        clearTimeout(autoRef.current);
+        autoRef.current = null;
+      }
+      const curAnswers = answersRef.current;
+      const qs = questionsRef.current;
+      const now = Date.now();
+      const duration = Math.max(0, Math.floor((Math.min(now, deadlineRef.current) - startTimeRef.current) / 1000));
+      const correct = Object.values(curAnswers).filter((a) => a.selected === a.correct).length;
+      const answeredCount = Object.keys(curAnswers).length;
+      const total = qs.length || rules.real.questionCount;
+      const wrong = answeredCount - correct;
+      const unanswered = Math.max(0, total - answeredCount);
+      const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+      setSavedScore(score);
+      setIsTimeUp(timeUp);
+      setPhase("result");
+      const isPassed = isExamPassed({ mode: "ticket", total, correct, wrong, unanswered }, rules);
+      if (!timeUp && total > 0 && correct === total) {
+        setCelebrate({ firstTime: !wasPerfectBeforeRef.current, fast: duration < 300 });
+        wasPerfectBeforeRef.current = true;
+      }
+
+      // Mark session completed in local crash-recovery database (outcome persisted with the record)
+      dbClient
+        .completeExamSession(localSessionIdRef.current, {
+          status: "COMPLETED",
+          correct_answers: correct,
+          score,
+          duration_seconds: duration,
+          completed_at: now,
+          mode: "ticket",
+          passed: isPassed,
+          wrong_answers: wrong,
+          unanswered,
+        })
+        .catch(() => {});
+
+      saveTicketStat(userId, ticketId, duration, correct, score, isPassed, total).catch(() => {});
+
+      void finalizeExamResult(
+        {
+          userId,
+          score,
+          totalQuestions: total,
+          correctAnswers: correct,
+          durationSeconds: duration,
+          examType: `ticket_${ticketId}`,
+          mode: "ticket",
+          wrongAnswers: wrong,
+          unanswered,
+          passed: isPassed,
+        },
+        {
+          serverSessionId: serverSessionIdRef.current,
+          localSessionId: localSessionIdRef.current,
+          examType: "ticket",
+          targetId: ticketId,
+          questions: qs,
+          answers: curAnswers,
+          durationSeconds: duration,
+          completedAt: now,
+        }
+      );
+    },
+    [ticketId, rules, userId, progressSaver]
+  );
+
+  /** Put a saved in-progress attempt back on screen (answers, position, original deadline). */
+  const restoreSession = useCallback(
+    (active: DbExamSession): boolean => {
+      const restoredQs: OfflineQuestion[] = JSON.parse(active.questions_json || "[]");
+      if (restoredQs.length === 0) return false;
+      const restoredAns: Record<number, Answer> = JSON.parse(active.answers_json || "{}");
+      const restoredDeadline =
+        active.deadline_at ?? active.started_at + durationSecondsFor("ticket", restoredQs.length, rules) * 1000;
+      localSessionIdRef.current = active.local_id;
+      serverSessionIdRef.current =
+        active.server_id != null && !isFakeLocalSessionId(active.server_id) ? active.server_id : null;
+      setQuestions(restoredQs);
+      questionsRef.current = restoredQs;
+      questionsJsonRef.current = active.questions_json || "[]";
+      setAnswers(restoredAns);
+      answersRef.current = restoredAns;
+      const idx = Math.max(0, Math.min(restoredQs.length - 1, active.current_index || 0));
+      setCurrent(idx);
+      currentRef.current = idx;
+      startTimeRef.current = active.started_at;
+      setDeadline(restoredDeadline);
+      deadlineRef.current = restoredDeadline;
+      return true;
+    },
+    [rules]
+  );
+
+  const loadQuestions = useCallback(
+    async (forceFresh = false) => {
+      setPhase("loading");
+      setResumeCandidate(null);
+      setAnswers({});
+      answersRef.current = {};
+      // Entering /tickets/:id (also after the post-login redirect) always starts at question 1.
+      setCurrent(0);
+      currentRef.current = 0;
+      setIsTimeUp(false);
+      setErrorMsg(null);
+      finishedRef.current = false;
+
+      // Unfinished attempt of this ticket → never resume silently: ask "Continue / Start over".
+      if (!forceFresh) {
+        try {
+          const active = await dbClient.getActiveExamSession(ticketKey);
+          if (active && active.questions_json && Date.now() - active.started_at < RESUME_MAX_AGE_MS) {
+            const restoredQs: OfflineQuestion[] = JSON.parse(active.questions_json);
+            const restoredAns: Record<number, Answer> = JSON.parse(active.answers_json || "{}");
+            const restoredDeadline =
+              active.deadline_at ??
+              active.started_at + durationSecondsFor("ticket", restoredQs.length, rules) * 1000;
+            if (restoredQs.length > 0 && restoredDeadline <= Date.now()) {
+              // Time ran out while the app was closed → submit what was answered.
+              if (restoreSession(active)) {
+                triggerFinish(true);
+                return;
+              }
+            } else if (restoredQs.length > 0 && Object.keys(restoredAns).length > 0) {
+              setResumeCandidate(active);
+              setPhase("resume");
+              return;
+            } else {
+              // Nothing answered yet — nothing worth resuming.
+              await dbClient.abandonExamSession(active.local_id).catch(() => {});
+            }
+          }
+        } catch (err) {
+          console.warn("Lokal bilet sessiyasini tiklashda xatolik:", err instanceof Error ? err.message : err);
+        }
+      }
+
+      // Fresh ticket session
+      try {
+        const qs = await getQuestionsByTicket(ticketId);
         if (qs.length === 0) {
-          setFailure({ kind: "empty" });
+          setErrorMsg(t("exam.noQuestions", "Savollar topilmadi"));
           setPhase("result");
           return;
         }
-        const total = durationSecondsFor(qs.length, getExamRulesSync().ticket.secondsPerQuestion);
-        const now = Date.now();
-        sessionIdRef.current = sessionId;
-        startTimeRef.current = now;
-        deadlineRef.current = now + total * 1000;
-        setTimerSeconds(total);
+
+        const newId = generateUUID();
+        const startedAt = Date.now();
+        const ticketSeconds = durationSecondsFor("ticket", qs.length, rules);
+        const newDeadline = startedAt + ticketSeconds * 1000;
+        localSessionIdRef.current = newId;
+        serverSessionIdRef.current = getActiveTicketSessionId();
         setQuestions(qs);
         questionsRef.current = qs;
+        questionsJsonRef.current = JSON.stringify(qs);
+        startTimeRef.current = startedAt;
+        setDeadline(newDeadline);
+        deadlineRef.current = newDeadline;
         setPhase("exam");
-      })
-      .catch((err: unknown) => {
-        if (seq !== loadSeqRef.current) return;
-        // 5xx/tarmoq uchun api.ts global toast ko'rsatadi — bu yerda faqat inline xato + "Qayta urinish".
-        setFailure({ kind: "error", error: err });
-        setPhase("result");
-      });
-  };
 
-  // Savol o'zgarganda izohni yop
+        await dbClient.saveExamSession({
+          local_id: newId,
+          server_id: serverSessionIdRef.current,
+          exam_type: ticketKey,
+          target_id: ticketId,
+          status: "IN_PROGRESS",
+          total_questions: qs.length,
+          correct_answers: 0,
+          score: 0,
+          duration_seconds: 0,
+          time_remaining_seconds: ticketSeconds,
+          deadline_at: newDeadline,
+          started_at: startedAt,
+          completed_at: null,
+          answers_json: "{}",
+          questions_json: questionsJsonRef.current,
+          current_index: 0,
+          synced: 0,
+        });
+      } catch (e) {
+        console.warn("Bilet savollarini yuklab bo'lmadi:", e instanceof Error ? e.message : e);
+        setErrorMsg(t("exam.loadFailed", "Savollarni yuklab bo'lmadi. Qayta urinib ko'ring."));
+        setPhase("result");
+      }
+    },
+    [ticketId, ticketKey, rules, t, triggerFinish, restoreSession]
+  );
+
+  const continueSaved = useCallback(() => {
+    const active = resumeCandidate;
+    setResumeCandidate(null);
+    if (active && restoreSession(active)) setPhase("exam");
+    else void loadQuestions(true);
+  }, [resumeCandidate, restoreSession, loadQuestions]);
+
+  const startOver = useCallback(async () => {
+    const active = resumeCandidate;
+    setResumeCandidate(null);
+    if (active) await dbClient.abandonExamSession(active.local_id).catch(() => {});
+    await loadQuestions(true);
+  }, [resumeCandidate, loadQuestions]);
+
   useEffect(() => {
-    setShowExp(false);
-  }, [current]);
+    loadQuestions();
+  }, [loadQuestions]);
 
   // Saqlangan savollarni yuklab olish
   useEffect(() => {
     getSavedQuestions(userId)
       .then((entries) => setSavedIds(new Set(entries.map((e) => e.question.id))))
-      .catch((e) => reportError("ticket.loadSaved", e));
+      .catch(() => {});
   }, [userId]);
 
-  const handleToggleExp = () => {
-    const willOpen = !showExp;
-    setShowExp(willOpen);
-    if (willOpen) {
-      if (autoRef.current) {
-        clearTimeout(autoRef.current);
-        autoRef.current = null;
-      }
-    } else if (current < questions.length - 1) {
-      autoRef.current = setTimeout(() => setCurrent((c) => c + 1), 500);
-    }
-  };
-
-  const handleToggleSave = (q: OfflineQuestion) => {
-    toggleSavedQuestion(userId, q).catch((e) => reportError("ticket.toggleSaved", e));
-    setSavedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(q.id)) next.delete(q.id);
-      else next.add(q.id);
-      return next;
-    });
-  };
-
-  const triggerFinish = (timeUp = false) => {
-    // Ikki marta yakunlanmasin (taymer + tugma bir vaqtda, StrictMode)
-    if (finishedRef.current) return;
-    finishedRef.current = true;
-    clearExamSnapshot("ticket");
-    if (autoRef.current) {
-      clearTimeout(autoRef.current);
-      autoRef.current = null;
-    }
-    const qs = questionsRef.current;
-    const tk = ticketRef.current;
-    const curAnswers = answersRef.current;
-    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
-    deadlineRef.current = null;
-    const correct = Object.values(curAnswers).filter((a) => a.selected === a.correct).length;
-    const total = qs.length || tk.question_count;
-    const score = total > 0 ? Math.round((correct / total) * 100) : 0;
-    setSavedScore(score);
-    setIsTimeUp(timeUp);
-    setPhase("result");
-    const answeredCount = Object.keys(curAnswers).length;
-    // Yagona qoida (barcha platformalar): foiz >= ticket.passPercent
-    const isPassed = isExamPassed(
-      {
-        mode: "ticket",
-        total,
-        correct,
-        wrong: Math.max(0, answeredCount - correct),
-        unanswered: Math.max(0, total - answeredCount),
-      },
-      rules,
-    );
-    saveExamResult({
-      userId,
-      score,
-      totalQuestions: total,
-      correctAnswers: correct,
-      durationSeconds: duration,
-      examType: `ticket_${tk.ticket_number}`,
-      passed: isPassed,
-    }).catch((e) => reportError("ticket.saveResult", e));
-    saveTicketStat(userId, tk.id, duration, correct, score, isPassed).catch((e) =>
-      reportError("ticket.saveStat", e),
-    );
-
-    const activeSessionId = sessionIdRef.current;
-    if (activeSessionId && qs.length > 0) {
-      sessionIdRef.current = null; // ikki marta yuborilmasin
-      const answersPayload = qs.map((q, idx) => ({
-        questionId: q.id,
-        selectedOptionIndex: curAnswers[idx]?.selected ?? null,
-      }));
-      // Xato bo'lsa submitExamSession o'zi navbatga qo'yadi va bildirishnoma ko'rsatadi
-      void submitExamSession(activeSessionId, answersPayload);
-    }
-  };
-
-  /**
-   * W-07: sahifa yangilangan bo'lsa — sessionStorage snapshot'dan davom etish;
-   * muddati o'tgan bo'lsa darhol yakunlash (natija + submit); aks holda yangi sessiya.
-   */
-  const resumeOrStart = () => {
-    if (ticketId == null) return;
-    const snap = readExamSnapshot<OfflineQuestion, Answer>("ticket", loaderKey);
-    if (snap.status === "none") {
-      startFresh();
-      return;
-    }
-    loadSeqRef.current++;
-    resetState();
-    const s = snap.snapshot;
-    sessionIdRef.current = s.sessionId;
-    startTimeRef.current = s.startedAt;
-    deadlineRef.current = s.deadline;
-    setQuestions(s.questions);
-    questionsRef.current = s.questions;
-    setAnswers(s.answers);
-    answersRef.current = s.answers;
-    setCurrent(s.current);
-    if (snap.status === "expired") {
-      triggerFinish(true);
-      return;
-    }
-    setTimerSeconds(snap.remainingSeconds);
-    setPhase("exam");
-  };
-
-  const initRef = useRef(resumeOrStart);
-  useEffect(() => {
-    initRef.current = resumeOrStart;
-  });
-  useEffect(() => {
-    initRef.current();
-  }, [loaderKey]);
-
-  // W-07: har javob / savol almashganda snapshot (absolyut deadline bilan)
-  useEffect(() => {
-    if (phase !== "exam" || finishedRef.current || deadlineRef.current == null) return;
-    const snapshot: Omit<ExamSnapshot<OfflineQuestion, Answer>, "v"> = {
-      kind: "ticket",
-      scope: loaderKey,
-      sessionId: sessionIdRef.current,
-      questions,
-      answers,
-      current,
-      deadline: deadlineRef.current,
-      startedAt: startTimeRef.current,
-    };
-    writeExamSnapshot(snapshot);
-  }, [phase, questions, answers, current, loaderKey]);
-
-  // P2-W5: deadline asosidagi taymer; onExpire bir marta, state updater tashqarisida.
-  const { timeLeft, warning: timerWarning } = useExamTimer({
-    durationSeconds: timerSeconds,
-    running: phase === "exam",
-    onExpire: () => {
-      triggerFinish(true);
+  const handleToggleSave = useCallback(
+    (q: OfflineQuestion) => {
+      toggleSavedQuestion(userId, q);
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(q.id)) next.delete(q.id);
+        else next.add(q.id);
+        return next;
+      });
     },
-  });
+    [userId]
+  );
 
-  useEffect(() => {
-    document.getElementById(`ticket-qnum-${current}`)?.scrollIntoView({
-      block: "nearest",
-      inline: "center",
-      behavior: "smooth",
-    });
-  }, [current]);
-
-  const handleSelect = (optIdx: number) => {
-    if (answers[current] !== undefined || finishedRef.current) return;
-    const q = questions[current];
-    if (!q) return;
-    const opts = parseOptions(q.options_json);
-    if (optIdx >= opts.length) return;
-    if (autoRef.current) {
-      clearTimeout(autoRef.current);
-      autoRef.current = null;
-    }
-    const isCorrect = optIdx === q.correct_option;
-    if (!isCorrect) {
-      addWrongAnswer(userId, q).catch((e) => reportError("ticket.addWrongAnswer", e));
-    }
-    recordQuestionAttempt(userId, q.id, isCorrect, "ticket").catch((e) =>
-      reportError("ticket.recordAttempt", e),
-    );
-    const newAns: Record<number, Answer> = {
-      ...answers,
-      [current]: { selected: optIdx, correct: q.correct_option },
-    };
-    setAnswers(newAns);
-    answersRef.current = newAns;
-    if (current < questions.length - 1) {
-      autoRef.current = setTimeout(() => setCurrent((c) => c + 1), 700);
-    }
-  };
-
-  // W-16: yagona klaviatura boshqaruvi (1–5 / A–D, ←/→, Enter, Space — izoh)
-  const lastIdx = Math.max(0, questions.length - 1);
-  useExamHotkeys({
-    enabled: phase === "exam",
-    blocked: confirmFinishOpen || !!zoomSrc || guard.blocked,
-    optionCount: questions[current] ? parseOptions(questions[current].options_json).length : 0,
-    onSelect: handleSelect,
-    onPrev: () => setCurrent((c) => Math.max(0, c - 1)),
-    onNext: () => setCurrent((c) => Math.min(lastIdx, c + 1)),
-    onEnter: () => {
-      if (answers[current] !== undefined && current < lastIdx) {
-        setCurrent((c) => Math.min(lastIdx, c + 1));
+  const handleSelect = useCallback(
+    (optIdx: number) => {
+      if (phase !== "exam" || finishedRef.current) return;
+      const idx = currentRef.current;
+      if (answersRef.current[idx] !== undefined) return;
+      const q = questionsRef.current[idx];
+      if (!q) return;
+      const opts = parseOptions(q.options_json);
+      if (optIdx >= opts.length) return;
+      const isCorrect = optIdx === q.correct_option;
+      if (!isCorrect) {
+        addWrongAnswer(userId, q).catch(() => {});
       }
+      recordQuestionAttempt(userId, q.id, isCorrect, "ticket").catch(() => {});
+      const newAns: Record<number, Answer> = {
+        ...answersRef.current,
+        [idx]: { selected: optIdx, correct: q.correct_option },
+      };
+      setAnswers(newAns);
+      answersRef.current = newAns;
+      // Persist immediately after every answer (crash resistance)
+      void progressSaver.saveNow({ answers: newAns, index: idx });
     },
-    onSpace: () => {
-      if (answers[current] !== undefined && questions[current] && localizeExp(questions[current])) {
-        handleToggleExp();
-      }
+    [phase, userId, progressSaver]
+  );
+
+  const handleGoto = useCallback(
+    (i: number) => {
+      setCurrent(i);
+      progressSaver.schedule({ answers: answersRef.current, index: i });
     },
-  });
-
-  if (ticketId == null) return null;
-
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
-  };
-
-  const timerIsRed = timeLeft <= 60;
-  const timerIsYellow = !timerIsRed && timeLeft <= 60 * 3;
+    [progressSaver]
+  );
+  const handleFinish = useCallback(() => triggerFinish(false), [triggerFinish]);
+  const persistProgress = useCallback(
+    () => progressSaver.saveNow({ answers: answersRef.current, index: currentRef.current }),
+    [progressSaver]
+  );
+  const handleExit = useCallback(() => navigate("/tickets"), [navigate]);
+  const handleTimeUp = useCallback(() => triggerFinish(true), [triggerFinish]);
+  const ticketNumber = ticket.ticket_number;
+  const ticketLabel = useMemo(
+    () => t("examDesktop.modeTicket", "Bilet #{{n}}", { n: ticketNumber }),
+    [t, ticketNumber]
+  );
 
   // ─── LOADING ───
   if (phase === "loading") {
     return (
       <div className="loading-screen">
         <div className="spinner" />
-        <p>{t("common.loading")}</p>
+        <p>{t("common.loading", "Yuklanmoqda...")}</p>
+      </div>
+    );
+  }
+
+  // ─── RESUME PROMPT ───
+  if (phase === "resume" && resumeCandidate) {
+    let answeredSaved = 0;
+    let totalSaved = 0;
+    try {
+      answeredSaved = Object.keys(JSON.parse(resumeCandidate.answers_json || "{}")).length;
+      totalSaved = resumeCandidate.total_questions || JSON.parse(resumeCandidate.questions_json || "[]").length;
+    } catch {
+      // ignore — counts are informational
+    }
+    return (
+      <div className="loading-screen">
+        <ConfirmDialog
+          title={t("exam.resumeTitle", "Tugallanmagan urinish topildi")}
+          description={t(
+            "exam.resumeDesc",
+            "Bu biletda {{answered}} / {{total}} savolga javob berilgan. Davom ettirasizmi yoki qaytadan boshlaysizmi?",
+            { answered: answeredSaved, total: totalSaved }
+          )}
+          actions={[
+            { id: "continue", label: t("exam.resumeContinue", "Davom ettirish"), variant: "primary", onClick: continueSaved },
+            { id: "restart", label: t("exam.resumeRestart", "Qaytadan boshlash"), onClick: () => void startOver() },
+          ]}
+          defaultFocusId="continue"
+          onCancel={onBack}
+        />
       </div>
     );
   }
@@ -452,28 +501,77 @@ export default function TicketExamPage() {
     const unanswered = total - answered;
     const score = total > 0 ? Math.round((correct / total) * 100) : savedScore;
 
-    if (failure) {
-      const message =
-        failure.kind === "empty"
-          ? t("exam.noQuestions")
-          : getErrorMessage(failure.error, t(errorKeyFor(failure.error, "notification.startError")));
+    if (errorMsg) {
       return (
         <div className="exam-result-screen">
-          <div className="exam-result-card">
+          <div className="exam-result-card" style={{ maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
             <div className="exam-result-icon failed">
               <IconAlertTriangle size={36} stroke={1.5} />
             </div>
-            <h2 className="exam-result-title failed">{t("common.error")}</h2>
-            <p className="exam-result-sub">{message}</p>
-            <div className="exam-result-actions">
-              <button className="exam-result-btn primary" onClick={startFresh} type="button">
-                <IconRefresh size={18} /> {t("common.retry")}
+            <h2 className="exam-result-title failed">{t("common.error", "Xatolik")}</h2>
+            <p className="exam-result-sub" style={{ marginBottom: 20 }}>
+              {errorMsg === t("exam.noQuestions", "Savollar topilmadi")
+                ? t("offline.questionsNotPreloaded", "Lokal bazada savollar topilmadi yoki to'liq tayyorlanmagan.")
+                : errorMsg}
+            </p>
+            <div className="exam-result-actions" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button
+                className="exam-result-btn primary"
+                onClick={() => loadQuestions()}
+                type="button"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "12px 20px",
+                  fontWeight: 600,
+                  borderRadius: 10,
+                }}
+              >
+                <IconRefresh size={18} /> {t("common.retry", "Qayta urinish")}
               </button>
-              <button className="exam-result-btn" onClick={onBack} type="button">
-                <IconArrowLeft size={18} /> {t("common.back")}
+              <button
+                className="exam-result-btn secondary"
+                onClick={() => setShowOfflineModal(true)}
+                type="button"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "12px 20px",
+                  fontWeight: 600,
+                  borderRadius: 10,
+                }}
+              >
+                <IconDownload size={18} /> {t("offline.prepareDataset", "Offline bazani tayyorlash / yuklash")}
+              </button>
+              <button
+                className="exam-result-btn secondary"
+                onClick={onBack}
+                type="button"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "10px 20px",
+                  borderRadius: 10,
+                }}
+              >
+                <IconArrowLeft size={18} /> {t("common.backToHome", "Bosh sahifaga qaytish")}
               </button>
             </div>
           </div>
+          <OfflinePreparationModal
+            opened={showOfflineModal}
+            onClose={() => setShowOfflineModal(false)}
+            onSuccess={() => {
+              setShowOfflineModal(false);
+              loadQuestions(true);
+            }}
+          />
         </div>
       );
     }
@@ -481,23 +579,22 @@ export default function TicketExamPage() {
     return (
       <>
         <SEO
-          title={`${localizeName(ticket)} — ${t("seo.examResult.title")}`}
-          description={t("seo.ticketExam.desc")}
+          title={t("exam.resultTitleOf", "{{title}} natijasi", { title: localizeName(ticket) })}
+          description={t("tickets.resultSeoDesc", "Bilet imtihon natijalari")}
           canonical={`/tickets/${ticket.id}`}
-          noIndex={true}
         />
-        <div style={{ height: "100dvh", overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+        <div style={{ height: "100%", flex: 1, minHeight: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <GamificationResult
-            mode="ticket"
             score={score}
             correct={correct}
             wrong={wrong}
             unanswered={unanswered}
             total={total}
             title={localizeName(ticket)}
-            badge={`${total} ${t("dashboard.questionsUnit")} • ${t("exam.passingScore")}: ${ticket.passing_score}%`}
+            badge={`${ticket.question_count} ${t("activeTest.questionsCount", "savol")} • ${t("exam.passingScore", "O'tish bali")}: ${ticket.passing_score}%`}
             isTimeUp={isTimeUp}
-            onRetry={startFresh}
+            passed={isExamPassed({ mode: "ticket", total, correct, wrong, unanswered }, rules)}
+            onRetry={() => loadQuestions(true)}
             onReviewMistakes={() => setReviewOpen(true)}
             onHome={onBack}
           />
@@ -511,251 +608,43 @@ export default function TicketExamPage() {
           onToggleSave={handleToggleSave}
           savedIds={savedIds}
         />
+
+        {celebrate && (
+          <PerfectCelebration
+            firstTime={celebrate.firstTime}
+            fast={celebrate.fast}
+            onDone={() => setCelebrate(null)}
+          />
+        )}
       </>
     );
   }
 
   // ─── EXAM ───
-  const q = questions[current];
-  const options = parseOptions(q.options_json);
-  const answered = answers[current];
-  const explanation = answered !== undefined ? localizeExp(q) : null;
-  const correct = Object.values(answers).filter((a) => a.selected === a.correct).length;
-  const wrong = Object.values(answers).length - correct;
-
-  const handleFinishClick = () => {
-    const answeredCount = Object.keys(answers).length;
-    if (answeredCount < questions.length) {
-      setConfirmFinishOpen(true);
-    } else {
-      triggerFinish(false);
-    }
-  };
-
   return (
     <>
       <SEO
-        title={`${localizeName(ticket)} — ${t("seo.ticketExam.title")}`}
-        description={t("seo.ticketExam.desc")}
+        title={localizeName(ticket)}
+        description={t("tickets.examSeoDesc", "Prava Online bilet imtihoni.")}
         canonical={`/tickets/${ticket.id}`}
-          noIndex={true}
       />
-      <ExamTimerAnnouncer warning={timerWarning} />
-      <div className="exam-screen">
-        {/* ── Top bar ── */}
-        <div className="exam-topbar">
-          <div className="exam-topbar-left">
-            <button
-              className="exam-finish-btn"
-              onClick={handleFinishClick}
-              type="button"
-            >
-              {t("exam.finish")} <IconX size={15} />
-            </button>
-            <span
-              className={`exam-timer${timerIsRed ? " red" : timerIsYellow ? " yellow" : ""}`}
-              role="timer"
-              aria-label={`${t("exam.timeLeft")}: ${formatTime(timeLeft)}`}
-            >
-              {formatTime(timeLeft)}
-            </span>
-          </div>
-
-          <div className="exam-topbar-center">
-            <span className="exam-ticket-label">
-              <IconTicket size={14} /> #{ticket.ticket_number}
-            </span>
-            <span className="exam-counter">
-              {current + 1} / {questions.length}
-            </span>
-          </div>
-
-          <div className="exam-topbar-right">
-            <span className="exam-score-chip green">
-              <IconCheck size={13} /> {correct}
-            </span>
-            <span className="exam-score-chip red">
-              <IconX size={13} /> {wrong}
-            </span>
-            <ColorMode />
-            <LanguagePicker />
-          </div>
-        </div>
-
-        {/* ── Question text ── */}
-        <div className="exam-question-header">
-          <p className="exam-question-text">{localizeQ(q)}</p>
-          <button
-            className={`exam-bookmark-btn${savedIds.has(q.id) ? " saved" : ""}`}
-            onClick={() => handleToggleSave(q)}
-            aria-pressed={savedIds.has(q.id)}
-            aria-label={
-              savedIds.has(q.id)
-                ? t("saved.remove")
-                : t("common.save")
-            }
-            title={
-              savedIds.has(q.id)
-                ? t("saved.remove")
-                : t("common.save")
-            }
-            type="button"
-          >
-            {savedIds.has(q.id) ? (
-              <IconBookmarkFilled size={18} />
-            ) : (
-              <IconBookmark size={18} />
-            )}
-          </button>
-        </div>
-
-        {/* ── Two-column body ── */}
-        <div className="exam-two-col">
-          {/* Left: options + explanation */}
-          <div className="exam-col-options">
-            {options.map((opt, idx) => {
-              let cls = "exam-option";
-              if (answered) {
-                if (idx === q.correct_option) cls += " correct";
-                else if (idx === answered.selected) cls += " wrong";
-              }
-              return (
-                <button
-                  key={idx}
-                  className={cls}
-                  onClick={() => handleSelect(idx)}
-                  disabled={!!answered}
-                  type="button"
-                >
-                  <span className="exam-option-key">{idx + 1}</span>
-                  <span className="exam-option-text">{localizeOpt(opt)}</span>
-                  {answered && idx === q.correct_option && (
-                    <IconCheck size={15} className="opt-icon correct" />
-                  )}
-                  {answered &&
-                    idx === answered.selected &&
-                    idx !== q.correct_option && (
-                      <IconX size={15} className="opt-icon wrong" />
-                    )}
-                </button>
-              );
-            })}
-
-            {/* Explanation toggle */}
-            {explanation && (
-              <div className="quiz-explanation-wrap" style={{ marginTop: 10 }}>
-                <button
-                  className="quiz-explanation-toggle"
-                  onClick={handleToggleExp}
-                  type="button"
-                >
-                  <IconBulb size={15} />
-                  {showExp
-                    ? t("marathon.hideExplanation")
-                    : t("marathon.showExplanation")}
-                </button>
-                {showExp && (
-                  <div className="quiz-explanation-text">{explanation}</div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Right: image or placeholder */}
-          <div className="exam-col-image">
-            {q.image_path ? (
-              <ZoomableImage
-                path={q.image_path}
-                className="exam-question-img"
-                onOpen={(src) => setZoomSrc(src)}
-              />
-            ) : (
-              <div className="exam-img-placeholder">
-                <IconSteeringWheel size={52} stroke={1} color="var(--border)" />
-                <span className="exam-placeholder-text">pravaonline.uz</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Zoom modal */}
-        <ImageZoomModal src={zoomSrc} onClose={() => setZoomSrc(null)} />
-
-        {/* ── Bottom: question numbers + nav ── */}
-        <div className="exam-bottom">
-          <div className="exam-bottom-row">
-            <button
-              className="exam-nav-btn"
-              onClick={() => setCurrent((c) => Math.max(0, c - 1))}
-              disabled={current === 0}
-              type="button"
-              title={t("exam.prev")}
-            >
-              <IconChevronLeft size={17} /> <span>{t("exam.prev")}</span>
-            </button>
-
-            <div className="exam-qnums-wrap">
-              <div className="exam-qnums scrollable">
-                {questions.map((_, i) => {
-                  const a = answers[i];
-                  let cls = "exam-qnum";
-                  if (i === current) cls += " active";
-                  else if (a) cls += a.selected === a.correct ? " correct" : " wrong";
-                  return (
-                    <button
-                      key={i}
-                      id={`ticket-qnum-${i}`}
-                      className={cls}
-                      onClick={() => setCurrent(i)}
-                      type="button"
-                    >
-                      {i + 1}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {current === questions.length - 1 ? (
-              <button
-                className="exam-nav-btn primary"
-                onClick={handleFinishClick}
-                type="button"
-                title={t("exam.finish")}
-              >
-                <span>{t("exam.finish")}</span> <IconCheck size={17} />
-              </button>
-            ) : (
-              <button
-                className="exam-nav-btn primary"
-                onClick={() => setCurrent((c) => Math.min(questions.length - 1, c + 1))}
-                type="button"
-                title={t("exam.next")}
-              >
-                <span>{t("exam.next")}</span> <IconChevronRight size={17} />
-              </button>
-            )}
-          </div>
-          <KeyboardHint />
-        </div>
-      </div>
-
-      {/* Early finish confirmation modal (Mantine Modal — P2-W6) */}
-      <ConfirmFinishModal
-        opened={confirmFinishOpen}
-        onCancel={() => setConfirmFinishOpen(false)}
-        onConfirm={() => {
-          setConfirmFinishOpen(false);
-          triggerFinish(false);
-        }}
-      />
-
-      {/* W-07: faol imtihondan chiqishni tasdiqlash */}
-      <ConfirmFinishModal
-        variant="leave"
-        opened={guard.blocked}
-        onCancel={guard.stay}
-        onConfirm={guard.leave}
+      <ExamDesktopView
+        mode="ticket"
+        label={ticketLabel}
+        questions={questions}
+        current={current}
+        answers={answers}
+        onSelect={handleSelect}
+        onGoto={handleGoto}
+        onFinish={handleFinish}
+        deadline={deadline}
+        onTimeUp={handleTimeUp}
+        showExplanation
+        autoAdvance="correct"
+        bookmarkedIds={savedIds}
+        onToggleBookmark={handleToggleSave}
+        onExit={handleExit}
+        persistProgress={persistProgress}
       />
     </>
   );

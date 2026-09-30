@@ -1,5 +1,4 @@
 import {
-  IconChevronDown,
   IconLogout,
   IconSettings,
   IconUser,
@@ -29,56 +28,91 @@ function UserMenuButton() {
   const handleLogout = () => {
     logout();
     notifications.show({
-      title: t("userMenu.logoutTitle"),
-      message: t("userMenu.logoutMessage"),
+      title: t("userMenu.logoutTitle", "Chiqish"),
+      message: t("userMenu.logoutMessage", "Tizimdan muvaffaqiyatli chiqdingiz"),
       color: "yellow",
+      withBorder: true,
     });
   };
 
-  const fullName = user?.fullName || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || t("userMenu.user");
+  const fullName = user?.fullName || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || t("userMenu.user", "Foydalanuvchi");
   const contact = user?.phoneNumber || user?.email || "";
   const initials =
     `${user?.firstName?.charAt(0) || ""}${user?.lastName?.charAt(0) || ""}`.toUpperCase() ||
-    fullName.charAt(0).toUpperCase() ||
+    (fullName ? fullName.charAt(0).toUpperCase() : "") ||
     "U";
+
+  const rawRole = (user?.role || "passenger").toLowerCase();
+  const roleText =
+    rawRole === "admin"
+      ? t("roles.admin", "ADMIN")
+      : rawRole === "instructor"
+      ? t("roles.instructor", "INSTRUKTOR")
+      : rawRole === "student"
+      ? t("roles.student", "O'QUVCHI")
+      : t("roles.passenger", "YO'LOVCHI");
 
   return (
     <Menu shadow="md" width={220} position="bottom-end" radius="md" withinPortal>
       <Menu.Target>
         <UnstyledButton
-          className="header-control-btn"
+          className="header-control-btn user-menu-profile-btn"
           aria-label={fullName}
-          style={{ paddingLeft: 4, paddingRight: 8 }}
+          style={{ paddingLeft: 4, paddingRight: 6 }}
         >
-          <Group gap={6} wrap="nowrap">
+          <Group gap={8} wrap="nowrap" style={{ cursor: "pointer", alignItems: "center" }}>
             <Avatar
-              size={26}
+              size={32}
               radius="xl"
               style={{
-                background: "var(--primary)",
+                background: "#0284c7",
                 color: "#ffffff",
-                fontSize: "11px",
-                fontWeight: 700,
+                fontSize: "14px",
+                fontWeight: 800,
                 flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(2, 132, 199, 0.4)",
               }}
             >
               {initials}
             </Avatar>
 
-            <Text
-              size="xs"
-              fw={600}
-              truncate="end"
-              style={{ maxWidth: 240, color: "var(--text)" }}
-              visibleFrom="xs"
-            >
-              {fullName}
-            </Text>
-
-            <IconChevronDown
-              size={13}
-              style={{ flexShrink: 0, opacity: 0.5, color: "var(--text-muted)" }}
-            />
+            <Box style={{ lineHeight: 1.15, textAlign: "left" }} visibleFrom="xs">
+              <div
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  color: "var(--text, #ffffff)",
+                  whiteSpace: "nowrap",
+                  letterSpacing: "-0.2px",
+                }}
+              >
+                {fullName}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: "#94a3b8",
+                  letterSpacing: "0.5px",
+                  marginTop: "1px",
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    backgroundColor: "#22c55e",
+                    display: "inline-block",
+                    flexShrink: 0,
+                  }}
+                />
+                <span>{roleText}</span>
+              </div>
+            </Box>
           </Group>
         </UnstyledButton>
       </Menu.Target>
@@ -101,25 +135,25 @@ function UserMenuButton() {
           leftSection={<IconUser size={15} />}
           onClick={() => goToApp("/me")}
         >
-          {t("nav.dashboard")}
+          {t("nav.dashboard", "Boshqaruv paneli")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconSettings size={15} />}
           onClick={() => goToApp("/settings")}
         >
-          {t("userMenu.settings")}
+          {t("userMenu.settings", "Sozlamalar")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconHistory size={15} />}
           onClick={() => goToApp("/history")}
         >
-          {t("history.title")}
+          {t("history.title", "Imtihon tarixi")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconTrophy size={15} />}
           onClick={() => goToApp("/leaderboard")}
         >
-          {t("leaderboard.title")}
+          {t("leaderboard.title", "Reyting")}
         </Menu.Item>
 
         <Menu.Divider />
@@ -129,7 +163,7 @@ function UserMenuButton() {
           onClick={handleLogout}
           leftSection={<IconLogout size={15} />}
         >
-          {t("userMenu.logout")}
+          {t("userMenu.logout", "Chiqish")}
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>
@@ -137,3 +171,4 @@ function UserMenuButton() {
 }
 
 export default UserMenuButton;
+

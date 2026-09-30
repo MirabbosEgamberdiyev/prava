@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../auth/AuthContext";
 import { DashboardHeader } from "./DashboardHeader";
 import { DashboardSidebar } from "./DashboardSidebar";
-import { DashboardFooter } from "./DashboardFooter";
 import { DashboardSearchModal } from "./DashboardSearchModal";
 import type { User } from "../../types";
 import styles from "./Dashboard.module.css";
@@ -46,6 +45,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const location = useLocation();
+  const isMePage = location.pathname === "/me";
 
   const user = propUser !== undefined ? propUser : authUser;
   const onLogout = propOnLogout || authLogout;
@@ -156,7 +156,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         className={styles.dashboardContainer}
         tabIndex={-1}
       >
-        {/* 1. Fixed Header (Always visible at top: 0) */}
+        {/* 1. Fixed Header (Desktop parity: 60px height, clean, fixed at top) */}
         <DashboardHeader
           user={user}
           displayName={displayName}
@@ -165,30 +165,25 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           isSidebarCollapsed={isSidebarCollapsed}
           onToggleSidebarCollapse={handleToggleSidebarCollapse}
           onLogout={onLogout}
+          isMePage={isMePage}
         />
 
-        {/* 2. Body: Fixed Sidebar + Main Content Column */}
-        <div className={styles.bodyWrapper}>
+        {/* 2. Full Width Canvas for ALL Pages (Zero sidebar, 100% desktop parity) */}
+        <div className={styles.fullCanvas}>
+          <main className={styles.mainContentFull}>{children}</main>
+        </div>
+
+        {/* Mobile Slideover Drawer (only rendered when opened on mobile) */}
+        {isMobileSidebarOpen && (
           <DashboardSidebar
             isOpen={isMobileSidebarOpen}
             onClose={() => setIsMobileSidebarOpen(false)}
             onOpenExamPicker={handleOpenExamPicker}
             onWheel={handleSidebarWheel}
-            isCollapsed={isSidebarCollapsed}
+            isCollapsed={false}
             onToggleCollapse={handleToggleSidebarCollapse}
           />
-
-          <div
-            className={`${styles.mainColumn} ${
-              isSidebarCollapsed ? styles.mainColumnCollapsed : ""
-            }`}
-          >
-            <main className={styles.mainContent}>{children}</main>
-
-            {/* 3. Enterprise Footer inside main column for zero sidebar overlap */}
-            <DashboardFooter />
-          </div>
-        </div>
+        )}
 
         {/* 4. Global Spotlight Search Modal */}
         <DashboardSearchModal

@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties } from "react";
+import { forwardRef, useMemo, type CSSProperties } from "react";
 import DOMPurify from "dompurify";
 
 /*
@@ -26,31 +26,41 @@ function ensureLinkHook() {
       node.setAttribute("target", "_blank");
       node.setAttribute("rel", "noopener noreferrer");
     }
+    if (node.tagName === "IMG") {
+      node.setAttribute("loading", "lazy");
+      node.setAttribute("decoding", "async");
+    }
   });
 }
 
-function sanitizeHtml(html: string | null | undefined): string {
+export function sanitizeHtml(html: string | null | undefined): string {
   if (!html) return "";
   ensureLinkHook();
   return DOMPurify.sanitize(html, PURIFY_CONFIG);
 }
 
-interface SafeHtmlProps {
+export interface SafeHtmlProps {
   html: string | null | undefined;
   className?: string;
   style?: CSSProperties;
+  /** Already sanitised HTML (skip the second DOMPurify pass). */
+  trusted?: boolean;
 }
 
-const SafeHtml = ({ html, className, style }: SafeHtmlProps) => {
-  const clean = useMemo(() => sanitizeHtml(html), [html]);
+const SafeHtml = forwardRef<HTMLDivElement, SafeHtmlProps>(function SafeHtml(
+  { html, className, style, trusted },
+  ref
+) {
+  const clean = useMemo(() => (trusted ? html || "" : sanitizeHtml(html)), [html, trusted]);
   return (
     <div
+      ref={ref}
       className={className}
       style={style}
       // Kontent DOMPurify orqali tozalangan
       dangerouslySetInnerHTML={{ __html: clean }}
     />
   );
-};
+});
 
 export default SafeHtml;

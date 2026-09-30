@@ -55,7 +55,11 @@ export interface FinesResult {
   /** true — tarmoq xatosi sababli keshdagi (eskirgan bo'lishi mumkin) nusxa qaytarildi. */
   stale: boolean;
   source: "network" | "not-modified" | "memory" | "storage";
+  fromCache?: boolean;
+  savedAt?: number | null;
 }
+
+export type FinesData = FinesPayload;
 
 interface CacheEntry {
   etag: string | null;
@@ -319,4 +323,27 @@ export function fetchFines(options: { force?: boolean } = {}): Promise<FinesResu
 /** Tarmoqsiz, darhol ko'rsatish uchun keshdagi nusxa (bo'lsa). */
 export function getCachedFines(): FinesPayload | null {
   return currentCache()?.data ?? null;
+}
+
+const LANGS: (keyof LocalizedText)[] = ["uzl", "uzc", "en", "ru"];
+
+export function filterFines(
+  fines: TrafficFine[],
+  query: string,
+  normalize: (s: string) => string = (s) => s.toLowerCase().trim()
+): TrafficFine[] {
+  const q = normalize(query);
+  if (!q) return fines;
+  return fines.filter((f) =>
+    normalize(`${f.articleCode} ${LANGS.map((l) => f.title[l] ?? "").join(" ")}`).includes(q)
+  );
+}
+
+export async function loadFines(opts: { force?: boolean } = {}): Promise<FinesResult> {
+  const res = await fetchFines(opts);
+  return {
+    ...res,
+    fromCache: res.source === "storage",
+    savedAt: currentCache()?.savedAt ?? null,
+  };
 }

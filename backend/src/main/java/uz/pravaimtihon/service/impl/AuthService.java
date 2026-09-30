@@ -79,7 +79,50 @@ public class AuthService {
 
 
     /**
-     * вњ… Refresh token with rotation вЂ” revoke old, issue new refresh token.
+     * Foydalanuvchi/Admin login (email yoki telefon raqam va parol orqali).
+     */
+    public AuthResponse login(LoginRequest request, AcceptLanguage language) {
+        if (request == null || request.getIdentifier() == null || request.getIdentifier().isBlank()) {
+            throw new UnauthorizedException("error.auth.invalid.credentials");
+        }
+
+        String rawId = request.getIdentifier().trim();
+        String normId = rawId;
+        if (!rawId.contains("@")) {
+            String cleanPhone = normalizePhone(rawId);
+            if (cleanPhone != null && cleanPhone.length() >= 9) {
+                normId = cleanPhone;
+            }
+        }
+
+        User user = userRepository.findByIdentifier(normId)
+                .or(() -> userRepository.findByIdentifier(rawId))
+                .orElseThrow(() -> new UnauthorizedException("error.auth.invalid.credentials"));
+
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            throw new UnauthorizedException("error.user.account.inactive");
+        }
+
+        if (user.isAccountLocked()) {
+            throw new UnauthorizedException("error.user.account.locked");
+        }
+
+        if (user.getPasswordHash() == null || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            user.incrementFailedLoginAttempts();
+            userRepository.save(user);
+            throw new UnauthorizedException("error.auth.invalid.credentials");
+        }
+
+        user.resetFailedLoginAttempts();
+        user.setLastLoginAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        log.info("User {} (role={}) logged in successfully with password", user.getId(), user.getRole());
+        return generateAuthResponse(user, language);
+    }
+
+    /**
+     * ✅ Refresh token with rotation — revoke old, issue new refresh token.
      * If a revoked token is reused, the entire token family is revoked (security breach).
      */
     public AuthResponse refreshToken(RefreshTokenRequest request, AcceptLanguage language) {

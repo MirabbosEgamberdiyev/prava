@@ -1,47 +1,59 @@
 import { ExamHistoryPage } from "../../features/ExamHistory";
 import SEO from "../../components/common/SEO";
+import { GuestGate } from "../../components/common/GuestEmptyState";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { IconHistory } from "@tabler/icons-react";
-import styles from "../../components/dashboard/Dashboard.module.css";
+import { IconArrowLeft, IconHistory } from "@tabler/icons-react";
+import { Container } from "@mantine/core";
 
-const History_Page = () => {
+const HistoryContent = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   return (
     <>
       <SEO
-        title={t("seo.history.title")}
-        description={t("seo.history.desc")}
+        title={t("history.title")}
+        description={t("seo.historyDesc")}
         canonical="/history"
         noIndex={true}
       />
-      {/* Page Header */}
-      <div className={styles.innerPageHeader}>
-        <div className={styles.innerPageHeaderLeft}>
-          <div className={styles.innerPageTitleRow}>
-            <h1 className={styles.innerPageTitle}>
-              <IconHistory
-                size={24}
-                stroke={2}
-                style={{ color: "var(--primary)", verticalAlign: "middle", marginRight: 8 }}
-              />
-              {t("history.title")}
-            </h1>
+      <div className="review-screen">
+        <header className="review-header">
+          <button
+            className="review-back-btn"
+            onClick={() => navigate("/me")}
+            type="button"
+          >
+            <IconArrowLeft size={18} stroke={2} />
+            {t("common.back", "Orqaga")}
+          </button>
+          <div className="review-header-title">
+            <IconHistory size={20} stroke={2} color="var(--mantine-color-blue-5)" />
+            <span>{t("history.title", "Imtihonlar tarixi")}</span>
           </div>
-          <p className={styles.innerPageSubtitle}>
-            {t(
-              "history.subtitle"
-            )}
-          </p>
-        </div>
-      </div>
-
-      {/* Content Container */}
-      <div style={{ maxWidth: 1080, width: "100%", margin: "0 auto" }}>
-        <ExamHistoryPage hideTitle={true} />
+        </header>
+        <main style={{ flex: 1, overflowY: "auto", padding: "14px 16px 32px" }}>
+          <Container size="lg">
+            <ExamHistoryPage />
+          </Container>
+        </main>
       </div>
     </>
   );
 };
 
-export default History_Page;
+/** Per-user data: guests get a friendly login prompt instead of an empty/inconsistent view (D-22). */
+export default function History_Page() {
+  const { t } = useTranslation();
+  return (
+    <GuestGate
+      pageTitle={t("history.title", "Imtihon tarixi")}
+      icon={IconHistory}
+      title={t("guest.historyTitle")}
+      description={t("guest.historyDesc")}
+    >
+      <HistoryContent />
+    </GuestGate>
+  );
+}

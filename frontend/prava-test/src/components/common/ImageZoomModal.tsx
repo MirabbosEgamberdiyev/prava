@@ -1,81 +1,46 @@
-import { useState } from "react";
-import { Modal } from "@mantine/core";
-import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 import { IconX } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 import SecureImage from "./SecureImage";
 
 interface Props {
-  /** Ko'rsatiladigan rasm; `null` — oyna yopiq. */
-  src: string | null;
+  src: string;
   onClose: () => void;
 }
 
-/**
- * Rasmni kattalashtirib ko'rish oynasi (P2-W6).
- *
- * Mantine `Modal` asosida: `role="dialog"` + `aria-modal`, focus trap, Esc bilan
- * yopish va yopilgach fokus rasmni ochgan elementga qaytadi. Fokus qaytishi
- * ishlashi uchun komponentni doim render qiling va `src={zoomSrc}` bering
- * (shartli `{zoomSrc && ...}` mount ham ishlaydi, lekin fokus qaytmaydi).
- */
 export default function ImageZoomModal({ src, onClose }: Props) {
   const { t } = useTranslation();
-  // Yopilish animatsiyasi paytida rasm yo'qolib qolmasligi uchun oxirgi src
-  const [shownSrc, setShownSrc] = useState<string | null>(src);
-  if (src && src !== shownSrc) setShownSrc(src);
-  const current = src ?? shownSrc;
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
 
   return (
-    <Modal.Root
-      opened={!!src}
-      onClose={onClose}
-      centered
-      size="auto"
-      zIndex={10001}
-      transitionProps={{ transition: "fade", duration: 150 }}
+    <div
+      className="img-zoom-overlay"
+      onClick={onClose}
+      onContextMenu={(e) => e.preventDefault()}
     >
-      <Modal.Overlay backgroundOpacity={0.85} blur={4} />
-      <Modal.Content
-        aria-label={t("a11y.imageZoomDialog")}
-        onContextMenu={(e) => e.preventDefault()}
-        styles={{
-          content: {
-            background: "transparent",
-            boxShadow: "none",
-            overflow: "visible",
-            maxWidth: "90vw",
-            flex: "0 0 auto",
-          },
-        }}
-      >
-        <button
-          className="img-zoom-close"
-          onClick={onClose}
-          type="button"
-          aria-label={t("common.close")}
-          style={{ position: "fixed" }}
-        >
-          <IconX size={20} />
-        </button>
-        <Modal.Body p={0} className="img-zoom-content">
-          {current &&
-            (current.startsWith("data:") ||
-            current.startsWith("http") ||
-            current.startsWith("/") ||
-            current.startsWith("blob:") ? (
-              <img
-                src={current}
-                alt=""
-                className="img-zoom-img"
-                onContextMenu={(e) => e.preventDefault()}
-                draggable={false}
-              />
-            ) : (
-              <SecureImage path={current} className="img-zoom-img" />
-            ))}
-        </Modal.Body>
-      </Modal.Content>
-    </Modal.Root>
+      <button className="img-zoom-close" onClick={onClose} type="button" aria-label={t("common.close")}>
+        <IconX size={20} />
+      </button>
+      <div className="img-zoom-content" onClick={(e) => e.stopPropagation()}>
+        {src.startsWith("data:") || src.startsWith("http") || src.startsWith("/") || src.startsWith("blob:") ? (
+          <img
+            src={src}
+            alt=""
+            className="img-zoom-img"
+            onContextMenu={(e) => e.preventDefault()}
+            draggable={false}
+          />
+        ) : (
+          <SecureImage path={src} className="img-zoom-img" />
+        )}
+      </div>
+    </div>
   );
 }
 

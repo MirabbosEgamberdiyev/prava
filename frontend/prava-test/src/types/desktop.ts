@@ -19,7 +19,7 @@ export interface UserStats {
 
 export interface ExamResult {
   id: number;
-  user_id: number;
+  user_id: number | string;
   score: number;
   total_questions: number;
   correct_answers: number;
@@ -27,7 +27,10 @@ export interface ExamResult {
   exam_type: string;
   created_at: string;
   /** Natija o'tganmi (yangi yozuvlar; eski yozuvlarda yo'q — isStoredResultPassed hisoblaydi). */
+  mode?: "real" | "ticket" | "marathon" | "wrong" | "package" | null;
   passed?: boolean | null;
+  wrong_answers?: number;
+  unanswered?: number;
 }
 
 export interface OfflineTopic {
@@ -38,6 +41,7 @@ export interface OfflineTopic {
   name_en: string | null;
   name_ru: string | null;
   question_count: number;
+  question_ids?: number[];
 }
 
 export interface OfflineQuestion {

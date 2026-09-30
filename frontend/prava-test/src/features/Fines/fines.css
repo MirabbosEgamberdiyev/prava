@@ -1,0 +1,97 @@
+/* Traffic fines page (/fines). Builds on curriculum.css tokens; no fixed widths. */
+
+.fines-bhm-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--token-radius-md, 12px);
+  background: var(--primary-light);
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  flex-shrink: 0;
+}
+.fines-bhm-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--primary);
+}
+
+.fines-rows {
+  display: flex;
+  flex-direction: column;
+}
+.fines-row {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.9fr) minmax(0, 3fr) minmax(150px, 1.4fr);
+  gap: 14px;
+  align-items: start;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.fines-row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.fines-row-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-muted);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.fines-article {
+  font-weight: 800;
+  color: var(--text-muted);
+}
+.fines-title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.fines-sanction {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.fines-amount {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.fines-amount-sum {
+  font-weight: 800;
+}
+.fines-amount-bhm {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.fines-empty {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--token-radius-md, 12px);
+  padding: 32px 16px;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .fines-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .fines-row-head {
+    display: none;
+  }
+}

@@ -8,6 +8,7 @@ interface Props {
   className?: string;
   style?: React.CSSProperties;
   onOpen?: (src: string) => void;
+  lazy?: boolean;
 }
 
 export default function SecureImage({ path, alt = "", className, style, onOpen }: Props) {

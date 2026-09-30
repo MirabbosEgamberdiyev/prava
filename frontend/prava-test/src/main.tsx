@@ -8,6 +8,9 @@ import "@mantine/notifications/styles.css";
 import "@mantine/nprogress/styles.css";
 import "./index.css";
 import "./styles/desktop.css";
+import "./styles/global-design-system.css";
+import "./styles/exam-desktop.css";
+import "./styles/desktop-auth-modal.css";
 import { theme } from "./theme";
 
 import { Notifications } from "@mantine/notifications";

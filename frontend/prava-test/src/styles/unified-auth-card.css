@@ -1,0 +1,316 @@
+/* ==========================================================================
+   UNIFIED AUTH CARD — PIXEL-PERFECT CLEAN AUTH MODAL & PAGE (WEB & DESKTOP)
+   ========================================================================== */
+
+.uac-card-wrapper {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.uac-card {
+  position: relative;
+  width: 100%;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 28px;
+  padding: 34px 28px 28px;
+  box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(0, 0, 0, 0.04);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--text, #0f172a);
+}
+
+@media (max-width: 480px) {
+  .uac-card {
+    border-radius: 22px;
+    padding: 26px 20px 22px;
+  }
+}
+
+/* Close Button (top-right) */
+.uac-close-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  z-index: 5;
+}
+
+.uac-close-btn:hover {
+  background: var(--bg-hover, #f1f5f9);
+  color: var(--text, #0f172a);
+}
+
+/* App Logo Badge */
+.uac-logo-badge {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: #e0f2fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.12);
+}
+
+.uac-logo-badge-inner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+}
+
+/* Titles */
+.uac-title {
+  margin: 16px 0 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text, #0f172a);
+  text-align: center;
+}
+
+.uac-subtitle {
+  margin: 8px auto 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-muted, #64748b);
+  text-align: center;
+  max-width: 320px;
+}
+
+/* Stack of Action Buttons */
+.uac-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  width: 100%;
+}
+
+/* Divider with 'yoki' */
+.uac-divider {
+  display: flex;
+  align-items: center;
+  margin: 6px 0;
+  width: 100%;
+}
+
+.uac-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border, #e2e8f0);
+}
+
+.uac-divider-text {
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted, #94a3b8);
+  user-select: none;
+}
+
+/* Mobile App QR Trigger Button */
+.uac-btn-mobile {
+  height: 48px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  background: #f8fbff;
+  border: 1.5px solid #38bdf8;
+  color: #0369a1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  padding: 0 18px;
+}
+
+.uac-btn-mobile:hover {
+  background: #f0f7ff;
+  border-color: #0284c7;
+  transform: translateY(-1px);
+}
+
+.uac-btn-mobile:active {
+  transform: translateY(0);
+}
+
+/* Guest Dismiss / Continue Link */
+.uac-guest-link {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0284c7;
+  cursor: pointer;
+  margin: 18px auto 0;
+  display: block;
+  padding: 4px 8px;
+  transition: opacity 0.15s ease;
+  text-align: center;
+}
+
+.uac-guest-link:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+}
+
+/* QR Code Display Container */
+.uac-qr-box {
+  background: #ffffff;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 20px;
+  padding: 16px;
+  margin: 20px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 232px;
+  height: 232px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(10, 37, 64, 0.04);
+  overflow: hidden;
+}
+
+/* Animated Radar Scan Line */
+.uac-qr-radar {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 2.5px;
+  background: linear-gradient(90deg, transparent, #0284c7, transparent);
+  box-shadow: 0 0 10px #0284c7;
+  animation: uacRadarMove 2.6s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes uacRadarMove {
+  0% { top: 14px; opacity: 0.2; }
+  50% { top: calc(100% - 16px); opacity: 1; }
+  100% { top: 14px; opacity: 0.2; }
+}
+
+/* Timer and Refresh Row */
+.uac-timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.uac-timer-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted, #475569);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.uac-refresh-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-hover, #f1f5f9);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted, #64748b);
+  transition: all 0.16s ease;
+}
+
+.uac-refresh-btn:hover {
+  background: var(--border, #e2e8f0);
+  color: var(--text, #0f172a);
+  transform: rotate(45deg);
+}
+
+/* Copy Link Button */
+.uac-btn-copy {
+  height: 46px;
+  border-radius: 14px;
+  font-size: 14.5px;
+  font-weight: 700;
+  background: #f0f7ff;
+  border: 1px solid #bae6fd;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  cursor: pointer;
+  margin-top: 18px;
+  transition: all 0.16s ease;
+}
+
+.uac-btn-copy:hover {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+}
+
+.uac-btn-copy.copied {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #059669;
+}
+
+/* Dark theme refinements */
+[data-mantine-color-scheme="dark"] .uac-card {
+  background: var(--card-bg, #1e293b);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.5);
+}
+
+[data-mantine-color-scheme="dark"] .uac-logo-badge {
+  background: rgba(2, 132, 199, 0.18);
+}
+
+[data-mantine-color-scheme="dark"] .uac-btn-mobile {
+  background: rgba(2, 132, 199, 0.08);
+  border-color: #0284c7;
+  color: #38bdf8;
+}
+
+[data-mantine-color-scheme="dark"] .uac-btn-mobile:hover {
+  background: rgba(2, 132, 199, 0.15);
+}
+
+[data-mantine-color-scheme="dark"] .uac-btn-copy {
+  background: rgba(2, 132, 199, 0.12);
+  border-color: rgba(2, 132, 199, 0.25);
+  color: #38bdf8;
+}
+
+[data-mantine-color-scheme="dark"] .uac-btn-copy:hover {
+  background: rgba(2, 132, 199, 0.2);
+}
+
+[data-mantine-color-scheme="dark"] .uac-qr-box {
+  background: #ffffff;
+  border-color: rgba(255, 255, 255, 0.12);
+}
