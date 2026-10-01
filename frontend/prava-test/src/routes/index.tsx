@@ -98,19 +98,6 @@ function RootLoadingFallback() {
   );
 }
 
-/**
- * Web Application Entry Gateway (W-06, guest-first):
- * - authenticated -> /me (dashboard)
- * - guest -> public guest home (tickets/topics/rules/signs...); login is asked only
- *   when a protected workflow is started (ProtectedRoute adds ?returnTo=).
- */
-function WebAppRoot() {
-  const hasLang = typeof window !== "undefined" && !!localStorage.getItem("prava_lang_selected");
-  if (!hasLang) {
-    return <Navigate to="/auth/language" replace />;
-  }
-  return <Navigate to="/me" replace />;
-}
 
 
 export default function AppRoutes() {
@@ -232,10 +219,18 @@ export default function AppRoutes() {
               <Route path="/offer" element={<Offer_Page />} />
             </Route>
 
-            {/* Curriculum Routes with Adaptive Layout (User_Layout when authenticated, App_Layout when guest) */}
+            {/* Curriculum Routes with Adaptive Layout (User_Layout on web app domain) */}
             <Route element={<AdaptiveLayout />}>
-              {/* Web App Root - authenticated -> /me, guest -> guest home */}
-              <Route path="/" element={<WebAppRoot />} />
+              {/* Web App Root - authenticated -> /me, guest -> /me */}
+              <Route path="/" element={<Navigate to="/me" replace />} />
+              <Route path="/me" element={<User_Page />} />
+              <Route path="/packages" element={<Packages_Page />} />
+              <Route path="/history" element={<History_Page />} />
+              <Route path="/leaderboard" element={<Leaderboard_Page />} />
+              <Route path="/statistics" element={<Statistics_Page />} />
+              <Route path="/settings" element={<Settings_Page />} />
+              <Route path="/wrong-answers" element={<WrongAnswers_Page />} />
+              <Route path="/saved-questions" element={<SavedQuestions_Page />} />
               <Route path="/signs" element={<RoadSigns_Page />} />
               <Route path="/markings" element={<RoadMarkings_Page />} />
               <Route path="/exam-centers" element={<ExamCenters_Page />} />
@@ -267,6 +262,26 @@ export default function AppRoutes() {
               <Route path="/tickets" element={<Tickets_Page />} />
               <Route path="/topics" element={<Topics_Page />} />
               <Route path="/topics/:topicCode" element={<TopicDetail_Page />} />
+
+              {/* Sub-route aliases under /me */}
+              <Route path="/me/topics" element={<Navigate to="/topics" replace />} />
+              <Route path="/me/tickets" element={<Navigate to="/tickets" replace />} />
+              <Route path="/me/marafon" element={<Navigate to="/marafon" replace />} />
+              <Route path="/me/marathon" element={<Navigate to="/marafon" replace />} />
+              <Route path="/me/exam" element={<Navigate to="/exam" replace />} />
+              <Route path="/me/statistics" element={<Navigate to="/statistics" replace />} />
+              <Route path="/me/history" element={<Navigate to="/history" replace />} />
+              <Route path="/me/leaderboard" element={<Navigate to="/leaderboard" replace />} />
+              <Route path="/me/ranking" element={<Navigate to="/leaderboard" replace />} />
+              <Route path="/me/saved-questions" element={<Navigate to="/saved-questions" replace />} />
+              <Route path="/me/saved" element={<Navigate to="/saved-questions" replace />} />
+              <Route path="/me/bookmarks" element={<Navigate to="/saved-questions" replace />} />
+              <Route path="/me/wrong-answers" element={<Navigate to="/wrong-answers" replace />} />
+              <Route path="/me/errors" element={<Navigate to="/wrong-answers" replace />} />
+              <Route path="/me/settings" element={<Navigate to="/settings" replace />} />
+              <Route path="/me/simulator" element={<Navigate to={SHOW_SIMULATOR ? "/simulator" : "/practical-exam"} replace />} />
+              <Route path="/me/simulator/*" element={<Navigate to={SHOW_SIMULATOR ? "/simulator" : "/practical-exam"} replace />} />
+              <Route path="/me/simulator/statistics" element={<Navigate to={SHOW_SIMULATOR ? "/simulator/statistics" : "/practical-exam"} replace />} />
             </Route>
 
             {/* Auth Routes */}
@@ -280,6 +295,7 @@ export default function AppRoutes() {
               <Route path="telegram-callback" element={<TelegramCallback_Page />} />
               <Route path="pair" element={<Pair_Page />} />
               <Route path="desktop-bridge" element={<DesktopBridge_Page />} />
+              <Route path="language" element={<Navigate to="/me" replace />} />
             </Route>
 
             {/* Direct Auth Aliases */}
@@ -291,38 +307,6 @@ export default function AppRoutes() {
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
-              {/* Dashboard AppShell Layout */}
-              <Route element={<User_Layout />}>
-                <Route path="/me" element={<User_Page />} />
-                <Route path="/packages" element={<Packages_Page />} />
-                <Route path="/history" element={<History_Page />} />
-                <Route path="/leaderboard" element={<Leaderboard_Page />} />
-                <Route path="/statistics" element={<Statistics_Page />} />
-                <Route path="/settings" element={<Settings_Page />} />
-                <Route path="/wrong-answers" element={<WrongAnswers_Page />} />
-                <Route path="/saved-questions" element={<SavedQuestions_Page />} />
-
-                {/* Sub-route aliases under /me */}
-                <Route path="/me/topics" element={<Navigate to="/topics" replace />} />
-                <Route path="/me/tickets" element={<Navigate to="/tickets" replace />} />
-                <Route path="/me/marafon" element={<Navigate to="/marafon" replace />} />
-                <Route path="/me/marathon" element={<Navigate to="/marafon" replace />} />
-                <Route path="/me/exam" element={<Navigate to="/exam" replace />} />
-                <Route path="/me/statistics" element={<Navigate to="/statistics" replace />} />
-                <Route path="/me/history" element={<Navigate to="/history" replace />} />
-                <Route path="/me/leaderboard" element={<Navigate to="/leaderboard" replace />} />
-                <Route path="/me/ranking" element={<Navigate to="/leaderboard" replace />} />
-                <Route path="/me/saved-questions" element={<Navigate to="/saved-questions" replace />} />
-                <Route path="/me/saved" element={<Navigate to="/saved-questions" replace />} />
-                <Route path="/me/bookmarks" element={<Navigate to="/saved-questions" replace />} />
-                <Route path="/me/wrong-answers" element={<Navigate to="/wrong-answers" replace />} />
-                <Route path="/me/errors" element={<Navigate to="/wrong-answers" replace />} />
-                <Route path="/me/settings" element={<Navigate to="/settings" replace />} />
-                <Route path="/me/simulator" element={<Navigate to={SHOW_SIMULATOR ? "/simulator" : "/practical-exam"} replace />} />
-                <Route path="/me/simulator/*" element={<Navigate to={SHOW_SIMULATOR ? "/simulator" : "/practical-exam"} replace />} />
-                <Route path="/me/simulator/statistics" element={<Navigate to={SHOW_SIMULATOR ? "/simulator/statistics" : "/practical-exam"} replace />} />
-              </Route>
-
               {/* Distraction-Free Exam Simulation Layout */}
               <Route element={<Exam_Layout />}>
                 <Route path="/tickets/:id" element={<TicketExamPage />} />
