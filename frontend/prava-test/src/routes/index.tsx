@@ -24,6 +24,7 @@ const Register_Page = lazy(() => import("../page/Auth/register"));
 const ForgotPassword_Page = lazy(() => import("../page/Auth/forgot-password"));
 const TelegramCallback_Page = lazy(() => import("../page/Auth/telegram-callback"));
 const Pair_Page = lazy(() => import("../page/Auth/pair"));
+const DesktopBridge_Page = lazy(() => import("../page/Auth/desktop-bridge"));
 const User_Page = lazy(() => import("../page/me"));
 const Packages_Page = lazy(() => import("../page/Packages"));
 const PackageExamPage = lazy(() => import("../page/Packages/ExamPage"));
@@ -278,6 +279,7 @@ export default function AppRoutes() {
               <Route path="verify-sms" element={<Register_Page />} />
               <Route path="telegram-callback" element={<TelegramCallback_Page />} />
               <Route path="pair" element={<Pair_Page />} />
+              <Route path="desktop-bridge" element={<DesktopBridge_Page />} />
             </Route>
 
             {/* Direct Auth Aliases */}
@@ -409,6 +411,7 @@ export default function AppRoutes() {
               <Route path="verify-sms" element={<Register_Page />} />
               <Route path="telegram-callback" element={<TelegramCallback_Page />} />
               <Route path="pair" element={<Pair_Page />} />
+              <Route path="desktop-bridge" element={<DesktopBridge_Page />} />
             </Route>
 
             {/* Direct Auth Aliases */}

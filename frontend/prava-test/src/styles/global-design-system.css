@@ -79,8 +79,7 @@
   width: 100%;
   background: var(--g-bg);
   color: var(--g-text);
-  overflow-y: auto;
-  scrollbar-gutter: stable;
+  box-sizing: border-box;
 }
 
 .ds-page-container {

@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import { useGoogleLogin } from "@react-oauth/google";
 import { isTauriRuntime } from "../../auth/runtime";
 import { useAuth } from "../../auth/AuthContext";
 import { useAuthModal } from "../../auth/AuthModalContext";
+import { AUTH_LOGIN_COMPLETED_EVENT } from "../../auth/pendingAuthRedirect";
+import { startQrPolling } from "../../auth/qrPolling";
+import { QrAuthService, type QrInitResponse } from "../../api/qrAuthService";
 import api from "../../api/api";
 import { showToast } from "../../utils/notificationUtils";
 import { getErrorMessage } from "../../types/errors";
@@ -16,6 +19,9 @@ export interface GoogleLoginButtonProps {
   radius?: number | string;
   className?: string;
   style?: React.CSSProperties;
+  disabled?: boolean;
+  onSuccess?: (authData: unknown) => void;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
 const GoogleIcon = () => (
@@ -34,11 +40,50 @@ export const GoogleLoginButton = ({
   radius = 10,
   className,
   style,
+  disabled = false,
+  onSuccess,
+  onLoadingChange,
 }: GoogleLoginButtonProps) => {
   const { t, i18n } = useTranslation();
   const { login: authLogin } = useAuth();
   const { executePending } = useAuthModal();
   const [loading, setLoading] = useState(false);
+
+  const timeoutRef = useRef<number | null>(null);
+  const stopQrPollerRef = useRef<(() => void) | null>(null);
+  const isMountedRef = useRef(true);
+
+  const updateLoading = useCallback((newLoading: boolean) => {
+    setLoading(newLoading);
+    onLoadingChange?.(newLoading);
+  }, [onLoadingChange]);
+
+  const cleanupListeners = useCallback(() => {
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (stopQrPollerRef.current) {
+      stopQrPollerRef.current();
+      stopQrPollerRef.current = null;
+    }
+    if (isMountedRef.current) {
+      updateLoading(false);
+    }
+  }, [updateLoading]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      cleanupListeners();
+      if (isTauriRuntime()) {
+        import("@tauri-apps/api/core")
+          .then(({ invoke }) => invoke("cancel_desktop_oauth"))
+          .catch(() => {});
+      }
+    };
+  }, [cleanupListeners]);
 
   const buttonText = compact
     ? "Google"
@@ -51,7 +96,7 @@ export const GoogleLoginButton = ({
   try {
     const hookLogin = useGoogleLogin({
       onSuccess: async (tokenResponse) => {
-        setLoading(true);
+        updateLoading(true);
         try {
           const response = await api.post("/api/v1/auth/google", {
             accessToken: tokenResponse.access_token,
@@ -72,6 +117,7 @@ export const GoogleLoginButton = ({
               color: "green",
               withBorder: true,
             });
+            onSuccess?.(response.data.data);
             executePending();
           }
         } catch (err: unknown) {
@@ -83,7 +129,7 @@ export const GoogleLoginButton = ({
             message: getErrorMessage(err, t("auth.google.errorMessage")),
           });
         } finally {
-          setLoading(false);
+          updateLoading(false);
         }
       },
       onError: (errorResponse) => {
@@ -106,24 +152,108 @@ export const GoogleLoginButton = ({
   }
 
   const handleGoogleLogin = async () => {
-    if (loading) return;
+    if (loading || disabled) return;
 
     if (isTauriRuntime()) {
-      setLoading(true);
+      updateLoading(true);
+      let session: QrInitResponse | null = null;
+
       try {
+        // Redundant cloud fallback channel via server-side session pairing
+        try {
+          session = await QrAuthService.initSession();
+        } catch (e) {
+          console.warn("Could not pre-init QR pairing session fallback for Google OAuth:", e);
+        }
+
         const { invoke } = await import("@tauri-apps/api/core");
-        await invoke("open_oauth_window", { provider: "google" });
+
+        // 120-second safety timeout
+        timeoutRef.current = window.setTimeout(async () => {
+          cleanupListeners();
+          try {
+            await invoke("cancel_desktop_oauth");
+          } catch {}
+          showToast({
+            id: "auth-google-timeout",
+            dedupeKey: "auth-google-timeout",
+            color: "yellow",
+            title: t("common.attention", { defaultValue: "Diqqat" }),
+            message: t("auth.google.timeoutMessage", {
+              defaultValue: "Google orqali kirish oynasi yopildi yoki vaqt tugadi. Qaytadan urinib ko'ring.",
+            }),
+          });
+        }, 120_000);
+
+        // Start parallel QR poller if session was created
+        if (session) {
+          stopQrPollerRef.current = startQrPolling({
+            sessionId: session.sessionId,
+            pollSecret: session.pollSecret,
+            intervalMs: 1500,
+            onStatus: async (res) => {
+              if (res.status === "APPROVED" && res.accessToken && res.user) {
+                cleanupListeners();
+                try {
+                  await invoke("cancel_desktop_oauth");
+                } catch {}
+
+                const userLang = res.user.preferredLanguage;
+                if (userLang) {
+                  i18n.changeLanguage(userLang);
+                }
+
+                authLogin({
+                  accessToken: res.accessToken,
+                  refreshToken: res.refreshToken || "",
+                  user: res.user,
+                });
+
+                showToast({
+                  id: "auth-google-success",
+                  dedupeKey: "auth-google-success",
+                  title: t("auth.google.successTitle", { defaultValue: "Muvaffaqiyat" }),
+                  message: t("auth.google.successMessage", {
+                    defaultValue: "Google orqali tizimga kirdingiz!",
+                  }),
+                  color: "green",
+                  withBorder: true,
+                });
+
+                onSuccess?.(res);
+                executePending();
+              } else if (res.status === "EXPIRED" || res.status === "REJECTED") {
+                cleanupListeners();
+              }
+            },
+          });
+        }
+
+        // Listen for successful authentication from Tauri desktop bridge loopback
+        const handleCompleted = () => {
+          cleanupListeners();
+          window.removeEventListener(AUTH_LOGIN_COMPLETED_EVENT, handleCompleted);
+        };
+        window.addEventListener(AUTH_LOGIN_COMPLETED_EVENT, handleCompleted, { once: true });
+
+        // Launch system browser via loopback listener command
+        await invoke("start_desktop_oauth_listener", {
+          provider: "google",
+          sessionId: session?.sessionId || null,
+          challenge: session?.challenge || null,
+        });
       } catch (err) {
-        console.error("Tauri open_oauth_window error:", err);
+        console.error("Tauri desktop OAuth error:", err);
+        cleanupListeners();
         showToast({
           id: "auth-google-tauri-error",
           dedupeKey: "auth-google-tauri-error",
           color: "red",
           title: t("common.error"),
-          message: t("auth.socialLoginError", { defaultValue: "Google orqali kirish oynasini ochib bo'lmadi" }),
+          message: t("auth.socialLoginError", {
+            defaultValue: "Google orqali kirish oynasini ochib bo'lmadi. Qaytadan urinib ko'ring.",
+          }),
         });
-      } finally {
-        setLoading(false);
       }
       return;
     }
@@ -149,6 +279,7 @@ export const GoogleLoginButton = ({
       fullWidth
       radius={radius}
       loading={loading}
+      disabled={disabled || loading}
       onClick={handleGoogleLogin}
       className={className}
       styles={{

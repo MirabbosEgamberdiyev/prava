@@ -9,6 +9,7 @@ export default function DesktopAuthModal() {
   // Esc key listener to close modal
   useEffect(() => {
     if (!isOpen) return;
+    document.documentElement.setAttribute("data-modal-open", "true");
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -16,7 +17,10 @@ export default function DesktopAuthModal() {
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.documentElement.removeAttribute("data-modal-open");
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, closeAuthModal]);
 
   if (!isOpen) return null;

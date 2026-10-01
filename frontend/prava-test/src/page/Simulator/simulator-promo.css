@@ -4,7 +4,7 @@
    ===================================================================== */
 
 .sim-promo-wrapper {
-  min-height: 100vh;
+  min-height: 100%;
   width: 100%;
   background: var(--g-bg, #0b1120);
   color: var(--g-text, #f8fafc);

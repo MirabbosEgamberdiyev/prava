@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   Button,
   Modal,
@@ -12,10 +12,14 @@ import {
 import { showToast } from "../../utils/notificationUtils";
 import { useAuth } from "../../auth/AuthContext";
 import { useAuthModal } from "../../auth/AuthModalContext";
+import { AUTH_LOGIN_COMPLETED_EVENT } from "../../auth/pendingAuthRedirect";
+import { startQrPolling } from "../../auth/qrPolling";
+import { QrAuthService, type QrInitResponse } from "../../api/qrAuthService";
 import { useTranslation } from "react-i18next";
 import api from "../../api/api";
 import { ENV } from "../../config/env";
 import { getErrorMessage } from "../../types/errors";
+import { isTauriRuntime } from "../../auth/runtime";
 import { IconBrandTelegram, IconKey, IconExternalLink } from "@tabler/icons-react";
 
 export interface TelegramLoginButtonProps {
@@ -26,6 +30,11 @@ export interface TelegramLoginButtonProps {
   className?: string;
   style?: React.CSSProperties;
   hideBotOption?: boolean;
+  disabled?: boolean;
+  onSuccess?: (authData: unknown) => void;
+  onLoadingChange?: (loading: boolean) => void;
+  botModalOpened?: boolean;
+  onBotModalClose?: () => void;
 }
 
 interface TelegramUser {
@@ -52,12 +61,7 @@ declare global {
 }
 
 const TELEGRAM_BOT_ID = ENV.TELEGRAM_BOT_ID;
-/** Only used in a plain browser (vite dev / web); never loaded inside the Tauri webview. */
 const TELEGRAM_WIDGET_SRC = "https://telegram.org/js/telegram-widget.js?22";
-
-const isTauriRuntime = () =>
-  typeof window !== "undefined" &&
-  Boolean((window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__);
 
 const TelegramIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -65,7 +69,7 @@ const TelegramIcon = () => (
   </svg>
 );
 
-const TelegramLoginButton = ({
+export const TelegramLoginButton = ({
   mode = "login",
   compact = false,
   h,
@@ -73,31 +77,64 @@ const TelegramLoginButton = ({
   className,
   style,
   hideBotOption = false,
+  disabled = false,
+  onSuccess,
+  onLoadingChange,
+  botModalOpened,
+  onBotModalClose,
 }: TelegramLoginButtonProps) => {
   const { t, i18n } = useTranslation();
   const { login: authLogin } = useAuth();
   const { executePending } = useAuthModal();
   const [loading, setLoading] = useState(false);
-  const [modalOpened, setModalOpened] = useState(false);
+  const [internalModalOpened, setInternalModalOpened] = useState(false);
   const [tokenInput, setTokenInput] = useState("");
   const [submittingToken, setSubmittingToken] = useState(false);
+
   const isSubmittingRef = useRef(false);
   const timeoutRef = useRef<number | null>(null);
+  const stopQrPollerRef = useRef<(() => void) | null>(null);
+  const isMountedRef = useRef(true);
 
-  const clearSafetyTimeout = () => {
+  const isModalOpen = botModalOpened !== undefined ? botModalOpened : internalModalOpened;
+  const setModalOpenState = (open: boolean) => {
+    if (botModalOpened !== undefined && onBotModalClose && !open) {
+      onBotModalClose();
+    }
+    setInternalModalOpened(open);
+  };
+
+  const updateLoading = useCallback((newLoading: boolean) => {
+    setLoading(newLoading);
+    onLoadingChange?.(newLoading);
+  }, [onLoadingChange]);
+
+  const clearSafetyTimeout = useCallback(() => {
     if (timeoutRef.current) {
       window.clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-  };
+    if (stopQrPollerRef.current) {
+      stopQrPollerRef.current();
+      stopQrPollerRef.current = null;
+    }
+    if (isMountedRef.current) {
+      updateLoading(false);
+    }
+  }, [updateLoading]);
 
-  const startSafetyTimeout = () => {
-    clearSafetyTimeout();
-    timeoutRef.current = window.setTimeout(() => {
-      setLoading(false);
-      setModalOpened(true);
-    }, 12000);
-  };
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      clearSafetyTimeout();
+      if (isTauriRuntime()) {
+        import("@tauri-apps/api/core")
+          .then(({ invoke }) => invoke("cancel_desktop_oauth"))
+          .catch(() => {});
+      }
+    };
+  }, [clearSafetyTimeout]);
 
   const handleTokenSubmit = async (tokenValue?: string) => {
     if (isSubmittingRef.current) return;
@@ -129,15 +166,17 @@ const TelegramLoginButton = ({
         }
 
         authLogin(response.data.data);
-        setModalOpened(false);
+        setModalOpenState(false);
+        setTokenInput("");
         showToast({
           id: "auth-telegram-token-success",
           dedupeKey: "auth-telegram-token-success",
-          title: t("auth.telegram.successTitle"),
-          message: t("auth.telegram.successMessage"),
+          title: t("auth.telegram.successTitle", { defaultValue: "Muvaffaqiyat" }),
+          message: t("auth.telegram.successMessage", { defaultValue: "Telegram orqali tizimga kirdingiz!" }),
           color: "green",
           withBorder: true,
         });
+        onSuccess?.(response.data.data);
         executePending();
       }
     } catch (err: unknown) {
@@ -146,11 +185,15 @@ const TelegramLoginButton = ({
         dedupeKey: "auth-telegram-token-error",
         color: "red",
         title: t("common.error"),
-        message: getErrorMessage(err, t("auth.telegramCallbackInvalid")),
+        message: getErrorMessage(err, t("auth.telegramCallbackInvalid", {
+          defaultValue: "Kiritilgan kod noto'g'ri yoki muddati o'tgan. Botdan yangi kod oling.",
+        })),
       });
     } finally {
       isSubmittingRef.current = false;
-      setSubmittingToken(false);
+      if (isMountedRef.current) {
+        setSubmittingToken(false);
+      }
     }
   };
 
@@ -180,34 +223,105 @@ const TelegramLoginButton = ({
   const isRegister = mode === "register";
 
   const handleTelegramLogin = useCallback(async () => {
-    if (loading) return;
+    if (loading || disabled) return;
 
     if (isTauri) {
       try {
-        setLoading(true);
+        updateLoading(true);
+        let session: QrInitResponse | null = null;
+
+        // Redundant cloud fallback channel via server-side session pairing
+        try {
+          session = await QrAuthService.initSession();
+        } catch (e) {
+          console.warn("Could not pre-init QR pairing session fallback for Telegram:", e);
+        }
+
         const { invoke } = await import("@tauri-apps/api/core");
-        await invoke("open_oauth_window", { provider: "telegram" });
+
+        // 120-second safety timeout (opens bot modal so user is never stranded)
+        timeoutRef.current = window.setTimeout(async () => {
+          clearSafetyTimeout();
+          try {
+            await invoke("cancel_desktop_oauth");
+          } catch {}
+          setModalOpenState(true);
+        }, 120_000);
+
+        // Start parallel QR poller if session was created
+        if (session) {
+          stopQrPollerRef.current = startQrPolling({
+            sessionId: session.sessionId,
+            pollSecret: session.pollSecret,
+            intervalMs: 1500,
+            onStatus: async (res) => {
+              if (res.status === "APPROVED" && res.accessToken && res.user) {
+                clearSafetyTimeout();
+                try {
+                  await invoke("cancel_desktop_oauth");
+                } catch {}
+
+                const userLang = res.user.preferredLanguage;
+                if (userLang) {
+                  i18n.changeLanguage(userLang);
+                }
+
+                authLogin({
+                  accessToken: res.accessToken,
+                  refreshToken: res.refreshToken || "",
+                  user: res.user,
+                });
+
+                showToast({
+                  id: "auth-telegram-auth-success",
+                  dedupeKey: "auth-telegram-auth-success",
+                  title: t("auth.telegram.successTitle", { defaultValue: "Muvaffaqiyat" }),
+                  message: t("auth.telegram.successMessage", { defaultValue: "Telegram orqali tizimga kirdingiz!" }),
+                  color: "green",
+                  withBorder: true,
+                });
+
+                onSuccess?.(res);
+                executePending();
+              } else if (res.status === "EXPIRED" || res.status === "REJECTED") {
+                clearSafetyTimeout();
+              }
+            },
+          });
+        }
+
+        // Listen for successful authentication from Tauri desktop bridge loopback
+        const handleCompleted = () => {
+          clearSafetyTimeout();
+          window.removeEventListener(AUTH_LOGIN_COMPLETED_EVENT, handleCompleted);
+        };
+        window.addEventListener(AUTH_LOGIN_COMPLETED_EVENT, handleCompleted, { once: true });
+
+        // Launch system browser via loopback listener command
+        await invoke("start_desktop_oauth_listener", {
+          provider: "telegram",
+          sessionId: session?.sessionId || null,
+          challenge: session?.challenge || null,
+        });
       } catch (err) {
-        console.error("Tauri open_oauth_window for telegram error:", err);
-        setModalOpened(true);
-      } finally {
-        setLoading(false);
+        console.error("Tauri desktop OAuth for telegram error:", err);
+        clearSafetyTimeout();
+        setModalOpenState(true);
       }
       return;
     }
 
     // In local development / localhost, Telegram widget origin check always fails
     // because BotFather only permits the production domain (pravaonline.uz).
-    // Smoothly launch the Telegram bot and open the 5-digit verification code modal!
+    // Launch the Telegram bot and open the 5-digit verification code modal!
     if (isLocalhost) {
-      setModalOpened(true);
+      setModalOpenState(true);
       void openExternalUrl(botUrl);
       return;
     }
 
     if (window.Telegram?.Login?.auth) {
-      setLoading(true);
-      startSafetyTimeout();
+      updateLoading(true);
 
       try {
         window.Telegram.Login.auth(
@@ -215,9 +329,8 @@ const TelegramLoginButton = ({
           async (user: TelegramUser | false) => {
             clearSafetyTimeout();
             if (!user) {
-              setLoading(false);
-              // Fallback to bot code entry so the user is never stuck
-              setModalOpened(true);
+              updateLoading(false);
+              setModalOpenState(true);
               return;
             }
 
@@ -242,11 +355,12 @@ const TelegramLoginButton = ({
                 showToast({
                   id: "auth-telegram-auth-success",
                   dedupeKey: "auth-telegram-auth-success",
-                  title: t("auth.telegram.successTitle"),
-                  message: t("auth.telegram.successMessage"),
+                  title: t("auth.telegram.successTitle", { defaultValue: "Muvaffaqiyat" }),
+                  message: t("auth.telegram.successMessage", { defaultValue: "Telegram orqali tizimga kirdingiz!" }),
                   color: "green",
                   withBorder: true,
                 });
+                onSuccess?.(response.data.data);
                 executePending();
               }
             } catch (err: unknown) {
@@ -257,42 +371,51 @@ const TelegramLoginButton = ({
                 title: t("common.error"),
                 message: getErrorMessage(err, t("auth.telegram.errorMessage")),
               });
-              setModalOpened(true);
+              setModalOpenState(true);
             } finally {
-              setLoading(false);
+              updateLoading(false);
             }
           }
         );
       } catch {
         clearSafetyTimeout();
-        setLoading(false);
-        setModalOpened(true);
+        setModalOpenState(true);
       }
     } else {
       // Browser only: load Telegram widget script and retry
-      setLoading(true);
-      startSafetyTimeout();
+      updateLoading(true);
       const script = document.createElement("script");
       script.src = TELEGRAM_WIDGET_SRC;
       script.async = true;
       script.onload = () => {
-        clearSafetyTimeout();
         if (window.Telegram?.Login?.auth) {
           handleTelegramLogin();
         } else {
-          setLoading(false);
-          setModalOpened(true);
+          clearSafetyTimeout();
+          setModalOpenState(true);
         }
       };
       script.onerror = () => {
         clearSafetyTimeout();
-        setLoading(false);
-        setModalOpened(true);
+        setModalOpenState(true);
       };
       document.head.appendChild(script);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLogin, executePending, t, i18n, isLocalhost, botUrl, openExternalUrl]);
+  }, [
+    loading,
+    disabled,
+    isTauri,
+    updateLoading,
+    clearSafetyTimeout,
+    isLocalhost,
+    openExternalUrl,
+    botUrl,
+    authLogin,
+    t,
+    onSuccess,
+    executePending,
+    i18n,
+  ]);
 
   return (
     <>
@@ -305,6 +428,7 @@ const TelegramLoginButton = ({
         fullWidth
         radius={radius}
         loading={loading}
+        disabled={disabled || loading}
         onClick={handleTelegramLogin}
         className={className}
         styles={{
@@ -319,14 +443,16 @@ const TelegramLoginButton = ({
           },
         }}
       >
-        {compact
+        {loading
+          ? t("auth.telegramCallbackProcessing", "Telegram orqali kirilmoqda...")
+          : compact
           ? "Telegram"
           : isRegister
-          ? t("auth.telegram.registerButton")
-          : t("auth.telegram.loginButton")}
+          ? t("auth.telegram.registerButton", "Telegram bilan ro'yxatdan o'tish")
+          : t("auth.telegram.loginButton", "Telegram bilan kirish")}
       </Button>
 
-      {isTauri && !compact && !hideBotOption && (
+      {!compact && !hideBotOption && (
         <Text
           component="button"
           type="button"
@@ -336,21 +462,24 @@ const TelegramLoginButton = ({
           mt={4}
           style={{
             cursor: "pointer",
-            textDecoration: "underline",
             background: "transparent",
             border: "none",
             width: "100%",
+            fontSize: "13px",
+            color: "#64748b",
+            transition: "color 0.15s ease",
           }}
-          onClick={() => setModalOpened(true)}
+          className="uac-bot-link"
+          onClick={() => setModalOpenState(true)}
         >
-          {t("auth.telegram.botOption")}
+          {t("auth.telegram.botOption", "Yoki @pravaonlineuzbot orqali kirish")}
         </Text>
       )}
 
-      {/* Modal: Telegram bot + one-time code (reliable desktop path) */}
+      {/* Modal: Telegram bot + 5-digit verification code */}
       <Modal
-        opened={modalOpened}
-        onClose={() => setModalOpened(false)}
+        opened={isModalOpen}
+        onClose={() => setModalOpenState(false)}
         closeButtonProps={{ "aria-label": t("common.close") }}
         title={
           <Group gap="xs">
@@ -376,9 +505,9 @@ const TelegramLoginButton = ({
             gap="xs"
             p="md"
             style={{
-              background: "var(--surface)",
+              background: "var(--surface, #f8fafc)",
               borderRadius: "12px",
-              border: "1px solid var(--border)",
+              border: "1px solid var(--border, #e2e8f0)",
             }}
           >
             <Text size="xs" fw={700} c="dimmed">
@@ -403,9 +532,9 @@ const TelegramLoginButton = ({
             gap="xs"
             p="md"
             style={{
-              background: "var(--surface)",
+              background: "var(--surface, #f8fafc)",
               borderRadius: "12px",
-              border: "1px solid var(--border)",
+              border: "1px solid var(--border, #e2e8f0)",
             }}
           >
             <Text size="xs" fw={700} c="dimmed">
@@ -413,10 +542,12 @@ const TelegramLoginButton = ({
             </Text>
             <Text size="sm">{t("auth.telegram.step2")}</Text>
             <TextInput
-              placeholder={t("auth.telegram.codePlaceholder")}
-              aria-label={t("auth.telegram.codeLabel")}
+              placeholder={t("auth.telegram.codePlaceholder", { defaultValue: "Masalan: 12345" })}
+              aria-label={t("auth.telegram.codeLabel", { defaultValue: "Tasdiqlash kodi" })}
               leftSection={<IconKey size={18} />}
               value={tokenInput}
+              autoFocus
+              maxLength={10}
               onChange={(e) => {
                 const val = e.currentTarget.value;
                 setTokenInput(val);
@@ -433,9 +564,9 @@ const TelegramLoginButton = ({
               radius="md"
               styles={{
                 input: {
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: 700,
-                  letterSpacing: tokenInput.length > 0 && /^\d+$/.test(tokenInput) ? 4 : 1,
+                  letterSpacing: tokenInput.length > 0 && /^\d+$/.test(tokenInput) ? 6 : 1,
                   textAlign: "center",
                 },
               }}
@@ -444,7 +575,7 @@ const TelegramLoginButton = ({
               fullWidth
               color="#229ED9"
               loading={submittingToken}
-              disabled={!tokenInput.trim()}
+              disabled={!tokenInput.trim() || submittingToken}
               onClick={() => handleTokenSubmit()}
               radius="md"
             >

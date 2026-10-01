@@ -57,6 +57,9 @@ export const UnifiedAuthCard: React.FC<UnifiedAuthCardProps> = ({
   const { returnUrl: from } = useAuthReturnUrl();
 
   const [view, setView] = useState<"main" | "qr">(initialView);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [telegramLoading, setTelegramLoading] = useState(false);
+  const isAnyLoading = googleLoading || telegramLoading;
 
   // QR Pairing Session State
   const [session, setSession] = useState<QrInitResponse | null>(null);
@@ -264,6 +267,15 @@ export const UnifiedAuthCard: React.FC<UnifiedAuthCardProps> = ({
                 mode="login"
                 h={48}
                 radius={14}
+                disabled={isAnyLoading}
+                onLoadingChange={setGoogleLoading}
+                onSuccess={() => {
+                  if (mode === "modal" && onClose) {
+                    onClose();
+                  } else {
+                    navigate(from || "/me", { replace: true });
+                  }
+                }}
                 style={{ width: "100%", height: 48, borderRadius: 14, fontWeight: 700, fontSize: 15 }}
               />
 
@@ -272,6 +284,15 @@ export const UnifiedAuthCard: React.FC<UnifiedAuthCardProps> = ({
                 mode="login"
                 h={48}
                 radius={14}
+                disabled={isAnyLoading}
+                onLoadingChange={setTelegramLoading}
+                onSuccess={() => {
+                  if (mode === "modal" && onClose) {
+                    onClose();
+                  } else {
+                    navigate(from || "/me", { replace: true });
+                  }
+                }}
                 style={{ width: "100%", height: 48, borderRadius: 14, fontWeight: 700, fontSize: 15 }}
               />
 
@@ -286,7 +307,12 @@ export const UnifiedAuthCard: React.FC<UnifiedAuthCardProps> = ({
               <button
                 type="button"
                 className="uac-btn-mobile"
+                disabled={isAnyLoading}
                 onClick={() => setView("qr")}
+                style={{
+                  opacity: isAnyLoading ? 0.6 : 1,
+                  cursor: isAnyLoading ? "not-allowed" : "pointer",
+                }}
               >
                 <IconQrcode size={22} color="#0284c7" stroke={2} />
                 <span>{t("qr.appLoginTitle")}</span>

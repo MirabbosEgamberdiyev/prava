@@ -221,6 +221,11 @@ export const normalizeFines = (raw: unknown): FinesData => {
 let memoryCache: CacheEntry | null = null;
 let inflight: Promise<FinesResult> | null = null;
 
+export function __resetFinesMemoryForTests(): void {
+  memoryCache = null;
+  inflight = null;
+}
+
 function readStorage(): CacheEntry | null {
   try {
     const raw = localStorage.getItem(FINES_CACHE_KEY);

@@ -11,7 +11,7 @@ const User_Layout = () => {
 
   return (
     <div className="app shell-layout is-focus">
-      <main className="shell-main" id="main-content">
+      <main className="shell-main" id="main-content" tabIndex={-1} role="region" aria-label="Main content">
         <div className="page-transition-wrapper shell-page" key={location.pathname}>
           <Suspense fallback={<UserRouteFallback />}>
             <Outlet />

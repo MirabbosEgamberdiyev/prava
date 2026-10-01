@@ -141,7 +141,7 @@ const TopicDetail_Page = () => {
         </div>
       </header>
 
-      <main style={{ flex: 1, overflowY: "auto", padding: "20px 16px" }}>
+      <main style={{ flex: "1 0 auto", width: "100%", padding: "20px 16px" }}>
         <Container size="xl">
           <BreadcrumbNav
             items={[

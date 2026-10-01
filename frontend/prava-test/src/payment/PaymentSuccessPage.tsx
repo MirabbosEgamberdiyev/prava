@@ -155,8 +155,8 @@ export default function PaymentSuccessPage() {
 
       <main
         style={{
-          flex: 1,
-          overflowY: "auto",
+          flex: "1 0 auto",
+          width: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

@@ -11,7 +11,8 @@ const Exam_Layout = () => {
     <div
       className="exam-route-wrapper"
       style={{
-        minHeight: "100dvh",
+        minHeight: "100%",
+        flex: "1 0 auto",
         display: "flex",
         flexDirection: "column",
       }}

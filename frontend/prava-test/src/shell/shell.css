@@ -44,22 +44,34 @@
 
 /* ── Frame ── */
 .shell-frame {
-  height: 100%;
+  height: 100vh;
+  height: 100dvh;
   width: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: var(--shell-chrome);
   color: var(--shell-chrome-text);
+  position: relative;
 }
 
 .shell-body {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
+  height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: var(--bg);
+  position: relative;
+}
+
+/* When not inside .shell-layout (e.g. App_Layout or WebAuthLayout), shell-body scrolls cleanly */
+.shell-body:not(:has(.shell-layout)) {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Titlebar / Header ── */
@@ -324,20 +336,32 @@
 
 /* ── Layout (sidebar + content layer) ── */
 .shell-layout {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
   flex-direction: row !important;
   background: var(--shell-chrome);
+  overflow: hidden;
 }
 
 .shell-main {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
   min-height: 0;
+  height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   background: var(--bg);
   border-left: 1px solid var(--shell-divider);
   border-top-left-radius: 8px;
+  position: relative;
 }
 .shell-layout.is-focus .shell-main {
   border-left: 0;
@@ -346,11 +370,24 @@
 }
 
 .shell-page {
-  flex: 1;
-  min-height: 0;
+  flex: 1 0 auto;
+  min-height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
+}
+
+/* Background scroll locking when modal or drawer is open */
+html[data-mantine-scroll-locked] .shell-main,
+body[data-mantine-scroll-locked] .shell-main,
+html[data-modal-open="true"] .shell-main,
+body[data-modal-open="true"] .shell-main,
+html[data-mantine-scroll-locked] .shell-body,
+body[data-mantine-scroll-locked] .shell-body,
+html[data-modal-open="true"] .shell-body,
+body[data-modal-open="true"] .shell-body {
+  overflow: hidden !important;
 }
 
 /* ── Sidebar ── */

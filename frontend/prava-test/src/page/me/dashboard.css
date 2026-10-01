@@ -8,8 +8,7 @@
   width: 100%;
   background: #060b13;
   color: var(--text, #f8fafc);
-  overflow-y: auto;
-  scrollbar-gutter: stable;
+  box-sizing: border-box;
 }
 
 [data-theme="light"] .ref-dashboard-wrapper {

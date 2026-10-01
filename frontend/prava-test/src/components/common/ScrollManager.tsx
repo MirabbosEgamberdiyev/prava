@@ -22,12 +22,31 @@ export function ScrollManager() {
       }
     }
 
+    // Clean up any stale modal or drawer scroll lock attributes on route change
+    document.documentElement.removeAttribute("data-modal-open");
+    document.body.removeAttribute("data-modal-open");
+    document.documentElement.removeAttribute("data-mantine-scroll-locked");
+    document.body.removeAttribute("data-mantine-scroll-locked");
+    if (document.body.style.overflow === "hidden") {
+      document.body.style.overflow = "";
+    }
+    if (document.documentElement.style.overflow === "hidden") {
+      document.documentElement.style.overflow = "";
+    }
+
     // For brand-new route transitions, scroll instantly to top so the page doesn't start midway
     if (navType !== "POP") {
       window.scrollTo({
         top: 0,
         left: 0,
         behavior: "instant",
+      });
+      const mainEl = document.getElementById("main-content");
+      if (mainEl) {
+        mainEl.scrollTop = 0;
+      }
+      document.querySelectorAll(".shell-main, .shell-body").forEach((el) => {
+        el.scrollTop = 0;
       });
     }
   }, [pathname, search, hash, navType]);

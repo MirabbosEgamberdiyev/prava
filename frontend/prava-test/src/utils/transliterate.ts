@@ -133,7 +133,7 @@ const CYRILLIC_TO_LATIN_MAP: Record<string, string> = {
   й: "y", Й: "Y",
   к: "k", К: "K",
   л: "l", Л: "L",
-  m: "m", М: "M",
+  м: "m", М: "M",
   н: "n", Н: "N",
   о: "o", О: "O",
   п: "p", П: "P",

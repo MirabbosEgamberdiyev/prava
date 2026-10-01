@@ -33,7 +33,7 @@ const HistoryContent = () => {
             <span>{t("history.title", "Imtihonlar tarixi")}</span>
           </div>
         </header>
-        <main style={{ flex: 1, overflowY: "auto", padding: "14px 16px 32px" }}>
+        <main style={{ flex: "1 0 auto", width: "100%", padding: "14px 16px 32px" }}>
           <Container size="lg">
             <ExamHistoryPage />
           </Container>

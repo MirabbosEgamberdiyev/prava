@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   IconX,
   IconCheck,
@@ -42,6 +42,14 @@ export default function TariffPaywallModal() {
   const [selectedPlanId, setSelectedPlanId] = useState<PlanOption["id"]>("1m");
   const [loadingProvider, setLoadingProvider] = useState<"click" | "payme" | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    document.documentElement.setAttribute("data-modal-open", "true");
+    return () => {
+      document.documentElement.removeAttribute("data-modal-open");
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
