@@ -126,6 +126,10 @@ export default function Marafon_Page() {
     getTopics().then((data) => setTopics(Array.isArray(data) ? data : [])).catch(() => {});
   }, []);
 
+  const rawCount = searchParams.get("count") ?? (location.state as any)?.count;
+  const shouldAutoStart = searchParams.get("autoStart") === "true" || (location.state as any)?.autoStart === true;
+  const autoStartedRef = useRef(false);
+
   useEffect(() => {
     if (initialTopicId !== null && !isNaN(initialTopicId)) {
       setSelTopic(initialTopicId);
@@ -245,7 +249,7 @@ export default function Marafon_Page() {
   );
 
   const startExam = useCallback(
-    async (forceFresh = false) => {
+    async (forceFresh = false, overrideTopicId?: number | null, overrideCount?: number) => {
       setPhase("loading");
       setAnswers({});
       answersRef.current = {};
@@ -255,7 +259,7 @@ export default function Marafon_Page() {
       finishedRef.current = false;
 
       // Crash recovery: resume an unfinished marathon with its ORIGINAL absolute deadline
-      if (!forceFresh) {
+      if (!forceFresh && overrideTopicId === undefined) {
         try {
           const active = await dbClient.getActiveExamSession("MARATHON");
           if (active && active.questions_json && Date.now() - active.started_at < 24 * 60 * 60 * 1000) {
@@ -306,18 +310,19 @@ export default function Marafon_Page() {
 
       // Fresh marathon session
       try {
+        const effectiveTopic = overrideTopicId !== undefined ? overrideTopicId : selTopic;
+        const chosenOption = overrideCount !== undefined ? overrideCount : COUNT_OPTIONS[countIdx];
         const maxQ =
-          selTopic != null
-            ? topics.find((tp) => tp.id === selTopic)?.question_count ?? 0
+          effectiveTopic != null
+            ? topics.find((tp) => tp.id === effectiveTopic)?.question_count ?? 0
             : topics.reduce((s, tp) => s + (tp.question_count || 0), 0);
 
-        const chosenOption = COUNT_OPTIONS[countIdx];
         const limit =
           chosenOption === 0
             ? maxQ > 0 ? maxQ : 0 // 0 → every question in the local bank
             : maxQ > 0 ? Math.min(chosenOption, maxQ) : chosenOption;
 
-        const qs = await getMarathonQuestions(selTopic ?? undefined, limit);
+        const qs = await getMarathonQuestions(effectiveTopic ?? undefined, limit);
         if (qs.length === 0) {
           setErrorMsg(t("marathon.noQuestions", "Savollar topilmadi"));
           setPhase("result");
@@ -346,7 +351,7 @@ export default function Marafon_Page() {
           local_id: newId,
           server_id: serverSessionIdRef.current,
           exam_type: "MARATHON",
-          target_id: selTopic,
+          target_id: effectiveTopic,
           status: "IN_PROGRESS",
           total_questions: qs.length,
           correct_answers: 0,
@@ -369,6 +374,22 @@ export default function Marafon_Page() {
     },
     [selTopic, countIdx, topics, rules, t, triggerFinish]
   );
+
+  useEffect(() => {
+    if (
+      (shouldAutoStart || rawCount != null) &&
+      initialTopicId !== null &&
+      !isNaN(initialTopicId) &&
+      !autoStartedRef.current
+    ) {
+      autoStartedRef.current = true;
+      const countNum = rawCount !== null && rawCount !== undefined ? Number(rawCount) : 10;
+      setSelTopic(initialTopicId);
+      const matchedIdx = COUNT_OPTIONS.indexOf(countNum);
+      if (matchedIdx !== -1) setCountIdx(matchedIdx);
+      void startExam(true, initialTopicId, countNum);
+    }
+  }, [shouldAutoStart, initialTopicId, rawCount, startExam]);
 
   // Resume an interrupted marathon automatically on page open (crash recovery).
   useEffect(() => {

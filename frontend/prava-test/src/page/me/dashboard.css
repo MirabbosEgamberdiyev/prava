@@ -273,7 +273,8 @@
   box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
 }
 
-.ref-primary-card.is-sim {
+.ref-primary-card.is-sim,
+.ref-primary-card.is-topics {
   background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
   box-shadow: 0 8px 20px rgba(139, 92, 246, 0.25);
 }
@@ -375,7 +376,8 @@
   color: #0284c7;
 }
 
-.ref-primary-card.is-sim .ref-primary-arrow {
+.ref-primary-card.is-sim .ref-primary-arrow,
+.ref-primary-card.is-topics .ref-primary-arrow {
   color: #8b5cf6;
 }
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../auth/AuthContext";
+import { isTauriRuntime } from "../../auth/runtime";
 import { useLanguage } from "../../context/LanguageContext";
 import SEO from "../../components/common/SEO";
 import { getFullStats } from "../../services/desktopAdapter";
@@ -369,31 +370,61 @@ export default function User_Page() {
                 </div>
               </button>
 
-              {/* Primary 3: 3D Simulator */}
-              <button
-                type="button"
-                className="ref-primary-card is-sim"
-                onClick={() => navigate("/simulator")}
-              >
-                <div className="ref-primary-top-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="9" />
-                    <circle cx="12" cy="12" r="2" />
-                    <path d="M12 14v7M10 12l-7-2M14 12l7-2" />
-                  </svg>
-                </div>
-                <div className="ref-primary-content">
-                  <div className="ref-primary-title">{t("refDashboard.simulator3D", "3D Simulyator")}</div>
-                  <div className="ref-primary-desc">{t("refDashboard.simulator3DDesc", "Avtodromda haydash")}</div>
-                </div>
-                {/* 3D Car Graphic */}
-                <div className="ref-primary-graphic" aria-hidden="true">
-                  <img src={SIM_CAR_IMG} alt="" />
-                </div>
-                <div className="ref-primary-arrow" aria-hidden="true">
-                  <IconArrowRight size={18} stroke={2.5} />
-                </div>
-              </button>
+              {/* Primary 3: 3D Simulator (Desktop Only) vs Topics (Web) */}
+              {isTauriRuntime() ? (
+                <button
+                  type="button"
+                  className="ref-primary-card is-sim"
+                  onClick={() => navigate("/simulator")}
+                >
+                  <div className="ref-primary-top-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="9" />
+                      <circle cx="12" cy="12" r="2" />
+                      <path d="M12 14v7M10 12l-7-2M14 12l7-2" />
+                    </svg>
+                  </div>
+                  <div className="ref-primary-content">
+                    <div className="ref-primary-title">{t("refDashboard.simulator3D", "3D Simulyator")}</div>
+                    <div className="ref-primary-desc">{t("refDashboard.simulator3DDesc", "Avtodromda haydash")}</div>
+                  </div>
+                  {/* 3D Car Graphic */}
+                  <div className="ref-primary-graphic" aria-hidden="true">
+                    <img src={SIM_CAR_IMG} alt="" />
+                  </div>
+                  <div className="ref-primary-arrow" aria-hidden="true">
+                    <IconArrowRight size={18} stroke={2.5} />
+                  </div>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="ref-primary-card is-topics"
+                  onClick={() => navigate("/topics")}
+                >
+                  <div className="ref-primary-top-icon">
+                    <IconBook2 size={22} color="#ffffff" stroke={2.2} />
+                  </div>
+                  <div className="ref-primary-content">
+                    <div className="ref-primary-title">{t("topics.title", "Mavzular")}</div>
+                    <div className="ref-primary-desc">{t("topics.subtitleShort", "Mavzulashtirilgan test")}</div>
+                  </div>
+                  {/* 3D Topics Graphic */}
+                  <div className="ref-primary-graphic" aria-hidden="true">
+                    <svg width="86" height="86" viewBox="0 0 100 100" fill="none">
+                      <rect x="22" y="18" width="56" height="64" rx="8" fill="#ffffff" fillOpacity="0.95" />
+                      <rect x="30" y="28" width="40" height="5" rx="2.5" fill="#8b5cf6" />
+                      <rect x="30" y="40" width="32" height="4" rx="2" fill="#cbd5e1" />
+                      <rect x="30" y="50" width="36" height="4" rx="2" fill="#cbd5e1" />
+                      <circle cx="66" cy="62" r="10" fill="#8b5cf6" />
+                      <path d="M63 62l2 2 4-4" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div className="ref-primary-arrow" aria-hidden="true">
+                    <IconArrowRight size={18} stroke={2.5} />
+                  </div>
+                </button>
+              )}
 
               {/* Primary 4: Tickets */}
               <button
