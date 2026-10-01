@@ -234,9 +234,10 @@
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--token-radius-md, 12px);
-  overflow: hidden;
-}
-.cur-detail {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+  max-height: calc(100vh - 120px);
   overflow-y: auto;
 }
 .cur-main {
@@ -248,14 +249,14 @@
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--token-radius-md, 12px);
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
 .cur-panel-scroll {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 /* ── Sidebar list ── */
@@ -404,7 +405,8 @@
 /* ── Virtual grid ── */
 .cur-grid-scroll {
   flex: 1;
-  min-height: 0;
+  min-height: calc(100vh - 240px);
+  height: calc(100vh - 240px);
   overflow-y: auto;
   background: var(--card-bg);
   border: 1px solid var(--border);

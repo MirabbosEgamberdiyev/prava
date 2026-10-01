@@ -39,6 +39,7 @@ import {
   type OfflineExamType,
 } from "./offlineExamRecord";
 import { errorMessage } from "./safeError";
+import { ENV } from "../config/env";
 
 const COUNTS_STORAGE_KEY = "prava_curriculum_counts";
 
@@ -920,21 +921,24 @@ export async function getTopics(): Promise<OfflineTopic[]> {
     }
   }
 
-  // 3. Fallback to bundled data/topics.json (44 canonical topics)
+  // 3. Fallback to direct live public API
   try {
-    const bundledRes = await fetch("/data/topics.json");
-    if (bundledRes.ok) {
-      const bundledList: any[] = await bundledRes.json();
-      if (Array.isArray(bundledList) && bundledList.length > 0) {
-        const topics: OfflineTopic[] = bundledList.map((tp: any) => ({
+    const apiBase = ENV.API_BASE_URL || (typeof window !== "undefined" && window.location.origin.includes("tauri") ? "https://pravaonline.uz" : "");
+    const directRes = await fetch(`${apiBase.replace(/\/+$/, "")}/api/v1/public/topics`);
+    if (directRes.ok) {
+      const json = await directRes.json();
+      const directList = json.data || json;
+      if (Array.isArray(directList) && directList.length > 0) {
+        const topics: OfflineTopic[] = directList.map((tp: any) => ({
           id: tp.id,
           code: tp.code || null,
-          name_uzl: tp.name_uzl || "",
-          name_uzc: tp.name_uzc || "",
-          name_en: tp.name_en || "",
-          name_ru: tp.name_ru || "",
-          question_count: tp.question_count || 0,
+          name_uzl: typeof tp.name === "object" ? tp.name?.uzl : (tp.name || tp.nameUzl || ""),
+          name_uzc: typeof tp.name === "object" ? tp.name?.uzc : (tp.nameUzc || ""),
+          name_en: typeof tp.name === "object" ? tp.name?.en : (tp.nameEn || ""),
+          name_ru: typeof tp.name === "object" ? tp.name?.ru : (tp.nameRu || ""),
+          question_count: tp.questionCount ?? tp.questionsCount ?? getExamRules().real.questionCount,
         }));
+        setCachedData(OFFLINE_CACHE_KEYS.TOPICS, topics);
         topicRepository.saveTopics(
           topics.map((tp) => ({
             id: tp.id,

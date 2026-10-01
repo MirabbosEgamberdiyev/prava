@@ -78,7 +78,7 @@ export default function TitleBar() {
     pathname === "/privacy" ||
     pathname === "/offer";
 
-  if ((isLandingHostname && isLandingMarketingPath) || fullscreen || inFocus || isTestPath) return null;
+  if ((!native && (isLandingHostname || isLandingMarketingPath)) || fullscreen || inFocus || isTestPath) return null;
 
   const canSearch = !isSearchBlockedPath(pathname);
 

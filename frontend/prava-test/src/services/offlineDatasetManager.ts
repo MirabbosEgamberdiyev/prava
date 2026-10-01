@@ -13,6 +13,7 @@ import { offlineMediaManager } from "./offlineMediaManager";
 import i18n from "i18next";
 import { durationMinutesFor, getExamRules, passPercentFor } from "./examRules";
 import { errorMessage } from "./safeError";
+import { ENV } from "../config/env";
 
 /** Localized progress text; falls back to the Uzbek default before i18n is initialised (tests). */
 function msg(key: string, fallback: string, options?: Record<string, unknown>): string {
@@ -206,7 +207,9 @@ class OfflineDatasetManager {
     // Check if live server bundle is available first (Zero fake/mock data, 100% real server sync)
     if (typeof navigator !== "undefined" && navigator.onLine) {
       try {
-        const bundleRes = await fetch("/api/v1/public/desktop-bundle");
+        const apiBase = ENV.API_BASE_URL || (typeof window !== "undefined" && window.location.origin.includes("tauri") ? "https://pravaonline.uz" : "");
+        const bundleUrl = `${apiBase.replace(/\/+$/, "")}/api/v1/public/desktop-bundle`;
+        const bundleRes = await fetch(bundleUrl);
         if (bundleRes.ok) {
           const json = await bundleRes.json();
           const bundle = json.data || json;
