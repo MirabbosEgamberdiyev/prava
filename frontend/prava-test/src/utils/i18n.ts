@@ -20,7 +20,7 @@ export const i18nReady = i18n
       escapeValue: false,
     },
     detection: {
-      order: ["localStorage", "cookie", "navigator"],
+      order: ["localStorage", "cookie"],
       lookupLocalStorage: "prava_lang",
       lookupCookie: "i18next",
       caches: ["localStorage", "cookie"],

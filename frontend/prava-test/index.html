@@ -11,7 +11,9 @@
         try {
           var saved = localStorage.getItem('prava-theme') || localStorage.getItem('mantine-color-scheme-value');
           var theme = saved;
-          if (!saved || saved === 'system') {
+          if (!saved) {
+            theme = 'dark';
+          } else if (saved === 'system') {
             var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             theme = prefersDark ? 'dark' : 'light';
           }

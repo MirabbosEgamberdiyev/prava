@@ -17,9 +17,11 @@ interface ThemeContextType {
   setTheme: (t: Theme) => void;
 }
 
+export const DEFAULT_THEME: Theme = "dark";
+
 const ThemeContext = createContext<ThemeContextType>({
-  theme: "light",
-  preference: "system",
+  theme: DEFAULT_THEME,
+  preference: DEFAULT_THEME,
   setPreference: () => {},
   toggleTheme: () => {},
   setTheme: () => {},
@@ -34,8 +36,8 @@ function readPreference(): ThemePreference {
   } catch {
     // ignore
   }
-  // No stored value (first run) → follow the OS, as before.
-  return "system";
+  // No stored value (first run) → default to dark
+  return DEFAULT_THEME;
 }
 
 function systemTheme(): Theme {

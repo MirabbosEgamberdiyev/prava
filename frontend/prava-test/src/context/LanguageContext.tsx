@@ -87,13 +87,14 @@ export interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+export const DEFAULT_LANGUAGE: AppLanguage = "uzl";
+
 /**
  * Resolves initial language by strict priority:
  * 1. User Profile Language (if authenticated)
  * 2. localStorage ("prava_lang" or "i18nextLng")
  * 3. Cookie ("i18next")
- * 4. Browser Navigator Language
- * 5. Fallback: "uzl"
+ * 4. Fallback: DEFAULT_LANGUAGE ("uzl")
  */
 function resolveInitialLanguage(userPreferred?: string | null): AppLanguage {
   if (userPreferred) {
@@ -111,11 +112,7 @@ function resolveInitialLanguage(userPreferred?: string | null): AppLanguage {
   const fromCookie = Cookies.get("i18next");
   if (fromCookie) return normalizeLanguage(fromCookie);
 
-  if (typeof navigator !== "undefined" && navigator.language) {
-    return normalizeLanguage(navigator.language);
-  }
-
-  return "uzl";
+  return DEFAULT_LANGUAGE;
 }
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

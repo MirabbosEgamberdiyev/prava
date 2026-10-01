@@ -22,7 +22,7 @@ i18n
       escapeValue: false,
     },
     detection: {
-      order: ["cookie", "localStorage", "navigator"],
+      order: ["cookie", "localStorage"],
       lookupCookie: "i18next",
       lookupLocalStorage: "i18nextLng",
       caches: ["cookie", "localStorage"],
