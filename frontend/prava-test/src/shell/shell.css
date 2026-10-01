@@ -666,3 +666,57 @@ body[data-modal-open="true"] .shell-body {
     animation: none;
   }
 }
+
+/* ── Mobile and Tablet Responsive Header / TitleBar ── */
+@media (max-width: 768px) {
+  .shell-titlebar {
+    padding: 0 12px;
+    gap: 10px;
+    height: 54px;
+    flex: 0 0 54px;
+  }
+  .shell-titlebar-search {
+    min-width: 0;
+    flex: 0 0 38px;
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 10px;
+  }
+  .shell-search-placeholder,
+  .shell-titlebar-search kbd {
+    display: none;
+  }
+  .shell-titlebar-tools {
+    gap: 6px;
+  }
+  .shell-titlebar-spacer {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .shell-titlebar {
+    padding: 0 8px;
+    gap: 6px;
+    height: 50px;
+    flex: 0 0 50px;
+  }
+  .shell-logo-wrap {
+    gap: 6px;
+  }
+  .shell-logo-badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+  .shell-logo-wrap span {
+    font-size: 16px !important;
+  }
+  .shell-login-btn {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
+}

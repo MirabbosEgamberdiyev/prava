@@ -760,3 +760,13 @@
     justify-content: center;
   }
 }
+
+@media (max-width: 420px) {
+  .ref-dashboard-container {
+    padding: 10px 10px 32px;
+  }
+
+  .ref-social-pill {
+    flex: 1 1 100% !important;
+  }
+}

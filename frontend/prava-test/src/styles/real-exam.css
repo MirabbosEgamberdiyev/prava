@@ -878,6 +878,222 @@
   }
 }
 
+/* =====================================================================
+   MOBILE & TABLET RESPONSIVE RULES (DYXHX / AVTECH EXAM UI)
+   Supports 320px, 360px, 375px, 390px, 414px, 430px, 768px
+   ===================================================================== */
+@media (max-width: 900px) {
+  .real-exam-viewport {
+    height: auto !important;
+    min-height: 100dvh;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header wraps compactly */
+  .real-exam-header {
+    padding: 8px 12px;
+    min-height: auto;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .real-exam-lang-tabs {
+    order: 1;
+    gap: 4px;
+  }
+
+  .real-exam-lang-tab {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .real-exam-candidate-info {
+    order: 2;
+    gap: 8px;
+  }
+
+  .real-exam-candidate-name {
+    font-size: 13px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .real-exam-desk-code {
+    font-size: 18px;
+  }
+
+  .real-exam-exit-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .real-exam-clock-container {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-top: 4px;
+  }
+
+  .real-exam-timer-box {
+    font-size: 20px;
+    padding: 3px 12px;
+  }
+
+  /* Question Banner */
+  .real-exam-question-bar {
+    margin: 6px 10px 10px 10px;
+    padding: 10px 14px;
+    min-height: auto;
+  }
+
+  .real-exam-question-text {
+    font-size: 15px;
+    line-height: 1.4;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  /* 2-Column layout STACKS VERTICALLY on mobile */
+  .real-exam-main {
+    flex-direction: column !important;
+    margin: 0 10px !important;
+    gap: 12px !important;
+    flex: none !important;
+    min-height: auto !important;
+  }
+
+  /* Image comes FIRST in natural mobile reading order */
+  .real-exam-image-col {
+    order: 1;
+    width: 100% !important;
+    flex: none !important;
+    height: auto !important;
+    min-height: 160px !important;
+    max-height: 36vh !important;
+  }
+
+  .real-exam-image-card {
+    min-height: 160px;
+    max-height: 36vh;
+    height: auto;
+  }
+
+  .real-exam-image-wrap img,
+  .real-exam-image-wrap .xd-media__img {
+    max-width: 96% !important;
+    max-height: 34vh !important;
+  }
+
+  /* Options stack below image at full width */
+  .real-exam-options-col {
+    order: 2;
+    flex: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-y: visible !important;
+  }
+
+  .real-exam-options-list {
+    gap: 8px;
+  }
+
+  .real-exam-option-card {
+    min-height: 48px;
+    width: 100%;
+  }
+
+  .real-exam-option-fbadge {
+    width: 42px;
+    min-width: 42px;
+    font-size: 14px;
+  }
+
+  .real-exam-option-text {
+    padding: 8px 12px;
+    font-size: 14px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  /* Action buttons row */
+  .real-exam-actions-row {
+    margin-top: 10px;
+    gap: 8px;
+  }
+
+  .real-exam-action-btn {
+    flex: 1 1 calc(50% - 6px);
+    justify-content: center;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  /* Navigator bar at bottom */
+  .real-exam-bottom-container {
+    margin: 12px auto 16px auto;
+    padding: 0 10px;
+  }
+
+  .real-exam-bottom-strip {
+    padding: 4px 6px;
+    gap: 4px;
+  }
+
+  .real-exam-bottom-box {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    font-size: 13px;
+  }
+}
+
+/* Extra Compact Phones: 320px to 380px */
+@media (max-width: 380px) {
+  .real-exam-header {
+    padding: 6px 8px;
+  }
+
+  .real-exam-candidate-name {
+    display: none;
+  }
+
+  .real-exam-lang-tab {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .real-exam-question-bar {
+    margin: 4px 6px 8px 6px;
+    padding: 8px 10px;
+  }
+
+  .real-exam-question-text {
+    font-size: 14px;
+  }
+
+  .real-exam-main {
+    margin: 0 6px !important;
+  }
+
+  .real-exam-action-btn {
+    flex: 1 1 100%;
+  }
+
+  .real-exam-bottom-box {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    font-size: 12px;
+  }
+}
+
 /* 1920x1080 Full HD Screen (Comfortable balance & clarity) */
 @media (min-width: 1920px) and (min-height: 900px) {
   .real-exam-options-col {

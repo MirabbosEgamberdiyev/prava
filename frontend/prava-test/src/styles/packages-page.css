@@ -67,6 +67,12 @@
   }
 }
 
+@media (max-width: 360px) {
+  .po-durations-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .po-duration-card {
   position: relative;
   background: var(--g-surface, #ffffff);

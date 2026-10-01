@@ -814,13 +814,20 @@
   justify-content: flex-end;
 }
 
-/* ── Responsive fallback: stacked below ~1100px ─────────────────────────── */
 @media (max-width: 1100px) {
+  .xd-root {
+    height: auto !important;
+    min-height: 100dvh;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+  }
   .xd-split {
     display: flex;
     flex-direction: column;
-    overflow: auto;
+    overflow: visible !important;
     gap: var(--xd-gap);
+    padding: 10px;
   }
   .xd-splitter {
     display: none;
@@ -829,15 +836,22 @@
   .xd-right {
     overflow: visible;
     padding-left: 0;
+    width: 100%;
+    min-width: 0;
+  }
+  .xd-center {
+    padding: 14px 14px;
   }
   .xd-media {
-    min-height: 240px;
-    max-height: 46vh;
+    min-height: 160px;
+    max-height: 36vh;
     flex: none;
-    height: 40vh;
+    height: auto;
   }
   .xd-header {
     grid-template-columns: 1fr auto;
+    padding: 8px 12px;
+    gap: 8px;
   }
   .xd-header__center {
     grid-column: 2;
@@ -847,9 +861,64 @@
     grid-column: 1 / -1;
     flex-wrap: wrap;
     justify-content: flex-start;
+    gap: 6px;
   }
   .xd-hide-sm {
     display: none;
+  }
+  .xd-answer {
+    padding: 10px 12px;
+    min-height: 48px;
+    gap: 10px;
+  }
+  .xd-answer__text {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  .xd-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .xd-actions .xd-btn {
+    flex: 1 1 calc(50% - 6px);
+    justify-content: center;
+  }
+  .xd-actions .xd-btn:last-child {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .xd-header {
+    padding: 6px 8px;
+  }
+  .xd-chip--mode {
+    max-width: 130px;
+  }
+  .xd-qhead {
+    gap: 8px;
+  }
+  .xd-qnum {
+    min-width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+  .xd-qtext {
+    font-size: 15px;
+    line-height: 1.4;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  .xd-actions .xd-btn {
+    flex: 1 1 100%;
+  }
+  .xd-nav__grid {
+    grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
+    gap: 4px;
+  }
+  .xd-nav__cell {
+    height: 28px;
+    font-size: 11.5px;
   }
 }
 

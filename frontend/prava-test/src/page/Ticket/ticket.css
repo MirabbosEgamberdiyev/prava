@@ -230,3 +230,10 @@
 [data-theme="dark"] .ref-ticket-btn.btn-locked {
   color: #c084fc;
 }
+
+@media (max-width: 480px) {
+  .ref-tickets-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
