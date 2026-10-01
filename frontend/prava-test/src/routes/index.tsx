@@ -13,8 +13,8 @@ import {
   DomainRedirectToLanding,
 } from "../components/common/DomainRedirect";
 
-// Simulator visibility flag: disabled on web (only for desktop and mobile apps)
-const SHOW_SIMULATOR = false;
+// Simulator promo / download page on web; interactive 3D in desktop
+const SHOW_SIMULATOR = true;
 const NullPage = () => null;
 
 const Home_Page = lazy(() => import("../page/Home"));
@@ -194,6 +194,8 @@ export default function AppRoutes() {
             <Route path="/history" element={<DomainRedirectToWebApp targetPath="/history" />} />
             <Route path="/leaderboard" element={<DomainRedirectToWebApp targetPath="/leaderboard" />} />
             <Route path="/settings" element={<DomainRedirectToWebApp targetPath="/settings" />} />
+            <Route path="/simulator" element={<DomainRedirectToWebApp targetPath="/simulator" />} />
+            <Route path="/simulator/*" element={<DomainRedirectToWebApp />} />
             <Route path="/payment/*" element={<DomainRedirectToWebApp />} />
             <Route path="/admin/*" element={<DomainRedirectToWebApp />} />
 
