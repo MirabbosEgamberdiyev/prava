@@ -4,8 +4,11 @@ import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import SEO from "../../components/common/SEO";
 import { useAuth } from "../../auth/AuthContext";
-import { IconArrowLeft, IconCrown } from "@tabler/icons-react";
+import { GuestGate } from "../../components/common/GuestEmptyState";
+import { EmptyState } from "../../components/common/EmptyState";
+import { IconArrowLeft, IconCrown, IconTrophy } from "@tabler/icons-react";
 import type { LeaderboardResponse } from "../../features/Leaderboard/types";
+import { Skeleton, Stack } from "@mantine/core";
 
 type PeriodTab = "weekly" | "monthly" | "all";
 
@@ -17,47 +20,32 @@ interface LeaderEntry {
   isCurrentUser?: boolean;
 }
 
-const DEFAULT_LEADERS: LeaderEntry[] = [
-  { rank: 1, name: "Azizbek", score: 1250 },
-  { rank: 2, name: "Mirabbos", score: 980 },
-  { rank: 3, name: "Bekzod", score: 860 },
-  { rank: 4, name: "Sardor", score: 720 },
-  { rank: 5, name: "Javohir", score: 690 },
-  { rank: 6, name: "Madina", score: 650 },
-  { rank: 7, name: "Oybek", score: 620 },
-  { rank: 8, name: "Dilshod", score: 580 },
-];
-
-export default function Leaderboard_Page() {
+function LeaderboardContent() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
   const [period, setPeriod] = useState<PeriodTab>("weekly");
 
   const leaderboardUrl = `/api/v1/statistics/leaderboard/global?period=${period}&size=20`;
-  const { data: response } = useSWR<LeaderboardResponse>(leaderboardUrl);
+  const { data: response, isLoading } = useSWR<LeaderboardResponse>(leaderboardUrl);
 
   const leaders = useMemo<LeaderEntry[]>(() => {
-    if (response?.data?.content && response.data.content.length > 0) {
+    if (response?.data?.content && Array.isArray(response.data.content) && response.data.content.length > 0) {
       return response.data.content.map((item: any, idx: number) => ({
-        rank: idx + 1,
-        name: item.user_name || item.name || t("leaderboard.userNum", { count: idx + 1 }),
-        score: item.score || item.points || (1000 - idx * 50),
-        isCurrentUser: Boolean(user?.id && item.user_id === user.id),
+        rank: item.rank ?? idx + 1,
+        name: item.userName || item.user_name || item.fullName || item.name || t("leaderboard.userNum", { count: idx + 1 }),
+        score: item.score ?? item.bestScore ?? item.points ?? 0,
+        isCurrentUser: Boolean(user?.id && (item.userId === user.id || item.user_id === user.id)),
       }));
     }
-    // Fallback to high-fidelity reference mock data if offline or no network records
-    const currentUserName = user?.fullName || user?.firstName;
-    return DEFAULT_LEADERS.map((item) => ({
-      ...item,
-      isCurrentUser: currentUserName ? item.name.toLowerCase() === currentUserName.toLowerCase() : item.rank === 2,
-    }));
+    return [];
   }, [response, user, t]);
 
-  const top1 = leaders.find((l) => l.rank === 1) || leaders[0];
-  const top2 = leaders.find((l) => l.rank === 2) || leaders[1];
-  const top3 = leaders.find((l) => l.rank === 3) || leaders[2];
-  const rest = leaders.filter((l) => l.rank > 3);
+  const top1 = leaders.find((l) => l.rank === 1);
+  const top2 = leaders.find((l) => l.rank === 2);
+  const top3 = leaders.find((l) => l.rank === 3);
+  const hasPodium = Boolean(top1 && top2 && top3);
+  const rest = hasPodium ? leaders.filter((l) => l.rank > 3) : leaders;
 
   return (
     <>
@@ -89,7 +77,7 @@ export default function Leaderboard_Page() {
             </div>
           </div>
 
-          {/* Period Filter Pills (Screen 11: Haftalik | Oylik | Barchasi) */}
+          {/* Period Filter Pills */}
           <div className="ds-tabs-row" role="tablist" style={{ marginBottom: 28 }}>
             <button
               type="button"
@@ -114,8 +102,38 @@ export default function Leaderboard_Page() {
             </button>
           </div>
 
+          {isLoading && (
+            <Stack gap="md" py="xl">
+              <Skeleton height={180} radius="lg" />
+              <Skeleton height={56} radius="md" />
+              <Skeleton height={56} radius="md" />
+              <Skeleton height={56} radius="md" />
+            </Stack>
+          )}
+
+          {!isLoading && leaders.length === 0 && (
+            <EmptyState
+              icon={<IconTrophy size={48} color="var(--mantine-color-yellow-6)" />}
+              title={t("leaderboard.emptyTitle", "Reyting hali mavjud emas")}
+              description={t(
+                "leaderboard.emptyDesc",
+                "Ushbu davr bo'yicha imtihon natijalari mavjud emas. Imtihon topshirib birinchi o'rinni egallang!"
+              )}
+              action={
+                <button
+                  type="button"
+                  className="ds-btn ds-btn-primary"
+                  onClick={() => navigate("/exam")}
+                  style={{ marginTop: 12, padding: "8px 20px" }}
+                >
+                  {t("examDesktop.startExam", "Imtihon topshirish")}
+                </button>
+              }
+            />
+          )}
+
           {/* Podium Component (Top 3) */}
-          {top1 && top2 && top3 && (
+          {!isLoading && hasPodium && top1 && top2 && top3 && (
             <div className="ref-podium">
               {/* ── 2nd Place (Silver - Left) ── */}
               <div className="ref-podium-col">
@@ -259,30 +277,49 @@ export default function Leaderboard_Page() {
             </div>
           )}
 
-          {/* Ranked List (Rank 4+) */}
-          <div className="ref-leaderboard-list">
-            {rest.map((entry) => (
-              <div
-                key={entry.rank}
-                className={`ref-leader-row ${entry.isCurrentUser ? "is-current-user" : ""}`}
-              >
-                <div className="ref-leader-user">
-                  <span className="ref-leader-rank">{entry.rank}</span>
-                  <div className="ref-leader-avatar">
-                    {entry.name.charAt(0).toUpperCase()}
+          {/* Ranked List */}
+          {!isLoading && rest.length > 0 && (
+            <div className="ref-leaderboard-list">
+              {rest.map((entry) => (
+                <div
+                  key={entry.rank}
+                  className={`ref-leader-row ${entry.isCurrentUser ? "is-current-user" : ""}`}
+                >
+                  <div className="ref-leader-user">
+                    <span className="ref-leader-rank">{entry.rank}</span>
+                    <div className="ref-leader-avatar">
+                      {entry.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="ref-leader-name">
+                      {entry.name} {entry.isCurrentUser && `(${t("leaderboard.you", "Siz")})`}
+                    </div>
                   </div>
-                  <div className="ref-leader-name">
-                    {entry.name} {entry.isCurrentUser && `(${t("leaderboard.you", "Siz")})`}
+                  <div className="ref-leader-score">
+                    {entry.score} {t("leaderboard.points", "ball")}
                   </div>
                 </div>
-                <div className="ref-leader-score">
-                  {entry.score} {t("leaderboard.points", "ball")}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>
+  );
+}
+
+export default function Leaderboard_Page() {
+  const { t } = useTranslation();
+  return (
+    <GuestGate
+      pageTitle={t("leaderboard.title", "Reyting")}
+      icon={IconCrown}
+      title={t("guest.leaderboardTitle", "Reytingni ko'rish")}
+      description={t(
+        "guest.leaderboardDesc",
+        "Boshqa o'quvchilar bilan raqobatlashish va o'z o'rningizni bilish uchun tizimga kiring."
+      )}
+    >
+      <LeaderboardContent />
+    </GuestGate>
   );
 }

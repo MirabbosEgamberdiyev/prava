@@ -1,16 +1,14 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   IconAlertTriangle,
-  IconFlame,
   IconArrowRight,
-  IconChevronRight,
-  IconTargetArrow,
   IconCheck,
+  IconChevronRight,
+  IconFlame,
+  IconTargetArrow,
 } from "@tabler/icons-react";
-import styles from "./Dashboard.module.css";
-import { useLanguage } from "../../context/LanguageContext";
+import "./dashboard.css";
 
 interface WeakTopic {
   id: number;
@@ -18,230 +16,135 @@ interface WeakTopic {
   wrongCount: number;
 }
 
-interface SmartRecommendationSectionProps {
+interface Props {
   weakTopics: WeakTopic[];
   totalWrongs: number;
-  practicedCount?: number;
+  practicedCount: number;
+  onOpenExamPicker: () => void;
 }
 
-export const SmartRecommendationSection: React.FC<SmartRecommendationSectionProps> = ({
-  weakTopics,
-  totalWrongs,
-  practicedCount = 0,
-}) => {
+/**
+ * Weak topics + quick mistake fixing (web SmartRecommendationSection parity) with honest
+ * empty states: new user → diagnostic test, experienced user without mistakes → mastery.
+ */
+export function SmartRecommendationSection({ weakTopics, totalWrongs, practicedCount, onOpenExamPicker }: Props) {
   const { t } = useTranslation();
-  const { localizeTopic } = useLanguage();
   const navigate = useNavigate();
-
-  const handleFixMistakes = () => {
-    if (totalWrongs > 0) {
-      navigate("/wrong-exam");
-    } else {
-      navigate("/exam");
-    }
-  };
-
-  const hasWeakTopics = weakTopics.length > 0;
+  const noArrow = (s: string) => s.replace(/\s*→\s*$/, "");
 
   return (
-    <section
-      className={styles.smartSection}
-      aria-label={t("dashboard.recommendation.title")}
-    >
-      <div className={styles.sectionHeader}>
-        <h3 className={styles.sectionTitle}>
-          {t("dashboard.recommendation.title")}
-        </h3>
-        <p className={styles.sectionSubtitle}>
-          {t(
-            "dashboard.recommendation.subtitle"
-          )}
-        </p>
+    <section className="dash-section" aria-label={t("dashboard.recommendation.title", "Aqlli tavsiya va xatolar ustida ishlash")}>
+      <div className="section-headline">
+        <h3>{t("dashboard.recommendation.title", "Aqlli tavsiya va xatolar ustida ishlash")}</h3>
+        <p>{t("dashboard.recommendation.subtitle", "")}</p>
       </div>
 
-      <div className={styles.smartSectionGrid}>
-        {/* Left Column: Weak Topics List or Honest Empty/Mastery State */}
-        <div className={styles.weakTopicsCard}>
-          <div className={styles.weakTopicsHeader}>
-            <span className={styles.weakBadge}>
+      <div className="dash-smart-grid">
+        <div className="dash-panel">
+          <div className="dash-panel-head">
+            <span className="dash-chip amber">
               <IconAlertTriangle size={13} stroke={2.5} />
-              <span>{t("dashboard.recommendation.weakTopicsBadge")}</span>
+              {t("dashboard.recommendation.weakTopicsBadge", "ZAIF MAVZULAR")}
             </span>
-
-            <button
-              type="button"
-              className={styles.weakViewAllLink}
-              onClick={() => navigate("/topics")}
-            >
-              <span>{t("dashboard.recommendation.viewAllLink")}</span>
+            <button type="button" className="dash-link" onClick={() => navigate("/topics")}>
+              {noArrow(t("dashboard.recommendation.viewAllLink", "Barchasini ko'rish"))}
               <IconArrowRight size={14} stroke={2.5} />
             </button>
           </div>
+          <h4>{t("dashboard.recommendation.weakTopicsTitle", "Eng ko'p xato tushgan yo'nalishlar")}</h4>
 
-          <h4 className={styles.weakTopicsTitle}>
-            {t("dashboard.recommendation.weakTopicsTitle")}
-          </h4>
-
-          {hasWeakTopics ? (
-            <div className={styles.weakTopicList}>
-              {weakTopics.slice(0, 5).map((topic, index) => (
+          {weakTopics.length > 0 ? (
+            <div className="dash-list" role="list">
+              {weakTopics.slice(0, 5).map((topic, i) => (
                 <button
                   key={topic.id}
                   type="button"
-                  className={styles.weakTopicItem}
+                  role="listitem"
+                  className="dash-list-item"
+                  title={topic.name}
                   onClick={() => navigate(`/marafon?topicId=${topic.id}`)}
                 >
-                  <span className={styles.weakTopicNum}>{index + 1}</span>
-                  <span className={styles.weakTopicName}>
-                    {localizeTopic({ id: topic.id, name: topic.name }) || topic.name}
+                  <span className="dash-list-num">{i + 1}</span>
+                  <span className="dash-list-name">{topic.name}</span>
+                  <span className="dash-list-count">
+                    {t("dashboard.recommendation.mistakesCount", { count: topic.wrongCount, defaultValue: `${topic.wrongCount}` })}
                   </span>
-                  <span className={styles.weakTopicMistakes}>
-                    {t("dashboard.recommendation.mistakesCount", {
-                      count: topic.wrongCount,
-                    })}
-                  </span>
-                  <IconChevronRight size={15} className={styles.weakTopicArrow} />
+                  <IconChevronRight size={15} />
                 </button>
               ))}
             </div>
           ) : practicedCount === 0 ? (
-            /* New user with 0 practice - honest diagnostic onboarding */
-            <div className={styles.weakEmptyBox}>
-              <div className={styles.weakEmptyIcon}>
+            <div className="dash-empty">
+              <div className="dash-empty-icon">
                 <IconTargetArrow size={24} stroke={2} />
               </div>
-              <h5 className={styles.weakEmptyTitle}>
-                {t("dashboard.recommendation.diagnosticEmptyTitle")}
-              </h5>
-              <p className={styles.weakEmptyDesc}>
-                {t(
-                  "dashboard.recommendation.diagnosticEmptyDesc"
-                )}
-              </p>
-              <button
-                type="button"
-                className={styles.weakEmptyBtn}
-                onClick={() => navigate("/exam")}
-              >
-                <span>{t("dashboard.recommendation.startDiagnosticBtn")}</span>
+              <h4>{t("dashboard.recommendation.diagnosticEmptyTitle", "Hozircha xatolar mavjud emas")}</h4>
+              <p className="dash-desc">{t("dashboard.recommendation.diagnosticEmptyDesc", "")}</p>
+              <button type="button" className="dash-btn" onClick={onOpenExamPicker}>
+                {noArrow(t("dashboard.recommendation.startDiagnosticBtn", "Sinov testini boshlash"))}
               </button>
             </div>
           ) : (
-            /* Experienced user with 0 mistakes - Mastery celebration */
-            <div className={styles.weakEmptyBox}>
-              <div
-                className={styles.weakEmptyIcon}
-                style={{ background: "rgba(16, 185, 129, 0.12)", color: "#059669" }}
-              >
+            <div className="dash-empty">
+              <div className="dash-empty-icon" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#059669" }}>
                 <IconCheck size={24} stroke={2.5} />
               </div>
-              <h5 className={styles.weakEmptyTitle}>
-                {t("dashboard.recommendation.masteryTitle")}
-              </h5>
-              <p className={styles.weakEmptyDesc}>
-                {t(
-                  "dashboard.recommendation.masteryDesc"
-                )}
-              </p>
-              <button
-                type="button"
-                className={styles.weakEmptyBtn}
-                style={{ background: "#059669" }}
-                onClick={() => navigate("/exam")}
-              >
-                <span>{t("dashboard.recommendation.startMockExamBtn")}</span>
+              <h4>{t("dashboard.recommendation.masteryTitle", "Barcha mavzular o'zlashtirildi!")}</h4>
+              <p className="dash-desc">{t("dashboard.recommendation.masteryDesc", "")}</p>
+              <button type="button" className="dash-btn" style={{ background: "#059669" }} onClick={onOpenExamPicker}>
+                {noArrow(t("dashboard.recommendation.startMockExamBtn", "Haqiqiy imtihon topshirish"))}
               </button>
             </div>
           )}
         </div>
 
-        {/* Right Column: Stacked Cards */}
-        <div className={styles.smartRightStack}>
-          {/* Card 1: Red Error Correction Card */}
-          <div className={styles.errorCorrectionCard}>
-            <div className={styles.errorCardHeader}>
-              <div>
-                <span className={styles.errorBadge}>
-                  <IconFlame size={12} stroke={2.5} />
-                  <span>{t("dashboard.recommendation.quickFixBadge")}</span>
-                </span>
-                <h4 className={styles.errorTitle}>
-                  {totalWrongs > 0
-                    ? `${totalWrongs} ${t("dashboard.recommendation.mistakesTitle")}`
-                    : t("dashboard.recommendation.noMistakesYet")}
-                </h4>
-                <p className={styles.errorDesc}>
-                  {totalWrongs > 0
-                    ? t(
-                        "dashboard.recommendation.mistakesDesc"
-                      )
-                    : t(
-                        "dashboard.recommendation.noMistakesDesc"
-                      )}
-                </p>
-              </div>
-
-              {/* Exam document graphic */}
-              <div className={styles.errorDocGraphic}>
-                <div className={styles.errorCrossCircle}>✕</div>
-                <div
-                  style={{
-                    width: 32,
-                    height: 4,
-                    backgroundColor: "rgba(239, 68, 68, 0.2)",
-                    borderRadius: 2,
-                  }}
-                />
-                <div
-                  style={{
-                    width: 24,
-                    height: 4,
-                    backgroundColor: "rgba(239, 68, 68, 0.2)",
-                    borderRadius: 2,
-                  }}
-                />
-              </div>
-            </div>
-
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
+          <div className="dash-panel" style={{ flex: 1 }}>
+            <span className="dash-chip red" style={{ alignSelf: "flex-start" }}>
+              <IconFlame size={12} stroke={2.5} />
+              {t("dashboard.recommendation.quickFixBadge", "TEZKOR TUZATISH")}
+            </span>
+            <h4>
+              {totalWrongs > 0
+                ? `${totalWrongs} ${t("dashboard.recommendation.mistakesTitle", "ta xato javob")}`
+                : t("dashboard.recommendation.noMistakesYet", "Xatolar mavjud emas")}
+            </h4>
+            <p className="dash-desc">
+              {totalWrongs > 0
+                ? t("dashboard.recommendation.mistakesDesc", "")
+                : t("dashboard.recommendation.noMistakesDesc", "")}
+            </p>
             <button
               type="button"
-              className={styles.errorCorrectionBtn}
-              onClick={handleFixMistakes}
+              className="dash-btn"
+              style={{ marginTop: "auto", alignSelf: "flex-start", background: totalWrongs > 0 ? "#dc2626" : undefined }}
+              onClick={() => (totalWrongs > 0 ? navigate("/wrong-exam") : onOpenExamPicker())}
             >
-              <span>
-                {totalWrongs > 0
-                  ? t("dashboard.recommendation.fixMistakesBtn")
-                  : t("dashboard.recommendation.startExamBtn")}
-              </span>
+              {noArrow(
+                totalWrongs > 0
+                  ? t("dashboard.recommendation.fixMistakesBtn", "Xatolar ustida ishlashni boshlash")
+                  : t("dashboard.recommendation.startExamBtn", "Sinov imtihonini boshlash")
+              )}
               <IconArrowRight size={16} stroke={2.5} />
             </button>
           </div>
 
-          {/* Card 2: Goal Target Card */}
-          <div
-            className={styles.goalTargetCard}
-            onClick={() => navigate("/statistics")}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/statistics")}
-          >
-            <div className={styles.goalIconBox}>
+          <button type="button" className="dash-panel dash-goal dash-card-focus" onClick={() => navigate("/statistics")} style={{ textAlign: "left", flexDirection: "row", fontFamily: "inherit" }}>
+            <span className="dash-goal-icon">
               <IconTargetArrow size={22} stroke={2.2} />
-            </div>
-            <div className={styles.goalInfo}>
-              <h5 className={styles.goalTitle}>
-                {t("dashboard.recommendation.goalTitle")}
-              </h5>
-              <p className={styles.goalDesc}>
-                {t(
-                  "dashboard.recommendation.goalDesc"
-                )}
-              </p>
-            </div>
+            </span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <h4 style={{ fontSize: 14 }}>{t("dashboard.recommendation.goalTitle", "Sizning maqsadingiz")}</h4>
+              <span className="dash-desc" style={{ display: "block", fontSize: 12.5, color: "var(--text-muted)" }}>
+                {t("dashboard.recommendation.goalDesc", "")}
+              </span>
+            </span>
             <IconChevronRight size={18} color="var(--text-muted)" />
-          </div>
+          </button>
         </div>
       </div>
     </section>
   );
-};
+}
+
+export default SmartRecommendationSection;

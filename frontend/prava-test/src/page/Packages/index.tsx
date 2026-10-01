@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SEO from "../../components/common/SEO";
@@ -6,6 +6,7 @@ import { useCurriculumCounts } from "../../hooks/useCurriculumCounts";
 import { useAuth } from "../../auth/AuthContext";
 import { useAuthModal } from "../../auth/AuthModalContext";
 import { paymentApi } from "../../payment/paymentApi";
+import api from "../../api/api";
 import {
   IconArrowLeft,
   IconCheck,
@@ -27,7 +28,7 @@ interface PlanOption {
   badge?: "popular" | "discount";
 }
 
-const PLANS: PlanOption[] = [
+const DEFAULT_PLANS: PlanOption[] = [
   { id: "1w", days: 7, price: 19000, daily: 2714, packageId: 1 },
   { id: "2w", days: 14, price: 29000, daily: 2071, packageId: 2, discount: 25 },
   { id: "1m", days: 30, price: 45000, daily: 1500, packageId: 3, discount: 45, badge: "popular" },
@@ -43,14 +44,49 @@ export default function Packages_Page() {
   const { openAuthModal } = useAuthModal();
   const counts = useCurriculumCounts();
 
+  const [plans, setPlans] = useState<PlanOption[]>(DEFAULT_PLANS);
   const [selectedPlanId, setSelectedPlanId] = useState<PlanOption["id"]>("1m");
   const [loadingProvider, setLoadingProvider] = useState<"click" | "payme" | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const selectedPlan = PLANS.find((p) => p.id === selectedPlanId) || PLANS[2];
+  useEffect(() => {
+    let mounted = true;
+    api
+      .get<{ data: { content?: any[] } }>("/api/v1/packages")
+      .then((res) => {
+        if (!mounted) return;
+        const content = res.data?.data?.content;
+        if (Array.isArray(content) && content.length > 0) {
+          setPlans((prev) =>
+            prev.map((pl) => {
+              const matched = content.find(
+                (c: any) =>
+                  c.id === pl.packageId ||
+                  (c.name && c.name.toLowerCase().includes(pl.id === "1w" ? "1 hafta" : pl.id === "2w" ? "2 hafta" : pl.id === "1m" ? "1 oy" : pl.id === "3m" ? "3 oy" : pl.id === "6m" ? "6 oy" : "1 yil"))
+              );
+              if (matched && typeof matched.price === "number") {
+                return {
+                  ...pl,
+                  packageId: matched.id ?? pl.packageId,
+                  price: matched.price,
+                  daily: Math.round(matched.price / pl.days),
+                };
+              }
+              return pl;
+            })
+          );
+        }
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-  const ticketsDisplay = counts.tickets > 0 ? String(counts.tickets) : "70";
-  const questionsDisplay = counts.questions > 0 ? new Intl.NumberFormat(i18n.language).format(counts.questions) : "1 190";
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[2];
+
+  const ticketsDisplay = counts.tickets > 0 ? String(counts.tickets) : "64";
+  const questionsDisplay = counts.questions > 0 ? new Intl.NumberFormat(i18n.language).format(counts.questions) : "1 243";
 
   const formatMoney = (n: number) => {
     return new Intl.NumberFormat(i18n.language).format(n) + " " + t("payment.currency", "so'm");
@@ -112,7 +148,7 @@ export default function Packages_Page() {
 
           {/* 6-Plan Duration Selector */}
           <div className="po-durations-grid">
-            {PLANS.map((plan) => {
+            {plans.map((plan) => {
               const isSelected = plan.id === selectedPlanId;
               const name = t(`tariff.plans.${plan.id}.name`, plan.id);
               return (
@@ -262,7 +298,7 @@ export default function Packages_Page() {
           <div className="po-checkout-card">
             <div className="po-checkout-left">
               <div className="po-checkout-label">
-                {t(`tariff.plans.${selectedPlan.id}.name`)} — {t("tariff.plans." + selectedPlan.id + ".desc")}
+                {t(`tariff.plans.${selectedPlan.id}.name`)} — {t(`tariff.plans.${selectedPlan.id}.desc`)}
               </div>
               <div className="po-checkout-sum">{formatMoney(selectedPlan.price)}</div>
             </div>

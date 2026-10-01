@@ -13,7 +13,6 @@ import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconClock, IconQuestionMark, IconCheck } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { getErrorMessage, isGloballyReported } from "../../../types/errors";
 import api from "../../../api/api";
 import { ExamModeModal, type ExamMode } from "../../../components/quiz/ExamModeModal";
 import { TopicBadge } from "../../../components/common/TopicBadge";
@@ -65,9 +64,11 @@ const Package_Card = ({ pkg }: Props) => {
         openPayModal();
         return;
       }
-      // W-05/W-19: faqat lokalizatsiyalangan 4xx xabar; 5xx/tarmoq — global toast allaqachon bor
-      if (isGloballyReported(error)) return;
-      const errorMessage = getErrorMessage(error, t("package.startError"));
+      const errorMessage =
+        (error as { response?: { data?: { message?: string; error?: string } } })
+          ?.response?.data?.message ||
+        (error as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        t("package.startError");
       notifications.show({
         title: t("common.error"),
         message: errorMessage,
@@ -125,7 +126,7 @@ const Package_Card = ({ pkg }: Props) => {
         <Group gap={6}>
           <IconClock size={16} color="var(--mantine-color-orange-5)" />
           <Text size="sm" c="dimmed">
-            <b>{pkg.durationMinutes}</b> {t("common.min")}
+            <b>{pkg.durationMinutes}</b> {t("dashboard.minutesUnit")}
           </Text>
         </Group>
 
@@ -146,11 +147,8 @@ const Package_Card = ({ pkg }: Props) => {
         loading={loading}
         onClick={handleButtonClick}
         className={classes.startButton}
-        title={pkg.isFree ? t("package.study") : t("package.buy")}
       >
-        <span style={{ overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>
-          {pkg.isFree ? t("package.study") : t("package.buy")}
-        </span>
+        {pkg.isFree ? t("package.study") : t("package.buy")}
       </Button>
 
       <ExamModeModal
@@ -162,7 +160,7 @@ const Package_Card = ({ pkg }: Props) => {
       <Modal
         opened={payModalOpened}
         onClose={closePayModal}
-        title={t("package.buy") || "Paketni sotib olish"}
+        title={t("package.buy")}
         centered
         size="md"
       >

@@ -14,6 +14,7 @@ import {
 } from "../../services/desktopAdapter";
 import SEO from "../../components/common/SEO";
 import { isExamResultPassed } from "../../services/examOutcome";
+import { getFallbackTopicName } from "../../data/topicTranslations";
 import { GuestGate } from "../../components/common/GuestEmptyState";
 import {
   IconArrowLeft,
@@ -139,11 +140,12 @@ function StatisticsContent() {
     if (!stats || !stats.topic_readiness || stats.topic_readiness.length === 0) {
       return [];
     }
-    const lang = i18n.language;
+    const lang = (i18n.language as "uzl" | "uzc" | "ru") || "uzl";
     return stats.topic_readiness.slice(0, 8).map((tp) => {
-      let name = tp.name_uzl || t("topics.topicNumber", { id: tp.topic_id });
-      if (lang === "ru" && tp.name_ru) name = tp.name_ru;
-      if (lang === "uzc" && tp.name_uzc) name = tp.name_uzc;
+      const fb = getFallbackTopicName(tp.topic_id, lang);
+      let name = fb || tp.name_uzl || t("topics.topicNumber", { number: tp.topic_id });
+      if (lang === "ru" && tp.name_ru && tp.name_ru !== tp.name_uzl) name = tp.name_ru;
+      if (lang === "uzc" && tp.name_uzc && tp.name_uzc !== tp.name_uzl) name = tp.name_uzc;
 
       // Percentage calculation
       const totalQ = tp.total || 1;
@@ -343,7 +345,7 @@ function StatisticsContent() {
                         <span className="ref-stats-metric-dot" style={{ background: "#06b6d4" }} />
                         {t("stats.totalQuestions", "Jami savollar")}
                       </span>
-                      <span className="ref-stats-metric-value">{totalAnswered > 0 ? totalAnswered : 1190}</span>
+                      <span className="ref-stats-metric-value">{totalAnswered}</span>
                     </div>
                   </div>
                 </div>

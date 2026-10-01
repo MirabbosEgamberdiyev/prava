@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { IconAlertOctagon, IconChevronLeft, IconChevronRight, IconSteeringWheel } from "@tabler/icons-react";
 import SEO from "../../components/common/SEO";
@@ -91,6 +91,24 @@ export default function PracticalExam_Page() {
                 <span className="cur-code">
                   {t("learn.exercise", "Mashq")} {exercise.exercise_number} / {exercises.length}
                 </span>
+                <Link
+                  to="/simulator"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 12px",
+                    background: "var(--brand, #1f7dd3)",
+                    color: "#ffffff",
+                    borderRadius: 8,
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                  }}
+                >
+                  <IconSteeringWheel size={15} />
+                  <span>{t("sim.launch", "3D Simulyatorda sinash")}</span>
+                </Link>
               </div>
               <h2 className="cur-detail-title" style={{ fontSize: 20, margin: "10px 0 14px" }}>
                 {exTitle(exercise)}

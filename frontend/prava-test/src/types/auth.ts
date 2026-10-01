@@ -8,6 +8,10 @@ export interface User {
   preferredLanguage?: string;
   /** Role as returned by the backend: "SUPER_ADMIN" | "ADMIN" | "USER" */
   role?: string;
+  hasSubscription?: boolean;
+  packageActive?: boolean;
+  subscriptionPlan?: string;
+  subscriptionExpiresAt?: string;
 }
 
 export interface AuthData {
@@ -15,6 +19,7 @@ export interface AuthData {
   refreshToken?: string;
   user: User;
   expiresIn?: number;
+  rememberMe?: boolean;
 }
 
 export interface UserResponse {

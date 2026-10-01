@@ -4,20 +4,20 @@ import { useDesktopTheme } from "@/context/DesktopThemeContext";
 import { useTranslation } from "react-i18next";
 
 const ColorMode = () => {
-  const { resolvedTheme, toggleTheme } = useDesktopTheme();
+  const { theme, toggleTheme } = useDesktopTheme();
   const { t } = useTranslation();
-  const isLight = resolvedTheme === "light";
+  const isLight = theme === "light";
 
   return (
     <Tooltip
-      label={isLight ? t("common.darkMode") : t("common.lightMode")}
+      label={isLight ? t("common.darkMode", "Qorong'u rejim") : t("common.lightMode", "Yorug' rejim")}
       position="bottom"
       withArrow
     >
       <UnstyledButton
         onClick={toggleTheme}
         className="header-control-icon-btn"
-        aria-label={isLight ? "Dark mode ga o'tish" : "Light mode ga o'tish"}
+        aria-label={isLight ? t("common.darkMode") : t("common.lightMode")}
         type="button"
       >
         {isLight ? (

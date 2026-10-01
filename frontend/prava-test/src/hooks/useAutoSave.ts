@@ -164,9 +164,11 @@ export function useAutoSave({
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", flush);
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pagehide", flush);
+      window.removeEventListener("beforeunload", flush);
     };
   }, [enabled, sessionId, saveToServer]);
 

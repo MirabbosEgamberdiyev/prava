@@ -143,7 +143,7 @@ export default function Tickets_Page() {
                   )}
                 </h1>
                 <p className="ds-page-desc">
-                  {t("tickets.subtitle", { count: tickets.length || 70, questions: 20 })}
+                  {t("tickets.subtitle", "Davlat YHXDX standartidagi rasmiy 70 ta bilet")}
                 </p>
               </div>
             </div>
@@ -275,7 +275,7 @@ export default function Tickets_Page() {
                   >
                     {/* Top Row: Title + Status Badge */}
                     <div className="ref-ticket-title">
-                      <span className="ref-ticket-name">{t("examDesktop.modeTicket", "Bilet #{{n}}", { n: ticket.ticket_number })}</span>
+                      <span className="ref-ticket-name">{ticket.ticket_number}-bilet</span>
                       {isLocked ? (
                         <span className="ds-badge ds-badge-purple" style={{ fontSize: 11, padding: "2px 8px" }}>
                           <IconLock size={12} />

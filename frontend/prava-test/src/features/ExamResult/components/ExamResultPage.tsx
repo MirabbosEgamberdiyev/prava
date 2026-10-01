@@ -3,26 +3,29 @@ import {
   Box,
   Button,
   Center,
-  Container,
   Flex,
   Grid,
   Group,
   Loader,
   Paper,
   RingProgress,
-  SimpleGrid,
   Stack,
   Text,
   Title,
   Image,
   useComputedColorScheme,
 } from "@mantine/core";
-import { IconArrowLeft, IconCheck, IconX, IconRefresh, IconAlertTriangle } from "@tabler/icons-react";
+import { IconArrowLeft, IconCheck, IconX } from "@tabler/icons-react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { useLanguage } from "../../../hooks/useLanguage";
 import { getImageUrl } from "../../../utils/imageUtils";
+import { dbClient } from "../../../database/dbClient";
+import storageService from "../../../services/storageService";
+import { passPercentForMode, resolveExamOutcome } from "../../../services/examOutcome";
+import { getExamRules } from "../../../services/examRules";
 import type { LocalizedText } from "../../../types";
 import type { ExamResultResponse, AnswerDetail } from "../types";
 
@@ -35,18 +38,154 @@ export function ExamResultPage() {
     getInitialValueInEffect: true,
   });
 
+  const [localResult, setLocalResult] = useState<ExamResultResponse["data"] | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!sessionId) return;
+    const sid: string = sessionId;
+    async function loadLocal() {
+      try {
+        const localSession = await dbClient.getExamSessionById(sid);
+        if (localSession) {
+          let answerDetails: AnswerDetail[] = [];
+          if (localSession.questions_json && localSession.answers_json) {
+            try {
+              const qs = JSON.parse(localSession.questions_json);
+              const answers = JSON.parse(localSession.answers_json);
+              answerDetails = qs.map((q: any, idx: number) => {
+                const ans = answers[idx];
+                const selected = ans?.selected ?? null;
+                const correct = ans?.correct ?? q.correct_option;
+                let opts: any[] = [];
+                try {
+                  opts = typeof q.options_json === "string" ? JSON.parse(q.options_json) : (q.options || []);
+                } catch {}
+                return {
+                  questionId: q.id,
+                  questionOrder: idx + 1,
+                  questionText: { uzl: q.text_uzl, uzc: q.text_uzc, ru: q.text_ru, en: q.text_en },
+                  imageUrl: q.image_url,
+                  options: opts.map((opt: any, optIdx: number) => ({
+                    id: optIdx,
+                    index: optIdx,
+                    text: typeof opt === "object" ? opt : { uzl: String(opt) },
+                  })),
+                  correctOptionIndex: correct,
+                  selectedOptionIndex: selected,
+                  isCorrect: selected !== null ? selected === correct : null,
+                  timeSpentSeconds: null,
+                  explanation: { uzl: q.explanation_uzl, uzc: q.explanation_uzc, ru: q.explanation_ru, en: q.explanation_en },
+                };
+              });
+            } catch {}
+          }
+
+          const rules = getExamRules();
+          const outcome = resolveExamOutcome(
+            {
+              passed: localSession.passed,
+              mode: localSession.mode,
+              examType: localSession.exam_type,
+              total: localSession.total_questions || rules.real.questionCount,
+              correct: localSession.correct_answers,
+              wrong: localSession.wrong_answers,
+              unanswered: localSession.unanswered,
+              score: localSession.score,
+            },
+            rules
+          );
+          const isPassed = outcome.passed;
+          const mapped: ExamResultResponse["data"] = {
+            sessionId: typeof sessionId === "number" ? sessionId : 0,
+            packageId: null,
+            packageName: null,
+            topicId: null,
+            topicName: null,
+            status: localSession.status,
+            isMarathonMode: localSession.exam_type === "MARATHON",
+            totalQuestions: outcome.total,
+            answeredCount: outcome.correct + outcome.wrong,
+            correctCount: localSession.correct_answers,
+            incorrectCount: outcome.wrong,
+            unansweredCount: outcome.unanswered,
+            score: localSession.score,
+            percentage: localSession.score,
+            isPassed,
+            passingScore: passPercentForMode(outcome.mode, rules),
+            startedAt: new Date(localSession.started_at).toISOString(),
+            finishedAt: localSession.completed_at ? new Date(localSession.completed_at).toISOString() : new Date().toISOString(),
+            durationSeconds: localSession.duration_seconds,
+            averageTimePerQuestion: localSession.total_questions > 0 ? localSession.duration_seconds / localSession.total_questions : 0,
+            answerDetails,
+          };
+
+          if (mounted) setLocalResult(mapped);
+          return;
+        }
+
+        const stored = storageService.getExamHistory().find((h) => String(h.id) === String(sessionId));
+        if (stored) {
+          const rules = getExamRules();
+          const outcome = resolveExamOutcome(
+            {
+              passed: stored.passed,
+              mode: stored.mode,
+              examType: stored.examType,
+              total: stored.totalQuestions,
+              correct: stored.correctAnswers,
+              wrong: stored.wrongAnswers,
+              unanswered: stored.unanswered,
+              score: stored.score,
+            },
+            rules
+          );
+          const isPassed = outcome.passed;
+          const mapped: ExamResultResponse["data"] = {
+            sessionId: typeof sessionId === "number" ? sessionId : 0,
+            packageId: null,
+            packageName: null,
+            topicId: null,
+            topicName: null,
+            status: "COMPLETED",
+            isMarathonMode: stored.examType === "MARATHON" || stored.examType === "marathon",
+            totalQuestions: stored.totalQuestions,
+            answeredCount: outcome.correct + outcome.wrong,
+            correctCount: stored.correctAnswers,
+            incorrectCount: outcome.wrong,
+            unansweredCount: outcome.unanswered,
+            score: stored.score,
+            percentage: stored.score,
+            isPassed,
+            passingScore: passPercentForMode(outcome.mode, rules),
+            startedAt: stored.createdAt,
+            finishedAt: stored.createdAt,
+            durationSeconds: stored.durationSeconds,
+            averageTimePerQuestion: stored.totalQuestions > 0 ? stored.durationSeconds / stored.totalQuestions : 0,
+            answerDetails: [],
+          };
+          if (mounted) setLocalResult(mapped);
+        }
+      } catch {}
+    }
+    loadLocal();
+    return () => {
+      mounted = false;
+    };
+  }, [sessionId]);
+
   const {
     data: resultResponse,
     isLoading,
     error,
     mutate,
   } = useSWR<ExamResultResponse>(
-    sessionId ? `/api/v2/exams/${sessionId}/result` : null,
+    sessionId && !isNaN(Number(sessionId)) ? `/api/v2/exams/${sessionId}/result` : null,
   );
 
-  const result = resultResponse?.data;
+  const result = resultResponse?.data || localResult;
 
-  if (isLoading) {
+  if (isLoading && !result) {
     return (
       <Center h="80vh">
         <Stack align="center">
@@ -59,11 +198,10 @@ export function ExamResultPage() {
 
   /*
    * BUG FIX: avval tarmoq/server xatosi ham "natija topilmadi" deb
-   * ko'rsatilardi va qayta urinish tugmasi yo'q edi — foydalanuvchi
-   * endigina yakunlagan imtihoni natijasini butunlay yo'qotgandek his
-   * qilardi. Endi xato alohida holat va uni qayta yuklash mumkin.
+   * ko'rsatilardi va qayta urinish tugmasi yo'q edi. Agar offline/lokal
+   * natija mavjud bo'lsa, xato o'rniga lokal natija ko'rsatiladi.
    */
-  if (error) {
+  if (error && !result) {
     return (
       <Center h="80vh">
         <Stack align="center">
@@ -120,138 +258,121 @@ export function ExamResultPage() {
     return `${secs} ${t("examResult.seconds")}`;
   };
 
+  const scrollToReview = () => {
+    const el = document.getElementById("exam-review-section");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <Box bg="var(--bg)" mih="100dvh" style={{ color: "var(--text)" }}>
-      {/*
-        Mobil ko'rinishda pastdagi "Orqaga" tugmasi `position: fixed` —
-        avval kontent tagida qo'shimcha joy yo'q edi va tugma oxirgi
-        javob kartasini yopib qo'yardi.
-      */}
-      <Container size="xl" p={0} pb={{ base: 120, sm: 40 }}>
-        {/* Header: Score Ring + Pass/Fail */}
-        <Paper
-          p="xl"
-          radius="md"
-          withBorder
-          shadow="sm"
-          mb="xl"
-          style={{ background: "var(--surface)", borderColor: "var(--border)" }}
-        >
-          <Flex
-            direction={{ base: "column", sm: "row" }}
-            align="center"
-            justify="center"
-            gap="xl"
-          >
+    <div className="ds-page-wrapper">
+      <main className="ds-page-container" style={{ maxWidth: 900 }}>
+        {/* Modern Result Card matching Reference Screen 5 */}
+        <div className="ref-result-card">
+          {/* Centered Circular Gauge */}
+          <div className="ref-result-gauge">
             <RingProgress
-              size={160}
-              thickness={14}
+              size={150}
+              thickness={12}
               roundCaps
               sections={[
                 {
                   value: result.percentage ?? 0,
-                  color: result.isPassed ? "green" : "red",
+                  color: result.isPassed ? "#10b981" : "#ef4444",
                 },
               ]}
               label={
-                <Text ta="center" size="xl" fw={700}>
-                  {(result.percentage ?? 0).toFixed(0)}%
-                </Text>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: 22, fontWeight: 900, color: "var(--g-text)", lineHeight: 1.1 }}>
+                    {result.correctCount}/{result.totalQuestions}
+                  </span>
+                  <span style={{ fontSize: 16, fontWeight: 800, color: result.isPassed ? "#10b981" : "#ef4444" }}>
+                    {(result.percentage ?? 0).toFixed(0)}%
+                  </span>
+                </div>
               }
             />
-            <Stack gap="xs" align="flex-start">
-              <Badge
-                size="xl"
-                color={result.isPassed ? "green" : "red"}
-                variant="filled"
+          </div>
+
+          {/* Heading & Subtitle */}
+          <h1 className="ref-result-title">
+            {result.isPassed
+              ? t("examResult.congratsTitle", "Ajoyib natija! ⭐")
+              : t("examResult.tryAgainTitle", "Qayta urinib ko'ring")}
+          </h1>
+          <p className="ref-result-sub">
+            {t("examResult.summarySubtitle", "Siz {{total}} ta savoldan {{correct}} tasiga to'g'ri javob berdingiz", {
+              total: result.totalQuestions,
+              correct: result.correctCount,
+            })}
+          </p>
+
+          {/* 3 Stat Boxes Row */}
+          <div className="ref-result-stats-row">
+            <div className="ref-result-stat-box" style={{ borderColor: "rgba(16, 185, 129, 0.3)" }}>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#10b981" }}>{result.correctCount ?? 0}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--g-text-muted)" }}>{t("examResult.correct", "To'g'ri")}</span>
+            </div>
+            <div className="ref-result-stat-box" style={{ borderColor: "rgba(239, 68, 68, 0.3)" }}>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#ef4444" }}>{result.incorrectCount ?? 0}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--g-text-muted)" }}>{t("examResult.incorrect", "Xato")}</span>
+            </div>
+            <div className="ref-result-stat-box">
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#38bdf8" }}>{result.unansweredCount ?? 0}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--g-text-muted)" }}>{t("examResult.unanswered", "Javobsiz")}</span>
+            </div>
+          </div>
+
+          {/* Time Metrics Pills */}
+          <div className="ref-result-pills-row">
+            <div className="ref-result-pill">
+              <span>⏱️</span>
+              <span>{t("examResult.timeSpent", "Sarflangan vaqt")}: <strong>{formatDuration(durationSeconds)}</strong></span>
+            </div>
+            <div className="ref-result-pill">
+              <span>⚡</span>
+              <span>{t("examResult.avgTimePerQuestion", "O'rtacha vaqt")}: <strong>{avgTimePerQuestion} {t("examResult.seconds", "soniya")}</strong></span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 360, margin: "0 auto" }}>
+            {(result.incorrectCount ?? 0) > 0 && (
+              <button
+                type="button"
+                className="ds-btn ds-btn-primary"
+                onClick={scrollToReview}
+                style={{ width: "100%", height: 44 }}
               >
-                {result.isPassed
-                  ? t("examResult.passed")
-                  : t("examResult.failed")}
-              </Badge>
-              <Text size="sm" c="dimmed">
-                {t("examResult.passingScore")}: {result.passingScore}%
-              </Text>
-              <Text size="sm" c="dimmed">
-                {t("examResult.timeSpent")}: {formatDuration(durationSeconds)}
-              </Text>
-              <Text size="sm" c="dimmed">
-                {t("examResult.avgTimePerQuestion")}: {avgTimePerQuestion}{" "}
-                {t("examResult.seconds")}
-              </Text>
-            </Stack>
-          </Flex>
-        </Paper>
+                <span>{t("examResult.viewMistakes", "Xatolarni ko'rish")}</span>
+              </button>
+            )}
+            <button
+              type="button"
+              className="ds-btn ds-btn-secondary"
+              onClick={() => navigate(`/exam?count=${result.totalQuestions || 20}`)}
+              style={{ width: "100%", height: 44 }}
+            >
+              <span>{t("examResult.retake", "Qayta yechish")}</span>
+            </button>
+            <button
+              type="button"
+              className="ds-btn ds-btn-ghost"
+              onClick={() => navigate("/me")}
+              style={{ width: "100%", height: 44 }}
+            >
+              <span>{t("examResult.backToDashboard", "Bosh sahifaga")}</span>
+            </button>
+          </div>
+        </div>
 
-        {/* Stat Cards */}
-        <SimpleGrid cols={{ base: 3 }} spacing="md" mb="xl">
-          <Paper
-            p="md"
-            ta="center"
-            radius="md"
-            style={{
-              backgroundColor:
-                computedColorScheme === "light"
-                  ? "var(--mantine-color-green-0)"
-                  : "var(--mantine-color-green-9)",
-              border: "1px solid var(--mantine-color-green-3)",
-            }}
-          >
-            <Text size="xl" fw={700} c="green">
-              {result.correctCount ?? 0}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {t("examResult.correct")}
-            </Text>
-          </Paper>
-          <Paper
-            p="md"
-            ta="center"
-            radius="md"
-            style={{
-              backgroundColor:
-                computedColorScheme === "light"
-                  ? "var(--mantine-color-red-0)"
-                  : "var(--mantine-color-red-9)",
-              border: "1px solid var(--mantine-color-red-3)",
-            }}
-          >
-            <Text size="xl" fw={700} c="red">
-              {result.incorrectCount ?? 0}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {t("examResult.incorrect")}
-            </Text>
-          </Paper>
-          <Paper
-            p="md"
-            ta="center"
-            radius="md"
-            style={{
-              backgroundColor:
-                computedColorScheme === "light"
-                  ? "var(--mantine-color-yellow-0)"
-                  : "var(--mantine-color-yellow-9)",
-              border: "1px solid var(--mantine-color-yellow-3)",
-            }}
-          >
-            <Text size="xl" fw={700} c="yellow.8">
-              {result.unansweredCount ?? 0}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {t("examResult.unanswered")}
-            </Text>
-          </Paper>
-        </SimpleGrid>
+        {/* Detailed Answer Review Section */}
+        <div id="exam-review-section" style={{ marginTop: 40 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--g-text)", marginBottom: 16 }}>
+            {t("examResult.answerReview", "Savollar tahlili")}
+          </h2>
 
-        {/* Answer Review */}
-        <Title order={3} mb="md">
-          {t("examResult.answerReview")}
-        </Title>
-
-        <Stack gap="md" mb="xl">
-          {(result.answerDetails ?? []).map(
-            (answer: AnswerDetail, index: number) => (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {(result.answerDetails ?? []).map((answer: AnswerDetail, index: number) => (
               <AnswerReviewCard
                 key={answer.questionId}
                 answer={answer}
@@ -260,103 +381,11 @@ export function ExamResultPage() {
                 t={t}
                 computedColorScheme={computedColorScheme}
               />
-            ),
-          )}
-        </Stack>
-
-        {/* Action Buttons */}
-        <Flex
-          direction={{ base: "column", sm: "row" }}
-          justify="center"
-          align="center"
-          gap="md"
-          mb="xl"
-          visibleFrom="sm"
-        >
-          {result.incorrectCount != null && result.incorrectCount > 0 && (
-            <Button
-              size="md"
-              radius="md"
-              color="red"
-              leftSection={<IconAlertTriangle size={18} />}
-              onClick={() => navigate("/wrong-exam")}
-            >
-              {t("examResult.practiceMistakes")} ({result.incorrectCount})
-            </Button>
-          )}
-
-          <Button
-            size="md"
-            radius="md"
-            variant="light"
-            color="blue"
-            leftSection={<IconRefresh size={18} />}
-            onClick={() => navigate("/exam")}
-          >
-            {t("examResult.retryExam")}
-          </Button>
-
-          <Button
-            size="md"
-            radius="md"
-            variant="default"
-            leftSection={<IconArrowLeft size={18} />}
-            onClick={() => navigate("/me")}
-          >
-            {t("examResult.backToDashboard")}
-          </Button>
-        </Flex>
-
-        {/* Mobile Sticky Bottom Actions */}
-        <Box
-          hiddenFrom="sm"
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: "10px 16px",
-            background: "var(--surface)",
-            borderTop: "1px solid var(--border)",
-            zIndex: 100,
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-          }}
-        >
-          {result.incorrectCount != null && result.incorrectCount > 0 && (
-            <Button
-              fullWidth
-              size="md"
-              color="red"
-              leftSection={<IconAlertTriangle size={18} />}
-              onClick={() => navigate("/wrong-exam")}
-            >
-              {t("examResult.practiceMistakes")} ({result.incorrectCount})
-            </Button>
-          )}
-          <Group grow gap="xs">
-            <Button
-              size="sm"
-              variant="light"
-              color="blue"
-              leftSection={<IconRefresh size={16} />}
-              onClick={() => navigate("/exam")}
-            >
-              {t("examResult.retryExam")}
-            </Button>
-            <Button
-              size="sm"
-              variant="default"
-              leftSection={<IconArrowLeft size={16} />}
-              onClick={() => navigate("/me")}
-            >
-              {t("examResult.backToDashboard")}
-            </Button>
-          </Group>
-        </Box>
-      </Container>
-    </Box>
+            ))}
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
 
@@ -410,28 +439,27 @@ function AnswerReviewCard({
 
       <Text mb="sm" fw={500}>{localize(answer.questionText)}</Text>
 
-      {/* Savol rasmi (yo'l belgilari, chorraha holatlari) */}
-      {answer.imageUrl && (
-        <Box
-          mb="md"
-          style={{
-            maxHeight: 240,
-            display: "flex",
-            justifyContent: "center",
-            background: "rgba(0, 0, 0, 0.04)",
-            borderRadius: "var(--radius)",
-            padding: 8,
-          }}
-        >
-          <Image
-            src={getImageUrl(answer.imageUrl)}
-            alt={localize(answer.questionText)}
-            fit="contain"
-            mah={220}
-            radius="sm"
-          />
-        </Box>
-      )}
+      {/* Savol rasmi (yo'l belgilari, chorraha holatlari yoki default) */}
+      <Box
+        mb="md"
+        style={{
+          maxHeight: 240,
+          display: "flex",
+          justifyContent: "center",
+          background: "rgba(0, 0, 0, 0.04)",
+          borderRadius: "var(--radius)",
+          padding: 8,
+        }}
+      >
+        <Image
+          src={getImageUrl(answer.imageUrl) || "/question-default.svg"}
+          fallbackSrc="/question-default.svg"
+          alt={localize(answer.questionText)}
+          fit="contain"
+          mah={220}
+          radius="sm"
+        />
+      </Box>
 
       <Grid gutter="xs">
         {answer.options.map((option) => {
@@ -484,7 +512,7 @@ function AnswerReviewCard({
           style={{
             background:
               computedColorScheme === "light"
-                ? "rgba(var(--primary-rgb), 0.08)"
+                ? "rgba(25, 113, 194, 0.08)"
                 : "rgba(255, 255, 255, 0.05)",
             border: "1px solid var(--border)",
           }}

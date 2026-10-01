@@ -29,7 +29,7 @@ export default function RoadMarkings_Page() {
         subtitle={t("curriculum.markingsSubtitle", "")}
         countBadge={(n) => (
           <span className="cur-badge">
-            <IconRoad size={14} /> {t("curriculum.markingsCount", { count: n })}
+            <IconRoad size={14} /> {n} {t("curriculum.markingsCount", "ta chiziq")}
           </span>
         )}
         items={markings}

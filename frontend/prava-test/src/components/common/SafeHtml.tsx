@@ -1,13 +1,12 @@
 import { forwardRef, useMemo, type CSSProperties } from "react";
 import DOMPurify from "dompurify";
+import { openExternal } from "../../utils/openExternal";
 
 /*
- * P1-W9: admin panelidan keladigan HTML kontent (YHQ, belgilar, chiziqlar)
- * avval to'g'ridan-to'g'ri `dangerouslySetInnerHTML` bilan render qilinardi.
- * Admin akkaunti buzilsa yoki kontentga zararli HTML tushsa → barcha
- * foydalanuvchilarda stored XSS. Endi DOMPurify orqali tozalanadi:
- * <script>, on* event handler'lar, javascript: URL'lar, iframe/form va h.k.
- * olib tashlanadi; oddiy formatlash (p, b, ul, table, img, a ...) saqlanadi.
+ * HTML content coming from the admin panel (traffic rules, sign / marking descriptions)
+ * is sanitised with DOMPurify before rendering (ported from the web app): <script>,
+ * on* handlers, javascript: URLs, iframes/forms etc. are stripped; plain formatting
+ * (p, b, ul, table, img, a ...) is kept.
  */
 const PURIFY_CONFIG = {
   USE_PROFILES: { html: true },
@@ -20,7 +19,7 @@ let hookInstalled = false;
 function ensureLinkHook() {
   if (hookInstalled) return;
   hookInstalled = true;
-  // Tashqi havolalar yangi oynada va opener'siz ochilsin
+  // External links open outside the app window, without opener.
   DOMPurify.addHook("afterSanitizeAttributes", (node) => {
     if (node.tagName === "A" && node.getAttribute("href")) {
       node.setAttribute("target", "_blank");
@@ -36,10 +35,10 @@ function ensureLinkHook() {
 export function sanitizeHtml(html: string | null | undefined): string {
   if (!html) return "";
   ensureLinkHook();
-  return DOMPurify.sanitize(html, PURIFY_CONFIG);
+  return DOMPurify.sanitize(html, PURIFY_CONFIG) as string;
 }
 
-export interface SafeHtmlProps {
+interface SafeHtmlProps {
   html: string | null | undefined;
   className?: string;
   style?: CSSProperties;
@@ -57,7 +56,16 @@ const SafeHtml = forwardRef<HTMLDivElement, SafeHtmlProps>(function SafeHtml(
       ref={ref}
       className={className}
       style={style}
-      // Kontent DOMPurify orqali tozalangan
+      onClick={(e) => {
+        // Links in admin content open in the system browser, never inside the app window.
+        const a = (e.target as HTMLElement).closest?.("a[href]") as HTMLAnchorElement | null;
+        if (!a) return;
+        const href = a.getAttribute("href") || "";
+        if (href.startsWith("#")) return;
+        e.preventDefault();
+        void openExternal(a.href);
+      }}
+      // Sanitised by DOMPurify
       dangerouslySetInnerHTML={{ __html: clean }}
     />
   );

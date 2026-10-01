@@ -2,8 +2,6 @@ import { Suspense } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@mantine/core";
 import { IconArrowRight } from "@tabler/icons-react";
-import LanguagePicker from "../components/language/LanguagePicker";
-import ColorMode from "../components/other/ColorMode";
 import { RouteContentFallback } from "../components/common/RouteContentFallback";
 import { useTranslation } from "react-i18next";
 import { clearPendingAuthRedirect } from "../auth/pendingAuthRedirect";
@@ -30,32 +28,28 @@ export const DesktopAuthLayout = () => {
         background: "var(--bg)",
       }}
     >
-      {/* Top Bar: Guest button + ColorMode + LanguagePicker */}
-      <div
-        style={{
-          flex: "0 0 auto",
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          gap: 10,
-          padding: "12px 20px 0",
-        }}
-      >
-        {!isLanguagePage && (
+      {/* Top Bar: Guest button */}
+      {!isLanguagePage && (
+        <div
+          style={{
+            flex: "0 0 auto",
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            padding: "12px 20px 0",
+          }}
+        >
           <Button
             variant="subtle"
             size="xs"
             radius="md"
             rightSection={<IconArrowRight size={14} />}
             onClick={continueAsGuest}
-            style={{ marginRight: "auto" }}
           >
             {t("auth.continueGuest")}
           </Button>
-        )}
-        <ColorMode />
-        <LanguagePicker />
-      </div>
+        </div>
+      )}
 
       <main
         style={{

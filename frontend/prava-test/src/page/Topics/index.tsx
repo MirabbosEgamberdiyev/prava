@@ -29,7 +29,7 @@ const BADGE_COLORS = [
 
 const CATEGORIES = [
   { id: "all", labelKey: "common.all", fallback: "Barchasi" },
-  { id: "movement", labelKey: "topics.catMovement", fallback: "Yo'l harakati" },
+  { id: "movement", labelKey: "topics.catMovement", fallback: "Harakatlanish tartibi" },
   { id: "vehicle", labelKey: "topics.catVehicle", fallback: "Avtomobil" },
   { id: "firstaid", labelKey: "topics.catFirstAid", fallback: "Birinchi yordam" },
 ];
@@ -319,7 +319,7 @@ export default function Topics_Page() {
                       {t("common.questions", "Savollar")}
                     </div>
                     <div style={{ fontSize: 20, fontWeight: 800, color: "var(--g-text)", marginTop: 2 }}>
-                      {activeTopic.question_count} {t("common.unit", "ta")}
+                      {activeTopic.question_count} ta
                     </div>
                   </div>
 
@@ -328,7 +328,7 @@ export default function Topics_Page() {
                       {t("topics.studyTime", "O'rganish vaqti")}
                     </div>
                     <div style={{ fontSize: 20, fontWeight: 800, color: "#38bdf8", marginTop: 2 }}>
-                      ~{Math.ceil((activeTopic.question_count || 10) * 1.25)} {t("common.min", "daq")}
+                      ~{Math.ceil((activeTopic.question_count || 10) * 1.25)} daq
                     </div>
                   </div>
                 </div>

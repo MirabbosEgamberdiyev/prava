@@ -36,15 +36,13 @@ import { notifications } from "@mantine/notifications";
 import { useLanguage } from "../../hooks/useLanguage";
 import { useAuth } from "../../auth/AuthContext";
 import type { Question, Option, AnswersMap } from "../../types";
-import { AppImage } from "../common/AppImage";
-import { FormattedExplanation } from "../common/FormattedExplanation";
+import { ImagePlaceholder } from "../common/ImagePlaceholder";
 import { getImageUrl } from "../../utils/imageUtils";
 import api from "../../api/api";
-import { useExamHotkeys } from "../../hooks/useExamHotkeys";
-import { isGloballyReported } from "../../types/errors";
-import { reportError } from "../../utils/monitoring";
-import KeyboardHint from "./KeyboardHint";
 import classes from "./QuizContent.module.css";
+import { resolveExamShortcut } from "../../hooks/useExamShortcuts";
+import { resolveDialogKey } from "../../features/ExamDesktop/logic";
+import ShortcutHint from "./ShortcutHint";
 
 interface QuizContentProps {
   questions: Question[];
@@ -64,6 +62,7 @@ interface QuizContentProps {
   onFinishExam?: (navigateTo: string) => Promise<void>;
   examSessionId?: number;
   onErrorLimitReached?: () => void;
+  /** Leave without finishing (Esc dialog → "Exit"); answers are auto-saved by the page. */
   onExit?: () => void;
 }
 
@@ -81,6 +80,7 @@ export function QuizContent({
   onFinishExam,
   examSessionId,
   onErrorLimitReached,
+  onExit,
 }: QuizContentProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -94,6 +94,12 @@ export function QuizContent({
   const [resultModalOpened, setResultModalOpened] = useState(false);
   const [submittingResult, setSubmittingResult] = useState(false);
   const [savedQuestionIds, setSavedQuestionIds] = useState<Set<number>>(new Set());
+  const [confirmExitOpen, setConfirmExitOpen] = useState(false);
+  /** When the exit dialog opened — Enter within DIALOG_ENTER_GUARD_MS is ignored (double-Enter guard). */
+  const confirmOpenedAtRef = useRef(0);
+  useEffect(() => {
+    if (confirmExitOpen) confirmOpenedAtRef.current = Date.now();
+  }, [confirmExitOpen]);
 
   const [timeUpTriggered, setTimeUpTriggered] = useState(false);
   const [activeQuiz, setActiveQuiz] = useState(0);
@@ -116,7 +122,7 @@ export function QuizContent({
           setSavedQuestionIds(new Set(list.map((q: { questionId: number }) => q.questionId)));
         }
       })
-      .catch((e) => reportError("quiz.loadSaved", e));
+      .catch(() => {});
   }, [isAuthenticated]);
 
   // Toggle saved question
@@ -135,7 +141,7 @@ export function QuizContent({
     // Optimistik yangilanish ROLLBACK bilan. Avval `.catch(() => {})` edi —
     // so'rov muvaffaqiyatsiz bo'lsa ham ikonka "saqlandi" holatida qolib,
     // interfeys yolg'on ma'lumot ko'rsatardi.
-    api.post(`/api/v1/app/saved-questions/${questionId}`).catch((err: unknown) => {
+    api.post(`/api/v1/app/saved-questions/${questionId}`).catch(() => {
       setSavedQuestionIds((prev) => {
         const reverted = new Set(prev);
         if (wasSaved) {
@@ -145,22 +151,17 @@ export function QuizContent({
         }
         return reverted;
       });
-      // 5xx/tarmoq — api.ts global toast ko'rsatgan (W-19)
-      if (!isGloballyReported(err)) {
-        notifications.show({
-          color: "red",
-          message: t("common.errorOccurred"),
-        });
-      }
+      notifications.show({
+        color: "red",
+        message: t("common.errorOccurred"),
+      });
     });
   };
 
   // Send wrong answer to backend
   const sendWrongAnswer = (questionId: number) => {
     if (!isAuthenticated) return;
-    api
-      .post(`/api/v1/app/wrong-answers/${questionId}`)
-      .catch((e) => reportError("quiz.addWrongAnswer", e));
+    api.post(`/api/v1/app/wrong-answers/${questionId}`).catch(() => {});
   };
 
   // Convert parent answers to simple index map
@@ -261,17 +262,129 @@ export function QuizContent({
     if (idx !== -1) setActiveQuiz(idx);
   };
 
-  // Escape: ochiq izohni yopish (modal ochiq bo'lsa — Mantine o'zi boshqaradi)
+  // Keyboard shortcuts
   useEffect(() => {
-    if (!explanationOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape" || imageModalOpened || resultModalOpened) return;
-      e.preventDefault();
-      setExplanationOpen(false);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 1. Ignore if typing inside form inputs
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target?.isContentEditable) {
+        return;
+      }
+
+      if (confirmExitOpen) {
+        // Enter / Space only activate the FOCUSED dialog button (focus starts on "Continue");
+        // auto-repeat and presses right after the dialog opened are swallowed.
+        const intent = resolveDialogKey(e, Date.now() - confirmOpenedAtRef.current);
+        if (intent === "cancel") {
+          e.preventDefault();
+          setConfirmExitOpen(false);
+        } else if (intent === "ignore" && (e.key === "Enter" || e.key === " " || e.code === "Space")) {
+          e.preventDefault();
+        }
+        return;
+      }
+      // Any other open dialog (finish modal, image modal…) handles Enter / Space natively.
+      if ((e.key === "Enter" || e.key === " ") && target?.closest?.('[role="dialog"]')) return;
+      if (e.key === "Enter" && e.repeat) {
+        e.preventDefault();
+        return;
+      }
+
+      // 2. Escape: close modals or explanation, or confirm exit
+      if (e.key === "Escape") {
+        if (imageModalOpened) {
+          e.preventDefault();
+          setImageModalOpened(false);
+          return;
+        }
+        if (explanationOpen) {
+          e.preventDefault();
+          setExplanationOpen(false);
+          return;
+        }
+        e.preventDefault();
+        setConfirmExitOpen(true);
+        return;
+      }
+
+      // If a blocking modal is open, ignore quiz hotkeys
+      if (imageModalOpened || resultModalOpened) return;
+
+      // 3. Space: next question (same key map as the desktop exam view); on the last answered
+      //    question it opens the finish confirmation.
+      if (e.key === " " || e.code === "Space") {
+        e.preventDefault();
+        if (e.repeat) return;
+        if (!isLastQuestion) goToNextQuestion();
+        else if (selectedAnswers[activeQuiz] !== undefined) handleFinishExam();
+        return;
+      }
+
+      // 4. Enter: advance to next question or finish on last
+      if (e.key === "Enter") {
+        if (selectedAnswers[activeQuiz] !== undefined && !isLastQuestion) {
+          e.preventDefault();
+          goToNextQuestion();
+          return;
+        }
+        if (isLastQuestion && selectedAnswers[activeQuiz] !== undefined) {
+          e.preventDefault();
+          handleFinishExam();
+          return;
+        }
+      }
+
+      // 5. Select Option: 1-5 / Numpad 1-5, Bookmark: B, Zoom: Z
+      const action = resolveExamShortcut(e);
+      if (action?.type === "select") {
+        e.preventDefault();
+        if (e.repeat) return;
+        const optionIndex = action.index;
+        const options = currentQuestion?.options || [];
+        if (optionIndex < options.length) {
+          handleSelectAnswer(activeQuiz, optionIndex);
+        }
+        return;
+      }
+      if (action?.type === "bookmark") {
+        e.preventDefault();
+        if (currentQuestion) handleToggleSaved(currentQuestion.id);
+        return;
+      }
+      if (action?.type === "zoom") {
+        e.preventDefault();
+        setImageModalOpened((prev) => !prev);
+        return;
+      }
+
+      // 6. Navigation: ArrowLeft / ArrowRight
+      if (e.key === "ArrowLeft" && !isFirstQuestion) {
+        e.preventDefault();
+        goToPrevQuestion();
+      }
+      if (e.key === "ArrowRight" && !isLastQuestion) {
+        e.preventDefault();
+        goToNextQuestion();
+      }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [explanationOpen, imageModalOpened, resultModalOpened]);
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    activeQuiz,
+    currentQuestion,
+    selectedAnswers,
+    isFirstQuestion,
+    isLastQuestion,
+    goToNextQuestion,
+    goToPrevQuestion,
+    imageModalOpened,
+    resultModalOpened,
+    explanationOpen,
+    showExplanation,
+    confirmExitOpen,
+  ]);
 
   const handleSelectAnswer = (questionIndex: number, optionIndex: number) => {
     if (selectedAnswers[questionIndex] !== undefined) return;
@@ -316,30 +429,6 @@ export function QuizContent({
     );
   };
 
-  // W-16: yagona klaviatura boshqaruvi (1–5 / A–D, ←/→, Enter, Space — izoh).
-  // Modal (natija, rasm, yakunlash) ochiq bo'lsa hook o'zi e'tiborsiz qoldiradi.
-  useExamHotkeys({
-    enabled: questions.length > 0,
-    blocked: imageModalOpened || resultModalOpened,
-    optionCount: currentQuestion?.options?.length ?? 0,
-    onSelect: (optionIndex) => handleSelectAnswer(activeQuiz, optionIndex),
-    onPrev: goToPrevQuestion,
-    onNext: goToNextQuestion,
-    onEnter: () => {
-      if (selectedAnswers[activeQuiz] !== undefined && !isLastQuestion) goToNextQuestion();
-    },
-    onSpace: () => {
-      if (
-        showExplanation &&
-        !isSecureMode &&
-        selectedAnswers[activeQuiz] !== undefined &&
-        currentQuestion?.explanation
-      ) {
-        setExplanationOpen((prev) => !prev);
-      }
-    },
-  });
-
   const handleFinishExam = () => {
     if (errorLimitMode) {
       setResultModalOpened(true);
@@ -352,7 +441,7 @@ export function QuizContent({
     return (
       <Box
         bg={computedColorScheme === "light" ? "gray.1" : "dark.8"}
-        mih="92dvh"
+        mih="92vh"
         p="xl"
       >
         <Container>
@@ -445,7 +534,7 @@ export function QuizContent({
   };
 
   return (
-    <Box bg={computedColorScheme === "light" ? "gray.1" : "dark.8"} mih="92dvh">
+    <Box bg={computedColorScheme === "light" ? "gray.1" : "dark.8"} mih="92vh">
       {/* Progress bar for marathon mode */}
       {showProgressBar && (
         <Box
@@ -542,14 +631,16 @@ export function QuizContent({
             {localize(currentQuestion?.text)}
           </Text>
           {isAuthenticated && (
-            <Tooltip label={savedQuestionIds.has(currentQuestion?.id) ? t("saved.remove") : t("exam.saveQuestion")}>
+            <Tooltip
+              label={`${savedQuestionIds.has(currentQuestion?.id) ? t("saved.remove", { defaultValue: "Belgini olib tashlash" }) : t("exam.saveQuestion", { defaultValue: "Savolni saqlash" })} [B]`}
+            >
               <ActionIcon
                 variant={savedQuestionIds.has(currentQuestion?.id) ? "filled" : "light"}
-                color="blue"
+                color={savedQuestionIds.has(currentQuestion?.id) ? "yellow" : "gray"}
                 size="lg"
                 radius="xl"
                 aria-pressed={savedQuestionIds.has(currentQuestion?.id)}
-                aria-label={t("exam.saveQuestion")}
+                aria-label={`${t("exam.saveQuestion", { defaultValue: "Savolni saqlash" })} [B]`}
                 onClick={() => currentQuestion && handleToggleSaved(currentQuestion.id)}
               >
                 {savedQuestionIds.has(currentQuestion?.id)
@@ -562,16 +653,10 @@ export function QuizContent({
         </Flex>
       </Box>
 
-      {/* Options and Image Area */}
-      {(() => {
-        const defaultFallbackImage = (currentQuestion?.id ?? 0) % 2 === 0
-          ? "/api/v1/files/defaults/default_malibu.webp"
-          : "/api/v1/files/defaults/default_tahoe.webp";
-        const questionImageUrl = getImageUrl(currentQuestion?.imageUrl) || getImageUrl(defaultFallbackImage);
-        const hasQuestionImage = Boolean(questionImageUrl && questionImageUrl.trim().length > 0);
-
-        const optionsContent = (
-          <>
+      <Container fluid px={{ base: "xs", sm: "md", md: "lg" }}>
+        <Grid gutter={{ base: "sm", md: "xl" }}>
+          {/* Options - left side */}
+          <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 2, md: 1 }}>
             {currentQuestion?.options?.map((option: Option) => {
               const style = getOptionStyle(option);
               const iconProps = getActionIconProps(option);
@@ -579,6 +664,17 @@ export function QuizContent({
               const isThisCorrect =
                 option.index === currentQuestion.correctOptionIndex;
 
+              /*
+               * A11Y TUZATISHLARI:
+               *  1. Avval `aria-label={`${t("exam.prev")} F${index+1}`}` edi —
+               *     ekran o'quvchi variant matnini emas, "Oldingi F1" deb
+               *     o'qirdi (noto'g'ri kalit). Endi haqiqiy variant matni +
+               *     javob berilgan bo'lsa to'g'ri/noto'g'ri holati o'qiladi.
+               *  2. `role="button"` bor edi, lekin `tabIndex` va klaviatura
+               *     ishlov beruvchisi YO'Q edi — variantlarni Tab bilan
+               *     tanlab bo'lmasdi (WCAG 2.1.1 buzilishi).
+               *  3. `aria-disabled` javob berilgandan keyin holatni bildiradi.
+               */
               const optionLabel = localize(option.text);
               const stateLabel =
                 !isAnswered || isSecureMode
@@ -592,13 +688,13 @@ export function QuizContent({
               return (
                 <Paper
                   withBorder
-                  radius="md"
-                  mb="sm"
+                  p="xs"
+                  mb="xs"
                   key={option.id}
                   role="button"
                   tabIndex={isAnswered ? -1 : 0}
                   aria-disabled={isAnswered}
-                  aria-label={`${option.index + 1}: ${optionLabel}${stateLabel}`}
+                  aria-label={`[${option.index + 1}]: ${optionLabel}${stateLabel}`}
                   className={classes.optionPaper}
                   data-clickable={!isAnswered}
                   style={{
@@ -615,25 +711,23 @@ export function QuizContent({
                     }
                   }}
                 >
-                  <Flex gap="md" align="center" w="100%">
+                  <Flex gap="sm" align="center">
                     <ActionIcon
-                      component="span"
-                      aria-hidden="true"
-                      radius="sm"
-                      size="md"
+                      radius="xs"
                       variant={iconProps.variant}
                       color={iconProps.color}
-                      style={{ fontWeight: 700, fontSize: 12, flexShrink: 0 }}
                     >
-                      {option.index + 1}
+                      {isSecureMode ? (
+                        option.index + 1
+                      ) : isAnswered && isThisCorrect ? (
+                        <IconCheck size={16} />
+                      ) : isAnswered && isThisSelected && !isThisCorrect ? (
+                        <IconX size={16} />
+                      ) : (
+                        option.index + 1
+                      )}
                     </ActionIcon>
-                    <Text fw={500} size="sm" style={{ flex: 1 }}>{localize(option.text)}</Text>
-                    {!isSecureMode && isAnswered && isThisCorrect && (
-                      <IconCheck size={18} color="var(--mantine-color-green-6)" style={{ flexShrink: 0 }} />
-                    )}
-                    {!isSecureMode && isAnswered && isThisSelected && !isThisCorrect && (
-                      <IconX size={18} color="var(--mantine-color-red-6)" style={{ flexShrink: 0 }} />
-                    )}
+                    <Text>{localize(option.text)}</Text>
                   </Flex>
                 </Paper>
               );
@@ -655,12 +749,14 @@ export function QuizContent({
                       setExplanationOpen((o) => !o);
 
                       if (!wasOpen) {
+                        // Izoh ochilmoqda → auto-advance timerni bekor qil
                         if (autoAdvanceTimer.current) {
                           clearTimeout(autoAdvanceTimer.current);
                           autoAdvanceTimer.current = null;
                         }
                       }
 
+                      // Izoh yopilmoqda → 500ms keyin keyingi savolga o'tsin
                       if (wasOpen && !isLastQuestion) {
                         if (autoAdvanceTimer.current) {
                           clearTimeout(autoAdvanceTimer.current);
@@ -685,46 +781,33 @@ export function QuizContent({
                         borderColor: "var(--mantine-color-blue-3)",
                       }}
                     >
-                      <FormattedExplanation
-                        text={localize(currentQuestion?.explanation)}
-                      />
+                      <Text size="sm">
+                        {localize(currentQuestion?.explanation)}
+                      </Text>
                     </Paper>
                   </Collapse>
                 </>
               )}
-          </>
-        );
+          </Grid.Col>
 
-        return (
-          <Container fluid px={{ base: "xs", sm: "md", md: "lg" }}>
-            {hasQuestionImage ? (
-              <Grid gutter={{ base: "sm", md: "xl" }}>
-                {/* Options - left side */}
-                <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 2, md: 1 }}>
-                  {optionsContent}
-                </Grid.Col>
-
-                {/* Image - right side */}
-                <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 1, md: 2 }}>
-                  <AppImage
-                    src={questionImageUrl}
-                    alt={localize(currentQuestion?.text)}
-                    aspectRatio="16 / 9"
-                    fit="contain"
-                    radius="md"
-                    onClick={() => setImageModalOpened(true)}
-                  />
-                </Grid.Col>
-              </Grid>
-            ) : (
-              /* Text-only question: Full readable width without empty void or fake images */
-              <Box maw={860} mx="auto" w="100%">
-                {optionsContent}
-              </Box>
-            )}
-          </Container>
-        );
-      })()}
+          {/* Image - right side */}
+          <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 1, md: 2 }}>
+            <Box onDoubleClick={() => setImageModalOpened(true)} style={{ cursor: "pointer" }}>
+              <ImagePlaceholder
+                src={
+                  getImageUrl(currentQuestion?.imageUrl) ||
+                  getImageUrl(
+                    (currentQuestion?.id ?? 0) % 2 === 0
+                      ? "/api/v1/files/defaults/default_malibu.webp"
+                      : "/api/v1/files/defaults/default_tahoe.webp"
+                  )
+                }
+                onClick={() => setImageModalOpened(true)}
+              />
+            </Box>
+          </Grid.Col>
+        </Grid>
+      </Container>
 
       {/* Image zoom modal */}
       {imageModalOpened && (
@@ -955,18 +1038,19 @@ export function QuizContent({
         {/* Avvalgi / Keyingi tugmalari - pastda */}
         <Flex gap="md" justify="center" align="center" mt="md">
           <Button
-            variant="filled"
-            color="gray"
+            variant="default"
             leftSection={<IconChevronLeft size={18} />}
             onClick={goToPrevQuestion}
             disabled={isFirstQuestion}
           >
-            {t("exam.prev")}
+            {t("exam.prev")} [←]
           </Button>
 
           {isLastQuestion ? (
             <Button
               variant="filled"
+              color="blue"
+              size="md"
               rightSection={
                 showProgressBar ? (
                   <IconTrophy size={18} />
@@ -976,21 +1060,66 @@ export function QuizContent({
               }
               onClick={handleFinishExam}
             >
-              {t("exam.finish")}
+              {t("exam.finish")} [Enter ↵]
             </Button>
           ) : (
             <Button
               variant="filled"
-              color="gray"
+              color="blue"
+              size="md"
               rightSection={<IconChevronRight size={18} />}
               onClick={goToNextQuestion}
             >
-              {t("exam.next")}
+              {t("exam.next")} [Space ↵]
             </Button>
           )}
         </Flex>
-        <KeyboardHint />
+        <ShortcutHint bookmark={true} />
       </Container>
+
+      {/* Chiqishni tasdiqlash modali (Esc) */}
+      <Modal
+        opened={confirmExitOpen}
+        onClose={() => setConfirmExitOpen(false)}
+        title={t("examDesktop.exitConfirmTitle", "Imtihondan chiqasizmi?")}
+        centered
+        radius="md"
+        closeOnEscape={false}
+      >
+        <Text size="sm" mb="lg">
+          {onExit
+            ? t(
+                "examDesktop.exitConfirmDescSaved",
+                "Chiqsangiz, javoblaringiz saqlanadi va keyinroq davom ettirishingiz mumkin. Yakunlasangiz, natija hisoblanadi."
+              )
+            : t("examDesktop.finishConfirmTitle", "Imtihonni yakunlaysizmi?")}
+        </Text>
+        <Flex gap="sm" justify="flex-end" wrap="wrap">
+          <Button variant="default" data-autofocus onClick={() => setConfirmExitOpen(false)}>
+            {t("examDesktop.continue", "Davom etish")}
+          </Button>
+          {onExit && (
+            <Button
+              variant="light"
+              onClick={() => {
+                setConfirmExitOpen(false);
+                onExit();
+              }}
+            >
+              {t("examDesktop.exitSaved", "Chiqish (progress saqlanadi)")}
+            </Button>
+          )}
+          <Button
+            color="red"
+            onClick={() => {
+              setConfirmExitOpen(false);
+              handleFinishExam();
+            }}
+          >
+            {t("examDesktop.finish", "Yakunlash")}
+          </Button>
+        </Flex>
+      </Modal>
     </Box>
   );
 }

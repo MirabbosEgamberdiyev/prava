@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import { useAuthModal } from "../../auth/AuthModalContext";
-import { useReturnTo } from "../../auth/useReturnTo";
+import { useAuthReturnUrl } from "../../auth/useAuthReturnUrl";
 import { clearPendingAuthRedirect } from "../../auth/pendingAuthRedirect";
 import { startQrPolling } from "../../auth/qrPolling";
 import {
@@ -22,7 +22,7 @@ import {
   type QrSessionStatus,
 } from "../../api/qrAuthService";
 import { showToast } from "../../utils/notificationUtils";
-import GoogleLoginButton from "./GoogleLoginButton";
+import { GoogleLoginButton } from "./GoogleLoginButton";
 import TelegramLoginButton from "./TelegramLoginButton";
 import "../../styles/unified-auth-card.css";
 
@@ -35,7 +35,7 @@ export interface UnifiedAuthCardProps {
   initialView?: "main" | "qr";
 }
 
-// Graduation cap + car SVG icon matching the screenshot
+// Graduation cap + car SVG icon matching the user screenshot
 function GraduationBadgeIcon() {
   return (
     <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -54,7 +54,7 @@ export const UnifiedAuthCard: React.FC<UnifiedAuthCardProps> = ({
   const { login } = useAuth();
   const { executePending } = useAuthModal();
   const navigate = useNavigate();
-  const { destination: from } = useReturnTo();
+  const { returnUrl: from } = useAuthReturnUrl();
 
   const [view, setView] = useState<"main" | "qr">(initialView);
 
@@ -174,7 +174,6 @@ export const UnifiedAuthCard: React.FC<UnifiedAuthCardProps> = ({
     }
   }, [clearTimers, mode]);
 
-  // When switching into 'qr' view, start a session if one doesn't exist
   useEffect(() => {
     isMountedRef.current = true;
     if (view === "qr") {

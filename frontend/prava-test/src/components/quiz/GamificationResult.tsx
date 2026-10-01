@@ -1,6 +1,5 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import {
   IconTrophy,
   IconTargetArrow,
@@ -12,11 +11,9 @@ import {
   IconRefresh,
   IconArrowLeft,
   IconSparkles,
-  IconAlertTriangle,
   IconCircleCheck,
   IconCircleX,
 } from "@tabler/icons-react";
-import { isExamPassed, useExamRules, type ExamMode } from "../../services/examRules";
 
 export interface GamificationResultProps {
   score: number; // 0 to 100
@@ -34,11 +31,9 @@ export interface GamificationResultProps {
   title?: string;
   errorMsg?: string | null;
   /**
-   * Natija rejimi — berilsa, yagona qoida (`isExamPassed`) bo'yicha aniq
-   * O'TDI / O'TMADI holati ko'rsatiladi.
+   * Explicit pass/fail verdict (from `isExamPassed` in services/examRules). When given,
+   * a PASSED / FAILED badge is shown above the score in addition to the tier visuals.
    */
-  mode?: ExamMode;
-  /** Server hisoblagan holat (bo'lsa, `mode` bo'yicha hisobdan ustun). */
   passed?: boolean;
 }
 
@@ -57,18 +52,10 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
   onHome,
   title,
   errorMsg,
-  mode,
-  passed: passedProp,
+  passed,
 }) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const rules = useExamRules();
   const actualTotal = totalQuestions ?? total ?? correct + wrong + unanswered;
-  const passed: boolean | undefined =
-    passedProp ??
-    (mode
-      ? isExamPassed({ mode, total: actualTotal, correct, wrong, unanswered }, rules)
-      : undefined);
   const handleHome = onBackHome ?? onHome ?? (() => {});
 
   // Exact 3-Tier Gamification Logic
@@ -84,8 +71,8 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
         icon: <IconTrophy size={42} stroke={1.8} color="#fff" />,
         badgeBg: "linear-gradient(135deg, #fcc419, #f59f00)",
         color: "#f59f00",
-        message: t("gamification.tierGold"),
-        title: title || t("gamification.tierGoldTitle"),
+        message: t("gamification.tierGold", "Ajoyib natija! Imtihonga deyarli tayyorsiz!"),
+        title: title || t("gamification.tierGoldTitle", "Ajoyib natija!"),
       }
     : isTargetTier
     ? {
@@ -93,20 +80,20 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
         icon: <IconTargetArrow size={42} stroke={1.8} color="#fff" />,
         badgeBg: "linear-gradient(135deg, #38d9a9, #0c8599)",
         color: "#0c8599",
-        message: t("gamification.tierTarget"),
-        title: title || t("gamification.tierTargetTitle"),
+        message: t("gamification.tierTarget", "Yaxshi ko'rsatkich! Yana bir oz mashq qilsangiz yetarli."),
+        title: title || t("gamification.tierTargetTitle", "Yaxshi ko'rsatkich!"),
       }
     : {
         tier: "retry",
         icon: <IconRotate size={42} stroke={1.8} color="#fff" />,
         badgeBg: "linear-gradient(135deg, #ffa94d, #e8590c)",
         color: "#e8590c",
-        message: t("gamification.tierRetry"),
-        title: title || t("gamification.tierRetryTitle"),
+        message: t("gamification.tierRetry", "Taslim bo'lmang! Xatolar ustida ishlab, qayta topshiring."),
+        title: title || t("gamification.tierRetryTitle", "Taslim bo'lmang!"),
       };
 
   return (
-    <div className="quiz-result-screen" style={{ width: "100%", padding: "24px 16px" }}>
+    <div className="quiz-result-screen" style={{ width: "100%", height: "100%", flex: 1, minHeight: 0, padding: "24px 16px", overflowY: "auto" }}>
       <div
         className="quiz-result-card"
         style={{
@@ -155,34 +142,6 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
           {errorMsg ? <IconX size={40} color="#fff" stroke={2.5} /> : tierConfig.icon}
         </div>
 
-        {/* Aniq O'TDI / O'TMADI holati (yagona qoida) */}
-        {!errorMsg && passed !== undefined && (
-          <div style={{ marginBottom: "12px" }}>
-            <span
-              role="status"
-              data-testid="exam-pass-state"
-              data-passed={passed ? "true" : "false"}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "6px 14px",
-                borderRadius: "var(--radius-pill, 999px)",
-                background: passed ? "var(--success-bg)" : "var(--danger-bg)",
-                color: passed ? "var(--success)" : "var(--danger)",
-                border: `1.5px solid ${passed ? "var(--success)" : "var(--danger)"}`,
-                fontSize: "13px",
-                fontWeight: 800,
-                letterSpacing: "0.6px",
-                textTransform: "uppercase",
-              }}
-            >
-              {passed ? <IconCircleCheck size={16} stroke={2.4} /> : <IconCircleX size={16} stroke={2.4} />}
-              <span>{passed ? t("gamification.passed") : t("gamification.failed")}</span>
-            </span>
-          </div>
-        )}
-
         {/* Title */}
         <h2
           style={{
@@ -193,7 +152,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
             letterSpacing: "-0.3px",
           }}
         >
-          {errorMsg ? t("common.error") : tierConfig.title}
+          {errorMsg ? t("common.error", "Xatolik") : tierConfig.title}
         </h2>
 
         {/* Motivational Message */}
@@ -207,6 +166,31 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
         >
           {errorMsg ? errorMsg : tierConfig.message}
         </p>
+
+        {!errorMsg && passed !== undefined && (
+          <div
+            data-passed={passed ? "true" : "false"}
+            role="status"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 14px",
+              borderRadius: 999,
+              marginBottom: 16,
+              fontSize: 14,
+              fontWeight: 800,
+              letterSpacing: "0.4px",
+              textTransform: "uppercase",
+              background: passed ? "var(--success-bg)" : "var(--danger-bg)",
+              color: passed ? "var(--success)" : "var(--danger)",
+              border: `1.5px solid ${passed ? "var(--success)" : "var(--danger)"}`,
+            }}
+          >
+            {passed ? <IconCircleCheck size={16} stroke={2.4} /> : <IconCircleX size={16} stroke={2.4} />}
+            <span>{passed ? t("gamification.passed", "O'tdi") : t("gamification.failed", "O'tmadi")}</span>
+          </div>
+        )}
 
         {!errorMsg && (
           <>
@@ -247,7 +231,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
                   <span>{correct}</span>
                 </div>
                 <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: 4, fontWeight: 600 }}>
-                  {t("common.correct")}
+                  {t("common.correct", "To'g'ri")}
                 </div>
               </div>
 
@@ -265,7 +249,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
                   <span>{wrong}</span>
                 </div>
                 <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: 4, fontWeight: 600 }}>
-                  {t("common.wrong")}
+                  {t("common.wrong", "Noto'g'ri")}
                 </div>
               </div>
 
@@ -284,7 +268,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
                     <span>{unanswered}</span>
                   </div>
                   <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: 4, fontWeight: 600 }}>
-                    {t("exam.unanswered")}
+                    {t("exam.unanswered", "Javobsiz")}
                   </div>
                 </div>
               )}
@@ -303,7 +287,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
                 width: "100%",
                 minHeight: "46px",
                 background: "var(--primary)",
-                color: "#fff",
+                color: "var(--on-primary, #ffffff)",
                 border: "none",
                 borderRadius: "12px",
                 fontSize: "14px",
@@ -314,38 +298,11 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
                 gap: "8px",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
-                boxShadow: "0 4px 14px rgba(var(--primary-rgb), 0.3)",
+                boxShadow: "0 4px 14px rgba(25, 113, 194, 0.35)",
               }}
             >
               <IconSearch size={18} stroke={2.2} />
-              <span>{t("gamification.reviewMistakes")}</span>
-            </button>
-          )}
-
-          {/* 1.1 Direct Mistakes Practice CTA */}
-          {!errorMsg && wrong > 0 && (
-            <button
-              type="button"
-              onClick={() => navigate("/wrong-exam")}
-              style={{
-                width: "100%",
-                minHeight: "44px",
-                background: "rgba(239, 68, 68, 0.12)",
-                color: "#ef4444",
-                border: "1.5px solid rgba(239, 68, 68, 0.3)",
-                borderRadius: "12px",
-                fontSize: "14px",
-                fontWeight: 700,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-              }}
-            >
-              <IconAlertTriangle size={18} stroke={2.2} />
-              <span>{t("gamification.solveMistakes")} ({wrong})</span>
+              <span>{t("gamification.reviewMistakes", "Xatolarni tahlil qilish")}</span>
             </button>
           )}
 
@@ -366,7 +323,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
               }}
             >
               <IconSparkles size={16} />
-              <span>{t("gamification.allCorrect")}</span>
+              <span>{t("gamification.allCorrect", "Barcha savollarga to'g'ri javob berildi!")}</span>
             </div>
           )}
 
@@ -392,7 +349,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
             }}
           >
             <IconRefresh size={17} stroke={2} />
-            <span>{t("gamification.retryTest")}</span>
+            <span>{t("gamification.retryTest", "Qayta urinish")}</span>
           </button>
 
           {/* 3. Tertiary: Back to Home */}
@@ -417,7 +374,7 @@ export const GamificationResult: React.FC<GamificationResultProps> = ({
             }}
           >
             <IconArrowLeft size={16} />
-            <span>{t("gamification.backHome")}</span>
+            <span>{t("gamification.backHome", "Bosh sahifaga qaytish")}</span>
           </button>
         </div>
       </div>

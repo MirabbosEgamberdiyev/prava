@@ -33,7 +33,7 @@ export function TopicFilter({
       searchable
       radius="md"
       size="sm"
-      w={{ base: "100%", sm: 240 }}
+      w={220}
       disabled={loading}
     />
   );

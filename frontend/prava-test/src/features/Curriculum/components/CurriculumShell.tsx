@@ -206,7 +206,6 @@ export function CurriculumSearch({ inputRef, value, onChange, placeholder, onEnt
           <IconX size={15} />
         </button>
       ) : (
-        /* i18n-ignore */
         <kbd className="cur-kbd" aria-hidden="true">Ctrl+F</kbd>
       )}
     </div>

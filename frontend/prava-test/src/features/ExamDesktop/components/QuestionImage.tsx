@@ -1,5 +1,5 @@
 import { memo, useEffect, useState } from "react";
-import { IconPhotoOff, IconZoomIn } from "@tabler/icons-react";
+import { IconZoomIn } from "@tabler/icons-react";
 import { offlineMediaManager } from "../../../services/offlineMediaManager";
 import { networkModeManager } from "../../../sync/networkModeManager";
 import { getImageUrl } from "../../../utils/imageUtils";
@@ -9,21 +9,30 @@ interface QuestionImageProps {
   alt: string;
   onZoom: (src: string) => void;
   zoomHint: string;
-  brokenLabel: string;
+  brokenLabel?: string;
 }
 
 /** Render with key={path}: a new question remounts this component (fresh state, no stale flash). */
 type Resolved = { path: string; src: string | null; done: boolean };
 
+const DEFAULT_QUESTION_IMAGE = "/question-default.svg";
+
 /**
  * Local-first question image: uses the offline media cache (synchronously when the object URL
  * is already warm), falls back to the remote URL only when online use is allowed and the image
  * is not cached (it is then cached in the background). Auto-fits the pane (object-fit: contain).
+ * Questions without an image or with broken images 100% render /question-default.svg.
  */
-export const QuestionImage = memo(function QuestionImage({ path, alt, onZoom, zoomHint, brokenLabel }: QuestionImageProps) {
+export const QuestionImage = memo(function QuestionImage({ path, alt, onZoom, zoomHint }: QuestionImageProps) {
+  const effectivePath = path || DEFAULT_QUESTION_IMAGE;
+  const isDirect = effectivePath.startsWith("/") || effectivePath.startsWith("http://") || effectivePath.startsWith("https://") || effectivePath.startsWith("data:");
+
   const [res, setRes] = useState<Resolved>(() => {
-    const warm = offlineMediaManager.peekLocalImageUrl(path);
-    return { path, src: warm, done: !!warm };
+    if (isDirect) {
+      return { path: effectivePath, src: effectivePath, done: true };
+    }
+    const warm = offlineMediaManager.peekLocalImageUrl(effectivePath);
+    return { path: effectivePath, src: warm, done: !!warm };
   });
   const [broken, setBroken] = useState(false);
 
@@ -31,39 +40,35 @@ export const QuestionImage = memo(function QuestionImage({ path, alt, onZoom, zo
 
   useEffect(() => {
     if (current.done) return;
+    if (isDirect) {
+      setRes({ path: effectivePath, src: effectivePath, done: true });
+      return;
+    }
     let alive = true;
     offlineMediaManager
-      .getLocalImageUrl(path)
+      .getLocalImageUrl(effectivePath)
       .then((local) => {
         if (!alive) return;
         if (local) {
-          setRes({ path, src: local, done: true });
+          setRes({ path: effectivePath, src: local, done: true });
           return;
         }
-        const remote = networkModeManager.isOnlineAllowed() ? getImageUrl(path) || null : null;
-        setRes({ path, src: remote, done: true });
-        if (remote) offlineMediaManager.cacheImage(path).catch(() => {});
+        const remote = networkModeManager.isOnlineAllowed() ? getImageUrl(effectivePath) || DEFAULT_QUESTION_IMAGE : DEFAULT_QUESTION_IMAGE;
+        setRes({ path: effectivePath, src: remote, done: true });
+        if (remote && remote !== DEFAULT_QUESTION_IMAGE) offlineMediaManager.cacheImage(effectivePath).catch(() => {});
       })
       .catch(() => {
-        if (alive) setRes({ path, src: null, done: true });
+        if (alive) setRes({ path: effectivePath, src: DEFAULT_QUESTION_IMAGE, done: true });
       });
     return () => {
       alive = false;
     };
-  }, [path, current.done]);
+  }, [effectivePath, current.done, isDirect]);
 
   if (!current.done) return <div className="xd-media xd-media--loading" aria-busy="true" />;
 
-  if (!current.src || broken) {
-    return (
-      <div className="xd-media xd-media--broken" role="img" aria-label={brokenLabel}>
-        <IconPhotoOff size={40} stroke={1.4} aria-hidden="true" />
-        <span>{brokenLabel}</span>
-      </div>
-    );
-  }
+  const src = (!current.src || broken) ? DEFAULT_QUESTION_IMAGE : current.src;
 
-  const src = current.src;
   return (
     <div className="xd-media">
       <button
@@ -80,7 +85,11 @@ export const QuestionImage = memo(function QuestionImage({ path, alt, onZoom, zo
           className="xd-media__img"
           draggable={false}
           decoding="async"
-          onError={() => setBroken(true)}
+          onError={() => {
+            if (src !== DEFAULT_QUESTION_IMAGE) {
+              setBroken(true);
+            }
+          }}
           onContextMenu={(e) => e.preventDefault()}
         />
         <span className="xd-media__hint" aria-hidden="true">

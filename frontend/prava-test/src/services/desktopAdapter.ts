@@ -18,6 +18,7 @@ import type {
 import storageService, { type StoredQuestion } from "./storageService";
 import api from "../api/api";
 import { normalizeLanguage, type AppLanguage } from "../context/LanguageContext";
+import { getFallbackTopicName } from "../data/topicTranslations";
 import {
   dbClient,
   type DbQuestion,
@@ -27,7 +28,7 @@ import {
 } from "../database";
 import { OutboxQueue } from "../sync/outboxQueue";
 import { networkModeManager } from "../sync/networkModeManager";
-import { offlineDatasetManager } from "./offlineDatasetManager";
+import { offlineDatasetManager, EXPECTED_TICKETS_COUNT } from "./offlineDatasetManager";
 import { buildTicketReadiness, legacyTickets, type ReadinessTicket } from "./ticketReadiness";
 import {
   buildRecordOfflinePayload,
@@ -38,13 +39,6 @@ import {
   type OfflineExamType,
 } from "./offlineExamRecord";
 import { errorMessage } from "./safeError";
-
-export function getLang(): AppLanguage {
-  const l = i18n.resolvedLanguage || i18n.language;
-  return normalizeLanguage(l);
-}
-
-export const AVERAGE_GAP_PERCENT = 20;
 
 const COUNTS_STORAGE_KEY = "prava_curriculum_counts";
 
@@ -122,6 +116,11 @@ export function getCachedTotalTickets(): number {
   return cachedTotalTickets;
 }
 
+export function getLang(): AppLanguage {
+  const l = i18n.resolvedLanguage || i18n.language;
+  return normalizeLanguage(l);
+}
+
 /**
  * Pick the variant of a localized DATA field (question text, ticket / topic name…) for the current
  * UI language; falls back to the Uzbek Latin value when the variant is missing or empty.
@@ -134,9 +133,20 @@ export function pickLocalized<T>(
   return v ? v : variants.uzl;
 }
 
-export function localizeTopic(tp: OfflineTopic | null | undefined): string {
+export function localizeTopic(tp: OfflineTopic | null | undefined, lang: AppLanguage = getLang()): string {
   if (!tp) return "";
-  return pickLocalized({ uzl: tp.name_uzl || tp.name_uzc || tp.name_ru || "", uzc: tp.name_uzc, ru: tp.name_ru });
+  const fb = getFallbackTopicName(tp.id, lang);
+  if (lang === "uzc") {
+    if (tp.name_uzc && tp.name_uzc !== tp.name_uzl) return tp.name_uzc;
+    if (fb) return fb;
+    if (tp.name_uzc) return tp.name_uzc;
+  }
+  if (lang === "ru") {
+    if (tp.name_ru && tp.name_ru !== tp.name_uzl) return tp.name_ru;
+    if (fb) return fb;
+    if (tp.name_ru) return tp.name_ru;
+  }
+  return fb || pickLocalized({ uzl: tp.name_uzl || tp.name_uzc || tp.name_ru || "", uzc: tp.name_uzc, ru: tp.name_ru }, lang);
 }
 
 export function parseOptions(json: string): QuestionOption[] {
@@ -171,17 +181,37 @@ function defaultTicketMeta(questionCount?: number | null) {
 }
 
 export function normalizeQuestion(q: any): OfflineQuestion {
-  const textUzl = typeof q.text === "object" ? q.text?.uzl || "" : q.text_uzl || q.text || "";
-  const textUzc = typeof q.text === "object" ? q.text?.uzc || null : q.text_uzc || null;
-  const textEn = typeof q.text === "object" ? q.text?.en || null : q.text_en || null;
-  const textRu = typeof q.text === "object" ? q.text?.ru || null : q.text_ru || null;
+  const qId = Number(
+    q.id ??
+    q.questionId ??
+    q.question_id ??
+    (q.question && (q.question.id ?? q.question.questionId ?? q.question.question_id)) ??
+    0
+  );
+  const textUzl =
+    typeof q.text === "object"
+      ? q.text?.uzl || q.text?.uz || ""
+      : q.text_uzl || q.text || (q.question && (typeof q.question.text === "object" ? q.question.text?.uzl || q.question.text?.uz : q.question.text_uzl || q.question.text)) || "";
+  const textUzc =
+    typeof q.text === "object"
+      ? q.text?.uzc || null
+      : q.text_uzc || (q.question && (typeof q.question.text === "object" ? q.question.text?.uzc : q.question.text_uzc)) || null;
+  const textEn =
+    typeof q.text === "object"
+      ? q.text?.en || null
+      : q.text_en || (q.question && (typeof q.question.text === "object" ? q.question.text?.en : q.question.text_en)) || null;
+  const textRu =
+    typeof q.text === "object"
+      ? q.text?.ru || null
+      : q.text_ru || (q.question && (typeof q.question.text === "object" ? q.question.text?.ru : q.question.text_ru)) || null;
 
-  let optionsJson = q.options_json;
-  if (!optionsJson && Array.isArray(q.options)) {
+  let optionsJson = q.options_json || (q.question && q.question.options_json);
+  const rawOpts = Array.isArray(q.options) ? q.options : (q.question && Array.isArray(q.question.options) ? q.question.options : null);
+  if (!optionsJson && Array.isArray(rawOpts)) {
     optionsJson = JSON.stringify(
-      q.options.map((opt: any, idx: number) => ({
+      rawOpts.map((opt: any, idx: number) => ({
         index: opt.index ?? idx,
-        uzl: typeof opt.text === "object" ? opt.text?.uzl || "" : opt.uzl || opt.text || "",
+        uzl: typeof opt.text === "object" ? opt.text?.uzl || opt.text?.uz || "" : opt.uzl || opt.uz || opt.text || "",
         uzc: typeof opt.text === "object" ? opt.text?.uzc || "" : opt.uzc || "",
         en: typeof opt.text === "object" ? opt.text?.en || "" : opt.en || "",
         ru: typeof opt.text === "object" ? opt.text?.ru || "" : opt.ru || "",
@@ -189,37 +219,44 @@ export function normalizeQuestion(q: any): OfflineQuestion {
     );
   }
 
+  const expRaw = q.explanation ?? (q.question && q.question.explanation);
   const expUzl =
-    typeof q.explanation === "object" ? q.explanation?.uzl || null : q.explanation_uzl || null;
+    typeof expRaw === "object"
+      ? expRaw?.uzl || expRaw?.uz || null
+      : q.explanation_uzl || (q.question && (q.question.explanation_uzl || (typeof q.question.explanation === "object" ? q.question.explanation?.uzl || q.question.explanation?.uz : null))) || null;
   const expUzc =
-    typeof q.explanation === "object" ? q.explanation?.uzc || null : q.explanation_uzc || null;
+    typeof expRaw === "object" ? expRaw?.uzc || null : q.explanation_uzc || (q.question && q.question.explanation_uzc) || null;
   const expEn =
-    typeof q.explanation === "object" ? q.explanation?.en || null : q.explanation_en || null;
+    typeof expRaw === "object" ? expRaw?.en || null : q.explanation_en || (q.question && q.question.explanation_en) || null;
   const expRu =
-    typeof q.explanation === "object" ? q.explanation?.ru || null : q.explanation_ru || null;
+    typeof expRaw === "object" ? expRaw?.ru || null : q.explanation_ru || (q.question && q.question.explanation_ru) || null;
 
   return {
-    id: q.id,
-    topic_id: q.topic_id ?? q.topicId ?? null,
-    order_num: q.order_num ?? q.order ?? 0,
+    id: qId,
+    topic_id: q.topic_id ?? q.topicId ?? (q.question && (q.question.topic_id ?? q.question.topicId)) ?? null,
+    order_num: q.order_num ?? q.order ?? (q.question && (q.question.order_num ?? q.question.order)) ?? 0,
     text_uzl: textUzl,
     text_uzc: textUzc,
     text_en: textEn,
     text_ru: textRu,
-    image_path: q.image_path || q.imageUrl || null,
+    question_text: textUzl,
+    question_text_uz: textUzl,
+    question_text_ru: textRu,
+    image_path: q.image_path || q.imageUrl || (q.question && (q.question.image_path || q.question.imageUrl)) || "/question-default.svg",
     options_json: optionsJson || "[]",
-    correct_option: q.correct_option ?? q.correctOptionIndex ?? 0,
+    correct_option: q.correct_option ?? q.correctOptionIndex ?? (q.question && (q.question.correct_option ?? q.question.correctOptionIndex)) ?? 0,
     explanation_uzl: expUzl,
     explanation_uzc: expUzc,
     explanation_en: expEn,
     explanation_ru: expRu,
-  };
+  } as OfflineQuestion;
 }
 
 export function toStoredQuestion(q: OfflineQuestion): StoredQuestion {
   const opts = parseOptions(q.options_json);
+  const qId = Number(q.id ?? (q as any).questionId ?? 0);
   return {
-    id: q.id,
+    id: qId,
     ticketId: null,
     ticketNumber: null,
     topicId: q.topic_id,
@@ -230,22 +267,23 @@ export function toStoredQuestion(q: OfflineQuestion): StoredQuestion {
     explanationUzl: q.explanation_uzl,
     explanationUzc: q.explanation_uzc,
     explanationRu: q.explanation_ru,
-    imageUrl: q.image_path,
+    imageUrl: q.image_path || "/question-default.svg",
     options: opts.map((o) => ({ uzl: o.uzl, uzc: o.uzc, ru: o.ru })),
     correctOption: q.correct_option,
   };
 }
 
 export function fromStoredQuestion(sq: StoredQuestion): OfflineQuestion {
+  const qId = Number(sq.id ?? (sq as any).questionId ?? 0);
   return {
-    id: sq.id,
+    id: qId,
     topic_id: sq.topicId ?? null,
     order_num: sq.orderNum ?? 0,
     text_uzl: sq.textUzl,
     text_uzc: sq.textUzc ?? null,
     text_en: null,
     text_ru: sq.textRu ?? null,
-    image_path: sq.imageUrl ?? null,
+    image_path: sq.imageUrl || "/question-default.svg",
     options_json: JSON.stringify(
       sq.options.map((o, idx) => ({
         index: idx,
@@ -271,7 +309,7 @@ export function dbQuestionToOfflineQuestion(dbq: DbQuestion): OfflineQuestion {
     text_uzc: dbq.text_uzc,
     text_en: null,
     text_ru: dbq.text_ru,
-    image_path: dbq.image_url,
+    image_path: dbq.image_url || "/question-default.svg",
     options_json: dbq.options_json,
     correct_option: dbq.correct_option,
     explanation_uzl: dbq.explanation_uzl,
@@ -594,7 +632,7 @@ export async function getTickets(): Promise<OfflineTicket[]> {
       await offlineDatasetManager.autoSeedIfEmpty();
       dbTickets = await ticketRepository.getAllTickets();
     }
-    if (dbTickets && dbTickets.length > 0) {
+    if (dbTickets && dbTickets.length >= EXPECTED_TICKETS_COUNT) {
       return dbTickets.map((t) => ({
         id: t.id,
         topic_id: t.topic_id ?? null,
@@ -621,19 +659,28 @@ export async function getTickets(): Promise<OfflineTicket[]> {
   // 2. Fetch from backend if online AND online allowed
   if (typeof navigator !== "undefined" && navigator.onLine && networkModeManager.isOnlineAllowed()) {
     try {
-      const res = await api.get<{
-        data: { content?: any[]; tickets?: any[] };
-      }>("/api/v2/tickets?page=0&size=100&sortBy=ticketNumber&direction=ASC");
-      const list = res.data?.data?.content || res.data?.data?.tickets || [];
+      let list: any[] = [];
+      try {
+        const pubRes = await api.get<{ data: any[] }>("/api/v1/public/tickets");
+        if (Array.isArray(pubRes.data?.data) && pubRes.data.data.length > 0) {
+          list = pubRes.data.data;
+        }
+      } catch {
+        const res = await api.get<{
+          data: { content?: any[]; tickets?: any[] };
+        }>("/api/v2/tickets?page=0&size=100&sortBy=ticketNumber&direction=ASC");
+        list = res.data?.data?.content || res.data?.data?.tickets || [];
+      }
+
       if (list.length > 0) {
         const tickets: OfflineTicket[] = list.map((tk: any) => ({
           id: tk.id,
           topic_id: tk.topicId ?? null,
           ticket_number: tk.ticketNumber ?? tk.number ?? tk.id,
-          name_uzl: typeof tk.name === "object" ? tk.name?.uzl : (tk.name || `${tk.ticketNumber}-bilet`),
-          name_uzc: typeof tk.name === "object" ? tk.name?.uzc : (tk.nameUzc || `${tk.ticketNumber}-билет`),
-          name_en: typeof tk.name === "object" ? tk.name?.en : (tk.nameEn || `Ticket #${tk.ticketNumber}`),
-          name_ru: typeof tk.name === "object" ? tk.name?.ru : (tk.nameRu || `Билет #${tk.ticketNumber}`),
+          name_uzl: typeof tk.name === "object" ? tk.name?.uzl : (tk.name || `${tk.ticketNumber || tk.id}-bilet`),
+          name_uzc: typeof tk.name === "object" ? tk.name?.uzc : (tk.nameUzc || `${tk.ticketNumber || tk.id}-билет`),
+          name_en: typeof tk.name === "object" ? tk.name?.en : (tk.nameEn || `Ticket #${tk.ticketNumber || tk.id}`),
+          name_ru: typeof tk.name === "object" ? tk.name?.ru : (tk.nameRu || `Билет #${tk.ticketNumber || tk.id}`),
           duration_minutes: tk.durationMinutes ?? defaultTicketMeta(tk.questionCount).duration_minutes,
           passing_score: tk.passingScore ?? defaultTicketMeta(tk.questionCount).passing_score,
           question_count: defaultTicketMeta(tk.questionCount).question_count,
@@ -644,7 +691,13 @@ export async function getTickets(): Promise<OfflineTicket[]> {
           tickets.map((t) => ({
             id: t.id,
             ticket_number: t.ticket_number,
+            name_uzl: t.name_uzl,
+            name_uzc: t.name_uzc,
+            name_en: t.name_en,
+            name_ru: t.name_ru,
             question_count: t.question_count,
+            duration_minutes: t.duration_minutes,
+            passing_score: t.passing_score,
             updated_at: Date.now(),
           }))
         ).catch(() => {});
@@ -787,7 +840,11 @@ export async function getTopics(): Promise<OfflineTopic[]> {
       await offlineDatasetManager.autoSeedIfEmpty();
       dbTopics = await topicRepository.getAllTopics();
     }
-    if (dbTopics && dbTopics.length > 0) {
+    const hasProperTranslations =
+      dbTopics &&
+      dbTopics.length >= 44 &&
+      dbTopics.some((t) => t.name_uzc && t.name_uzc !== t.name_uzl);
+    if (hasProperTranslations) {
       return dbTopics.map((tp) => ({
         id: tp.id,
         code: tp.code,
@@ -808,20 +865,27 @@ export async function getTopics(): Promise<OfflineTopic[]> {
     try {
       let list: any[] = [];
       try {
-        const res = await api.get<{ data: any[] }>("/api/v1/admin/topics/active");
+        const res = await api.get<{ data: any[] }>("/api/v1/public/topics");
         if (Array.isArray(res.data?.data)) {
           list = res.data.data;
         }
       } catch {
         try {
-          const res2 = await api.get<{ data: any[] }>("/api/v1/admin/topics/with-questions");
+          const res2 = await api.get<{ data: any[] }>("/api/v1/admin/topics/active");
           if (Array.isArray(res2.data?.data)) {
             list = res2.data.data;
           }
         } catch {
-          const res3 = await api.get<{ data: any[] }>("/api/v1/admin/topics/simple");
-          if (Array.isArray(res3.data?.data)) {
-            list = res3.data.data;
+          try {
+            const res3 = await api.get<{ data: any[] }>("/api/v1/admin/topics/with-questions");
+            if (Array.isArray(res3.data?.data)) {
+              list = res3.data.data;
+            }
+          } catch {
+            const res4 = await api.get<{ data: any[] }>("/api/v1/admin/topics/simple");
+            if (Array.isArray(res4.data?.data)) {
+              list = res4.data.data;
+            }
           }
         }
       }
@@ -854,6 +918,40 @@ export async function getTopics(): Promise<OfflineTopic[]> {
     } catch {
       // Backend unavailable
     }
+  }
+
+  // 3. Fallback to bundled data/topics.json (44 canonical topics)
+  try {
+    const bundledRes = await fetch("/data/topics.json");
+    if (bundledRes.ok) {
+      const bundledList: any[] = await bundledRes.json();
+      if (Array.isArray(bundledList) && bundledList.length > 0) {
+        const topics: OfflineTopic[] = bundledList.map((tp: any) => ({
+          id: tp.id,
+          code: tp.code || null,
+          name_uzl: tp.name_uzl || "",
+          name_uzc: tp.name_uzc || "",
+          name_en: tp.name_en || "",
+          name_ru: tp.name_ru || "",
+          question_count: tp.question_count || 0,
+        }));
+        topicRepository.saveTopics(
+          topics.map((tp) => ({
+            id: tp.id,
+            code: tp.code || `topic_${tp.id}`,
+            name_uzl: tp.name_uzl,
+            name_uzc: tp.name_uzc,
+            name_ru: tp.name_ru,
+            order_num: tp.id,
+            question_count: tp.question_count,
+            updated_at: Date.now(),
+          }))
+        ).catch(() => {});
+        return topics;
+      }
+    }
+  } catch {
+    // ignore
   }
 
   const cached = getCachedData<OfflineTopic[]>(OFFLINE_CACHE_KEYS.TOPICS);
@@ -1259,20 +1357,28 @@ export async function getSavedQuestions(_userId?: UserScopeId): Promise<SavedQue
   try {
     const res = await api.get<{ data: any[] }>("/api/v1/app/saved-questions");
     if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-      return res.data.data.map((item: any) => ({
-        saved_at: item.savedAt || item.createdAt || new Date().toISOString(),
-        question: normalizeQuestion(item.question || item),
-      }));
+      return res.data.data.map((item: any, idx: number) => {
+        const qRaw = item.question || item;
+        const qId = Number(qRaw.id ?? qRaw.questionId ?? item.questionId ?? item.id ?? idx + 1);
+        return {
+          saved_at: item.savedAt || item.createdAt || new Date().toISOString(),
+          question: normalizeQuestion({ ...qRaw, id: qId }),
+        };
+      });
     }
   } catch {
     // fallback
   }
 
   if (localList.length > 0) {
-    return localList.map((s) => ({
-      saved_at: s.date,
-      question: fromStoredQuestion(s.question),
-    }));
+    return localList.map((s, idx) => {
+      const q = fromStoredQuestion(s.question);
+      if (!q.id) q.id = (s as any).questionId || idx + 1;
+      return {
+        saved_at: s.date,
+        question: q,
+      };
+    });
   }
 
   // Check dbClient active saved questions

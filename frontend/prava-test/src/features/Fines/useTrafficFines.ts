@@ -19,7 +19,7 @@ function initialData(): FinesResult | undefined {
   const cached = getCachedFines();
   // Shown instantly while the mount revalidation runs; the "offline copy" chip only
   // appears once the network has actually failed.
-  return cached ? { data: cached, stale: false, source: "memory", fromCache: false, savedAt: null } : undefined;
+  return cached ? { ...cached, fromCache: false } : undefined;
 }
 
 export function useTrafficFines() {

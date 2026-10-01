@@ -1,15 +1,18 @@
-import { useEffect, useState } from "react";
+/**
+ * Exam rules (durations, pass thresholds, max wrong answers).
+ *
+ * Source of truth: GET /api/v1/public/exam-rules → ApiResponse.data (see ExamRules).
+ * Fetched at most once per app session, cached in localStorage so the rules also
+ * apply offline. Until the first successful fetch the built-in defaults are used.
+ *
+ * Business rule: every mode is 1 minute (60 s) per question — e.g. a 20-question
+ * marathon lasts 20 minutes (it used to default to 30).
+ */
+import { useState, useEffect } from "react";
 import api from "../api/api";
 
-/**
- * Imtihon qoidalari — yagona manba: `GET /api/v1/public/exam-rules`.
- *
- * Bir marta yuklanadi (modul darajasidagi promise kesh). Tarmoq bo'lmasa yoki
- * endpoint hali mavjud bo'lmasa, quyidagi DEFAULT qiymatlar ishlatiladi —
- * ular backend bilan kelishilgan biznes qoidasining aynan nusxasi.
- */
 export interface ExamRules {
-  version: number | string;
+  version: string;
   real: {
     questionCount: number;
     secondsPerQuestion: number;
@@ -20,154 +23,167 @@ export interface ExamRules {
   marathon: { secondsPerQuestion: number; passPercent: number };
 }
 
-export const DEFAULT_EXAM_RULES: ExamRules = {
-  version: 0,
-  real: {
-    questionCount: 20,
-    secondsPerQuestion: 60,
-    maxWrong: 3,
-    unansweredCountsAsWrong: true,
-  },
+export type ExamRulesMode = "real" | "ticket" | "marathon";
+
+export const EXAM_RULES_URL = "/api/v1/public/exam-rules";
+const STORAGE_KEY = "prava_exam_rules_v1";
+
+export const DEFAULT_EXAM_RULES: ExamRules = Object.freeze({
+  version: "default",
+  real: { questionCount: 20, secondsPerQuestion: 60, maxWrong: 3, unansweredCountsAsWrong: true },
   ticket: { secondsPerQuestion: 60, passPercent: 90 },
   marathon: { secondsPerQuestion: 60, passPercent: 90 },
-};
+}) as ExamRules;
 
-const posNum = (v: unknown, fallback: number): number =>
-  typeof v === "number" && Number.isFinite(v) && v > 0 ? v : fallback;
-const nonNegNum = (v: unknown, fallback: number): number =>
-  typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : fallback;
+function num(v: unknown, fallback: number, min = 0): number {
+  const n = typeof v === "string" ? Number(v) : v;
+  return typeof n === "number" && Number.isFinite(n) && n >= min ? n : fallback;
+}
 
-type Partialish = {
-  version?: unknown;
-  real?: Record<string, unknown>;
-  ticket?: Record<string, unknown>;
-  marathon?: Record<string, unknown>;
-};
-
-/** Server javobini tekshirib, yetishmayotgan maydonlarni default bilan to'ldiradi. */
-export function normalizeExamRules(raw: unknown): ExamRules {
+/** Merge an untrusted payload over the defaults, field by field. */
+function sanitize(raw: any): ExamRules {
   const d = DEFAULT_EXAM_RULES;
-  const r = (raw && typeof raw === "object" ? raw : {}) as Partialish;
-  const real = r.real ?? {};
-  const ticket = r.ticket ?? {};
-  const marathon = r.marathon ?? {};
+  const r = raw && typeof raw === "object" ? raw : {};
   return {
-    version:
-      typeof r.version === "number" || typeof r.version === "string" ? r.version : d.version,
+    version: r.version != null ? String(r.version) : d.version,
     real: {
-      questionCount: posNum(real.questionCount, d.real.questionCount),
-      secondsPerQuestion: posNum(real.secondsPerQuestion, d.real.secondsPerQuestion),
-      maxWrong: nonNegNum(real.maxWrong, d.real.maxWrong),
+      questionCount: Math.round(num(r.real?.questionCount, d.real.questionCount, 1)),
+      secondsPerQuestion: num(r.real?.secondsPerQuestion, d.real.secondsPerQuestion, 1),
+      maxWrong: Math.round(num(r.real?.maxWrong, d.real.maxWrong, 0)),
       unansweredCountsAsWrong:
-        typeof real.unansweredCountsAsWrong === "boolean"
-          ? real.unansweredCountsAsWrong
+        typeof r.real?.unansweredCountsAsWrong === "boolean"
+          ? r.real.unansweredCountsAsWrong
           : d.real.unansweredCountsAsWrong,
     },
     ticket: {
-      secondsPerQuestion: posNum(ticket.secondsPerQuestion, d.ticket.secondsPerQuestion),
-      passPercent: posNum(ticket.passPercent, d.ticket.passPercent),
+      secondsPerQuestion: num(r.ticket?.secondsPerQuestion, d.ticket.secondsPerQuestion, 1),
+      passPercent: num(r.ticket?.passPercent, d.ticket.passPercent, 0),
     },
     marathon: {
-      secondsPerQuestion: posNum(marathon.secondsPerQuestion, d.marathon.secondsPerQuestion),
-      passPercent: posNum(marathon.passPercent, d.marathon.passPercent),
+      secondsPerQuestion: num(r.marathon?.secondsPerQuestion, d.marathon.secondsPerQuestion, 1),
+      passPercent: num(r.marathon?.passPercent, d.marathon.passPercent, 0),
     },
   };
 }
 
-let cachedRules: ExamRules | null = null;
-let rulesPromise: Promise<ExamRules> | null = null;
+let memo: ExamRules | null = null;
+let inflight: Promise<ExamRules> | null = null;
+let fetchedThisSession = false;
 
-/** Qoidalarni bir marta yuklaydi; xatoda default qaytaradi (hech qachon reject qilmaydi). */
-export function fetchExamRules(): Promise<ExamRules> {
-  if (cachedRules) return Promise.resolve(cachedRules);
-  if (!rulesPromise) {
-    rulesPromise = api
-      .get("/api/v1/public/exam-rules", { timeout: 5000 })
-      .then((res) => {
-        const body = res.data as { data?: unknown } | undefined;
-        // ApiResponse envelope ({ success, data }) yoki to'g'ridan-to'g'ri obyekt
-        const payload =
-          body && typeof body === "object" && "data" in body && body.data && typeof body.data === "object"
-            ? body.data
-            : body;
-        cachedRules = normalizeExamRules(payload);
-        return cachedRules;
-      })
-      .catch(() => {
-        // Offline / endpoint yo'q — keyingi chaqiruvda qayta urinib ko'rish uchun
-        // promise keshini tozalaymiz, hozircha default qaytaramiz.
-        rulesPromise = null;
-        return DEFAULT_EXAM_RULES;
-      });
+function readCache(): ExamRules | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? sanitize(JSON.parse(raw)) : null;
+  } catch {
+    return null;
   }
-  return rulesPromise;
 }
 
-export type ExamRulesMode = "real" | "ticket" | "marathon";
-export const MAX_EXAM_QUESTION_COUNT = 100;
-
-/** Sinxron o'qish: yuklangan bo'lsa server qoidalari, aks holda default. */
-export function getExamRulesSync(): ExamRules {
-  return cachedRules ?? DEFAULT_EXAM_RULES;
-}
-export const getExamRules = getExamRulesSync;
-export const loadExamRules = fetchExamRules;
-
-export function secondsPerQuestion(mode: ExamRulesMode, rules: ExamRules = getExamRulesSync()): number {
-  return (rules[mode] as any)?.secondsPerQuestion ?? 60;
+function writeCache(rules: ExamRules): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(rules));
+  } catch {
+    // storage unavailable — in-memory copy still works
+  }
 }
 
-/** Savollar soni × savolga ajratilgan soniya → umumiy soniya. */
+/**
+ * Synchronous accessor: cached rules (or defaults). Kicks off a one-time
+ * background refresh from the server; the new values apply to the next exam.
+ */
+export function getExamRules(): ExamRules {
+  if (!memo) memo = readCache() ?? DEFAULT_EXAM_RULES;
+  if (!fetchedThisSession) void loadExamRules();
+  return memo;
+}
+
+/** Fetch rules from the server once per session (use `force` to refetch). Never throws. */
+export function loadExamRules(force = false): Promise<ExamRules> {
+  if (inflight) return inflight;
+  if (fetchedThisSession && !force) return Promise.resolve(memo ?? DEFAULT_EXAM_RULES);
+  fetchedThisSession = true;
+  inflight = (async () => {
+    try {
+      const res = await api.get<{ data?: unknown }>(EXAM_RULES_URL);
+      const payload = (res.data as any)?.data ?? res.data;
+      if (payload && typeof payload === "object") {
+        memo = sanitize(payload);
+        writeCache(memo);
+      }
+    } catch {
+      // offline / old backend — keep cached or default rules
+    } finally {
+      inflight = null;
+    }
+    return memo ?? readCache() ?? DEFAULT_EXAM_RULES;
+  })();
+  return inflight;
+}
+
+export function secondsPerQuestion(mode: ExamRulesMode, rules: ExamRules = getExamRules()): number {
+  return rules[mode].secondsPerQuestion;
+}
+
+/** Total time limit in seconds for `questionCount` questions. */
+export function durationSecondsFor(mode: ExamRulesMode, questionCount: number, rules?: ExamRules): number;
+export function durationSecondsFor(questionCount: number, secondsPerQuestion: number): number;
 export function durationSecondsFor(
   arg1: ExamRulesMode | number,
   arg2: number,
-  rules: ExamRules = getExamRulesSync()
+  rules: ExamRules = getExamRules()
 ): number {
-  if (typeof arg1 === "string") {
-    const sec = (rules[arg1] as any)?.secondsPerQuestion ?? 60;
-    return Math.max(1, Math.round(arg2 * sec));
+  if (typeof arg1 === "number") {
+    return Math.max(0, Math.round(arg1 * arg2));
   }
-  return Math.max(0, Math.round(arg1 * arg2));
+  return Math.max(1, Math.round(arg2 * secondsPerQuestion(arg1, rules)));
 }
 
-/** Backend `durationMinutes` maydoni uchun (butun daqiqa, kamida 1). */
+/** Time limit in whole minutes (for server APIs that take `durationMinutes`). */
+export function durationMinutesFor(mode: ExamRulesMode, questionCount: number, rules?: ExamRules): number;
+export function durationMinutesFor(questionCount: number, secondsPerQuestion: number): number;
 export function durationMinutesFor(
   arg1: ExamRulesMode | number,
   arg2: number,
-  rules: ExamRules = getExamRulesSync()
+  rules: ExamRules = getExamRules()
 ): number {
-  return Math.max(1, Math.ceil(durationSecondsFor(arg1 as any, arg2, rules) / 60));
+  if (typeof arg1 === "number") {
+    return Math.max(1, Math.ceil((arg1 * arg2) / 60));
+  }
+  return Math.max(1, Math.ceil(durationSecondsFor(arg1, arg2, rules) / 60));
 }
 
-export function clampExamQuestionCount(raw: unknown, rules: ExamRules = getExamRulesSync()): number {
+/**
+ * Max wrong answers allowed in the real exam. For the official question count
+ * this is `real.maxWrong` (default rules: 20 questions → 3); other counts scale
+ * proportionally and round down: floor(count × maxWrong / questionCount)
+ * (default rules: 10 → 1, 40 → 6, 100 → 15).
+ */
+export function maxWrongFor(questionCount: number, rules: ExamRules = getExamRules()): number {
+  const { questionCount: base, maxWrong } = rules.real;
+  if (questionCount === base) return maxWrong;
+  return Math.floor((questionCount * maxWrong) / base);
+}
+
+/** Upper bound for a custom real-exam length (`/exam?count=`). */
+export const MAX_EXAM_QUESTION_COUNT = 100;
+
+/** Parse `/exam?count=`: integer in [1, MAX_EXAM_QUESTION_COUNT]; otherwise the official count. */
+export function clampExamQuestionCount(raw: unknown, rules: ExamRules = getExamRules()): number {
   const n = typeof raw === "number" ? raw : raw == null || raw === "" ? NaN : Number(raw);
   if (!Number.isFinite(n) || n < 1) return rules.real.questionCount;
   return Math.min(MAX_EXAM_QUESTION_COUNT, Math.floor(n));
 }
 
-/** React hook: darhol default/kesh qiymatini beradi, server javobi kelganda yangilanadi. */
-export function useExamRules(): ExamRules {
-  const [rules, setRules] = useState<ExamRules>(getExamRulesSync);
-  useEffect(() => {
-    let alive = true;
-    void fetchExamRules().then((r) => {
-      if (alive) setRules(r);
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
-  return rules;
+export function passPercentFor(mode: "ticket" | "marathon", rules: ExamRules = getExamRules()): number {
+  return rules[mode].passPercent;
 }
 
-/* ─────────────────────── O'tdi / o'tmadi (yagona qoida) ─────────────────────── */
-
-/** Natija qaysi rejimga tegishli. */
+/** Every exam flavour the desktop grades (mirrors the web `ExamMode`). */
 export type ExamMode = "real" | "ticket" | "marathon" | "wrong" | "package";
 
 export interface ExamOutcome {
   mode: ExamMode;
-  /** Jami savollar soni. */
+  /** Total questions in the exam, INCLUDING unanswered ones. */
   total: number;
   correct: number;
   wrong: number;
@@ -175,28 +191,13 @@ export interface ExamOutcome {
 }
 
 /**
- * Real imtihonda ruxsat etilgan maksimal xato soni:
- * `floor(real.maxWrong × count / real.questionCount)`.
+ * Unified pass/fail rule (identical to web `isExamPassed`):
+ *  - real: (wrong + unanswered) <= floor(maxWrong × total / real.questionCount)
+ *          (unanswered only counts when `unansweredCountsAsWrong`);
+ *  - ticket / marathon / wrong / package: percent correct >= passPercent.
+ * An exam without questions never passes.
  */
-export function maxAllowedWrong(count: number, rules: ExamRules = getExamRulesSync()): number {
-  const base = Math.max(1, rules.real.questionCount);
-  return Math.floor((rules.real.maxWrong * Math.max(0, count)) / base);
-}
-export const maxWrongFor = maxAllowedWrong;
-
-/** Foizli rejimlar uchun o'tish chegarasi (%). */
-export function passPercentFor(mode: ExamMode, rules: ExamRules = getExamRulesSync()): number {
-  return mode === "marathon" ? rules.marathon.passPercent : rules.ticket.passPercent;
-}
-
-/**
- * Barcha platformalar uchun yagona o'tdi/o'tmadi qoidasi.
- *  - real: (xato + javobsiz) ≤ floor(real.maxWrong × count / real.questionCount)
- *    (`unansweredCountsAsWrong=false` bo'lsa faqat xatolar sanaladi);
- *  - ticket / marathon / wrong / package: foiz ≥ passPercent.
- * Savol bo'lmasa — o'tmagan.
- */
-export function isExamPassed(outcome: ExamOutcome, rules: ExamRules = getExamRulesSync()): boolean {
+export function isExamPassed(outcome: ExamOutcome, rules: ExamRules = getExamRules()): boolean {
   const total = Math.max(0, Math.round(outcome.total));
   if (total <= 0) return false;
   const correct = Math.max(0, outcome.correct);
@@ -205,13 +206,33 @@ export function isExamPassed(outcome: ExamOutcome, rules: ExamRules = getExamRul
 
   if (outcome.mode === "real") {
     const mistakes = wrong + (rules.real.unansweredCountsAsWrong ? unanswered : 0);
-    return mistakes <= maxAllowedWrong(total, rules);
+    return mistakes <= maxWrongFor(total, rules);
   }
-  const percent = (correct / total) * 100;
-  return percent >= passPercentFor(outcome.mode, rules);
+  const passPercent = outcome.mode === "marathon" ? rules.marathon.passPercent : rules.ticket.passPercent;
+  return (correct / total) * 100 >= passPercent;
 }
 
-/* ─────────────── Saqlangan natijalar (tarix/statistika) uchun ─────────────── */
+/** Merge an untrusted rules payload over the defaults (exported for tests / callers). */
+export const normalizeExamRules = sanitize;
+
+export const getExamRulesSync = getExamRules;
+export const fetchExamRules = loadExamRules;
+export const maxAllowedWrong = maxWrongFor;
+
+/** React hook: returns cached or default rules, updates when loaded from server */
+export function useExamRules(): ExamRules {
+  const [rules, setRules] = useState<ExamRules>(getExamRules);
+  useEffect(() => {
+    let alive = true;
+    void loadExamRules().then((r) => {
+      if (alive) setRules(r);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return rules;
+}
 
 /** Tarixdagi `exam_type` qiymatini (server: "EXAM"/"TICKET"/…, lokal: "exam"/"ticket_5"/…) rejimga o'giradi. */
 export function modeFromExamType(examType: string | null | undefined): ExamMode {
@@ -228,7 +249,6 @@ export interface StoredResultLike {
   total_questions?: number | null;
   correct_answers?: number | null;
   score?: number | null;
-  /** Saqlangan paytdagi aniq natija (yangi yozuvlarda bor). */
   passed?: boolean | null;
 }
 
@@ -237,7 +257,7 @@ export interface StoredResultLike {
  * eski yozuvlar uchun — rejimga mos yagona qoida (isExamPassed). Savollar soni
  * noma'lum bo'lsa, foiz (`score`) bo'yicha bilet/marafon chegarasi.
  */
-export function isStoredResultPassed(r: StoredResultLike, rules: ExamRules = getExamRulesSync()): boolean {
+export function isStoredResultPassed(r: StoredResultLike, rules: ExamRules = getExamRules()): boolean {
   if (typeof r.passed === "boolean") return r.passed;
   const mode = modeFromExamType(r.exam_type);
   const total = Math.max(0, Math.round(Number(r.total_questions) || 0));
@@ -246,5 +266,6 @@ export function isStoredResultPassed(r: StoredResultLike, rules: ExamRules = get
     return isExamPassed({ mode, total, correct, wrong: Math.max(0, total - correct), unanswered: 0 }, rules);
   }
   const score = Number(r.score);
-  return Number.isFinite(score) && score >= passPercentFor(mode === "real" ? "ticket" : mode, rules);
+  return Number.isFinite(score) && score >= passPercentFor(mode === "real" ? "ticket" : (mode as "ticket" | "marathon"), rules);
 }
+

@@ -1,71 +1,121 @@
-import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  LEGACY_TEXT_SIZE_KEY,
+  UI_SCALE_KEY,
+  parseUiScale,
+  stepUiScale,
+  type UiScale,
+} from "../shell/zoom";
 
-export type TextSize = "small" | "standard" | "large";
+/**
+ * Settings → Ko'rinish: UI scale (90 / 100 / 110 / 125 %) + bold text, persisted in localStorage.
+ * Desktop: the scale uses the native WebView zoom (like Ctrl +/- in a browser) so the whole
+ * px/rem UI scales and layouts reflow without CSS transforms (crisp text on high-DPI screens).
+ * Plain browser (vite dev) falls back to the root font-size (rem-based text only).
+ * Ctrl+= / Ctrl+- / Ctrl+0 are wired in src/shell/GlobalHotkeys.tsx.
+ */
+export const BOLD_TEXT_KEY = "prava-bold-text";
 
 interface TypographyContextType {
-  textSize: TextSize;
+  scale: UiScale;
   boldText: boolean;
-  setTextSize: (size: TextSize) => void;
+  setScale: (scale: UiScale) => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetZoom: () => void;
   setBoldText: (bold: boolean) => void;
 }
 
 const TypographyContext = createContext<TypographyContextType>({
-  textSize: "standard",
+  scale: 1,
   boldText: false,
-  setTextSize: () => {},
+  setScale: () => {},
+  zoomIn: () => {},
+  zoomOut: () => {},
+  resetZoom: () => {},
   setBoldText: () => {},
 });
 
-export function TypographyProvider({ children }: { children: React.ReactNode }) {
-  const [textSize, setTextSizeState] = useState<TextSize>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("prava-text-size") as TextSize | null;
-      if (saved === "small" || saved === "standard" || saved === "large") {
-        return saved;
-      }
-    }
-    return "standard";
-  });
+export function readUiScale(): UiScale {
+  try {
+    return parseUiScale(localStorage.getItem(UI_SCALE_KEY), localStorage.getItem(LEGACY_TEXT_SIZE_KEY));
+  } catch {
+    return 1;
+  }
+}
 
-  const [boldText, setBoldTextState] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("prava-bold-text") === "true";
-    }
+function readBold(): boolean {
+  try {
+    return localStorage.getItem(BOLD_TEXT_KEY) === "true";
+  } catch {
     return false;
-  });
+  }
+}
 
-  // Apply typography attributes to root HTML element
+const isTauri = () => typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+
+async function applyNativeZoom(scale: number): Promise<boolean> {
+  if (!isTauri()) return false;
+  try {
+    const { getCurrentWebview } = await import("@tauri-apps/api/webview");
+    await getCurrentWebview().setZoom(scale);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function TypographyProvider({ children }: { children: ReactNode }) {
+  const [scale, setScaleState] = useState<UiScale>(readUiScale);
+  const [boldText, setBoldTextState] = useState<boolean>(readBold);
+  const zoomApplied = useRef<number>(1);
+
   useEffect(() => {
-    if (typeof document === "undefined") return;
-    document.documentElement.setAttribute("data-text-size", textSize);
-    document.documentElement.setAttribute("data-bold-text", String(boldText));
-
+    const root = document.documentElement;
+    root.setAttribute("data-bold-text", String(boldText));
     try {
-      localStorage.setItem("prava-text-size", textSize);
-      localStorage.setItem("prava-bold-text", String(boldText));
+      localStorage.setItem(BOLD_TEXT_KEY, String(boldText));
     } catch {
-      // ignore storage quota / private browsing errors
+      // ignore
     }
-  }, [textSize, boldText]);
+  }, [boldText]);
 
-  const setTextSize = useCallback((size: TextSize) => {
-    setTextSizeState(size);
-  }, []);
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute("data-ui-scale", String(Math.round(scale * 100)));
+    try {
+      localStorage.setItem(UI_SCALE_KEY, String(scale));
+      localStorage.removeItem(LEGACY_TEXT_SIZE_KEY);
+    } catch {
+      // ignore
+    }
+    // Optimistic: under Tauri the CSS root-font fallback must not stack on top of the zoom.
+    if (isTauri()) root.setAttribute("data-native-zoom", "true");
+    // No IPC at startup for the default scale (zoom is already 1).
+    if (scale === zoomApplied.current) return;
+    let alive = true;
+    applyNativeZoom(scale).then((ok) => {
+      if (ok) zoomApplied.current = scale;
+      if (!alive) return;
+      if (ok) root.setAttribute("data-native-zoom", "true");
+      else root.removeAttribute("data-native-zoom");
+    });
+    return () => {
+      alive = false;
+    };
+  }, [scale]);
 
-  const setBoldText = useCallback((bold: boolean) => {
-    setBoldTextState(bold);
-  }, []);
+  const setScale = useCallback((s: UiScale) => setScaleState(s), []);
+  const zoomIn = useCallback(() => setScaleState((s) => stepUiScale(s, 1)), []);
+  const zoomOut = useCallback(() => setScaleState((s) => stepUiScale(s, -1)), []);
+  const resetZoom = useCallback(() => setScaleState(1), []);
+  const setBoldText = useCallback((bold: boolean) => setBoldTextState(bold), []);
 
   const value = useMemo(
-    () => ({ textSize, boldText, setTextSize, setBoldText }),
-    [textSize, boldText, setTextSize, setBoldText]
+    () => ({ scale, boldText, setScale, zoomIn, zoomOut, resetZoom, setBoldText }),
+    [scale, boldText, setScale, zoomIn, zoomOut, resetZoom, setBoldText],
   );
-
-  return (
-    <TypographyContext.Provider value={value}>
-      {children}
-    </TypographyContext.Provider>
-  );
+  return <TypographyContext.Provider value={value}>{children}</TypographyContext.Provider>;
 }
 
 export function useTypography() {

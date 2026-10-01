@@ -1,29 +1,29 @@
 import React from "react";
 import { Box } from "@mantine/core";
 import { Navigate } from "react-router-dom";
-import { useReturnTo } from "../../../auth/useReturnTo";
+import { useAuthReturnUrl } from "../../../auth/useAuthReturnUrl";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/auth/AuthContext";
-import SEO from "@/components/common/SEO";
-import UnifiedAuthCard from "@/components/auth/UnifiedAuthCard";
+import { useAuth } from "../../../auth/AuthContext";
+import SEO from "../../../components/common/SEO";
+import UnifiedAuthCard from "../../../components/auth/UnifiedAuthCard";
 
 const Login_Page: React.FC = () => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
-  const { destination: from } = useReturnTo();
+  const { returnUrl: from } = useAuthReturnUrl();
 
   if (isAuthenticated) {
-    return <Navigate to={from} replace />;
+    return <Navigate to={from || "/me"} replace />;
   }
 
   return (
     <Box style={{ width: "100%", maxWidth: 440, margin: "0 auto" }}>
       <SEO
-        title={t("seo.login.title", { defaultValue: "Kirish - Prava Online" })}
-        description={t("seo.login.desc", {
-          defaultValue: "Google, Telegram yoki QR-kod orqali 1 bosqichda parolsiz kiring.",
+        title={t("auth.seo.loginTitle", { defaultValue: "Kirish - Prava Online" })}
+        description={t("auth.seo.loginDescription", {
+          defaultValue: "Prava Online platformasiga kiring va imtihonga tayyorlanishni davom eting.",
         })}
-        keywords="prava online kirish, google login, telegram login, qr login"
+        keywords="prava online kirish, qr login, google login, telegram login"
         canonical="/auth/login"
       />
 

@@ -141,7 +141,7 @@ export default function RoadSigns_Page() {
         subtitle={t("curriculum.signsSubtitle", "")}
         countBadge={(n) => (
           <span className="cur-badge">
-            <IconDirections size={14} /> {t("curriculum.signsCount", { count: n })}
+            <IconDirections size={14} /> {n} {t("curriculum.signsCount", "ta belgi")}
           </span>
         )}
         items={signs}

@@ -214,7 +214,7 @@ export default function Survival_Page() {
     const allDone = !run.ended && run.streak >= questions.length && questions.length > 0;
     return (
       <>
-        <SEO title={label} description={t("survival.seoDesc", "Xatogacha marafon natijasi")} canonical="/survival" />
+        <SEO title={label} description="Xatogacha marafon natijasi" canonical="/survival" />
         <div className="xd-root" style={{ padding: 16, overflow: "auto" }}>
           <div className="xd-result" role="status">
             <h2 style={{ margin: 0, display: "flex", alignItems: "center", gap: 8 }}>

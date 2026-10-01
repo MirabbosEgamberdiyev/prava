@@ -12,14 +12,12 @@ import {
   DomainRedirectToWebApp,
   DomainRedirectToLanding,
 } from "../components/common/DomainRedirect";
-import { useAuth } from "../auth/AuthContext";
 
 // Simulator visibility flag: disabled on web (only for desktop and mobile apps)
 const SHOW_SIMULATOR = false;
 const NullPage = () => null;
 
 const Home_Page = lazy(() => import("../page/Home"));
-const GuestHome_Page = lazy(() => import("../page/GuestHome"));
 const Survival_Page = lazy(() => import("../page/Survival"));
 const Login_Page = lazy(() => import("../page/Auth/login"));
 const Register_Page = lazy(() => import("../page/Auth/register"));
@@ -106,8 +104,11 @@ function RootLoadingFallback() {
  *   when a protected workflow is started (ProtectedRoute adds ?returnTo=).
  */
 function WebAppRoot() {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Navigate to="/me" replace /> : <GuestHome_Page />;
+  const hasLang = typeof window !== "undefined" && !!localStorage.getItem("prava_lang_selected");
+  if (!hasLang) {
+    return <Navigate to="/auth/language" replace />;
+  }
+  return <Navigate to="/me" replace />;
 }
 
 

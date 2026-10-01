@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { getImageUrl } from "../../utils/imageUtils";
-import { AppImage } from "./AppImage";
+import { offlineMediaManager } from "../../services/offlineMediaManager";
+import { networkModeManager } from "../../sync/networkModeManager";
 
 interface Props {
   path: string;
@@ -8,20 +9,65 @@ interface Props {
   className?: string;
   style?: React.CSSProperties;
   onOpen?: (src: string) => void;
+  /** Native lazy loading (long lists / grids). */
   lazy?: boolean;
 }
 
-export default function SecureImage({ path, alt = "", className, style, onOpen }: Props) {
-  const src = path ? getImageUrl(path) || path : null;
+const DEFAULT_IMAGE = "/question-default.svg";
+
+export default function SecureImage({ path, alt = "", className, style, onOpen, lazy }: Props) {
+  const [hasError, setHasError] = useState(false);
+  const [localSrc, setLocalSrc] = useState<string | null>(null);
+
+  const effectivePath = path || DEFAULT_IMAGE;
+  const isDirect = effectivePath.startsWith("/") || effectivePath.startsWith("http://") || effectivePath.startsWith("https://") || effectivePath.startsWith("data:");
+
+  useEffect(() => {
+    let active = true;
+    setHasError(false);
+
+    if (isDirect) {
+      setLocalSrc(effectivePath);
+      return;
+    }
+
+    offlineMediaManager.getLocalImageUrl(effectivePath).then((cached) => {
+      if (!active) return;
+      if (cached) {
+        setLocalSrc(cached);
+      } else {
+        setLocalSrc(null);
+        // If online, background-cache it for future offline sessions
+        if (networkModeManager.isOnlineAllowed()) {
+          offlineMediaManager.cacheImage(effectivePath).catch(() => {});
+        }
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [effectivePath, isDirect]);
+
+  const rawSrc = localSrc || getImageUrl(effectivePath) || effectivePath;
+  const src = (!rawSrc || hasError) ? DEFAULT_IMAGE : rawSrc;
 
   return (
-    <AppImage
+    <img
       src={src}
       alt={alt}
       className={className}
-      style={style}
-      fit="contain"
-      onClick={onOpen && src ? () => onOpen(src) : undefined}
+      draggable={false}
+      loading={lazy ? "lazy" : undefined}
+      decoding={lazy ? "async" : undefined}
+      onContextMenu={(e) => e.preventDefault()}
+      onError={() => {
+        if (src !== DEFAULT_IMAGE) {
+          setHasError(true);
+        }
+      }}
+      onClick={onOpen ? () => onOpen(src) : undefined}
+      style={{ ...style, ...(onOpen ? { cursor: "zoom-in" } : {}) }}
     />
   );
 }

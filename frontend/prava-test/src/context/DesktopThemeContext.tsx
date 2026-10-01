@@ -1,105 +1,97 @@
-import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useMantineColorScheme } from "@mantine/core";
 
-export type Theme = "light" | "dark" | "system";
-export type ResolvedTheme = "light" | "dark";
+/** Resolved (applied) theme. */
+export type Theme = "light" | "dark";
+/** User preference (Settings → Ko'rinish). "system" follows the OS and reacts to changes live. */
+export type ThemePreference = Theme | "system";
+
+export const THEME_STORAGE_KEY = "prava-theme";
 
 interface ThemeContextType {
+  /** Applied theme (never "system"). */
   theme: Theme;
-  resolvedTheme: ResolvedTheme;
+  preference: ThemePreference;
+  setPreference: (p: ThemePreference) => void;
   toggleTheme: () => void;
   setTheme: (t: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: "system",
-  resolvedTheme: "dark",
+  theme: "light",
+  preference: "system",
+  setPreference: () => {},
   toggleTheme: () => {},
   setTheme: () => {},
 });
 
-function getSystemPreference(): ResolvedTheme {
-  if (typeof window !== "undefined" && window.matchMedia) {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+
+function readPreference(): ThemePreference {
+  try {
+    const saved = localStorage.getItem(THEME_STORAGE_KEY);
+    if (saved === "dark" || saved === "light" || saved === "system") return saved;
+  } catch {
+    // ignore
   }
-  return "dark";
+  // No stored value (first run) → follow the OS, as before.
+  return "system";
+}
+
+function systemTheme(): Theme {
+  return typeof window !== "undefined" && window.matchMedia?.(DARK_QUERY).matches ? "dark" : "light";
 }
 
 export function DesktopThemeProvider({ children }: { children: React.ReactNode }) {
-  const { setColorScheme } = useMantineColorScheme({ keepTransitions: true });
+  const { setColorScheme } = useMantineColorScheme();
+  const [preference, setPreferenceState] = useState<ThemePreference>(readPreference);
+  const [osTheme, setOsTheme] = useState<Theme>(systemTheme);
 
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      const saved = (localStorage.getItem("prava-theme") ||
-        localStorage.getItem("mantine-color-scheme-value")) as Theme | null;
-      if (saved === "dark" || saved === "light" || saved === "system") {
-        return saved;
-      }
-    }
-    return "system";
-  });
+  const theme: Theme = preference === "system" ? osTheme : preference;
 
-  const [systemPref, setSystemPref] = useState<ResolvedTheme>(getSystemPreference);
-
-  // Listen for OS system theme changes
+  // Follow OS changes only while the preference is "system" (no listener otherwise).
   useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return;
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e: MediaQueryListEvent) => {
-      setSystemPref(e.matches ? "dark" : "light");
-    };
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
-  }, []);
+    if (preference !== "system" || typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia(DARK_QUERY);
+    setOsTheme(mq.matches ? "dark" : "light");
+    const handler = (e: MediaQueryListEvent) => setOsTheme(e.matches ? "dark" : "light");
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [preference]);
 
-  // Compute active visual theme
-  const resolvedTheme: ResolvedTheme = useMemo(() => {
-    if (theme === "system") return systemPref;
-    return theme;
-  }, [theme, systemPref]);
-
-  // Apply visual theme to DOM and Mantine
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", resolvedTheme);
-    document.documentElement.setAttribute("data-mantine-color-scheme", resolvedTheme);
-    document.documentElement.style.colorScheme = resolvedTheme;
-
-    if (resolvedTheme === "dark") {
-      document.documentElement.style.backgroundColor = "#0B1220";
-      document.documentElement.style.color = "#F8FAFC";
-    } else {
-      document.documentElement.style.backgroundColor = "#F8FAFC";
-      document.documentElement.style.color = "#0F172A";
-    }
-
+    const root = document.documentElement;
+    root.setAttribute("data-theme", theme);
+    root.setAttribute("data-mantine-color-scheme", theme);
+    root.style.colorScheme = theme;
     try {
-      setColorScheme(resolvedTheme);
+      setColorScheme(theme);
     } catch {
-      // ignore in test / SSR environments
+      // ignore
     }
+  }, [theme, setColorScheme]);
 
-    localStorage.setItem("prava-theme", theme);
-    localStorage.setItem("mantine-color-scheme-value", resolvedTheme);
-  }, [theme, resolvedTheme, setColorScheme]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, preference);
+    } catch {
+      // ignore
+    }
+  }, [preference]);
 
-  const toggleTheme = useCallback(() => {
-    setThemeState((current) => {
-      if (current === "system") {
-        return systemPref === "dark" ? "light" : "dark";
-      }
-      return current === "light" ? "dark" : "light";
-    });
-  }, [systemPref]);
-
-  const setTheme = useCallback((t: Theme) => {
-    setThemeState(t);
-  }, []);
-
-  return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, toggleTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
+  const setPreference = useCallback((p: ThemePreference) => setPreferenceState(p), []);
+  const setTheme = useCallback((t: Theme) => setPreferenceState(t), []);
+  const toggleTheme = useCallback(
+    () => setPreferenceState((p) => ((p === "system" ? systemTheme() : p) === "light" ? "dark" : "light")),
+    [],
   );
+
+  const value = useMemo(
+    () => ({ theme, preference, setPreference, toggleTheme, setTheme }),
+    [theme, preference, setPreference, toggleTheme, setTheme],
+  );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export const useDesktopTheme = () => useContext(ThemeContext);

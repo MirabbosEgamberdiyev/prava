@@ -36,10 +36,22 @@ function SavedQuestionsContent() {
 
   const [entries, setEntries] = useState<SavedQuestionEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState<number | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [zoomSrc, setZoomSrc] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [clearModalOpen, setClearModalOpen] = useState(false);
+
+  const toggleExpand = (qId: number) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(qId)) {
+        next.delete(qId);
+      } else {
+        next.add(qId);
+      }
+      return next;
+    });
+  };
 
   const loadData = () => {
     getSavedQuestions(userId)
@@ -58,17 +70,24 @@ function SavedQuestionsContent() {
   }, [userId]);
 
   const handleRemove = async (questionId: number) => {
-    const target = entries.find((e) => e.question.id === questionId);
-    if (!target) return;
-    await toggleSavedQuestion(userId, target.question).catch(() => {});
-    setEntries((prev) => prev.filter((e) => e?.question?.id !== questionId));
+    await toggleSavedQuestion(userId, questionId).catch(() => {});
+    setEntries((prev) => prev.filter((e) => Number(e?.question?.id ?? (e?.question as any)?.questionId) !== questionId));
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(questionId);
+      return next;
+    });
   };
 
   const handleClearAll = async () => {
     for (const entry of entries) {
-      await toggleSavedQuestion(userId, entry.question).catch(() => {});
+      const qId = Number(entry?.question?.id ?? (entry?.question as any)?.questionId);
+      if (qId) {
+        await toggleSavedQuestion(userId, qId).catch(() => {});
+      }
     }
     setEntries([]);
+    setExpandedIds(new Set());
     setClearModalOpen(false);
     showToast({
       id: "clear-saved-success",
@@ -164,15 +183,16 @@ function SavedQuestionsContent() {
             </div>
           ) : (
             <div className="review-list">
-              {filteredEntries.map((entry) => {
+              {filteredEntries.map((entry, idx) => {
                 const q = entry.question;
+                const qId = Number(q.id || (q as any).questionId || idx + 1);
                 const opts = parseOptions(q.options_json);
-                const isOpen = expanded === q.id;
+                const isOpen = expandedIds.has(qId);
                 const explanation = localizeExp(q);
 
                 return (
-                  <div key={q.id} className={`review-card ${isOpen ? "open" : ""}`}>
-                    <div className="review-card-top" onClick={() => setExpanded(isOpen ? null : q.id)}>
+                  <div key={qId} className={`review-card ${isOpen ? "open" : ""}`}>
+                    <div className="review-card-top" onClick={() => toggleExpand(qId)}>
                       <div className="review-card-badge saved-badge">
                         <IconBookmark size={14} stroke={2} />
                       </div>
@@ -182,7 +202,7 @@ function SavedQuestionsContent() {
                         className="review-remove-btn"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleRemove(q.id);
+                          handleRemove(qId);
                         }}
                         title={t("saved.remove", "Olib tashlash")}
                       >
@@ -241,15 +261,13 @@ function SavedQuestionsContent() {
                           )}
                         </div>
 
-                        {q.image_path && (
-                          <div className="review-card-img-wrap">
-                            <ZoomableImage
-                              path={q.image_path}
-                              className="review-card-img"
-                              onOpen={(src) => setZoomSrc(src)}
-                            />
-                          </div>
-                        )}
+                        <div className="review-card-img-wrap">
+                          <ZoomableImage
+                            path={q.image_path || "/question-default.svg"}
+                            className="review-card-img"
+                            onOpen={(src) => setZoomSrc(src)}
+                          />
+                        </div>
                       </div>
                     )}
                   </div>

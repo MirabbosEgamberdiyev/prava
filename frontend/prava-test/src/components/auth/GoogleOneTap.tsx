@@ -6,19 +6,21 @@
  * Logout dan keyin qayta ko'rsatiladi.
  * Har sahifaga o'tganda prompt qayta chaqiriladi (SPA navigatsiya uchun).
  * GSI yuklanmasa — boshqa login usullari ta'sirlanmaydi (silent fail).
+ *
+ * Desktop (Tauri): never rendered/loaded — the GSI script is only injected in a plain browser
+ * (vite dev / web). Google login on desktop uses the in-app OAuth window (audit D-08).
  */
 
 import { useCallback, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../auth/AuthContext";
+import { useAuthModal } from "../../auth/AuthModalContext";
+import { isTauriRuntime } from "../../auth/runtime";
 import { ENV } from "../../config/env";
 import api from "../../api/api";
 import { getErrorMessage } from "../../types/errors";
-import { isGoogleOneTapAllowed } from "../../utils/domain";
-import { readReturnTo } from "../../utils/returnTo";
-import { DEFAULT_AFTER_LOGIN } from "../../auth/useReturnTo";
 
 // ----- Google GSI type declarations -----
 interface CredentialResponse {
@@ -45,6 +47,7 @@ interface GoogleAccountsId {
     auto_select?: boolean;
     context?: string;
     itp_support?: boolean;
+    use_fedcm_for_prompt?: boolean;
   }): void;
   prompt(momentListener?: (notification: PromptMomentNotification) => void): void;
   cancel(): void;
@@ -73,7 +76,7 @@ const EXCLUDED_PATHS = [
 export function GoogleOneTap() {
   const { isAuthenticated, login: authLogin } = useAuth();
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+  const { executePending } = useAuthModal();
   const location = useLocation();
 
   // GSI bir marta initialize qilinganini kuzatadi
@@ -81,22 +84,9 @@ export function GoogleOneTap() {
   // Joriy handleCredential ni ref da saqlash — stale closure muammosidan qochish
   const handleCredentialRef = useRef<((r: CredentialResponse) => Promise<void>) | null>(null);
 
-  const isAllowed = isGoogleOneTapAllowed(location.pathname);
   const isExcluded = EXCLUDED_PATHS.some((p) => location.pathname.startsWith(p));
-  const shouldShow = isAllowed && !isAuthenticated && !!ENV.GOOGLE_CLIENT_ID && !isExcluded;
-
-  // Agar landing domainda bo'lsa yoki ruxsat etilmagan bo'lsa, har qanday promptni bekor qilish
-  useEffect(() => {
-    if (!isAllowed) {
-      gsiInitializedRef.current = false;
-      try {
-        window.google?.accounts?.id?.cancel();
-        window.google?.accounts?.id?.disableAutoSelect();
-      } catch {
-        // ignore
-      }
-    }
-  }, [isAllowed]);
+  const isTauri = isTauriRuntime();
+  const shouldShow = !isAuthenticated && !isTauri && !!ENV.GOOGLE_CLIENT_ID && !isExcluded;
 
   // handleCredential ni doim yangilab turish (i18n, navigate, t o'zgarganda ham)
   useEffect(() => {
@@ -112,11 +102,7 @@ export function GoogleOneTap() {
             i18n.changeLanguage(userLang.toLowerCase());
           }
           authLogin(apiResponse.data.data);
-          // W-06: auth sahifasida bo'lsa — returnTo (yoki /me); boshqa sahifada foydalanuvchi
-          // turgan joyida qoladi (mehmon ko'rib turgan sahifa login'dan keyin ham ochiq).
-          if (location.pathname.startsWith("/auth")) {
-            navigate(readReturnTo(location.search) ?? DEFAULT_AFTER_LOGIN, { replace: true });
-          }
+          executePending();
           notifications.show({
             title: t("auth.google.successTitle"),
             message: t("auth.google.successMessage"),
@@ -176,6 +162,7 @@ export function GoogleOneTap() {
           auto_select: false,
           context: "signin",
           itp_support: true,
+          use_fedcm_for_prompt: false,
         });
         gsiInitializedRef.current = true;
       }

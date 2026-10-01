@@ -135,29 +135,40 @@ export const storageService = {
 
   // ── SAVED QUESTIONS (BOOKMARKS) ──
   getSavedQuestions(): { question: StoredQuestion; date: string }[] {
-    return safeGet<{ question: StoredQuestion; date: string }[]>(STORAGE_KEYS.SAVED_QUESTIONS, []);
+    const list = safeGet<{ question: StoredQuestion; date: string }[]>(STORAGE_KEYS.SAVED_QUESTIONS, []);
+    return list.map((item, idx) => {
+      if (item && item.question) {
+        const rawId = item.question.id ?? (item.question as any).questionId ?? (item as any).questionId;
+        const validId = Number(rawId);
+        item.question.id = Number.isFinite(validId) && validId > 0 ? validId : idx + 1;
+      }
+      return item;
+    });
   },
 
   isSaved(questionId: number): boolean {
-    return this.getSavedQuestions().some((s) => s.question.id === questionId);
+    const qId = Number(questionId);
+    return this.getSavedQuestions().some((s) => Number(s.question?.id) === qId);
   },
 
   toggleSavedQuestion(question: StoredQuestion): boolean {
+    const qId = Number(question.id ?? (question as any).questionId ?? 0);
     const list = this.getSavedQuestions();
-    const idx = list.findIndex((s) => s.question.id === question.id);
+    const idx = list.findIndex((s) => Number(s.question?.id) === qId);
     if (idx >= 0) {
       list.splice(idx, 1);
       safeSet(STORAGE_KEYS.SAVED_QUESTIONS, list);
       return false;
     } else {
-      list.unshift({ question, date: new Date().toISOString() });
+      list.unshift({ question: { ...question, id: qId }, date: new Date().toISOString() });
       safeSet(STORAGE_KEYS.SAVED_QUESTIONS, list);
       return true;
     }
   },
 
   removeSavedQuestion(questionId: number): void {
-    const list = this.getSavedQuestions().filter((s) => s.question.id !== questionId);
+    const targetId = Number(questionId);
+    const list = this.getSavedQuestions().filter((s) => Number(s.question?.id) !== targetId);
     safeSet(STORAGE_KEYS.SAVED_QUESTIONS, list);
   },
 

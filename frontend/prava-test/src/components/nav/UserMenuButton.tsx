@@ -6,28 +6,21 @@ import {
   IconTrophy,
 } from "@tabler/icons-react";
 import { Group, Avatar, Text, Menu, UnstyledButton, Box } from "@mantine/core";
+import { showToast } from "../../utils/notificationUtils";
 import { useAuth } from "../../auth/AuthContext";
-import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { getWebAppUrl, isLandingDomain } from "../../utils/domain";
 
 function UserMenuButton() {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const goToApp = (path: string) => {
-    if (isLandingDomain()) {
-      window.location.href = getWebAppUrl(path);
-    } else {
-      navigate(path);
-    }
-  };
-
   const handleLogout = () => {
     logout();
-    notifications.show({
+    showToast({
+      id: "auth-logout-toast",
+      dedupeKey: "auth-logout-toast",
       title: t("userMenu.logoutTitle", "Chiqish"),
       message: t("userMenu.logoutMessage", "Tizimdan muvaffaqiyatli chiqdingiz"),
       color: "yellow",
@@ -52,6 +45,9 @@ function UserMenuButton() {
       ? t("roles.student", "O'QUVCHI")
       : t("roles.passenger", "YO'LOVCHI");
 
+  const isSubscribed = Boolean((user as any)?.hasSubscription || (user as any)?.packageActive);
+  const badgeText = isSubscribed ? t("tariff.plans.1y.name", "1 yil (VIP)") : roleText;
+
   return (
     <Menu shadow="md" width={220} position="bottom-end" radius="md" withinPortal>
       <Menu.Target>
@@ -65,12 +61,12 @@ function UserMenuButton() {
               size={32}
               radius="xl"
               style={{
-                background: "#0284c7",
+                background: isSubscribed ? "linear-gradient(135deg, #f59e0b, #d97706)" : "#0284c7",
                 color: "#ffffff",
                 fontSize: "14px",
                 fontWeight: 800,
                 flexShrink: 0,
-                boxShadow: "0 2px 8px rgba(2, 132, 199, 0.4)",
+                boxShadow: isSubscribed ? "0 2px 8px rgba(245, 158, 11, 0.4)" : "0 2px 8px rgba(2, 132, 199, 0.4)",
               }}
             >
               {initials}
@@ -95,7 +91,7 @@ function UserMenuButton() {
                   gap: "4px",
                   fontSize: "10px",
                   fontWeight: 700,
-                  color: "#94a3b8",
+                  color: isSubscribed ? "#f59e0b" : "#94a3b8",
                   letterSpacing: "0.5px",
                   marginTop: "1px",
                 }}
@@ -105,12 +101,12 @@ function UserMenuButton() {
                     width: 6,
                     height: 6,
                     borderRadius: "50%",
-                    backgroundColor: "#22c55e",
+                    backgroundColor: isSubscribed ? "#f59e0b" : "#22c55e",
                     display: "inline-block",
                     flexShrink: 0,
                   }}
                 />
-                <span>{roleText}</span>
+                <span>{badgeText}</span>
               </div>
             </Box>
           </Group>
@@ -133,25 +129,25 @@ function UserMenuButton() {
 
         <Menu.Item
           leftSection={<IconUser size={15} />}
-          onClick={() => goToApp("/me")}
+          onClick={() => navigate("/me")}
         >
           {t("nav.dashboard", "Boshqaruv paneli")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconSettings size={15} />}
-          onClick={() => goToApp("/settings")}
+          onClick={() => navigate("/settings")}
         >
           {t("userMenu.settings", "Sozlamalar")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconHistory size={15} />}
-          onClick={() => goToApp("/history")}
+          onClick={() => navigate("/history")}
         >
           {t("history.title", "Imtihon tarixi")}
         </Menu.Item>
         <Menu.Item
           leftSection={<IconTrophy size={15} />}
-          onClick={() => goToApp("/leaderboard")}
+          onClick={() => navigate("/leaderboard")}
         >
           {t("leaderboard.title", "Reyting")}
         </Menu.Item>
@@ -171,4 +167,3 @@ function UserMenuButton() {
 }
 
 export default UserMenuButton;
-

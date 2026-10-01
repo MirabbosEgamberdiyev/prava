@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
 
 const BASE_URL = "https://pravaonline.uz";
 const SITE_NAME = "Prava Online";
@@ -46,26 +45,15 @@ const SEO = ({
   type = "website",
   jsonLd,
 }: SEOProps) => {
-  const { i18n } = useTranslation();
-  const currentLang = i18n?.language || "uzl";
-  const ogLocale = currentLang === "ru" ? "ru_RU" : "uz_UZ";
-
   const fullTitle = title.includes(SITE_NAME)
     ? title
     : `${title} | ${SITE_NAME}`;
-  // P1-W7: canonical berilmasa — joriy sahifa (origin + pathname), bosh sahifa EMAS.
-  const canonicalUrl = canonical
-    ? `${BASE_URL}${canonical}`
-    : typeof window !== "undefined"
-      ? `${window.location.origin}${window.location.pathname}`
-      : BASE_URL;
+  const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : BASE_URL;
   const robotsContent = noIndex
     ? "noindex, nofollow"
     : "index, follow, max-image-preview:large, max-snippet:-1";
 
   useEffect(() => {
-    // NOTE: <html lang> is owned by LanguageContext (utils/date.ts getHtmlLang) — do not set it here.
-
     // Title
     document.title = fullTitle;
 
@@ -84,7 +72,7 @@ const SEO = ({
     setMeta("property", "og:url", canonicalUrl);
     setMeta("property", "og:type", type);
     setMeta("property", "og:site_name", SITE_NAME);
-    setMeta("property", "og:locale", ogLocale);
+    setMeta("property", "og:locale", "uz_UZ");
 
     // Twitter
     setMeta("name", "twitter:card", "summary_large_image");
@@ -114,7 +102,7 @@ const SEO = ({
         .querySelector('script[data-seo="page"]')
         ?.remove();
     };
-  }, [fullTitle, description, keywords, canonicalUrl, ogImage, type, robotsContent, jsonLd, ogLocale]);
+  }, [fullTitle, description, keywords, canonicalUrl, ogImage, type, robotsContent, jsonLd]);
 
   return null;
 };

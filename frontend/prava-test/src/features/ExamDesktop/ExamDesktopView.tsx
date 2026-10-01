@@ -28,6 +28,7 @@ import { acquireExamFocusMode } from "./focusMode";
 import { countResults, resolveEscapeIntent, shouldConfirmFinish, type AnswerMap } from "./logic";
 import { destroyCurrentWindow, registerExamCloseGuard } from "./windowCloseGuard";
 import { MAX_KEYBOARD_OPTIONS } from "../../hooks/useExamShortcuts";
+import { RealExamView } from "./RealExamView";
 import "../../styles/exam-desktop.css";
 
 export type AutoAdvance = "always" | "correct" | "never";
@@ -36,6 +37,8 @@ export interface ExamDesktopViewProps {
   mode: ExamStatusMode;
   /** Ready, translated label: "Imtihon", "Bilet #14", "Marafon"… */
   label: string;
+  /** Optional workstation desk code (e.g. "A-13", "B-7"). If omitted, a random realistic desk code is generated. */
+  deskCode?: string;
   questions: OfflineQuestion[];
   current: number;
   answers: AnswerMap;
@@ -82,7 +85,7 @@ type DialogReason = "finish" | "exit" | "close";
 
 const AUTO_ADVANCE_MS = 700;
 
-function ExamDesktopViewImpl(props: ExamDesktopViewProps) {
+function StandardExamDesktopViewImpl(props: ExamDesktopViewProps) {
   const {
     mode,
     label,
@@ -287,8 +290,9 @@ function ExamDesktopViewImpl(props: ExamDesktopViewProps) {
   }, [q, onToggleBookmark]);
 
   const openZoom = useCallback(() => {
-    if (!q?.image_path) return;
-    const src = offlineMediaManager.peekLocalImageUrl(q.image_path) ?? getImageUrl(q.image_path);
+    const src = q?.image_path
+      ? (offlineMediaManager.peekLocalImageUrl(q.image_path) ?? getImageUrl(q.image_path) ?? "/question-default.svg")
+      : "/question-default.svg";
     if (src) setZoomSrc(src);
   }, [q]);
 
@@ -443,7 +447,8 @@ function ExamDesktopViewImpl(props: ExamDesktopViewProps) {
 
   if (!q) return null;
   const bookmarked = bookmarkedIds.has(q.id);
-  const hasImage = !!q.image_path;
+  const DEFAULT_QUESTION_IMAGE = "/question-default.svg";
+  const imagePath = q.image_path || DEFAULT_QUESTION_IMAGE;
   const mistakesLeftDanger = maxMistakes != null && wrong >= maxMistakes;
 
   return (
@@ -489,22 +494,20 @@ function ExamDesktopViewImpl(props: ExamDesktopViewProps) {
       </header>
 
       {/* ── Split body ── */}
-      <div className={`xd-split${hasImage ? "" : " xd-split--noimg"}`} ref={containerRef}>
+      <div className="xd-split" ref={containerRef}>
         <section className="xd-center" aria-label={t("examDesktop.question", "Savol")}>
           <div className="xd-qhead">
             <span className="xd-qnum">{current + 1}</span>
             <p className="xd-qtext">{questionText}</p>
           </div>
-          {hasImage && (
-            <QuestionImage
-              key={q.image_path!}
-              path={q.image_path!}
-              alt={questionText}
-              onZoom={setZoomSrc}
-              zoomHint={t("examDesktop.zoomOpen", "Kattalashtirish (Z)")}
-              brokenLabel={t("examDesktop.imageUnavailable", "Rasm mavjud emas")}
-            />
-          )}
+          <QuestionImage
+            key={imagePath + "_" + q.id}
+            path={imagePath}
+            alt={questionText}
+            onZoom={setZoomSrc}
+            zoomHint={t("examDesktop.zoomOpen", "Kattalashtirish (Z)")}
+            brokenLabel={t("examDesktop.imageUnavailable", "Rasm mavjud emas")}
+          />
         </section>
 
         <div
@@ -587,7 +590,6 @@ function ExamDesktopViewImpl(props: ExamDesktopViewProps) {
                 onMouseDown={(e) => e.preventDefault()}
               >
                 {finishLabel ?? t("examDesktop.finish", "Yakunlash")} <IconCheck size={16} aria-hidden="true" />{" "}
-                {/* i18n-ignore */}
                 <kbd className="xd-kbd">Enter ↵</kbd>
               </button>
             ) : (
@@ -598,7 +600,6 @@ function ExamDesktopViewImpl(props: ExamDesktopViewProps) {
                 onMouseDown={(e) => e.preventDefault()}
               >
                 {t("examDesktop.next", "Keyingi")} <IconChevronRight size={16} aria-hidden="true" />{" "}
-                {/* i18n-ignore */}
                 <kbd className="xd-kbd">Space ↵</kbd>
               </button>
             )}
@@ -640,6 +641,14 @@ function ExamDesktopViewImpl(props: ExamDesktopViewProps) {
   );
 }
 
-/** Shared split-view desktop exam UI (Real, Ticket, Marathon, Survival, WrongExam, Topic). */
-export const ExamDesktopView = memo(ExamDesktopViewImpl);
+export const StandardExamDesktopView = memo(StandardExamDesktopViewImpl);
+
+/**
+ * Universal desktop exam UI (renders the official DYXHX terminal layout with Saqlash & Izoh
+ * for all test-taking modes: real exam, tickets, marathon, survival, and mistake tests).
+ */
+export const ExamDesktopView = memo(function ExamDesktopView(props: ExamDesktopViewProps) {
+  return <RealExamView {...props} />;
+});
+
 export default ExamDesktopView;

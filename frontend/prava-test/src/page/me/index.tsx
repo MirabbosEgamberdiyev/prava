@@ -5,8 +5,9 @@ import { useAuth } from "../../auth/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import SEO from "../../components/common/SEO";
 import { getFullStats } from "../../services/desktopAdapter";
-import { resolveUserScopeId } from "../../utils/userScope";
+import { resolveUserScopeId } from "@/utils/userScope";
 import type { FullStats } from "../../types/desktop";
+import { useCurriculumCounts } from "../../hooks/useCurriculumCounts";
 import { QRCodeSVG } from "qrcode.react";
 import "./dashboard.css";
 import {
@@ -33,6 +34,9 @@ import {
   IconTrophy,
   IconBooks,
 } from "@tabler/icons-react";
+
+/** Simulator vehicle image rendered from 3D model */
+const SIM_CAR_IMG = "/simulator/car-card.webp";
 
 const SOCIAL_LINKS = [
   {
@@ -148,12 +152,12 @@ export default function User_Page() {
     setShowTargetModal(false);
   };
 
-  // Stats calculation
+  const counts = useCurriculumCounts();
   const ticketReady = stats?.ticket_ready ?? 0;
-  const ticketTotal = stats?.ticket_total && stats.ticket_total >= 64 ? stats.ticket_total : 64;
+  const ticketTotal = stats?.ticket_total || counts.tickets || 64;
   const qReady = stats?.question_readiness?.ready ?? 0;
   const qAverage = stats?.question_readiness?.average ?? 0;
-  const qTotal = stats?.question_readiness?.total && stats.question_readiness.total >= 1264 ? stats.question_readiness.total : 1264;
+  const qTotal = stats?.question_readiness?.total || counts.questions || 1243;
 
   const ticketReadyPct = ticketTotal > 0 ? Math.round((ticketReady / ticketTotal) * 100) : 0;
   const qPracticedPct = qTotal > 0 ? Math.round(((qReady + qAverage) / qTotal) * 100) : 0;
@@ -365,7 +369,33 @@ export default function User_Page() {
                 </div>
               </button>
 
-              {/* Primary: Tickets */}
+              {/* Primary 3: 3D Simulator */}
+              <button
+                type="button"
+                className="ref-primary-card is-sim"
+                onClick={() => navigate("/simulator")}
+              >
+                <div className="ref-primary-top-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="9" />
+                    <circle cx="12" cy="12" r="2" />
+                    <path d="M12 14v7M10 12l-7-2M14 12l7-2" />
+                  </svg>
+                </div>
+                <div className="ref-primary-content">
+                  <div className="ref-primary-title">{t("refDashboard.simulator3D", "3D Simulyator")}</div>
+                  <div className="ref-primary-desc">{t("refDashboard.simulator3DDesc", "Avtodromda haydash")}</div>
+                </div>
+                {/* 3D Car Graphic */}
+                <div className="ref-primary-graphic" aria-hidden="true">
+                  <img src={SIM_CAR_IMG} alt="" />
+                </div>
+                <div className="ref-primary-arrow" aria-hidden="true">
+                  <IconArrowRight size={18} stroke={2.5} />
+                </div>
+              </button>
+
+              {/* Primary 4: Tickets */}
               <button
                 type="button"
                 className="ref-primary-card is-tickets"

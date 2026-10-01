@@ -5,7 +5,6 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
-  useRef,
   type ReactNode,
 } from "react";
 import Cookies from "js-cookie";
@@ -14,30 +13,10 @@ import { useAuth } from "../auth/AuthContext";
 import type {
   LocalizedText,
   OfflineQuestion,
+  OfflineTopic,
   QuestionOption,
 } from "../types";
-import { findOfficialTopic } from "../constants/topics";
-import { latinToCyrillic, cyrillicToLatin } from "../utils/transliterate";
-import { getHtmlLang } from "../utils/date";
-import api from "../api/api";
-
-/**
- * Best-effort: persist the chosen language to the logged-in user's profile.
- * Never blocks the UI and never surfaces errors (validateStatus accepts every status,
- * so global axios error toasts/refresh logic are not triggered).
- * NOTE: backend must expose PATCH /api/v1/auth/me { preferredLanguage } — see audit P2/§9.
- */
-function persistLanguageToProfile(lang: AppLanguage): void {
-  void api
-    .patch(
-      "/api/v1/auth/me",
-      { preferredLanguage: lang },
-      { validateStatus: () => true },
-    )
-    .catch(() => {
-      // ignore — best-effort only
-    });
-}
+import { getFallbackTopicName } from "../data/topicTranslations";
 
 export type AppLanguage = "uzl" | "uzc" | "ru";
 
@@ -100,7 +79,7 @@ export interface LanguageContextType {
   languages: LanguageOption[];
   currentLanguageOption: LanguageOption;
   localize: (text: LocalizedText | Record<string, string> | string | undefined | null) => string;
-  localizeTopic: (topic: any) => string;
+  localizeTopic: (topic: OfflineTopic | null | undefined) => string;
   localizeQuestion: (q: OfflineQuestion | null | undefined) => string;
   localizeOption: (opt: QuestionOption | null | undefined) => string;
   localizeExplanation: (q: OfflineQuestion | null | undefined) => string | null;
@@ -116,38 +95,17 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
  * 4. Browser Navigator Language
  * 5. Fallback: "uzl"
  */
-/*
- * W-26: til uchun YAGONA localStorage kaliti — "prava_lang" (i18next detector ham
- * shu kalitni o'qiydi/yozadi). Eski "i18nextLng" faqat bir martalik migratsiya uchun
- * o'qiladi va o'chiriladi. Cookie "i18next" — subdomenlar (pravaonline.uz ↔
- * web.pravaonline.uz) o'rtasida til bir xil bo'lishi uchun qoldirilgan.
- */
-export const LANG_STORAGE_KEY = "prava_lang";
-const LEGACY_LANG_KEY = "i18nextLng";
-
-export function readStoredLanguage(): string | null {
-  try {
-    const current = localStorage.getItem(LANG_STORAGE_KEY);
-    if (current) return current;
-    const legacy = localStorage.getItem(LEGACY_LANG_KEY);
-    if (legacy) {
-      const normalized = normalizeLanguage(legacy);
-      localStorage.setItem(LANG_STORAGE_KEY, normalized);
-      localStorage.removeItem(LEGACY_LANG_KEY);
-      return normalized;
-    }
-  } catch {
-    // storage bloklangan
-  }
-  return null;
-}
-
 function resolveInitialLanguage(userPreferred?: string | null): AppLanguage {
-  const fromLocal = readStoredLanguage();
-  if (fromLocal) return normalizeLanguage(fromLocal);
-
   if (userPreferred) {
     return normalizeLanguage(userPreferred);
+  }
+
+  try {
+    const fromLocal =
+      localStorage.getItem("prava_lang") || localStorage.getItem("i18nextLng");
+    if (fromLocal) return normalizeLanguage(fromLocal);
+  } catch {
+    // ignore
   }
 
   const fromCookie = Cookies.get("i18next");
@@ -168,23 +126,25 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     return initial;
   });
 
-  // Synchronize i18next instance on initial mount (faqat bir marta — keyingi
-  // o'zgarishlar setLanguage orqali i18n bilan birga bajariladi).
-  const initialLanguageRef = useRef(language);
+  // Sync with user's preferred language when user loads
   useEffect(() => {
-    if (i18n.language !== initialLanguageRef.current) {
-      void i18n.changeLanguage(initialLanguageRef.current);
+    if (user?.preferredLanguage) {
+      const userLang = normalizeLanguage(user.preferredLanguage);
+      if (userLang !== language) {
+        setLanguage(userLang);
+      }
+    }
+  }, [user?.preferredLanguage]);
+
+  // Synchronize i18next instance and document language on initial mount
+  useEffect(() => {
+    if (i18n.language !== language) {
+      i18n.changeLanguage(language);
+    }
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = language;
     }
   }, []);
-
-  // Single owner of <html lang> (BCP-47: uz-Latn / uz-Cyrl / ru)
-  useEffect(() => {
-    if (typeof document !== "undefined") {
-      document.documentElement.lang = getHtmlLang(language);
-    }
-  }, [language]);
-
-  const isLoggedIn = !!user;
 
   const setLanguage = useCallback(async (newLang: string): Promise<void> => {
     const normalized = normalizeLanguage(newLang);
@@ -195,24 +155,19 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     // 2. Persist to localStorage
     try {
-      localStorage.setItem(LANG_STORAGE_KEY, normalized);
-      localStorage.removeItem(LEGACY_LANG_KEY);
+      localStorage.setItem("prava_lang", normalized);
+      localStorage.setItem("i18nextLng", normalized);
     } catch {
       // ignore
     }
 
-    // 3. Persist to Cookie (cross-subdomain support between pravaonline.uz and web.pravaonline.uz)
-    const isPravaDomain =
-      typeof window !== "undefined" &&
-      window.location.hostname.endsWith("pravaonline.uz");
-    Cookies.set("i18next", normalized, {
-      expires: 365,
-      path: "/",
-      domain: isPravaDomain ? ".pravaonline.uz" : undefined,
-      sameSite: "Lax",
-    });
+    // 3. Persist to Cookie
+    Cookies.set("i18next", normalized, { expires: 365, path: "/" });
 
-    // 4. <html lang> is updated by the [language] effect above.
+    // 4. Update DOM attribute
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = normalized;
+    }
 
     // 5. Dispatch global window event for components outside React context
     if (typeof window !== "undefined") {
@@ -220,22 +175,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         new CustomEvent("appLanguageChanged", { detail: normalized })
       );
     }
-
-    // 6. Save to the user profile (best-effort, non-blocking)
-    if (isLoggedIn) {
-      persistLanguageToProfile(normalized);
-    }
-  }, [isLoggedIn]);
-
-  // Sync with user's preferred language on login ONLY if there is no explicit local choice
-  useEffect(() => {
-    if (!user?.preferredLanguage) return;
-    if (readStoredLanguage()) return;
-    const userLang = normalizeLanguage(user.preferredLanguage);
-    if (userLang !== language) {
-      void setLanguage(userLang);
-    }
-  }, [user?.preferredLanguage, language, setLanguage]);
+  }, []);
 
   // Listen to external i18n language changes (e.g. from tests or third-party adapters)
   useEffect(() => {
@@ -261,65 +201,26 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (!text) return "";
       if (typeof text === "string") return text;
       const map = text as Record<string, string>;
-      const direct = map[language];
-      if (direct && direct.trim() !== "") return direct;
-      if (language === "uzc") {
-        const uzlVal = map["uzl"] || map["uz"];
-        if (uzlVal) return latinToCyrillic(uzlVal);
-      }
-      if (language === "uzl") {
-        const uzcVal = map["uzc"];
-        if (uzcVal) return cyrillicToLatin(uzcVal);
-      }
-      return map["uzl"] || map["uz"] || map["ru"] || "";
+      return map[language] || map["uzl"] || map["uz"] || "";
     },
     [language]
   );
 
   const localizeTopic = useCallback(
-    (topic: any): string => {
+    (topic: OfflineTopic | null | undefined): string => {
       if (!topic) return "";
-      const official = findOfficialTopic(topic);
-      const nameRu =
-        (typeof topic.name === "object" ? topic.name?.ru : null) ||
-        topic.name_ru ||
-        topic.nameRu ||
-        official?.name_ru;
-      const nameUzc =
-        (typeof topic.name === "object" ? topic.name?.uzc : null) ||
-        topic.name_uzc ||
-        topic.nameUzc ||
-        official?.name_uzc;
-      const nameUzl =
-        (typeof topic.name === "object" ? topic.name?.uzl : null) ||
-        topic.name_uzl ||
-        topic.nameUzl ||
-        official?.name_uzl ||
-        (typeof topic.name === "string" ? topic.name : "");
-
-      const hasCyrillic = (s: any) => typeof s === "string" && /[\u0400-\u04FF]/.test(s);
-
+      const fallback = getFallbackTopicName(topic.id, language);
       if (language === "uzc") {
-        if (official?.name_uzc) return official.name_uzc;
-        if (nameUzc && hasCyrillic(nameUzc)) return String(nameUzc);
-        if (nameUzl && String(nameUzl).trim()) return latinToCyrillic(String(nameUzl));
-        if (nameRu && String(nameRu).trim()) return String(nameRu);
-        return "";
+        if (topic.name_uzc && topic.name_uzc !== topic.name_uzl) return topic.name_uzc;
+        if (fallback) return fallback;
+        if (topic.name_uzc) return topic.name_uzc;
       }
       if (language === "ru") {
-        if (official?.name_ru) return official.name_ru;
-        if (nameRu && hasCyrillic(nameRu)) return String(nameRu);
-        if (nameRu && String(nameRu).trim()) return String(nameRu);
-        if (nameUzl && String(nameUzl).trim()) return String(nameUzl);
-        if (nameUzc && String(nameUzc).trim()) return cyrillicToLatin(String(nameUzc));
-        return "";
+        if (topic.name_ru && topic.name_ru !== topic.name_uzl) return topic.name_ru;
+        if (fallback) return fallback;
+        if (topic.name_ru) return topic.name_ru;
       }
-      // uzl
-      if (official?.name_uzl) return official.name_uzl;
-      if (nameUzl && String(nameUzl).trim()) return String(nameUzl);
-      if (nameUzc && String(nameUzc).trim()) return cyrillicToLatin(String(nameUzc));
-      if (nameRu && String(nameRu).trim()) return String(nameRu);
-      return "";
+      return fallback || topic.name_uzl || topic.name_uzc || topic.name_ru || "";
     },
     [language]
   );
@@ -327,16 +228,9 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const localizeQuestion = useCallback(
     (q: OfflineQuestion | null | undefined): string => {
       if (!q) return "";
-      if (language === "uzc") {
-        if (q.text_uzc && q.text_uzc.trim()) return q.text_uzc;
-        if (q.text_uzl && q.text_uzl.trim()) return latinToCyrillic(q.text_uzl);
-        if (q.text_ru && q.text_ru.trim()) return q.text_ru;
-        return "";
-      }
+      if (language === "uzc") return q.text_uzc || q.text_uzl;
       if (language === "ru") return q.text_ru || q.text_uzl;
-      if (q.text_uzl && q.text_uzl.trim()) return q.text_uzl;
-      if (q.text_uzc && q.text_uzc.trim()) return cyrillicToLatin(q.text_uzc);
-      return q.text_ru || "";
+      return q.text_uzl;
     },
     [language]
   );
@@ -344,16 +238,9 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const localizeOption = useCallback(
     (opt: QuestionOption | null | undefined): string => {
       if (!opt) return "";
-      if (language === "uzc") {
-        if (opt.uzc && opt.uzc.trim()) return opt.uzc;
-        if (opt.uzl && opt.uzl.trim()) return latinToCyrillic(opt.uzl);
-        if (opt.ru && opt.ru.trim()) return opt.ru;
-        return "";
-      }
+      if (language === "uzc") return opt.uzc || opt.uzl;
       if (language === "ru") return opt.ru || opt.uzl;
-      if (opt.uzl && opt.uzl.trim()) return opt.uzl;
-      if (opt.uzc && opt.uzc.trim()) return cyrillicToLatin(opt.uzc);
-      return opt.ru || "";
+      return opt.uzl;
     },
     [language]
   );
@@ -361,16 +248,9 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const localizeExplanation = useCallback(
     (q: OfflineQuestion | null | undefined): string | null => {
       if (!q) return null;
-      if (language === "uzc") {
-        if (q.explanation_uzc && q.explanation_uzc.trim()) return q.explanation_uzc;
-        if (q.explanation_uzl && q.explanation_uzl.trim()) return latinToCyrillic(q.explanation_uzl);
-        if (q.explanation_ru && q.explanation_ru.trim()) return q.explanation_ru;
-        return null;
-      }
-      if (language === "ru") return q.explanation_ru || q.explanation_uzl || null;
-      if (q.explanation_uzl && q.explanation_uzl.trim()) return q.explanation_uzl;
-      if (q.explanation_uzc && q.explanation_uzc.trim()) return cyrillicToLatin(q.explanation_uzc);
-      return q.explanation_ru ?? null;
+      if (language === "uzc" && q.explanation_uzc) return q.explanation_uzc;
+      if (language === "ru" && q.explanation_ru) return q.explanation_ru;
+      return q.explanation_uzl ?? null;
     },
     [language]
   );
@@ -429,27 +309,18 @@ export function useLanguage(): LanguageContextType {
       },
       localizeTopic: (tp) => {
         if (!tp) return "";
-        const official = findOfficialTopic(tp);
-        const hasCyrillic = (s: any) => typeof s === "string" && /[\u0400-\u04FF]/.test(s);
+        const fallback = getFallbackTopicName(tp.id, normalized);
         if (normalized === "uzc") {
-          if (official?.name_uzc) return official.name_uzc;
-          if (tp.name_uzc && hasCyrillic(tp.name_uzc)) return tp.name_uzc;
-          if (tp.name_uzl && String(tp.name_uzl).trim()) return latinToCyrillic(String(tp.name_uzl));
-          return tp.name_ru || official?.name_uzc || "";
+          if (tp.name_uzc && tp.name_uzc !== tp.name_uzl) return tp.name_uzc;
+          if (fallback) return fallback;
+          if (tp.name_uzc) return tp.name_uzc;
         }
         if (normalized === "ru") {
-          if (official?.name_ru) return official.name_ru;
-          if (tp.name_ru && hasCyrillic(tp.name_ru)) return tp.name_ru;
+          if (tp.name_ru && tp.name_ru !== tp.name_uzl) return tp.name_ru;
+          if (fallback) return fallback;
           if (tp.name_ru) return tp.name_ru;
-          return official?.name_ru || tp.name_uzl || "";
         }
-        return (
-          official?.name_uzl ||
-          tp.name_uzl ||
-          (tp.name_uzc ? cyrillicToLatin(tp.name_uzc) : "") ||
-          tp.name_ru ||
-          ""
-        );
+        return fallback || tp.name_uzl || tp.name_ru || tp.name_uzc || "";
       },
       localizeQuestion: (q) => {
         if (!q) return "";
@@ -482,22 +353,16 @@ export function getLocalizedText(item: any, fieldPrefix: string, lang?: string):
   const l = normalizeLanguage(
     lang ||
       (typeof window !== "undefined"
-        ? readStoredLanguage()
+        ? localStorage.getItem("prava_lang") || localStorage.getItem("i18nextLng")
         : undefined) ||
       i18n.language ||
       "uzl"
   );
-  const direct = item[`${fieldPrefix}_${l}`];
-  if (direct && String(direct).trim() !== "") return String(direct);
-
-  if (import.meta.env.DEV) {
-    console.warn(`[i18n:getLocalizedText] Missing field "${fieldPrefix}_${l}" for active locale "${l}"`, item);
-  }
   if (l === "uzc") {
-    return item[`${fieldPrefix}_uzl`] || item[fieldPrefix] || "";
+    return item[`${fieldPrefix}_uzc`] || item[`${fieldPrefix}_uzl`] || item[fieldPrefix] || "";
   }
   if (l === "ru") {
-    return item[`${fieldPrefix}_uzl`] || item[fieldPrefix] || "";
+    return item[`${fieldPrefix}_ru`] || item[`${fieldPrefix}_uzl`] || item[fieldPrefix] || "";
   }
   return item[`${fieldPrefix}_uzl`] || item[fieldPrefix] || "";
 }

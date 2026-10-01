@@ -27,7 +27,7 @@ export function classifyError(error: unknown): ErrorKind {
     if (status >= 400) return "client";
   }
   if (e.code === "ERR_NETWORK" || e.code === "ECONNABORTED" || e.code === "ETIMEDOUT") return "network";
-  if ("response" in e || "isAxiosError" in e) return "network";
+  if ("response" in e || "isAxiosError" in (e as any)) return "network";
   return "unknown";
 }
 

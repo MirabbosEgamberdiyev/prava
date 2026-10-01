@@ -133,7 +133,7 @@ const CYRILLIC_TO_LATIN_MAP: Record<string, string> = {
   й: "y", Й: "Y",
   к: "k", К: "K",
   л: "l", Л: "L",
-  м: "m", М: "M",
+  m: "m", М: "M",
   н: "n", Н: "N",
   о: "o", О: "O",
   п: "p", П: "P",
@@ -184,4 +184,3 @@ export function normalizeSearchText(text: string | null | undefined): string {
     .replace(/\s+/g, " ")
     .trim();
 }
-

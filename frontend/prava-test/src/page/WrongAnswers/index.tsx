@@ -50,11 +50,23 @@ function WrongAnswersContent() {
   const [entries, setEntries] = useState<WrongAnswerEntry[]>([]);
   const [topics, setTopics] = useState<OfflineTopic[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState<number | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [zoomSrc, setZoomSrc] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "byTopic">("all");
   const [clearModalOpen, setClearModalOpen] = useState(false);
+
+  const toggleExpand = (qId: number) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(qId)) {
+        next.delete(qId);
+      } else {
+        next.add(qId);
+      }
+      return next;
+    });
+  };
 
   const loadData = () => {
     getWrongAnswers(userId)
@@ -75,14 +87,23 @@ function WrongAnswersContent() {
 
   const handleRemove = async (questionId: number) => {
     await removeWrongAnswer(userId, questionId).catch(() => {});
-    setEntries((prev) => prev.filter((e) => e?.question?.id !== questionId));
+    setEntries((prev) => prev.filter((e) => Number(e?.question?.id ?? (e?.question as any)?.questionId) !== questionId));
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(questionId);
+      return next;
+    });
   };
 
   const handleClearAll = async () => {
     for (const entry of entries) {
-      await removeWrongAnswer(userId, entry.question.id).catch(() => {});
+      const qId = Number(entry?.question?.id ?? (entry?.question as any)?.questionId);
+      if (qId) {
+        await removeWrongAnswer(userId, qId).catch(() => {});
+      }
     }
     setEntries([]);
+    setExpandedIds(new Set());
     setClearModalOpen(false);
     showToast({
       id: "clear-wrong-success",
@@ -294,15 +315,16 @@ function WrongAnswersContent() {
           {/* TAB 1: Barcha xatolar */}
           {!loading && activeTab === "all" && filteredEntries.length > 0 && (
             <div className="ref-wrong-list">
-              {filteredEntries.map((entry) => {
+              {filteredEntries.map((entry, idx) => {
                 const q = entry.question;
+                const qId = Number(q.id || (q as any).questionId || idx + 1);
                 const opts = parseOptions(q.options_json);
-                const isOpen = expanded === q.id;
+                const isOpen = expandedIds.has(qId);
                 const explanation = localizeExp(q);
 
                 return (
                   <div
-                    key={q.id}
+                    key={qId}
                     className="ref-wrong-card"
                     style={{ flexDirection: "column", alignItems: "stretch", padding: 0, overflow: "hidden" }}
                   >
@@ -315,22 +337,18 @@ function WrongAnswersContent() {
                         padding: "16px 20px",
                         cursor: "pointer",
                       }}
-                      onClick={() => setExpanded(isOpen ? null : q.id)}
+                      onClick={() => toggleExpand(qId)}
                     >
-                      {/* Image Thumbnail or Icon */}
+                      {/* Image Thumbnail */}
                       <div className="ref-wrong-thumb">
-                        {q.image_path ? (
-                          <img
-                            src={q.image_path}
-                            alt=""
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                            onError={(e) => {
-                              (e.target as HTMLElement).style.display = "none";
-                            }}
-                          />
-                        ) : (
-                          <IconAlertTriangle size={24} color="#ef4444" />
-                        )}
+                        <img
+                          src={q.image_path || "/question-default.svg"}
+                          alt=""
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/question-default.svg";
+                          }}
+                        />
                       </div>
 
                       {/* Info */}
@@ -352,7 +370,7 @@ function WrongAnswersContent() {
                           style={{ padding: 6, color: "var(--g-text-muted)" }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleRemove(q.id);
+                            handleRemove(qId);
                           }}
                           title={t("wrongAnswers.remove", "Olib tashlash")}
                         >
@@ -375,15 +393,13 @@ function WrongAnswersContent() {
                           background: "var(--g-surface-muted)",
                         }}
                       >
-                        {q.image_path && (
-                          <div style={{ margin: "16px 0", maxWidth: 360 }}>
-                            <ZoomableImage
-                              path={q.image_path}
-                              className="ref-wrong-expanded-img"
-                              onOpen={(src) => setZoomSrc(src)}
-                            />
-                          </div>
-                        )}
+                        <div style={{ margin: "16px 0", maxWidth: 360 }}>
+                          <ZoomableImage
+                            path={q.image_path || "/question-default.svg"}
+                            className="ref-wrong-expanded-img"
+                            onOpen={(src) => setZoomSrc(src)}
+                          />
+                        </div>
 
                         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
                           {opts.map((opt, optIdx) => {

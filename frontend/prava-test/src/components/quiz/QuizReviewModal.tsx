@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Modal } from "@mantine/core";
 import { IconBulb } from "@tabler/icons-react";
 import type { OfflineQuestion } from "../../types/desktop";
 import {
@@ -33,9 +32,8 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
   const { t } = useTranslation();
   const [filter, setFilter] = useState<"all" | "mistakes">("mistakes");
 
-  // Mantine Modal (P2-W6): focus trap, aria-modal, Esc, fokusni qaytarish.
-  // Komponent yopiq holatda ham render qilinadi — Modal o'zi kontentni olib tashlaydi.
   const isVisible = opened ?? isOpen ?? false;
+  if (!isVisible) return null;
 
   const mistakesIndices = questions
     .map((q, idx) => ({ q, idx, ans: answers[idx] }))
@@ -49,47 +47,52 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
       : questions.map((q, idx) => ({ q, idx, ans: answers[idx] }));
 
   return (
-    <Modal.Root
-      opened={isVisible}
-      onClose={onClose}
-      centered
-      size={760}
-      zIndex={9999}
-      styles={{ inner: { padding: "clamp(8px, 2vw, 16px)" } }}
+    <div
+      className="modal-overlay"
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(0,0,0,0.6)",
+        backdropFilter: "blur(4px)",
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px",
+      }}
     >
-      <Modal.Overlay backgroundOpacity={0.6} blur={4} />
-      <Modal.Content
-        radius={20}
-        styles={{
-          content: {
-            width: "100%",
-            maxHeight: "90dvh",
-            display: "flex",
-            flexDirection: "column",
-            background: "var(--card-bg, var(--surface, #fff))",
-            border: "1.5px solid var(--border)",
-            boxShadow: "0 20px 48px rgba(0,0,0,0.18)",
-            overflow: "hidden",
-          },
+      <div
+        className="modal-card"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: "760px",
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          background: "var(--card-bg, var(--surface, #fff))",
+          borderRadius: "20px",
+          border: "1.5px solid var(--border)",
+          boxShadow: "0 20px 48px rgba(0,0,0,0.18)",
+          overflow: "hidden",
         }}
       >
         {/* Modal Header */}
         <div
           style={{
-            padding: "clamp(12px, 3vw, 18px) clamp(12px, 4vw, 24px)",
+            padding: "18px 24px",
             borderBottom: "1px solid var(--border)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             background: "var(--surface-muted, rgba(0,0,0,0.02))",
-            flexWrap: "wrap",
-            gap: "10px",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <Modal.Title style={{ margin: 0, fontSize: "clamp(15px, 3.5vw, 17px)", fontWeight: 800, lineHeight: 1.3, color: "var(--text)" }}>
-              {t("gamification.reviewMistakes")}
-            </Modal.Title>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "var(--text)" }}>
+              {t("gamification.reviewMistakes", "Xatolarni tahlil qilish")}
+            </h3>
             <span
               style={{
                 fontSize: "12px",
@@ -100,7 +103,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                 color: "#e03131",
               }}
             >
-              {mistakesIndices.length} {t("common.wrong")}
+              {mistakesIndices.length} {t("common.wrong", "ta xato")}
             </span>
           </div>
 
@@ -117,7 +120,6 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
               <button
                 type="button"
                 onClick={() => setFilter("mistakes")}
-                aria-pressed={filter === "mistakes"}
                 style={{
                   padding: "4px 10px",
                   borderRadius: "6px",
@@ -129,12 +131,11 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                   color: filter === "mistakes" ? "var(--primary)" : "var(--text-muted)",
                 }}
               >
-                {t("quiz.onlyMistakes")}
+                {t("common.wrong", "Faqat xatolar")}
               </button>
               <button
                 type="button"
                 onClick={() => setFilter("all")}
-                aria-pressed={filter === "all"}
                 style={{
                   padding: "4px 10px",
                   borderRadius: "6px",
@@ -146,7 +147,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                   color: filter === "all" ? "var(--primary)" : "var(--text-muted)",
                 }}
               >
-                {t("common.all")}
+                {t("common.all", "Barchasi")}
               </button>
             </div>
 
@@ -154,7 +155,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              aria-label={t("common.close")}
+              aria-label={t("common.close", "Yopish")}
               style={{
                 background: "none",
                 border: "none",
@@ -165,7 +166,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                 borderRadius: "6px",
               }}
             >
-              <span aria-hidden="true">✕</span>
+              ✕
             </button>
           </div>
         </div>
@@ -173,18 +174,16 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
         {/* Modal Scrollable Body */}
         <div
           style={{
-            padding: "clamp(12px, 3vw, 20px) clamp(10px, 3.5vw, 24px)",
+            padding: "20px 24px",
             overflowY: "auto",
-            flex: 1,
-            minHeight: 0,
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
+            gap: "20px",
           }}
         >
           {displayedList.length === 0 ? (
             <div style={{ textAlign: "center", padding: "36px 0", color: "var(--text-muted)" }}>
-              {t("gamification.noMistakes")}
+              {t("gamification.noMistakes", "Ajoyib! Birorta ham xato qilmadingiz.")}
             </div>
           ) : (
             displayedList.map(({ q, idx, ans }) => {
@@ -221,20 +220,18 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                         borderRadius: "6px",
                       }}
                     >
-                      {t("exam.questionReviewNum", { number: idx + 1 })} • {isWrong ? t("common.wrong") : t("common.correct")}
+                      {idx + 1}-savol • {isWrong ? t("common.wrong", "Xato") : t("common.correct", "To'g'ri")}
                     </span>
                   </div>
 
-                  {/* Image if present */}
-                  {q.image_path && (
-                    <div style={{ marginBottom: "12px", maxHeight: "180px", overflow: "hidden", borderRadius: "8px" }}>
-                      <SecureImage
-                        path={q.image_path}
-                        alt={t("exam.questionIllustration")}
-                        style={{ width: "100%", maxHeight: "180px", objectFit: "contain", borderRadius: "8px" }}
-                      />
-                    </div>
-                  )}
+                  {/* Image: always render (q.image_path or default) */}
+                  <div style={{ marginBottom: "12px", maxHeight: "180px", overflow: "hidden", borderRadius: "8px" }}>
+                    <SecureImage
+                      path={q.image_path || "/question-default.svg"}
+                      alt={t("exam.questionImageAlt", "Savol rasmi")}
+                      style={{ width: "100%", maxHeight: "180px", objectFit: "contain", borderRadius: "8px" }}
+                    />
+                  </div>
 
                   {/* Question text */}
                   <div
@@ -304,19 +301,19 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                               flexShrink: 0,
                             }}
                           >
-                            {String.fromCharCode(65 + optIdx)}
+                            F{optIdx + 1}
                           </span>
 
                           <span style={{ flex: 1 }}>{localizeOpt(opt)}</span>
 
                           {isCorrect && (
                             <span style={{ fontSize: "11px", fontWeight: 800, color: "#2f9e44" }}>
-                              ✓ {t("examResult.correctAnswer")}
+                              ✓ {t("examResult.correctAnswer", "To'g'ri javob")}
                             </span>
                           )}
                           {isSelected && !isCorrect && (
                             <span style={{ fontSize: "11px", fontWeight: 800, color: "#e03131" }}>
-                              ✕ {t("examResult.yourAnswer")}
+                              ✕ {t("examResult.yourAnswer", "Sizning javobingiz")}
                             </span>
                           )}
                         </div>
@@ -331,8 +328,8 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                         marginTop: "12px",
                         padding: "10px 12px",
                         borderRadius: "8px",
-                        background: "rgba(var(--primary-rgb), 0.08)",
-                        border: "1px solid rgba(var(--primary-rgb), 0.2)",
+                        background: "rgba(25, 113, 194, 0.08)",
+                        border: "1px solid rgba(25, 113, 194, 0.2)",
                         fontSize: "12.5px",
                         color: "var(--text)",
                         display: "flex",
@@ -340,10 +337,10 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                         alignItems: "flex-start",
                       }}
                     >
-                      <IconBulb size={18} color="var(--primary)" style={{ flexShrink: 0, marginTop: 2 }} />
+                      <IconBulb size={18} color="#1971c2" style={{ flexShrink: 0, marginTop: 2 }} />
                       <div style={{ lineHeight: 1.4 }}>
-                        <span style={{ fontWeight: 700, color: "var(--primary)" }}>
-                          {t("activeTest.explanation")}:{" "}
+                        <span style={{ fontWeight: 700, color: "#1971c2" }}>
+                          {t("activeTest.explanation", "YHQ tushuntirishi")}:{" "}
                         </span>
                         {explanation}
                       </div>
@@ -358,7 +355,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
         {/* Modal Footer */}
         <div
           style={{
-            padding: "clamp(10px, 2.5vw, 14px) clamp(12px, 4vw, 24px)",
+            padding: "14px 24px",
             borderTop: "1px solid var(--border)",
             display: "flex",
             justifyContent: "flex-end",
@@ -370,7 +367,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
             onClick={onClose}
             style={{
               padding: "8px 20px",
-              background: "var(--primary)",
+              background: "var(--primary, #1971c2)",
               color: "#fff",
               border: "none",
               borderRadius: "10px",
@@ -379,11 +376,11 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
               cursor: "pointer",
             }}
           >
-            {t("common.close")}
+            {t("common.close", "Yopish")}
           </button>
         </div>
-      </Modal.Content>
-    </Modal.Root>
+      </div>
+    </div>
   );
 };
 

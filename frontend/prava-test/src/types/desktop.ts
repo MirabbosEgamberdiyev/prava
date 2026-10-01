@@ -1,3 +1,4 @@
+import type { UserScopeId } from "@/utils/userScope";
 export interface DesktopUser {
   id: number;
   name: string;
@@ -19,14 +20,14 @@ export interface UserStats {
 
 export interface ExamResult {
   id: number;
-  user_id: number | string;
+  user_id: UserScopeId;
   score: number;
   total_questions: number;
   correct_answers: number;
   duration_seconds: number;
   exam_type: string;
   created_at: string;
-  /** Natija o'tganmi (yangi yozuvlar; eski yozuvlarda yo'q — isStoredResultPassed hisoblaydi). */
+  /** Persisted outcome (records saved after the D-02 fix; absent on older records). */
   mode?: "real" | "ticket" | "marathon" | "wrong" | "package" | null;
   passed?: boolean | null;
   wrong_answers?: number;
@@ -81,8 +82,6 @@ export interface OfflineTicket {
   passing_score: number;
   question_count: number;
   is_blocked?: boolean;
-  /** Mehmonlar uchun ochiq (bepul) bilet — public endpoint beradi. */
-  is_free?: boolean;
 }
 
 export interface TicketStat {
@@ -202,5 +201,6 @@ export type AppScreen =
   | "saved-questions"
   | "leaderboard"
   | "history"
+  | "simulator"
   | "admin-login"
   | "admin-dashboard";

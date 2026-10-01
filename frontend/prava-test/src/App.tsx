@@ -13,7 +13,6 @@ import { useTranslation } from "react-i18next";
 import { ScrollManager } from "./components/common/ScrollManager";
 import { AuthModalProvider } from "./auth/AuthModalContext";
 import { TariffPaywallProvider } from "./context/TariffPaywallContext";
-import DesktopAuthModal from "./components/auth/DesktopAuthModal";
 import TariffPaywallModal from "./components/common/TariffPaywallModal";
 
 /**
@@ -73,6 +72,9 @@ function ApiErrorListener() {
   return null;
 }
 
+import GlobalSearchHost from "./features/Search/GlobalSearchHost";
+import DesktopFrame from "./shell/DesktopFrame";
+
 /**
  * Inner app wrapper that resets ErrorBoundary on route change.
  */
@@ -90,11 +92,13 @@ function AppInner() {
                 <ApiErrorListener />
                 {allowGoogleOneTap && <GoogleOneTap />}
                 <ScrollManager />
-                <DesktopAuthModal />
+                <GlobalSearchHost />
                 <TariffPaywallModal />
-                <ErrorBoundary resetKey={location.pathname}>
-                  <AppRoutes />
-                </ErrorBoundary>
+                <DesktopFrame>
+                  <ErrorBoundary resetKey={location.pathname}>
+                    <AppRoutes />
+                  </ErrorBoundary>
+                </DesktopFrame>
               </LanguageProvider>
             </TariffPaywallProvider>
           </AuthModalProvider>

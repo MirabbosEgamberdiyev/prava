@@ -1,0 +1,130 @@
+/* Professional High-Elevation Language Switcher */
+.pro-lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px 0 8px;
+  border-radius: 8px;
+  border: 1px solid var(--shell-divider);
+  background: var(--surface);
+  color: var(--shell-chrome-text);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+[data-theme="light"] .pro-lang-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.pro-lang-btn:hover {
+  background: var(--shell-hover);
+  border-color: var(--primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .pro-lang-btn:hover {
+  background: #f1f5f9;
+  border-color: #0284c7;
+}
+
+.pro-lang-globe {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.pro-lang-code {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+
+.pro-lang-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--shell-chrome-text);
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pro-lang-chevron {
+  opacity: 0.55;
+  margin-left: 2px;
+  transition: transform 0.18s ease;
+}
+
+.pro-lang-btn[data-expanded="true"] .pro-lang-chevron {
+  transform: rotate(180deg);
+}
+
+/* Dropdown */
+.pro-lang-dropdown {
+  padding: 6px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  z-index: 10000;
+}
+
+.pro-lang-heading {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  padding: 4px 8px 6px;
+}
+
+.pro-lang-item {
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pro-lang-item:hover {
+  background: var(--bg);
+}
+
+.pro-lang-item.is-active {
+  background: var(--primary-light, rgba(25, 113, 194, 0.1));
+}
+
+.pro-lang-item.is-active .pro-lang-item-name {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.pro-lang-item-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.pro-lang-item-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.pro-lang-item-name {
+  font-size: 13px;
+  color: var(--text);
+}

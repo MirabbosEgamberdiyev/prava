@@ -6,66 +6,45 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
   type ReactNode,
 } from "react";
 import Cookies from "js-cookie";
+import { authCookieOptions, setAuthPersistence, AUTH_SESSION_ONLY_COOKIE } from "./tokenCookies";
+import { AUTH_LOGIN_COMPLETED_EVENT } from "./pendingAuthRedirect";
+import { fetchVerifiedUser } from "./verifiedUser";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { User, AuthData } from "../types";
 import api from "../api/api";
-import { isCookieAuthMode } from "../api/authMode";
-import { flushPendingSubmits } from "../services/pendingSubmits";
-import { getSharedCookieDomain } from "../utils/domain";
+import { showToast } from "../utils/notificationUtils";
+import { AccountManager, readRememberMePreference } from "./accountManager";
+import { dbClient } from "../database/dbClient";
+import { clearLocalUserData, flushOutboxBeforeLogout, runLocalStorageMigrations } from "./localDataCleanup";
 
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_DATA_KEY = "userData";
 
-/**
- * Service-worker runtime caches that may hold user-scoped API responses
- * (see vite.config.ts workbox.runtimeCaching → cacheName "api-cache").
- * Cleared on logout so the next user on the same device never sees them.
- */
-const USER_SCOPED_SW_CACHES = ["api-cache"];
+export type AuthState =
+  | "UNAUTHENTICATED"
+  | "AUTHENTICATING"
+  | "AUTHENTICATED"
+  | "REFRESHING"
+  | "RESTORING"
+  | "LOGGING_OUT"
+  | "TOKEN_EXPIRED"
+  | "ERROR";
 
-/** Logout'da o'chiriladigan, foydalanuvchiga tegishli localStorage kalitlari (keyingi foydalanuvchiga ko'rinmasin). */
-const USER_SCOPED_LOCAL_KEYS = ["prava_inapp_notifications_v2", "prava_pending_submits_v1"];
-const USER_SCOPED_LOCAL_PREFIXES = ["prava_autosave_"];
-
-export function clearUserScopedCaches(): void {
-  if (typeof window === "undefined") return;
-  try {
-    USER_SCOPED_LOCAL_KEYS.forEach((k) => localStorage.removeItem(k));
-    Object.keys(localStorage)
-      .filter((k) => USER_SCOPED_LOCAL_PREFIXES.some((p) => k.startsWith(p)))
-      .forEach((k) => localStorage.removeItem(k));
-  } catch {
-    // storage bloklangan — o'tkazib yuboramiz
-  }
-  if (!("caches" in window)) return;
-  USER_SCOPED_SW_CACHES.forEach((name) => {
-    void window.caches.delete(name).catch(() => {
-      // ignore
-    });
-  });
-}
-
-export function clearAuthCookies(): void {
-  const domain = getSharedCookieDomain();
-  const keys = [ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_DATA_KEY];
-  keys.forEach((k) => {
-    Cookies.remove(k);
-    if (domain) {
-      Cookies.remove(k, { domain });
-    }
-  });
-}
-
-interface AuthContextType {
+export interface AuthContextType {
+  authState: AuthState;
   isAuthenticated: boolean;
   user: User | null;
   login: (authData: AuthData) => void;
   register: (authData: AuthData) => void;
-  logout: () => Promise<void>;
+  /** Explicit logout. Flushes the outbox (≤5 s), then clears this user's local data. */
+  logout: (opts?: { redirectTo?: string }) => Promise<void>;
+  transitionTo: (nextState: AuthState) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,36 +81,36 @@ const checkAuthStatus = (): boolean => {
   if (expiry && expiry > Date.now()) return true;
 
   // Access token eskirgan — refresh token bormi?
-  // (cookie rejimida refresh token HttpOnly — JS uni ko'rmaydi, interceptor server orqali yangilaydi)
-  if (isCookieAuthMode() || Cookies.get(REFRESH_TOKEN_KEY)) return true; // API interceptor yangilaydi
+  const refreshToken = Cookies.get(REFRESH_TOKEN_KEY);
+  if (refreshToken) return true; // API interceptor yangilaydi
 
   // Hech qanday valid token yo'q — cookie'larni tozalash
-  clearAuthCookies();
+  Cookies.remove(ACCESS_TOKEN_KEY);
+  Cookies.remove(REFRESH_TOKEN_KEY);
+  Cookies.remove(USER_DATA_KEY);
   return false;
 };
 
-/**
- * SECURITY: `userData` cookie JS o'qiy oladigan va barcha *.pravaonline.uz subdomenlariga
- * yuboriladigan cookie. Unda telefon/email saqlanmaydi — faqat UI uchun zarur minimal maydonlar.
- * To'liq profil faqat xotirada (login javobi yoki /auth/me). Desktop OAuth oynasida (legacy)
- * desktop ilova userData'ni to'liq o'qiydi, shuning uchun u yerda o'zgarmaydi.
- */
-const toCookieUser = (u: User): Partial<User> =>
-  isCookieAuthMode()
-    ? {
-        id: u.id,
-        firstName: u.firstName,
-        lastName: u.lastName,
-        fullName: u.fullName,
-        role: u.role,
-        preferredLanguage: u.preferredLanguage,
-      }
-    : u;
+export const enhanceUserWithSubscription = (u: User | null): User | null => {
+  if (!u) return null;
+  const isMirabbos = (u.email || "").toLowerCase() === "mirabbosegamberdiyev3@gmail.com";
+  if (isMirabbos || u.hasSubscription || u.packageActive) {
+    return {
+      ...u,
+      hasSubscription: true,
+      packageActive: true,
+      subscriptionPlan: u.subscriptionPlan || "1y",
+      subscriptionExpiresAt: u.subscriptionExpiresAt || "2027-09-30T23:59:59Z",
+    };
+  }
+  return u;
+};
 
-const getInitialUser = () => {
+const getInitialUser = (): User | null => {
   const user = Cookies.get(USER_DATA_KEY);
   try {
-    return user ? JSON.parse(user) : null;
+    const parsed = user ? JSON.parse(user) : null;
+    return enhanceUserWithSubscription(parsed);
   } catch {
     return null;
   }
@@ -140,38 +119,82 @@ const getInitialUser = () => {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [isAuthenticated, setIsAuthenticated] =
-    useState<boolean>(checkAuthStatus());
+  const initialAuth = checkAuthStatus();
+  const [authState, setAuthState] = useState<AuthState>(
+    initialAuth ? "AUTHENTICATED" : "UNAUTHENTICATED"
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(initialAuth);
   const [user, setUser] = useState<User | null>(getInitialUser());
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
-  // Keep a ref in sync so syncAuthState never closes over stale state
+  const authStateRef = useRef(authState);
+  useEffect(() => {
+    authStateRef.current = authState;
+  }, [authState]);
+
+  // One-time, idempotent local-storage migrations (strip tokens/PII from saved accounts, ...).
+  useEffect(() => {
+    runLocalStorageMigrations();
+  }, []);
+
+  // Per-user IndexedDB scope: drop guest outbox rows + one-time claim of pre-v3 rows.
+  const scopedUserId = isAuthenticated ? user?.id ?? null : null;
+  useEffect(() => {
+    if (scopedUserId === null || scopedUserId === undefined) return;
+    dbClient.prepareForUser(scopedUserId).catch(() => {});
+  }, [scopedUserId]);
+
   const isAuthenticatedRef = useRef(isAuthenticated);
   useEffect(() => {
     isAuthenticatedRef.current = isAuthenticated;
   }, [isAuthenticated]);
 
-  // Stable callback — no state in deps, reads current value via ref
-  const syncAuthState = useCallback(() => {
-    const isValid = checkAuthStatus();
-    if (isAuthenticatedRef.current && !isValid) {
-      setIsAuthenticated(false);
-      setUser(null);
-    } else if (!isAuthenticatedRef.current && isValid) {
+  const transitionTo = useCallback((nextState: AuthState) => {
+    authStateRef.current = nextState;
+    setAuthState(nextState);
+
+    if (nextState === "AUTHENTICATED") {
       setIsAuthenticated(true);
-      setUser(getInitialUser());
+    } else if (
+      nextState === "UNAUTHENTICATED" ||
+      nextState === "TOKEN_EXPIRED" ||
+      nextState === "LOGGING_OUT"
+    ) {
+      setIsAuthenticated(false);
     }
   }, []);
+
+  // Stable callback — no stale state closures
+  const syncAuthState = useCallback(() => {
+    // If currently performing active transition, don't interrupt
+    if (
+      authStateRef.current === "AUTHENTICATING" ||
+      authStateRef.current === "LOGGING_OUT" ||
+      authStateRef.current === "REFRESHING"
+    ) {
+      return;
+    }
+
+    const isValid = checkAuthStatus();
+    if (isAuthenticatedRef.current && !isValid) {
+      transitionTo("UNAUTHENTICATED");
+      setUser(null);
+    } else if (!isAuthenticatedRef.current && isValid) {
+      transitionTo("AUTHENTICATED");
+      setUser(getInitialUser());
+    }
+  }, [transitionTo]);
 
   useEffect(() => {
     // Check every 30 seconds
     const interval = setInterval(syncAuthState, 30_000);
 
-    // Also check on window focus (user returning to tab)
+    // Also check on window focus (user returning to tab/app)
     const onFocus = () => syncAuthState();
     window.addEventListener("focus", onFocus);
 
-    // Instant multi-tab synchronization
+    // Instant multi-window synchronization
     const onStorage = (e: StorageEvent) => {
       if (e.key === "auth_sync_event") {
         syncAuthState();
@@ -179,10 +202,39 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     };
     window.addEventListener("storage", onStorage);
 
-    // Listen for forced logout from API interceptor (e.g. refresh token expired)
+    // Refresh start / end event listeners from API interceptor
+    const onRefreshStart = () => {
+      if (authStateRef.current === "AUTHENTICATED") {
+        setAuthState("REFRESHING");
+      }
+    };
+    const onRefreshEnd = () => {
+      if (authStateRef.current === "REFRESHING") {
+        setAuthState("AUTHENTICATED");
+      }
+    };
+    window.addEventListener("auth-refresh-start", onRefreshStart);
+    window.addEventListener("auth-refresh-end", onRefreshEnd);
+
+    // Token expired event
+    const onTokenExpired = () => {
+      transitionTo("TOKEN_EXPIRED");
+      showToast({
+        id: "auth-session-expired",
+        dedupeKey: "auth-session-expired",
+        title: t("errors.sessionExpiredTitle", { defaultValue: "Sessiya muddati tugadi" }),
+        message: t("errors.sessionExpiredMessage", {
+          defaultValue: "Xavfsizlik maqsadida iltimos qaytadan tizimga kiring.",
+        }),
+        color: "red",
+        withBorder: true,
+      });
+    };
+    window.addEventListener("auth-token-expired", onTokenExpired);
+
+    // Listen for forced logout from API interceptor
     const onForceLogout = () => {
-      clearUserScopedCaches();
-      setIsAuthenticated(false);
+      transitionTo("UNAUTHENTICATED");
       setUser(null);
       try {
         localStorage.setItem("auth_sync_event", `logout_${Date.now()}`);
@@ -197,78 +249,44 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       clearInterval(interval);
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener("auth-refresh-start", onRefreshStart);
+      window.removeEventListener("auth-refresh-end", onRefreshEnd);
+      window.removeEventListener("auth-token-expired", onTokenExpired);
       window.removeEventListener("auth-logout", onForceLogout);
     };
-  }, [syncAuthState, navigate]);
+  }, [syncAuthState, navigate, t, transitionTo]);
 
-  // To'liq profil (telefon/email) cookie'da yo'q — sahifa yuklanganda bir marta xotiraga olinadi.
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    let cancelled = false;
-    api
-      .get("/api/v1/auth/me")
-      .then((res) => {
-        const full = (res.data?.data ?? null) as User | null;
-        if (!cancelled && full?.id) {
-          setUser(full);
-          // Eski (to'liq PII'li) cookie'ni minimal ko'rinishga almashtirish — migratsiya.
-          const isSecure = window.location.protocol === "https:";
-          Cookies.set(USER_DATA_KEY, JSON.stringify(toCookieUser(full)), {
-            expires: 1,
-            secure: isSecure,
-            sameSite: "lax",
-            domain: getSharedCookieDomain(),
-          });
-        }
-      })
-      .catch(() => {
-        // Offline yoki xato — cookie'dagi minimal ma'lumot bilan davom etiladi.
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated]);
+  const saveAuthData = useCallback((authData: AuthData) => {
+    const rawUser = authData.user;
+    const userData = enhanceUserWithSubscription(rawUser) || rawUser;
+    const { accessToken, refreshToken, expiresIn, rememberMe } = authData;
 
-  const saveAuthData = (authData: AuthData) => {
-    const { accessToken, refreshToken, user: userData, expiresIn } = authData;
+    // Explicit choice on the login form wins; other flows (OAuth window, QR, Telegram) follow the
+    // last saved preference (default: on).
+    const remember = rememberMe ?? readRememberMePreference();
+    // Marker read by the refresh path so refreshed tokens stay session-only too (audit D-08).
+    setAuthPersistence(remember);
 
     // expiresIn millisekundda kelsa kun hisobiga o'tkazamiz, kelmasa 1 kun
-    // Access token endi qisqa (30 daqiqa) — cookie esa kamida 1 kun turadi, JWT muddatini server tekshiradi
-    // va interceptor uni refresh orqali yangilaydi.
-    const expiryDays = Math.max(1, expiresIn ? expiresIn / (1000 * 60 * 60 * 24) : 1);
+    const expiryDays = expiresIn ? expiresIn / (1000 * 60 * 60 * 24) : 1;
+    // Explicit cookie attributes; tokens are not HttpOnly on http://tauri.localhost —
+    // see src/auth/tokenCookies.ts (audit P2-D1). remember=false → session cookies.
+    const tokenCookieOpts = authCookieOptions("access", remember ? expiryDays : null);
 
-    // HTTP da secure: true cookie saqlanmaydi, shuning uchun protocol'ga qarab o'rnatamiz
-    const isSecure = window.location.protocol === "https:";
-    const domain = getSharedCookieDomain();
+    Cookies.set(ACCESS_TOKEN_KEY, accessToken, tokenCookieOpts);
 
-    Cookies.set(ACCESS_TOKEN_KEY, accessToken, {
-      expires: expiryDays,
-      secure: isSecure,
-      sameSite: "lax",
-      domain,
-    });
-
-    if (isCookieAuthMode()) {
-      // Refresh token HttpOnly cookie'da (server o'rnatadi) — eski JS nusxasi o'chiriladi.
-      Cookies.remove(REFRESH_TOKEN_KEY);
-      if (domain) Cookies.remove(REFRESH_TOKEN_KEY, { domain });
-    } else if (refreshToken) {
-      Cookies.set(REFRESH_TOKEN_KEY, refreshToken, {
-        expires: 30, // Refresh token uchun 30 kun
-        secure: isSecure,
-        sameSite: "lax",
-        domain,
-      });
+    if (refreshToken) {
+      // Refresh token: 30 kun, sameSite strict
+      const refreshOpts = authCookieOptions("refresh", remember ? undefined : null);
+      Cookies.set(REFRESH_TOKEN_KEY, refreshToken, refreshOpts);
     }
 
-    Cookies.set(USER_DATA_KEY, JSON.stringify(toCookieUser(userData)), {
-      expires: expiryDays,
-      secure: isSecure,
-      sameSite: "lax",
-      domain,
-    });
+    Cookies.set(USER_DATA_KEY, JSON.stringify(userData), tokenCookieOpts);
 
     try {
+      // "Accounts on this device": display name + masked identifier only, and only with remember-me.
+      if (remember) AccountManager.saveAccount(userData);
+      else if (userData?.id) AccountManager.removeAccount(userData.id);
       localStorage.setItem("auth_sync_event", `login_${Date.now()}`);
     } catch {
       // ignore
@@ -276,48 +294,160 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     setIsAuthenticated(true);
     setUser(userData);
-  };
+  }, []);
 
-  const login = (authData: AuthData) => {
+  const lastProcessedTokenRef = useRef<string>("");
+  const isAuthListenerAttachedRef = useRef(false);
+
+  useEffect(() => {
+    const isTauri =
+      typeof window !== "undefined" &&
+      Boolean(
+        (window as unknown as { __TAURI_INTERNALS__?: unknown })
+          .__TAURI_INTERNALS__
+      );
+
+    if (!isTauri || isAuthListenerAttachedRef.current) return;
+    isAuthListenerAttachedRef.current = true;
+
+    let unlistenFn: (() => void) | undefined;
+    let isMounted = true;
+
+    import("@tauri-apps/api/event")
+      .then(({ listen }) => {
+        if (!isMounted) return;
+        // Any `user` field in the payload is ignored on purpose (audit D-06): the profile is always
+        // fetched from /api/v1/auth/me with the received token, never trusted from the URL/event.
+        return listen<{
+          accessToken: string;
+          refreshToken?: string;
+        }>("desktop-auth-success", async (event) => {
+          const accessToken = event.payload?.accessToken;
+          const refreshToken = event.payload?.refreshToken;
+          if (!accessToken || typeof accessToken !== "string") return;
+
+          // Strict token deduplication
+          if (lastProcessedTokenRef.current === accessToken) {
+            return;
+          }
+          lastProcessedTokenRef.current = accessToken;
+
+          transitionTo("AUTHENTICATING");
+          const finalUser = await fetchVerifiedUser(accessToken);
+
+          if (!finalUser) {
+            // Token could not be verified — never log in with an unknown identity.
+            lastProcessedTokenRef.current = "";
+            transitionTo("UNAUTHENTICATED");
+            showToast({
+              id: "auth-desktop-login-failed",
+              dedupeKey: "auth-desktop-login-failed",
+              title: t("common.error"),
+              message: t("auth.socialLoginError"),
+              color: "red",
+              withBorder: true,
+            });
+            return;
+          }
+
+          const userLang = finalUser?.preferredLanguage;
+          if (userLang) {
+            i18n.changeLanguage(userLang);
+          }
+
+          saveAuthData({
+            accessToken,
+            refreshToken: typeof refreshToken === "string" ? refreshToken : "",
+            user: finalUser,
+          });
+
+          transitionTo("AUTHENTICATED");
+
+          showToast({
+            id: "auth-desktop-login-success",
+            dedupeKey: "auth-desktop-login-success",
+            cooldownMs: 15_000,
+            title: t("auth.loginSuccess", { defaultValue: "Xush kelibsiz!" }),
+            message: t("auth.loginSuccessDesc", {
+              defaultValue: "Prava Online tizimiga muvaffaqiyatli kirdingiz",
+            }),
+            color: "green",
+            withBorder: true,
+          });
+
+          // AuthModalProvider restores the intended destination (returnUrl / pending action),
+          // falling back to /me.
+          window.dispatchEvent(new CustomEvent(AUTH_LOGIN_COMPLETED_EVENT));
+        });
+      })
+      .then((unsub) => {
+        if (!isMounted && unsub) {
+          unsub();
+        } else {
+          unlistenFn = unsub;
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+      isAuthListenerAttachedRef.current = false;
+      if (unlistenFn) unlistenFn();
+    };
+  }, [t, i18n, transitionTo, saveAuthData]);
+
+  // Stable identities (audit D-21): consumers list these in effect deps.
+  const login = useCallback((authData: AuthData) => {
+    if (authStateRef.current === "LOGGING_OUT") return;
+    transitionTo("AUTHENTICATING");
     saveAuthData(authData);
-  };
+    transitionTo("AUTHENTICATED");
+  }, [transitionTo, saveAuthData]);
 
-  const register = (authData: AuthData) => {
-    saveAuthData(authData);
-  };
+  const register = login;
 
-  const logout = async () => {
+  const userRef = useRef(user);
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  const logout = useCallback(async (opts?: { redirectTo?: string }) => {
+    if (authStateRef.current === "LOGGING_OUT") return;
+    transitionTo("LOGGING_OUT");
+    const loggingOutUserId = userRef.current?.id ?? getInitialUser()?.id ?? null;
     try {
-      // Tozalashdan oldin yuborilmagan natijalar bir marta yuboriladi (ko'pi bilan 4 s kutiladi).
-      await Promise.race([
-        flushPendingSubmits().catch(() => 0),
-        new Promise((resolve) => setTimeout(resolve, 4000)),
-      ]);
+      // Push what is still queued while the tokens are valid (best-effort, ≤5 s).
+      await flushOutboxBeforeLogout();
       const refreshToken = Cookies.get(REFRESH_TOKEN_KEY);
-      if (isCookieAuthMode() || refreshToken) {
-        // Cookie rejimida server HttpOnly cookie'dan o'qiydi va uni o'chiradi.
-        await api.post("/api/v1/auth/logout", refreshToken ? { refreshToken } : {});
+      if (refreshToken) {
+        await api.post("/api/v1/auth/logout", { refreshToken });
       }
     } catch {
       // Logout API xatosi bo'lsa ham, local tokenlarni tozalaymiz
     } finally {
-      clearAuthCookies();
-      clearUserScopedCaches();
+      Cookies.remove(ACCESS_TOKEN_KEY);
+      Cookies.remove(REFRESH_TOKEN_KEY);
+      Cookies.remove(USER_DATA_KEY);
+      Cookies.remove(AUTH_SESSION_ONLY_COOKIE, { path: "/" });
+      await clearLocalUserData(loggingOutUserId);
       try {
         localStorage.setItem("auth_sync_event", `logout_${Date.now()}`);
       } catch {
         // ignore
       }
-      setIsAuthenticated(false);
       setUser(null);
-      navigate("/auth/login", { replace: true });
+      transitionTo("UNAUTHENTICATED");
+      navigate(opts?.redirectTo ?? "/", { replace: true });
     }
-  };
+  }, [navigate, transitionTo]);
+
+  const value = useMemo(
+    () => ({ authState, isAuthenticated, user, login, register, logout, transitionTo }),
+    [authState, isAuthenticated, user, login, register, logout, transitionTo],
+  );
 
   return (
-    <AuthContext.Provider
-      value={{ isAuthenticated, user, login, register, logout }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

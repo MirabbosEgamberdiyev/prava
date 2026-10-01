@@ -1,0 +1,61 @@
+/* Professional High-Elevation Theme Action Button */
+.pro-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--shell-divider, rgba(255, 255, 255, 0.12));
+  background: var(--surface, rgba(255, 255, 255, 0.05));
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  padding: 0;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+[data-theme="light"] .pro-theme-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.pro-theme-btn:hover {
+  background: var(--shell-hover, rgba(255, 255, 255, 0.1));
+  border-color: var(--primary, #38bdf8);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] .pro-theme-btn:hover {
+  background: #f1f5f9;
+  border-color: #0284c7;
+}
+
+.pro-theme-btn:active {
+  transform: scale(0.92);
+}
+
+.pro-theme-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.pro-sun-icon {
+  color: #f59e0b;
+  filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.45));
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pro-moon-icon {
+  color: #334155;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.18s ease;
+}
+
+.pro-theme-btn:hover .pro-moon-icon {
+  color: #0f172a;
+}

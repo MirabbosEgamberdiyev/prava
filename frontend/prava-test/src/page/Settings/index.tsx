@@ -25,10 +25,12 @@ import { useLanguage, type AppLanguage } from "../../context/LanguageContext";
 import { useDesktopTheme } from "../../context/DesktopThemeContext";
 import OfflinePreparationModal from "../../components/offline/OfflinePreparationModal";
 import TermsModal from "../../components/auth/TermsModal";
+import { useCurriculumCounts } from "../../hooks/useCurriculumCounts";
 
 export default function Settings_Page() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const counts = useCurriculumCounts();
   const { lang, setLanguage } = useLanguage();
   const { theme, setTheme } = useDesktopTheme();
 
@@ -426,7 +428,7 @@ export default function Settings_Page() {
                   {t("settings.storageLocalDB", "Lokal savollar bazasi")}
                 </span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "var(--g-primary-light)" }}>
-                  1190 {t("common.questions", "ta savol")}
+                  {counts.questions || 1243} {t("common.questions", "ta savol")}
                 </span>
               </div>
 

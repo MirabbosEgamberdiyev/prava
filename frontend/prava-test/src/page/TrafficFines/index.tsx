@@ -8,7 +8,6 @@ import { CurriculumSearch, CurriculumShell, CurriculumState } from "../../featur
 import { useTrafficFines } from "../../features/Fines/useTrafficFines";
 import { filterFines, pickFineText, type TrafficFine } from "../../services/finesService";
 import { formatMultiplier, formatSom, formatSomRange } from "../../utils/formatMoney";
-import { normalizeSearchText } from "../../utils/transliterate";
 import "../../features/Fines/fines.css";
 
 function FineRow({ fine, lang }: { fine: TrafficFine; lang: string }) {
@@ -33,7 +32,7 @@ function FineRow({ fine, lang }: { fine: TrafficFine; lang: string }) {
         )}
       </span>
       <span className="fines-amount" role="cell">
-        <span className="fines-amount-sum">{formatSomRange(fine.amountMin ?? 0, fine.amountMax, lang)}</span>
+        <span className="fines-amount-sum">{formatSomRange(fine.amountMin ?? 0, fine.amountMax ?? null, lang)}</span>
         <span className="fines-amount-bhm">{t("fines.bhmMultiplier", { value: multiplier, defaultValue: "{{value}} BHM" })}</span>
       </span>
     </div>
@@ -53,7 +52,7 @@ export default function TrafficFines_Page() {
     if (deepQ) setSearch(deepQ);
   }, [deepQ]);
 
-  const filtered = useMemo(() => filterFines(fines, search, normalizeSearchText), [fines, search]);
+  const filtered = useMemo(() => filterFines(fines, search, lang), [fines, search, lang]);
   const title = t("fines.title", "Yo'l harakati jarimalari");
   const subtitle = t("fines.subtitle", "");
   const noData = !!data && fines.length === 0;
@@ -123,7 +122,7 @@ export default function TrafficFines_Page() {
                       <span role="columnheader">{t("fines.colViolation", "Qoidabuzarlik")}</span>
                       <span role="columnheader">{t("fines.colAmount", "Jarima miqdori")}</span>
                     </div>
-                    {filtered.map((f: TrafficFine) => (
+                    {filtered.map((f) => (
                       <FineRow key={f.id} fine={f} lang={lang} />
                     ))}
                   </div>

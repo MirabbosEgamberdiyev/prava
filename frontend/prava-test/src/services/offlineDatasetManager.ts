@@ -8,6 +8,7 @@ import { questionRepository } from "../database/repositories/questionRepository"
 import { ticketRepository } from "../database/repositories/ticketRepository";
 import { topicRepository } from "../database/repositories/topicRepository";
 import type { DbQuestion, DbTicket, DbTopic, OfflineDatasetStatus } from "../database/schema";
+import { mapOfflineBundle } from "../sync/syncEngine";
 import { offlineMediaManager } from "./offlineMediaManager";
 import i18n from "i18next";
 import { durationMinutesFor, getExamRules, passPercentFor } from "./examRules";
@@ -24,10 +25,10 @@ function msg(key: string, fallback: string, options?: Record<string, unknown>): 
   return Object.entries(options ?? {}).reduce((s, [k, val]) => s.split(`{{${k}}}`).join(String(val)), fallback);
 }
 
-export const CURRENT_DATASET_VERSION = "2026.09.14";
-export const EXPECTED_QUESTIONS_COUNT = 1190;
-export const EXPECTED_TICKETS_COUNT = 60;
-export const EXPECTED_TOPICS_COUNT = 10;
+export const CURRENT_DATASET_VERSION = "2026.09.30";
+export const EXPECTED_QUESTIONS_COUNT = 1234;
+export const EXPECTED_TICKETS_COUNT = 64;
+export const EXPECTED_TOPICS_COUNT = 44;
 
 export interface PreloadProgress {
   questionsCurrent: number;
@@ -201,6 +202,41 @@ class OfflineDatasetManager {
       currentTaskMessage: msg("offline.progress.checking", "Lokal ma'lumotlar to'plami tekshirilmoqda..."),
       overallPercent: 5,
     });
+
+    // Check if live server bundle is available first (Zero fake/mock data, 100% real server sync)
+    if (typeof navigator !== "undefined" && navigator.onLine) {
+      try {
+        const bundleRes = await fetch("/api/v1/public/desktop-bundle");
+        if (bundleRes.ok) {
+          const json = await bundleRes.json();
+          const bundle = json.data || json;
+          if (bundle?.questions?.length && bundle?.tickets?.length && bundle?.topics?.length) {
+            const mapped = mapOfflineBundle(bundle);
+            if (mapped.topics) await dbClient.saveTopics(mapped.topics);
+            if (mapped.tickets) await dbClient.saveTickets(mapped.tickets);
+            await dbClient.bulkInsertQuestions(mapped.questions);
+            await dbClient.setSyncMeta("dataset_version", bundle.version || CURRENT_DATASET_VERSION);
+            await dbClient.setSyncMeta("dataset_status", "READY");
+            await dbClient.setSyncMeta("dataset_seeded_at", String(Date.now()));
+            await dbClient.setSyncMeta("offline_bundle_schema", "2");
+
+            const ticketsCount = mapped.tickets?.length ?? EXPECTED_TICKETS_COUNT;
+            this.updateProgress({
+              ticketsCurrent: ticketsCount,
+              ticketsTotal: ticketsCount,
+              questionsCurrent: mapped.questions.length,
+              questionsTotal: mapped.questions.length,
+              status: "READY",
+              currentTaskMessage: msg("offline.progress.dataReady", "Offline ma'lumotlar tayyor!"),
+              overallPercent: 100,
+            });
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("[OfflineDatasetManager] Failed to fetch live public bundle, falling back to local files:", errorMessage(err));
+      }
+    }
 
     // 1. Fetch Topics
     const topicsRaw = await loadJsonDataset<any[]>("/data/topics.json");

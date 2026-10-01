@@ -17,24 +17,36 @@ import {
   useComputedColorScheme,
 } from "@mantine/core";
 import { IconFlame, IconMedal } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
-import type { LeaderboardResponse, TopicsResponse } from "../types";
-import { useLanguage } from "../../../context/LanguageContext";
+import { getTopics, localizeTopic } from "../../../services/desktopAdapter";
+import type { LeaderboardResponse } from "../types";
 
-export function LeaderboardPage({ hideTitle = true }: { hideTitle?: boolean } = {}) {
-  const { t } = useTranslation();
-  const { localizeTopic } = useLanguage();
+export function LeaderboardPage() {
+  const { t, i18n } = useTranslation();
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
   });
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Math.max(0, Number(searchParams.get("page") ?? 0));
   const selectedTopic = searchParams.get("topic") ?? null;
+  const [topics, setTopics] = useState<any[]>([]);
 
-  // User endpoint (same TopicResponse as the admin one); "with questions" = questionCount > 0.
-  const { data: topicsResponse } = useSWR<TopicsResponse>("/api/v1/app/topics");
+  useEffect(() => {
+    let mounted = true;
+    getTopics()
+      .then((res: any[]) => {
+        if (mounted && Array.isArray(res) && res.length > 0) {
+          setTopics(res);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const leaderboardUrl = selectedTopic
     ? `/api/v1/statistics/leaderboard/${selectedTopic}?page=${page}&size=20`
@@ -44,16 +56,17 @@ export function LeaderboardPage({ hideTitle = true }: { hideTitle?: boolean } = 
     useSWR<LeaderboardResponse>(leaderboardUrl);
 
   const leaderboard = leaderboardResponse?.data;
-  const topics = (topicsResponse?.data || []).filter(
-    (topic) => (topic.questionCount ?? 0) > 0,
-  );
+
+  const getTopicName = (tp: any): string => {
+    if (!tp) return "";
+    return localizeTopic(tp, (i18n.language as any) || "uzl");
+  };
 
   const topicOptions = [
-    { value: "", label: t("leaderboard.global") },
+    { value: "", label: t("leaderboard.global", "Umumiy reyting") },
     ...topics.map((topic: any) => ({
-      // Backend /leaderboard/{topic} mavzu KODI bo'yicha qidiradi (ID emas) — avval filtr bo'sh natija berardi.
-      value: String(topic.code ?? topic.id),
-      label: localizeTopic(topic),
+      value: String(topic.id),
+      label: getTopicName(topic),
     })),
   ];
 
@@ -97,11 +110,9 @@ export function LeaderboardPage({ hideTitle = true }: { hideTitle?: boolean } = 
 
   return (
     <>
-      {!hideTitle && (
-        <Title order={2} mb="md">
-          {t("leaderboard.title")}
-        </Title>
-      )}
+      <Title order={2} mb="md">
+        {t("leaderboard.title")}
+      </Title>
 
       <Select
         data={topicOptions}
@@ -301,14 +312,12 @@ export function LeaderboardPage({ hideTitle = true }: { hideTitle?: boolean } = 
           )}
 
           {totalPages > 1 && (
-            <Flex justify="center" mt="md">
+            <Flex justify="center">
               <Pagination
                 value={page + 1}
                 onChange={(p) => setPage(p - 1)}
                 total={totalPages}
-                size="sm"
-                siblings={1}
-                boundaries={0}
+                withEdges
               />
             </Flex>
           )}

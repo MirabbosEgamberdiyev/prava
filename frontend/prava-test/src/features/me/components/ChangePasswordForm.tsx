@@ -11,7 +11,6 @@ import {
 import { notifications } from "@mantine/notifications";
 import { useTranslation } from "react-i18next";
 import api from "../../../api/api";
-import { getErrorMessage, isGloballyReported } from "../../../types/errors";
 
 function getPasswordStrength(password: string): number {
   let score = 0;
@@ -83,9 +82,9 @@ export function ChangePasswordForm() {
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: unknown) {
-      // W-05/W-19: xom backend matni emas; 5xx/tarmoq xatosi global toast bilan ko'rsatiladi
-      if (isGloballyReported(error)) return;
-      const errorMessage = getErrorMessage(error, t("profile.passwordChangeError"));
+      const errorMessage =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || t("profile.passwordChangeError");
 
       notifications.show({
         title: t("common.error"),

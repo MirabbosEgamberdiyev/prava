@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Container, Skeleton, Stack, SimpleGrid } from "@mantine/core";
 import { nprogress } from "@mantine/nprogress";
 
 /**
@@ -14,14 +15,17 @@ export function RouteContentFallback() {
   }, []);
 
   return (
-    <div
-      style={{
-        flex: 1,
-        width: "100%",
-        minHeight: "60vh",
-        background: "var(--bg)",
-      }}
-    />
+    <Container size="xl" py="xl" style={{ minHeight: "60vh" }}>
+      <Stack gap="lg" style={{ opacity: 0.5, transition: "opacity 0.2s ease" }}>
+        <Skeleton height={38} width="35%" radius="md" />
+        <Skeleton height={18} width="60%" radius="sm" />
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg" mt="md">
+          <Skeleton height={200} radius="md" />
+          <Skeleton height={200} radius="md" />
+          <Skeleton height={200} radius="md" />
+        </SimpleGrid>
+      </Stack>
+    </Container>
   );
 }
 

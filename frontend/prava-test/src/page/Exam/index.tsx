@@ -493,7 +493,7 @@ export default function Exam_Page() {
             unanswered={unanswered}
             total={total}
             title={t("exam.officialTitle", "Rasmiy DTM Imtihon Simulyatori")}
-            badge={`${total} ${t("activeTest.questionsCount", "savol")} • ${t("exam.maxWrongAllowed", { max: MAX_WRONG })}`}
+            badge={`${total} ${t("activeTest.questionsCount", "savol")} • ${MAX_WRONG} ${t("exam.maxWrongAllowed", "tagacha xato")}`}
             isTimeUp={isTimeUp}
             passed={isExamPassed({ mode: "real", total, correct, wrong, unanswered }, rules)}
             onRetry={() => loadQuestions(true)}

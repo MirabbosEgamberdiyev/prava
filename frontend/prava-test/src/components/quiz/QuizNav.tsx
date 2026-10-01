@@ -34,10 +34,10 @@ import {
 } from "@tabler/icons-react";
 import LanguagePicker from "../language/LanguagePicker";
 import ColorMode from "../other/ColorMode";
+import NetworkModeSelector from "../common/NetworkModeSelector";
 import api from "../../api/api";
+import { durationMinutesFor, getExamRules } from "../../services/examRules";
 import { backupAnswers, clearBackup } from "../../hooks/useAutoSave";
-import { errorKeyFor, getErrorMessage, isGloballyReported } from "../../types/errors";
-import { reportError } from "../../utils/monitoring";
 import type { AnswersMap } from "../../types";
 
 export interface QuizNavHandle {
@@ -61,8 +61,6 @@ interface QuizNavProps {
   onGuestFinish?: () => void;
   onGuestViewResults?: () => void;
   onSubmitSuccess?: () => void;
-  /** "Chiqish" bosilib sahifa tark etilishidan oldin (masalan, leave-guard'ni o'chirish). */
-  onBeforeExit?: () => void;
   // `forceEnableSubmit` OLIB TASHLANDI: props interfeysida e'lon qilingan va
   // Exam sahifasidan uzatilgan, ammo komponent ichida hech qachon
   // destrukturizatsiya qilinmagan/ishlatilmagan edi — jim o'lik prop.
@@ -72,7 +70,7 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
   sessionId,
   questions = [],
   totalQuestions = 0,
-  durationMinutes = 30,
+  durationMinutes: durationMinutesProp,
   answers,
   onReset,
   backUrl = "/packages",
@@ -81,9 +79,12 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
   onGuestFinish,
   onGuestViewResults,
   onSubmitSuccess,
-  onBeforeExit,
 }: QuizNavProps, ref) {
   const { t } = useTranslation();
+  // No explicit duration → the exam rules (seconds per question × question count), never a magic 30.
+  const durationMinutes =
+    durationMinutesProp ??
+    durationMinutesFor("real", totalQuestions || questions.length || getExamRules().real.questionCount);
   const navigate = useNavigate();
   const [opened, { open, close }] = useDisclosure(false);
   const [submitting, setSubmitting] = useState(false);
@@ -210,20 +211,15 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
       close();
       navigate(navigateTo, { replace: true });
     } catch (error: unknown) {
-      // Texnik xato matni foydalanuvchiga ko'rsatilmaydi (W-05); 5xx/tarmoq xatosi
-      // uchun api.ts global toast chiqaradi — ikkinchi toast ko'rsatilmaydi (W-19).
-      const errorMessage = getErrorMessage(
-        error,
-        t(errorKeyFor(error, "notification.submitError")),
-      );
+      const errorMessage =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || t("notification.submitError");
 
-      if (!isGloballyReported(error)) {
-        notifications.show({
-          title: t("common.error"),
-          message: errorMessage,
-          color: "red",
-        });
-      }
+      notifications.show({
+        title: t("common.error"),
+        message: errorMessage,
+        color: "red",
+      });
 
       // MUHIM: xatolikda modalni YOPMAYMIZ. Avval `finally { close() }` bor edi —
       // internet uzilganda modal yopilib ketardi, foydalanuvchi imtihon
@@ -317,7 +313,7 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
             color={getTimerColor()}
             role="timer"
             aria-live={timeLeft <= 60 ? "assertive" : "off"}
-            aria-label={`${t("exam.timeLeft")}: ${formatTime(timeLeft)}`}
+            aria-label={`${t("exam.timeLeft", { defaultValue: "Qolgan vaqt" })}: ${formatTime(timeLeft)}`}
             leftSection={
               timeLeft <= 300 ? <IconAlertTriangle size={14} /> : <IconClock size={14} />
             }
@@ -327,6 +323,7 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
         </Group>
 
         <Group gap="xs" wrap="nowrap">
+          <NetworkModeSelector size="xs" />
           <ColorMode />
           <LanguagePicker />
         </Group>
@@ -465,7 +462,10 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
               <Stack gap={6}>
                 <Text size="sm">{submitError}</Text>
                 <Text size="xs" c="dimmed">
-                  {t("exam.answersBackedUp")}
+                  {t("exam.answersBackedUp", {
+                    defaultValue:
+                      "Javoblaringiz qurilmangizda saqlandi — qayta urinib ko'ring.",
+                  })}
                 </Text>
               </Stack>
             </Alert>
@@ -535,9 +535,8 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
                   if (sessionId) {
                     try {
                       await api.delete(`/api/v2/exams/${sessionId}/abandon`);
-                    } catch (abandonErr) {
-                      // Abandon xatosi chiqishga to'sqinlik qilmaydi
-                      reportError("quizNav.abandon", abandonErr);
+                    } catch {
+                      // Ignore abandon errors
                     }
                     // Foydalanuvchi ataylab chiqdi — zaxirani ham tozalaymiz,
                     // aks holda keyingi sessiyada eski javoblar "tiklanardi".
@@ -545,7 +544,6 @@ export const QuizNav = forwardRef<QuizNavHandle, QuizNavProps>(function QuizNav(
                   }
                   setAbandoning(false);
                   close();
-                  onBeforeExit?.();
                   navigate(backUrl, { replace: true });
                 }}
               >

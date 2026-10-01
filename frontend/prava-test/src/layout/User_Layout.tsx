@@ -1,20 +1,24 @@
 import { Suspense } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { UserRouteFallback } from "../components/common/RouteContentFallback";
-import { DashboardLayout } from "../components/dashboard/DashboardLayout";
 
 /**
- * Enterprise Dashboard AppShell Layout.
- * Persists DashboardHeader, Sticky Sidebar, and Global Persistent Footer
- * across all dashboard route transitions without unmounting or flicker.
+ * Modern desktop layout: clean full-width canvas with header-driven navigation.
+ * Sidebar removed per reference image architecture.
  */
 const User_Layout = () => {
+  const location = useLocation();
+
   return (
-    <DashboardLayout>
-      <Suspense fallback={<UserRouteFallback />}>
-        <Outlet />
-      </Suspense>
-    </DashboardLayout>
+    <div className="app shell-layout is-focus">
+      <main className="shell-main" id="main-content">
+        <div className="page-transition-wrapper shell-page" key={location.pathname}>
+          <Suspense fallback={<UserRouteFallback />}>
+            <Outlet />
+          </Suspense>
+        </div>
+      </main>
+    </div>
   );
 };
 

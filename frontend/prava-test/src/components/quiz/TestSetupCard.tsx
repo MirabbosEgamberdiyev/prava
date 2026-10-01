@@ -8,7 +8,6 @@ import {
   IconListNumbers,
 } from "@tabler/icons-react";
 import type { OfflineTopic } from "../../types/desktop";
-import { useCurriculumCounts } from "../../hooks/useCurriculumCounts";
 
 export interface TestSetupCardProps {
   topics: OfflineTopic[];
@@ -20,11 +19,6 @@ export interface TestSetupCardProps {
   onStart: () => void;
   onBack: () => void;
   localizeTopic: (tp: OfflineTopic) => string;
-  /**
-   * "Barchasi" (0) varianti uchun yuqori chegara (W-15). Mavjud savollar shu
-   * sondan ko'p (yoki noma'lum) bo'lsa, tugmada "Barchasi" o'rniga shu son yoziladi.
-   */
-  allCap?: number;
 }
 
 export const TestSetupCard: React.FC<TestSetupCardProps> = ({
@@ -37,14 +31,13 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
   onStart,
   onBack,
   localizeTopic,
-  allCap,
 }) => {
   const { t } = useTranslation();
 
   const currentTopic =
     selectedTopicId != null ? topics.find((t) => t.id === selectedTopicId) : null;
 
-  const { questions: totalAllQuestions } = useCurriculumCounts();
+  const totalAllQuestions = topics.reduce((s, tp) => s + (tp.question_count || 0), 0) || 1243;
   const maxQ = currentTopic ? currentTopic.question_count : totalAllQuestions;
 
   // Strict Terminology Separation:
@@ -52,8 +45,8 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
   // All Topics -> "Katta Marafon"
   const isSingleTopic = selectedTopicId != null;
   const screenTitle = isSingleTopic
-    ? t("testSetup.topicTestTitle")
-    : t("testSetup.marathonTitle");
+    ? t("testSetup.topicTestTitle", "Mavzulashtirilgan test")
+    : t("testSetup.marathonTitle", "Katta Marafon");
 
   return (
     <div
@@ -89,7 +82,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
           <button
             type="button"
             onClick={onBack}
-            aria-label={t("common.back")}
+            aria-label={t("common.back", "Ortga")}
             style={{
               width: "38px",
               height: "38px",
@@ -110,7 +103,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {isSingleTopic ? (
-                <IconBook2 size={20} color="var(--primary)" />
+                <IconBook2 size={20} color="#1971c2" />
               ) : (
                 <IconFlame size={20} color="#7950f2" />
               )}
@@ -153,7 +146,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
               marginBottom: "8px",
             }}
           >
-            {t("testSetup.selectTopic")}
+            {t("testSetup.selectTopic", "Mavzuni tanlang")}
           </label>
           <select
             id="setup-topic-select"
@@ -175,7 +168,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
               cursor: "pointer",
             }}
           >
-            <option value="">{t("testSetup.allTopics")}</option>
+            <option value="">{t("testSetup.allTopics", "Barcha mavzular")}</option>
             {topics.map((tp) => (
               <option key={tp.id} value={tp.id}>
                 {localizeTopic(tp)} ({tp.question_count})
@@ -201,9 +194,8 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
                 color: "var(--text)",
               }}
             >
-              {t("testSetup.questionCount")}
+              {t("testSetup.questionCount", "Savollar soni")}
             </label>
-            {maxQ > 0 && (
             <span
               style={{
                 fontSize: "12px",
@@ -215,9 +207,8 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
               }}
             >
               <IconListNumbers size={14} />
-              {t("testSetup.available")}: {maxQ}
+              {t("testSetup.available", "Mavjud")}: {maxQ}
             </span>
-            )}
           </div>
 
           <div
@@ -229,11 +220,8 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
           >
             {countOptions.map((n, idx) => {
               const isAll = n === 0;
-              const isCapped = isAll && allCap != null && (maxQ <= 0 || maxQ > allCap);
               const label = isAll
-                ? isCapped
-                  ? String(allCap)
-                  : `${t("testSetup.allQuestions")}`
+                ? `${t("testSetup.allQuestions", "Barchasi")}`
                 : String(n);
 
               // Dynamic Validation:
@@ -249,7 +237,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
                   disabled={isOptionExcessive}
                   title={
                     isOptionExcessive
-                      ? t("testSetup.limitExceededTooltip", {
+                      ? t("testSetup.limitExceededTooltip", "Bu mavzuda faqat {{count}} ta savol mavjud", {
                           count: maxQ,
                         })
                       : undefined
@@ -258,12 +246,12 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
                     height: "44px",
                     borderRadius: "10px",
                     border: isSelected
-                      ? "2px solid var(--primary)"
+                      ? "2px solid var(--primary, #1971c2)"
                       : "1.5px solid var(--border)",
                     background: isSelected
-                      ? "var(--primary-light, rgba(var(--primary-rgb), 0.1))"
+                      ? "var(--primary-light, rgba(25, 113, 194, 0.1))"
                       : "var(--surface)",
-                    color: isSelected ? "var(--primary)" : "var(--text)",
+                    color: isSelected ? "var(--primary, #1971c2)" : "var(--text)",
                     fontSize: "13px",
                     fontWeight: 700,
                     cursor: isOptionExcessive ? "not-allowed" : "pointer",
@@ -287,7 +275,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
             width: "100%",
             height: "48px",
             borderRadius: "12px",
-            background: "var(--primary)",
+            background: "var(--primary, #1971c2)",
             color: "#fff",
             border: "none",
             fontSize: "15px",
@@ -297,12 +285,12 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
             justifyContent: "center",
             gap: "8px",
             cursor: "pointer",
-            boxShadow: "0 4px 16px rgba(var(--primary-rgb), 0.35)",
+            boxShadow: "0 4px 16px rgba(25, 113, 194, 0.35)",
             transition: "all 0.15s ease",
           }}
         >
           <IconPlayerPlay size={19} stroke={2.5} />
-          <span>{t("testSetup.startTest")}</span>
+          <span>{t("testSetup.startTest", "Testni boshlash")}</span>
         </button>
       </div>
     </div>

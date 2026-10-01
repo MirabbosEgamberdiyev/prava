@@ -1,294 +1,448 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import {
-  Box,
-  Center,
-  Loader,
-  Text,
-  Title,
-  Button,
-  Group,
-  Paper,
-  Stack,
-  Container,
-  ThemeIcon,
-} from "@mantine/core";
-import { IconAlertCircle, IconPlayerPlay } from "@tabler/icons-react";
+import { resolveUserScopeId } from "@/utils/userScope";
+import { getExamRules, durationSecondsFor, isExamPassed } from "@/services/examRules";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { mutate } from "swr";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../../auth/AuthContext";
+import type { OfflineQuestion } from "../../../types/desktop";
+import type { PackageExamData, Question } from "../../../types/api";
+import {
+  finalizeExamResult,
+  addWrongAnswer,
+  toggleSavedQuestion,
+  getSavedQuestions,
+  recordQuestionAttempt,
+  getExamQuestions,
+  pickLocalized,
+} from "../../../services/desktopAdapter";
 import api from "../../../api/api";
-import { QuizNav, type QuizNavHandle } from "../../../components/quiz/QuizNav";
-import { QuizContent } from "../../../components/quiz/QuizContent";
+import { ExamDesktopView, useDebouncedSave, countResults } from "../../../features/ExamDesktop";
+import "../../../styles/exam-desktop.css";
 import SEO from "../../../components/common/SEO";
-import { useAutoSave, restoreAnswers } from "../../../hooks/useAutoSave";
-import type { PackageExamData, AnswersMap } from "../../../types";
+import GamificationResult from "../../../components/quiz/GamificationResult";
+import QuizReviewModal from "../../../components/quiz/QuizReviewModal";
+import { dbClient } from "../../../database";
+import { generateUUID } from "../../../sync/outboxQueue";
+import { IconArrowLeft, IconAlertTriangle, IconRefresh } from "@tabler/icons-react";
 
-interface ActiveExamInfo {
-  sessionId: number;
-  ticketId?: number;
-  packageId?: number;
+type Phase = "loading" | "exam" | "result";
+
+interface Answer {
+  selected: number;
+  correct: number;
 }
 
-const PackageExamPage = () => {
+function convertApiQuestionToOffline(q: Question): OfflineQuestion {
+  return {
+    id: q.id,
+    topic_id: null,
+    order_num: 0,
+    text_uzl: q.text?.uzl || "",
+    text_uzc: q.text?.uzc ?? null,
+    text_en: null,
+    text_ru: q.text?.ru ?? null,
+    options_json: JSON.stringify(
+      (q.options || []).map((opt, idx) => ({
+        key: String(idx + 1),
+        text_uzl: opt.text?.uzl || "",
+        text_uzc: opt.text?.uzc || opt.text?.uzl || "",
+        text_ru: opt.text?.ru || opt.text?.uzl || "",
+      }))
+    ),
+    correct_option: q.correctOptionIndex ?? 0,
+    image_path: q.imageUrl ?? null,
+    explanation_uzl: q.explanation?.uzl ?? null,
+    explanation_uzc: q.explanation?.uzc ?? null,
+    explanation_en: null,
+    explanation_ru: q.explanation?.ru ?? null,
+  };
+}
+
+export default function PackageExamPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const userId = resolveUserScopeId(user);
 
-  const examMode = location.state?.examMode || "visible";
-  const isSecureMode = examMode === "secure";
+  const packageId = Number(id) || 1;
+  const [rules] = useState(getExamRules);
 
-  const [examData, setExamData] = useState<PackageExamData | null>(
-    location.state?.examData || null,
-  );
-  const [loading, setLoading] = useState(!examData);
-  const [error, setError] = useState<string | null>(null);
-  const [activeConflict, setActiveConflict] = useState<ActiveExamInfo | null>(null);
-  const [answers, setAnswers] = useState<AnswersMap>({});
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [questions, setQuestions] = useState<OfflineQuestion[]>([]);
+  const [current, setCurrent] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, Answer>>({});
+  const [deadline, setDeadline] = useState<number>(0);
+  const [isTimeUp, setIsTimeUp] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [savedScore, setSavedScore] = useState(0);
+  const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [packageName, setPackageName] = useState<string>("");
 
-  const submittedRef = useRef(false);
-  const sessionIdRef = useRef<number | null>(null);
-  const quizNavRef = useRef<QuizNavHandle>(null);
+  const localSessionIdRef = useRef<string>(generateUUID());
+  const serverSessionIdRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(Date.now());
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
+  const questionsRef = useRef(questions);
+  questionsRef.current = questions;
+  const deadlineRef = useRef(deadline);
+  deadlineRef.current = deadline;
+  const finishedRef = useRef(false);
 
-  const startExam = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    setActiveConflict(null);
-
-    const endpoint = isSecureMode
-      ? "/api/v2/exams/start-secure"
-      : "/api/v2/exams/start-visible";
-
-    try {
-      const response = await api.post<PackageExamData>(endpoint, {
-        packageId: Number(id),
-      });
-
-      if (response.data) {
-        setExamData(response.data);
-        sessionIdRef.current = response.data.data.sessionId;
-        // Uzilib qolgan sessiya javoblarini tiklash
-        const restored = restoreAnswers(response.data.data.sessionId);
-        if (restored) setAnswers(restored);
-        // Active exam cache ni yangilaymiz
-        mutate("/api/v2/exams/active", null, false);
-      }
-    } catch {
-      // Active session bor-yo'qligini tekshirish
-      try {
-        const activeRes = await api.get<{ data: ActiveExamInfo | null }>("/api/v2/exams/active");
-        if (activeRes.data?.data?.sessionId) {
-          setActiveConflict(activeRes.data.data);
-          return;
-        }
-      } catch {
-        // Active tekshiruv ham xato — generic error
-      }
-
-      setError(t("notification.startError"));
-    } finally {
-      setLoading(false);
-    }
-  }, [id, isSecureMode, t]);
+  const onBack = () => navigate("/packages");
 
   useEffect(() => {
-    if (!examData && id) {
-      startExam();
-    }
-  }, [id, examData, startExam]);
+    getSavedQuestions(userId)
+      .then((entries) => setSavedIds(new Set(entries.map((e) => e.question.id))))
+      .catch(() => {});
+  }, [userId]);
 
-  /*
-   * OLIB TASHLANDI — unmount'dagi `navigator.sendBeacon(.../abandon)`.
-   * sendBeacon doim POST yuboradi (endpoint DELETE) va Authorization header
-   * qo'sha olmaydi — ya'ni hech qachon ishlamagan. Ishlaganda ham tasodifiy
-   * "orqaga" bosish imtihonni bekor qilardi. Sessiyani bekor qilish endi
-   * faqat foydalanuvchi aniq tanlaganda (conflict UI / "Chiqish") bajariladi.
-   */
+  const progressSaver = useDebouncedSave((snap: { answers: Record<number, Answer>; index: number }) => {
+    const qs = questionsRef.current;
+    const { correct: correctSoFar } = countResults(snap.answers);
+    const now = Date.now();
+    const durationSec = Math.floor((now - startTimeRef.current) / 1000);
+    const remainingSec = Math.max(0, Math.floor((deadlineRef.current - now) / 1000));
+    return dbClient
+      .saveExamSession({
+        local_id: localSessionIdRef.current,
+        server_id: serverSessionIdRef.current,
+        exam_type: "EXAM",
+        status: "IN_PROGRESS",
+        total_questions: qs.length,
+        correct_answers: correctSoFar,
+        score: qs.length > 0 ? Math.round((correctSoFar / qs.length) * 100) : 0,
+        passed: false,
+        duration_seconds: durationSec,
+        time_remaining_seconds: remainingSec,
+        deadline_at: deadlineRef.current,
+        target_id: packageId,
+        started_at: startTimeRef.current,
+        completed_at: null,
+        answers_json: JSON.stringify(snap.answers),
+        synced: 0,
+      })
+      .catch(() => {});
+  }, 500);
 
-  // Javoblarni avtomatik saqlash (localStorage + server).
-  useAutoSave({
-    sessionId: examData?.data.sessionId ?? null,
-    answers,
-    questions: examData?.data.questions ?? [],
-    enabled: !!examData && !submittedRef.current,
-  });
+  const persistProgress = useCallback(() => {
+    void progressSaver.saveNow({ answers: answersRef.current, index: current });
+  }, [current, progressSaver]);
 
-  const handleAbandonAndRestart = async () => {
-    if (!activeConflict) return;
-    setLoading(true);
+  const loadQuestions = useCallback(
+    async () => {
+      setPhase("loading");
+      setErrorMsg(null);
+      finishedRef.current = false;
+      localSessionIdRef.current = generateUUID();
+
+      try {
+        // Try online start first if available
+        let loadedQs: OfflineQuestion[] = [];
+        let sessionDurationSec = durationSecondsFor("real", 20, rules);
+        let name = t("packages.defaultName", "Paket #{{n}}", { n: packageId });
+
+        try {
+          const res = await api.post<PackageExamData>("/api/v2/exams/start-visible", {
+            packageId,
+          });
+          if (res.data?.data) {
+            const data = res.data.data;
+            serverSessionIdRef.current = data.sessionId;
+            if (data.packageName) {
+              name = pickLocalized({
+                uzl: data.packageName.uzl || name,
+                uzc: data.packageName.uzc || name,
+                ru: data.packageName.ru || name,
+              });
+            }
+            if (Array.isArray(data.questions) && data.questions.length > 0) {
+              loadedQs = data.questions.map(convertApiQuestionToOffline);
+            }
+            if (data.durationMinutes) {
+              sessionDurationSec = data.durationMinutes * 60;
+            }
+          }
+        } catch {
+          // Offline fallback: load local curriculum / exam questions
+          loadedQs = await getExamQuestions(20);
+        }
+
+        if (loadedQs.length === 0) {
+          setErrorMsg(t("exam.noQuestions", "Savollar topilmadi"));
+          return;
+        }
+
+        const now = Date.now();
+        startTimeRef.current = now;
+        const newDeadline = now + sessionDurationSec * 1000;
+
+        setPackageName(name);
+        setQuestions(loadedQs);
+        questionsRef.current = loadedQs;
+        setAnswers({});
+        setCurrent(0);
+        setDeadline(newDeadline);
+        deadlineRef.current = newDeadline;
+        setIsTimeUp(false);
+        setPhase("exam");
+
+        dbClient
+          .saveExamSession({
+            local_id: localSessionIdRef.current,
+            server_id: serverSessionIdRef.current,
+            exam_type: "EXAM",
+            status: "IN_PROGRESS",
+            total_questions: loadedQs.length,
+            correct_answers: 0,
+            score: 0,
+            passed: false,
+            duration_seconds: 0,
+            time_remaining_seconds: sessionDurationSec,
+            deadline_at: newDeadline,
+            target_id: packageId,
+            started_at: now,
+            completed_at: null,
+            answers_json: "{}",
+            synced: 0,
+          })
+          .catch(() => {});
+      } catch (err: any) {
+        setErrorMsg(err?.message || t("errors.serverError", "Xatolik yuz berdi"));
+      }
+    },
+    [packageId, rules, t]
+  );
+
+  useEffect(() => {
+    void loadQuestions();
+  }, [loadQuestions]);
+
+  const handleSelect = useCallback(
+    (optionIndex: number) => {
+      const q = questionsRef.current[current];
+      if (!q || answersRef.current[current]) return;
+
+      const isCorrect = optionIndex === q.correct_option;
+      const ans: Answer = { selected: optionIndex, correct: q.correct_option };
+      const nextAnswers = { ...answersRef.current, [current]: ans };
+
+      setAnswers(nextAnswers);
+      answersRef.current = nextAnswers;
+      progressSaver.schedule({ answers: nextAnswers, index: current });
+
+      void recordQuestionAttempt(userId, q.id, isCorrect, "package");
+      if (!isCorrect) {
+        addWrongAnswer(userId, q);
+      }
+    },
+    [current, progressSaver, userId]
+  );
+
+  const handleGoto = useCallback((idx: number) => {
+    setCurrent(idx);
+  }, []);
+
+  const handleFinish = useCallback(async () => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    progressSaver.cancel();
+
+    const qs = questionsRef.current;
+    const finalAns = answersRef.current;
+    const { correct, wrong } = countResults(finalAns);
+    const total = qs.length || 20;
+    const unanswered = total - (correct + wrong);
+    const passed = isExamPassed({ mode: "package", total, correct, wrong, unanswered }, rules);
+    const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
+
+    setSavedScore(score);
+
     try {
-      await api.delete(`/api/v2/exams/${activeConflict.sessionId}/abandon`);
-      mutate("/api/v2/exams/active", { data: null }, false);
-    } catch {
-      // Abandon xatosi — baribir qayta urinib ko'ramiz
-    }
-    setActiveConflict(null);
-    await startExam();
-  };
+      await finalizeExamResult(
+        {
+          userId,
+          score,
+          correctAnswers: correct,
+          wrongAnswers: wrong,
+          totalQuestions: total,
+          durationSeconds: duration,
+          passed,
+          mode: "package",
+          examType: "package",
+          unanswered,
+        },
+        {
+          serverSessionId: serverSessionIdRef.current,
+          localSessionId: localSessionIdRef.current,
+          examType: "package",
+          targetId: packageId,
+          questions: qs,
+          answers: finalAns,
+          durationSeconds: duration,
+        }
+      );
+    } catch {}
 
-  const handleAnswerSelect = (
-    questionIndex: number,
-    optionIndex: number,
-    timeSpentSeconds: number,
-  ) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionIndex]: { optionIndex, timeSpentSeconds },
-    }));
-  };
+    setPhase("result");
+  }, [packageId, progressSaver, rules, userId]);
 
-  const handleReset = () => setAnswers({});
+  const handleTimeUp = useCallback(() => {
+    setIsTimeUp(true);
+    void handleFinish();
+  }, [handleFinish]);
 
-  const handleFinish = () => {
-    // Avval `document.querySelector("[data-finish-button]").click()` edi —
-    // DOM'ga bog'liq mo'rt hack. QuizNav imperativ API'si ishlatiladi.
-    quizNavRef.current?.openFinishModal();
-  };
+  const handleExit = useCallback(() => {
+    persistProgress();
+    onBack();
+  }, [persistProgress, onBack]);
 
-  const handleSubmitSuccess = () => {
-    submittedRef.current = true;
-  };
+  const handleToggleSave = useCallback(
+    (q: OfflineQuestion) => {
+      toggleSavedQuestion(userId, q);
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(q.id)) next.delete(q.id);
+        else next.add(q.id);
+        return next;
+      });
+    },
+    [userId]
+  );
 
-  // Yuklash
-  if (loading) {
+  // ─── LOADING & ERROR PHASES ───
+  if (phase === "loading") {
     return (
-      <Center style={{ height: "100%", flex: 1, minHeight: 0 }}>
-        <Box ta="center">
-          <Loader size="lg" mb="md" />
-          <Text c="dimmed">{t("exam.loading")}</Text>
-        </Box>
-      </Center>
+      <div className="ds-page-wrapper">
+        <div className="ds-empty-state" style={{ minHeight: "80vh" }}>
+          <div className="ds-spinner" />
+          <p style={{ marginTop: 16, color: "var(--g-text-muted)" }}>{t("common.loading", "Yuklanmoqda...")}</p>
+        </div>
+      </div>
     );
   }
 
-  // Tugallanmagan imtihon bor — conflict UI
-  if (activeConflict) {
+  if (errorMsg) {
     return (
-      <Center style={{ height: "100%", flex: 1, minHeight: 0 }}>
-        <Container size="xs">
-          <Paper p="xl" radius="md" withBorder shadow="md" ta="center">
-            <ThemeIcon size={64} radius="xl" color="orange" variant="light" mb="md" mx="auto">
-              <IconAlertCircle size={32} />
-            </ThemeIcon>
-            <Title order={3} mb="sm">
-              {t("me.stats.resumeExam")}
-            </Title>
-            <Text c="dimmed" mb="xl" size="sm">
-              {t("exam.activeSessionDesc", {
-                defaultValue: "Boshqa imtihon tugallanmagan. Uni yakunlab yoki bekor qilib, yangi imtihon boshlashingiz mumkin.",
-              })}
-            </Text>
-            <Stack gap="sm">
-              <Button
-                loading={loading}
-                leftSection={<IconPlayerPlay size={18} />}
-                onClick={handleAbandonAndRestart}
-              >
-                {t("exam.abandonAndRestart", { defaultValue: "Bekor qilib, yangi boshlash" })}
-              </Button>
-              {activeConflict.packageId && (
-                <Button
-                  variant="light"
-                  onClick={() => navigate(`/packages/${activeConflict.packageId}`)}
-                >
-                  {t("me.stats.continue")}
-                </Button>
-              )}
-              {activeConflict.ticketId && (
-                <Button
-                  variant="light"
-                  onClick={() => navigate(`/tickets/${activeConflict.ticketId}`)}
-                >
-                  {t("me.stats.continue")}
-                </Button>
-              )}
-              <Button
-                variant="subtle"
-                color="gray"
-                onClick={() => navigate("/packages")}
-              >
-                {t("common.back")}
-              </Button>
-            </Stack>
-          </Paper>
-        </Container>
-      </Center>
+      <div className="exam-result-screen">
+        <div className="exam-result-card" style={{ maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
+          <div className="exam-result-icon failed">
+            <IconAlertTriangle size={36} stroke={1.5} />
+          </div>
+          <h2 className="exam-result-title failed">{t("common.error", "Xatolik")}</h2>
+          <p className="exam-result-sub" style={{ marginBottom: 20 }}>
+            {errorMsg}
+          </p>
+          <div className="exam-result-actions" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button
+              className="exam-result-btn primary"
+              onClick={() => void loadQuestions()}
+              type="button"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                padding: "12px 20px",
+                fontWeight: 600,
+                borderRadius: 10,
+              }}
+            >
+              <IconRefresh size={18} /> {t("common.retry", "Qayta urinish")}
+            </button>
+            <button
+              className="exam-result-btn secondary"
+              onClick={onBack}
+              type="button"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                padding: "10px 20px",
+                borderRadius: 10,
+              }}
+            >
+              <IconArrowLeft size={18} /> {t("common.back", "Orqaga")}
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
-  // Xato
-  if (error) {
+  // ─── RESULT PHASE ───
+  if (phase === "result") {
+    const { correct, wrong } = countResults(answers);
+    const total = questions.length;
+    const unanswered = total - (correct + wrong);
+    const score = total > 0 ? Math.round((correct / total) * 100) : savedScore;
+
     return (
-      <Center style={{ height: "100%", flex: 1, minHeight: 0 }}>
-        <Box ta="center">
-          <Title order={3} c="red" mb="md">
-            {t("common.errorOccurred")}
-          </Title>
-          <Text c="dimmed" mb="lg">
-            {error}
-          </Text>
-          <Group justify="center">
-            <Button variant="outline" onClick={() => navigate("/packages")}>
-              {t("common.back")}
-            </Button>
-            <Button onClick={startExam}>{t("common.retry")}</Button>
-          </Group>
-        </Box>
-      </Center>
+      <>
+        <SEO
+          title={t("activeTest.results", "Imtihon natijasi")}
+          description={t("exam.resultSeoDesc", "Imtihon natijalari va statistikasi")}
+          canonical={`/packages/${packageId}`}
+        />
+        <div style={{ height: "100%", flex: 1, minHeight: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <GamificationResult
+            score={score}
+            correct={correct}
+            wrong={wrong}
+            unanswered={unanswered}
+            total={total}
+            title={packageName || t("packages.defaultName", "Paket #{{n}}", { n: packageId })}
+            badge={`${total} ${t("activeTest.questionsCount", "savol")}`}
+            isTimeUp={isTimeUp}
+            passed={isExamPassed({ mode: "package", total, correct, wrong, unanswered }, rules)}
+            onRetry={() => void loadQuestions()}
+            onReviewMistakes={() => setReviewOpen(true)}
+            onHome={onBack}
+          />
+        </div>
+
+        <QuizReviewModal
+          isOpen={reviewOpen}
+          onClose={() => setReviewOpen(false)}
+          questions={questions}
+          answers={answers}
+          onToggleSave={handleToggleSave}
+          savedIds={savedIds}
+        />
+      </>
     );
   }
 
-  if (!examData) {
-    return (
-      <Center style={{ height: "100%", flex: 1, minHeight: 0 }}>
-        <Box ta="center">
-          <Title order={3} mb="md">
-            {t("exam.notFound")}
-          </Title>
-          <Text c="dimmed" mb="lg">
-            {t("exam.notFoundDesc")}
-          </Text>
-          <Button onClick={() => navigate("/packages")}>
-            {t("common.back")}
-          </Button>
-        </Box>
-      </Center>
-    );
-  }
-
+  // ─── EXAM PHASE (RealExam Terminal Interface) ───
   return (
     <>
       <SEO
-        title={t("packages.examSeoTitle", "Imtihon — {{count}} ta savol", { count: examData.data.totalQuestions })}
-        description={t("packages.examSeoDesc", "Haydovchilik guvohnomasi imtihoni — {{count}} ta savol, {{minutes}} daqiqa.", {
-          count: examData.data.totalQuestions,
-          minutes: examData.data.durationMinutes,
-        })}
-        canonical={`/packages/${id}`}
-        noIndex
+        title={`${packageName || t("packages.defaultName", "Paket #{{n}}", { n: packageId })} - Prava Online`}
+        description={t("packages.examSeoDesc", "Prava Online maxsus o'quv paketi imtihoni.")}
+        canonical={`/packages/${packageId}`}
       />
-      <QuizNav
-        ref={quizNavRef}
-        sessionId={examData.data.sessionId}
-        questions={examData.data.questions}
-        totalQuestions={examData.data.totalQuestions}
-        durationMinutes={examData.data.durationMinutes}
+      <ExamDesktopView
+        mode="package"
+        label={packageName || t("packages.defaultName", "Paket #{{n}}", { n: packageId })}
+        questions={questions}
+        current={current}
         answers={answers}
-        onReset={handleReset}
-        backUrl="/packages"
-        isSecureMode={isSecureMode}
-        onSubmitSuccess={handleSubmitSuccess}
-      />
-      <QuizContent
-        questions={examData.data.questions}
-        onAnswerSelect={handleAnswerSelect}
+        onSelect={handleSelect}
+        onGoto={handleGoto}
         onFinish={handleFinish}
-        selectedAnswers={answers}
-        isSecureMode={isSecureMode}
-        onExit={() => navigate("/packages")}
+        deadline={deadline > 0 ? deadline : null}
+        onTimeUp={handleTimeUp}
+        showExplanation
+        autoAdvance="correct"
+        bookmarkedIds={savedIds}
+        onToggleBookmark={handleToggleSave}
+        onExit={handleExit}
+        persistProgress={persistProgress}
       />
     </>
   );
-};
-
-export default PackageExamPage;
+}

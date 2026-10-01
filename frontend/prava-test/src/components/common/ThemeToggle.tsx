@@ -1,25 +1,28 @@
-import { useTranslation } from "react-i18next";
 import { useDesktopTheme } from "../../context/DesktopThemeContext";
+import { useTranslation } from "react-i18next";
 import { IconMoon, IconSun } from "@tabler/icons-react";
+import "./ThemeToggle.css";
 
 export default function ThemeToggle() {
   const { t } = useTranslation();
-  const { resolvedTheme, toggleTheme } = useDesktopTheme();
-  const isLight = resolvedTheme === "light";
+  const { theme, toggleTheme } = useDesktopTheme();
+  const isDark = theme === "dark";
 
   return (
     <button
-      className="theme-toggle"
+      className={`pro-theme-btn ${isDark ? "is-dark" : "is-light"}`}
       onClick={toggleTheme}
-      title={isLight ? t("common.darkMode") : t("common.lightMode")}
+      title={isDark ? t("settings.themeLight", "Yorug' rejim") : t("settings.themeDark", "Qorong'i rejim")}
       type="button"
-      aria-label={t("theme.toggleTheme")}
+      aria-label={t("settings.themeToggleAria", "Mavzuni almashtirish")}
     >
-      {isLight ? (
-        <IconMoon size={18} stroke={2} />
-      ) : (
-        <IconSun size={18} stroke={2} />
-      )}
+      <span className="pro-theme-icon-wrap" aria-hidden="true">
+        {isDark ? (
+          <IconSun size={17} stroke={2} className="pro-sun-icon" />
+        ) : (
+          <IconMoon size={17} stroke={2} className="pro-moon-icon" />
+        )}
+      </span>
     </button>
   );
 }

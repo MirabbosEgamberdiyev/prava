@@ -1,36 +1,27 @@
 import { createTheme, type MantineColorsTuple } from "@mantine/core";
+/**
+ * SINGLE SOURCE of design values: src/theme/design-tokens.json (identical copy of the web
+ * prava-test tokens — do not edit values here). CSS variables in styles/desktop.css mirror
+ * the same JSON (guarded by tests/designTokens.test.ts).
+ */
 import tokens from "./theme/design-tokens.json";
 
-/**
- * Mantine theme — YAGONA MANBA: `src/theme/design-tokens.json`
- * (web, desktop va mobil ilovalar uchun umumiy). Qiymatlarni shu yerda
- * qattiq yozmang — tokenlar faylini o'zgartiring.
- */
+const BRAND_STEPS = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900"] as const;
+const brand = tokens.color.brand as Record<(typeof BRAND_STEPS)[number], string>;
+const primaryBlue = BRAND_STEPS.map((k) => brand[k]) as unknown as MantineColorsTuple;
 
-const BRAND_SHADES = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900"] as const;
-
-/** color.brand (50..900) → Mantine 10 ta shade (0..9). */
-const brand = BRAND_SHADES.map(
-  (k) => tokens.color.brand[k],
-) as unknown as MantineColorsTuple;
-
-const px = (v: number) => `${v / 16}rem`;
-
-/** Montserrat + tizim shriftlari (fallback). */
-const FONT_STACK = `"${tokens.font.family}", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+const FONT_STACK = `"${tokens.font.family}", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
+const px = (n: number) => `${n}px`;
 
 export const theme = createTheme({
-  primaryColor: "brand",
+  primaryColor: "blue",
   colors: {
-    brand,
-    // Kodda `color="blue"` ko'p joyda ishlatilgan — ular ham brend palitrasini
-    // olsin (Mantine default ko'k #228be6 boshqa ko'k tus sifatida chiqmasin).
-    blue: brand,
+    blue: primaryBlue,
   },
 
   /**
-   * `primaryShade` — light rejimda 6-shade (#0284c7) ishlatiladi (oq fonda 4.7:1 kontrast).
-   * Dark rejimda esa 4-shade (#38bdf8) ishlatiladi (to'q fonda 7.5:1 kontrast).
+   * `primaryShade` — light: 6-shade (brand.600 #0284c7, ~4.7:1 on white),
+   * dark: 4-shade (brand.400 #38bdf8, ~7.5:1 on the dark background). Same as web.
    */
   primaryShade: { light: 6, dark: 4 },
 
@@ -50,11 +41,11 @@ export const theme = createTheme({
    * Quyidagi shkala savol/javob matnini havodorroq qiladi.
    */
   fontSizes: {
-    xs: px(tokens.font.size.xs),
-    sm: px(tokens.font.size.sm),
-    md: px(tokens.font.size.md),
-    lg: px(tokens.font.size.lg),
-    xl: px(tokens.font.size.xl),
+    xs: "0.75rem",
+    sm: "0.875rem",
+    md: "1rem",
+    lg: "1.125rem",
+    xl: "1.25rem",
   },
   lineHeights: {
     xs: "1.45",
@@ -78,18 +69,16 @@ export const theme = createTheme({
     },
   },
 
-  /** Radius shkalasi — tokens.radius (xs tokenlarda yo'q: sm ning yarmi). */
+  // Kodda tugmalar/kartalar allaqachon `radius="md"` ni qo'lda uzatardi —
+  // defaultni "md" qilib, `sm` bilan aralashib ketishiga chek qo'yamiz.
+  defaultRadius: "md",
   radius: {
-    xs: px(tokens.radius.sm / 2),
+    xs: px(Math.round(tokens.radius.sm / 2)),
     sm: px(tokens.radius.sm),
     md: px(tokens.radius.md),
     lg: px(tokens.radius.lg),
     xl: px(tokens.radius.xl),
   },
-
-  // Kodda tugmalar/kartalar allaqachon `radius="md"` ni qo'lda uzatardi —
-  // defaultni "md" qilib, `sm` bilan aralashib ketishiga chek qo'yamiz.
-  defaultRadius: "md",
 
   components: {
     Card: {

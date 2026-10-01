@@ -1,24 +1,16 @@
 import api from "../api/api";
-import { latinToCyrillic, cyrillicToLatin } from "../utils/transliterate";
+import { latinToCyrillic, cyrillicToLatin, normalizeSearchText } from "../utils/transliterate";
 import { getAppDateLocale } from "../utils/date";
-
-/**
- * Yo'l harakati jarimalari (BHM asosida) — domen qoidalari va ma'lumot olish.
- *
- * Qoidalar UI komponentlaridan tashqarida:
- *  - summa = ko'paytiruvchi (BHM soni) * bhm.amount; server bergan amountMin/amountMax afzal.
- *  - GET /api/v1/public/fines (mehmonlar uchun ochiq), kuchli ETag + If-None-Match -> 304.
- *  - Xotira + localStorage keshi (version bilan). Tarmoq yo'q bo'lsa — keshdagi nusxa.
- *  - Global "api-error" toast chiqarilmaydi (config.silent) — sahifa xatoni inline ko'rsatadi.
- *  - Hech qachon ma'lumot o'ylab topilmaydi: ro'yxat bo'sh bo'lsa, bo'sh qaytadi.
- */
+import { calculateFineAmount, DEFAULT_BHM, setBhmValue } from "../config/bhm";
 
 export const FINES_ENDPOINT = "/api/v1/public/fines";
+export const FINES_URL = FINES_ENDPOINT;
 export const FINES_CACHE_KEY = "prava_fines_cache_v1";
-/** Server Cache-Control max-age=300 bilan mos: shu muddat ichida qayta so'rov yuborilmaydi. */
+export const FINES_STORAGE_KEY = FINES_CACHE_KEY;
 export const FINES_FRESH_MS = 5 * 60 * 1000;
 
-export type FinesLang = "uzl" | "uzc" | "ru";
+export type FineLang = "uzl" | "uzc" | "en" | "ru";
+export type FinesLang = FineLang;
 
 export interface LocalizedText {
   uzl?: string | null;
@@ -28,7 +20,7 @@ export interface LocalizedText {
 }
 
 export interface TrafficFine {
-  id: number | string;
+  id: number;
   articleCode: string;
   title: LocalizedText;
   bhmMin: number;
@@ -41,34 +33,33 @@ export interface TrafficFine {
 
 export interface BhmInfo {
   amount: number;
-  effectiveFrom: string;
+  effectiveFrom: string | null;
 }
 
-export interface FinesPayload {
+export interface FinesData {
   bhm: BhmInfo;
   version: string;
   fines: TrafficFine[];
 }
 
-export interface FinesResult {
-  data: FinesPayload;
-  /** true — tarmoq xatosi sababli keshdagi (eskirgan bo'lishi mumkin) nusxa qaytarildi. */
-  stale: boolean;
-  source: "network" | "not-modified" | "memory" | "storage";
-  fromCache?: boolean;
-  savedAt?: number | null;
-}
+export type FinesPayload = FinesData;
 
-export type FinesData = FinesPayload;
+export interface FinesResult {
+  data: FinesData;
+  stale: boolean;
+  fromCache: boolean;
+  savedAt: number | null;
+  source: "network" | "not-modified" | "memory" | "storage";
+}
 
 interface CacheEntry {
   etag: string | null;
   version: string;
-  data: FinesPayload;
+  data: FinesData;
   savedAt: number;
 }
 
-// ─── Domen: summa hisoblash ────────────────────────────────────────────────
+const LANGS: FineLang[] = ["uzl", "uzc", "en", "ru"];
 
 function toFiniteNumber(v: unknown): number | null {
   if (v === null || v === undefined || v === "") return null;
@@ -76,22 +67,16 @@ function toFiniteNumber(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** multiplier * BHM (so'mda, butun songa yaxlitlanadi). */
 export function computeBhmAmount(multiplier: number, bhmAmount: number): number {
   return Math.round(multiplier * bhmAmount);
 }
 
 export interface AmountRange {
   min: number;
-  /** null — bitta qat'iy summa (oraliq emas). */
   max: number | null;
 }
 
-/**
- * Jarima summasi oralig'i. Server hisoblagan amountMin/amountMax afzal; yo'q bo'lsa
- * bhmMin/bhmMax * bhm.amount. max min'ga teng yoki kichik bo'lsa — bitta summa.
- */
-export function getFineAmountRange(fine: TrafficFine, bhm: BhmInfo): AmountRange {
+export function getFineAmountRange(fine: TrafficFine, bhm: { amount: number }): AmountRange {
   const bhmAmount = toFiniteNumber(bhm?.amount) ?? 0;
   const serverMin = toFiniteNumber(fine.amountMin);
   const serverMax = toFiniteNumber(fine.amountMax);
@@ -103,16 +88,23 @@ export function getFineAmountRange(fine: TrafficFine, bhm: BhmInfo): AmountRange
   return { min, max: max !== null && max > min ? max : null };
 }
 
-// ─── Formatlash ─────────────────────────────────────────────────────────────
+export function resolveAmount(serverAmount: unknown, multiplier: number | null, bhm: number): number | null {
+  const server = toFiniteNumber(serverAmount);
+  if (server !== null && server > 0) return Math.round(server);
+  if (multiplier === null || multiplier <= 0) return null;
+  return calculateFineAmount(multiplier, bhm);
+}
 
-const CURRENCY: Record<FinesLang, string> = {
+const CURRENCY: Record<string, string> = {
   uzl: "so'm",
   uzc: "сўм",
   ru: "сум",
+  en: "so'm",
 };
 
-function normLang(lang: string | undefined): FinesLang {
-  return lang === "ru" || lang === "uzc" ? lang : "uzl";
+function normLang(lang: string | undefined): FineLang {
+  if (lang === "ru" || lang === "uzc" || lang === "en") return lang;
+  return "uzl";
 }
 
 export function formatNumber(value: number, lang?: string): string {
@@ -123,18 +115,15 @@ export function formatNumber(value: number, lang?: string): string {
   }
 }
 
-/** "375 000 so'm" / "375 000 сўм" / "375 000 сум" (ajratgich — lokal bo'yicha). */
 export function formatMoney(value: number, lang?: string): string {
-  return `${formatNumber(value, lang)} ${CURRENCY[normLang(lang)]}`;
+  return `${formatNumber(value, lang)} ${CURRENCY[normLang(lang)] || "so'm"}`;
 }
 
-/** "375 000 – 750 000 so'm" yoki bitta summa. */
 export function formatAmountRange(range: AmountRange, lang?: string): string {
   if (range.max === null) return formatMoney(range.min, lang);
   return `${formatNumber(range.min, lang)} – ${formatMoney(range.max, lang)}`;
 }
 
-/** BHM ko'paytiruvchisi: "5" yoki "5–10" (kasr bo'lsa lokal ajratgich bilan). */
 export function formatBhmMultiplier(fine: TrafficFine, lang?: string): string {
   const fmt = (n: number) => {
     try {
@@ -148,7 +137,6 @@ export function formatBhmMultiplier(fine: TrafficFine, lang?: string): string {
   return max !== null && max > min ? `${fmt(min)}–${fmt(max)}` : fmt(min);
 }
 
-/** ISO sana ("2024-08-01") -> lokal sana; noto'g'ri bo'lsa asl qiymat. */
 export function formatEffectiveDate(iso: string, lang?: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
   if (!m) return iso || "";
@@ -165,26 +153,23 @@ export function formatEffectiveDate(iso: string, lang?: string): string {
   }
 }
 
-/**
- * Lokallashtirilgan matn. uzc bo'sh bo'lsa — uzl kirillga transliteratsiya qilinadi;
- * ru bo'sh bo'lsa — uzl; uzl bo'sh bo'lsa — uzc lotinga.
- */
 export function pickFineText(text: LocalizedText | null | undefined, lang?: string): string {
   if (!text) return "";
   const uzl = (text.uzl || "").trim();
   const uzc = (text.uzc || "").trim();
   const ru = (text.ru || "").trim();
+  const en = (text.en || "").trim();
   switch (normLang(lang)) {
     case "ru":
       return ru || uzl || cyrillicToLatin(uzc);
     case "uzc":
       return uzc || latinToCyrillic(uzl) || ru;
+    case "en":
+      return en || uzl || cyrillicToLatin(uzc);
     default:
       return uzl || cyrillicToLatin(uzc) || ru;
   }
 }
-
-// ─── Payload tekshiruvi ───────────────────────────────────────────────────────
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === "object" && !Array.isArray(v);
@@ -194,8 +179,7 @@ function unwrapEnvelope(body: unknown): unknown {
   return isRecord(body) && "data" in body ? body.data : body;
 }
 
-/** Server javobini tekshiradi; yaroqsiz bo'lsa null (ma'lumot o'ylab topilmaydi). */
-export function parseFinesPayload(body: unknown): FinesPayload | null {
+export function parseFinesPayload(body: unknown): FinesData | null {
   const data = unwrapEnvelope(body);
   if (!isRecord(data) || !isRecord(data.bhm)) return null;
   const amount = toFiniteNumber(data.bhm.amount);
@@ -207,13 +191,32 @@ export function parseFinesPayload(body: unknown): FinesPayload | null {
   );
   valid.sort((a, b) => (toFiniteNumber(a.sortOrder) ?? 0) - (toFiniteNumber(b.sortOrder) ?? 0));
   return {
-    bhm: { amount, effectiveFrom: typeof data.bhm.effectiveFrom === "string" ? data.bhm.effectiveFrom : "" },
+    bhm: { amount, effectiveFrom: typeof data.bhm.effectiveFrom === "string" ? data.bhm.effectiveFrom : null },
     version: typeof data.version === "string" ? data.version : "",
-    fines: valid.map((f) => ({ ...f, articleCode: typeof f.articleCode === "string" ? f.articleCode : "" })),
+    fines: valid.map((f) => {
+      const bhmMin = toFiniteNumber(f.bhmMin) ?? 0;
+      const bhmMax = toFiniteNumber(f.bhmMax);
+      return {
+        ...f,
+        id: Number(f.id),
+        articleCode: typeof f.articleCode === "string" ? f.articleCode : "",
+        bhmMin,
+        bhmMax: bhmMax !== null && bhmMax > bhmMin ? bhmMax : null,
+        amountMin: resolveAmount(f.amountMin, bhmMin, amount) ?? 0,
+        amountMax: bhmMax !== null ? resolveAmount(f.amountMax, bhmMax, amount) : null,
+        sortOrder: toFiniteNumber(f.sortOrder) ?? 0,
+      };
+    }),
   };
 }
 
-// ─── Kesh ────────────────────────────────────────────────────────────────────
+export const normalizeFines = (raw: unknown): FinesData => {
+  return parseFinesPayload(raw) ?? {
+    bhm: { amount: DEFAULT_BHM, effectiveFrom: null },
+    version: "",
+    fines: [],
+  };
+};
 
 let memoryCache: CacheEntry | null = null;
 let inflight: Promise<FinesResult> | null = null;
@@ -240,9 +243,7 @@ function writeCache(entry: CacheEntry): void {
   memoryCache = entry;
   try {
     localStorage.setItem(FINES_CACHE_KEY, JSON.stringify(entry));
-  } catch {
-    // localStorage to'la / bloklangan — xotiradagi kesh yetarli.
-  }
+  } catch {}
 }
 
 function currentCache(): CacheEntry | null {
@@ -250,15 +251,13 @@ function currentCache(): CacheEntry | null {
   return memoryCache;
 }
 
-/** Test va "keshni tozalash" uchun. */
 export function clearFinesCache(): void {
   memoryCache = null;
   inflight = null;
   try {
     localStorage.removeItem(FINES_CACHE_KEY);
-  } catch {
-    // e'tiborsiz
-  }
+    localStorage.removeItem("prava_traffic_fines_v1");
+  } catch {}
 }
 
 function headerValue(headers: unknown, name: string): string | null {
@@ -277,41 +276,45 @@ async function fetchFromNetwork(cached: CacheEntry | null, retried = false): Pro
     res = await api.get(FINES_ENDPOINT, {
       headers,
       silent: true,
-      validateStatus: (s) => (s >= 200 && s < 300) || s === 304,
-    });
+      validateStatus: (s: number) => (s >= 200 && s < 300) || s === 304,
+    } as any);
   } catch (err) {
-    if (cached) return { data: cached.data, stale: true, source: "storage" };
+    if (cached) {
+      setBhmValue(cached.data.bhm.amount);
+      return { data: cached.data, stale: true, fromCache: true, savedAt: cached.savedAt, source: "storage" };
+    }
     throw err;
   }
 
   if (res.status === 304) {
     if (cached) {
       writeCache({ ...cached, savedAt: Date.now() });
-      return { data: cached.data, stale: false, source: "not-modified" };
+      setBhmValue(cached.data.bhm.amount);
+      return { data: cached.data, stale: false, fromCache: false, savedAt: cached.savedAt, source: "not-modified" };
     }
-    // Keshsiz 304 bo'lmasligi kerak — bir marta shartsiz qayta so'raymiz.
     if (retried) throw new Error("Unexpected 304 without cached fines");
     return fetchFromNetwork(null, true);
   }
 
   const data = parseFinesPayload(res.data);
   if (!data) {
-    if (cached) return { data: cached.data, stale: true, source: "storage" };
+    if (cached) {
+      setBhmValue(cached.data.bhm.amount);
+      return { data: cached.data, stale: true, fromCache: true, savedAt: cached.savedAt, source: "storage" };
+    }
     throw new Error("Invalid fines payload");
   }
   const etag = headerValue(res.headers, "etag");
   writeCache({ etag, version: data.version, data, savedAt: Date.now() });
-  return { data, stale: false, source: "network" };
+  setBhmValue(data.bhm.amount);
+  return { data, stale: false, fromCache: false, savedAt: Date.now(), source: "network" };
 }
 
-/**
- * Jarimalar ro'yxati. Kesh yangi bo'lsa (FINES_FRESH_MS) — tarmoqsiz; aks holda shartli
- * so'rov (If-None-Match). `force` — keshni chetlab o'tib serverdan tekshirish (Qayta urinish).
- */
 export function fetchFines(options: { force?: boolean } = {}): Promise<FinesResult> {
   const cached = currentCache();
   if (!options.force && cached && Date.now() - cached.savedAt < FINES_FRESH_MS) {
-    return Promise.resolve({ data: cached.data, stale: false, source: "memory" });
+    setBhmValue(cached.data.bhm.amount);
+    return Promise.resolve({ data: cached.data, stale: false, fromCache: false, savedAt: cached.savedAt, source: "memory" });
   }
   if (inflight) return inflight;
   inflight = fetchFromNetwork(cached).finally(() => {
@@ -320,30 +323,22 @@ export function fetchFines(options: { force?: boolean } = {}): Promise<FinesResu
   return inflight;
 }
 
-/** Tarmoqsiz, darhol ko'rsatish uchun keshdagi nusxa (bo'lsa). */
-export function getCachedFines(): FinesPayload | null {
-  return currentCache()?.data ?? null;
+export const loadFines = fetchFines;
+
+export function getCachedFines(): FinesResult | null {
+  const s = currentCache();
+  return s ? { data: s.data, stale: false, fromCache: true, savedAt: s.savedAt || null, source: "storage" } : null;
 }
 
-const LANGS: (keyof LocalizedText)[] = ["uzl", "uzc", "en", "ru"];
-
-export function filterFines(
-  fines: TrafficFine[],
-  query: string,
-  normalize: (s: string) => string = (s) => s.toLowerCase().trim()
-): TrafficFine[] {
-  const q = normalize(query);
+export function filterFines(fines: TrafficFine[], query: string, _lang?: string): TrafficFine[] {
+  const q = normalizeSearchText(query);
   if (!q) return fines;
-  return fines.filter((f) =>
-    normalize(`${f.articleCode} ${LANGS.map((l) => f.title[l] ?? "").join(" ")}`).includes(q)
-  );
-}
-
-export async function loadFines(opts: { force?: boolean } = {}): Promise<FinesResult> {
-  const res = await fetchFines(opts);
-  return {
-    ...res,
-    fromCache: res.source === "storage",
-    savedAt: currentCache()?.savedAt ?? null,
-  };
+  return fines.filter((f) => {
+    if (normalizeSearchText(f.articleCode).includes(q)) return true;
+    for (const l of LANGS) {
+      const text = f.title[l];
+      if (text && normalizeSearchText(text).includes(q)) return true;
+    }
+    return false;
+  });
 }

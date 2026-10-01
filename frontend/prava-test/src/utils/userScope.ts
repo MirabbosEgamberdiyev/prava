@@ -8,18 +8,12 @@
 import Cookies from "js-cookie";
 
 export const GUEST_USER_KEY = "guest" as const;
-export const GUEST_USER_ID = 0;
 
 export type UserScopeId = number | typeof GUEST_USER_KEY;
 
 export function resolveUserScopeId(user?: { id?: unknown } | null): UserScopeId {
   const n = Number(user?.id);
   return Number.isFinite(n) && n > 0 ? n : GUEST_USER_KEY;
-}
-
-export function scopedUserId(user: { id?: unknown } | null | undefined): number {
-  const n = Number(user?.id);
-  return Number.isFinite(n) && n > 0 ? n : GUEST_USER_ID;
 }
 
 export function isGuestScope(id: UserScopeId | null | undefined): boolean {

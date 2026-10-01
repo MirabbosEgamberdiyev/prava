@@ -1,6 +1,5 @@
 import {
   Badge,
-  Button,
   Flex,
   Group,
   Pagination,
@@ -14,17 +13,20 @@ import {
   Title,
 } from "@mantine/core";
 import { IconClock, IconHistory } from "@tabler/icons-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import useSWR from "swr";
 import { useLanguage } from "../../../hooks/useLanguage";
 import { EmptyState } from "../../../components/common/EmptyState";
+import { dbClient } from "../../../database/dbClient";
+import storageService from "../../../services/storageService";
+import { resolveExamOutcome } from "../../../services/examOutcome";
+import { getExamRules } from "../../../services/examRules";
 import type { ExamHistoryResponse, ExamHistoryItem, HistoryFilterStatus } from "../types";
 import { getApiStatus } from "../types";
-import { formatAppDateTime } from "../../../utils/date";
 
-export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = {}) {
+export function ExamHistoryPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { lang, localize } = useLanguage();
@@ -33,6 +35,105 @@ export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = 
   const [filter, setFilter] = useState<HistoryFilterStatus>(
     (searchParams.get("filter") as HistoryFilterStatus) ?? "ALL",
   );
+  const [offlineItems, setOfflineItems] = useState<ExamHistoryItem[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadOfflineHistory() {
+      try {
+        const localSessions = await dbClient.getAllExamSessions();
+        const storedResults = storageService.getExamHistory();
+        const items: ExamHistoryItem[] = [];
+
+        // 1. Map local sessions from dbClient
+        const rules = getExamRules();
+        for (const s of localSessions) {
+          // Persisted verdict (new rows) or the unified rule for the session's mode (old rows).
+          const outcome = resolveExamOutcome(
+            {
+              passed: s.passed,
+              mode: s.mode,
+              examType: s.exam_type,
+              total: s.total_questions || rules.real.questionCount,
+              correct: s.correct_answers,
+              wrong: s.wrong_answers,
+              unanswered: s.unanswered,
+              score: s.score,
+            },
+            rules
+          );
+          const isPassed = s.status === "COMPLETED" && outcome.passed;
+          items.push({
+            sessionId: s.local_id,
+            isOffline: true,
+            status: s.status,
+            score: s.score,
+            percentage: s.score,
+            isPassed,
+            passed: isPassed,
+            totalQuestions: outcome.total,
+            correctAnswers: s.correct_answers,
+            incorrectAnswers: Math.max(0, outcome.total - s.correct_answers),
+            durationSeconds: s.duration_seconds,
+            startedAt: new Date(s.started_at).toISOString(),
+            completedAt: s.completed_at ? new Date(s.completed_at).toISOString() : null,
+            ticketName: s.exam_type.startsWith("ticket_") || s.exam_type === "TICKET" ? { uzl: "Bilet", uzc: "Билет", ru: "Билет", en: "Ticket" } : undefined,
+            ticketNumber: s.exam_type.startsWith("ticket_") ? Number(s.exam_type.replace("ticket_", "")) : undefined,
+            isMarathon: s.exam_type === "MARATHON",
+          });
+        }
+
+        // 2. Also map any storedResults from storageService not already present
+        for (const sr of storedResults) {
+          const outcome = resolveExamOutcome(
+            {
+              passed: sr.passed,
+              mode: sr.mode,
+              examType: sr.examType,
+              total: sr.totalQuestions || rules.real.questionCount,
+              correct: sr.correctAnswers,
+              wrong: sr.wrongAnswers,
+              unanswered: sr.unanswered,
+              score: sr.score,
+            },
+            rules
+          );
+          const isPassed = outcome.passed;
+          items.push({
+            sessionId: sr.id,
+            isOffline: true,
+            status: "COMPLETED",
+            score: sr.score,
+            percentage: sr.score,
+            isPassed,
+            passed: isPassed,
+            totalQuestions: outcome.total,
+            correctAnswers: sr.correctAnswers,
+            incorrectAnswers: Math.max(0, outcome.total - sr.correctAnswers),
+            durationSeconds: sr.durationSeconds,
+            startedAt: sr.createdAt,
+            completedAt: sr.createdAt,
+            ticketName: sr.examType.startsWith("ticket_") ? { uzl: "Bilet", uzc: "Билет", ru: "Билет", en: "Ticket" } : undefined,
+            ticketNumber: sr.examType.startsWith("ticket_") ? Number(sr.examType.replace("ticket_", "")) : undefined,
+            isMarathon: sr.examType === "MARATHON" || sr.examType === "marathon",
+          });
+        }
+
+        if (mounted) {
+          const unique = items.filter(
+            (v, i, a) => a.findIndex((item) => String(item.sessionId) === String(v.sessionId)) === i
+          );
+          setOfflineItems(unique);
+        }
+      } catch {
+        // Safe offline catch
+      }
+    }
+    loadOfflineHistory();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const apiStatus = getApiStatus(filter);
   const apiUrl =
@@ -45,13 +146,21 @@ export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = 
 
   const history = historyResponse?.data;
 
-  // Client-side filter for COMPLETED (passed only) and FAILED (not passed)
+  // Client-side filter: use server content if available; otherwise use local offlineItems
   const filteredContent = useMemo(() => {
-    if (!history?.content || !Array.isArray(history.content)) return [];
-    if (filter === "COMPLETED") return history.content.filter((item) => item && (item.isPassed ?? item.passed));
-    if (filter === "FAILED") return history.content.filter((item) => item && !(item.isPassed ?? item.passed));
-    return history.content.filter(Boolean);
-  }, [history?.content, filter]);
+    let sourceContent: ExamHistoryItem[] = [];
+    if (history?.content && Array.isArray(history.content) && history.content.length > 0) {
+      sourceContent = history.content.filter(Boolean);
+    } else {
+      sourceContent = offlineItems;
+    }
+
+    if (filter === "COMPLETED") return sourceContent.filter((item) => item && (item.isPassed ?? item.passed));
+    if (filter === "FAILED") return sourceContent.filter((item) => item && !(item.isPassed ?? item.passed));
+    if (filter === "IN_PROGRESS") return sourceContent.filter((item) => item && item.status === "IN_PROGRESS");
+    if (filter === "ABANDONED") return sourceContent.filter((item) => item && item.status === "ABANDONED");
+    return sourceContent;
+  }, [history?.content, offlineItems, filter]);
 
   const filterOptions = [
     { label: t("history.all"), value: "ALL" },
@@ -89,7 +198,16 @@ export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = 
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const formatDate = (dateStr: string) => formatAppDateTime(dateStr);
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(undefined, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   const getStatusColor = (item: ExamHistoryItem) => {
     if (item.status === "IN_PROGRESS") return "blue";
@@ -109,21 +227,19 @@ export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = 
     if (item.packageName) return localize(item.packageName);
     if (item.ticketName)
       return `${localize(item.ticketName)} #${item.ticketNumber}`;
-    if (item.isMarathonMode || item.isMarathon) return t("marathon.title");
-    return t("history.exam");
+    if (item.isMarathonMode || item.isMarathon) return t("marathon.title", "Marafon");
+    return t("history.exam", "Imtihon");
   };
 
   const totalPages = history?.totalPages ?? 0;
 
   return (
     <>
-      {!hideTitle && (
-        <Title order={2} mb="md">
-          {t("history.title")}
-        </Title>
-      )}
+      <Title order={2} mb="md">
+        {t("history.title")}
+      </Title>
 
-      <ScrollArea type="auto" offsetScrollbars={false}>
+      <ScrollArea type="auto">
         <SegmentedControl
           value={filter}
           onChange={handleFilterChange}
@@ -132,7 +248,6 @@ export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = 
           fullWidth
           size="sm"
           radius="md"
-          miw={460}
         />
       </ScrollArea>
 
@@ -161,22 +276,8 @@ export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = 
 
       {!isLoading && filteredContent.length === 0 && (
         <EmptyState
-          icon={<IconHistory size={48} color="var(--primary)" style={{ opacity: 0.75 }} />}
-          title={t("history.emptyTitle")}
-          description={t(
-            "history.emptyDesc"
-          )}
-          action={
-            <Button
-              variant="filled"
-              color="blue"
-              radius="md"
-              onClick={() => navigate("/exam")}
-              mt="xs"
-            >
-              {t("exam.startBtn")}
-            </Button>
-          }
+          icon={<IconHistory size={48} color="gray" style={{ opacity: 0.5 }} />}
+          title={t("history.empty")}
         />
       )}
 
@@ -201,6 +302,11 @@ export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = 
                 <Stack gap={4} style={{ flex: 1 }}>
                   <Group gap="xs">
                     <Text fw={600}>{getExamName(item)}</Text>
+                    {item.isOffline && (
+                      <Badge size="xs" variant="outline" color="gray">
+                        {t("mode.offline", "Oflayn")}
+                      </Badge>
+                    )}
                     <Badge
                       size="sm"
                       color={getStatusColor(item)}
@@ -253,9 +359,7 @@ export function ExamHistoryPage({ hideTitle = true }: { hideTitle?: boolean } = 
                 value={page + 1}
                 onChange={(p) => setPage(p - 1)}
                 total={totalPages}
-                size="sm"
-                siblings={1}
-                boundaries={0}
+                withEdges
               />
             </Flex>
           )}
