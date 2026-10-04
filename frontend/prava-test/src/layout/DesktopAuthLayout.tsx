@@ -1,22 +1,11 @@
 import { Suspense } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Button } from "@mantine/core";
-import { IconArrowRight } from "@tabler/icons-react";
+import { Outlet, useLocation } from "react-router-dom";
 import { RouteContentFallback } from "../components/common/RouteContentFallback";
-import { useTranslation } from "react-i18next";
-import { clearPendingAuthRedirect } from "../auth/pendingAuthRedirect";
 
 export const DesktopAuthLayout = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
 
   const isLanguagePage = location.pathname.includes("/auth/language");
-
-  const continueAsGuest = () => {
-    clearPendingAuthRedirect();
-    navigate("/me", { replace: true });
-  };
 
   return (
     <div
@@ -28,28 +17,6 @@ export const DesktopAuthLayout = () => {
         background: "var(--bg)",
       }}
     >
-      {/* Top Bar: Guest button */}
-      {!isLanguagePage && (
-        <div
-          style={{
-            flex: "0 0 auto",
-            display: "flex",
-            justifyContent: "flex-start",
-            alignItems: "center",
-            padding: "12px 20px 0",
-          }}
-        >
-          <Button
-            variant="subtle"
-            size="xs"
-            radius="md"
-            rightSection={<IconArrowRight size={14} />}
-            onClick={continueAsGuest}
-          >
-            {t("auth.continueGuest")}
-          </Button>
-        </div>
-      )}
 
       <main
         style={{

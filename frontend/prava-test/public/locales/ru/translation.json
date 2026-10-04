@@ -27,7 +27,7 @@
       "successTitle": "Успешно",
       "successMessage": "Вы успешно вошли через Telegram!",
       "errorMessage": "Ошибка входа через Telegram",
-      "botOption": "Или войти через @pravaonlineuzbot",
+      "botOption": "Войти через Telegram-бота",
       "modalDescLogin": "Быстрый вход без пароля через официального Telegram-бота:",
       "modalDescRegister": "Быстрая регистрация и вход без пароля через Telegram-бота:",
       "stepLabel": "ШАГ {{n}}:",
@@ -2675,7 +2675,7 @@
     "cameraError": "Не удалось запустить веб-камеру. Проверьте подключение камеры.",
     "loginSuccessTitle": "Успешный вход!",
     "loginSuccessDesc": "Вы успешно вошли в систему",
-    "appLoginTitle": "Войти через приложение",
+    "appLoginTitle": "Войти с телефона",
     "appLoginDesc": "Отсканируйте QR-код в приложении Prava Online, чтобы войти",
     "confirmOnPhoneTitle": "Подтвердите вход на телефоне",
     "confirmOnPhoneDesc": "Запрос отправлен на ваш телефон. Подтвердите вход в мобильном приложении.",
@@ -2686,7 +2686,8 @@
     "revokeFailed": "Не удалось завершить сеанс устройства.",
     "devicePairingTitle": "Привязка устройства",
     "devicePairingDesc": "Чтобы привязать аккаунт к мобильному приложению, отсканируйте QR-код приложением на телефоне.",
-    "copiedToast": "Ссылка скопирована!"
+    "copiedToast": "Ссылка скопирована!",
+    "appLoginSubtitle": "Отсканируйте QR-код в мобильном приложении"
   },
   "pair": {
     "title": "Подключение нового устройства",

@@ -27,7 +27,7 @@
       "successTitle": "Muvaffaqiyat",
       "successMessage": "Telegram orqali tizimga kirdingiz!",
       "errorMessage": "Telegram orqali kirishda xatolik yuz berdi",
-      "botOption": "Yoki @pravaonlineuzbot orqali kirish",
+      "botOption": "Telegram bot orqali kirish",
       "modalDescLogin": "Rasmiy Telegram botimiz orqali parolsiz tezkor kirish:",
       "modalDescRegister": "Telegram botimiz orqali parolsiz tezkor ro'yxatdan o'tish va kirish:",
       "stepLabel": "{{n}}-QADAM:",
@@ -2675,7 +2675,7 @@
     "cameraError": "Web-kamerani ishga tushirib bo'lmadi. Iltimos, kamerani tekshiring.",
     "loginSuccessTitle": "Muvaffaqiyatli kirildi!",
     "loginSuccessDesc": "Tizimga muvaffaqiyatli ulandingiz",
-    "appLoginTitle": "Mobil ilova orqali kiring",
+    "appLoginTitle": "Telefon orqali kirish",
     "appLoginDesc": "Hisobingizni mobil ilova bilan bog'lash uchun QR kodni skaner qiling",
     "confirmOnPhoneTitle": "Mobil ilovada tasdiqlashni kuting",
     "confirmOnPhoneDesc": "So'rov mobil ilovangizga yuborildi. Iltimos, mobil ilovada tasdiqlang.",
@@ -2686,7 +2686,8 @@
     "revokeFailed": "Qurilma sessiyasini tugatishda xatolik yuz berdi.",
     "devicePairingTitle": "Qurilmani bog'lash",
     "devicePairingDesc": "Hisobingizni mobil ilova bilan bog'lash uchun telefoningizdagi ilova bilan QR kodni skaner qiling.",
-    "copiedToast": "Havola nusxalandi!"
+    "copiedToast": "Havola nusxalandi!",
+    "appLoginSubtitle": "Mobil ilova orqali QR-kodni skanerlang"
   },
   "pair": {
     "title": "Yangi qurilma ulanishi",

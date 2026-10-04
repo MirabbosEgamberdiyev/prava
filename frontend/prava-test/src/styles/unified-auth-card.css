@@ -128,9 +128,10 @@
 
 /* Mobile App QR Trigger Button */
 .uac-btn-mobile {
-  height: 48px;
+  min-height: 48px;
+  height: auto;
   border-radius: 14px;
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 700;
   background: #f8fbff;
   border: 1.5px solid #38bdf8;
@@ -142,7 +143,7 @@
   width: 100%;
   cursor: pointer;
   transition: all 0.16s ease;
-  padding: 0 18px;
+  padding: 7px 18px;
 }
 
 .uac-btn-mobile:hover {
@@ -314,3 +315,29 @@
   background: #ffffff;
   border-color: rgba(255, 255, 255, 0.12);
 }
+
+/* Bot Option link */
+.uac-bot-link {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.15s ease;
+  user-select: none;
+}
+
+.uac-bot-link:hover {
+  color: #0284c7;
+  text-decoration: underline;
+}
+
+.uac-bot-link:focus,
+.uac-bot-link:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+

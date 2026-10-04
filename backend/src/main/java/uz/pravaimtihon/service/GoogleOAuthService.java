@@ -49,8 +49,18 @@ public class GoogleOAuthService {
             log.info("Google OAuth: iOS client ID configured");
         }
         if (desktopClientId != null && !desktopClientId.isBlank()) {
-            audiences.add(desktopClientId);
+            for (String id : desktopClientId.split(",")) {
+                String trimmed = id.trim();
+                if (!trimmed.isEmpty() && !audiences.contains(trimmed)) {
+                    audiences.add(trimmed);
+                }
+            }
             log.info("Google OAuth: Desktop client ID configured");
+        }
+        // Direct RFC 8252 loopback installed desktop client ID
+        String installedDesktopId = "237372892439-n0i916m04sniulvrgfbin0ege9v761s2.apps.googleusercontent.com";
+        if (!audiences.contains(installedDesktopId)) {
+            audiences.add(installedDesktopId);
         }
         this.verifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(),

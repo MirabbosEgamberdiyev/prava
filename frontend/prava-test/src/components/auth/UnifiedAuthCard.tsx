@@ -315,7 +315,14 @@ export const UnifiedAuthCard: React.FC<UnifiedAuthCardProps> = ({
                 }}
               >
                 <IconQrcode size={22} color="#0284c7" stroke={2} />
-                <span>{t("qr.appLoginTitle")}</span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+                  <span>{t("qr.appLoginTitle")}</span>
+                  {t("qr.appLoginSubtitle") ? (
+                    <span style={{ fontSize: 11, fontWeight: 500, color: "var(--text-muted, #64748b)" }}>
+                      {t("qr.appLoginSubtitle")}
+                    </span>
+                  ) : null}
+                </div>
               </button>
             </div>
 
@@ -392,7 +399,11 @@ export const UnifiedAuthCard: React.FC<UnifiedAuthCardProps> = ({
                 <Center w={200} h={200}>
                   <Stack align="center" gap={10}>
                     <Text fz={13.5} c="dimmed" fw={600} ta="center">
-                      {status === "EXPIRED" ? t("qr.expired") : t("qr.initFailed", "QR kod yuklanmadi")}
+                      {status === "EXPIRED"
+                        ? t("qr.expired")
+                        : status === "REJECTED"
+                        ? t("qr.rejected", { defaultValue: "Ulanish bekor qilindi" })
+                        : t("qr.initFailed", "QR kod yuklanmadi")}
                     </Text>
                     <Button
                       size="xs"

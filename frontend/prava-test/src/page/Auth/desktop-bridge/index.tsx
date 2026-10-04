@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Container, Paper, Stack, Text, Title, Button, Loader } from "@mantine/core";
 import { useTranslation } from "react-i18next";
-import { IconBrandGoogle, IconBrandTelegram, IconCheck, IconAlertCircle, IconDeviceLaptop } from "@tabler/icons-react";
+import { IconBrandGoogle, IconBrandTelegram, IconCheck, IconAlertCircle, IconDeviceLaptop, IconDeviceMobile } from "@tabler/icons-react";
 import { useGoogleLogin } from "@react-oauth/google";
 import Cookies from "js-cookie";
 import api from "../../../api/api";
@@ -29,6 +29,9 @@ export default function DesktopBridgePage() {
   const state = searchParams.get("state") || "";
   const sessionId = searchParams.get("sessionId");
   const challenge = searchParams.get("challenge");
+  const redirectUri = searchParams.get("redirect_uri") || searchParams.get("redirect") || searchParams.get("callbackUrl");
+  const platform = searchParams.get("platform");
+  const isMobile = platform === "mobile" || /Android|iPhone|iPad/i.test(navigator.userAgent);
 
   const [status, setStatus] = useState<BridgeStatus>("INITIALIZING");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -74,17 +77,14 @@ export default function DesktopBridgePage() {
         }
       }
 
-      // 3. Tertiary channel: custom protocol scheme
-      if (state) {
+      // 3. Deep link redirect (Mobile app or custom protocol scheme)
+      const targetRedirect = redirectUri || (state ? `pravaonline://oauth/callback?token=${encodeURIComponent(
+        accessToken
+      )}&refresh=${encodeURIComponent(refreshToken)}&state=${encodeURIComponent(state)}` : null);
+
+      if (targetRedirect) {
         try {
-          const schemeUrl = `pravaonline://oauth/callback?token=${encodeURIComponent(
-            accessToken
-          )}&refresh=${encodeURIComponent(refreshToken)}&state=${encodeURIComponent(state)}`;
-          const iframe = document.createElement("iframe");
-          iframe.style.display = "none";
-          iframe.src = schemeUrl;
-          document.body.appendChild(iframe);
-          setTimeout(() => iframe.remove(), 2000);
+          window.location.href = targetRedirect;
         } catch {
           // ignore
         }
@@ -107,7 +107,7 @@ export default function DesktopBridgePage() {
         }
       }, 1000);
     },
-    [port, state, sessionId, challenge]
+    [port, state, sessionId, challenge, redirectUri]
   );
 
   // If already authenticated on web, immediately transfer session to Desktop!
@@ -201,18 +201,18 @@ export default function DesktopBridgePage() {
                   marginBottom: 4,
                 }}
               >
-                <IconDeviceLaptop size={34} stroke={2} />
+                {isMobile ? <IconDeviceMobile size={34} stroke={2} /> : <IconDeviceLaptop size={34} stroke={2} />}
               </div>
 
               <Title order={2} style={{ fontSize: 22, fontWeight: 800, color: "#ffffff", margin: 0 }}>
-                Prava Online Desktop
+                {isMobile ? "Prava Online Mobile" : "Prava Online Desktop"}
               </Title>
 
               {status === "INITIALIZING" && (
                 <>
                   <Loader size="md" color="#38bdf8" />
                   <Text size="sm" c="dimmed">
-                    {t("auth.connecting", "Desktop ilovasiga ulanmoqda...")}
+                    {isMobile ? "Ilovaga ulanmoqda..." : t("auth.connecting", "Desktop ilovasiga ulanmoqda...")}
                   </Text>
                 </>
               )}
@@ -221,8 +221,8 @@ export default function DesktopBridgePage() {
                 <>
                   <Text size="sm" c="dimmed" style={{ lineHeight: 1.5, maxWidth: 360 }}>
                     {provider === "telegram"
-                      ? "Desktop ilovangizga kirish uchun Telegram hisobingizni tasdiqlang."
-                      : "Desktop ilovangizga kirish uchun Google hisobingiz orqali 1 bosqichda kiring."}
+                      ? (isMobile ? "Ilovaga kirish uchun Telegram hisobingizni tasdiqlang." : "Desktop ilovangizga kirish uchun Telegram hisobingizni tasdiqlang.")
+                      : (isMobile ? "Prava Online ilovasiga kirish uchun Google hisobingiz orqali 1 bosqichda kiring." : "Desktop ilovangizga kirish uchun Google hisobingiz orqali 1 bosqichda kiring.")}
                   </Text>
 
                   {provider === "telegram" ? (
@@ -269,7 +269,7 @@ export default function DesktopBridgePage() {
                 <>
                   <Loader size="md" color="#38bdf8" />
                   <Text size="sm" c="dimmed">
-                    Desktop ilovasiga token uzatilmoqda...
+                    {isMobile ? "Ilovaga token uzatilmoqda..." : "Desktop ilovasiga token uzatilmoqda..."}
                   </Text>
                 </>
               )}
@@ -295,11 +295,23 @@ export default function DesktopBridgePage() {
                     Muvaffaqiyatli ulandingiz!
                   </Title>
                   <Text size="sm" c="dimmed" style={{ maxWidth: 340 }}>
-                    Prava Online Desktop ilovangizga kirildi. Dasturga qaytishingiz mumkin.
+                    {isMobile ? "Prava Online ilovangizga muvaffaqiyatli kirildi. Ilovaga qaytishingiz mumkin." : "Prava Online Desktop ilovangizga kirildi. Dasturga qaytishingiz mumkin."}
                   </Text>
                   <Text size="xs" c="dimmed">
                     Ushbu oyna {countdown} soniyada avtomatik yopiladi...
                   </Text>
+                  {isMobile ? (
+                    <Button
+                      component="a"
+                      href={redirectUri || "pravamobile://auth/callback"}
+                      size="sm"
+                      radius="md"
+                      color="blue"
+                      mt={6}
+                    >
+                      Ilovaga qaytish
+                    </Button>
+                  ) : null}
                   <Button
                     variant="subtle"
                     color="gray"
