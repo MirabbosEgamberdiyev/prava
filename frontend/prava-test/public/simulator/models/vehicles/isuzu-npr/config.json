@@ -1,0 +1,39 @@
+{
+  "id": "ISUZU_NPR",
+  "name": "Isuzu NPR Truck",
+  "category": "TRUCK",
+  "categoryLabel": "Yuk (C)",
+  "model": "/simulator/models/vehicles/isuzu-npr/isuzu-npr.glb",
+  "brand": "ISUZU",
+  "color": "#0284c7",
+  "dimensions": {
+    "length": 5.98,
+    "width": 2.11,
+    "height": 2.28,
+    "wheelBase": 3.36,
+    "wheelRadius": 0.4,
+    "rearAxleZ": 1.45,
+    "halfLength": 3.45,
+    "halfWidth": 1.18
+  },
+  "physics": {
+    "mass": 3850,
+    "accel": 1.85,
+    "brake": 6.8,
+    "rolling": 1.2,
+    "maxForward": 7.2,
+    "maxReverse": 2.6,
+    "turnSpeed": 0.036
+  },
+  "camera": {
+    "distance": 9.4,
+    "height": 3.4,
+    "lookAhead": 4.6,
+    "lookHeight": 1.85,
+    "cockpitEye": {
+      "side": -0.55,
+      "front": 0.15,
+      "up": 1.85
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "id": "TRACKER",
+  "name": "Chevrolet Tracker",
+  "category": "SUV",
+  "categoryLabel": "SUV (B)",
+  "model": "/simulator/models/vehicles/tracker/tracker.glb",
+  "brand": "CHEVROLET",
+  "color": "#991b1b",
+  "dimensions": {
+    "length": 4.27,
+    "width": 1.79,
+    "height": 1.62,
+    "wheelBase": 2.57,
+    "wheelRadius": 0.35,
+    "rearAxleZ": 1.39,
+    "halfLength": 2.48,
+    "halfWidth": 1.02
+  },
+  "physics": {
+    "mass": 1340,
+    "accel": 2.8,
+    "brake": 7.8,
+    "rolling": 0.95,
+    "maxForward": 8.2,
+    "maxReverse": 3,
+    "turnSpeed": 0.048
+  },
+  "camera": {
+    "distance": 7.2,
+    "height": 2.5,
+    "lookAhead": 4,
+    "lookHeight": 1.35,
+    "cockpitEye": {
+      "side": -0.38,
+      "front": 0.05,
+      "up": 1.42
+    }
+  }
+}

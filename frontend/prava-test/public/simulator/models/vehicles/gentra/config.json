@@ -1,0 +1,39 @@
+{
+  "id": "GENTRA",
+  "name": "Chevrolet Gentra",
+  "category": "SEDAN",
+  "categoryLabel": "Sedan (B)",
+  "model": "/simulator/models/vehicles/gentra/gentra.glb",
+  "brand": "CHEVROLET",
+  "color": "#1e293b",
+  "dimensions": {
+    "length": 4.51,
+    "width": 1.72,
+    "height": 1.44,
+    "wheelBase": 2.6,
+    "wheelRadius": 0.31,
+    "rearAxleZ": 1.35,
+    "halfLength": 2.55,
+    "halfWidth": 0.96
+  },
+  "physics": {
+    "mass": 1250,
+    "accel": 2.7,
+    "brake": 7.6,
+    "rolling": 0.88,
+    "maxForward": 8.45,
+    "maxReverse": 3.1,
+    "turnSpeed": 0.052
+  },
+  "camera": {
+    "distance": 6.5,
+    "height": 2.1,
+    "lookAhead": 3.7,
+    "lookHeight": 1.12,
+    "cockpitEye": {
+      "side": -0.36,
+      "front": 0.05,
+      "up": 1.25
+    }
+  }
+}

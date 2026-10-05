@@ -1,0 +1,39 @@
+{
+  "id": "ONIX",
+  "name": "Chevrolet Onix",
+  "category": "TURBO",
+  "categoryLabel": "Turbo (B)",
+  "model": "/simulator/models/vehicles/onix/onix.glb",
+  "brand": "CHEVROLET",
+  "color": "#e2e8f0",
+  "dimensions": {
+    "length": 4.47,
+    "width": 1.73,
+    "height": 1.47,
+    "wheelBase": 2.6,
+    "wheelRadius": 0.32,
+    "rearAxleZ": 1.38,
+    "halfLength": 2.54,
+    "halfWidth": 0.97
+  },
+  "physics": {
+    "mass": 1115,
+    "accel": 3.2,
+    "brake": 8.2,
+    "rolling": 0.85,
+    "maxForward": 9,
+    "maxReverse": 3.3,
+    "turnSpeed": 0.054
+  },
+  "camera": {
+    "distance": 6.5,
+    "height": 2.15,
+    "lookAhead": 3.8,
+    "lookHeight": 1.14,
+    "cockpitEye": {
+      "side": -0.37,
+      "front": 0.05,
+      "up": 1.26
+    }
+  }
+}

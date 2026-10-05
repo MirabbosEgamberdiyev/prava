@@ -1,0 +1,197 @@
+{
+  "COBALT": {
+    "id": "COBALT",
+    "name": "Chevrolet Cobalt",
+    "category": "SEDAN",
+    "categoryLabel": "Sedan (B)",
+    "model": "/simulator/models/vehicles/cobalt/cobalt.glb",
+    "brand": "CHEVROLET",
+    "color": "#f8fafc",
+    "dimensions": {
+      "length": 4.48,
+      "width": 1.73,
+      "height": 1.51,
+      "wheelBase": 2.62,
+      "wheelRadius": 0.32,
+      "rearAxleZ": 1.575,
+      "halfLength": 2.58,
+      "halfWidth": 0.98
+    },
+    "physics": {
+      "mass": 1243,
+      "accel": 2.6,
+      "brake": 7.5,
+      "rolling": 0.9,
+      "maxForward": 8.33,
+      "maxReverse": 3,
+      "turnSpeed": 0.05
+    },
+    "camera": {
+      "distance": 6.6,
+      "height": 2.2,
+      "lookAhead": 3.8,
+      "lookHeight": 1.15,
+      "cockpitEye": {
+        "side": -0.38,
+        "front": 0.05,
+        "up": 1.3
+      }
+    }
+  },
+  "GENTRA": {
+    "id": "GENTRA",
+    "name": "Chevrolet Gentra",
+    "category": "SEDAN",
+    "categoryLabel": "Sedan (B)",
+    "model": "/simulator/models/vehicles/gentra/gentra.glb",
+    "brand": "CHEVROLET",
+    "color": "#1e293b",
+    "dimensions": {
+      "length": 4.51,
+      "width": 1.72,
+      "height": 1.44,
+      "wheelBase": 2.6,
+      "wheelRadius": 0.31,
+      "rearAxleZ": 1.35,
+      "halfLength": 2.55,
+      "halfWidth": 0.96
+    },
+    "physics": {
+      "mass": 1250,
+      "accel": 2.7,
+      "brake": 7.6,
+      "rolling": 0.88,
+      "maxForward": 8.45,
+      "maxReverse": 3.1,
+      "turnSpeed": 0.052
+    },
+    "camera": {
+      "distance": 6.5,
+      "height": 2.1,
+      "lookAhead": 3.7,
+      "lookHeight": 1.12,
+      "cockpitEye": {
+        "side": -0.36,
+        "front": 0.05,
+        "up": 1.25
+      }
+    }
+  },
+  "ONIX": {
+    "id": "ONIX",
+    "name": "Chevrolet Onix",
+    "category": "TURBO",
+    "categoryLabel": "Turbo (B)",
+    "model": "/simulator/models/vehicles/onix/onix.glb",
+    "brand": "CHEVROLET",
+    "color": "#e2e8f0",
+    "dimensions": {
+      "length": 4.47,
+      "width": 1.73,
+      "height": 1.47,
+      "wheelBase": 2.6,
+      "wheelRadius": 0.32,
+      "rearAxleZ": 1.38,
+      "halfLength": 2.54,
+      "halfWidth": 0.97
+    },
+    "physics": {
+      "mass": 1115,
+      "accel": 3.2,
+      "brake": 8.2,
+      "rolling": 0.85,
+      "maxForward": 9,
+      "maxReverse": 3.3,
+      "turnSpeed": 0.054
+    },
+    "camera": {
+      "distance": 6.5,
+      "height": 2.15,
+      "lookAhead": 3.8,
+      "lookHeight": 1.14,
+      "cockpitEye": {
+        "side": -0.37,
+        "front": 0.05,
+        "up": 1.26
+      }
+    }
+  },
+  "TRACKER": {
+    "id": "TRACKER",
+    "name": "Chevrolet Tracker",
+    "category": "SUV",
+    "categoryLabel": "SUV (B)",
+    "model": "/simulator/models/vehicles/tracker/tracker.glb",
+    "brand": "CHEVROLET",
+    "color": "#991b1b",
+    "dimensions": {
+      "length": 4.27,
+      "width": 1.79,
+      "height": 1.62,
+      "wheelBase": 2.57,
+      "wheelRadius": 0.35,
+      "rearAxleZ": 1.39,
+      "halfLength": 2.48,
+      "halfWidth": 1.02
+    },
+    "physics": {
+      "mass": 1340,
+      "accel": 2.8,
+      "brake": 7.8,
+      "rolling": 0.95,
+      "maxForward": 8.2,
+      "maxReverse": 3,
+      "turnSpeed": 0.048
+    },
+    "camera": {
+      "distance": 7.2,
+      "height": 2.5,
+      "lookAhead": 4,
+      "lookHeight": 1.35,
+      "cockpitEye": {
+        "side": -0.38,
+        "front": 0.05,
+        "up": 1.42
+      }
+    }
+  },
+  "ISUZU_NPR": {
+    "id": "ISUZU_NPR",
+    "name": "Isuzu NPR Truck",
+    "category": "TRUCK",
+    "categoryLabel": "Yuk (C)",
+    "model": "/simulator/models/vehicles/isuzu-npr/isuzu-npr.glb",
+    "brand": "ISUZU",
+    "color": "#0284c7",
+    "dimensions": {
+      "length": 5.98,
+      "width": 2.11,
+      "height": 2.28,
+      "wheelBase": 3.36,
+      "wheelRadius": 0.4,
+      "rearAxleZ": 1.45,
+      "halfLength": 3.45,
+      "halfWidth": 1.18
+    },
+    "physics": {
+      "mass": 3850,
+      "accel": 1.85,
+      "brake": 6.8,
+      "rolling": 1.2,
+      "maxForward": 7.2,
+      "maxReverse": 2.6,
+      "turnSpeed": 0.036
+    },
+    "camera": {
+      "distance": 9.4,
+      "height": 3.4,
+      "lookAhead": 4.6,
+      "lookHeight": 1.85,
+      "cockpitEye": {
+        "side": -0.55,
+        "front": 0.15,
+        "up": 1.85
+      }
+    }
+  }
+}

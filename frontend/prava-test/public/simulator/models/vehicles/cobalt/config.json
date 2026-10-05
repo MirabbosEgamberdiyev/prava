@@ -1,0 +1,39 @@
+{
+  "id": "COBALT",
+  "name": "Chevrolet Cobalt",
+  "category": "SEDAN",
+  "categoryLabel": "Sedan (B)",
+  "model": "/simulator/models/vehicles/cobalt/cobalt.glb",
+  "brand": "CHEVROLET",
+  "color": "#f8fafc",
+  "dimensions": {
+    "length": 4.48,
+    "width": 1.73,
+    "height": 1.51,
+    "wheelBase": 2.62,
+    "wheelRadius": 0.32,
+    "rearAxleZ": 1.575,
+    "halfLength": 2.58,
+    "halfWidth": 0.98
+  },
+  "physics": {
+    "mass": 1243,
+    "accel": 2.6,
+    "brake": 7.5,
+    "rolling": 0.9,
+    "maxForward": 8.33,
+    "maxReverse": 3,
+    "turnSpeed": 0.05
+  },
+  "camera": {
+    "distance": 6.6,
+    "height": 2.2,
+    "lookAhead": 3.8,
+    "lookHeight": 1.15,
+    "cockpitEye": {
+      "side": -0.38,
+      "front": 0.05,
+      "up": 1.3
+    }
+  }
+}
