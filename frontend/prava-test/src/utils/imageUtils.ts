@@ -15,6 +15,10 @@ export const getImageUrl = (url: string | null | undefined): string | undefined 
     return url;
   }
 
+  if (url === "/images/malibu.webp" || url === "/malibu.webp" || url === "/question-default.svg" || url === "question-default.svg") {
+    return url.startsWith("/") ? url : `/${url}`;
+  }
+
   const cleanPath = normalizeMediaPath(url) || (url.startsWith("/") ? url : `/${url}`);
   if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
     return cleanPath;

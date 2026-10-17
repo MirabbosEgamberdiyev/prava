@@ -796,11 +796,7 @@ export function QuizContent({
               <ImagePlaceholder
                 src={
                   getImageUrl(currentQuestion?.imageUrl) ||
-                  getImageUrl(
-                    (currentQuestion?.id ?? 0) % 2 === 0
-                      ? "/api/v1/files/defaults/default_malibu.webp"
-                      : "/api/v1/files/defaults/default_tahoe.webp"
-                  )
+                  "/images/malibu.webp"
                 }
                 onClick={() => setImageModalOpened(true)}
               />
@@ -822,11 +818,7 @@ export function QuizContent({
           <Image
             src={
               getImageUrl(currentQuestion?.imageUrl) ||
-              getImageUrl(
-                (currentQuestion?.id ?? 0) % 2 === 0
-                  ? "/api/v1/files/defaults/default_malibu.webp"
-                  : "/api/v1/files/defaults/default_tahoe.webp"
-              )
+              "/images/malibu.webp"
             }
             fit="contain"
           />

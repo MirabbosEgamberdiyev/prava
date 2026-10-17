@@ -243,7 +243,7 @@ export function normalizeQuestion(q: any): OfflineQuestion {
     question_text: textUzl,
     question_text_uz: textUzl,
     question_text_ru: textRu,
-    image_path: q.image_path || q.imageUrl || (q.question && (q.question.image_path || q.question.imageUrl)) || "/question-default.svg",
+    image_path: q.image_path || q.imageUrl || (q.question && (q.question.image_path || q.question.imageUrl)) || "/images/malibu.webp",
     options_json: optionsJson || "[]",
     correct_option: q.correct_option ?? q.correctOptionIndex ?? (q.question && (q.question.correct_option ?? q.question.correctOptionIndex)) ?? 0,
     explanation_uzl: expUzl,
@@ -268,7 +268,7 @@ export function toStoredQuestion(q: OfflineQuestion): StoredQuestion {
     explanationUzl: q.explanation_uzl,
     explanationUzc: q.explanation_uzc,
     explanationRu: q.explanation_ru,
-    imageUrl: q.image_path || "/question-default.svg",
+    imageUrl: q.image_path || "/images/malibu.webp",
     options: opts.map((o) => ({ uzl: o.uzl, uzc: o.uzc, ru: o.ru })),
     correctOption: q.correct_option,
   };
@@ -284,7 +284,7 @@ export function fromStoredQuestion(sq: StoredQuestion): OfflineQuestion {
     text_uzc: sq.textUzc ?? null,
     text_en: null,
     text_ru: sq.textRu ?? null,
-    image_path: sq.imageUrl || "/question-default.svg",
+    image_path: sq.imageUrl || "/images/malibu.webp",
     options_json: JSON.stringify(
       sq.options.map((o, idx) => ({
         index: idx,
@@ -310,7 +310,7 @@ export function dbQuestionToOfflineQuestion(dbq: DbQuestion): OfflineQuestion {
     text_uzc: dbq.text_uzc,
     text_en: null,
     text_ru: dbq.text_ru,
-    image_path: dbq.image_url || "/question-default.svg",
+    image_path: dbq.image_url || "/images/malibu.webp",
     options_json: dbq.options_json,
     correct_option: dbq.correct_option,
     explanation_uzl: dbq.explanation_uzl,

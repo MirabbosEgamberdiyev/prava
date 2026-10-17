@@ -227,7 +227,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                   {/* Image: always render (q.image_path or default) */}
                   <div style={{ marginBottom: "12px", maxHeight: "180px", overflow: "hidden", borderRadius: "8px" }}>
                     <SecureImage
-                      path={q.image_path || "/question-default.svg"}
+                      path={q.image_path || "/images/malibu.webp"}
                       alt={t("exam.questionImageAlt", "Savol rasmi")}
                       style={{ width: "100%", maxHeight: "180px", objectFit: "contain", borderRadius: "8px" }}
                     />

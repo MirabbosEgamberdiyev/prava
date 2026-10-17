@@ -291,8 +291,8 @@ function StandardExamDesktopViewImpl(props: ExamDesktopViewProps) {
 
   const openZoom = useCallback(() => {
     const src = q?.image_path
-      ? (offlineMediaManager.peekLocalImageUrl(q.image_path) ?? getImageUrl(q.image_path) ?? "/question-default.svg")
-      : "/question-default.svg";
+      ? (offlineMediaManager.peekLocalImageUrl(q.image_path) ?? getImageUrl(q.image_path) ?? "/images/malibu.webp")
+      : "/images/malibu.webp";
     if (src) setZoomSrc(src);
   }, [q]);
 
@@ -447,7 +447,7 @@ function StandardExamDesktopViewImpl(props: ExamDesktopViewProps) {
 
   if (!q) return null;
   const bookmarked = bookmarkedIds.has(q.id);
-  const DEFAULT_QUESTION_IMAGE = "/question-default.svg";
+  const DEFAULT_QUESTION_IMAGE = "/images/malibu.webp";
   const imagePath = q.image_path || DEFAULT_QUESTION_IMAGE;
   const mistakesLeftDanger = maxMistakes != null && wrong >= maxMistakes;
 

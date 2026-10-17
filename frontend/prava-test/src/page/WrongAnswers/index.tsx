@@ -342,11 +342,11 @@ function WrongAnswersContent() {
                       {/* Image Thumbnail */}
                       <div className="ref-wrong-thumb">
                         <img
-                          src={q.image_path || "/question-default.svg"}
+                          src={q.image_path || "/images/malibu.webp"}
                           alt=""
                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/question-default.svg";
+                            (e.target as HTMLImageElement).src = "/images/malibu.webp";
                           }}
                         />
                       </div>
@@ -395,7 +395,7 @@ function WrongAnswersContent() {
                       >
                         <div style={{ margin: "16px 0", maxWidth: 360 }}>
                           <ZoomableImage
-                            path={q.image_path || "/question-default.svg"}
+                            path={q.image_path || "/images/malibu.webp"}
                             className="ref-wrong-expanded-img"
                             onOpen={(src) => setZoomSrc(src)}
                           />

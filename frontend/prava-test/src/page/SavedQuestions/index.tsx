@@ -263,7 +263,7 @@ function SavedQuestionsContent() {
 
                         <div className="review-card-img-wrap">
                           <ZoomableImage
-                            path={q.image_path || "/question-default.svg"}
+                            path={q.image_path || "/images/malibu.webp"}
                             className="review-card-img"
                             onOpen={(src) => setZoomSrc(src)}
                           />

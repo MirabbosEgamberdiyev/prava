@@ -1,72 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" role="img" aria-label="Prava Online">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="100%" height="100%" role="img" aria-label="Prava Online">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%"  stop-color="#dbeafe"/>
-      <stop offset="60%" stop-color="#bfdbfe"/>
-      <stop offset="100%" stop-color="#93c5fd"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="50%" r="55%">
-      <stop offset="0%"  stop-color="#ffffff" stop-opacity="0.55"/>
-      <stop offset="70%" stop-color="#ffffff" stop-opacity="0"/>
+    <radialGradient id="carGlow" cx="50%" cy="55%" r="50%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="ring" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"  stop-color="#3b82f6"/>
-      <stop offset="100%" stop-color="#1d4ed8"/>
-    </linearGradient>
   </defs>
-
-  <!-- Background -->
-  <rect width="600" height="400" fill="url(#bg)" rx="16"/>
-  <circle cx="300" cy="200" r="190" fill="url(#glow)"/>
-
-  <!-- ── Brand logo (replica of /logo.png in SVG form) ── -->
-  <g transform="translate(300,200)">
-    <!-- Outer blue circle -->
-    <circle r="135" fill="url(#ring)" stroke="#ffffff" stroke-width="5"/>
-    <!-- Inner thin ring -->
-    <circle r="125" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.7"/>
-
-    <!-- Graduation cap -->
-    <g transform="translate(0,-58)">
-      <polygon points="-55,-8 0,-22 55,-8 0,6" fill="#ffffff"/>
-      <polygon points="-55,-8 -55,-3 0,11 55,-3 55,-8 0,6" fill="#ffffff" opacity="0.85"/>
-      <!-- Tassel -->
-      <path d="M -42 -4 L -42 18 Q -42 24 -38 24 Q -34 24 -34 18 L -34 -2"
-            stroke="#ffffff" stroke-width="2" fill="none"/>
-      <circle cx="-38" cy="26" r="3" fill="#ffffff"/>
-    </g>
-
-    <!-- Steering wheel -->
-    <g stroke="#ffffff" fill="none" stroke-width="9" stroke-linecap="round">
-      <circle r="52"/>
-    </g>
-    <g fill="#ffffff">
-      <circle cy="6" r="13"/>
-      <!-- 3 spokes (top, bottom-left, bottom-right) -->
-      <path d="M -3 -50 L 3 -50 L 3 -8 L -3 -8 Z"/>
-      <path d="M -48 22 L -44 18 L -8 0 L -8 6 Z" transform="rotate(0)"/>
-      <path d="M 48 22 L 44 18 L 8 0 L 8 6 Z"/>
-    </g>
-
-    <!-- Hands gripping the wheel -->
-    <!-- Left hand -->
-    <g fill="#ffffff" transform="translate(-58,8)">
-      <path d="M 0 0 Q -8 -6 -16 -2 Q -22 4 -22 14 Q -22 24 -14 28 L 0 28 Q 8 26 10 18 L 10 4 Z"/>
-      <!-- finger lines -->
-      <line x1="-14" y1="-2" x2="-12" y2="10" stroke="#3b82f6" stroke-width="1.5"/>
-      <line x1="-8"  y1="-4" x2="-6"  y2="10" stroke="#3b82f6" stroke-width="1.5"/>
-    </g>
-    <!-- Right hand -->
-    <g fill="#ffffff" transform="translate(58,8) scale(-1,1)">
-      <path d="M 0 0 Q -8 -6 -16 -2 Q -22 4 -22 14 Q -22 24 -14 28 L 0 28 Q 8 26 10 18 L 10 4 Z"/>
-      <line x1="-14" y1="-2" x2="-12" y2="10" stroke="#3b82f6" stroke-width="1.5"/>
-      <line x1="-8"  y1="-4" x2="-6"  y2="10" stroke="#3b82f6" stroke-width="1.5"/>
-    </g>
-
-    <!-- "PRAVA ONLINE" wordmark inside the circle -->
-    <text y="92" text-anchor="middle"
-          font-family="'Segoe UI', system-ui, sans-serif"
-          font-size="20" font-weight="900" fill="#ffffff" letter-spacing="3">PRAVA ONLINE</text>
-  </g>
-
+  <rect width="1200" height="600" fill="#0f172a" rx="16"/>
+  <ellipse cx="600" cy="380" rx="480" ry="140" fill="url(#carGlow)"/>
+  <image href="/images/malibu.webp" x="0" y="0" width="1200" height="600" preserveAspectRatio="xMidYMid meet"/>
 </svg>
