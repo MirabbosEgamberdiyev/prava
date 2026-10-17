@@ -157,7 +157,7 @@ export default function User_Page() {
   const ticketTotal = stats?.ticket_total || counts.tickets || 64;
   const qReady = stats?.question_readiness?.ready ?? 0;
   const qAverage = stats?.question_readiness?.average ?? 0;
-  const qTotal = stats?.question_readiness?.total || counts.questions || 1243;
+  const qTotal = stats?.question_readiness?.total || counts.questions || 1272;
 
   const ticketReadyPct = ticketTotal > 0 ? Math.round((ticketReady / ticketTotal) * 100) : 0;
   const qPracticedPct = qTotal > 0 ? Math.round(((qReady + qAverage) / qTotal) * 100) : 0;

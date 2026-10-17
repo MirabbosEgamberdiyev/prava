@@ -37,7 +37,7 @@ export const TestSetupCard: React.FC<TestSetupCardProps> = ({
   const currentTopic =
     selectedTopicId != null ? topics.find((t) => t.id === selectedTopicId) : null;
 
-  const totalAllQuestions = topics.reduce((s, tp) => s + (tp.question_count || 0), 0) || 1243;
+  const totalAllQuestions = topics.reduce((s, tp) => s + (tp.question_count || 0), 0) || 1272;
   const maxQ = currentTopic ? currentTopic.question_count : totalAllQuestions;
 
   // Strict Terminology Separation:

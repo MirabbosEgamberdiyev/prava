@@ -1,10 +1,10 @@
 {
-  "version": "v2-1276.1790799059588-44-64-tq1276",
-  "generated_at": "2026-09-30T20:10:59.588Z",
-  "source": "web.pravaonline.uz",
+  "version": "v2-1272.42.64-tq1276",
+  "generated_at": "2026-10-17T18:52:30.330Z",
+  "source": "D:\\My-project\\PRAVA-NEW-DATA\\baza",
   "counts": {
-    "questions": 1276,
-    "topics": 44,
+    "questions": 1272,
+    "topics": 42,
     "tickets": 64,
     "ticket_questions": 1276
   }

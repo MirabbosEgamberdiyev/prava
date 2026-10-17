@@ -77,6 +77,7 @@ backup_unzipped/
 *.dump
 
 # ---- Database & Scratch Scripts ----
+/prava/
 *.sql
 !**/src/main/**/migration/*.sql
 !**/src/main/**/db/*.sql

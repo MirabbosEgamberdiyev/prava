@@ -360,7 +360,7 @@ export function NetworkModeSelector({ size = "xs" }: NetworkModeSelectorProps) {
                 {t("offline.prepMenu", { defaultValue: "Offline tayyorgarlik" })}
               </Text>
               <Badge size="xs" variant="outline" color="teal">
-                {t("settings.sync.questionsCount", { count: counts.questions || 1243 })}
+                {t("settings.sync.questionsCount", { count: counts.questions || 1272 })}
               </Badge>
             </Group>
           </Menu.Item>

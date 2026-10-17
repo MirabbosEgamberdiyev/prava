@@ -428,7 +428,7 @@ export default function Settings_Page() {
                   {t("settings.storageLocalDB", "Lokal savollar bazasi")}
                 </span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "var(--g-primary-light)" }}>
-                  {counts.questions || 1243} {t("common.questions", "ta savol")}
+                  {counts.questions || 1272} {t("common.questions", "ta savol")}
                 </span>
               </div>
 

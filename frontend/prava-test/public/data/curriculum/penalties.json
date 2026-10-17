@@ -1,0 +1,290 @@
+[
+ {
+  "id": 1,
+  "penalty_number": 1,
+  "severity": "minor",
+  "points": 5,
+  "text_uzl": "Xavfsizlik kamarini taqmadi",
+  "text_uzc": "Хавфсизлик камарини тақмади",
+  "text_ru": "Не пристегнул ремень безопасности"
+ },
+ {
+  "id": 2,
+  "penalty_number": 2,
+  "severity": "minor",
+  "points": 5,
+  "text_uzl": "Chapga burilish chirog'ini yoqmasdan \"Start\" chizig'ini kesib o'tdi",
+  "text_uzc": "Чапга бурилиш чироғини ёқмасдан \"Старт\" чизиғини кесиб ўтди",
+  "text_ru": "Пересёк линию «Старт», не включив левый указатель поворота"
+ },
+ {
+  "id": 3,
+  "penalty_number": 3,
+  "severity": "minor",
+  "points": 5,
+  "text_uzl": "\"Start\" chizig'idan keyin 10 metr masofada chapga burilish chirog'ini o'chirmadi",
+  "text_uzc": "\"Старт\" чизиғидан кейин 10 метр масофада чапга бурилиш чироғини ўчирмади",
+  "text_ru": "Не выключил левый указатель поворота в течение 10 метров после линии «Старт»"
+ },
+ {
+  "id": 4,
+  "penalty_number": 4,
+  "severity": "minor",
+  "points": 5,
+  "text_uzl": "\"To'xtash chizig'i\"dan oldin 1 metrdan ko'proq masofada to'xtatdi",
+  "text_uzc": "\"Тўхташ чизиғи\"дан олдин 1 метрдан кўпроқ масофада тўхтатди",
+  "text_ru": "Остановился более чем за 1 метр до линии «Стоп»"
+ },
+ {
+  "id": 5,
+  "penalty_number": 5,
+  "severity": "minor",
+  "points": 5,
+  "text_uzl": "Tegishli yo'nalishdagi burilish chirog'ini yoqmadi",
+  "text_uzc": "Тегишли йўналишдаги бурилиш чироғини ёқмади",
+  "text_ru": "Не включил указатель поворота в соответствующем направлении"
+ },
+ {
+  "id": 6,
+  "penalty_number": 6,
+  "severity": "minor",
+  "points": 5,
+  "text_uzl": "4.7 va 3.24 yo'l belgilarining talablarini buzdi",
+  "text_uzc": "4.7 ва 3.24 йўл белгиларининг талабларини бузди",
+  "text_ru": "Нарушил требования дорожных знаков 4.7 и 3.24"
+ },
+ {
+  "id": 7,
+  "penalty_number": 7,
+  "severity": "minor",
+  "points": 5,
+  "text_uzl": "\"Harakatlanishni yakunlash (Finish)\" chizig'ini kesib o'tishdan oldin o'ngga burilish ishorasini yoqmadi",
+  "text_uzc": "\"Ҳаракатланишни якунлаш (Финиш)\" чизиғини кесиб ўтишдан олдин ўнгга бурилиш ишорасини ёқмади",
+  "text_ru": "Не включил правый указатель поворота перед пересечением линии «Финиш»"
+ },
+ {
+  "id": 8,
+  "penalty_number": 8,
+  "severity": "minor",
+  "points": 5,
+  "text_uzl": "Harakatlanish tezligini 20 km/soatdan oshirib yubordi (\"Yo'lning tezlashish qismida harakatlanish\" mashqini bajarishdan tashqari)",
+  "text_uzc": "Ҳаракатланиш тезлигини 20 км/соатдан ошириб юборди (\"Йўлнинг тезлашиш қисмида ҳаракатланиш\" машқини бажаришдан ташқари)",
+  "text_ru": "Превысил скорость движения 20 км/ч (кроме выполнения упражнения «Движение на участке разгона»)"
+ },
+ {
+  "id": 9,
+  "penalty_number": 9,
+  "severity": "minor",
+  "points": 10,
+  "text_uzl": "Svetoforning ruxsat beruvchi ishorasida chorrahadan o'tish uchun 30 soniyadan ko'p vaqt sarfladi",
+  "text_uzc": "Светофорнинг рухсат берувчи ишорасида чорраҳадан ўтиш учун 30 сониядан кўп вақт сарфлади",
+  "text_ru": "Затратил более 30 секунд на проезд перекрёстка при разрешающем сигнале светофора"
+ },
+ {
+  "id": 10,
+  "penalty_number": 10,
+  "severity": "medium",
+  "points": 25,
+  "text_uzl": "\"Start\" ishorasidan keyin 30 soniya davomida harakatni boshlamadi",
+  "text_uzc": "\"Старт\" ишорасидан кейин 30 сония давомида ҳаракатни бошламади",
+  "text_ru": "Не начал движение в течение 30 секунд после сигнала «Старт»"
+ },
+ {
+  "id": 11,
+  "penalty_number": 11,
+  "severity": "medium",
+  "points": 20,
+  "text_uzl": "\"To'xtash chizig'i\"ning oldida to'xtamadi yoki uni bosib o'tdi",
+  "text_uzc": "\"Тўхташ чизиғи\"нинг олдида тўхтамади ёки уни босиб ўтди",
+  "text_ru": "Не остановился перед линией «Стоп» или наехал на неё"
+ },
+ {
+  "id": 12,
+  "penalty_number": 12,
+  "severity": "medium",
+  "points": 20,
+  "text_uzl": "To'xtagandan so'ng 3 soniya o'tmasdan harakatni boshladi",
+  "text_uzc": "Тўхтагандан сўнг 3 сония ўтмасдан ҳаракатни бошлади",
+  "text_ru": "Начал движение, не выждав 3 секунды после остановки"
+ },
+ {
+  "id": 13,
+  "penalty_number": 13,
+  "severity": "medium",
+  "points": 25,
+  "text_uzl": "\"Estakada\" mashqida to'xtagandan so'ng 30 soniya davomida harakatni boshlamadi",
+  "text_uzc": "\"Эстакада\" машқида тўхтагандан сўнг 30 сония давомида ҳаракатни бошламади",
+  "text_ru": "В упражнении «Эстакада» не начал движение в течение 30 секунд после остановки"
+ },
+ {
+  "id": 14,
+  "penalty_number": 14,
+  "severity": "medium",
+  "points": 20,
+  "text_uzl": "\"Estakada\" mashqida to'xtagandan so'ng yoki harakatni boshlashdan oldin transport vositasi orqaga 0,3 metrdan ortiq siljidi",
+  "text_uzc": "\"Эстакада\" машқида тўхтагандан сўнг ёки ҳаракатни бошлашдан олдин транспорт воситаси орқага 0,3 метрдан ортиқ силжиди",
+  "text_ru": "В упражнении «Эстакада» транспортное средство откатилось назад более чем на 0,3 метра после остановки или перед началом движения"
+ },
+ {
+  "id": 15,
+  "penalty_number": 15,
+  "severity": "medium",
+  "points": 20,
+  "text_uzl": "\"90 gradus burilish\" va \"Ilon izi\" mashqlarini bajarishda nazorat chizig'ini bosdi",
+  "text_uzc": "\"90 градус бурилиш\" ва \"Илон изи\" машқларини бажаришда назорат чизиғини босди",
+  "text_ru": "При выполнении упражнений «Поворот на 90 градусов» и «Змейка» наехал на контрольную линию"
+ },
+ {
+  "id": 16,
+  "penalty_number": 16,
+  "severity": "medium",
+  "points": 15,
+  "text_uzl": "\"90 gradus burilish\" va \"Ilon izi\" mashqlarini bajarishga 2 daqiqadan ko'p vaqt sarfladi",
+  "text_uzc": "\"90 градус бурилиш\" ва \"Илон изи\" машқларини бажаришга 2 дақиқадан кўп вақт сарфлади",
+  "text_ru": "Затратил более 2 минут на выполнение упражнений «Поворот на 90 градусов» и «Змейка»"
+ },
+ {
+  "id": 17,
+  "penalty_number": 17,
+  "severity": "medium",
+  "points": 20,
+  "text_uzl": "\"Boksga kirish\" va \"Parallel to'xtash\" mashqlarida g'ildiraklarni mashqni bajarishning qayd etish chizig'iga qo'ymadi",
+  "text_uzc": "\"Боксга кириш\" ва \"Параллел тўхташ\" машқларида ғилдиракларни машқни бажаришнинг қайд этиш чизиғига қўймади",
+  "text_ru": "В упражнениях «Въезд в бокс» и «Параллельная парковка» не поставил колёса на контрольную линию выполнения упражнения"
+ },
+ {
+  "id": 18,
+  "penalty_number": 18,
+  "severity": "medium",
+  "points": 25,
+  "text_uzl": "Yo'lning tezlashish qismida harakatlanishda ikkinchi uzatmani qo'shmadi",
+  "text_uzc": "Йўлнинг тезлашиш қисмида ҳаракатланишда иккинчи узатмани қўшмади",
+  "text_ru": "При движении на участке разгона не включил вторую передачу"
+ },
+ {
+  "id": 19,
+  "penalty_number": 19,
+  "severity": "medium",
+  "points": 20,
+  "text_uzl": "Transport vositasining salonida tovushli va/yoki yorug'lik ishorasi yonganidan so'ng 2 soniya ichida transport vositasini to'xtatmadi",
+  "text_uzc": "Транспорт воситасининг салонида товушли ва/ёки ёруғлик ишораси ёнганидан сўнг 2 сония ичида транспорт воситасини тўхтатмади",
+  "text_ru": "Не остановил транспортное средство в течение 2 секунд после звукового и/или светового сигнала в салоне"
+ },
+ {
+  "id": 20,
+  "penalty_number": 20,
+  "severity": "medium",
+  "points": 20,
+  "text_uzl": "\"Avariya holatda to'xtash\" mashqida to'xtagandan so'ng 3 soniya ichida avariya ishorasini yoqmadi",
+  "text_uzc": "\"Авария ҳолатда тўхташ\" машқида тўхтагандан сўнг 3 сония ичида авария ишорасини ёқмади",
+  "text_ru": "В упражнении «Аварийная остановка» не включил аварийную сигнализацию в течение 3 секунд после остановки"
+ },
+ {
+  "id": 21,
+  "penalty_number": 21,
+  "severity": "medium",
+  "points": 10,
+  "text_uzl": "\"Avariya holatda to'xtash\" mashqida harakatni boshlashdan oldin avariya ishorasini o'chirmadi",
+  "text_uzc": "\"Авария ҳолатда тўхташ\" машқида ҳаракатни бошлашдан олдин авария ишорасини ўчирмади",
+  "text_ru": "В упражнении «Аварийная остановка» не выключил аварийную сигнализацию перед началом движения"
+ },
+ {
+  "id": 22,
+  "penalty_number": 22,
+  "severity": "medium",
+  "points": 20,
+  "text_uzl": "Sinov mashqlarini bajarayotganda dvigatelni o'chirib qo'ydi",
+  "text_uzc": "Синов машқларини бажараётганда двигателни ўчириб қўйди",
+  "text_ru": "При выполнении испытательных упражнений заглушил двигатель"
+ },
+ {
+  "id": 23,
+  "penalty_number": 23,
+  "severity": "major",
+  "points": 100,
+  "text_uzl": "\"Start\" ishorasidan keyin 40 soniya davomida harakatni boshlamadi",
+  "text_uzc": "\"Старт\" ишорасидан кейин 40 сония давомида ҳаракатни бошламади",
+  "text_ru": "Не начал движение в течение 40 секунд после сигнала «Старт»"
+ },
+ {
+  "id": 24,
+  "penalty_number": 24,
+  "severity": "major",
+  "points": 100,
+  "text_uzl": "Svetoforning taqiqlovchi ishorasida chorrahaga kirdi yoki transport vositasining eng oldingi nuqtasi \"To'xtash chizig'i\"dan o'tdi",
+  "text_uzc": "Светофорнинг тақиқловчи ишорасида чорраҳага кирди ёки транспорт воситасининг энг олдинги нуқтаси \"Тўхташ чизиғи\"дан ўтди",
+  "text_ru": "Выехал на перекрёсток на запрещающий сигнал светофора или крайняя передняя точка транспортного средства пересекла линию «Стоп»"
+ },
+ {
+  "id": 25,
+  "penalty_number": 25,
+  "severity": "major",
+  "points": 50,
+  "text_uzl": "Temir yo'l kesishmasidan to'xtamasdan o'tdi",
+  "text_uzc": "Темир йўл кесишмасидан тўхтамасдан ўтди",
+  "text_ru": "Проехал железнодорожный переезд без остановки"
+ },
+ {
+  "id": 26,
+  "penalty_number": 26,
+  "severity": "major",
+  "points": 100,
+  "text_uzl": "Imtihonni o'zboshimchalik bilan tark etdi yoki sinov mashqlarini bajarishni rad etdi",
+  "text_uzc": "Имтиҳонни ўзбошимчалик билан тарк этди ёки синов машқларини бажаришни рад этди",
+  "text_ru": "Самовольно покинул экзамен или отказался выполнять испытательные упражнения"
+ },
+ {
+  "id": 27,
+  "penalty_number": 27,
+  "severity": "major",
+  "points": 100,
+  "text_uzl": "Sinov mashqlaridan birini bajarmadi",
+  "text_uzc": "Синов машқларидан бирини бажармади",
+  "text_ru": "Не выполнил одно из испытательных упражнений"
+ },
+ {
+  "id": 28,
+  "penalty_number": 28,
+  "severity": "major",
+  "points": 100,
+  "text_uzl": "Sinov mashqlarini bajarish uchun belgilangan yo'nalishdan chetga chiqib ketdi",
+  "text_uzc": "Синов машқларини бажариш учун белгиланган йўналишдан четга чиқиб кетди",
+  "text_ru": "Выехал за пределы маршрута, установленного для выполнения испытательных упражнений"
+ },
+ {
+  "id": 29,
+  "penalty_number": 29,
+  "severity": "major",
+  "points": 100,
+  "text_uzl": "Sinov mashqlarida ko'zda tutilmagan joylarda orqaga harakatlandi",
+  "text_uzc": "Синов машқларида кўзда тутилмаган жойларда орқага ҳаракатланди",
+  "text_ru": "Двигался задним ходом в местах, не предусмотренных испытательными упражнениями"
+ },
+ {
+  "id": 30,
+  "penalty_number": 30,
+  "severity": "major",
+  "points": 100,
+  "text_uzl": "Boshqa transport vositasi bilan to'qnashuv sodir qildi yoki to'siqqa borib urildi",
+  "text_uzc": "Бошқа транспорт воситаси билан тўқнашув содир қилди ёки тўсиққа бориб урилди",
+  "text_ru": "Совершил столкновение с другим транспортным средством или наезд на препятствие"
+ },
+ {
+  "id": 31,
+  "penalty_number": 31,
+  "severity": "major",
+  "points": 100,
+  "text_uzl": "Harakatlanish tezligini 40 km/soatdan oshirib yubordi",
+  "text_uzc": "Ҳаракатланиш тезлигини 40 км/соатдан ошириб юборди",
+  "text_ru": "Превысил скорость движения 40 км/ч"
+ },
+ {
+  "id": 32,
+  "penalty_number": 32,
+  "severity": "major",
+  "points": 100,
+  "text_uzl": "Amaliy imtihon uchun belgilangan umumiy vaqtdan oshib ketdi",
+  "text_uzc": "Амалий имтиҳон учун белгиланган умумий вақтдан ошиб кетди",
+  "text_ru": "Превысил общее время, установленное для практического экзамена"
+ }
+]
