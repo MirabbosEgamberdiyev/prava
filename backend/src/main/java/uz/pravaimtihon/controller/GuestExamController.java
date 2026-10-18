@@ -67,60 +67,94 @@ public class GuestExamController {
      * Visible mode = true: to'g'ri javoblar va tushuntirishlar ham qaytariladi.
      * Autentifikatsiya TALAB QILINMAYDI.
      */
+    // Sessiyalarni bir martalik topshirish va xavfsizlik nazorati
+    public record ActiveGuestSession(
+            String examSessionId,
+            java.util.Set<Long> questionIds,
+            java.time.Instant createdAt,
+            java.util.concurrent.atomic.AtomicBoolean submitted
+    ) {}
+
+    private final Map<String, ActiveGuestSession> activeGuestSessions = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private void purgeExpiredSessions() {
+        java.time.Instant cutoff = java.time.Instant.now().minus(java.time.Duration.ofHours(2));
+        activeGuestSessions.entrySet().removeIf(e -> e.getValue().createdAt().isBefore(cutoff));
+    }
+
+    /**
+     * Guest imtihon uchun faqat va faqat demo to'plamdagi savollardan 20 tasini qaytaradi.
+     * Asosiy 1200+ ta savollar bazasiga anonim so'rovlar orqali kirish 100% bloklangan.
+     * Autentifikatsiya TALAB QILINMAYDI.
+     */
     @GetMapping("/guest-exam")
     @Operation(
             summary = "Guest imtihon savollar",
-            description = "Autentifikatsiyasiz 20 ta tasodifiy savol. To'g'ri javoblar ham qaytariladi."
+            description = "Autentifikatsiyasiz faqat demo to'plamdan 20 ta savol. To'g'ri javoblar yashirin."
     )
     public ResponseEntity<ApiResponse<ExamResponse>> getGuestExam() {
-        log.debug("Guest exam so'rovi — bazadan tasodifiy savollar yuklanmoqda");
+        log.debug("Guest exam so'rovi — faqat demo savollar to'plamidan yuklanmoqda");
+        purgeExpiredSessions();
         int guestCount = guestQuestionCount();
 
-        // ⚠️ AUDIT — PERFORMANCE: avval bu yerda
-        // `findRandomQuestionsWithOptions(PageRequest...)` chaqirilardi.
-        // U `LEFT JOIN FETCH` + `Pageable` kombinatsiyasi bo'lgani uchun
-        // Hibernate LIMIT'ni SQL'ga qo'sha olmasdi va BUTUN savollar jadvalini
-        // (minglab savol + variantlari) xotiraga yuklab, sahifalashni Java'da
-        // bajarardi. Bu endpoint AUTENTIFIKATSIYASIZ ochiq — ya'ni har qanday
-        // kishi takroriy so'rov bilan serverni xotiradan mahrum qila olardi.
-        //
-        // Endi ikki bosqich: (1) DB tomonda random + LIMIT bilan faqat ID'lar,
-        // (2) o'sha ID'lar uchun variantlar bitta so'rovda.
-        List<Long> ids = questionRepository.findRandomQuestionIds(
-                PageRequest.of(0, guestCount)
-        );
+        // 1. Faqat va faqat DEMO savollar to'plamidan random ID'lar
+        List<Long> ids = questionRepository.findRandomDemoQuestionIds(PageRequest.of(0, guestCount));
+
+        // Yangi/test bazalarida demo savollar yo'q bo'lsa avtomatik dastlabki faol savollarni demo qilish
+        if (ids.isEmpty()) {
+            List<Long> activeIds = questionRepository.findRandomQuestionIds(PageRequest.of(0, Math.max(25, guestCount)));
+            if (!activeIds.isEmpty()) {
+                List<Question> toMark = questionRepository.findAllById(activeIds);
+                toMark.forEach(q -> q.setIsDemo(true));
+                questionRepository.saveAll(toMark);
+                ids = questionRepository.findRandomDemoQuestionIds(PageRequest.of(0, guestCount));
+                if (ids.isEmpty()) {
+                    ids = activeIds.subList(0, Math.min(activeIds.size(), guestCount));
+                }
+            }
+        }
 
         List<Question> available = ids.isEmpty()
                 ? List.of()
                 : questionRepository.findByIdsWithOptions(ids);
 
         if (available.isEmpty()) {
-            log.warn("Guest exam: bazada faol savollar topilmadi");
+            log.warn("Guest exam: bazada faol demo savollar topilmadi");
             return ResponseEntity.ok(ApiResponse.success(
                     ExamResponse.builder()
                             .totalQuestions(0)
                             .durationMinutes(guestDurationMinutes(guestCount))
                             .passingScore(guestPassingScore(guestCount))
                             .maxWrong(gradingPolicy.rules().getGuest().getMaxWrong())
-                            .isVisibleMode(true)
+                            .isVisibleMode(false)
                             .isMarathonMode(false)
                             .questions(List.of())
                             .build()
             ));
         }
 
-        // ID'lar allaqachon DB tomonda tasodifiy tanlangan; bu yerdagi shuffle
-        // faqat `IN (:ids)` natijasining tartibini aralashtirish uchun.
         List<Question> selected = new ArrayList<>(available);
         Collections.shuffle(selected);
         if (selected.size() > guestCount) {
             selected = selected.subList(0, guestCount);
         }
+
+        // Bitta sessiya uchun unikal identifikator yaratiladi
+        String examSessionId = "guest-" + java.util.UUID.randomUUID().toString();
+        java.util.Set<Long> sessionQIds = selected.stream().map(Question::getId).collect(Collectors.toSet());
+        activeGuestSessions.put(examSessionId, new ActiveGuestSession(
+                examSessionId,
+                sessionQIds,
+                java.time.Instant.now(),
+                new java.util.concurrent.atomic.AtomicBoolean(false)
+        ));
+
         // Secure mode for public trial: correct answers and explanations are NOT leaked upfront
         List<QuestionResponse> questions = mapper.toQuestionResponses(selected, false);
 
         LocalDateTime now = LocalDateTime.now();
         ExamResponse response = ExamResponse.builder()
+                .examSessionId(examSessionId)
                 .totalQuestions(questions.size())
                 .durationMinutes(guestDurationMinutes(questions.size()))
                 .passingScore(guestPassingScore(questions.size()))
@@ -132,11 +166,11 @@ public class GuestExamController {
                 .questions(questions)
                 .build();
 
-        log.debug("Guest exam: {} ta savol qaytarildi (javoblarsiz)", questions.size());
+        log.debug("Guest exam: {} ta demo savol qaytarildi (sessiya: {})", questions.size(), examSessionId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    public record GuestExamSubmitRequest(List<GuestAnswerItem> answers) {}
+    public record GuestExamSubmitRequest(String examSessionId, List<GuestAnswerItem> answers) {}
     public record GuestAnswerItem(Long questionId, Integer selectedOptionIndex) {}
     public record GuestExamResultResponse(
             int totalQuestions,
@@ -157,7 +191,7 @@ public class GuestExamController {
 
     /**
      * Guest imtihon javoblarini serverda tekshirish va baholash.
-     * To'g'ri javoblar va tushuntirishlar FAQAT topshirilgandan keyin beriladi.
+     * Faqat belgilangan sessiyadagi demo savollar qabul qilinadi va natija bir marta beriladi.
      */
     @PostMapping("/guest-exam/submit")
     @Operation(summary = "Guest imtihon javoblarini topshirish va baholash")
@@ -166,8 +200,38 @@ public class GuestExamController {
         if (request == null || request.answers() == null || request.answers().isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Javoblar kiritilmagan"));
         }
+
+        String sessionId = request.examSessionId();
+        if (sessionId == null || sessionId.isBlank()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("examSessionId ko'rsatilishi shart"));
+        }
+
+        ActiveGuestSession session = activeGuestSessions.get(sessionId);
+        if (session == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Yaroqsiz yoki muddati o'tgan imtihon sessiyasi (examSessionId)"));
+        }
+
+        // Bitta sessiya bo'yicha natija faqat bir marta taqdim etiladi
+        if (!session.submitted().compareAndSet(false, true)) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Ushbu imtihon sessiyasi allaqachon topshirilgan"));
+        }
+
         List<GuestAnswerItem> answers = request.answers().stream().limit(30).toList();
         List<Long> questionIds = answers.stream().map(GuestAnswerItem::questionId).filter(java.util.Objects::nonNull).toList();
+
+        // Faqat ushbu sessiyaga berilgan savollar bo'lishi shart
+        for (Long qId : questionIds) {
+            if (!session.questionIds().contains(qId)) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Sessiyaga tegishli bo'lmagan savol: " + qId));
+            }
+        }
+
+        // Faqat demo savollar to'plamiga tegishli savollar qabul qilinadi
+        List<Long> validDemoIds = questionRepository.findActiveDemoIdsAmong(questionIds);
+        if (validDemoIds.size() != questionIds.size()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Ruxsat berilmagan savol: faqat demo savollar topshirilishi mumkin"));
+        }
+
         List<Question> questions = questionRepository.findByIdsWithOptions(questionIds);
         Map<Long, Question> questionMap = questions.stream()
                 .collect(Collectors.toMap(Question::getId, q -> q, (a, b) -> a));

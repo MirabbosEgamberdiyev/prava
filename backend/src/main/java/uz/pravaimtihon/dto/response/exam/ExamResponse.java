@@ -27,6 +27,11 @@ public class ExamResponse {
     private Long sessionId;
 
     /**
+     * Guest va bir martalik imtihonlar uchun sessiya identifikatori
+     */
+    private String examSessionId;
+
+    /**
      * Bilet ma'lumotlari (ticket rejimida)
      */
     private Long ticketId;

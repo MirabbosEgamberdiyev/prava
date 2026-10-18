@@ -29,24 +29,68 @@ public class UserAppController {
 
     private final UserAppService userAppService;
     private final uz.pravaimtihon.service.OfflineBundleService offlineBundleService;
+    private final uz.pravaimtihon.service.BundleCryptoService bundleCryptoService;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
-    // ─── Offline bundle (desktop) ─────────────────────────────────────────────
+    // ─── Offline bundle (desktop / mobile) ────────────────────────────────────
 
-    @GetMapping("/offline-bundle")
-    @Operation(summary = "Offline rejim uchun barcha faol savollar (ETag bilan versiyalangan)")
-    public ResponseEntity<ApiResponse<uz.pravaimtihon.service.OfflineBundleService.Bundle>> getOfflineBundle(
+    @GetMapping(value = "/offline-bundle")
+    @Operation(summary = "Offline rejim uchun AES-256-GCM shifrlangan savollar to'plami (faqat Desktop/Mobile)")
+    public ResponseEntity<?> getOfflineBundle(
+            jakarta.servlet.http.HttpServletRequest request,
             @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
+            @RequestHeader(value = "X-Client-Platform", required = false) String clientPlatform,
             @AuthenticationPrincipal CustomUserDetails principal) {
+
+        // 1. Web brauzer tekshiruvi: brauzer orqali to'liq bazani yuklash 100% bloklanadi
+        String origin = request.getHeader("Origin");
+        String referer = request.getHeader("Referer");
+        String secFetch = request.getHeader("Sec-Fetch-Mode");
+        boolean isBrowser = false;
+
+        if ("web".equalsIgnoreCase(clientPlatform)) {
+            isBrowser = true;
+        } else if (origin != null && (origin.contains("web.pravaonline.uz") || origin.contains("pravaonline.uz"))) {
+            if (!"desktop".equalsIgnoreCase(clientPlatform) && !"mobile".equalsIgnoreCase(clientPlatform)) {
+                isBrowser = true;
+            }
+        } else if (secFetch != null && !"desktop".equalsIgnoreCase(clientPlatform) && !"mobile".equalsIgnoreCase(clientPlatform)) {
+            isBrowser = true;
+        } else if (referer != null && (referer.contains("web.pravaonline.uz") || referer.contains("pravaonline.uz"))) {
+            if (!"desktop".equalsIgnoreCase(clientPlatform) && !"mobile".equalsIgnoreCase(clientPlatform)) {
+                isBrowser = true;
+            }
+        }
+
+        if (isBrowser) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Web brauzerlar uchun offline-bundle taqiqlangan. Savollar On-Demand yuklanadi."));
+        }
+
         Long userId = principal != null ? principal.getId() : null;
         String etag = "\"" + offlineBundleService.currentVersionFor(userId) + "\"";
-        // private: shaxsiy (huquqqa bog'liq) javob — umumiy/proxy keshlarda saqlanmasin.
         org.springframework.http.CacheControl cc = org.springframework.http.CacheControl.noCache().cachePrivate();
-        // B-07: proxy/CDN gzip qilganda ETag "W/" bilan zaiflashadi — solishtirishda olib tashlanadi.
+
         if (uz.pravaimtihon.util.ETags.matches(ifNoneMatch, etag)) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_MODIFIED).eTag(etag).cacheControl(cc).build();
         }
-        return ResponseEntity.ok().eTag(etag).cacheControl(cc)
-                .body(ApiResponse.success(offlineBundleService.getBundleFor(userId)));
+
+        uz.pravaimtihon.service.OfflineBundleService.Bundle bundle = offlineBundleService.getBundleFor(userId);
+        try {
+            byte[] jsonBytes = objectMapper.writeValueAsBytes(bundle);
+            byte[] encrypted = bundleCryptoService.encryptBundle(jsonBytes);
+
+            return ResponseEntity.ok()
+                    .eTag(etag)
+                    .cacheControl(cc)
+                    .header("X-Encrypted-Algorithm", "AES-256-GCM")
+                    .header("Content-Disposition", "attachment; filename=\"bundle.enc\"")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM)
+                    .body(encrypted);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(ApiResponse.error("Offline bundle shifrlashda xatolik yuz berdi"));
+        }
     }
 
     // ─── Topics ───────────────────────────────────────────────────────────────

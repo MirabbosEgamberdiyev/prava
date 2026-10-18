@@ -27,6 +27,7 @@ import type { DbExamSession, DbOutboxItem, DbQuestion, DbTicket, DbTopic } from 
 import { convertLegacySubmitItem, isFakeLocalSessionId } from "../services/offlineExamRecord";
 import { getExamRules } from "../services/examRules";
 import { errorMessage } from "../services/safeError";
+import { isTauriRuntime } from "../auth/runtime";
 
 export type SyncState = "IDLE" | "SYNCING" | "OFFLINE" | "ERROR";
 
@@ -610,6 +611,13 @@ export class SyncEngine {
    */
   private async pullServerChanges(): Promise<number> {
     let count = 0;
+
+    // Web brauzer muhitida to'liq offline bazani yuklab olish logikasi olib tashlangan (On-Demand arxitektura).
+    // Savollar faqat foydalanuvchi biror bilet yoki bo'limni ochganida (On-Demand, 20 tadan) yuklanadi.
+    // Faqat Desktop (Tauri) va Mobile offline bundle'ni yuklab olishi mumkin.
+    if (!isTauriRuntime()) {
+      return 0;
+    }
 
     // 1. Offline bundle (questions + official topics + tickets). 304 → nothing changed.
     let bundle: Awaited<ReturnType<SyncEngine["pullOfflineBundle"]>> | null = null;

@@ -40,6 +40,7 @@ import {
 } from "./offlineExamRecord";
 import { errorMessage } from "./safeError";
 import { ENV } from "../config/env";
+import { isTauriRuntime } from "../auth/runtime";
 
 const COUNTS_STORAGE_KEY = "prava_curriculum_counts";
 
@@ -742,19 +743,21 @@ export async function getTicketInfo(ticketId: number): Promise<OfflineTicket> {
 }
 
 export async function getQuestionsByTicket(ticketId: number): Promise<OfflineQuestion[]> {
-  // 1. LOCAL DATABASE FIRST (Primary Runtime Source of Truth)
-  try {
-    let localDbQuestions = await questionRepository.getQuestionsByTicket(ticketId);
-    if (!localDbQuestions || localDbQuestions.length === 0) {
-      await offlineDatasetManager.autoSeedIfEmpty();
-      localDbQuestions = await questionRepository.getQuestionsByTicket(ticketId);
+  // 1. DESKTOP TAURI RUNTIME ONLY: Local database first
+  if (isTauriRuntime()) {
+    try {
+      let localDbQuestions = await questionRepository.getQuestionsByTicket(ticketId);
+      if (!localDbQuestions || localDbQuestions.length === 0) {
+        await offlineDatasetManager.autoSeedIfEmpty();
+        localDbQuestions = await questionRepository.getQuestionsByTicket(ticketId);
+      }
+      if (localDbQuestions && localDbQuestions.length > 0) {
+        activeTicketSessionId = null; // graded locally → record-offline
+        return localDbQuestions.map(dbQuestionToOfflineQuestion);
+      }
+    } catch (err) {
+      console.warn(`Lokal DB dan ${ticketId}-bilet savollarini olishda xatolik:`, errorMessage(err));
     }
-    if (localDbQuestions && localDbQuestions.length > 0) {
-      activeTicketSessionId = null; // graded locally → record-offline
-      return localDbQuestions.map(dbQuestionToOfflineQuestion);
-    }
-  } catch (err) {
-    console.warn(`Lokal DB dan ${ticketId}-bilet savollarini olishda xatolik:`, errorMessage(err));
   }
 
   // If in OFFLINE mode, DO NOT attempt network fetch! Zero network requests rule.
@@ -762,7 +765,7 @@ export async function getQuestionsByTicket(ticketId: number): Promise<OfflineQue
     return [];
   }
 
-  // 2. If Local DB is empty and online allowed, attempt on-demand fetch from backend
+  // 2. WEB BROWSER: On-Demand fetch from backend (only loads the requested 20 questions)
   if (navigator.onLine && networkModeManager.isOnlineAllowed()) {
     try {
       const res = await api.post<{
@@ -773,6 +776,7 @@ export async function getQuestionsByTicket(ticketId: number): Promise<OfflineQue
       }
       if (res.data?.data?.questions && res.data.data.questions.length > 0) {
         const questions = res.data.data.questions.map(normalizeQuestion);
+        // Only caches this specific ticket (20 questions) into local IndexedDB
         questionRepository.saveQuestions(questions.map((q) => offlineQuestionToDbQuestion(q, ticketId))).catch(() => {});
         return questions;
       }
@@ -799,17 +803,19 @@ export async function getQuestionsByTicket(ticketId: number): Promise<OfflineQue
 }
 
 export async function getQuestionsByTopic(topicId: number): Promise<OfflineQuestion[]> {
-  try {
-    let localDbQuestions = await questionRepository.getQuestionsByTopic(topicId);
-    if (!localDbQuestions || localDbQuestions.length === 0) {
-      await offlineDatasetManager.autoSeedIfEmpty();
-      localDbQuestions = await questionRepository.getQuestionsByTopic(topicId);
+  if (isTauriRuntime()) {
+    try {
+      let localDbQuestions = await questionRepository.getQuestionsByTopic(topicId);
+      if (!localDbQuestions || localDbQuestions.length === 0) {
+        await offlineDatasetManager.autoSeedIfEmpty();
+        localDbQuestions = await questionRepository.getQuestionsByTopic(topicId);
+      }
+      if (localDbQuestions && localDbQuestions.length > 0) {
+        return localDbQuestions.map(dbQuestionToOfflineQuestion);
+      }
+    } catch (err) {
+      console.warn(`Lokal DB dan ${topicId}-mavzu savollarini olishda xatolik:`, errorMessage(err));
     }
-    if (localDbQuestions && localDbQuestions.length > 0) {
-      return localDbQuestions.map(dbQuestionToOfflineQuestion);
-    }
-  } catch (err) {
-    console.warn(`Lokal DB dan ${topicId}-mavzu savollarini olishda xatolik:`, errorMessage(err));
   }
 
   if (networkModeManager.isOfflineOnly()) {

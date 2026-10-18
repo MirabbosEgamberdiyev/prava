@@ -65,6 +65,7 @@ const GuestExamPage = () => {
   const { tickets: totalTickets } = useCurriculumCounts();
 
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [examSessionId, setExamSessionId] = useState<string | null>(null);
   const [durationMinutes, setDurationMinutes] = useState(defaultGuestDurationMinutes);
   const [loading, setLoading] = useState(true);
   /** Xato — i18n kaliti (render paytida joriy tilda tarjima qilinadi). */
@@ -99,6 +100,9 @@ const GuestExamPage = () => {
         const exam = res.data?.data;
         if (!exam?.questions?.length) throw new Error("No questions");
         setQuestions(exam.questions);
+        if (exam.examSessionId) {
+          setExamSessionId(exam.examSessionId);
+        }
         setDurationMinutes(exam.durationMinutes ?? defaultGuestDurationMinutes());
         // Limit hisoblagichi FAQAT imtihon muvaffaqiyatli yuklangandan keyin
         // oshiriladi (avval ham shunday edi) — tarmoq xatosi foydalanuvchining
@@ -154,6 +158,7 @@ const GuestExamPage = () => {
   const handleFinish = async () => {
     try {
       const payload = {
+        examSessionId,
         answers: questions.map((q, idx) => ({
           questionId: q.id,
           selectedOptionIndex: answers[idx]?.optionIndex ?? null,

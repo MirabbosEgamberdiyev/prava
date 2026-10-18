@@ -61,10 +61,11 @@ class GuestExamControllerTest {
                 .textUzl("Savol 1")
                 .correctAnswerIndex(2)
                 .explanationUzl("Izoh 1")
+                .isDemo(true)
                 .build();
         q.setId(101L);
 
-        when(questionRepository.findRandomQuestionIds(any(Pageable.class))).thenReturn(List.of(101L));
+        when(questionRepository.findRandomDemoQuestionIds(any(Pageable.class))).thenReturn(List.of(101L));
         when(questionRepository.findByIdsWithOptions(anyList())).thenReturn(List.of(q));
 
         // When mapper is called with visibleMode=false, correctOptionIndex must be null
@@ -81,29 +82,46 @@ class GuestExamControllerTest {
         mockMvc.perform(get("/api/v1/public/guest-exam"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.isVisibleMode").value(false))
+                .andExpect(jsonPath("$.data.examSessionId").isString())
                 .andExpect(jsonPath("$.data.questions[0].correctOptionIndex").doesNotExist())
                 .andExpect(jsonPath("$.data.questions[0].explanation").doesNotExist());
     }
 
     @Test
-    void submitGuestExamEvaluatesOnServerAndReturnsResults() throws Exception {
+    void submitGuestExamEvaluatesOnServerAndPreventsDuplicateOrAlienSubmissions() throws Exception {
         Question q1 = Question.builder()
                 .correctAnswerIndex(2)
                 .explanationUzl("Qoida 1")
+                .isDemo(true)
                 .build();
         q1.setId(101L);
 
+        when(questionRepository.findRandomDemoQuestionIds(any(Pageable.class))).thenReturn(List.of(101L));
         when(questionRepository.findByIdsWithOptions(anyList())).thenReturn(List.of(q1));
+        when(mapper.toQuestionResponses(anyList(), eq(false))).thenReturn(List.of(QuestionResponse.builder().id(101L).build()));
+
+        // 1. First get guest exam to obtain valid session ID
+        String getResponse = mockMvc.perform(get("/api/v1/public/guest-exam"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        com.fasterxml.jackson.databind.JsonNode rootNode = new com.fasterxml.jackson.databind.ObjectMapper().readTree(getResponse);
+        String sessionId = rootNode.path("data").path("examSessionId").asText();
+        org.junit.jupiter.api.Assertions.assertFalse(sessionId.isBlank());
+
+        when(questionRepository.findActiveDemoIdsAmong(anyList())).thenReturn(List.of(101L));
         when(mapper.toExplanation(q1)).thenReturn(LocalizedText.of("Qoida 1", null, null, null));
 
         String requestBody = """
                 {
+                    "examSessionId": "%s",
                     "answers": [
                         {"questionId": 101, "selectedOptionIndex": 2}
                     ]
                 }
-                """;
+                """.formatted(sessionId);
 
+        // 2. First submission should succeed
         mockMvc.perform(post("/api/v1/public/guest-exam/submit")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -115,5 +133,48 @@ class GuestExamControllerTest {
                 .andExpect(jsonPath("$.data.results[0].correctOptionIndex").value(2))
                 .andExpect(jsonPath("$.data.results[0].isCorrect").value(true))
                 .andExpect(jsonPath("$.data.results[0].explanation.uzl").value("Qoida 1"));
+
+        // 3. Second submission of the same session must return 400 Bad Request
+        mockMvc.perform(post("/api/v1/public/guest-exam/submit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void submitGuestExamWithAlienQuestionIsRejected() throws Exception {
+        Question q1 = Question.builder()
+                .correctAnswerIndex(2)
+                .isDemo(true)
+                .build();
+        q1.setId(101L);
+
+        when(questionRepository.findRandomDemoQuestionIds(any(Pageable.class))).thenReturn(List.of(101L));
+        when(questionRepository.findByIdsWithOptions(anyList())).thenReturn(List.of(q1));
+        when(mapper.toQuestionResponses(anyList(), eq(false))).thenReturn(List.of(QuestionResponse.builder().id(101L).build()));
+
+        String getResponse = mockMvc.perform(get("/api/v1/public/guest-exam"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        com.fasterxml.jackson.databind.JsonNode rootNode = new com.fasterxml.jackson.databind.ObjectMapper().readTree(getResponse);
+        String sessionId = rootNode.path("data").path("examSessionId").asText();
+
+        // Alien question ID 999 not in session
+        String requestBody = """
+                {
+                    "examSessionId": "%s",
+                    "answers": [
+                        {"questionId": 999, "selectedOptionIndex": 1}
+                    ]
+                }
+                """.formatted(sessionId);
+
+        mockMvc.perform(post("/api/v1/public/guest-exam/submit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
     }
 }

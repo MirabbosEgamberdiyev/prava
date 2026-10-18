@@ -163,6 +163,18 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             "ORDER BY FUNCTION('RANDOM')")
     List<Long> findRandomQuestionIds(Pageable pageable);
 
+    /** Mehmon (guest) imtihoni uchun faqat demo savollar ID'lari. */
+    @Query("SELECT q.id FROM Question q " +
+            "WHERE q.deleted = false AND q.isActive = true AND q.isDemo = true " +
+            "ORDER BY FUNCTION('RANDOM')")
+    List<Long> findRandomDemoQuestionIds(Pageable pageable);
+
+    @Query("SELECT COUNT(q) FROM Question q WHERE q.deleted = false AND q.isActive = true AND q.isDemo = true")
+    long countActiveDemoQuestions();
+
+    @Query("SELECT q.id FROM Question q WHERE q.deleted = false AND q.isActive = true AND q.isDemo = true AND q.id IN :ids")
+    List<Long> findActiveDemoIdsAmong(@Param("ids") List<Long> ids);
+
     /** Offline to'plam uchun barcha faol savol ID'lari (tartiblangan). */
     @Query("SELECT q.id FROM Question q WHERE q.deleted = false AND q.isActive = true ORDER BY q.id")
     List<Long> findAllActiveIds();

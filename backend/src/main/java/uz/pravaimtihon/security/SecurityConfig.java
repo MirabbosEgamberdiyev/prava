@@ -273,8 +273,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(finalOrigins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Accept-Language", "X-Requested-With", "X-Auth-Mode",
-                "X-QR-Poll-Secret", "If-None-Match"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Total-Count", "Content-Disposition", "X-Request-Id", "ETag"));
+                "X-QR-Poll-Secret", "If-None-Match", "X-Client-Platform"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Total-Count", "Content-Disposition", "X-Request-Id", "ETag", "X-Encrypted-Algorithm"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 

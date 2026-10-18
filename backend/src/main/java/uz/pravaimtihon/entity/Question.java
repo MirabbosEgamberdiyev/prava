@@ -23,7 +23,8 @@ import java.util.Set;
         @Index(name = "idx_question_topic", columnList = "topic_id"),
         @Index(name = "idx_question_difficulty", columnList = "difficulty"),
         @Index(name = "idx_question_deleted", columnList = "deleted"),
-        @Index(name = "idx_question_active", columnList = "is_active")
+        @Index(name = "idx_question_active", columnList = "is_active"),
+        @Index(name = "idx_question_demo", columnList = "is_demo")
 })
 @SQLRestriction("deleted = false")
 @Getter
@@ -81,6 +82,10 @@ public class Question extends BaseEntity {
     @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    @Builder.Default
+    @Column(name = "is_demo", nullable = false)
+    private Boolean isDemo = false;
 
     // Statistics
     @Builder.Default
