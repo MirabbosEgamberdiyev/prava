@@ -220,7 +220,7 @@ export const QuizReviewModal: React.FC<QuizReviewModalProps> = ({
                         borderRadius: "6px",
                       }}
                     >
-                      {idx + 1}-savol • {isWrong ? t("common.wrong", "Xato") : t("common.correct", "To'g'ri")}
+                      {t("quiz.questionNumber", { num: idx + 1, defaultValue: `${idx + 1}-savol` })} • {isWrong ? t("common.wrong", "Xato") : t("common.correct", "To'g'ri")}
                     </span>
                   </div>
 

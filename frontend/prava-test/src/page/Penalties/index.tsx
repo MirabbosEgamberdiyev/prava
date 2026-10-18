@@ -60,7 +60,7 @@ export default function Penalties_Page() {
         subtitle={t("curriculum.finesSubtitle", "")}
         badge={
           <span className="cur-badge">
-            <IconGavel size={14} /> {filtered.length} {t("curriculum.finesCount", "ta qoida")}
+            <IconGavel size={14} /> {t("curriculum.finesCount", { count: filtered.length, defaultValue: `${filtered.length} ta holat` })}
           </span>
         }
         savedAt={savedAt}

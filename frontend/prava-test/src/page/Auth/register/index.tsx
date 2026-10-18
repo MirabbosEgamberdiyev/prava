@@ -41,8 +41,8 @@ const Register_Page: React.FC = () => {
       )}
 
       <div style={{ display: "none" }}>
-        <button onClick={() => setTermsModal("terms")}>Terms</button>
-        <button onClick={() => setTermsModal("privacy")}>Privacy</button>
+        <button onClick={() => setTermsModal("terms")}>{t("auth.termsOfService", "Foydalanish shartlari")}</button>
+        <button onClick={() => setTermsModal("privacy")}>{t("auth.privacyPolicy", "Maxfiylik siyosati")}</button>
       </div>
     </Box>
   );

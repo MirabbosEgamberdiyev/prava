@@ -157,8 +157,8 @@ export default function DesktopBridgePage() {
   return (
     <>
       <SEO
-        title="Prava Online Desktop — Kirish"
-        description="Prava Online Desktop ilovasiga xavfsiz kirish"
+        title={t("auth.desktopBridgeTitle", "Prava Online Desktop — Kirish")}
+        description={t("auth.desktopBridgeDesc", "Prava Online Desktop ilovasiga xavfsiz kirish")}
         noIndex
       />
 
@@ -212,7 +212,7 @@ export default function DesktopBridgePage() {
                 <>
                   <Loader size="md" color="#38bdf8" />
                   <Text size="sm" c="dimmed">
-                    {isMobile ? "Ilovaga ulanmoqda..." : t("auth.connecting", "Desktop ilovasiga ulanmoqda...")}
+                    {isMobile ? t("auth.mobileConnecting", "Ilovaga ulanmoqda...") : t("auth.connecting", "Desktop ilovasiga ulanmoqda...")}
                   </Text>
                 </>
               )}
@@ -221,8 +221,8 @@ export default function DesktopBridgePage() {
                 <>
                   <Text size="sm" c="dimmed" style={{ lineHeight: 1.5, maxWidth: 360 }}>
                     {provider === "telegram"
-                      ? (isMobile ? "Ilovaga kirish uchun Telegram hisobingizni tasdiqlang." : "Desktop ilovangizga kirish uchun Telegram hisobingizni tasdiqlang.")
-                      : (isMobile ? "Prava Online ilovasiga kirish uchun Google hisobingiz orqali 1 bosqichda kiring." : "Desktop ilovangizga kirish uchun Google hisobingiz orqali 1 bosqichda kiring.")}
+                      ? (isMobile ? t("auth.promptTelegramMobile", "Ilovaga kirish uchun Telegram hisobingizni tasdiqlang.") : t("auth.promptTelegramDesktop", "Desktop ilovangizga kirish uchun Telegram hisobingizni tasdiqlang."))
+                      : (isMobile ? t("auth.promptGoogleMobile", "Prava Online ilovasiga kirish uchun Google hisobingiz orqali 1 bosqichda kiring.") : t("auth.promptGoogleDesktop", "Desktop ilovangizga kirish uchun Google hisobingiz orqali 1 bosqichda kiring."))}
                   </Text>
 
                   {provider === "telegram" ? (
@@ -234,7 +234,7 @@ export default function DesktopBridgePage() {
                       leftSection={<IconBrandTelegram size={20} />}
                       onClick={() => navigate("/auth/login?oauth=telegram")}
                     >
-                      Telegram orqali kirish
+                      {t("auth.loginWithTelegram", "Telegram orqali kirish")}
                     </Button>
                   ) : (
                     <Button
@@ -250,7 +250,7 @@ export default function DesktopBridgePage() {
                         fontWeight: 700,
                       }}
                     >
-                      Google bilan kirish
+                      {t("auth.loginWithGoogle", "Google bilan kirish")}
                     </Button>
                   )}
                 </>
@@ -260,7 +260,7 @@ export default function DesktopBridgePage() {
                 <>
                   <Loader size="md" color="#EA4335" />
                   <Text size="sm" c="dimmed">
-                    Google hisobi tekshirilmoqda...
+                    {t("auth.googleChecking", "Google hisobi tekshirilmoqda...")}
                   </Text>
                 </>
               )}
@@ -269,7 +269,7 @@ export default function DesktopBridgePage() {
                 <>
                   <Loader size="md" color="#38bdf8" />
                   <Text size="sm" c="dimmed">
-                    {isMobile ? "Ilovaga token uzatilmoqda..." : "Desktop ilovasiga token uzatilmoqda..."}
+                    {isMobile ? t("auth.mobileTokenTransferring", "Ilovaga token uzatilmoqda...") : t("auth.tokenTransferring", "Desktop ilovasiga token uzatilmoqda...")}
                   </Text>
                 </>
               )}
@@ -292,13 +292,13 @@ export default function DesktopBridgePage() {
                     <IconCheck size={32} stroke={3} />
                   </div>
                   <Title order={3} style={{ color: "#34d399", fontSize: 20, fontWeight: 800 }}>
-                    Muvaffaqiyatli ulandingiz!
+                    {t("auth.connectedSuccess", "Muvaffaqiyatli ulandingiz!")}
                   </Title>
                   <Text size="sm" c="dimmed" style={{ maxWidth: 340 }}>
-                    {isMobile ? "Prava Online ilovangizga muvaffaqiyatli kirildi. Ilovaga qaytishingiz mumkin." : "Prava Online Desktop ilovangizga kirildi. Dasturga qaytishingiz mumkin."}
+                    {isMobile ? t("auth.mobileConnectedDesc", "Prava Online ilovangizga muvaffaqiyatli kirildi. Ilovaga qaytishingiz mumkin.") : t("auth.desktopConnectedDesc", "Prava Online Desktop ilovangizga kirildi. Dasturga qaytishingiz mumkin.")}
                   </Text>
                   <Text size="xs" c="dimmed">
-                    Ushbu oyna {countdown} soniyada avtomatik yopiladi...
+                    {t("auth.windowAutoCloses", { count: countdown, defaultValue: "Ushbu oyna {{count}} soniyada avtomatik yopiladi..." })}
                   </Text>
                   {isMobile ? (
                     <Button
@@ -309,7 +309,7 @@ export default function DesktopBridgePage() {
                       color="blue"
                       mt={6}
                     >
-                      Ilovaga qaytish
+                      {t("auth.backToApp", "Ilovaga qaytish")}
                     </Button>
                   ) : null}
                   <Button
@@ -319,7 +319,7 @@ export default function DesktopBridgePage() {
                     onClick={() => window.close()}
                     mt={4}
                   >
-                    Oynani yopish
+                    {t("auth.closeWindow", "Oynani yopish")}
                   </Button>
                 </>
               )}
@@ -341,10 +341,10 @@ export default function DesktopBridgePage() {
                     <IconAlertCircle size={32} stroke={2.5} />
                   </div>
                   <Title order={3} style={{ color: "#f87171", fontSize: 18 }}>
-                    Kirishda xatolik yuz berdi
+                    {t("auth.loginError", "Kirishda xatolik yuz berdi")}
                   </Title>
                   <Text size="sm" c="dimmed" style={{ maxWidth: 340 }}>
-                    {errorMessage || "Noma'lum xatolik yuz berdi. Qaytadan urinib ko'ring."}
+                    {errorMessage || t("auth.socialLoginError", "Noma'lum xatolik yuz berdi. Qaytadan urinib ko'ring.")}
                   </Text>
                   <Button
                     size="sm"
@@ -356,7 +356,7 @@ export default function DesktopBridgePage() {
                     }}
                     mt={8}
                   >
-                    Qayta urinish
+                    {t("auth.retry", "Qayta urinish")}
                   </Button>
                 </>
               )}

@@ -10,7 +10,7 @@
     "orContinueWith": "yoki",
     "errorTitle": "Xatolik",
     "forgotPassword": "Parolni unutdingizmi?",
-    "loginError": "Login yoki parol xato!",
+    "loginError": "Kirishda xatolik yuz berdi",
     "google": {
       "loginButton": "Google bilan kirish",
       "registerButton": "Google bilan ro'yxatdan o'tish",
@@ -19,7 +19,8 @@
       "errorMessage": "Google orqali kirishda xatolik yuz berdi",
       "authenticating": "Google orqali kirilmoqda...",
       "loginTitle": "Google orqali kirish",
-      "loginDescription": "Google hisobi orqali tizimga kirish"
+      "loginDescription": "Google hisobi orqali tizimga kirish",
+      "timeoutMessage": "Google orqali kirish vaqti tugadi. Qaytadan urinib ko'ring."
     },
     "telegram": {
       "loginButton": "Telegram bilan kirish",
@@ -39,7 +40,7 @@
       "codeLabel": "Tasdiqlash kodi"
     },
     "loginWithGoogle": "Google bilan kirish",
-    "loginWithTelegram": "Telegram bilan kirish",
+    "loginWithTelegram": "Telegram orqali kirish",
     "socialLoginError": "Ijtimoiy tarmoq orqali kirishda xatolik. Qayta urinib ko'ring.",
     "telegramCallbackProcessing": "Telegram orqali kirilmoqda...",
     "telegramCallbackSuccess": "Muvaffaqiyatli kirdingiz!",
@@ -157,7 +158,26 @@
     "qrRefresh": "Kodni yangilash",
     "qrSuccess": "Ulanish tasdiqlandi, tizimga yo'naltirilmoqda...",
     "qrWaiting": "Mobil ilova orqali skanerlash kutilmoqda...",
-    "registerInstant": "1 soniyada ro'yxatdan o'tish"
+    "registerInstant": "1 soniyada ro'yxatdan o'tish",
+    "connecting": "Ilovaga ulanmoqda...",
+    "desktopBridgeTitle": "Prava Online Desktop — Kirish",
+    "desktopBridgeDesc": "Prava Online Desktop ilovasiga xavfsiz kirish",
+    "googleChecking": "Google hisobi tekshirilmoqda...",
+    "tokenTransferring": "Desktop ilovasiga token uzatilmoqda...",
+    "mobileTokenTransferring": "Ilovaga token uzatilmoqda...",
+    "connectedSuccess": "Muvaffaqiyatli ulandingiz!",
+    "desktopConnectedDesc": "Prava Online Desktop ilovangizga kirildi. Dasturga qaytishingiz mumkin.",
+    "mobileConnectedDesc": "Prava Online ilovangizga muvaffaqiyatli kirildi. Ilovaga qaytishingiz mumkin.",
+    "windowAutoCloses": "Ushbu oyna {{count}} soniyada avtomatik yopiladi...",
+    "backToApp": "Ilovaga qaytish",
+    "closeWindow": "Oynani yopish",
+    "retry": "Qayta urinish",
+    "promptTelegramDesktop": "Desktop ilovangizga kirish uchun Telegram hisobingizni tasdiqlang.",
+    "promptTelegramMobile": "Ilovaga kirish uchun Telegram hisobingizni tasdiqlang.",
+    "promptGoogleDesktop": "Desktop ilovangizga kirish uchun Google hisobingiz orqali 1 bosqichda kiring.",
+    "promptGoogleMobile": "Prava Online ilovasiga kirish uchun Google hisobingiz orqali 1 bosqichda kiring.",
+    "mobileConnecting": "Ilovaga ulanmoqda...",
+    "googleTokenExchangeFailed": "Google token almashinuvi amalga oshmadi"
   },
   "register": {
     "title": "Ro'yxatdan o'tish",
@@ -285,7 +305,8 @@
     "enabled": "Yoqilgan",
     "and": "va",
     "soundToggle": "Ovozni yoqish / ochirish",
-    "exit": "Chiqish"
+    "exit": "Chiqish",
+    "mainContent": "Asosiy kontent"
   },
   "notFound": {
     "title": "Sahifa topilmadi",
@@ -1046,7 +1067,9 @@
     "allTime": "Barchasi",
     "points": "ball",
     "subtitle": "Eng faol va yuqori natija ko'rsatgan o'quvchilar",
-    "userNum": "Foydalanuvchi #{{count}}"
+    "userNum": "Foydalanuvchi #{{count}}",
+    "emptyTitle": "Reyting hali mavjud emas",
+    "emptyDesc": "Ushbu davr bo'yicha imtihon natijalari mavjud emas. Imtihon topshirib birinchi o'rinni egallang!"
   },
   "examMode": {
     "title": "Imtihon rejimini tanlang",
@@ -1319,7 +1342,13 @@
     "general": "Umumiy qoidalar",
     "unit": "ta mavzu",
     "tryAnotherSearch": "Qidiruv so'zini o'zgartirib ko'ring yoki tozalang.",
-    "noTopicsDesc": "Hozircha tizimda mavzular mavjud emas."
+    "noTopicsDesc": "Hozircha tizimda mavzular mavjud emas.",
+    "availableCount": "Mavjud: {{count}}",
+    "countBadge": "{{count}} ta mavzu",
+    "modalTitle": "Mavzulashtirilgan test",
+    "questionCountLabel": "Savollar soni",
+    "selectTopic": "Mavzuni tanlang",
+    "subtitleFull": "Yo'l harakati qoidalarini mavzulashtirilgan tarzda tizimli o'rganing va testdan o'ting."
   },
   "statistics": {
     "title": "Statistika",
@@ -2269,7 +2298,7 @@
     "examSeoTitle": "Imtihon — {{count}} ta savol",
     "examSeoDesc": "Haydovchilik guvohnomasi imtihoni — {{count}} ta savol, {{minutes}} daqiqa.",
     "subtitle": "Mavzular va yo'nalishlar bo'yicha maxsus to'plamlar",
-    "defaultName": "Paket #{{n}}"
+    "defaultName": "Maxsus o'quv paketi"
   },
   "preview": {
     "statsScoreDemo": "Statistika va imtihon ko'rsatkichlari"
@@ -2687,7 +2716,8 @@
     "devicePairingTitle": "Qurilmani bog'lash",
     "devicePairingDesc": "Hisobingizni mobil ilova bilan bog'lash uchun telefoningizdagi ilova bilan QR kodni skaner qiling.",
     "copiedToast": "Havola nusxalandi!",
-    "appLoginSubtitle": "Mobil ilova orqali QR-kodni skanerlang"
+    "appLoginSubtitle": "Ilova orqali QR-kodni skanerlab tezkor kiring",
+    "rejected": "Ulanish bekor qilindi"
   },
   "pair": {
     "title": "Yangi qurilma ulanishi",
@@ -3056,7 +3086,8 @@
     "exitUnsaved": "Chiqish (natija saqlanmaydi)",
     "bookmarkHint": "Savolni saqlash / belgilash (B)",
     "navigation": "Savollar navigatsiyasi",
-    "noExplanation": "Ushbu savol uchun qo'shimcha izoh kiritilmagan."
+    "noExplanation": "Ushbu savol uchun qo'shimcha izoh kiritilmagan.",
+    "startExam": "Imtihon topshirish"
   },
   "seo": {
     "historyDesc": "O'tgan imtihonlaringiz natijalarini ko'ring va tahlil qiling.",
@@ -3240,7 +3271,9 @@
     "savedTitle": "Saqlangan savollar hisobingizda turadi",
     "savedDesc": "Muhim savollarni belgilab, keyinroq takrorlash uchun tizimga kiring.",
     "statsTitle": "Statistika hisobingiz bo'yicha yuritiladi",
-    "statsDesc": "Tayyorgarlik darajangiz va natijalaringiz tahlilini ko'rish uchun tizimga kiring."
+    "statsDesc": "Tayyorgarlik darajangiz va natijalaringiz tahlilini ko'rish uchun tizimga kiring.",
+    "leaderboardTitle": "Reytingni ko'rish",
+    "leaderboardDesc": "Boshqa o'quvchilar bilan raqobatlashish va o'z o'rningizni bilish uchun tizimga kiring."
   },
   "fines": {
     "navLabel": "Yo'l harakati jarimalari",
@@ -3381,7 +3414,8 @@
     "tooSlowDesc": "Tasvir sekundiga bir necha marta ham yangilanmayapti. Dastur qotib qolmasligi uchun simulyator to'xtatildi."
   },
   "quiz": {
-    "explanationTitle": "Qoida sharhi:"
+    "explanationTitle": "Qoida sharhi:",
+    "questionNumber": "{{num}}-savol"
   },
   "refDashboard": {
     "searchPlaceholder": "Qidirish... (savol, mavzu, bilet, yo'l belgisi...)",
@@ -3979,7 +4013,49 @@
     "leftMirror": "Chap ko'zgu",
     "centerMirror": "Markaziy salon ko'zgusi",
     "rightMirror": "O'ng ko'zgu",
-    "jumpToMoment": "Ushbu daqiqaga o'tish"
+    "jumpToMoment": "Ushbu daqiqaga o'tish",
+    "promo": {
+      "seoTitle": "3D Avtodrom Simulyatori — Prava Online",
+      "seoDesc": "Avtodromda haydash simulyatoridan to'liq foydalanish uchun Prava Online Desktop yoki Mobil versiyasini yuklab oling.",
+      "badge": "3D Avtodrom Simulyatori",
+      "title": "Avtodromda haydash simulyatori",
+      "lead": "3D Simulyatordan to‘liq, silliq va yuqori unumdorlikda (60 FPS) foydalanish uchun Prava Online Desktop (Windows) yoki Mobil versiyasini yuklab oling!",
+      "downloadWindows": "Windows uchun yuklab olish (.exe)",
+      "allDownloads": "Barcha versiyalar",
+      "choosePlatform": "Qurilmangizni tanlang",
+      "recommended": "Tavsiya etiladi",
+      "downloadExe": "O‘rnatish (.exe)",
+      "mobileApp": "Mobil ilova",
+      "appleDevice": "iPhone & iPad",
+      "whyDesktop": "Nega alohida dasturda foydalanish tavsiya etiladi?",
+      "feature1Title": "To‘liq GPU tezlanishi",
+      "feature1Desc": "Brauzer cheklovlarisiz to‘liq video karta kuchidan foydalanadi va silliq 60 FPS beradi.",
+      "feature2Title": "Rul va Geympad",
+      "feature2Desc": "Logitech, Thrustmaster va geympadlarni ulab, haqiqiy mashinadagidek his eting.",
+      "feature3Title": "Oflayn ishlash",
+      "feature3Desc": "Bir marta yuklab oling va internetsiz ham barcha avtodrom mashqlarini bajaring.",
+      "feature4Title": "100% Imtihon Standartlari",
+      "feature4Desc": "YHXX amaliy imtihon avtodromining estakada, parallel parkovka va garaj mashqlari nusxasi.",
+      "featDesktop1": "To‘liq 3D Avtodrom va real avtomobil fizikasi",
+      "featDesktop2": "Rul chambaragi, geympad va klaviatura bilan boshqarish",
+      "featDesktop3": "Internet talab qilmaydigan 100% oflayn rejim",
+      "featDesktop4": "Ultra HD grafika va 0ms minimal kechikish",
+      "featMobile1": "Istalgan joyda smartfonda mashq qilish",
+      "featMobile2": "Sensorli virtual rul va boshqaruv pedallari",
+      "featMobile3": "Google Play orqali avtomatik yangilanish",
+      "featMobile4": "To‘g‘ridan-to‘g‘ri APK orqali tezkor o‘rnatish",
+      "featApple1": "Metal grafik tezlatgich bilan silliq kadrlar",
+      "featApple2": "iPhone va iPad ekranlariga moslashtirilgan interfeys",
+      "featApple3": "Apple ID orqali natijalarni sinxronlashtirish",
+      "featApple4": "App Store rasmiy do‘koni orqali himoyalangan",
+      "loadingAutodrome": "Avtodrom yuklanmoqda...",
+      "platformWindows": "Windows Desktop",
+      "platformWindowsSpecs": "Windows 10 / 11 (64-bit) • 60 FPS Engine",
+      "platformAndroid": "Android Ilova",
+      "platformAndroidSpecs": "Android 8.0+ • Google Play & APK",
+      "platformIos": "iOS / iPadOS",
+      "platformIosSpecs": "iOS 15.0+ • iPhone va iPad"
+    }
   },
   "practicalExam": {
     "controlsTitle": "Boshqaruv tugmalari (Klaviatura):",
@@ -3989,5 +4065,95 @@
     "handbrake": "Qol tormozi",
     "voiceInstructor": "Ovozli instruktor: Ozbekcha / Kirill / Ruscha",
     "loadError": "Amaliy imtihon malumotlarini yuklashda xatolik yuz berdi. Qayta urinib koring."
+  },
+  "a11y": {
+    "timerFiveMinutesLeft": "Imtihon tugashiga 5 daqiqa qoldi",
+    "timerOneMinuteLeft": "Imtihon tugashiga 1 daqiqa qoldi",
+    "imageZoomDialog": "Rasm kattalashtirilgan ko'rinishda",
+    "soundOn": "Ovozni yoqish",
+    "soundOff": "Ovozni o'chirish",
+    "cameraView": "Kamera ko'rinishini almashtirish",
+    "steeringWheelMode": "Virtual rul boshqaruvi",
+    "keyboardMode": "Klaviatura tugmalari",
+    "enterFullscreen": "To'liq ekran",
+    "exitFullscreen": "To'liq ekrandan chiqish",
+    "screenshot": "Skrinshot olish",
+    "splitScreen": "Bo'lingan ekran"
+  },
+  "survival": {
+    "title": "Xatogacha marafon",
+    "seoDesc": "Tasodifiy savollar birinchi xatogacha — eng uzun seriyangizni o'rnating.",
+    "streak": "Seriya",
+    "best": "Eng yaxshi seriya",
+    "newRecord": "Yangi rekord!",
+    "over": "Marafon tugadi",
+    "allDone": "Barcha savollarga xatosiz javob berdingiz!",
+    "failedOn": "Xato qilingan savol",
+    "yourAnswer": "Sizning javobingiz",
+    "correctAnswer": "To'g'ri javob",
+    "explanation": "Izoh",
+    "retry": "Qaytadan boshlash",
+    "backToDashboard": "Bosh sahifaga",
+    "giveUp": "Tugatish",
+    "confirmTitle": "Marafonni tugatasizmi?",
+    "confirmDesc": "Joriy seriya: {{streak}}. Rekordingiz saqlanadi, lekin bu marafonni davom ettirib bo'lmaydi.",
+    "continue": "Davom etish",
+    "next": "Keyingi",
+    "seeResult": "Natijani ko'rish",
+    "loadingMore": "Keyingi savollar yuklanmoqda...",
+    "empty": "Savollar topilmadi",
+    "emptyDesc": "Hozircha savollar mavjud emas. Birozdan so'ng qayta urinib ko'ring.",
+    "hint": "1–5 yoki A–D — javob, Enter — keyingi",
+    "questionNumber": "{{n}}-savol",
+    "imageAlt": "Savol rasmi",
+    "bookmarkAdd": "Saqlash",
+    "bookmarkRemove": "Saqlangandan o'chirish",
+    "resultSeoDesc": "Xatogacha marafon natijasi"
+  },
+  "guestHome": {
+    "seoTitle": "Prava Online — haydovchilik imtihoniga tayyorgarlik",
+    "seoDesc": "Biletlar, mavzular, yo'l harakati qoidalari, yo'l belgilari va chiziqlari — ro'yxatdan o'tmasdan ko'rib chiqing.",
+    "title": "Haydovchilik imtihoniga tayyorlaning",
+    "subtitle": "Biletlar, mavzular va qoidalarni hoziroq ko'rib chiqing. Imtihon yoki marafonni boshlash va natijalarni saqlash uchun tizimga kiring.",
+    "login": "Kirish",
+    "register": "Ro'yxatdan o'tish",
+    "loginRequired": "Kirish kerak",
+    "loginToStart": "Boshlash uchun kiring",
+    "practiceTitle": "Mashq qilish",
+    "referenceTitle": "Qo'llanma va ma'lumotlar",
+    "ticketsDesc": "{{count}} ta rasmiy bilet, har birida {{questions}} ta savol.",
+    "ticketsDescGeneric": "Rasmiy biletlar, har birida {{questions}} ta savol.",
+    "topicsDesc": "Savollarni mavzular bo'yicha o'rganing.",
+    "tryExamDesc": "{{count}} ta savol, {{minutes}} daqiqa — ro'yxatdan o'tmasdan bir marta.",
+    "realExamDesc": "Rasmiy format: {{max}} tagacha xato mumkin.",
+    "marathonDesc": "Savollarni ketma-ket, to'xtovsiz yeching.",
+    "survivalDesc": "Birinchi xatogacha davom eting va rekordingizni yangilang.",
+    "wrongAnswersDesc": "Xato javoblaringiz ustida ishlang.",
+    "rulesDesc": "Yo'l harakati qoidalarining to'liq matni.",
+    "signsDesc": "Barcha yo'l belgilari izohlari bilan.",
+    "markingsDesc": "Yo'l chiziqlari va ularning ma'nosi.",
+    "penaltiesDesc": "Amaliy imtihonda beriladigan jarima ballari.",
+    "practicalDesc": "Avtodromdagi amaliy imtihon mashqlari.",
+    "examCentersDesc": "Imtihon markazlari manzillari va aloqa ma'lumotlari.",
+    "ticketsLoginHint": "Mavzu biletlarini ko'rish va yechish uchun tizimga kiring.",
+    "trafficFinesDesc": "BHM asosidagi amaldagi jarima miqdorlari."
+  },
+  "trafficFines": {
+    "title": "Yo'l harakati jarimalari",
+    "subtitle": "Jarima miqdorlari bazaviy hisoblash miqdori (BHM) asosida hisoblanadi.",
+    "bhmNote": "1 BHM = {{amount}}, {{date}} dan",
+    "searchPlaceholder": "Modda yoki qoidabuzarlik bo'yicha qidirish",
+    "colArticle": "Modda",
+    "colViolation": "Qoidabuzarlik",
+    "colAmount": "Jarima miqdori",
+    "colSanction": "Qo'shimcha jazo",
+    "bhmMultiplier": "{{value}} BHM",
+    "total": "Jami: {{count}}",
+    "emptyTitle": "Jarimalar ro'yxati hali to'ldirilmagan",
+    "emptyHint": "Ma'lumotlar tez orada qo'shiladi. Keyinroq qayta tekshiring.",
+    "noResults": "Qidiruv bo'yicha hech narsa topilmadi",
+    "loadError": "Jarimalar ro'yxatini yuklab bo'lmadi",
+    "staleNote": "Internet aloqasi yo'q — oxirgi saqlangan nusxa ko'rsatilmoqda.",
+    "disclaimer": "Ma'lumot tanishish uchun. Rasmiy miqdor O'zbekiston Respublikasi Ma'muriy javobgarlik to'g'risidagi kodeksiga muvofiq belgilanadi."
   }
 }

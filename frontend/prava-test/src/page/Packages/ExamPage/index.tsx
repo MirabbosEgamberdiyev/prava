@@ -422,7 +422,7 @@ export default function PackageExamPage() {
     <>
       <SEO
         title={`${packageName || t("packages.defaultName", "Paket #{{n}}", { n: packageId })} - Prava Online`}
-        description={t("packages.examSeoDesc", "Prava Online maxsus o'quv paketi imtihoni.")}
+        description={t("packages.examSeoDesc", { count: questions.length || 20, minutes: rules.durationMinutes || 25, defaultValue: "Haydovchilik guvohnomasi imtihoni — {{count}} ta savol, {{minutes}} daqiqa." })}
         canonical={`/packages/${packageId}`}
       />
       <ExamDesktopView

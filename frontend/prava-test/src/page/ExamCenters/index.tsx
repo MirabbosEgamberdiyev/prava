@@ -62,7 +62,7 @@ export default function ExamCenters_Page() {
         subtitle={t("curriculum.centersSubtitle", "")}
         badge={
           <span className="cur-badge">
-            <IconBuildingSkyscraper size={14} /> {centers.length} {t("curriculum.centersCount", "ta markaz")}
+            <IconBuildingSkyscraper size={14} /> {t("curriculum.centersCount", { count: centers.length, defaultValue: `${centers.length} ta markaz` })}
           </span>
         }
         savedAt={savedAt}

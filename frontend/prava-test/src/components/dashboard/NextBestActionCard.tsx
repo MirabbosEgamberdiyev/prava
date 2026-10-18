@@ -106,7 +106,7 @@ export function NextBestActionCard({ decision, onOpenExamPicker }: NextBestActio
         accent: "#0284c7",
         badgeBg: "rgba(2, 132, 199, 0.14)",
         title: t("dashboard.nba.diagnosticTitle", "Bilim darajangizni aniqlash uchun sinov testi"),
-        subtitle: t("dashboard.nba.diagnosticDesc", "20 ta savoldan iborat boshlang'ich test orqali kuchli va zaif tomonlaringizni aniqlang."),
+        subtitle: t("dashboard.nba.diagnosticDesc", { count: 20, defaultValue: "20 ta savoldan iborat boshlang'ich test orqali kuchli va zaif tomonlaringizni aniqlang." }),
         pill: { icon: <IconTargetArrow size={14} />, text: t("dashboard.nba.questionsCount", { count: 20, defaultValue: "20" }) },
         button: t("dashboard.nba.startDiagnosticBtn", "Diagnostik testni boshlash"),
         gradient: "linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)",

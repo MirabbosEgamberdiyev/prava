@@ -96,7 +96,7 @@ export function buildSearchEntries(src: SearchSources, t: TFunction, lang: strin
     out.push({
       id: `ticket-${tk.id}`,
       kind: "ticket",
-      title: pickLocalized(tk, "name", lang) || `${tk.ticket_number}-${t("dashboard.ticketNum", "bilet")}`,
+      title: pickLocalized(tk, "name", lang) || t("dashboard.ticketNum", { num: tk.ticket_number, defaultValue: `${tk.ticket_number}-bilet` }),
       category: catTickets,
       code: String(tk.ticket_number),
       keywords: `${allNames(tk, "name")} bilet билет ticket`,

@@ -128,24 +128,24 @@ function SimulatorWebPromo() {
                     {t("simulator.promo.recommended", "Tavsiya etiladi")}
                   </span>
                 </div>
-                <h3 className="sim-card-title">Windows Desktop</h3>
-                <div className="sim-card-specs">Windows 10 / 11 (64-bit) • 60 FPS Engine</div>
+                <h3 className="sim-card-title">{t("simulator.promo.platformWindows", "Windows Desktop")}</h3>
+                <div className="sim-card-specs">{t("simulator.promo.platformWindowsSpecs", "Windows 10 / 11 (64-bit) • 60 FPS Engine")}</div>
                 <ul className="sim-card-features">
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>To‘liq 3D Avtodrom va real avtomobil fizikasi</span>
+                    <span>{t("simulator.promo.featDesktop1", "To‘liq 3D Avtodrom va real avtomobil fizikasi")}</span>
                   </li>
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>Rul chambaragi, geympad va klaviatura bilan boshqarish</span>
+                    <span>{t("simulator.promo.featDesktop2", "Rul chambaragi, geympad va klaviatura bilan boshqarish")}</span>
                   </li>
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>Internet talab qilmaydigan 100% oflayn rejim</span>
+                    <span>{t("simulator.promo.featDesktop3", "Internet talab qilmaydigan 100% oflayn rejim")}</span>
                   </li>
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>Ultra HD grafika va 0ms minimal kechikish</span>
+                    <span>{t("simulator.promo.featDesktop4", "Ultra HD grafika va 0ms minimal kechikish")}</span>
                   </li>
                 </ul>
               </div>
@@ -166,24 +166,24 @@ function SimulatorWebPromo() {
                     {t("simulator.promo.mobileApp", "Mobil ilova")}
                   </span>
                 </div>
-                <h3 className="sim-card-title">Android Ilova</h3>
-                <div className="sim-card-specs">Android 8.0+ • Google Play & APK</div>
+                <h3 className="sim-card-title">{t("simulator.promo.platformAndroid", "Android Ilova")}</h3>
+                <div className="sim-card-specs">{t("simulator.promo.platformAndroidSpecs", "Android 8.0+ • Google Play & APK")}</div>
                 <ul className="sim-card-features">
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>Istalgan joyda smartfonda mashq qilish</span>
+                    <span>{t("simulator.promo.featMobile1", "Istalgan joyda smartfonda mashq qilish")}</span>
                   </li>
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>Sensorli virtual rul va boshqaruv pedallari</span>
+                    <span>{t("simulator.promo.featMobile2", "Sensorli virtual rul va boshqaruv pedallari")}</span>
                   </li>
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>Google Play orqali avtomatik yangilanish</span>
+                    <span>{t("simulator.promo.featMobile3", "Google Play orqali avtomatik yangilanish")}</span>
                   </li>
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>To‘g‘ridan-to‘g‘ri APK orqali tezkor o‘rnatish</span>
+                    <span>{t("simulator.promo.featMobile4", "To‘g‘ridan-to‘g‘ri APK orqali tezkor o‘rnatish")}</span>
                   </li>
                 </ul>
               </div>
@@ -209,24 +209,24 @@ function SimulatorWebPromo() {
                     {t("simulator.promo.appleDevice", "iPhone & iPad")}
                   </span>
                 </div>
-                <h3 className="sim-card-title">iOS / iPadOS</h3>
-                <div className="sim-card-specs">iOS 15.0+ • iPhone va iPad</div>
+                <h3 className="sim-card-title">{t("simulator.promo.platformIos", "iOS / iPadOS")}</h3>
+                <div className="sim-card-specs">{t("simulator.promo.platformIosSpecs", "iOS 15.0+ • iPhone va iPad")}</div>
                 <ul className="sim-card-features">
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>Metal grafik tezlatgich bilan silliq kadrlar</span>
+                    <span>{t("simulator.promo.featApple1", "Metal grafik tezlatgich bilan silliq kadrlar")}</span>
                   </li>
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>iPhone va iPad ekranlariga moslashtirilgan interfeys</span>
+                    <span>{t("simulator.promo.featApple2", "iPhone va iPad ekranlariga moslashtirilgan interfeys")}</span>
                   </li>
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>Apple ID orqali natijalarni sinxronlashtirish</span>
+                    <span>{t("simulator.promo.featApple3", "Apple ID orqali natijalarni sinxronlashtirish")}</span>
                   </li>
                   <li>
                     <IconCheck size={17} className="sim-check-icon" />
-                    <span>App Store rasmiy do‘koni orqali himoyalangan</span>
+                    <span>{t("simulator.promo.featApple4", "App Store rasmiy do‘koni orqali himoyalangan")}</span>
                   </li>
                 </ul>
               </div>
@@ -404,7 +404,7 @@ function SimulatorTauriView() {
           }}
         >
           <div className="spinner" />
-          <span style={{ fontSize: "14px", fontWeight: 600 }}>Avtodrom yuklanmoqda...</span>
+          <span style={{ fontSize: "14px", fontWeight: 600 }}>{t("simulator.promo.loadingAutodrome", "Avtodrom yuklanmoqda...")}</span>
         </div>
       }
     >

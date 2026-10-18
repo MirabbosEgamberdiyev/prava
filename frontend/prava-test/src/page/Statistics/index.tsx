@@ -143,7 +143,7 @@ function StatisticsContent() {
     const lang = (i18n.language as "uzl" | "uzc" | "ru") || "uzl";
     return stats.topic_readiness.slice(0, 8).map((tp) => {
       const fb = getFallbackTopicName(tp.topic_id, lang);
-      let name = fb || tp.name_uzl || t("topics.topicNumber", { number: tp.topic_id });
+      let name = fb || tp.name_uzl || t("topics.topicNumber", { id: tp.topic_id, defaultValue: `Mavzu #${tp.topic_id}` });
       if (lang === "ru" && tp.name_ru && tp.name_ru !== tp.name_uzl) name = tp.name_ru;
       if (lang === "uzc" && tp.name_uzc && tp.name_uzc !== tp.name_uzl) name = tp.name_uzc;
 

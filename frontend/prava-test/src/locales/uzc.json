@@ -10,7 +10,7 @@
     "orContinueWith": "ёки",
     "errorTitle": "Хатолик",
     "forgotPassword": "Паролни унутдингизми?",
-    "loginError": "Логин ёки парол хато!",
+    "loginError": "Киришда хатолик юз берди",
     "google": {
       "loginButton": "Google билан кириш",
       "registerButton": "Google билан рўйхатдан ўтиш",
@@ -19,7 +19,8 @@
       "errorMessage": "Google орқали киришда хатолик юз берди",
       "authenticating": "Google орқали кирилмоқда...",
       "loginTitle": "Google орқали кириш",
-      "loginDescription": "Google ҳисоби орқали тизимга кириш"
+      "loginDescription": "Google ҳисоби орқали тизимга кириш",
+      "timeoutMessage": "Google орқали кириш вақти тугади. Қайтадан уриниб кўринг."
     },
     "telegram": {
       "loginButton": "Telegram билан кириш",
@@ -39,7 +40,7 @@
       "codeLabel": "Тасдиқлаш коди"
     },
     "loginWithGoogle": "Google билан кириш",
-    "loginWithTelegram": "Telegram билан кириш",
+    "loginWithTelegram": "Telegram орқали кириш",
     "socialLoginError": "Ижтимоий тармоқ орқали киришда хатолик. Қайта уриниб кўринг.",
     "telegramCallbackProcessing": "Telegram орқали кирилмоқда...",
     "telegramCallbackSuccess": "Муваффақиятли кирдингиз!",
@@ -157,7 +158,26 @@
     "quickSocialDesc": "Google ёки Telegram профилингиз орқали бир босишда хавфсиз киринг",
     "agreeEnd": "га розилик билдирасиз.",
     "alreadyHaveAccount": "Ҳисобингиз борми? Кириш",
-    "byContinuingAgree": "Давом этиш орқали сиз"
+    "byContinuingAgree": "Давом этиш орқали сиз",
+    "connecting": "Иловага уланмоқда...",
+    "desktopBridgeTitle": "Prava Online Desktop — Кириш",
+    "desktopBridgeDesc": "Prava Online Desktop иловасига хавфсиз кириш",
+    "googleChecking": "Google ҳисоби текширилмоқда...",
+    "tokenTransferring": "Desktop иловасига токен узатилмоқда...",
+    "mobileTokenTransferring": "Иловага токен узатилмоқда...",
+    "connectedSuccess": "Муваффақиятли уландингиз!",
+    "desktopConnectedDesc": "Prava Online Desktop иловангизга кирилди. Дастурга қайтишингиз мумкин.",
+    "mobileConnectedDesc": "Prava Online иловангизга муваффақиятли кирилди. Иловага қайтишингиз мумкин.",
+    "windowAutoCloses": "Ушбу ойна {{count}} сонияда автоматик ёпилади...",
+    "backToApp": "Иловага қайтиш",
+    "closeWindow": "Ойнани ёпиш",
+    "retry": "Қайта уриниш",
+    "promptTelegramDesktop": "Desktop иловангизга кириш учун Telegram ҳисобингизни тасдиқланг.",
+    "promptTelegramMobile": "Иловага кириш учун Telegram ҳисобингизни тасдиқланг.",
+    "promptGoogleDesktop": "Desktop иловангизга кириш учун Google ҳисобингиз орқали 1 босқичда киринг.",
+    "promptGoogleMobile": "Prava Online иловасига кириш учун Google ҳисобингиз орқали 1 босқичда киринг.",
+    "mobileConnecting": "Иловага уланмоқда...",
+    "googleTokenExchangeFailed": "Google токен алмашинуви амалга ошмади"
   },
   "register": {
     "title": "Рўйхатдан ўтиш",
@@ -285,7 +305,9 @@
     "disabled": "Ўчирилган",
     "enabled": "Ёқилган",
     "and": "ва",
-    "unit": "та"
+    "unit": "та",
+    "exit": "Чиқиш",
+    "mainContent": "Асосий контент"
   },
   "notFound": {
     "title": "Саҳифа топилмади",
@@ -875,7 +897,9 @@
     "pickTitle": "Имтиҳон саволлари сонини танланг",
     "pickSubtitle": "Давлат имтиҳони 20 та савол. Тайёргарлик учун кўпроқ савол танлашингиз мумкин.",
     "officialBadge": "Расмий",
-    "minutesUnit": "дақ"
+    "minutesUnit": "дақ",
+    "elapsedTime": "Ўтган вақт",
+    "timeRemaining": "Қолган вақт"
   },
   "package": {
     "title": "Мавзулар рўйхати",
@@ -1066,7 +1090,9 @@
     "monthly": "Ойлик",
     "allTime": "Барчаси",
     "points": "балл",
-    "userNum": "Фойдаланувчи #{{count}}"
+    "userNum": "Фойдаланувчи #{{count}}",
+    "emptyTitle": "Рейтинг ҳали мавжуд эмас",
+    "emptyDesc": "Ушбу давр бўйича имтиҳон натижалари мавжуд эмас. Имтиҳон топшириб биринчи ўринни эгалланг!"
   },
   "examMode": {
     "title": "Имтиҳон режимини танланг",
@@ -1337,7 +1363,13 @@
     "officialSectionDesc": "— Ўзбекистон Республикаси Йўл ҳаракати қоидаларининг расмий бўлими ҳисобланади.",
     "examStandardDesc": "Ушбу мавзудаги тест саволлари Давлат Йўл Ҳаракати Хавфсизлиги Хизмати (ЙҲХДХ) имтиҳон стандартларига тўлиқ мос келади.",
     "emptyDesc": "Танланган мезон бўйича мавзулар топилмади",
-    "general": "Умумий қоидалар"
+    "general": "Умумий қоидалар",
+    "availableCount": "Мавжуд: {{count}}",
+    "countBadge": "{{count}} та мавзу",
+    "modalTitle": "Мавзулаштирилган тест",
+    "questionCountLabel": "Саволлар сони",
+    "selectTopic": "Мавзуни танланг",
+    "subtitleFull": "Йўл ҳаракати қоидаларини мавзулаштирилган тарзда тизимли ўрганинг ва тестдан ўтинг."
   },
   "statistics": {
     "title": "Статистика",
@@ -2418,7 +2450,8 @@
     "subtitle": "Мавзулар ва йўналишлар бўйича махсус тўпламлар",
     "seoDesc": "Ҳайдовчилик гувоҳномаси имтиҳони пакетларини танланг ва ўзингизга мос тест тўпламини ечинг.",
     "examSeoTitle": "Имтиҳон — {{count}} та савол",
-    "examSeoDesc": "Ҳайдовчилик гувоҳномаси имтиҳони — {{count}} та савол, {{minutes}} дақиқа."
+    "examSeoDesc": "Ҳайдовчилик гувоҳномаси имтиҳони — {{count}} та савол, {{minutes}} дақиқа.",
+    "defaultName": "Махсус ўқув пакети"
   },
   "gamification": {
     "solveMistakes": "Фақат хатолар бўйича тест",
@@ -2839,7 +2872,9 @@
     "revokeFailed": "Қурилма сессиясини тугатишда хатолик юз берди.",
     "devicePairingTitle": "Қурилмани боғлаш",
     "devicePairingDesc": "Ҳисобингизни мобил илова билан боғлаш учун телефонингиздаги илова билан QR кодни сканер қилинг.",
-    "copiedToast": "Ҳавола нусхаланди!"
+    "copiedToast": "Ҳавола нусхаланди!",
+    "appLoginSubtitle": "Илова орқали QR-кодни сканерлаб тезкор киринг",
+    "rejected": "Уланиш бекор қилинди"
   },
   "pair": {
     "title": "Янги қурилма уланиши",
@@ -3446,7 +3481,49 @@
     "seatbelt": "Хавфсизлик камари",
     "turnLeft": "Чап бурилиш",
     "turnRight": "Ўнг бурилиш",
-    "viewReplay": "Такрорий кўриш"
+    "viewReplay": "Такрорий кўриш",
+    "promo": {
+      "seoTitle": "3D Автодром Симулятори — Prava Online",
+      "seoDesc": "Автодромда ҳайдаш симуляторидан тўлиқ фойдаланиш учун Prava Online Desktop ёки Мобил версиясини юклаб олинг.",
+      "badge": "3D Автодром Симулятори",
+      "title": "Автодромда ҳайдаш симулятори",
+      "lead": "3D Симулятордан тўлиқ, силлиқ ва юқори унумдорликда (60 FPS) фойдаланиш учун Prava Online Desktop (Windows) ёки Мобил версиясини юклаб олинг!",
+      "downloadWindows": "Windows учун юклаб олиш (.exe)",
+      "allDownloads": "Барча версиялар",
+      "choosePlatform": "Қурилмангизни танланг",
+      "recommended": "Тавсия этилади",
+      "downloadExe": "Ўрнатиш (.exe)",
+      "mobileApp": "Мобил илова",
+      "appleDevice": "iPhone & iPad",
+      "whyDesktop": "Нега алоҳида дастурда фойдаланиш тавсия этилади?",
+      "feature1Title": "Тўлиқ GPU тезланиши",
+      "feature1Desc": "Браузер чекловларисиз тўлиқ видео карта кучидан фойдаланади ва силлиқ 60 FPS беради.",
+      "feature2Title": "Рул ва Геймпад",
+      "feature2Desc": "Logitech, Thrustmaster ва геймпадларни улаб, ҳақиқий машинадагидек ҳис этинг.",
+      "feature3Title": "Офлайн ишлаш",
+      "feature3Desc": "Бир марта юклаб олинг ва интернетсиз ҳам барча автодром машқларини бажаринг.",
+      "feature4Title": "100% Имтиҳон Стандартлари",
+      "feature4Desc": "ЙҲХХ амалий имтиҳон автодромининг эстакада, параллел парковка ва гараж машқлари нусхаси.",
+      "featDesktop1": "Тўлиқ 3D Автодром ва реал автомобил физикаси",
+      "featDesktop2": "Рул чамбараги, геймпад ва клавиатура билан бошқариш",
+      "featDesktop3": "Интернет талаб қилмайдиган 100% офлайн режим",
+      "featDesktop4": "Ultra HD графика ва 0ms минимал кечикиш",
+      "featMobile1": "Исталган жойда смартфонда машқ қилиш",
+      "featMobile2": "Сенсорли виртуал рул ва бошқарув педаллари",
+      "featMobile3": "Google Play орқали автоматик янгиланиш",
+      "featMobile4": "Тўғридан-тўғри APK орқали тезкор ўрнатиш",
+      "featApple1": "Metal график тезлатгич билан силлиқ кадрлар",
+      "featApple2": "iPhone ва iPad экранларига мослаштирилган интерфейс",
+      "featApple3": "Apple ID орқали натижаларни синхронлаштириш",
+      "featApple4": "App Store расмий дўкони орқали ҳимояланган",
+      "loadingAutodrome": "Автодром юкланмоқда...",
+      "platformWindows": "Windows Desktop",
+      "platformWindowsSpecs": "Windows 10 / 11 (64-bit) • 60 FPS Двигатель",
+      "platformAndroid": "Android Илова",
+      "platformAndroidSpecs": "Android 8.0+ • Google Play & APK",
+      "platformIos": "iOS / iPadOS",
+      "platformIosSpecs": "iOS 15.0+ • iPhone ва iPad"
+    }
   },
   "practicalExam": {
     "controlsTitle": "Бошқарув тугмалари (Клавиатура):",
@@ -3498,7 +3575,8 @@
     "questionNumber": "{{n}}-савол",
     "imageAlt": "Савол расми",
     "bookmarkAdd": "Сақлаш",
-    "bookmarkRemove": "Сақланганлардан ўчириш"
+    "bookmarkRemove": "Сақланганлардан ўчириш",
+    "resultSeoDesc": "Хатогача марафон натижаси"
   },
   "guestHome": {
     "seoTitle": "Prava Online — ҳайдовчилик имтиҳонига тайёргарлик",
@@ -3530,7 +3608,8 @@
   },
   "quiz": {
     "onlyMistakes": "Фақат хатолар",
-    "explanationTitle": "Қоида шарҳи:"
+    "explanationTitle": "Қоида шарҳи:",
+    "questionNumber": "{{num}}-савол"
   },
   "trafficFines": {
     "title": "Йўл ҳаракати жарималари",
@@ -3853,7 +3932,11 @@
     "exitConfirmDescSaved": "Чиқсангиз, жавобларингиз сақланади ва кейинроқ давом эттиришингиз мумкин. Якунласангиз, натижа ҳисобланади.",
     "exitConfirmDescUnsaved": "Чиқсангиз, бу уриниш сақланмайди. Якунласангиз, натижа ҳисобланади.",
     "exitSaved": "Чиқиш (прогресс сақланади)",
-    "exitUnsaved": "Чиқиш (натижа сақланмайди)"
+    "exitUnsaved": "Чиқиш (натижа сақланмайди)",
+    "bookmarkHint": "Саволни сақлаш / белгилаш (B)",
+    "navigation": "Саволлар навигацияси",
+    "noExplanation": "Ушбу савол учун қўшимча изоҳ киритилмаган.",
+    "startExam": "Имтиҳон топшириш"
   },
   "guest": {
     "loginCta": "Тизимга кириш",
@@ -3866,7 +3949,9 @@
     "savedTitle": "Сақланган саволлар ҳисобингизда туради",
     "savedDesc": "Муҳим саволларни белгилаб, кейинроқ такрорлаш учун тизимга киринг.",
     "statsTitle": "Статистика ҳисобингиз бўйича юритилади",
-    "statsDesc": "Тайёргарлик даражангиз ва натижаларингиз таҳлилини кўриш учун тизимга киринг."
+    "statsDesc": "Тайёргарлик даражангиз ва натижаларингиз таҳлилини кўриш учун тизимга киринг.",
+    "leaderboardTitle": "Рейтингни кўриш",
+    "leaderboardDesc": "Бошқа ўқувчилар билан рақобатлашиш ва ўз ўрнингизни билиш учун тизимга киринг."
   },
   "fines": {
     "navLabel": "Йўл ҳаракати жарималари",
