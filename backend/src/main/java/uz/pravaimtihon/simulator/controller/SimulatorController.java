@@ -34,6 +34,14 @@ public class SimulatorController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/sessions")
+    @Operation(summary = "Get simulator sessions list", description = "Admin view of recent simulation sessions")
+    public ResponseEntity<ApiResponse<List<SimulatorSessionResponse>>> getSessions(
+            @RequestParam(defaultValue = "50") int limit) {
+        List<SimulatorSessionResponse> sessions = simulatorService.getAllSessions(limit);
+        return ResponseEntity.ok(ApiResponse.success(sessions));
+    }
+
     @GetMapping("/sessions/{id}")
     @Operation(summary = "Get simulator session", description = "Retrieves simulation session details and result")
     public ResponseEntity<ApiResponse<SimulatorSessionResponse>> getSession(

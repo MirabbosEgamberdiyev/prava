@@ -378,4 +378,15 @@ public class QuestionController {
                 .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
                 .body(csv);
     }
+
+    @PostMapping(value = "/import", consumes = {"multipart/form-data"})
+    @Operation(summary = "Import questions from CSV or JSON file", description = "Multi-language: UZL, UZC, EN, RU")
+    public ResponseEntity<ApiResponse<BulkQuestionResponse>> importQuestions(
+            @RequestParam("file") MultipartFile file,
+            @Parameter(description = "uzl|uzc|en|ru") @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        BulkQuestionResponse response = questionService.importQuestionsFile(file, language);
+        return ResponseEntity.ok(ApiResponse.success(
+                messageService.getMessage("success.question.bulk.import", new Object[]{response.getSuccess(), response.getFailed()}, language),
+                response));
+    }
 }

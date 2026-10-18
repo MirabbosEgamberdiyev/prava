@@ -1678,7 +1678,8 @@
     "timesUnit": "{{formatted}} marta",
     "uniqueUsers": "Unikal foydalanuvchilar",
     "lastDownload": "Oxirgi yuklab olish",
-    "notDownloadedYet": "Hali yuklanmagan"
+    "notDownloadedYet": "Hali yuklanmagan",
+    "manageReleases": "Relizlarni boshqarish"
   },
   "settingsAdmin": {
     "subtitle": "Tizim parametrlari, sayt sozlamalari va shaxsiy profil",
@@ -1796,5 +1797,11 @@
     "networkTitle": "Internet aloqasi yoq",
     "noInternet": "Internet aloqasi yoq. Tarmoqqa ulanishni tekshiring.",
     "somethingWrong": "Kutilmagan xatolik yuz berdi."
+  },
+  "notFound": {
+    "title": "Sahifa topilmadi",
+    "description": "Siz qidirayotgan sahifa mavjud emas, nomi o'zgartirilgan yoki unga kirish uchun ruxsat berilmagan.",
+    "back": "Orqaga qaytish",
+    "home": "Bosh sahifaga o'tish"
   }
 }

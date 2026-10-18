@@ -24,6 +24,7 @@ import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { QuestionList } from "../../features/question";
 import { useTopicOptions } from "../../features/topic/hooks/useTopics";
+import { mutate } from "swr";
 import api from "../../services/api";
 
 const Question_Page = () => {
@@ -90,7 +91,13 @@ const Question_Page = () => {
       });
       closeImport();
       setImportFile(null);
-      window.location.reload();
+      await mutate(
+        (key) =>
+          (typeof key === "string" && key.startsWith("/api/v1/admin/questions")) ||
+          (Array.isArray(key) && typeof key[0] === "string" && key[0].startsWith("/api/v1/admin/questions")),
+        undefined,
+        { revalidate: true }
+      );
     } catch (err: any) {
       notifications.show({
         title: t("common.error"),

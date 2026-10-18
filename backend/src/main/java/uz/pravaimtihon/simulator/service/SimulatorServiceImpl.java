@@ -2,6 +2,9 @@ package uz.pravaimtihon.simulator.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.pravaimtihon.entity.User;
@@ -183,6 +186,16 @@ public class SimulatorServiceImpl implements SimulatorService {
         return vehicleConfigRepository.findAll();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<SimulatorSessionResponse> getAllSessions(int limit) {
+        int pageLimit = (limit <= 0 || limit > 200) ? 50 : limit;
+        Pageable pageable = PageRequest.of(0, pageLimit, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return sessionRepository.findAll(pageable).getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     private SimulatorSessionResponse mapToResponse(SimulatorSession session) {
         List<SimulatorExerciseResultDto> results = session.getExerciseResults() != null
                 ? session.getExerciseResults().stream()
@@ -209,9 +222,15 @@ public class SimulatorServiceImpl implements SimulatorService {
                 .collect(Collectors.toList())
                 : new ArrayList<>();
 
+        String userPhone = null;
+        if (session.getUser() != null) {
+            userPhone = session.getUser().getPhoneNumber();
+        }
+
         return SimulatorSessionResponse.builder()
                 .id(session.getId())
                 .userId(session.getUser() != null ? session.getUser().getId() : null)
+                .userPhone(userPhone)
                 .mode(session.getMode())
                 .status(session.getStatus())
                 .totalPenaltyPoints(session.getTotalPenaltyPoints())

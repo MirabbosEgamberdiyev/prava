@@ -81,7 +81,7 @@ export default function DownloadsPage() {
             variant="default"
             onClick={() => navigate("/applications")}
           >
-            Relizlarni boshqarish
+            {t("downloadsAdmin.manageReleases")}
           </Button>
           <Button
             leftSection={<IconRefresh size={16} />}

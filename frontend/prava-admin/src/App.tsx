@@ -52,6 +52,7 @@ const Fines_Page = lazy(() => import("./page/Curriculum/FinesPage"));
 const Autodrom_Page = lazy(() => import("./page/Curriculum/AutodromPage"));
 const Simulator_Page = lazy(() => import("./page/Simulator"));
 const ExamCenters_Page = lazy(() => import("./page/Curriculum/ExamCentersPage"));
+const NotFound_Page = lazy(() => import("./page/NotFound"));
 
 function App() {
   return (
@@ -418,8 +419,13 @@ function App() {
                     </RoleGuard>
                   }
                 />
+
+                {/* 404 Ichki sahifalar uchun */}
+                <Route path="*" element={<NotFound_Page />} />
               </Route>
             </Route>
+            {/* 404 Tashqi / Noma'lum marshrutlar uchun */}
+            <Route path="*" element={<NotFound_Page />} />
           </Routes>
         </AuthProvider>
       </TypographyProvider>

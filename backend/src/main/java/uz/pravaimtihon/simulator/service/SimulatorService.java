@@ -23,4 +23,6 @@ public interface SimulatorService {
     List<SimulatorExerciseConfig> getActiveExercises();
 
     List<SimulatorVehicleConfig> getVehicleConfigs();
+
+    List<SimulatorSessionResponse> getAllSessions(int limit);
 }

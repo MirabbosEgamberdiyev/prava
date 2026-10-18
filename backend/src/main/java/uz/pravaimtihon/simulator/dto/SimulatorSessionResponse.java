@@ -18,6 +18,7 @@ import java.util.List;
 public class SimulatorSessionResponse {
     private Long id;
     private Long userId;
+    private String userPhone;
     private SimulatorMode mode;
     private SimulatorSessionStatus status;
     private Integer totalPenaltyPoints;

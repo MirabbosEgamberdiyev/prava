@@ -143,8 +143,8 @@ export default function NewsPage() {
         isPublished: !article.isPublished,
       });
       notifications.show({
-        title: "Yangilandi",
-        message: !article.isPublished ? "Yangilik nashr qilindi" : "Yangilik nashrdan olindi",
+        title: t("common.success"),
+        message: t("newsAdmin.notifications.publishSuccess"),
         color: "blue",
       });
       mutate();

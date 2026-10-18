@@ -70,15 +70,15 @@ interface AdminVehicleConfig {
 }
 
 interface AdminSimulatorSession {
-  id: string;
-  userPhone: string;
+  id: string | number;
+  userPhone?: string;
   mode: string;
-  vehicleModel: string;
+  vehicleModel?: string;
   totalPenaltyPoints: number;
   timeSpentSeconds: number;
   isPassed: boolean;
   status: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 const DEFAULT_EXERCISES: AdminExerciseConfig[] = [
@@ -133,15 +133,25 @@ export default function SimulatorAdminPage() {
       // Fetch live sessions from backend
       const res = await api.get("/api/v1/simulator/sessions");
       if (res?.data?.data && Array.isArray(res.data.data)) {
-        setSessions(res.data.data);
+        setSessions(
+          res.data.data.map((s: any) => ({
+            id: s.id,
+            userPhone: s.userPhone || (s.userId ? `User #${s.userId}` : "N/A"),
+            mode: s.mode || "EXAM",
+            vehicleModel: s.vehicleModel || "Chevrolet Cobalt",
+            totalPenaltyPoints: s.totalPenaltyPoints || 0,
+            timeSpentSeconds: s.timeSpentSeconds || 0,
+            isPassed: !!s.isPassed,
+            status: s.status || (s.isPassed ? "PASSED" : "FAILED"),
+            createdAt: s.startedAt || s.createdAt || new Date().toISOString(),
+          }))
+        );
+      } else {
+        setSessions([]);
       }
     } catch {
-      // Mock / local fallback sessions for admin display
-      setSessions([
-        { id: "sim_9481a_1", userPhone: "+998 90 123 45 67", mode: "EXAM", vehicleModel: "Chevrolet Cobalt", totalPenaltyPoints: 15, timeSpentSeconds: 420, isPassed: true, status: "COMPLETED", createdAt: new Date(Date.now() - 3600000).toISOString() },
-        { id: "sim_8273b_2", userPhone: "+998 93 987 65 43", mode: "EXAM", vehicleModel: "Chevrolet Gentra", totalPenaltyPoints: 115, timeSpentSeconds: 280, isPassed: false, status: "FAILED", createdAt: new Date(Date.now() - 7200000).toISOString() },
-        { id: "sim_6190c_3", userPhone: "+998 97 555 11 22", mode: "TRAINING", vehicleModel: "Chevrolet Cobalt", totalPenaltyPoints: 0, timeSpentSeconds: 610, isPassed: true, status: "COMPLETED", createdAt: new Date(Date.now() - 14400000).toISOString() },
-      ]);
+      // Clean fallback: clear sessions, no fake mock data
+      setSessions([]);
     } finally {
       setLoading(false);
     }
@@ -208,7 +218,7 @@ export default function SimulatorAdminPage() {
 
       {/* KPI Cards */}
       <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-        <Card p="md" radius="md" withBorder bg="white">
+        <Card p="md" radius="md" withBorder>
           <Group justify="space-between" mb="xs">
             <Text size="xs" c="dimmed" fw={700} tt="uppercase">
               {t("simulatorAdmin.kpiExercises", "Amaliy mashqlar")}
@@ -225,7 +235,7 @@ export default function SimulatorAdminPage() {
           </Text>
         </Card>
 
-        <Card p="md" radius="md" withBorder bg="white">
+        <Card p="md" radius="md" withBorder>
           <Group justify="space-between" mb="xs">
             <Text size="xs" c="dimmed" fw={700} tt="uppercase">
               {t("simulatorAdmin.kpiRules", "Jarima qoidalari")}
@@ -242,7 +252,7 @@ export default function SimulatorAdminPage() {
           </Text>
         </Card>
 
-        <Card p="md" radius="md" withBorder bg="white">
+        <Card p="md" radius="md" withBorder>
           <Group justify="space-between" mb="xs">
             <Text size="xs" c="dimmed" fw={700} tt="uppercase">
               {t("simulatorAdmin.kpiVehicles", "Avtomobil modellari")}
@@ -259,7 +269,7 @@ export default function SimulatorAdminPage() {
           </Text>
         </Card>
 
-        <Card p="md" radius="md" withBorder bg="white">
+        <Card p="md" radius="md" withBorder>
           <Group justify="space-between" mb="xs">
             <Text size="xs" c="dimmed" fw={700} tt="uppercase">
               {t("simulatorAdmin.kpiExams", "Jami imtihonlar")}
@@ -296,7 +306,7 @@ export default function SimulatorAdminPage() {
 
         {/* Tab 1: Exercises */}
         <Tabs.Panel value="exercises" pt="md">
-          <Paper p="md" radius="md" withBorder bg="white">
+          <Paper p="md" radius="md" withBorder>
             <Table highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
@@ -361,7 +371,7 @@ export default function SimulatorAdminPage() {
 
         {/* Tab 2: Penalty Rules */}
         <Tabs.Panel value="rules" pt="md">
-          <Paper p="md" radius="md" withBorder bg="white">
+          <Paper p="md" radius="md" withBorder>
             <Table highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
@@ -425,7 +435,7 @@ export default function SimulatorAdminPage() {
 
         {/* Tab 3: Vehicle Dynamics */}
         <Tabs.Panel value="vehicles" pt="md">
-          <Paper p="md" radius="md" withBorder bg="white">
+          <Paper p="md" radius="md" withBorder>
             <Table highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
@@ -467,7 +477,7 @@ export default function SimulatorAdminPage() {
 
         {/* Tab 4: Sessions */}
         <Tabs.Panel value="sessions" pt="md">
-          <Paper p="md" radius="md" withBorder bg="white">
+          <Paper p="md" radius="md" withBorder>
             {sessions.length === 0 ? (
               <Box py="xl" ta="center">
                 <Text c="dimmed">{t("simulatorAdmin.noActiveSessions")}</Text>

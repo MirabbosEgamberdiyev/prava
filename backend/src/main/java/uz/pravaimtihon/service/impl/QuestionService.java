@@ -29,9 +29,17 @@ import uz.pravaimtihon.repository.TopicRepository;
 import uz.pravaimtihon.security.SecurityUtils;
 import uz.pravaimtihon.service.MessageService;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,6 +55,7 @@ public class QuestionService {
     private final TopicService topicService;
     private final MessageService messageService;
     private final FileStorageManager fileStorageManager;
+    private final ObjectMapper objectMapper;
 
 
     // AUDIT: "activeQuestions" qo'shildi — u @Cacheable bilan to'ldirilardi,
@@ -786,7 +795,7 @@ public class QuestionService {
 
         StringBuilder sb = new StringBuilder();
         sb.append("\uFEFF"); // UTF-8 BOM
-        sb.append("ID,Topic ID,Text (Lotin),Text (Kirill),Text (Rus),Correct Answer Index,Explanation,Image URL,Is Active\n");
+        sb.append("ID,Topic ID,Text (Lotin),Text (Kirill),Text (Rus),Text (En),Difficulty,Correct Answer Index,Explanation,Image URL,Is Active,Option 1,Option 2,Option 3,Option 4\n");
 
         for (Question q : questions) {
             sb.append(q.getId()).append(",");
@@ -794,13 +803,233 @@ public class QuestionService {
             sb.append(escapeCsv(q.getTextUzl())).append(",");
             sb.append(escapeCsv(q.getTextUzc())).append(",");
             sb.append(escapeCsv(q.getTextRu())).append(",");
+            sb.append(escapeCsv(q.getTextEn())).append(",");
+            sb.append(q.getDifficulty() != null ? q.getDifficulty().name() : "MEDIUM").append(",");
             sb.append(q.getCorrectAnswerIndex() != null ? q.getCorrectAnswerIndex() : 0).append(",");
             sb.append(escapeCsv(q.getExplanationUzl())).append(",");
             sb.append(escapeCsv(q.getImageUrl())).append(",");
-            sb.append(Boolean.TRUE.equals(q.getIsActive()) ? "Active" : "Inactive").append("\n");
+            sb.append(Boolean.TRUE.equals(q.getIsActive()) ? "Active" : "Inactive").append(",");
+
+            List<QuestionOption> options = optionRepository.findByQuestionIdOrderByOptionIndex(q.getId());
+            sb.append(options.size() > 0 ? escapeCsv(options.get(0).getTextUzl()) : "").append(",");
+            sb.append(options.size() > 1 ? escapeCsv(options.get(1).getTextUzl()) : "").append(",");
+            sb.append(options.size() > 2 ? escapeCsv(options.get(2).getTextUzl()) : "").append(",");
+            sb.append(options.size() > 3 ? escapeCsv(options.get(3).getTextUzl()) : "").append("\n");
         }
 
-        return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    @CacheEvict(value = {"questions", "questionsByTopic", "activeQuestions", "packages", "topics", "topicsSimple", "topic_stats", "dashboard_stats"}, allEntries = true)
+    public BulkQuestionResponse importQuestionsFile(MultipartFile file, AcceptLanguage language) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("validation.file.required");
+        }
+
+        String filename = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
+        log.info("Importing questions from file: {}, size: {} bytes", filename, file.getSize());
+
+        try {
+            String content = new String(file.getBytes(), StandardCharsets.UTF_8);
+            if (content.startsWith("\uFEFF")) {
+                content = content.substring(1);
+            }
+            content = content.trim();
+
+            if (filename.endsWith(".json") || content.startsWith("[") || content.startsWith("{")) {
+                return parseAndImportJson(content, language);
+            } else {
+                return parseAndImportCsv(content, language);
+            }
+        } catch (BusinessException be) {
+            throw be;
+        } catch (Exception e) {
+            log.error("Failed to parse and import question file: {}", filename, e);
+            throw new BusinessException("error.question.bulk.import.failed");
+        }
+    }
+
+    private BulkQuestionResponse parseAndImportJson(String content, AcceptLanguage language) throws Exception {
+        JsonNode root = objectMapper.readTree(content);
+        List<QuestionRequest> requests = new ArrayList<>();
+
+        if (root.isArray()) {
+            for (JsonNode node : root) {
+                QuestionRequest qr = objectMapper.treeToValue(node, QuestionRequest.class);
+                if (qr != null) requests.add(qr);
+            }
+        } else if (root.isObject()) {
+            if (root.has("questions") && root.get("questions").isArray()) {
+                for (JsonNode node : root.get("questions")) {
+                    QuestionRequest qr = objectMapper.treeToValue(node, QuestionRequest.class);
+                    if (qr != null) requests.add(qr);
+                }
+            } else {
+                QuestionRequest qr = objectMapper.treeToValue(root, QuestionRequest.class);
+                if (qr != null) requests.add(qr);
+            }
+        }
+
+        return bulkImportQuestions(new BulkQuestionRequest(requests), language);
+    }
+
+    private BulkQuestionResponse parseAndImportCsv(String content, AcceptLanguage language) {
+        List<QuestionRequest> requests = new ArrayList<>();
+        List<String[]> lines = parseCsvLines(content);
+
+        if (lines.isEmpty()) {
+            return new BulkQuestionResponse(0, 0, 0, new ArrayList<>(), new ArrayList<>());
+        }
+
+        String[] header = lines.get(0);
+        Map<String, Integer> colMap = new HashMap<>();
+        for (int i = 0; i < header.length; i++) {
+            colMap.put(header[i].trim().toLowerCase(), i);
+        }
+
+        for (int rowIdx = 1; rowIdx < lines.size(); rowIdx++) {
+            String[] row = lines.get(rowIdx);
+            if (row.length == 0 || (row.length == 1 && row[0].isBlank())) continue;
+
+            String textUzl = getColValue(row, colMap, "text (lotin)", "text_uzl", "text", "savol");
+            String textUzc = getColValue(row, colMap, "text (kirill)", "text_uzc");
+            String textRu = getColValue(row, colMap, "text (rus)", "text_ru");
+            String textEn = getColValue(row, colMap, "text (en)", "text_en");
+            String explanationUzl = getColValue(row, colMap, "explanation", "explanation (lotin)", "explanation_uzl");
+            String imageUrl = getColValue(row, colMap, "image url", "image_url");
+            String diffStr = getColValue(row, colMap, "difficulty");
+            String correctStr = getColValue(row, colMap, "correct answer index", "correct_answer_index", "correct");
+            String topicIdStr = getColValue(row, colMap, "topic id", "topic_id", "topic");
+
+            if ((textUzl == null || textUzl.isBlank()) && (textRu == null || textRu.isBlank())) {
+                continue;
+            }
+
+            Long topicId = null;
+            if (topicIdStr != null && !topicIdStr.isBlank()) {
+                try {
+                    topicId = Long.parseLong(topicIdStr.trim());
+                } catch (NumberFormatException ignored) {}
+            }
+
+            QuestionDifficulty difficulty = QuestionDifficulty.MEDIUM;
+            if (diffStr != null && !diffStr.isBlank()) {
+                try {
+                    difficulty = QuestionDifficulty.valueOf(diffStr.trim().toUpperCase());
+                } catch (Exception ignored) {}
+            }
+
+            int correctIndex = 0;
+            if (correctStr != null && !correctStr.isBlank()) {
+                try {
+                    correctIndex = Integer.parseInt(correctStr.trim());
+                } catch (NumberFormatException ignored) {}
+            }
+
+            List<QuestionOptionRequest> options = new ArrayList<>();
+            String opt1 = getColValue(row, colMap, "option 1", "option 1 (uzl)", "option_1", "variant 1");
+            String opt2 = getColValue(row, colMap, "option 2", "option 2 (uzl)", "option_2", "variant 2");
+            String opt3 = getColValue(row, colMap, "option 3", "option 3 (uzl)", "option_3", "variant 3");
+            String opt4 = getColValue(row, colMap, "option 4", "option 4 (uzl)", "option_4", "variant 4");
+
+            if (opt1 != null && !opt1.isBlank()) {
+                options.add(QuestionOptionRequest.builder().optionIndex(0).textUzl(opt1).build());
+            }
+            if (opt2 != null && !opt2.isBlank()) {
+                options.add(QuestionOptionRequest.builder().optionIndex(1).textUzl(opt2).build());
+            }
+            if (opt3 != null && !opt3.isBlank()) {
+                options.add(QuestionOptionRequest.builder().optionIndex(2).textUzl(opt3).build());
+            }
+            if (opt4 != null && !opt4.isBlank()) {
+                options.add(QuestionOptionRequest.builder().optionIndex(3).textUzl(opt4).build());
+            }
+
+            if (options.size() < 2) {
+                options.clear();
+                options.add(QuestionOptionRequest.builder().optionIndex(0).textUzl("To'g'ri javob").build());
+                options.add(QuestionOptionRequest.builder().optionIndex(1).textUzl("Noto'g'ri javob").build());
+            }
+
+            if (correctIndex < 0 || correctIndex >= options.size()) {
+                correctIndex = 0;
+            }
+
+            QuestionRequest qr = QuestionRequest.builder()
+                    .textUzl(textUzl != null && !textUzl.isBlank() ? textUzl : (textRu != null ? textRu : "Savol"))
+                    .textUzc(textUzc)
+                    .textRu(textRu)
+                    .textEn(textEn)
+                    .topicId(topicId)
+                    .difficulty(difficulty)
+                    .correctAnswerIndex(correctIndex)
+                    .explanationUzl(explanationUzl)
+                    .imageUrl(imageUrl)
+                    .options(options)
+                    .isActive(true)
+                    .build();
+
+            requests.add(qr);
+        }
+
+        return bulkImportQuestions(new BulkQuestionRequest(requests), language);
+    }
+
+    private List<String[]> parseCsvLines(String text) {
+        List<String[]> lines = new ArrayList<>();
+        List<String> currentLine = new ArrayList<>();
+        StringBuilder currentField = new StringBuilder();
+        boolean inQuotes = false;
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+
+            if (inQuotes) {
+                if (c == '"') {
+                    if (i + 1 < text.length() && text.charAt(i + 1) == '"') {
+                        currentField.append('"');
+                        i++;
+                    } else {
+                        inQuotes = false;
+                    }
+                } else {
+                    currentField.append(c);
+                }
+            } else {
+                if (c == '"') {
+                    inQuotes = true;
+                } else if (c == ',') {
+                    currentLine.add(currentField.toString().trim());
+                    currentField.setLength(0);
+                } else if (c == '\r') {
+                    // Ignore CR
+                } else if (c == '\n') {
+                    currentLine.add(currentField.toString().trim());
+                    currentField.setLength(0);
+                    lines.add(currentLine.toArray(new String[0]));
+                    currentLine = new ArrayList<>();
+                } else {
+                    currentField.append(c);
+                }
+            }
+        }
+
+        if (currentField.length() > 0 || !currentLine.isEmpty()) {
+            currentLine.add(currentField.toString().trim());
+            lines.add(currentLine.toArray(new String[0]));
+        }
+
+        return lines;
+    }
+
+    private String getColValue(String[] row, Map<String, Integer> colMap, String... colNames) {
+        for (String name : colNames) {
+            Integer idx = colMap.get(name.toLowerCase());
+            if (idx != null && idx < row.length) {
+                return row[idx];
+            }
+        }
+        return null;
     }
 
     private String escapeCsv(String val) {

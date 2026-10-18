@@ -1678,7 +1678,8 @@
     "timesUnit": "{{formatted}} times",
     "uniqueUsers": "Unique users",
     "lastDownload": "Last download",
-    "notDownloadedYet": "Not downloaded yet"
+    "notDownloadedYet": "Not downloaded yet",
+    "manageReleases": "Manage Releases"
   },
   "settingsAdmin": {
     "subtitle": "System parameters, site configuration, and personal profile",
@@ -1796,5 +1797,11 @@
     "networkTitle": "No internet connection",
     "noInternet": "No internet connection. Please check your network.",
     "somethingWrong": "An unexpected error occurred."
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you are looking for does not exist, has been removed, or you do not have permission to access it.",
+    "back": "Go Back",
+    "home": "Go to Home"
   }
 }
