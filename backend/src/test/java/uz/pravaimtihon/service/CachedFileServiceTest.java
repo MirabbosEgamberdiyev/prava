@@ -3,12 +3,6 @@ package uz.pravaimtihon.service;
 import org.junit.jupiter.api.Test;
 import uz.pravaimtihon.service.impl.CachedFileService;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class CachedFileServiceTest {
@@ -16,28 +10,13 @@ class CachedFileServiceTest {
     private final CachedFileService cachedFileService = new CachedFileService("uploads");
 
     @Test
-    void watermarksJpegImageCorrectly() throws Exception {
-        // Create simple 200x200 JPEG in memory
-        BufferedImage img = new BufferedImage(200, 200, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = img.createGraphics();
-        g.setColor(Color.BLUE);
-        g.fillRect(0, 0, 200, 200);
-        g.dispose();
+    void servesRawImageBytesWithoutWatermark() throws Exception {
+        byte[] dummyData = "clean-raw-image-bytes".getBytes();
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(img, "jpeg", out);
-        byte[] rawJpeg = out.toByteArray();
+        byte[] result = cachedFileService.applyWatermarkIfNeeded("questions", "sample.jpg", dummyData);
 
-        byte[] watermarked = cachedFileService.applyWatermarkIfNeeded("questions", "sample.jpg", rawJpeg);
-
-        assertNotNull(watermarked);
-        assertTrue(watermarked.length > 0);
-
-        // Verify readable as image
-        BufferedImage result = ImageIO.read(new ByteArrayInputStream(watermarked));
         assertNotNull(result);
-        assertEquals(200, result.getWidth());
-        assertEquals(200, result.getHeight());
+        assertArrayEquals(dummyData, result);
     }
 
     @Test

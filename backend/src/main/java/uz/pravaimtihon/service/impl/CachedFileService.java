@@ -6,11 +6,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import uz.pravaimtihon.exception.FileStorageException;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,8 +59,7 @@ public class CachedFileService {
             }
 
             byte[] fileData = Files.readAllBytes(filePath);
-            fileData = applyWatermarkIfNeeded(folder, filename, fileData);
-            log.debug("✅ File loaded and watermarked (will be cached): {}/{}", folder, filename);
+            log.debug("✅ File loaded directly from storage (clean, no watermark): {}/{}", folder, filename);
 
             return fileData;
 
@@ -76,91 +70,10 @@ public class CachedFileService {
     }
 
     /**
-     * Server tomonda savol rasmlari ustiga yarim shaffof watermark muhrlaydi.
-     * "Prava Online • pravaonline.uz"
+     * Savol rasmlari ustiga hech qanday watermark qo'yilmaydi (toza asl nusxa xizmat qiladi).
      */
     public byte[] applyWatermarkIfNeeded(String folder, String filename, byte[] rawBytes) {
-        if (!"questions".equals(folder) && !"general".equals(folder)) {
-            return rawBytes;
-        }
-
-        String lower = filename.toLowerCase();
-        if (!lower.endsWith(".jpg") && !lower.endsWith(".jpeg") && !lower.endsWith(".png")) {
-            return rawBytes;
-        }
-
-        try {
-            ByteArrayInputStream in = new ByteArrayInputStream(rawBytes);
-            BufferedImage original = ImageIO.read(in);
-            if (original == null) {
-                return rawBytes;
-            }
-
-            int width = original.getWidth();
-            int height = original.getHeight();
-
-            boolean isPng = lower.endsWith(".png");
-            BufferedImage watermarked = new BufferedImage(
-                    width, height, isPng ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB
-            );
-
-            Graphics2D g2d = watermarked.createGraphics();
-            g2d.drawImage(original, 0, 0, null);
-
-            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            String watermarkText = "Prava Online \u2022 pravaonline.uz";
-
-            int fontSize = Math.max(14, Math.min(width, height) / 22);
-            Font font = new Font(Font.SANS_SERIF, Font.BOLD, fontSize);
-            g2d.setFont(font);
-
-            FontMetrics fm = g2d.getFontMetrics();
-            int textWidth = fm.stringWidth(watermarkText);
-            int textHeight = fm.getHeight();
-
-            // 1. Semi-transparent diagonal watermarks in grid pattern
-            Graphics2D rotG2d = (Graphics2D) g2d.create();
-            rotG2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.18f));
-            rotG2d.rotate(Math.toRadians(-25), width / 2.0, height / 2.0);
-
-            int stepX = textWidth + 80;
-            int stepY = textHeight + 90;
-            int diag = (int) Math.sqrt(width * width + height * height);
-
-            for (int x = -diag; x < diag * 2; x += stepX) {
-                for (int y = -diag; y < diag * 2; y += stepY) {
-                    rotG2d.setColor(Color.BLACK);
-                    rotG2d.drawString(watermarkText, x + 1, y + 1);
-                    rotG2d.setColor(Color.WHITE);
-                    rotG2d.drawString(watermarkText, x, y);
-                }
-            }
-            rotG2d.dispose();
-
-            // 2. Clear bottom-right badge watermark
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.45f));
-            int badgeX = width - textWidth - 16;
-            int badgeY = height - 14;
-            if (badgeX > 10 && badgeY > 20) {
-                g2d.setColor(new Color(0, 0, 0, 160));
-                g2d.drawString(watermarkText, badgeX + 1, badgeY + 1);
-                g2d.setColor(new Color(255, 255, 255, 230));
-                g2d.drawString(watermarkText, badgeX, badgeY);
-            }
-
-            g2d.dispose();
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            String formatName = isPng ? "png" : "jpeg";
-            ImageIO.write(watermarked, formatName, out);
-            return out.toByteArray();
-
-        } catch (Exception e) {
-            log.warn("Watermark failed for {}/{}, serving original: {}", folder, filename, e.getMessage());
-            return rawBytes;
-        }
+        return rawBytes;
     }
 
     /**

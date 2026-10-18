@@ -104,21 +104,13 @@ export function ImagePlaceholder({
         <>
           <Image
             src="/logo.svg"
-            alt="Prava Online"
-            w={64}
-            h={64}
+            alt=""
+            w={48}
+            h={48}
             fit="contain"
             loading="lazy"
-            style={{ opacity: isDark ? 0.7 : 0.5 }}
+            style={{ opacity: isDark ? 0.35 : 0.25 }}
           />
-          <Text
-            size="lg"
-            fw={700}
-            c={isDark ? "dark.1" : "gray.5"}
-            style={{ letterSpacing: 1, userSelect: "none" }}
-          >
-            pravaonline.uz
-          </Text>
         </>
       )}
     </Box>
