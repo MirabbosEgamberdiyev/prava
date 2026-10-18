@@ -18,6 +18,8 @@ import { countResults } from "./logic";
 import { destroyCurrentWindow, registerExamCloseGuard } from "./windowCloseGuard";
 import { acquireExamFocusMode } from "./focusMode";
 import { clearExamStatus, setExamStatus } from "../../state/statusBarStore";
+import { prioritizeQuestionImages } from "../../services/offlineMediaManagerPreload";
+import { preloadQuestionImage } from "../../utils/imageUtils";
 import type { ExamDesktopViewProps } from "./ExamDesktopView";
 import "../../styles/real-exam.css";
 
@@ -153,6 +155,21 @@ export const RealExamView = memo(function RealExamView(props: ExamDesktopViewPro
       maxMistakes,
     });
   }, [mode, label, current, total, deadline, wrong, maxMistakes, q]);
+
+  // ── Preload all exam images and prioritize current + upcoming questions ──
+  useEffect(() => {
+    if (!questions || questions.length === 0) return;
+    const paths = questions.map((x) => x.image_path).filter(Boolean) as string[];
+    prioritizeQuestionImages(paths);
+    paths.forEach((p) => preloadQuestionImage(p));
+  }, [questions]);
+
+  useEffect(() => {
+    if (total === 0) return;
+    const upcoming = questions.slice(current, current + 5).map((x) => x.image_path);
+    prioritizeQuestionImages(upcoming);
+    upcoming.forEach((p) => preloadQuestionImage(p));
+  }, [current, questions, total]);
 
   // ── Digital Timer (0:MM:SS) ──
   // If timed: countdown. If untimed (marathon/topics): stopwatch countup.

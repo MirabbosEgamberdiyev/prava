@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Box, Image, Skeleton, Text, useComputedColorScheme } from "@mantine/core";
+import { imageMemoryCache } from "../../utils/imageUtils";
 
 interface ImagePlaceholderProps {
   src?: string | null;
@@ -26,13 +27,18 @@ export function ImagePlaceholder({
   });
   const isDark = colorScheme === "dark";
 
+  const isPreloaded = Boolean(src && imageMemoryCache.has(src));
   const [imageError, setImageError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(isPreloaded);
 
-  // Savol o'zgarganda holatlarni tozalash
+  // Savol o'zgarganda holatlarni tozalash (agar rasm allaqachon keshda bo'lsa, birinchi freymdayoq darhol ko'rsatadi)
   useEffect(() => {
     setImageError(false);
-    setImageLoaded(false);
+    if (src && imageMemoryCache.has(src)) {
+      setImageLoaded(true);
+    } else {
+      setImageLoaded(false);
+    }
   }, [src]);
 
   const hasImage = !!src && !imageError;
@@ -42,6 +48,8 @@ export function ImagePlaceholder({
     borderRadius: `var(--mantine-radius-${radius})`,
     overflow: "hidden",
     aspectRatio: "3 / 2",
+    width: "100%",
+    contain: "layout paint",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -59,7 +67,7 @@ export function ImagePlaceholder({
     <Box onClick={hasImage ? onClick : undefined} style={containerStyle}>
       {hasImage ? (
         <>
-          {/* Skeleton — rasm yuklanguncha */}
+          {/* Skeleton — rasm yuklanguncha (layout o'lchami o'zgarmaydi) */}
           {!imageLoaded && (
             <Skeleton
               style={{
@@ -68,21 +76,27 @@ export function ImagePlaceholder({
                 width: "100%",
                 height: "100%",
                 borderRadius: 0,
+                zIndex: 1,
               }}
             />
           )}
           <Image
+            key={src || "none"}
             src={src}
             alt=""
             fit="contain"
             h="100%"
             w="100%"
-            loading="lazy"
-            onLoad={() => setImageLoaded(true)}
+            loading="eager"
+            decoding="async"
+            onLoad={() => {
+              if (src) imageMemoryCache.add(src);
+              setImageLoaded(true);
+            }}
             onError={() => setImageError(true)}
             style={{
               opacity: imageLoaded ? 1 : 0,
-              transition: "opacity 0.25s ease",
+              transition: "opacity 0.15s ease",
             }}
           />
         </>

@@ -14,6 +14,7 @@ import i18n from "i18next";
 import { durationMinutesFor, getExamRules, passPercentFor } from "./examRules";
 import { errorMessage } from "./safeError";
 import { ENV } from "../config/env";
+import { isTauriRuntime } from "../auth/runtime";
 
 /** Localized progress text; falls back to the Uzbek default before i18n is initialised (tests). */
 function msg(key: string, fallback: string, options?: Record<string, unknown>): string {
@@ -175,6 +176,11 @@ class OfflineDatasetManager {
    * Auto-seed bundled dataset if database is empty or incomplete
    */
   public async autoSeedIfEmpty(): Promise<boolean> {
+    // Production Security Hardening: Web brauzerda to'liq savollar bazasini
+    // IndexedDB'ga saqlash qat'iyan man etiladi (scraping va phantom exam oldini olish uchun).
+    if (!isTauriRuntime()) {
+      return false;
+    }
     try {
       const qCount = await questionRepository.getQuestionCount();
       if (qCount >= EXPECTED_QUESTIONS_COUNT) {

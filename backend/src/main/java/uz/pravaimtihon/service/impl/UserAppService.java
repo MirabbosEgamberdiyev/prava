@@ -40,10 +40,10 @@ public class UserAppService {
     // open-in-view=false: lazy options tranzaksiya ichida yuklanishi shart (aks holda LazyInitializationException → 500).
     @Transactional(readOnly = true)
     public List<uz.pravaimtihon.dto.response.exam.QuestionResponse> getQuestionsByTopic(Long topicId) {
-        org.springframework.data.domain.Pageable all =
-                org.springframework.data.domain.PageRequest.of(0, 2000);
+        org.springframework.data.domain.Pageable pageable =
+                org.springframework.data.domain.PageRequest.of(0, 100);
         org.springframework.data.domain.Page<Question> page =
-                questionRepository.findByTopicIdAndDeletedFalseAndIsActiveTrue(topicId, all);
+                questionRepository.findByTopicIdAndDeletedFalseAndIsActiveTrue(topicId, pageable);
         return page.getContent().stream()
                 .map(this::toExamQuestion)
                 .collect(Collectors.toList());
@@ -180,10 +180,6 @@ public class UserAppService {
                 .text(LocalizedText.of(q.getTextUzl(), q.getTextUzc(), q.getTextEn(), q.getTextRu()))
                 .imageUrl(q.getImageUrl())
                 .options(buildOptions(q))
-                .correctOptionIndex(q.getCorrectAnswerIndex())
-                .explanation(LocalizedText.of(
-                        q.getExplanationUzl(), q.getExplanationUzc(),
-                        q.getExplanationEn(), q.getExplanationRu()))
                 .build();
     }
 

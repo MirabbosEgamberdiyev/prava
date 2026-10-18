@@ -37,7 +37,7 @@ import { useLanguage } from "../../hooks/useLanguage";
 import { useAuth } from "../../auth/AuthContext";
 import type { Question, Option, AnswersMap } from "../../types";
 import { ImagePlaceholder } from "../common/ImagePlaceholder";
-import { getImageUrl } from "../../utils/imageUtils";
+import { getImageUrl, preloadQuestionImage } from "../../utils/imageUtils";
 import api from "../../api/api";
 import classes from "./QuizContent.module.css";
 import { resolveExamShortcut } from "../../hooks/useExamShortcuts";
@@ -181,6 +181,25 @@ export function QuizContent({
       setActiveQuiz(0);
     }
   }, [parentAnswers]);
+
+  // Intelligent prefetching: savollar almashganda rasmlar darhol (<100ms) chiqishi uchun
+  // joriy va keyingi 3 ta savolning rasmlarini brauzer xotirasiga oldindan yuklab qo'yamiz.
+  useEffect(() => {
+    if (!questions || questions.length === 0) return;
+    const upcoming = questions.slice(activeQuiz, activeQuiz + 4);
+    upcoming.forEach((q) => {
+      const imgPath = q?.imageUrl || (q as unknown as { image_path?: string })?.image_path;
+      if (imgPath) {
+        preloadQuestionImage(imgPath);
+      } else {
+        const defaultFallback =
+          (q?.id ?? 0) % 2 === 0
+            ? "/api/v1/files/defaults/default_malibu.webp"
+            : "/api/v1/files/defaults/default_tahoe.webp";
+        preloadQuestionImage(defaultFallback);
+      }
+    });
+  }, [activeQuiz, questions]);
 
   // Time-up handling for error limit mode
   useEffect(() => {

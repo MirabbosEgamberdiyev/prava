@@ -19,6 +19,7 @@ import {
 } from "./schema";
 import { GUEST_USER_KEY, getActiveUserId, ownerOf } from "../utils/userScope";
 import { errorMessage } from "../services/safeError";
+import { isTauriRuntime } from "../auth/runtime";
 
 export { SQLITE_INIT_SCRIPTS };
 
@@ -269,12 +270,47 @@ export const dbClient = {
     try {
       await openIndexedDb();
       isInitialized = true;
-      // Background auto-seed if question database is empty
-      import("../services/offlineDatasetManager")
-        .then((m) => m.offlineDatasetManager.autoSeedIfEmpty())
-        .catch(() => {});
+      if (isTauriRuntime()) {
+        // Desktop environment: background auto-seed if question database is empty
+        import("../services/offlineDatasetManager")
+          .then((m) => m.offlineDatasetManager.autoSeedIfEmpty())
+          .catch(() => {});
+      } else {
+        // Web environment (web.pravaonline.uz):
+        // 1. DO NOT seed full question database into browser IndexedDB.
+        // 2. Safe migration: purge stale/leaked questions from local IndexedDB,
+        //    while STRICTLY PRESERVING USER_DATA_STORES (progress, saved questions, history).
+        this.purgeStaleQuestionsStore().catch(() => {});
+      }
     } catch (err) {
       console.warn("Lokal DB initializatsiya xatosi:", errorMessage(err));
+    }
+  },
+
+  /**
+   * Web brauzerda stale savollar keshini xavfsiz tozalash.
+   * Foydalanuvchining progressi, xato javoblari va sessiyalari (USER_DATA_STORES) TEGMAYDI.
+   */
+  async purgeStaleQuestionsStore(): Promise<void> {
+    try {
+      const db = await openIndexedDb();
+      if (db.objectStoreNames.contains("questions")) {
+        const tx = db.transaction("questions", "readwrite");
+        const store = tx.objectStore("questions");
+        store.clear();
+      }
+      // Eski versiyadagi 'pravaimtihon_v2' bazasi mavjud bo'lsa uni o'chirish
+      if (typeof indexedDB !== "undefined" && typeof indexedDB.databases === "function") {
+        indexedDB.databases().then((dbs) => {
+          for (const d of dbs) {
+            if (d.name && (d.name === "pravaimtihon_v2" || d.name === "pravaimtihon")) {
+              indexedDB.deleteDatabase(d.name);
+            }
+          }
+        }).catch(() => {});
+      }
+    } catch {
+      // ignore
     }
   },
 

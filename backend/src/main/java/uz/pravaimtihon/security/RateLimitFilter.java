@@ -99,6 +99,18 @@ public class RateLimitFilter extends OncePerRequestFilter {
         } else if (isCredentialEndpoint(path)) {
             limit = authRequestsPerMinute;
             bucketKey = clientIp + ":auth";
+        } else if (path.startsWith("/api/v1/public/guest-exam")) {
+            limit = 10;
+            bucketKey = clientIp + ":guest-exam";
+        } else if (path.startsWith("/api/v1/files/questions/")) {
+            limit = 180;
+            bucketKey = clientIp + ":q-img";
+        } else if (path.startsWith("/api/v2/exams/") || path.startsWith("/api/v2/tickets/")) {
+            limit = 60;
+            bucketKey = clientIp + ":exam";
+        } else if (path.startsWith("/api/v1/app/")) {
+            limit = 60;
+            bucketKey = clientIp + ":app";
         } else {
             limit = requestsPerMinute;
             bucketKey = clientIp;
@@ -109,7 +121,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         TokenBucket bucket = buckets.computeIfAbsent(bucketKey, k -> new TokenBucket(limit));
 
         if (!bucket.tryConsume()) {
-            log.warn("Rate limit exceeded for IP: {}", clientIp);
+            log.warn("Rate limit exceeded for IP: {} on key: {}", clientIp, bucketKey);
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.getWriter().write(
@@ -124,18 +136,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        // B7: auth/telegram'dan tashqari — brute-force/DoS xavfi yuqori bo'lgan
-        // activation-code generatsiyasi, backup/restore va to'lov endpointlari ham
-        // rate-limit qatlamiga qo'shildi (avval faqat auth/telegram himoyalangan edi).
-        // AUDIT: `/api/v1/public/**` qo'shildi — u autentifikatsiyasiz ochiq va
-        // guest-exam so'rovi bazadan katta hajmda savol o'qiydi, ya'ni limitsiz
-        // qoldirilsa arzon DoS vektori bo'ladi.
-        return !path.startsWith("/api/v1/auth/")
-                && !path.startsWith("/api/v1/public/")
-                && !path.startsWith("/api/v1/telegram/")
-                && !path.startsWith("/api/v1/admin/activation-codes")
-                && !path.startsWith("/api/v1/admin/backup")
-                && !path.startsWith("/api/v1/payment");
+        // Faqat /api/** so'rovlari rate-limit qilinadi.
+        // Statik fayllar, html, css, js, swagger, actuator filtrlashdan ozod.
+        if (!path.startsWith("/api/")) {
+            return true;
+        }
+        return path.startsWith("/api-docs") || path.startsWith("/v3/api-docs");
     }
 
     /**

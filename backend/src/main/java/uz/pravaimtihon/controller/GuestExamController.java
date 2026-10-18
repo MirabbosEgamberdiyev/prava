@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uz.pravaimtihon.dto.mapper.ExamResponseMapper;
@@ -23,6 +25,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Guest (autentifikatsiyasiz) foydalanuvchilar uchun bepul imtihon va umumiy statistika.
@@ -112,9 +116,8 @@ public class GuestExamController {
         if (selected.size() > guestCount) {
             selected = selected.subList(0, guestCount);
         }
-
-        // Visible mode = true: to'g'ri javoblar va tushuntirishlar qaytariladi
-        List<QuestionResponse> questions = mapper.toQuestionResponses(selected, true);
+        // Secure mode for public trial: correct answers and explanations are NOT leaked upfront
+        List<QuestionResponse> questions = mapper.toQuestionResponses(selected, false);
 
         LocalDateTime now = LocalDateTime.now();
         ExamResponse response = ExamResponse.builder()
@@ -124,13 +127,93 @@ public class GuestExamController {
                 .maxWrong((int) Math.floor((double) gradingPolicy.rules().getGuest().getMaxWrong() * questions.size() / guestCount))
                 .startedAt(now)
                 .expiresAt(now.plusMinutes(guestDurationMinutes(questions.size())))
-                .isVisibleMode(true)
+                .isVisibleMode(false)
                 .isMarathonMode(false)
                 .questions(questions)
                 .build();
 
-        log.debug("Guest exam: {} ta savol qaytarildi", questions.size());
+        log.debug("Guest exam: {} ta savol qaytarildi (javoblarsiz)", questions.size());
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    public record GuestExamSubmitRequest(List<GuestAnswerItem> answers) {}
+    public record GuestAnswerItem(Long questionId, Integer selectedOptionIndex) {}
+    public record GuestExamResultResponse(
+            int totalQuestions,
+            int correctCount,
+            int incorrectCount,
+            int unansweredCount,
+            double scorePercentage,
+            boolean passed,
+            List<GuestQuestionResult> results
+    ) {}
+    public record GuestQuestionResult(
+            Long questionId,
+            Integer selectedOptionIndex,
+            Integer correctOptionIndex,
+            boolean isCorrect,
+            uz.pravaimtihon.dto.response.exam.LocalizedText explanation
+    ) {}
+
+    /**
+     * Guest imtihon javoblarini serverda tekshirish va baholash.
+     * To'g'ri javoblar va tushuntirishlar FAQAT topshirilgandan keyin beriladi.
+     */
+    @PostMapping("/guest-exam/submit")
+    @Operation(summary = "Guest imtihon javoblarini topshirish va baholash")
+    public ResponseEntity<ApiResponse<GuestExamResultResponse>> submitGuestExam(
+            @RequestBody GuestExamSubmitRequest request) {
+        if (request == null || request.answers() == null || request.answers().isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Javoblar kiritilmagan"));
+        }
+        List<GuestAnswerItem> answers = request.answers().stream().limit(30).toList();
+        List<Long> questionIds = answers.stream().map(GuestAnswerItem::questionId).filter(java.util.Objects::nonNull).toList();
+        List<Question> questions = questionRepository.findByIdsWithOptions(questionIds);
+        Map<Long, Question> questionMap = questions.stream()
+                .collect(Collectors.toMap(Question::getId, q -> q, (a, b) -> a));
+
+        int correctCount = 0;
+        int incorrectCount = 0;
+        int unansweredCount = 0;
+        List<GuestQuestionResult> results = new ArrayList<>();
+
+        for (GuestAnswerItem ans : answers) {
+            Question q = questionMap.get(ans.questionId());
+            if (q == null) continue;
+            Integer selected = ans.selectedOptionIndex();
+            Integer correct = q.getCorrectAnswerIndex();
+            boolean isCorrect = selected != null && selected.equals(correct);
+            if (selected == null) {
+                unansweredCount++;
+            } else if (isCorrect) {
+                correctCount++;
+            } else {
+                incorrectCount++;
+            }
+            results.add(new GuestQuestionResult(
+                    q.getId(),
+                    selected,
+                    correct,
+                    isCorrect,
+                    mapper.toExplanation(q)
+            ));
+        }
+
+        int total = results.size();
+        double score = total > 0 ? ((double) correctCount / total) * 100.0 : 0.0;
+        int maxWrong = gradingPolicy.rules().getGuest().getMaxWrong();
+        boolean passed = (incorrectCount + unansweredCount) <= maxWrong;
+
+        GuestExamResultResponse result = new GuestExamResultResponse(
+                total,
+                correctCount,
+                incorrectCount,
+                unansweredCount,
+                Math.round(score * 10.0) / 10.0,
+                passed,
+                results
+        );
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**

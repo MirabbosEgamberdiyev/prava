@@ -97,7 +97,7 @@ public class OfflineBundleService {
             for (int i = 0; i < ids.size(); i += CHUNK) {
                 List<Question> chunk = questionRepository.findByIdsWithOptions(ids.subList(i, Math.min(ids.size(), i + CHUNK)));
                 chunk.sort((a, b) -> Long.compare(a.getId(), b.getId()));
-                questions.addAll(mapper.toQuestionResponses(chunk, true));
+                questions.addAll(mapper.toQuestionResponses(chunk, false));
             }
             java.util.Set<Long> activeIds = new java.util.HashSet<>(ids);
 

@@ -54,12 +54,13 @@ export default function SecureImage({ path, alt = "", className, style, onOpen, 
 
   return (
     <img
+      key={src}
       src={src}
       alt={alt}
       className={className}
       draggable={false}
-      loading={lazy ? "lazy" : undefined}
-      decoding={lazy ? "async" : undefined}
+      loading={lazy ? "lazy" : "eager"}
+      decoding="async"
       onContextMenu={(e) => e.preventDefault()}
       onError={() => {
         if (src !== DEFAULT_IMAGE) {

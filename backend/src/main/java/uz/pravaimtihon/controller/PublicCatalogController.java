@@ -33,13 +33,6 @@ public class PublicCatalogController {
 
     private final PublicCatalogService catalogService;
     private final ObjectMapper objectMapper;
-    private final uz.pravaimtihon.service.OfflineBundleService offlineBundleService;
-
-    @GetMapping("/desktop-bundle")
-    @Operation(summary = "Desktop ilova uchun barcha faol savollar, mavzular va biletlar to'plami (ochiq)")
-    public ResponseEntity<ApiResponse<uz.pravaimtihon.service.OfflineBundleService.Bundle>> desktopBundle() {
-        return ResponseEntity.ok(ApiResponse.success(offlineBundleService.getBundle()));
-    }
 
     @GetMapping("/tickets")
     @Operation(summary = "Faol biletlar ro'yxati (savollarsiz)")

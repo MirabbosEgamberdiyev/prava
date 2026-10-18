@@ -138,10 +138,62 @@ const GuestExamPage = () => {
     }));
   };
 
-  const handleReset = () => setAnswers({});
-  const handleFinish = () => setGuestResultOpened(true);
+  const [serverResult, setServerResult] = useState<{
+    correctCount: number;
+    incorrectCount: number;
+    unansweredCount: number;
+    scorePercentage: number;
+    passed: boolean;
+  } | null>(null);
 
-  const { correctCount, incorrectCount, unansweredCount } = useMemo(() => {
+  const handleReset = () => {
+    setAnswers({});
+    setServerResult(null);
+  };
+
+  const handleFinish = async () => {
+    try {
+      const payload = {
+        answers: questions.map((q, idx) => ({
+          questionId: q.id,
+          selectedOptionIndex: answers[idx]?.optionIndex ?? null,
+        })),
+      };
+      const res = await api.post("/api/v1/public/guest-exam/submit", payload);
+      const data = res.data?.data;
+      if (data) {
+        setServerResult({
+          correctCount: data.correctCount,
+          incorrectCount: data.incorrectCount,
+          unansweredCount: data.unansweredCount,
+          scorePercentage: data.scorePercentage,
+          passed: data.passed,
+        });
+        if (Array.isArray(data.results)) {
+          const resMap = new Map<number, any>(data.results.map((r: any) => [r.questionId, r]));
+          setQuestions((prev) =>
+            prev.map((q) => {
+              const r = resMap.get(q.id);
+              if (r) {
+                return {
+                  ...q,
+                  correctOptionIndex: r.correctOptionIndex,
+                  explanation: r.explanation,
+                };
+              }
+              return q;
+            })
+          );
+        }
+      }
+    } catch {
+      // offline fallback
+    } finally {
+      setGuestResultOpened(true);
+    }
+  };
+
+  const localStats = useMemo(() => {
     const correct = questions.reduce((count, q, i) => {
       return count + (answers[i]?.optionIndex === q.correctOptionIndex ? 1 : 0);
     }, 0);
@@ -153,11 +205,16 @@ const GuestExamPage = () => {
     };
   }, [questions, answers]);
 
-  const correctPercentage =
-    questions.length > 0 ? (correctCount / questions.length) * 100 : 0;
+  const correctCount = serverResult?.correctCount ?? localStats.correctCount;
+  const incorrectCount = serverResult?.incorrectCount ?? localStats.incorrectCount;
+  const unansweredCount = serverResult?.unansweredCount ?? localStats.unansweredCount;
 
-  // W-03: mehmon imtihoni — rasmiy (real) qoida: xato + javobsiz ≤ ruxsat etilgan xatolar
-  const passed = isExamPassed(
+  const correctPercentage = serverResult?.scorePercentage ?? (
+    questions.length > 0 ? (correctCount / questions.length) * 100 : 0
+  );
+
+  // W-03: mehmon imtihoni — rasmiy (real) qoida: xato + javobsiz <= ruxsat etilgan xatolar
+  const passed = serverResult?.passed ?? isExamPassed(
     {
       mode: "real",
       total: questions.length,
@@ -321,7 +378,7 @@ const GuestExamPage = () => {
         onReset={handleReset}
         backUrl="/"
         isSecureMode={false}
-        onGuestFinish={() => setGuestResultOpened(true)}
+        onGuestFinish={handleFinish}
         onGuestViewResults={() => setGuestResultOpened(true)}
       />
       <Alert
