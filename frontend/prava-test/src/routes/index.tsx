@@ -49,6 +49,7 @@ const Contact_Page        = lazy(() => import("../page/Contact"));
 const FAQ_Page            = lazy(() => import("../page/FAQ"));
 const Terms_Page          = lazy(() => import("../page/Legal/Terms"));
 const Privacy_Page        = lazy(() => import("../page/Legal/Privacy"));
+const AccountDeletion_Page = lazy(() => import("../page/Legal/AccountDeletion"));
 const Offer_Page          = lazy(() => import("../page/Legal/Offer"));
 // const Pricing_Page        = lazy(() => import("../page/Pricing")); // Temporarily disabled per user request
 const WrongAnswers_Page   = lazy(() => import("../page/WrongAnswers"));
@@ -129,6 +130,7 @@ export default function AppRoutes() {
               <Route path="faq" element={<FAQ_Page />} />
               <Route path="terms" element={<Terms_Page />} />
               <Route path="privacy" element={<Privacy_Page />} />
+              <Route path="account-deletion" element={<AccountDeletion_Page />} />
               <Route path="offer" element={<Offer_Page />} />
               <Route path="signs" element={<RoadSigns_Page />} />
               <Route path="markings" element={<RoadMarkings_Page />} />
@@ -216,6 +218,7 @@ export default function AppRoutes() {
             <Route element={<App_Layout />}>
               <Route path="/terms" element={<Terms_Page />} />
               <Route path="/privacy" element={<Privacy_Page />} />
+              <Route path="/account-deletion" element={<AccountDeletion_Page />} />
               <Route path="/offer" element={<Offer_Page />} />
             </Route>
 
@@ -345,6 +348,7 @@ export default function AppRoutes() {
               <Route path="faq" element={<FAQ_Page />} />
               <Route path="terms" element={<Terms_Page />} />
               <Route path="privacy" element={<Privacy_Page />} />
+              <Route path="account-deletion" element={<AccountDeletion_Page />} />
               <Route path="offer" element={<Offer_Page />} />
             </Route>
 

@@ -33,6 +33,7 @@ public class AuthController {
     private final AuthService authService;
     private final MessageService messageService;
     private final uz.pravaimtihon.security.RefreshTokenCookies refreshTokenCookies;
+    private final uz.pravaimtihon.service.impl.AccountDeletionService accountDeletionService;
 
     /** Body'da token bo'lmasa (web cookie rejimi) HttpOnly cookie'dan olinadi. */
     private RefreshTokenRequest withCookieFallback(RefreshTokenRequest request, jakarta.servlet.http.HttpServletRequest httpRequest) {
@@ -495,5 +496,20 @@ public class AuthController {
             throw new uz.pravaimtihon.exception.ValidationException("validation.field.required");
         }
         return ResponseEntity.ok(ApiResponse.success(authService.updateMyLanguage(AcceptLanguage.fromCode(code))));
+    }
+
+    @DeleteMapping("/me")
+    @Operation(summary = "O'z akkauntini o'chirish",
+            description = "Google Play Account Deletion: o'quv ma'lumotlari o'chiriladi, profil anonimlashtiriladi, barcha sessiyalar bekor qilinadi.")
+    public ResponseEntity<ApiResponse<Void>> deleteMyAccount(
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        Long userId = uz.pravaimtihon.security.SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new uz.pravaimtihon.exception.UnauthorizedException("error.auth.required");
+        }
+        accountDeletionService.deleteOwnAccount(userId);
+        return ResponseEntity.ok()
+                .header(uz.pravaimtihon.security.RefreshTokenCookies.headerName(), refreshTokenCookies.clearHeader())
+                .body(ApiResponse.success(messageService.getMessage("success.user.deleted", language), null));
     }
 }
