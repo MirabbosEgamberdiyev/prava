@@ -124,4 +124,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             nativeQuery = true)
     List<Object[]> ticketQuestionsChecksum();
 
+    @Query(value = "SELECT COUNT(*) FROM ticket_questions", nativeQuery = true)
+    long countTicketQuestions();
 }

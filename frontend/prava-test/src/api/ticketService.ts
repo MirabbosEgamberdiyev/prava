@@ -33,6 +33,11 @@ class TicketService {
     const res = await api.post(`${this.baseUrl}/start-secure`, data);
     return res.data;
   }
+
+  async getQuestions(ticketId: number, visibleMode = true) {
+    const res = await api.get(`${this.baseUrl}/${ticketId}/questions?visibleMode=${visibleMode}`);
+    return res.data;
+  }
 }
 
 export const ticketService = new TicketService();

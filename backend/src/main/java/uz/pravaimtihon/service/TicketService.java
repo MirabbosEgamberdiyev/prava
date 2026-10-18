@@ -207,6 +207,17 @@ public class TicketService {
     }
 
     /**
+     * Bilet savollari ro'yxatini qat'iy question_order bo'yicha olish.
+     */
+    @Transactional(readOnly = true)
+    public List<QuestionResponse> getTicketQuestions(Long ticketId, boolean visibleMode) {
+        Ticket ticket = ticketRepository.findByIdWithQuestionsAndOptions(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("error.ticket.not.found"));
+
+        return mapper.toQuestionResponses(ticket.getQuestions(), visibleMode);
+    }
+
+    /**
      * Biletni yangilash.
      */
     @Transactional

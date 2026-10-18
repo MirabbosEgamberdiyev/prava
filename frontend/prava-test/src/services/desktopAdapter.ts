@@ -663,15 +663,21 @@ export async function getTickets(): Promise<OfflineTicket[]> {
     try {
       let list: any[] = [];
       try {
-        const pubRes = await api.get<{ data: any[] }>("/api/v1/public/tickets");
-        if (Array.isArray(pubRes.data?.data) && pubRes.data.data.length > 0) {
-          list = pubRes.data.data;
-        }
-      } catch {
         const res = await api.get<{
-          data: { content?: any[]; tickets?: any[] };
+          data: { content?: any[]; tickets?: any[] } | any[];
         }>("/api/v2/tickets?page=0&size=100&sortBy=ticketNumber&direction=ASC");
-        list = res.data?.data?.content || res.data?.data?.tickets || [];
+        list = Array.isArray(res.data?.data)
+          ? res.data.data
+          : res.data?.data?.content || res.data?.data?.tickets || [];
+      } catch {
+        try {
+          const res2 = await api.get<{ data: any[] }>("/api/v1/app/tickets");
+          if (Array.isArray(res2.data?.data)) {
+            list = res2.data.data;
+          }
+        } catch {
+          // ignore
+        }
       }
 
       if (list.length > 0) {
@@ -768,14 +774,11 @@ export async function getQuestionsByTicket(ticketId: number): Promise<OfflineQue
   // 2. WEB BROWSER: On-Demand fetch from backend (only loads the requested 20 questions)
   if (navigator.onLine && networkModeManager.isOnlineAllowed()) {
     try {
-      const res = await api.post<{
-        data: { sessionId?: number; questions: any[] };
-      }>("/api/v2/tickets/start-visible", { ticketId });
-      if (res.data?.data?.sessionId) {
-        activeTicketSessionId = res.data.data.sessionId;
-      }
-      if (res.data?.data?.questions && res.data.data.questions.length > 0) {
-        const questions = res.data.data.questions.map(normalizeQuestion);
+      const res = await api.get<{
+        data: any[];
+      }>(`/api/v2/tickets/${ticketId}/questions?visibleMode=true`);
+      if (Array.isArray(res.data?.data) && res.data.data.length > 0) {
+        const questions = res.data.data.map(normalizeQuestion);
         // Only caches this specific ticket (20 questions) into local IndexedDB
         questionRepository.saveQuestions(questions.map((q) => offlineQuestionToDbQuestion(q, ticketId))).catch(() => {});
         return questions;
@@ -784,7 +787,7 @@ export async function getQuestionsByTicket(ticketId: number): Promise<OfflineQue
       try {
         const res2 = await api.post<{
           data: { sessionId?: number; questions: any[] };
-        }>("/api/v2/tickets/start-secure", { ticketId });
+        }>("/api/v2/tickets/start-visible", { ticketId });
         if (res2.data?.data?.sessionId) {
           activeTicketSessionId = res2.data.data.sessionId;
         }
@@ -824,15 +827,27 @@ export async function getQuestionsByTopic(topicId: number): Promise<OfflineQuest
 
   if (navigator.onLine && networkModeManager.isOnlineAllowed()) {
     try {
-      const res = await api.get<{ data: { content?: any[]; questions?: any[] } }>(
-        `/api/v1/questions/topic/${topicId}?size=100`
+      const res = await api.get<{ data: { content?: any[]; questions?: any[] } | any[] }>(
+        `/api/v2/questions?topicId=${topicId}&size=100&visibleMode=true`
       );
-      const list = (res.data?.data as any)?.content || (res.data?.data as any)?.questions || res.data?.data || [];
+      const list = Array.isArray(res.data?.data)
+        ? res.data.data
+        : (res.data?.data as any)?.content || (res.data?.data as any)?.questions || [];
       if (Array.isArray(list) && list.length > 0) {
         return list.map(normalizeQuestion);
       }
     } catch {
-      // Backend unavailable
+      try {
+        const res = await api.get<{ data: { content?: any[]; questions?: any[] } }>(
+          `/api/v1/questions/topic/${topicId}?size=100`
+        );
+        const list = (res.data?.data as any)?.content || (res.data?.data as any)?.questions || res.data?.data || [];
+        if (Array.isArray(list) && list.length > 0) {
+          return list.map(normalizeQuestion);
+        }
+      } catch {
+        // Backend unavailable
+      }
     }
   }
 
@@ -872,28 +887,18 @@ export async function getTopics(): Promise<OfflineTopic[]> {
     try {
       let list: any[] = [];
       try {
-        const res = await api.get<{ data: any[] }>("/api/v1/public/topics");
+        const res = await api.get<{ data: any[] }>("/api/v2/topics");
         if (Array.isArray(res.data?.data)) {
           list = res.data.data;
         }
       } catch {
         try {
-          const res2 = await api.get<{ data: any[] }>("/api/v1/admin/topics/active");
+          const res2 = await api.get<{ data: any[] }>("/api/v1/app/topics");
           if (Array.isArray(res2.data?.data)) {
             list = res2.data.data;
           }
         } catch {
-          try {
-            const res3 = await api.get<{ data: any[] }>("/api/v1/admin/topics/with-questions");
-            if (Array.isArray(res3.data?.data)) {
-              list = res3.data.data;
-            }
-          } catch {
-            const res4 = await api.get<{ data: any[] }>("/api/v1/admin/topics/simple");
-            if (Array.isArray(res4.data?.data)) {
-              list = res4.data.data;
-            }
-          }
+          // ignore
         }
       }
 

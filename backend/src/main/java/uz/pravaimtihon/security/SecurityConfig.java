@@ -96,7 +96,8 @@ public class SecurityConfig {
                                 "/error",
 
                                 // ✅ Curriculum & Simulator Public Endpoints
-                                "/api/v1/curriculum/**"
+                                "/api/v1/curriculum/**",
+                                "/api/v2/content/manifest"
                         ).permitAll()
 
                         // Simulator/Autodrom: faqat ma'lumotnoma (mashqlar, mashinalar) ochiq.
@@ -209,7 +210,8 @@ public class SecurityConfig {
                         // DESKTOP APP — USER + ADMIN + SUPER_ADMIN
                         // ============================================
                         .requestMatchers("/api/v1/app/**",
-                                "/api/v2/tickets/**", "/api/v2/my-statistics/**")
+                                "/api/v2/tickets/**", "/api/v2/topics/**", "/api/v2/questions/**",
+                                "/api/v2/content/**", "/api/v2/my-statistics/**")
                         .hasAnyRole("SUPER_ADMIN", "ADMIN", "USER")
 
                         // ============================================

@@ -99,6 +99,7 @@ public class Question extends BaseEntity {
     // Relationships with proper cascade
     @Builder.Default
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("optionIndex ASC")
     private List<QuestionOption> options = new ArrayList<>();
 
     @Builder.Default

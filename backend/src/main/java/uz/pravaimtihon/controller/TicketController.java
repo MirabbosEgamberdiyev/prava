@@ -17,6 +17,7 @@ import uz.pravaimtihon.dto.request.TicketStartRequest;
 import uz.pravaimtihon.dto.response.ApiResponse;
 import uz.pravaimtihon.dto.response.PageResponse;
 import uz.pravaimtihon.dto.response.exam.ExamResponse;
+import uz.pravaimtihon.dto.response.exam.QuestionResponse;
 import uz.pravaimtihon.dto.response.exam.TicketResponse;
 import uz.pravaimtihon.enums.AcceptLanguage;
 import uz.pravaimtihon.service.MessageService;
@@ -132,6 +133,23 @@ public class TicketController {
     )
     public ResponseEntity<ApiResponse<TicketResponse>> getTicket(@PathVariable Long ticketId) {
         TicketResponse response = ticketService.getTicket(ticketId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * Biletga tegishli barcha savollar (qat'iy question_order bo'yicha).
+     */
+    @GetMapping("/{ticketId}/questions")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'USER')")
+    @Operation(
+            summary = "Bilet savollari",
+            description = "Biletga tegishli savollar ro'yxati (qat'iy question_order bo'yicha)."
+    )
+    public ResponseEntity<ApiResponse<List<QuestionResponse>>> getTicketQuestions(
+            @PathVariable Long ticketId,
+            @RequestParam(defaultValue = "true") boolean visibleMode) {
+        userThrottlerService.recordAndCheck(uz.pravaimtihon.security.SecurityUtils.getCurrentUserId(), 10);
+        List<QuestionResponse> response = ticketService.getTicketQuestions(ticketId, visibleMode);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
