@@ -280,14 +280,16 @@ const USER_FACING_ATTRS = new Set(['placeholder', 'title', 'aria-label', 'alt', 
 const JSX_BRAND_RE = new RegExp(
   '^(' +
     [
-      'Prava( Online)?\\.?', 'PravaOnline\\.?', 'PRAVA', 'PRAVA ONLINE', 'Prava Online\\.?', 'pravaonline\\.uz', '@pravaonlineuzbot', '@\\w+',
+      'Prava( Online)?\\.?', 'PravaOnline\\.?', 'PRAVA', 'PRAVA ONLINE', 'Prava Online\\.?', 'pravaonline\\.uz(/\\S*)?', '@pravaonlineuzbot', '@\\w+',
       'Telegram( Bot)?', 'Google( Play)?', 'App Store', 'Instagram', 'YouTube', 'Facebook',
       'Click', 'Payme', 'Uzum Bank', 'Uzcard( / Humo)?', 'Humo', 'Visa( / Mastercard)?', 'Mastercard',
       'Windows( \\(\\.exe\\))?', 'macOS', 'Linux', 'Android', 'iOS', 'PWA', 'APK', 'QR', 'SMS', 'OTP', 'ID', 'UZS',
       'Chevrolet', 'Spark', 'Cobalt', 'Gentra', 'Malibu',
+      // Native language selector endonyms
+      "O'zbek tili", "Ўзбек тили", "Русский язык",
       // product version tags, e.g. "v2.0 • WebGL"
       'v\\d+(\\.\\d+)*\\b.*',
-      'Enter( ↵)?', 'Esc', 'Space( ↵)?', 'Tab', 'Shift(\\+[A-Za-z0-9]+)?', 'Ctrl(\\+[A-Za-z0-9]+)?', 'Alt(\\+[A-Za-z0-9]+)?', '←', '→', '↑', '↓',
+      '\\[?Enter( ↵)?\\]?', 'Esc', '\\[?Space( ↵)?\\]?', 'Tab', 'Shift([+ ][A-Za-z0-9]+)?', 'Ctrl([+ ][A-Za-z0-9]+)?', 'Alt([+ ][A-Za-z0-9]+)?', '←', '→', '↑', '↓',
     ].join('|') +
     ')$'
 );
