@@ -19,7 +19,8 @@ export const Key_Benefits = React.memo(() => {
     {
       icon: IconTicket,
       title: t("home.benefits.card1Title", {
-        tickets: countParams.tickets,
+        count: countParams.tickets || 64,
+        tickets: countParams.tickets || 64,
       }),
       desc: t(
         "home.benefits.card1Desc",
