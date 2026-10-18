@@ -41,6 +41,7 @@ public class ExamControllerV2 {
     private final ExamServiceV2 examService;
     private final uz.pravaimtihon.service.impl.ExamService examServiceV1;
     private final MessageService messageService;
+    private final uz.pravaimtihon.service.UserThrottlerService userThrottlerService;
 
     // ============================================
     // 1. IMTIHON BOSHLASH - VISIBLE MODE
@@ -74,6 +75,7 @@ public class ExamControllerV2 {
             @Valid @RequestBody ExamStartRequest request,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
+        userThrottlerService.recordAndCheck(uz.pravaimtihon.security.SecurityUtils.getCurrentUserId(), 20);
         ExamResponse response = examService.startExamVisible(request);
         return ResponseEntity.ok(ApiResponse.success(
                 messageService.getMessage("success.exam.started", language),
@@ -113,6 +115,7 @@ public class ExamControllerV2 {
             @Valid @RequestBody ExamStartRequest request,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
+        userThrottlerService.recordAndCheck(uz.pravaimtihon.security.SecurityUtils.getCurrentUserId(), 20);
         ExamResponse response = examService.startExamSecure(request);
         return ResponseEntity.ok(ApiResponse.success(
                 messageService.getMessage("success.exam.started", language),

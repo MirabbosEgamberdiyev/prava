@@ -43,4 +43,30 @@ class BundleCryptoServiceTest {
 
         assertThrows(Exception.class, () -> cryptoService.decryptBundle(encrypted));
     }
+
+    @Test
+    void appSignatureVerificationSucceedsForValidHmac() throws Exception {
+        long now = java.time.Instant.now().getEpochSecond();
+        String platform = "desktop";
+        Long userId = 42L;
+
+        String dataToSign = "offline-bundle:42:" + now + ":desktop";
+        javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+        mac.init(new javax.crypto.spec.SecretKeySpec(BundleCryptoService.APP_HMAC_SECRET.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+        byte[] raw = mac.doFinal(dataToSign.getBytes(StandardCharsets.UTF_8));
+        StringBuilder hex = new StringBuilder();
+        for (byte b : raw) hex.append(String.format("%02x", b));
+
+        boolean valid = cryptoService.verifyAppSignature(platform, String.valueOf(now), hex.toString(), userId);
+        assertTrue(valid);
+    }
+
+    @Test
+    void appSignatureVerificationFailsForWebPlatformOrTamperedSig() {
+        long now = java.time.Instant.now().getEpochSecond();
+        assertFalse(cryptoService.verifyAppSignature("web", String.valueOf(now), "bad_signature", 42L));
+        assertFalse(cryptoService.verifyAppSignature("desktop", String.valueOf(now), "bad_signature", 42L));
+        // Expired timestamp (10 minutes ago)
+        assertFalse(cryptoService.verifyAppSignature("desktop", String.valueOf(now - 600), "signature", 42L));
+    }
 }

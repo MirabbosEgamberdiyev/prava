@@ -36,6 +36,7 @@ public class TicketController {
 
     private final TicketService ticketService;
     private final MessageService messageService;
+    private final uz.pravaimtihon.service.UserThrottlerService userThrottlerService;
 
     // ============================================
     // ADMIN ENDPOINTS
@@ -224,6 +225,7 @@ public class TicketController {
             @Valid @RequestBody TicketStartRequest request,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
+        userThrottlerService.recordAndCheck(uz.pravaimtihon.security.SecurityUtils.getCurrentUserId(), 10);
         ExamResponse response = ticketService.startTicketVisible(request);
         return ResponseEntity.ok(ApiResponse.success(
                 messageService.getMessage("success.ticket.started", language),
@@ -244,6 +246,7 @@ public class TicketController {
             @Valid @RequestBody TicketStartRequest request,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
+        userThrottlerService.recordAndCheck(uz.pravaimtihon.security.SecurityUtils.getCurrentUserId(), 10);
         ExamResponse response = ticketService.startTicketSecure(request);
         return ResponseEntity.ok(ApiResponse.success(
                 messageService.getMessage("success.ticket.started", language),

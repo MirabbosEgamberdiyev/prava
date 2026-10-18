@@ -27,9 +27,12 @@ export const DynamicWatermark = () => {
 
   const watermarkText = useMemo(() => {
     if (!user) return "";
-    const phone = user.phoneNumber || user.email || "";
-    return `ID: ${user.id} • ${phone} • ${currentTime}`;
-  }, [user, currentTime]);
+    let phone = user.phoneNumber || user.email || "";
+    if (phone && !phone.startsWith("+") && !phone.includes("@")) {
+      phone = `+${phone}`;
+    }
+    return `ID: ${user.id} | ${phone} | pravaonline.uz`;
+  }, [user]);
 
   if (!shouldRender) {
     return null;
@@ -49,7 +52,7 @@ export const DynamicWatermark = () => {
         zIndex: 9999,
         overflow: "hidden",
         userSelect: "none",
-        opacity: 0.085,
+        opacity: 0.08,
         display: "grid",
         gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
         gridAutoRows: "180px",

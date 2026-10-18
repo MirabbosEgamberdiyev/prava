@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
+import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -97,5 +98,61 @@ public class BundleCryptoService {
         GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
         cipher.init(Cipher.DECRYPT_MODE, masterKey, spec);
         return cipher.doFinal(ciphertext);
+    }
+
+    public static final String APP_HMAC_SECRET = "ef6d4985cfc62ff2015af70cac135d4ce09778467014f3905bc7f9f301dfbced";
+
+    /**
+     * Desktop va Mobile ilovalarining HMAC imzosini tekshiradi.
+     * Imzolanadigan ma'lumot: "offline-bundle:[userId]:[timestamp]:[platform]"
+     * Maksimal ruxsat etilgan drift: 300 soniya.
+     */
+    public boolean verifyAppSignature(String platform, String timestampStr, String signature, Long userId) {
+        if (platform == null || timestampStr == null || signature == null) {
+            return false;
+        }
+
+        if (!"desktop".equalsIgnoreCase(platform) && !"mobile".equalsIgnoreCase(platform)) {
+            return false;
+        }
+
+        long timestamp;
+        try {
+            timestamp = Long.parseLong(timestampStr);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        long nowSec = java.time.Instant.now().getEpochSecond();
+        if (timestamp > 1000000000000L) {
+            timestamp = timestamp / 1000L;
+        }
+        if (Math.abs(nowSec - timestamp) > 300) {
+            log.warn("App signature timestamp drift too large: client={}, server={}", timestamp, nowSec);
+            return false;
+        }
+
+        String dataToSign = "offline-bundle:" + (userId != null ? userId : 0) + ":" + timestampStr + ":" + platform.toLowerCase();
+        try {
+            // 1. Standard HMAC-SHA256
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(APP_HMAC_SECRET.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] rawHmac = mac.doFinal(dataToSign.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexHmac = new StringBuilder(rawHmac.length * 2);
+            for (byte b : rawHmac) hexHmac.append(String.format("%02x", b));
+            if (MessageDigest.isEqual(hexHmac.toString().getBytes(StandardCharsets.UTF_8), signature.toLowerCase().getBytes(StandardCharsets.UTF_8))) {
+                return true;
+            }
+
+            // 2. Fallback SHA-256
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            byte[] rawSha = sha256.digest((APP_HMAC_SECRET + ":" + dataToSign).getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexSha = new StringBuilder(rawSha.length * 2);
+            for (byte b : rawSha) hexSha.append(String.format("%02x", b));
+            return MessageDigest.isEqual(hexSha.toString().getBytes(StandardCharsets.UTF_8), signature.toLowerCase().getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            log.error("Error verifying app signature", e);
+            return false;
+        }
     }
 }

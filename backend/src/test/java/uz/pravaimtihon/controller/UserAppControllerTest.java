@@ -29,6 +29,7 @@ class UserAppControllerTest {
     @Mock private UserAppService userAppService;
     @Mock private OfflineBundleService offlineBundleService;
     @Mock private BundleCryptoService bundleCryptoService;
+    @Mock private uz.pravaimtihon.service.UserThrottlerService userThrottlerService;
     @Mock private ObjectMapper objectMapper;
 
     @InjectMocks
@@ -62,6 +63,7 @@ class UserAppControllerTest {
     @Test
     void getOfflineBundleServesEncryptedBinaryToDesktopOrMobile() throws Exception {
         OfflineBundleService.Bundle mockBundle = new OfflineBundleService.Bundle("v2-test", List.of(), List.of(), List.of());
+        when(bundleCryptoService.verifyAppSignature(any(), any(), any(), any())).thenReturn(true);
         when(offlineBundleService.currentVersionFor(any())).thenReturn("v2-test");
         when(offlineBundleService.getBundleFor(any())).thenReturn(mockBundle);
 
@@ -71,10 +73,24 @@ class UserAppControllerTest {
         when(bundleCryptoService.encryptBundle(fakeJson)).thenReturn(fakeEncrypted);
 
         mockMvc.perform(get("/api/v1/app/offline-bundle")
-                        .header("X-Client-Platform", "desktop"))
+                        .header("X-Client-Platform", "desktop")
+                        .header("X-App-Timestamp", "1729240000")
+                        .header("X-App-Signature", "validaes256hmacsignature"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Encrypted-Algorithm", "AES-256-GCM"))
                 .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
                 .andExpect(content().bytes(fakeEncrypted));
+    }
+
+    @Test
+    void getOfflineBundleRejectsWhenSignatureIsInvalid() throws Exception {
+        when(bundleCryptoService.verifyAppSignature(any(), any(), any(), any())).thenReturn(false);
+
+        mockMvc.perform(get("/api/v1/app/offline-bundle")
+                        .header("X-Client-Platform", "desktop")
+                        .header("X-App-Timestamp", "1729240000")
+                        .header("X-App-Signature", "badsig"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Offline bundle faqat rasmiy mobil yoki desktop ilova orqali yuklanishi mumkin (Invalid App Signature)."));
     }
 }

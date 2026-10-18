@@ -30,6 +30,7 @@ public class UserAppController {
     private final UserAppService userAppService;
     private final uz.pravaimtihon.service.OfflineBundleService offlineBundleService;
     private final uz.pravaimtihon.service.BundleCryptoService bundleCryptoService;
+    private final uz.pravaimtihon.service.UserThrottlerService userThrottlerService;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     // ─── Offline bundle (desktop / mobile) ────────────────────────────────────
@@ -40,6 +41,8 @@ public class UserAppController {
             jakarta.servlet.http.HttpServletRequest request,
             @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
             @RequestHeader(value = "X-Client-Platform", required = false) String clientPlatform,
+            @RequestHeader(value = "X-App-Timestamp", required = false) String appTimestamp,
+            @RequestHeader(value = "X-App-Signature", required = false) String appSignature,
             @AuthenticationPrincipal CustomUserDetails principal) {
 
         // 1. Web brauzer tekshiruvi: brauzer orqali to'liq bazani yuklash 100% bloklanadi
@@ -67,7 +70,13 @@ public class UserAppController {
                     .body(ApiResponse.error("Web brauzerlar uchun offline-bundle taqiqlangan. Savollar On-Demand yuklanadi."));
         }
 
+        // 2. Native ilova (Desktop / Mobile) HMAC tekshiruvi
         Long userId = principal != null ? principal.getId() : null;
+        if (!bundleCryptoService.verifyAppSignature(clientPlatform, appTimestamp, appSignature, userId)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Offline bundle faqat rasmiy mobil yoki desktop ilova orqali yuklanishi mumkin (Invalid App Signature)."));
+        }
+
         String etag = "\"" + offlineBundleService.currentVersionFor(userId) + "\"";
         org.springframework.http.CacheControl cc = org.springframework.http.CacheControl.noCache().cachePrivate();
 
@@ -108,6 +117,7 @@ public class UserAppController {
     @Operation(summary = "Mavzu bo'yicha barcha savollarni olish (marathon uchun)")
     public ResponseEntity<ApiResponse<List<QuestionResponse>>> getQuestionsByTopic(
             @PathVariable Long topicId) {
+        userThrottlerService.recordAndCheck(uz.pravaimtihon.security.SecurityUtils.getCurrentUserId(), 20);
         return ResponseEntity.ok(ApiResponse.success(
                 "Savollar muvaffaqiyatli olindi",
                 userAppService.getQuestionsByTopic(topicId)
