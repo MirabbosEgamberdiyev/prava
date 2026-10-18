@@ -14,7 +14,6 @@ import { ScrollManager } from "./components/common/ScrollManager";
 import { AuthModalProvider } from "./auth/AuthModalContext";
 import { TariffPaywallProvider } from "./context/TariffPaywallContext";
 import TariffPaywallModal from "./components/common/TariffPaywallModal";
-import DynamicWatermark from "./components/common/DynamicWatermark";
 
 /**
  * Global API error listener with deduplication cooldown.
@@ -95,7 +94,6 @@ function AppInner() {
                 <ScrollManager />
                 <GlobalSearchHost />
                 <TariffPaywallModal />
-                <DynamicWatermark />
                 <DesktopFrame>
                   <ErrorBoundary resetKey={location.pathname}>
                     <AppRoutes />
