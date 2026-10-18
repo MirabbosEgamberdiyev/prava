@@ -2635,7 +2635,9 @@
       "simulator": {
         "title": "3D Simulyator",
         "desc": "Avtodromda real 3D haydash amaliyoti va imtihon mashqlari"
-      }
+      },
+      "octagonTitle": "Oktagon (1v1 PvP)",
+      "octagonDesc": "Real vaqt rejimida boshqa haydovchilar bilan intellektual bellashuv va ELO reytingi"
     },
     "recommendation": {
       "title": "Aqlli tavsiya va xatolar ustida ishlash",
@@ -3715,7 +3717,8 @@
       "settings": "Sozlamalar",
       "survival": "Xatogacha marafon",
       "fines": "Yo'l harakati jarimalari",
-      "simulator": "3D Simulyator"
+      "simulator": "3D Simulyator",
+      "octagon": "Oktagon (1v1 PvP)"
     },
     "sections": {
       "history": "Imtihon tarixi",
@@ -4204,6 +4207,103 @@
       "offline": "Oflayn rejim (internetsiz)",
       "offlineFree": "Mavjud emas",
       "offlinePro": "Desktop va Mobilda to'liq oflayn"
+    }
+  },
+  "octagon": {
+    "rules": {
+      "title": "Oktagon Qoidalari",
+      "subtitle": "1v1 Intellektual arena – haqiqiy bilimlar jangi!",
+      "rule1Title": "10 ta Savol, Har biriga 30 soniya",
+      "rule1Desc": "Vaqt tugashidan oldin to'g'ri variantni tanlang.",
+      "rule2Title": "Tezlik va Aniqlik",
+      "rule2Desc": "Qancha tezroq to'g'ri topsangiz, shuncha yuqori ball olasiz.",
+      "rule3Title": "Reyting va Ligalar (ELO)",
+      "rule3Desc": "G'alaba qozonib Bronzadan Brilliant ligasigacha ko'tariling!",
+      "waitCountdown": "{{sec}} soniya kuting...",
+      "understand": "TUSHUNDIM"
+    },
+    "guest": {
+      "title": "Oktagon Arenaga Kirish",
+      "desc": "Jangni mehmon sifatida boshlashingiz yoki natijalaringiz saqlanib qolishi uchun tizimga kirishingiz mumkin.",
+      "nicknameLabel": "Sizning Laqabingiz (Nickname):",
+      "randomize": "Boshqa nom tanlash",
+      "continueAsGuest": "Mehmon sifatida o'ynash",
+      "or": "Yoki",
+      "loginToSave": "Tizimga kirish (Natijalarni saqlash)",
+      "placeholder": "Masalan: Tezkor_Haydovchi"
+    },
+    "radar": {
+      "connectingBot": "Zaxira botga ulanmoqda...",
+      "searchingOpponent": "Teng kuchli raqib qidirilmoqda...",
+      "botDesc": "Kutib qolmasligingiz uchun insondek o'ylanuvchi bot ulanmoqda",
+      "eloMatchDesc": "Sizning ELO reytingingizga mos raqib saralanmoqda",
+      "cancel": "Qidiruvni bekor qilish"
+    },
+    "leaderboard": {
+      "title": "Peshqadamlar Jadvali",
+      "weekly": "Haftalik",
+      "monthly": "Oylik",
+      "allTime": "Umumiy",
+      "empty": "Hozircha natijalar mavjud emas",
+      "rankCol": "O'rin",
+      "userCol": "Foydalanuvchi",
+      "leagueCol": "Liga",
+      "scoreCol": "ELO Ball",
+      "winsAndMatches": "{{wins}} G'alaba • {{total}} Jang"
+    },
+    "duel": {
+      "title": "Do'st bilan Duel",
+      "subtitle": "Do'stingizga ushbu havolani yuboring va 1v1 jangda o'zaro kuch sinashing!",
+      "scanQr": "Kamera orqali QR-kodni skaner qiling",
+      "inviteLink": "Taklif havolasi:",
+      "copy": "Nusxalash",
+      "copied": "Nusxalandi!",
+      "orCode": "Yoki taklif kodini kiriting",
+      "enterCodePlaceholder": "Duel kodi (masalan: 123456)",
+      "join": "Qo'shilish"
+    },
+    "arena": {
+      "opponent": "Raqib",
+      "preloadingTitle": "Raqib topildi!",
+      "preloadingDesc": "Savollar va rasmlar oldindan yuklanmoqda (8 soniya)...",
+      "countdownDesc": "Diqqat qiling, jang hoziroq boshlanadi!",
+      "you": "Siz",
+      "points": "ball",
+      "questionNumber": "Savol {{curr}} / {{total}}",
+      "hotkeyTip": "1-4 yoki A-D klavishlarini bosishingiz mumkin",
+      "loadingQuestion": "Savol yuklanmoqda...",
+      "reactions": "Reaksiyalar:",
+      "imageAlt": "Savol chizmasi"
+    },
+    "result": {
+      "victory": "G'ALABA!",
+      "draw": "DURANG!",
+      "defeat": "MAG'LUBIYAT",
+      "winDesc": "Ajoyib g'alaba! Bilimlaringiz yuksak darajada.",
+      "drawDesc": "Teng kurash! Ikkala tomon ham mahorat ko'rsatdi.",
+      "loseDesc": "Tushkunlikka tushmang! Xatolarni o'rganing va qasos oling.",
+      "eloChange": "Reyting o'zgarishi:",
+      "waitingRevenge": "Raqib javobi kutilmoqda...",
+      "requestRevenge": "Qasos (Rematch) talab qilish",
+      "backToLobby": "Lobbiyga qaytish"
+    },
+    "lobby": {
+      "guest": "Mehmon O'yinchi",
+      "tagline": "Haqiqiy raqiblar bilan real vaqt rejimida bilim sinovi!",
+      "rating": "Reyting",
+      "wins": "G'alabalar",
+      "winRate": "G'alaba %",
+      "streak": "Seriya",
+      "startSearch": "QIDIRISHNI BOSHLASH",
+      "duelFriend": "Do'st bilan duel",
+      "leaderboard": "Peshqadamlar",
+      "viewRules": "Oktagon qoidalari bilan tanishish"
+    },
+    "rank": {
+      "brilliant": "Brilliant",
+      "gold": "Oltin",
+      "silver": "Kumush",
+      "bronze": "Bronza"
     }
   }
 }

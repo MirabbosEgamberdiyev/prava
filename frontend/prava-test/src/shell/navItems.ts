@@ -14,6 +14,7 @@ import {
   IconSteeringWheel,
   IconTicket,
   IconTrophy,
+  IconSwords,
 } from "@tabler/icons-react";
 import { isLearnPath } from "./routes";
 
@@ -72,6 +73,7 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
       { id: "tickets", path: "/tickets", labelKey: "desktopShell.nav.tickets", fallback: "Biletlar", icon: IconTicket, match: starts("/tickets") },
       { id: "marathon", path: "/marafon", labelKey: "desktopShell.nav.marathon", fallback: "Marafon", icon: IconRun, match: starts("/marafon", "/marathon"), requiresAuth: true },
       { id: "survival", path: "/survival", labelKey: "desktopShell.nav.survival", fallback: "Xatogacha marafon", icon: IconFlame, match: starts("/survival"), requiresAuth: true },
+      { id: "octagon", path: "/octagon", labelKey: "desktopShell.nav.octagon", fallback: "Oktagon (1v1 PvP)", icon: IconSwords, match: starts("/octagon") },
     ],
   },
   {

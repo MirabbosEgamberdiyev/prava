@@ -267,8 +267,22 @@ let ts = null;
 try {
   ts = require('typescript');
 } catch {
-  console.error('[ERROR] typescript is required for the JSX scan (npm install)');
-  totalErrors++;
+  const possiblePaths = [
+    'D:\\My-project\\Prava-desktop\\node_modules\\typescript',
+    'D:\\My-project\\prava-desktop-online\\node_modules\\typescript',
+    path.join(ROOT, '..', '..', '..', 'Prava-desktop', 'node_modules', 'typescript'),
+    path.join(ROOT, '..', '..', '..', 'prava-desktop-online', 'node_modules', 'typescript'),
+  ];
+  for (const p of possiblePaths) {
+    try {
+      ts = require(p);
+      if (ts) break;
+    } catch {}
+  }
+  if (!ts) {
+    console.error('[ERROR] typescript is required for the JSX scan (npm install)');
+    totalErrors++;
+  }
 }
 
 const JSX_SKIP_DIRS = [
@@ -283,7 +297,7 @@ const JSX_BRAND_RE = new RegExp(
       'Prava( Online)?\\.?', 'PravaOnline\\.?', 'PRAVA', 'PRAVA ONLINE', 'Prava Online\\.?', 'pravaonline\\.uz(/\\S*)?', '@pravaonlineuzbot', '@\\w+',
       'Telegram( Bot)?', 'Google( Play)?', 'App Store', 'Instagram', 'YouTube', 'Facebook',
       'Click', 'Payme', 'Uzum Bank', 'Uzcard( / Humo)?', 'Humo', 'Visa( / Mastercard)?', 'Mastercard',
-      'Windows( \\(\\.exe\\))?', 'macOS', 'Linux', 'Android', 'iOS', 'PWA', 'APK', 'QR', 'SMS', 'OTP', 'ID', 'UZS',
+      'Windows( \\(\\.exe\\))?', 'macOS', 'Linux', 'Android', 'iOS', 'PWA', 'APK', 'QR', 'SMS', 'OTP', 'ID', 'UZS', 'OKTAGON', '1v1 PvP', 'ELO', 'VS',
       'Chevrolet', 'Spark', 'Cobalt', 'Gentra', 'Malibu',
       // Native language selector endonyms
       "O'zbek tili", "Ўзбек тили", "Русский язык",

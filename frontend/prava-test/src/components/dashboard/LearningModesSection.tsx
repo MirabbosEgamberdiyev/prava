@@ -9,6 +9,7 @@ import {
   IconArrowRight,
   IconSparkles,
   IconFlame,
+  IconSwords,
 } from "@tabler/icons-react";
 import { useCurriculumCounts } from "../../hooks/useCurriculumCounts";
 import styles from "./Dashboard.module.css";
@@ -294,6 +295,40 @@ export const LearningModesSection: React.FC<LearningModesSectionProps> = ({
             onClick={(e) => {
               e.stopPropagation();
               navigate("/survival");
+            }}
+          >
+            <span>{t("dashboard.modes.startBtn")}</span>
+            <IconArrowRight size={15} stroke={2.5} />
+          </button>
+        </article>
+
+        {/* Mode 6: Oktagon (1v1 PvP Arena) */}
+        <article
+          className={styles.modeCard}
+          style={{ "--mode-accent": "#10b981", gridColumn: "1 / -1", minHeight: 0 } as React.CSSProperties}
+          onClick={() => navigate("/octagon")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/octagon")}
+        >
+          <div>
+            <div
+              className={styles.modeIconBox}
+              style={{ background: "linear-gradient(135deg, #10b981 0%, #059669 100%)" }}
+            >
+              <IconSwords size={24} stroke={2} />
+            </div>
+            <h4 className={styles.modeTitle}>{t("dashboard.modes.octagonTitle", "Oktagon (1v1 PvP)")}</h4>
+            <p className={styles.modeDesc}>{t("dashboard.modes.octagonDesc", "Real vaqt rejimida boshqa haydovchilar bilan intellektual bellashuv va ELO reytingi")}</p>
+          </div>
+
+          <button
+            type="button"
+            className={styles.modeActionRow}
+            style={{ maxWidth: 320 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate("/octagon");
             }}
           >
             <span>{t("dashboard.modes.startBtn")}</span>

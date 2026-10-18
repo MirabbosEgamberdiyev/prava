@@ -97,7 +97,12 @@ public class SecurityConfig {
 
                                 // ✅ Curriculum & Simulator Public Endpoints
                                 "/api/v1/curriculum/**",
-                                "/api/v2/content/manifest"
+                                "/api/v2/content/manifest",
+
+                                // ✅ Octagon WebSocket Handshake & Public Endpoints
+                                "/ws/octagon/**",
+                                "/api/app/octagon/**",
+                                "/api/v1/octagon/**"
                         ).permitAll()
 
                         // Simulator/Autodrom: faqat ma'lumotnoma (mashqlar, mashinalar) ochiq.

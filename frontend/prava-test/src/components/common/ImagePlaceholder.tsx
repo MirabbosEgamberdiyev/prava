@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Image, Skeleton, Text, useComputedColorScheme } from "@mantine/core";
+import { Box, Image, Skeleton, useComputedColorScheme } from "@mantine/core";
 import { imageMemoryCache } from "../../utils/imageUtils";
 
 interface ImagePlaceholderProps {

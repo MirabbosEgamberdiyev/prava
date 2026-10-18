@@ -19,6 +19,7 @@ const NullPage = () => null;
 
 const Home_Page = lazy(() => import("../page/Home"));
 const Survival_Page = lazy(() => import("../page/Survival"));
+const Octagon_Page = lazy(() => import("../page/Octagon"));
 const Login_Page = lazy(() => import("../page/Auth/login"));
 const Register_Page = lazy(() => import("../page/Auth/register"));
 const ForgotPassword_Page = lazy(() => import("../page/Auth/forgot-password"));
@@ -175,6 +176,7 @@ export default function AppRoutes() {
             <Route path="/topics/*" element={<DomainRedirectToWebApp />} />
             <Route path="/marafon" element={<DomainRedirectToWebApp targetPath="/marafon" />} />
             <Route path="/survival" element={<DomainRedirectToWebApp targetPath="/survival" />} />
+            <Route path="/octagon" element={<DomainRedirectToWebApp targetPath="/octagon" />} />
             <Route path="/exam" element={<DomainRedirectToWebApp targetPath="/exam" />} />
             <Route path="/exam/*" element={<DomainRedirectToWebApp />} />
             <Route path="/wrong-answers" element={<DomainRedirectToWebApp targetPath="/wrong-answers" />} />
@@ -227,6 +229,7 @@ export default function AppRoutes() {
               {/* Web App Root - authenticated -> /me, guest -> /me */}
               <Route path="/" element={<Navigate to="/me" replace />} />
               <Route path="/me" element={<User_Page />} />
+              <Route path="/octagon" element={<Octagon_Page />} />
               <Route path="/packages" element={<Packages_Page />} />
               <Route path="/history" element={<History_Page />} />
               <Route path="/leaderboard" element={<Leaderboard_Page />} />
@@ -271,6 +274,7 @@ export default function AppRoutes() {
               <Route path="/me/tickets" element={<Navigate to="/tickets" replace />} />
               <Route path="/me/marafon" element={<Navigate to="/marafon" replace />} />
               <Route path="/me/marathon" element={<Navigate to="/marafon" replace />} />
+              <Route path="/me/octagon" element={<Navigate to="/octagon" replace />} />
               <Route path="/me/exam" element={<Navigate to="/exam" replace />} />
               <Route path="/me/statistics" element={<Navigate to="/statistics" replace />} />
               <Route path="/me/history" element={<Navigate to="/history" replace />} />
@@ -385,6 +389,7 @@ export default function AppRoutes() {
               <Route path="/tickets" element={<Tickets_Page />} />
               <Route path="/topics" element={<Topics_Page />} />
               <Route path="/topics/:topicCode" element={<TopicDetail_Page />} />
+              <Route path="/octagon" element={<Octagon_Page />} />
             </Route>
 
             <Route path="/try-exam" element={<GuestExam_Page />} />
@@ -427,6 +432,7 @@ export default function AppRoutes() {
                 <Route path="/me/tickets" element={<Navigate to="/tickets" replace />} />
                 <Route path="/me/marafon" element={<Navigate to="/marafon" replace />} />
                 <Route path="/me/marathon" element={<Navigate to="/marafon" replace />} />
+                <Route path="/me/octagon" element={<Navigate to="/octagon" replace />} />
                 <Route path="/me/exam" element={<Navigate to="/exam" replace />} />
                 <Route path="/me/statistics" element={<Navigate to="/statistics" replace />} />
                 <Route path="/me/history" element={<Navigate to="/history" replace />} />
