@@ -11,6 +11,7 @@ import {
   IconPencil,
   IconCheck,
   IconUsers,
+  IconHistory,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { OctagonAudio } from "../OctagonAudio";
@@ -23,7 +24,9 @@ interface Props {
   stats: UserStats | null;
   onStartSearch: () => void;
   onOpenDuel: () => void;
+  onOpenGroup: () => void;
   onOpenLeaderboard: () => void;
+  onOpenHistory: () => void;
   onOpenRules: () => void;
   onUpdateNickname?: (name: string) => void;
 }
@@ -34,7 +37,9 @@ export const OctagonLobbyView: React.FC<Props> = ({
   stats,
   onStartSearch,
   onOpenDuel,
+  onOpenGroup,
   onOpenLeaderboard,
+  onOpenHistory,
   onOpenRules,
   onUpdateNickname,
 }) => {
@@ -259,19 +264,42 @@ export const OctagonLobbyView: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* 3. Primary 3D Search Button */}
+        {/* 3. Primary 3D Search Button: Mode 1 - Random 1v1 */}
         <button
           type="button"
           onClick={onStartSearch}
           className="oct-search-btn-3d"
         >
           <IconSwords size={26} stroke={2.5} />
-          <span>{t("octagon.lobby.startSearch")}</span>
+          <span>{t("octagon.lobby.startSearch", "Tezkor 1v1 Jang")}</span>
         </button>
 
-        {/* 4. Quick Action Cards (3 columns) */}
-        <div className="oct-actions-row">
-          {/* Card 1: Do'st bilan duel */}
+        {/* 4. Secondary Battle Modes: Mode 2 - Guruhli bahs & Mode 3 - Do'st bilan duel */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", width: "100%" }}>
+          {/* Mode 2: Guruhli Bahs (Party) */}
+          <div
+            onClick={onOpenGroup}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") onOpenGroup();
+            }}
+            className="oct-action-card"
+            style={{
+              background: "linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(15, 23, 42, 0.8))",
+              border: "1px solid rgba(6, 182, 212, 0.35)",
+              padding: "14px 12px",
+              cursor: "pointer",
+            }}
+          >
+            <div className="oct-action-icon cyan" style={{ background: "rgba(6, 182, 212, 0.2)", color: "#06b6d4" }}>
+              <IconUsers size={22} stroke={2.2} />
+            </div>
+            <div className="oct-action-title" style={{ color: "#38bdf8" }}>{t("octagon.lobby.groupBattle", "Guruhli Bahs")}</div>
+            <div className="oct-action-desc">{t("octagon.lobby.groupBattleDesc", "Do'stlar bilan xona ochib birgalikda bellashing")}</div>
+          </div>
+
+          {/* Mode 3: Do'st bilan 1v1 Duel */}
           <div
             onClick={onOpenDuel}
             role="button"
@@ -280,15 +308,24 @@ export const OctagonLobbyView: React.FC<Props> = ({
               if (e.key === "Enter" || e.key === " ") onOpenDuel();
             }}
             className="oct-action-card"
+            style={{
+              background: "linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(15, 23, 42, 0.8))",
+              border: "1px solid rgba(168, 85, 247, 0.35)",
+              padding: "14px 12px",
+              cursor: "pointer",
+            }}
           >
-            <div className="oct-action-icon purple">
-              <IconUsers size={22} stroke={2.2} />
+            <div className="oct-action-icon purple" style={{ background: "rgba(168, 85, 247, 0.2)", color: "#c084fc" }}>
+              <IconSwords size={22} stroke={2.2} />
             </div>
-            <div className="oct-action-title">{t("octagon.lobby.duelFriend")}</div>
-            <div className="oct-action-desc">{t("octagon.lobby.dueFriendDesc")}</div>
+            <div className="oct-action-title" style={{ color: "#e879f9" }}>{t("octagon.lobby.duelFriend", "Do'st bilan 1v1")}</div>
+            <div className="oct-action-desc">{t("octagon.lobby.dueFriendDesc", "ID yoki username qidirib to'g'ridan-to'g'ri chaqiring")}</div>
           </div>
+        </div>
 
-          {/* Card 2: Peshqadamlar */}
+        {/* 5. Informational & Records Cards (3 columns) */}
+        <div className="oct-actions-row">
+          {/* Card 1: Peshqadamlar */}
           <div
             onClick={onOpenLeaderboard}
             role="button"
@@ -301,8 +338,25 @@ export const OctagonLobbyView: React.FC<Props> = ({
             <div className="oct-action-icon yellow">
               <IconTrophy size={22} stroke={2.2} />
             </div>
-            <div className="oct-action-title">{t("octagon.lobby.leaderboard")}</div>
-            <div className="oct-action-desc">{t("octagon.lobby.leaderboardDesc")}</div>
+            <div className="oct-action-title">{t("octagon.lobby.leaderboard", "Peshqadamlar")}</div>
+            <div className="oct-action-desc">{t("octagon.lobby.leaderboardDesc", "Haftalik va global peshqadamlar ro'yxati")}</div>
+          </div>
+
+          {/* Card 2: Bahslar tarixi */}
+          <div
+            onClick={onOpenHistory}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") onOpenHistory();
+            }}
+            className="oct-action-card"
+          >
+            <div className="oct-action-icon emerald" style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10b981" }}>
+              <IconHistory size={22} stroke={2.2} />
+            </div>
+            <div className="oct-action-title">{t("octagon.lobby.history", "Bahslar Tarixi")}</div>
+            <div className="oct-action-desc">{t("octagon.lobby.historyDesc", "Oldingi janglaringiz va ELO o'zgarishlari")}</div>
           </div>
 
           {/* Card 3: Oktagon qoidalari */}
@@ -318,8 +372,8 @@ export const OctagonLobbyView: React.FC<Props> = ({
             <div className="oct-action-icon blue">
               <IconInfoCircle size={22} stroke={2.2} />
             </div>
-            <div className="oct-action-title">{t("octagon.lobby.rulesAndLicense")}</div>
-            <div className="oct-action-desc">{t("octagon.lobby.rulesDesc")}</div>
+            <div className="oct-action-title">{t("octagon.lobby.rulesAndLicense", "Qoidalar va Ligalar")}</div>
+            <div className="oct-action-desc">{t("octagon.lobby.rulesDesc", "Bahs qoidalari, ligalar shkalasi va anti-cheat")}</div>
           </div>
         </div>
       </div>

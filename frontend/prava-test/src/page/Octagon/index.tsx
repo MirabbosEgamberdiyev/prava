@@ -10,6 +10,9 @@ import { OctagonRulesModal } from "../../features/Octagon/components/OctagonRule
 import { OctagonGuestModal } from "../../features/Octagon/components/OctagonGuestModal";
 import { OctagonLeaderboardModal } from "../../features/Octagon/components/OctagonLeaderboardModal";
 import { OctagonDuelModal } from "../../features/Octagon/components/OctagonDuelModal";
+import { OctagonHistoryModal } from "../../features/Octagon/components/OctagonHistoryModal";
+import { OctagonGroupModal } from "../../features/Octagon/components/OctagonGroupModal";
+import { OctagonChallengeToast } from "../../features/Octagon/components/OctagonChallengeToast";
 import "../../features/Octagon/octagon.css";
 
 const OctagonPage: React.FC = () => {
@@ -33,6 +36,9 @@ const OctagonPage: React.FC = () => {
     matchResult,
     flyingEmojis,
     revengeRequested,
+    currentRoom,
+    roomErrorMessage,
+    incomingChallenge,
     showRulesModal,
     setShowRulesModal,
     showGuestModal,
@@ -41,6 +47,10 @@ const OctagonPage: React.FC = () => {
     setShowLeaderboard,
     showDuelModal,
     setShowDuelModal,
+    showGroupModal,
+    setShowGroupModal,
+    showHistoryModal,
+    setShowHistoryModal,
     startSearch,
     confirmRulesAndSearch,
     cancelSearch,
@@ -48,6 +58,14 @@ const OctagonPage: React.FC = () => {
     sendReaction,
     requestRevenge,
     returnToLobby,
+    sendChallenge,
+    acceptChallenge,
+    rejectChallenge,
+    createRoom,
+    joinRoom,
+    leaveRoom,
+    toggleReady,
+    startRoomGame,
   } = useOctagonStore(user);
 
   // Auto-trigger duel challenge if ?duel=CODE is present in URL
@@ -78,7 +96,9 @@ const OctagonPage: React.FC = () => {
           stats={myStats}
           onStartSearch={startSearch}
           onOpenDuel={() => setShowDuelModal(true)}
+          onOpenGroup={() => setShowGroupModal(true)}
           onOpenLeaderboard={() => setShowLeaderboard(true)}
+          onOpenHistory={() => setShowHistoryModal(true)}
           onOpenRules={() => setShowRulesModal(true)}
         />
       )}
@@ -152,6 +172,32 @@ const OctagonPage: React.FC = () => {
           setShowDuelModal(false);
           confirmRulesAndSearch(code);
         }}
+        onSendChallenge={sendChallenge}
+      />
+
+      <OctagonGroupModal
+        opened={showGroupModal}
+        onClose={() => setShowGroupModal(false)}
+        currentUserId={user ? String(user.id) : (localStorage.getItem("octagon_guest_id") || "")}
+        currentRoom={currentRoom}
+        errorMessage={roomErrorMessage}
+        onCreateRoom={createRoom}
+        onJoinRoom={joinRoom}
+        onLeaveRoom={leaveRoom}
+        onToggleReady={toggleReady}
+        onStartRoomGame={startRoomGame}
+      />
+
+      <OctagonHistoryModal
+        opened={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        userId={user ? String(user.id) : undefined}
+      />
+
+      <OctagonChallengeToast
+        challenge={incomingChallenge}
+        onAccept={acceptChallenge}
+        onReject={rejectChallenge}
       />
     </div>
   );

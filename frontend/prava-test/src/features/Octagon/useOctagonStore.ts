@@ -8,6 +8,8 @@ import {
   type MatchResultData,
   type UserStats,
   type FlyingEmoji,
+  type GroupRoom,
+  type IncomingChallenge,
 } from "./types";
 import { OctagonApi } from "./OctagonApi";
 import { OctagonSocket } from "./OctagonSocket";
@@ -40,11 +42,21 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
   const [flyingEmojis, setFlyingEmojis] = useState<FlyingEmoji[]>([]);
   const [revengeRequested, setRevengeRequested] = useState(false);
 
+  // Group room states
+  const [currentRoom, setCurrentRoom] = useState<GroupRoom | null>(null);
+  const [roomErrorMessage, setRoomErrorMessage] = useState<string | null>(null);
+  const [roomStandings, setRoomStandings] = useState<Array<{ userId: string; displayName: string; avatarUrl: string; score: number; answeredCount: number }> | null>(null);
+
+  // Incoming challenge
+  const [incomingChallenge, setIncomingChallenge] = useState<IncomingChallenge | null>(null);
+
   // Modal triggers
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showGuestModal, setShowGuestModal] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showDuelModal, setShowDuelModal] = useState(false);
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   const socketRef = useRef<OctagonSocket | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
@@ -194,12 +206,79 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
         refreshStats();
       },
 
-
       onReconnect: (data) => {
         setState("PLAYING");
         setMatchId(data.matchId);
         setCurrentIndex(data.questionIndex);
         setRemainingTimeSec(data.remainingTimeSec);
+      },
+
+      // Direct Challenge callbacks
+      onChallengeReceived: (data) => {
+        setIncomingChallenge(data);
+        OctagonAudio.playMatchFound();
+      },
+      onChallengeRejected: () => {
+        // Target rejected challenge
+      },
+      onChallengeError: (data) => {
+        alert(data.message || "Xatolik yuz berdi");
+      },
+
+      // Group Room callbacks
+      onRoomCreated: (room) => {
+        setCurrentRoom(room);
+        setShowGroupModal(true);
+        setRoomErrorMessage(null);
+      },
+      onRoomJoined: (room) => {
+        setCurrentRoom(room);
+        setShowGroupModal(true);
+        setRoomErrorMessage(null);
+      },
+      onRoomUpdated: (room) => {
+        setCurrentRoom(room);
+      },
+      onRoomLeft: () => {
+        setCurrentRoom(null);
+      },
+      onRoomError: (data) => {
+        setRoomErrorMessage(data.message);
+      },
+      onRoomGameCountdown: (count) => {
+        setState("COUNTDOWN");
+        setCountdown(count);
+        OctagonAudio.playCountdownTick(count);
+        setShowGroupModal(false);
+      },
+      onRoomGameStarted: async (data) => {
+        setState("PLAYING");
+        setCurrentIndex(0);
+        setMyAnswers({});
+        setMyScore(0);
+        setRevengeRequested(false);
+        setRemainingTimeSec(data.totalDurationSec || 300);
+        setShowGroupModal(false);
+        OctagonAudio.playMatchStart();
+
+        try {
+          const qList = await OctagonApi.getQuestions(data.questionIds);
+          setQuestions(qList);
+          const imageUrls = qList.map((q) => q.imageUrl).filter((u): u is string => Boolean(u));
+          imagePreloader.preloadImages(imageUrls);
+        } catch {
+          // Failover
+        }
+      },
+      onGroupProgress: (_data) => {
+        // live group score sync
+      },
+      onGroupMatchEnded: (data) => {
+        setRoomStandings(data.standings);
+        setState("MATCH_FINISHED");
+        OctagonAudio.playVictory();
+        fireConfetti();
+        refreshStats();
       },
     });
 
@@ -267,7 +346,11 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
 
       // Send via socket
       if (socketRef.current) {
-        socketRef.current.submitAnswer(matchId, currentQ.id, selectedIndex);
+        if (currentRoom) {
+          socketRef.current.submitRoomAnswer(currentQ.id, selectedIndex);
+        } else {
+          socketRef.current.submitAnswer(matchId, currentQ.id, selectedIndex);
+        }
       }
 
       // Move to next question after small delay
@@ -277,7 +360,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
         }, 300);
       }
     },
-    [state, questions, currentIndex, myAnswers, matchId]
+    [state, questions, currentIndex, myAnswers, matchId, currentRoom]
   );
 
   const sendReaction = useCallback(
@@ -301,6 +384,69 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     socketRef.current.requestRevenge(matchId);
   }, [matchId]);
 
+  // Friend Duel Actions
+  const sendChallenge = useCallback(async (targetUserId: string) => {
+    try {
+      const socket = await initSocket();
+      socket.sendChallenge(targetUserId);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [initSocket]);
+
+  const acceptChallenge = useCallback((challengeId: string) => {
+    if (socketRef.current) {
+      socketRef.current.acceptChallenge(challengeId);
+    }
+    setIncomingChallenge(null);
+  }, []);
+
+  const rejectChallenge = useCallback((challengeId: string) => {
+    if (socketRef.current) {
+      socketRef.current.rejectChallenge(challengeId);
+    }
+    setIncomingChallenge(null);
+  }, []);
+
+  // Group Room Actions
+  const createRoom = useCallback(async (maxPlayers = 4, isPrivate = false) => {
+    try {
+      const socket = await initSocket();
+      socket.createRoom(maxPlayers, isPrivate);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [initSocket]);
+
+  const joinRoom = useCallback(async (roomCode: string) => {
+    try {
+      const socket = await initSocket();
+      socket.joinRoom(roomCode);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [initSocket]);
+
+  const leaveRoom = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.leaveRoom();
+    }
+    setCurrentRoom(null);
+    setShowGroupModal(false);
+  }, []);
+
+  const toggleReady = useCallback((ready: boolean) => {
+    if (socketRef.current) {
+      socketRef.current.toggleReady(ready);
+    }
+  }, []);
+
+  const startRoomGame = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.startRoomGame();
+    }
+  }, []);
+
   const returnToLobby = useCallback(() => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     setState("IDLE");
@@ -311,6 +457,8 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     setMyAnswers({});
     setMatchResult(null);
     setRevengeRequested(false);
+    setCurrentRoom(null);
+    setRoomStandings(null);
     refreshStats();
   }, [refreshStats]);
 
@@ -332,6 +480,10 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     matchResult,
     flyingEmojis,
     revengeRequested,
+    currentRoom,
+    roomErrorMessage,
+    roomStandings,
+    incomingChallenge,
     showRulesModal,
     setShowRulesModal,
     showGuestModal,
@@ -340,6 +492,10 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     setShowLeaderboard,
     showDuelModal,
     setShowDuelModal,
+    showGroupModal,
+    setShowGroupModal,
+    showHistoryModal,
+    setShowHistoryModal,
     startSearch,
     confirmRulesAndSearch,
     cancelSearch,
@@ -348,5 +504,13 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     requestRevenge,
     returnToLobby,
     refreshStats,
+    sendChallenge,
+    acceptChallenge,
+    rejectChallenge,
+    createRoom,
+    joinRoom,
+    leaveRoom,
+    toggleReady,
+    startRoomGame,
   };
 }

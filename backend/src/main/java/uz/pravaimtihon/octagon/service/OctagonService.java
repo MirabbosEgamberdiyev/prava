@@ -339,4 +339,58 @@ public class OctagonService {
         }
         return dtos;
     }
+
+    @Transactional(readOnly = true)
+    public List<UserSearchResult> searchUsers(String query, String currentUserId) {
+        if (query == null || query.trim().length() < 2) {
+            return Collections.emptyList();
+        }
+        String cleanQuery = query.trim();
+        List<User> foundUsers = new ArrayList<>();
+
+        try {
+            Long uid = Long.parseLong(cleanQuery);
+            userRepository.findById(uid).ifPresent(foundUsers::add);
+        } catch (NumberFormatException ignored) {}
+
+        try {
+            Page<User> page = userRepository.searchUsers(cleanQuery, PageRequest.of(0, 10));
+            for (User u : page.getContent()) {
+                if (foundUsers.stream().noneMatch(existing -> existing.getId().equals(u.getId()))) {
+                    foundUsers.add(u);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Search users error for query '{}': {}", cleanQuery, e.getMessage());
+        }
+
+        List<UserSearchResult> results = new ArrayList<>();
+        for (User u : foundUsers) {
+            String uidStr = String.valueOf(u.getId());
+            if (uidStr.equals(currentUserId)) {
+                continue;
+            }
+
+            OctagonProfile profile = getOrCreateProfile(uidStr);
+            String name = u.getFirstName();
+            if (u.getLastName() != null && !u.getLastName().isBlank()) {
+                name += " " + u.getLastName().charAt(0) + ".";
+            }
+
+            results.add(UserSearchResult.builder()
+                    .userId(uidStr)
+                    .displayName(name)
+                    .avatarUrl(u.getProfileImageUrl() != null ? u.getProfileImageUrl() : "/images/default-avatar.webp")
+                    .eloRating(profile.getEloRating())
+                    .rank(profile.getRank())
+                    .rankEmoji(profile.getRank() != null ? profile.getRank().getEmoji() : "🥉")
+                    .rankName(profile.getRank() != null ? profile.getRank().getDisplayName() : "Bronza")
+                    .isOnline(false)
+                    .status("OFFLINE")
+                    .build());
+        }
+
+        return results;
+    }
 }
+

@@ -1,4 +1,4 @@
-import { OCTAGON_CONFIG, type MatchOpponent, type OpponentProgress, type MatchResultData } from "./types";
+import { OCTAGON_CONFIG, type MatchOpponent, type OpponentProgress, type MatchResultData, type GroupRoom, type IncomingChallenge } from "./types";
 import { ENV } from "../../config/env";
 
 export interface OctagonSocketCallbacks {
@@ -12,6 +12,23 @@ export interface OctagonSocketCallbacks {
   onReconnect?: (data: { matchId: string; questionIndex: number; myAnswers: Record<string, number>; remainingTimeSec: number }) => void;
   onError?: (err: Event | Error) => void;
   onClose?: (code: number, reason: string) => void;
+
+  // Challenge callbacks
+  onChallengeReceived?: (data: IncomingChallenge) => void;
+  onChallengeSent?: (data: { challengeId: string; targetUserId: string }) => void;
+  onChallengeRejected?: (data: { challengeId: string; byUserId?: string }) => void;
+  onChallengeError?: (data: { code: string; message: string }) => void;
+
+  // Group Room callbacks
+  onRoomCreated?: (room: GroupRoom) => void;
+  onRoomJoined?: (room: GroupRoom) => void;
+  onRoomUpdated?: (room: GroupRoom) => void;
+  onRoomLeft?: (data: { roomCode: string }) => void;
+  onRoomError?: (data: { code: string; message: string }) => void;
+  onRoomGameCountdown?: (count: number) => void;
+  onRoomGameStarted?: (data: { roomCode: string; questionIds: number[]; totalDurationSec: number; startTime: number }) => void;
+  onGroupProgress?: (data: { userId: string; displayName: string; questionIndex: number; answeredCount: number; score: number }) => void;
+  onGroupMatchEnded?: (data: { roomCode: string; standings: Array<{ userId: string; displayName: string; avatarUrl: string; score: number; answeredCount: number }> }) => void;
 }
 
 export class OctagonSocket {
@@ -93,6 +110,50 @@ export class OctagonSocket {
             case "heartbeat_ping":
               // Server acknowledged ping
               break;
+
+            // Direct Challenge events
+            case "challenge_received":
+              this.callbacks.onChallengeReceived?.(data as IncomingChallenge);
+              break;
+            case "challenge_sent":
+              this.callbacks.onChallengeSent?.(data);
+              break;
+            case "challenge_rejected":
+              this.callbacks.onChallengeRejected?.(data);
+              break;
+            case "challenge_error":
+              this.callbacks.onChallengeError?.(data);
+              break;
+
+            // Group Room events
+            case "room_created":
+              this.callbacks.onRoomCreated?.(data.room as GroupRoom);
+              break;
+            case "room_joined":
+              this.callbacks.onRoomJoined?.(data.room as GroupRoom);
+              break;
+            case "room_updated":
+              this.callbacks.onRoomUpdated?.(data.room as GroupRoom);
+              break;
+            case "room_left":
+              this.callbacks.onRoomLeft?.(data);
+              break;
+            case "room_error":
+              this.callbacks.onRoomError?.(data);
+              break;
+            case "room_game_countdown":
+              this.callbacks.onRoomGameCountdown?.(data.count);
+              break;
+            case "room_game_started":
+              this.callbacks.onRoomGameStarted?.(data);
+              break;
+            case "group_progress":
+              this.callbacks.onGroupProgress?.(data);
+              break;
+            case "group_match_ended":
+              this.callbacks.onGroupMatchEnded?.(data);
+              break;
+
             default:
               break;
           }
@@ -150,6 +211,48 @@ export class OctagonSocket {
 
   public requestRevenge(matchId: string) {
     this.send("request_revenge", { matchId });
+  }
+
+  // Friend Duel methods
+  public sendChallenge(targetUserId: string) {
+    this.send("send_challenge", { targetUserId });
+  }
+
+  public acceptChallenge(challengeId: string) {
+    this.send("accept_challenge", { challengeId });
+  }
+
+  public rejectChallenge(challengeId: string) {
+    this.send("reject_challenge", { challengeId });
+  }
+
+  // Group Room methods
+  public createRoom(maxPlayers = 4, isPrivate = false) {
+    this.send("create_room", { maxPlayers, isPrivate });
+  }
+
+  public joinRoom(roomCode: string) {
+    this.send("join_room", { roomCode: roomCode.trim().toUpperCase() });
+  }
+
+  public leaveRoom() {
+    this.send("leave_room", {});
+  }
+
+  public toggleReady(isReady: boolean) {
+    this.send("toggle_ready", { isReady });
+  }
+
+  public startRoomGame() {
+    this.send("start_room_game", {});
+  }
+
+  public submitRoomAnswer(questionId: number, selectedIndex: number) {
+    this.send("submit_room_answer", {
+      questionId,
+      selectedIndex,
+      clientTimestamp: Date.now(),
+    });
   }
 
   public close() {

@@ -112,4 +112,52 @@ public class OctagonDtos {
         private String explanationUzc;
         private String explanationRu;
     }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserSearchResult {
+        private String userId;
+        private String displayName;
+        private String avatarUrl;
+        private int eloRating;
+        private OctagonRank rank;
+        private String rankEmoji;
+        private String rankName;
+        private boolean isOnline;
+        private String status; // "AVAILABLE", "IN_MATCH", "IN_QUEUE"
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GroupRoomMemberDto {
+        private String userId;
+        private String displayName;
+        private String avatarUrl;
+        private int eloRating;
+        private String rankEmoji;
+        private boolean isHost;
+        private boolean isReady;
+        private int currentScore;
+        private int answeredCount;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GroupRoomDto {
+        private String roomCode;
+        private String hostId;
+        private String hostName;
+        private int maxPlayers;
+        private boolean isPrivate;
+        private String status; // "WAITING", "COUNTDOWN", "PLAYING", "FINISHED"
+        private List<GroupRoomMemberDto> members;
+        private String createdAt;
+    }
 }
+

@@ -145,3 +145,63 @@ export interface FlyingEmoji {
   startX: number;
   startY: number;
 }
+
+export interface UserSearchResult {
+  userId: string;
+  displayName: string;
+  avatarUrl?: string;
+  eloRating: number;
+  rank: OctagonRankId;
+  rankEmoji: string;
+  rankName: string;
+  isOnline: boolean;
+  status: "AVAILABLE" | "IN_MATCH" | "IN_QUEUE" | "OFFLINE" | string;
+}
+
+export interface GroupRoomMember {
+  userId: string;
+  displayName: string;
+  avatarUrl?: string;
+  eloRating: number;
+  rankEmoji: string;
+  isHost: boolean;
+  isReady: boolean;
+  currentScore: number;
+  answeredCount: number;
+}
+
+export interface GroupRoom {
+  roomCode: string;
+  hostId: string;
+  hostName: string;
+  maxPlayers: number;
+  isPrivate: boolean;
+  status: "WAITING" | "COUNTDOWN" | "PLAYING" | "FINISHED";
+  members: GroupRoomMember[];
+  createdAt: string;
+}
+
+export interface MatchHistoryEntry {
+  matchId: string;
+  opponentId: string;
+  opponentName: string;
+  myScore: number;
+  opponentScore: number;
+  result: "WIN" | "LOSS" | "DRAW";
+  deltaElo: number;
+  durationSeconds: number;
+  createdAt: string;
+}
+
+export interface IncomingChallenge {
+  challengeId: string;
+  challenger: {
+    userId: string;
+    displayName: string;
+    eloRating: number;
+    rank: string;
+    rankEmoji: string;
+  };
+  expiresInSec: number;
+}
+

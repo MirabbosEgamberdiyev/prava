@@ -69,6 +69,31 @@ class OctagonAudioSynthesizer {
     });
   }
 
+  public playMatchFound() {
+    if (this.isMuted) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const notes = [440, 880];
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      const start = ctx.currentTime + idx * 0.1;
+      osc.frequency.setValueAtTime(freq, start);
+
+      gain.gain.setValueAtTime(0.2, start);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(start);
+      osc.stop(start + 0.25);
+    });
+  }
+
   public playCorrect() {
     if (this.isMuted) return;
     const ctx = this.getContext();

@@ -27,6 +27,7 @@ public class OctagonController {
 
     private final OctagonTicketService ticketService;
     private final OctagonService octagonService;
+    private final uz.pravaimtihon.octagon.websocket.OctagonMatchmaker matchmaker;
 
     @PostMapping("/ticket")
     @Operation(summary = "Generate 30-second One-Time Ticket for WebSocket authentication (CWE-598 protected)")
@@ -153,4 +154,33 @@ public class OctagonController {
         List<QuestionDto> list = octagonService.getQuestionsByIds(questionIds);
         return ResponseEntity.ok(ApiResponse.success(list));
     }
+
+    @GetMapping("/users/search")
+    @Operation(summary = "Search users for 1v1 challenge by username, name, phone or ID")
+    public ResponseEntity<ApiResponse<List<UserSearchResult>>> searchUsers(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @RequestParam("q") String query) {
+
+        String currentUserId = principal != null ? principal.getId().toString() : "";
+        List<UserSearchResult> results = octagonService.searchUsers(query, currentUserId);
+
+        for (UserSearchResult r : results) {
+            boolean online = matchmaker.isUserOnline(r.getUserId());
+            r.setOnline(online);
+            r.setStatus(matchmaker.getUserStatus(r.getUserId()));
+        }
+
+        return ResponseEntity.ok(ApiResponse.success(results));
+    }
+
+    @GetMapping("/room/{code}")
+    @Operation(summary = "Get group room details by code")
+    public ResponseEntity<ApiResponse<GroupRoomDto>> getRoom(
+            @PathVariable("code") String code) {
+
+        return matchmaker.getRoomDto(code)
+                .map(room -> ResponseEntity.ok(ApiResponse.success(room)))
+                .orElseGet(() -> ResponseEntity.status(404).body(ApiResponse.error("Xona topilmadi")));
+    }
 }
+

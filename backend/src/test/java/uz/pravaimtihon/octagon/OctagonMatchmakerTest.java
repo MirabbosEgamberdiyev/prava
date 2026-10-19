@@ -92,4 +92,81 @@ class OctagonMatchmakerTest {
             matchmaker.handleSubmitAnswer(session, nonExistentMatchId, 999L, 1, System.currentTimeMillis());
         });
     }
+
+    @Test
+    @DisplayName("User Status & Online Tracking")
+    void testUserStatusTracking() {
+        WebSocketSession wsSession = mock(WebSocketSession.class);
+        when(wsSession.isOpen()).thenReturn(true);
+
+        OctagonSession session = new OctagonSession("user_400", "Player_400", wsSession);
+        matchmaker.registerSession(session);
+
+        assertTrue(matchmaker.isUserOnline("user_400"));
+        assertEquals("AVAILABLE", matchmaker.getUserStatus("user_400"));
+
+        matchmaker.joinQueue(session, 0, 100);
+        assertEquals("IN_QUEUE", matchmaker.getUserStatus("user_400"));
+
+        matchmaker.leaveQueue(session);
+        assertEquals("AVAILABLE", matchmaker.getUserStatus("user_400"));
+
+        matchmaker.removeSession("user_400");
+        assertFalse(matchmaker.isUserOnline("user_400"));
+        assertEquals("OFFLINE", matchmaker.getUserStatus("user_400"));
+    }
+
+    @Test
+    @DisplayName("Group Room Flow: Create, Join, Ready, Leave")
+    void testGroupRoomFlow() {
+        WebSocketSession ws1 = mock(WebSocketSession.class);
+        when(ws1.isOpen()).thenReturn(true);
+        WebSocketSession ws2 = mock(WebSocketSession.class);
+        when(ws2.isOpen()).thenReturn(true);
+
+        OctagonSession host = new OctagonSession("host_1", "Host User", ws1);
+        OctagonSession guest = new OctagonSession("guest_2", "Guest User", ws2);
+
+        uz.pravaimtihon.octagon.entity.OctagonProfile mockProfile = uz.pravaimtihon.octagon.entity.OctagonProfile.builder()
+                .userId("host_1")
+                .eloRating(200)
+                .rank(uz.pravaimtihon.octagon.enums.OctagonRank.SILVER)
+                .build();
+        when(octagonService.getOrCreateProfile(anyString())).thenReturn(mockProfile);
+        when(octagonService.resolveDisplayName(anyString())).thenReturn("Test User");
+
+        matchmaker.registerSession(host);
+        matchmaker.registerSession(guest);
+
+        // Host creates room
+        matchmaker.handleCreateRoom(host, 4, false);
+        assertEquals("IN_ROOM", matchmaker.getUserStatus("host_1"));
+
+        // Retrieve room
+        String roomCode = null;
+        for (int i = 1000; i <= 9999; i++) {
+            if (matchmaker.getRoomDto("OCT-" + i).isPresent()) {
+                roomCode = "OCT-" + i;
+                break;
+            }
+        }
+        assertNotNull(roomCode);
+
+        // Guest joins room
+        matchmaker.handleJoinRoom(guest, roomCode);
+        assertEquals("IN_ROOM", matchmaker.getUserStatus("guest_2"));
+
+        var roomDto = matchmaker.getRoomDto(roomCode).orElseThrow();
+        assertEquals(2, roomDto.getMembers().size());
+
+        // Guest toggles ready
+        matchmaker.handleToggleReady(guest, true);
+        var updatedRoom = matchmaker.getRoomDto(roomCode).orElseThrow();
+        assertTrue(updatedRoom.getMembers().stream().anyMatch(m -> m.getUserId().equals("guest_2") && m.isReady()));
+
+        // Guest leaves room
+        matchmaker.handleLeaveRoom(guest);
+        assertEquals("AVAILABLE", matchmaker.getUserStatus("guest_2"));
+        assertEquals(1, matchmaker.getRoomDto(roomCode).orElseThrow().getMembers().size());
+    }
 }

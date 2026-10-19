@@ -60,4 +60,14 @@ export const OctagonApi = {
     const res = await api.post("/api/v1/octagon/questions", questionIds);
     return res.data?.data || [];
   },
+
+  async searchUsers(query: string) {
+    const res = await api.get(`/api/v1/octagon/users/search?q=${encodeURIComponent(query)}`);
+    return res.data?.data || [];
+  },
+
+  async getRoom(code: string) {
+    const res = await api.get(`/api/v1/octagon/room/${encodeURIComponent(code)}`);
+    return res.data?.data || null;
+  },
 };

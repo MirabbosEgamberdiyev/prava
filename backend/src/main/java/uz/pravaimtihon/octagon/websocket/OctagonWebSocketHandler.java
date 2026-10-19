@@ -99,6 +99,54 @@ public class OctagonWebSocketHandler extends TextWebSocketHandler {
                     matchmaker.handleRequestRevenge(octSession, revMatchId);
                     break;
 
+                // Friend Challenge Events
+                case "send_challenge":
+                    String targetId = data.get("targetUserId").asText();
+                    matchmaker.handleSendChallenge(octSession, targetId);
+                    break;
+
+                case "accept_challenge":
+                    UUID accChallengeId = UUID.fromString(data.get("challengeId").asText());
+                    matchmaker.handleAcceptChallenge(octSession, accChallengeId);
+                    break;
+
+                case "reject_challenge":
+                    UUID rejChallengeId = UUID.fromString(data.get("challengeId").asText());
+                    matchmaker.handleRejectChallenge(octSession, rejChallengeId);
+                    break;
+
+                // Group Room Events
+                case "create_room":
+                    int maxP = data.has("maxPlayers") ? data.get("maxPlayers").asInt(4) : 4;
+                    boolean isPriv = data.has("isPrivate") && data.get("isPrivate").asBoolean();
+                    matchmaker.handleCreateRoom(octSession, maxP, isPriv);
+                    break;
+
+                case "join_room":
+                    String rCode = data.get("roomCode").asText();
+                    matchmaker.handleJoinRoom(octSession, rCode);
+                    break;
+
+                case "leave_room":
+                    matchmaker.handleLeaveRoom(octSession);
+                    break;
+
+                case "toggle_ready":
+                    boolean ready = data.has("isReady") && data.get("isReady").asBoolean();
+                    matchmaker.handleToggleReady(octSession, ready);
+                    break;
+
+                case "start_room_game":
+                    matchmaker.handleStartRoomGame(octSession);
+                    break;
+
+                case "submit_room_answer":
+                    Long roomQId = data.get("questionId").asLong();
+                    int roomSelIdx = data.get("selectedIndex").asInt();
+                    long roomClientTime = data.has("clientTimestamp") ? data.get("clientTimestamp").asLong() : System.currentTimeMillis();
+                    matchmaker.handleSubmitRoomAnswer(octSession, roomQId, roomSelIdx, roomClientTime);
+                    break;
+
                 case "heartbeat_ping":
                     octSession.setLastPingTime(java.time.Instant.now());
                     String pong = objectMapper.writeValueAsString(Map.of(

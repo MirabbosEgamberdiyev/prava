@@ -4260,7 +4260,20 @@
       "copied": "Nusxalandi!",
       "orCode": "Yoki taklif kodini kiriting",
       "enterCodePlaceholder": "Duel kodi (masalan: 123456)",
-      "join": "Qo'shilish"
+      "join": "Qo'shilish",
+      "tabSearch": "Foydalanuvchini qidirish",
+      "tabLink": "Havola va QR-kod",
+      "searchPlaceholder": "Ism, telefon yoki ID kiriting...",
+      "searchBtn": "Qidirish",
+      "statusInMatch": "Jangda",
+      "statusInQueue": "Qidiruvda",
+      "statusOnline": "Onlayn",
+      "statusOffline": "Oflayn",
+      "challengeSent": "Yuborildi...",
+      "challengeBtn": "Jangga Chorlash",
+      "noUsersFound": "Foydalanuvchi topilmadi",
+      "searchHint": "Do'stingizning ismi yoki ID raqamini kiriting",
+      "searchError": "Qidirishda xatolik yuz berdi"
     },
     "arena": {
       "opponent": "Raqib",
@@ -4308,7 +4321,11 @@
       "rulesBtn": "Qoidalar",
       "editNickname": "Taxallusni tahrirlash",
       "saveNickname": "Saqlash",
-      "dueFriendDesc": "Do'stingizga maxsus havola yuborib, xususiy jangga chorlang"
+      "dueFriendDesc": "Do'stingizga maxsus havola yuborib, xususiy jangga chorlang",
+      "groupBattle": "Guruhli Bahs",
+      "groupBattleDesc": "Do'stlar bilan xona ochib birgalikda bellashing",
+      "history": "Bahslar Tarixi",
+      "historyDesc": "Oldingi janglaringiz va ELO o'zgarishlari"
     },
     "rank": {
       "brilliant": "Brilliant",
@@ -4322,6 +4339,45 @@
       "desc": "Haqiqiy raqiblar bilan real vaqtda yo'l qoidalari bo'yicha bellashing, ELO yig'ing va ligalarda ko'tariling!",
       "cta": "Jangga Kirish",
       "myRank": "Sizning ligangiz: {{rank}} • {{elo}} ELO"
+    },
+    "group": {
+      "title": "Guruhli Bahs (Party)",
+      "tabCreate": "Xona yaratish",
+      "tabJoin": "Xonaga qo'shilish",
+      "maxPlayers": "Maksimal ishtirokchilar soni:",
+      "privateRoom": "Xususiy xona",
+      "privateDesc": "Faqat kod orqali kirish mumkin",
+      "createBtn": "Xonani Yaratish",
+      "enterCode": "Xona kodi:",
+      "joinBtn": "Xonaga Kirish",
+      "roomCodeLabel": "XONA KODI",
+      "copied": "Nusxalandi!",
+      "copy": "Nusxalash",
+      "members": "Ishtirokchilar:",
+      "host": "Xona egasi",
+      "hostBadge": "Host",
+      "ready": "Tayyor",
+      "waiting": "Kutilmoqda...",
+      "leave": "Chiqish",
+      "startGame": "O'yinni Boshlash",
+      "setReady": "Men Tayyorman!",
+      "unready": "Bekor qilish"
+    },
+    "history": {
+      "title": "Bahslar Tarixi",
+      "empty": "Hozircha yakunlangan janglar mavjud emas",
+      "win": "G'alaba",
+      "draw": "Durang",
+      "loss": "Mag'lubiyat",
+      "opponent": "Raqib",
+      "prev": "Oldingi",
+      "next": "Keyingi"
+    },
+    "challenge": {
+      "incomingTitle": "Jangga Chorlov!",
+      "incomingPrompt": "Raqib siz bilan real vaqtda 1v1 Oktagonda kuch sinashmoqchi!",
+      "accept": "Qabul qilish",
+      "reject": "Rad etish"
     }
   }
 }
