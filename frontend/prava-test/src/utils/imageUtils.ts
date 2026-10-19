@@ -21,7 +21,11 @@ export const getImageUrl = (url: string | null | undefined): string | undefined 
     url === "/logo.png" ||
     url === "logo.png" ||
     url === "/logo.svg" ||
-    url === "logo.svg"
+    url === "logo.svg" ||
+    url === "/question-default.svg" ||
+    url === "question-default.svg" ||
+    url === "/question-default.png" ||
+    url === "question-default.png"
   ) {
     return url.startsWith("/") ? url : `/${url}`;
   }

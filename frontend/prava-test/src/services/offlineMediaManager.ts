@@ -23,6 +23,10 @@ export function normalizeMediaPath(rawPath: string | null | undefined): string |
     trimmed === "logo.png" ||
     trimmed === "/logo.svg" ||
     trimmed === "logo.svg" ||
+    trimmed === "/question-default.svg" ||
+    trimmed === "question-default.svg" ||
+    trimmed === "/question-default.png" ||
+    trimmed === "question-default.png" ||
     trimmed === "/images/malibu.webp" ||
     trimmed === "/malibu.webp" ||
     trimmed === "images/malibu.webp" ||
