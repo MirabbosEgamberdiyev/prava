@@ -15,7 +15,7 @@ interface QuestionImageProps {
 /** Render with key={path}: a new question remounts this component (fresh state, no stale flash). */
 type Resolved = { path: string; src: string | null; done: boolean };
 
-const DEFAULT_QUESTION_IMAGE = "/images/malibu.webp";
+const DEFAULT_QUESTION_IMAGE = "/question-default.svg";
 
 /**
  * Local-first question image: uses the offline media cache (synchronously when the object URL

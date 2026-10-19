@@ -13,7 +13,7 @@ interface Props {
   lazy?: boolean;
 }
 
-const DEFAULT_IMAGE = "/images/malibu.webp";
+const DEFAULT_IMAGE = "/question-default.svg";
 
 export default function SecureImage({ path, alt = "", className, style, onOpen, lazy }: Props) {
   const [hasError, setHasError] = useState(false);

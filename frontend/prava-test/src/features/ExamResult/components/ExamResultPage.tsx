@@ -452,8 +452,8 @@ function AnswerReviewCard({
         }}
       >
         <Image
-          src={getImageUrl(answer.imageUrl) || "/images/malibu.webp"}
-          fallbackSrc="/images/malibu.webp"
+          src={getImageUrl(answer.imageUrl) || "/question-default.svg"}
+          fallbackSrc="/question-default.svg"
           alt={localize(answer.questionText)}
           fit="contain"
           mah={220}

@@ -192,11 +192,7 @@ export function QuizContent({
       if (imgPath) {
         preloadQuestionImage(imgPath);
       } else {
-        const defaultFallback =
-          (q?.id ?? 0) % 2 === 0
-            ? "/api/v1/files/defaults/default_malibu.webp"
-            : "/api/v1/files/defaults/default_tahoe.webp";
-        preloadQuestionImage(defaultFallback);
+        preloadQuestionImage("/question-default.svg");
       }
     });
   }, [activeQuiz, questions]);
@@ -811,13 +807,13 @@ export function QuizContent({
 
           {/* Image - right side */}
           <Grid.Col span={{ base: 12, md: 6 }} order={{ base: 1, md: 2 }}>
-            <Box onDoubleClick={() => setImageModalOpened(true)} style={{ cursor: "pointer" }}>
+            <Box
+              onDoubleClick={currentQuestion?.imageUrl ? () => setImageModalOpened(true) : undefined}
+              style={{ cursor: currentQuestion?.imageUrl ? "pointer" : "default" }}
+            >
               <ImagePlaceholder
-                src={
-                  getImageUrl(currentQuestion?.imageUrl) ||
-                  "/images/malibu.webp"
-                }
-                onClick={() => setImageModalOpened(true)}
+                src={getImageUrl(currentQuestion?.imageUrl) || null}
+                onClick={currentQuestion?.imageUrl ? () => setImageModalOpened(true) : undefined}
               />
             </Box>
           </Grid.Col>
@@ -837,7 +833,7 @@ export function QuizContent({
           <Image
             src={
               getImageUrl(currentQuestion?.imageUrl) ||
-              "/images/malibu.webp"
+              "/question-default.svg"
             }
             fit="contain"
           />

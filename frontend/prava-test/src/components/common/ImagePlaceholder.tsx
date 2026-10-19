@@ -101,17 +101,76 @@ export function ImagePlaceholder({
           />
         </>
       ) : (
-        <>
-          <Image
-            src="/logo.svg"
-            alt=""
-            w={48}
-            h={48}
-            fit="contain"
-            loading="lazy"
-            style={{ opacity: isDark ? 0.35 : 0.25 }}
-          />
-        </>
+        <Box
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+            padding: 16,
+            gap: 10,
+            userSelect: "none",
+          }}
+        >
+          <Box
+            style={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              maxHeight: "65%",
+              flex: 1,
+            }}
+          >
+            <Image
+              src="/logo.svg"
+              fallbackSrc="/question-default.svg"
+              alt="PRAVA-ONLINE"
+              maw={150}
+              mah={150}
+              fit="contain"
+              loading="eager"
+              decoding="async"
+              style={{
+                filter: isDark
+                  ? "drop-shadow(0 0 20px rgba(59, 130, 246, 0.25))"
+                  : "drop-shadow(0 4px 12px rgba(37, 99, 235, 0.12))",
+              }}
+            />
+          </Box>
+          <Box style={{ textAlign: "center" }}>
+            <Box
+              component="span"
+              style={{
+                display: "block",
+                fontFamily: "Montserrat, var(--mantine-font-family), sans-serif",
+                fontSize: 16,
+                fontWeight: 800,
+                letterSpacing: 2,
+                color: isDark ? "#60a5fa" : "#1d4ed8",
+                lineHeight: 1.2,
+              }}
+            >
+              PRAVA-ONLINE
+            </Box>
+            <Box
+              component="span"
+              style={{
+                display: "block",
+                fontSize: 12,
+                fontWeight: 500,
+                color: isDark ? "var(--mantine-color-dark-2)" : "var(--mantine-color-gray-6)",
+                marginTop: 3,
+                letterSpacing: 0.5,
+              }}
+            >
+              O'quv va Imtihon Tizimi
+            </Box>
+          </Box>
+        </Box>
       )}
     </Box>
   );

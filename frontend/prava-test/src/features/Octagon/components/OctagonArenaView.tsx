@@ -276,16 +276,20 @@ export const OctagonArenaView: React.FC<Props> = ({
           </Text>
 
           {/* Question Image */}
-          {(question.imageUrl || question.image) && (
-            <div className="oct-question-img-box">
-              <img
-                src={question.imageUrl || question.image}
-                alt={t("octagon.arena.imageAlt", "Savol chizmasi")}
-                className="oct-question-img"
-                loading="eager"
-              />
-            </div>
-          )}
+          <div className="oct-question-img-box">
+            <img
+              src={question.imageUrl || question.image || "/question-default.svg"}
+              alt={t("octagon.arena.imageAlt", "Savol chizmasi")}
+              className="oct-question-img"
+              loading="eager"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.src.includes("question-default.svg")) {
+                  target.src = "/question-default.svg";
+                }
+              }}
+            />
+          </div>
 
           {/* 4 Options Grid */}
           <div className="oct-options-grid">

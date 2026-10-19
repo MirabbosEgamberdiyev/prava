@@ -18,7 +18,20 @@ const memoryBlobMap = new Map<string, string>();
 export function normalizeMediaPath(rawPath: string | null | undefined): string | null {
   if (!rawPath || typeof rawPath !== "string") return null;
   const trimmed = rawPath.trim();
-  if (!trimmed) return null;
+  if (
+    trimmed === "/question-default.svg" ||
+    trimmed === "question-default.svg" ||
+    trimmed === "/logo.png" ||
+    trimmed === "logo.png" ||
+    trimmed === "/logo.svg" ||
+    trimmed === "logo.svg" ||
+    trimmed === "/images/malibu.webp" ||
+    trimmed === "/malibu.webp" ||
+    trimmed === "images/malibu.webp" ||
+    trimmed === "malibu.webp"
+  ) {
+    return null;
+  }
 
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:") || trimmed.startsWith("blob:")) {
     return trimmed;

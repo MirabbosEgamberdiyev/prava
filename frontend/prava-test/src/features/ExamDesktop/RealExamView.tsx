@@ -354,7 +354,7 @@ export const RealExamView = memo(function RealExamView(props: ExamDesktopViewPro
 
   if (!q) return null;
 
-  const DEFAULT_QUESTION_IMAGE = "/images/malibu.webp";
+  const DEFAULT_QUESTION_IMAGE = "/question-default.svg";
   const imagePath = q.image_path || DEFAULT_QUESTION_IMAGE;
   const isUrgentTimer = deadline ? secondsLeft <= 60 : false;
 
