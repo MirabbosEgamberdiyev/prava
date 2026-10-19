@@ -25,8 +25,15 @@ export const OctagonResultView: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation();
 
-  const isWin = result?.isWin ?? false;
   const isDraw = result?.isDraw ?? false;
+  const isWin =
+    result?.isWin ??
+    (!isDraw &&
+      Boolean(
+        (result?.finalScores && result.finalScores.me > result.finalScores.opponent) ||
+          (result?.myDeltaElo && result.myDeltaElo > 0)
+      ));
+
 
   useEffect(() => {
     if (isWin) {

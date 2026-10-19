@@ -169,12 +169,22 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
 
       onMatchEnded: (data) => {
         if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-        setMatchResult(data);
+        const myId = user ? String(user.id) : localStorage.getItem("octagon_guest_id");
+        const isWin = !data.isDraw && Boolean(
+          (data.winnerId && myId && data.winnerId === myId) ||
+          (data.finalScores && data.finalScores.me > data.finalScores.opponent) ||
+          (data.myDeltaElo && data.myDeltaElo > 0)
+        );
+        const enrichedResult: MatchResultData = {
+          ...data,
+          isWin,
+        };
+        setMatchResult(enrichedResult);
         setState("MATCH_FINISHED");
 
         if (data.isDraw) {
           OctagonAudio.playDefeat();
-        } else if (data.winnerId && data.winnerId === (user ? String(user.id) : localStorage.getItem("octagon_guest_id"))) {
+        } else if (isWin) {
           OctagonAudio.playVictory();
           fireConfetti();
         } else {
@@ -183,6 +193,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
 
         refreshStats();
       },
+
 
       onReconnect: (data) => {
         setState("PLAYING");

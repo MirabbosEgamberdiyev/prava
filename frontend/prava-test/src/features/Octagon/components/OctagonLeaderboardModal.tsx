@@ -100,37 +100,42 @@ export const OctagonLeaderboardModal: React.FC<Props> = ({ opened, onClose }) =>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {entries.map((item, idx) => (
-                  <Table.Tr key={item.userId || idx}>
-                    <Table.Td>
-                      <Center>{getMedalIcon(item.rankPosition || idx + 1)}</Center>
-                    </Table.Td>
-                    <Table.Td>
-                      <Group gap="sm" wrap="nowrap">
-                        <Avatar size="sm" radius="xl" color="blue">
-                          {item.name ? item.name.charAt(0).toUpperCase() : "U"}
-                        </Avatar>
-                        <div>
-                          <Text size="sm" fw={700}>
-                            {item.name || "O'yinchi"}
-                          </Text>
-                          <Text size="xs" c="dimmed">
-                            {t("octagon.leaderboard.winsAndMatches", "{{wins}} G'alaba • {{total}} Jang", {
-                              wins: item.wins,
-                              total: item.totalMatches,
-                            })}
-                          </Text>
-                        </div>
-                      </Group>
-                    </Table.Td>
-                    <Table.Td>{getRankBadge(item.rank)}</Table.Td>
-                    <Table.Td style={{ textAlign: "right" }}>
-                      <Text fw={800} size="sm" c="yellow">
-                        {item.eloRating}
-                      </Text>
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
+                {entries.map((item, idx) => {
+                  const playerName = item.displayName || item.name || "O'yinchi";
+                  const playerPos = item.position || item.rankPosition || idx + 1;
+                  return (
+                    <Table.Tr key={item.userId || idx}>
+                      <Table.Td>
+                        <Center>{getMedalIcon(playerPos)}</Center>
+                      </Table.Td>
+                      <Table.Td>
+                        <Group gap="sm" wrap="nowrap">
+                          <Avatar size="sm" radius="xl" color="blue">
+                            {playerName.charAt(0).toUpperCase()}
+                          </Avatar>
+                          <div>
+                            <Text size="sm" fw={700}>
+                              {playerName}
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                              {t("octagon.leaderboard.winsAndMatches", "{{wins}} G'alaba • {{total}} Jang", {
+                                wins: item.wins,
+                                total: item.totalMatches,
+                              })}
+                            </Text>
+                          </div>
+                        </Group>
+                      </Table.Td>
+                      <Table.Td>{getRankBadge(item.rank)}</Table.Td>
+                      <Table.Td style={{ textAlign: "right" }}>
+                        <Text fw={800} size="sm" c="yellow">
+                          {item.eloRating}
+                        </Text>
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })}
+
               </Table.Tbody>
             </Table>
           </Table.ScrollContainer>

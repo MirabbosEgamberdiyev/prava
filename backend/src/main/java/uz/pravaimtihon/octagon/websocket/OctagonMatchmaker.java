@@ -313,9 +313,6 @@ public class OctagonMatchmaker {
     }
 
     public void handleSendReaction(OctagonSession session, UUID matchId, String emojiId) {
-        ActiveMatch match = activeMatches.get(matchId);
-        if (match == null || match.isEnded()) return;
-
         // Rate-limit & anti-flood check: 3 reactions in 1.5s -> 8s mute
         Instant now = Instant.now();
         if (session.getReactionMutedUntil() != null && now.isBefore(session.getReactionMutedUntil())) {
@@ -333,11 +330,15 @@ public class OctagonMatchmaker {
             }
         }
 
+        ActiveMatch match = activeMatches.get(matchId);
+        if (match == null || match.isEnded()) return;
+
         OctagonSession opp = match.getOpponentSession(session.getUserId());
         if (opp != null) {
             sendEvent(opp, "opponent_reaction", Map.of("emojiId", emojiId));
         }
     }
+
 
     public void handleRequestRevenge(OctagonSession session, UUID matchId) {
         ActiveMatch match = activeMatches.get(matchId);
