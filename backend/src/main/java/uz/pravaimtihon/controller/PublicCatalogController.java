@@ -33,6 +33,22 @@ public class PublicCatalogController {
 
     private final PublicCatalogService catalogService;
     private final ObjectMapper objectMapper;
+    private final uz.pravaimtihon.service.OfflineBundleService offlineBundleService;
+
+    @GetMapping("/desktop-bundle")
+    @Operation(summary = "Desktop ilovalar uchun savollar to'plami (offline Desktop pariteti)")
+    public ResponseEntity<ApiResponse<uz.pravaimtihon.service.OfflineBundleService.Bundle>> desktopBundle(
+            @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch) {
+        uz.pravaimtihon.service.OfflineBundleService.Bundle bundle = offlineBundleService.getBundle();
+        String etag = "\"" + bundle.version() + "\"";
+        if (uz.pravaimtihon.util.ETags.matches(ifNoneMatch, etag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(etag).cacheControl(CACHE).build();
+        }
+        return ResponseEntity.ok()
+                .eTag(etag)
+                .cacheControl(CACHE)
+                .body(ApiResponse.success("Desktop bundle muvaffaqiyatli olindi", bundle));
+    }
 
     @GetMapping("/tickets")
     @Operation(summary = "Faol biletlar ro'yxati (savollarsiz)")
