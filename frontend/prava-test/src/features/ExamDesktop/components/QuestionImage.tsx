@@ -15,13 +15,13 @@ interface QuestionImageProps {
 /** Render with key={path}: a new question remounts this component (fresh state, no stale flash). */
 type Resolved = { path: string; src: string | null; done: boolean };
 
-const DEFAULT_QUESTION_IMAGE = "/question-default.svg";
+const DEFAULT_QUESTION_IMAGE = "/logo.png";
 
 /**
  * Local-first question image: uses the offline media cache (synchronously when the object URL
  * is already warm), falls back to the remote URL only when online use is allowed and the image
  * is not cached (it is then cached in the background). Auto-fits the pane (object-fit: contain).
- * Questions without an image or with broken images 100% render /question-default.svg.
+ * Questions without an image or with broken images 100% render /logo.png.
  */
 export const QuestionImage = memo(function QuestionImage({ path, alt, onZoom, zoomHint }: QuestionImageProps) {
   const effectivePath = path || DEFAULT_QUESTION_IMAGE;

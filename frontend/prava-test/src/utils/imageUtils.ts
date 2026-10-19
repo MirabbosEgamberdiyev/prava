@@ -18,8 +18,6 @@ export const getImageUrl = (url: string | null | undefined): string | undefined 
   if (
     url === "/images/malibu.webp" ||
     url === "/malibu.webp" ||
-    url === "/question-default.svg" ||
-    url === "question-default.svg" ||
     url === "/logo.png" ||
     url === "logo.png" ||
     url === "/logo.svg" ||

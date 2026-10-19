@@ -19,8 +19,6 @@ export function normalizeMediaPath(rawPath: string | null | undefined): string |
   if (!rawPath || typeof rawPath !== "string") return null;
   const trimmed = rawPath.trim();
   if (
-    trimmed === "/question-default.svg" ||
-    trimmed === "question-default.svg" ||
     trimmed === "/logo.png" ||
     trimmed === "logo.png" ||
     trimmed === "/logo.svg" ||

@@ -9,9 +9,7 @@ describe("Unified Brand Question Image Placeholder System", () => {
     expect(getImageUrl("   ")).toBeUndefined();
   });
 
-  it("passes /question-default.svg and /logo.png directly as local assets", () => {
-    expect(getImageUrl("/question-default.svg")).toBe("/question-default.svg");
-    expect(getImageUrl("question-default.svg")).toBe("/question-default.svg");
+  it("passes /logo.png directly as local assets", () => {
     expect(getImageUrl("/logo.png")).toBe("/logo.png");
     expect(getImageUrl("logo.png")).toBe("/logo.png");
     expect(getImageUrl("/logo.svg")).toBe("/logo.svg");
