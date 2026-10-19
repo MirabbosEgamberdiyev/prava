@@ -4299,15 +4299,16 @@
       "leaderboard": "Peshqadamlar",
       "viewRules": "Oktagon qoidalari bilan tanishish",
       "onlineCounter": "142 nafar haydovchi onlayn navbatda",
-      "rulesAndLicense": "Qoidalar va reglament",
-      "duelFriendDesc": "Shaxsiy xona kodi orqali do'stingizni jangga chorlang",
-      "leaderboardDesc": "Eng kuchli top haydovchilar reytingi",
-      "rulesDesc": "Oktagon 1v1 PvP reglamenti va ballar tizimi",
+      "rulesAndLicense": "Oktagon qoidalari",
+      "duelFriendDesc": "Do'stingizga maxsus havola yuborib, xususiy jangga chorlang",
+      "leaderboardDesc": "Eng kuchli o'yinchilar va haftalik peshqadamlar ro'yxati",
+      "rulesDesc": "Ballar hisoblash, vaqt chegarasi va liga talablari bilan tanishing",
       "soundOn": "Ovozni o'chirish",
       "soundOff": "Ovozni yoqish",
       "rulesBtn": "Qoidalar",
       "editNickname": "Taxallusni tahrirlash",
-      "saveNickname": "Saqlash"
+      "saveNickname": "Saqlash",
+      "dueFriendDesc": "Do'stingizga maxsus havola yuborib, xususiy jangga chorlang"
     },
     "rank": {
       "brilliant": "Brilliant",
@@ -4316,11 +4317,11 @@
       "bronze": "Bronza"
     },
     "banner": {
-      "badge": "ONLAYN PvP ARENA",
-      "title": "OKTAGON — 1v1 Intellektual Jang",
-      "desc": "Boshqa haydovchilar bilan real vaqtda bellashing va ligalarda ko'tariling!",
+      "badge": "JONLI 1v1 ARENA",
+      "title": "Oktagon — Intellektual Jang",
+      "desc": "Haqiqiy raqiblar bilan real vaqtda yo'l qoidalari bo'yicha bellashing, ELO yig'ing va ligalarda ko'tariling!",
       "cta": "Jangga Kirish",
-      "myRank": "{{rank}} • {{elo}} ELO"
+      "myRank": "Sizning ligangiz: {{rank}} • {{elo}} ELO"
     }
   }
 }

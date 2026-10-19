@@ -52,48 +52,51 @@ export const OctagonBannerCard: React.FC = () => {
       }}
       className="oct-banner-card"
     >
-      {/* Top Badge Row */}
-      <div className="oct-banner-top">
-        <div className="oct-banner-badge">
-          <div className="oct-banner-dot" />
-          <span>{t("octagon.banner.badge")}</span>
-        </div>
-      </div>
+      <div className="oct-banner-ambient" />
 
-      {/* Title */}
-      <div className="oct-banner-title">
-        <span>{t("octagon.banner.title")}</span>
-        <IconSwords size={22} color="#fbbf24" />
-      </div>
+      <div className="oct-banner-inner">
+        {/* Chap tomonda (Left Side) */}
+        <div className="oct-banner-left">
+          <div className="oct-banner-badge">
+            <span className="oct-banner-dot" />
+            <span>{t("octagon.banner.badge")}</span>
+          </div>
 
-      {/* Description */}
-      <div className="oct-banner-desc">
-        {t("octagon.banner.desc")}
-      </div>
+          <div className="oct-banner-title">
+            <span>{t("octagon.banner.title")}</span>
+            <IconSwords size={22} color="#fbbf24" />
+          </div>
 
-      {/* Footer: Rank & 3D CTA Button */}
-      <div className="oct-banner-footer">
-        <div className="oct-banner-rank">
-          <span>{t("octagon.banner.myRank", { emoji: rankInfo.emoji, rank: rankInfo.name, elo })}</span>
-          {stats && stats.winStreak > 0 && (
-            <span style={{ color: "#ef4444", display: "inline-flex", alignItems: "center", gap: 3, marginLeft: 6 }}>
-              <IconFlame size={15} />
-              <span>{stats.winStreak}</span>
-            </span>
-          )}
+          <div className="oct-banner-desc">
+            {t("octagon.banner.desc")}
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate("/octagon");
-          }}
-          className="oct-banner-btn"
-        >
-          <span>{t("octagon.banner.cta")}</span>
-          <IconArrowRight size={17} stroke={2.6} />
-        </button>
+        {/* O'ng tomonda (Right Side) */}
+        <div className="oct-banner-right">
+          <div className="oct-banner-rank">
+            <span>{rankInfo.emoji}</span>
+            <span>{t("octagon.banner.myRank", { rank: rankInfo.name, elo })}</span>
+            {stats && stats.winStreak > 0 && (
+              <span className="oct-banner-streak">
+                <IconFlame size={15} />
+                <span>{stats.winStreak}</span>
+              </span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate("/octagon");
+            }}
+            className="oct-banner-btn"
+          >
+            <span>{t("octagon.banner.cta")}</span>
+            <IconArrowRight size={17} stroke={2.6} />
+          </button>
+        </div>
       </div>
     </div>
   );

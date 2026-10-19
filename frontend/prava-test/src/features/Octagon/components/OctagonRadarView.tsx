@@ -1,5 +1,4 @@
 import React from "react";
-import { Stack, Text, Button } from "@mantine/core";
 import { IconX, IconRadar, IconRobot } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import "../octagon.css";
@@ -20,58 +19,75 @@ export const OctagonRadarView: React.FC<Props> = ({ searchSeconds, onCancel }) =
 
   return (
     <div className="oct-page-wrapper" style={{ justifyContent: "center", alignItems: "center" }}>
+      {/* Background Cosmic Ambient Glowing Orbs */}
       <div className="oct-ambient-glow" />
-      <div className="oct-console" style={{ alignItems: "center", textAlign: "center" }}>
-        {/* Radar Animation Area */}
-        <div className="oct-radar-box">
-          <div className="oct-radar-wave" />
-          <div className="oct-radar-wave" />
-          <div className="oct-radar-wave" />
+      <div className="oct-radar-ambient-left" />
+      <div className="oct-radar-ambient-right" />
 
-          {/* Center glowing badge */}
-          <div className="oct-radar-center">
+      <div className="oct-console" style={{ alignItems: "center", textAlign: "center" }}>
+        {/* Esports Sonar Radar Dish */}
+        <div className="oct-sonar-container">
+          {/* Concentric rings */}
+          <div className="oct-sonar-ring oct-ring-1" />
+          <div className="oct-sonar-ring oct-ring-2" />
+          <div className="oct-sonar-ring oct-ring-3" />
+
+          {/* Crosshair grid lines */}
+          <div className="oct-sonar-cross-h" />
+          <div className="oct-sonar-cross-v" />
+
+          {/* Expanding pulse waves */}
+          <div className="oct-sonar-wave wave-1" />
+          <div className="oct-sonar-wave wave-2" />
+          <div className="oct-sonar-wave wave-3" />
+
+          {/* 360° Conical Sweeping Beam */}
+          <div className="oct-sonar-sweep" />
+
+          {/* Simulated player blips */}
+          <div className="oct-sonar-blip blip-1" />
+          <div className="oct-sonar-blip blip-2" />
+
+          {/* Center glowing focal point */}
+          <div className="oct-sonar-center">
             {isBotThreshold ? (
-              <IconRobot size={32} style={{ animation: "oct-bounce 1s infinite" }} />
+              <IconRobot size={36} className="oct-radar-icon-bounce" />
             ) : (
-              <IconRadar size={32} style={{ animation: "oct-spin 3s linear infinite" }} />
+              <IconRadar size={36} className="oct-radar-icon-pulse" />
             )}
-            <span style={{ fontSize: "12px", fontFamily: "monospace", fontWeight: 800, marginTop: "4px" }}>
-              {timeFormatted}
-            </span>
           </div>
         </div>
 
-        <Stack gap="xs" align="center" style={{ maxWidth: 420 }}>
-          <Text size="xl" fw={900} style={{ color: "#ffffff", letterSpacing: "0.5px" }}>
+        {/* Live Matchmaking Status Card */}
+        <div className="oct-radar-status-card">
+          {/* High-contrast Timer Badge */}
+          <div className="oct-radar-timer-pill">
+            <span className="oct-banner-dot" />
+            <span className="oct-radar-time-text">{timeFormatted}</span>
+          </div>
+
+          <div className="oct-radar-title">
             {isBotThreshold
               ? t("octagon.radar.connectingBot", "Zaxira botga ulanmoqda...")
               : t("octagon.radar.searchingOpponent", "Teng kuchli raqib qidirilmoqda...")}
-          </Text>
-          <Text size="sm" style={{ color: "#94a3b8" }}>
+          </div>
+
+          <div className="oct-radar-desc">
             {isBotThreshold
               ? t("octagon.radar.botDesc", "Kutib qolmasligingiz uchun insondek o'ylanuvchi bot ulanmoqda")
               : t("octagon.radar.eloMatchDesc", "Sizning ELO reytingingizga mos raqib saralanmoqda")}
-          </Text>
-
-          <div style={{ marginTop: "24px" }}>
-            <Button
-              variant="subtle"
-              color="red"
-              radius="xl"
-              size="md"
-              leftSection={<IconX size={18} />}
-              onClick={onCancel}
-              style={{
-                background: "rgba(239, 68, 68, 0.15)",
-                color: "#f87171",
-                border: "1px solid rgba(239, 68, 68, 0.3)",
-                fontWeight: 700,
-              }}
-            >
-              {t("octagon.radar.cancel", "Qidiruvni bekor qilish")}
-            </Button>
           </div>
-        </Stack>
+
+          {/* Cancel Search Button */}
+          <button
+            type="button"
+            onClick={onCancel}
+            className="oct-radar-cancel-btn"
+          >
+            <IconX size={18} stroke={2.5} />
+            <span>{t("octagon.radar.cancel", "Qidiruvni bekor qilish")}</span>
+          </button>
+        </div>
       </div>
     </div>
   );

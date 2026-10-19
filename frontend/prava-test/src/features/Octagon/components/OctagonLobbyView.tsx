@@ -74,69 +74,83 @@ export const OctagonLobbyView: React.FC<Props> = ({
 
   const getRankData = (r: string) => {
     const lower = r.toLowerCase();
-    if (lower === "brilliant") return { name: t("octagon.rank.brilliant"), emoji: "💎", className: "brilliant" };
-    if (lower === "gold") return { name: t("octagon.rank.gold"), emoji: "🥇", className: "gold" };
-    if (lower === "silver") return { name: t("octagon.rank.silver"), emoji: "🥈", className: "silver" };
-    return { name: t("octagon.rank.bronze"), emoji: "🥉", className: "bronze" };
+    if (lower === "brilliant") {
+      return {
+        name: t("octagon.rank.brilliant"),
+        emoji: "💎",
+        className: "brilliant",
+      };
+    }
+    if (lower === "gold") {
+      return {
+        name: t("octagon.rank.gold"),
+        emoji: "🥇",
+        className: "gold",
+      };
+    }
+    if (lower === "silver") {
+      return {
+        name: t("octagon.rank.silver"),
+        emoji: "🥈",
+        className: "silver",
+      };
+    }
+    return {
+      name: t("octagon.rank.bronze"),
+      emoji: "🥉",
+      className: "bronze",
+    };
   };
 
-  const rankInfo = getRankData(rawRank);
+  const rankData = getRankData(rawRank);
 
   return (
     <div className="oct-page-wrapper">
       {/* Background Ambient Glow */}
       <div className="oct-ambient-glow" />
 
-      {/* Main Game Console (Osonprava style: 580px max-width) */}
+      {/* Central Game Console (Osonprava style: 580px max-width) */}
       <div className="oct-console">
-        {/* 1. Header: Logo, Shiny League Badge & Action Buttons */}
+        {/* 1. Header Row */}
         <div className="oct-header">
-          <div style={{ width: 88 }} />
+          <button
+            type="button"
+            onClick={toggleSound}
+            className="oct-icon-btn"
+            title={isMuted ? t("octagon.lobby.soundOff") : t("octagon.lobby.soundOn")}
+            aria-label={isMuted ? t("octagon.lobby.soundOff") : t("octagon.lobby.soundOn")}
+          >
+            {isMuted ? <IconVolumeOff size={20} /> : <IconVolume size={20} />}
+          </button>
 
           <div className="oct-header-center">
             <div className="oct-header-logo">
               <span>OKTAGON</span>
               <span className="oct-header-pvp-tag">1v1 PvP</span>
             </div>
-            <div className={`oct-league-badge ${rankInfo.className}`}>
-              <span>{rankInfo.emoji}</span>
-              <span>{rankInfo.name}</span>
-            </div>
-            <div className="oct-header-tagline">
-              {t("octagon.lobby.tagline")}
-            </div>
+            <div className="oct-header-tagline">{t("octagon.lobby.tagline")}</div>
           </div>
 
-          <div className="oct-header-actions">
-            <button
-              type="button"
-              onClick={toggleSound}
-              className="oct-icon-btn"
-              title={isMuted ? t("octagon.lobby.soundOff") : t("octagon.lobby.soundOn")}
-              aria-label={isMuted ? t("octagon.lobby.soundOff") : t("octagon.lobby.soundOn")}
-            >
-              {isMuted ? <IconVolumeOff size={20} /> : <IconVolume size={20} />}
-            </button>
-
-            <button
-              type="button"
-              onClick={onOpenRules}
-              className="oct-icon-btn"
-              title={t("octagon.lobby.rulesBtn")}
-              aria-label={t("octagon.lobby.rulesBtn")}
-            >
-              <IconInfoCircle size={20} />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onOpenRules}
+            className="oct-icon-btn"
+            title={t("octagon.lobby.rulesBtn")}
+            aria-label={t("octagon.lobby.rulesBtn")}
+          >
+            <IconInfoCircle size={20} />
+          </button>
         </div>
 
-        {/* 2. User Profile & 4-Column Stats Card (Duolingo / Gaming Glass Card) */}
+        {/* 2. User Profile & Symmetrical Stats Card */}
         <div className="oct-stats-card">
+          {/* User Row (Clean layout without duplicate rating box) */}
           <div className="oct-user-row">
             <div className="oct-user-left">
               <div className="oct-avatar-ring">
                 {displayName.charAt(0).toUpperCase()}
               </div>
+
               <div className="oct-user-info">
                 {isEditingNick ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -193,28 +207,24 @@ export const OctagonLobbyView: React.FC<Props> = ({
                     )}
                   </div>
                 )}
-                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 3 }}>
-                  <span style={{ fontSize: 12, color: "#94a3b8" }}>
-                    {t("octagon.lobby.rating")}: <b style={{ color: "#fbbf24" }}>{elo} ELO</b>
-                  </span>
-                </div>
-              </div>
-            </div>
 
-            <div className="oct-user-rating-box">
-              <div className="oct-rating-label">{t("octagon.lobby.rating")}</div>
-              <div className="oct-rating-num">
-                {elo} <span>ELO</span>
+                {/* League Badge under player name */}
+                <div style={{ marginTop: 4 }}>
+                  <div className={`oct-league-badge ${rankData.className}`} style={{ marginTop: 0, padding: "3px 10px", fontSize: "11.5px" }}>
+                    <span>{rankData.emoji}</span>
+                    <span>{rankData.name}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* 4-Column Symmetrical Stats Grid */}
+          {/* 4-Column High-Contrast Symmetrical Stats Grid */}
           <div className="oct-stats-grid">
             {/* 1. Reyting */}
             <div className="oct-stat-cell">
               <div className="oct-stat-icon-wrap star">
-                <IconStar size={16} stroke={2.5} />
+                <IconStar size={17} stroke={2.6} />
               </div>
               <div className="oct-stat-val gold">{elo}</div>
               <div className="oct-stat-lbl">{t("octagon.lobby.rating")}</div>
@@ -223,7 +233,7 @@ export const OctagonLobbyView: React.FC<Props> = ({
             {/* 2. G'alabalar */}
             <div className="oct-stat-cell">
               <div className="oct-stat-icon-wrap trophy">
-                <IconTrophy size={16} stroke={2.5} />
+                <IconTrophy size={17} stroke={2.6} />
               </div>
               <div className="oct-stat-val emerald">{wins}</div>
               <div className="oct-stat-lbl">{t("octagon.lobby.wins")}</div>
@@ -232,7 +242,7 @@ export const OctagonLobbyView: React.FC<Props> = ({
             {/* 3. G'alaba % */}
             <div className="oct-stat-cell">
               <div className="oct-stat-icon-wrap chart">
-                <IconPercentage size={16} stroke={2.5} />
+                <IconPercentage size={17} stroke={2.6} />
               </div>
               <div className="oct-stat-val blue">{winRate}%</div>
               <div className="oct-stat-lbl">{t("octagon.lobby.winRate")}</div>
@@ -241,7 +251,7 @@ export const OctagonLobbyView: React.FC<Props> = ({
             {/* 4. Seriya */}
             <div className="oct-stat-cell">
               <div className="oct-stat-icon-wrap flame">
-                <IconFlame size={16} stroke={2.5} />
+                <IconFlame size={17} stroke={2.6} />
               </div>
               <div className="oct-stat-val red">{streak}</div>
               <div className="oct-stat-lbl">{t("octagon.lobby.streak")}</div>
@@ -249,19 +259,17 @@ export const OctagonLobbyView: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* 3. 3D "QIDIRISHNI BOSHLASH" Green Button (Osonprava Standard) */}
-        <div>
-          <button
-            type="button"
-            onClick={onStartSearch}
-            className="oct-search-btn-3d"
-          >
-            <IconSwords size={28} />
-            <span>{t("octagon.lobby.startSearch")}</span>
-          </button>
-        </div>
+        {/* 3. Primary 3D Search Button */}
+        <button
+          type="button"
+          onClick={onStartSearch}
+          className="oct-search-btn-3d"
+        >
+          <IconSwords size={26} stroke={2.5} />
+          <span>{t("octagon.lobby.startSearch")}</span>
+        </button>
 
-        {/* 4. Bottom Quick Action Cards (3 columns) */}
+        {/* 4. Quick Action Cards (3 columns) */}
         <div className="oct-actions-row">
           {/* Card 1: Do'st bilan duel */}
           <div
@@ -277,7 +285,7 @@ export const OctagonLobbyView: React.FC<Props> = ({
               <IconUsers size={22} stroke={2.2} />
             </div>
             <div className="oct-action-title">{t("octagon.lobby.duelFriend")}</div>
-            <div className="oct-action-desc">{t("octagon.lobby.duelFriendDesc")}</div>
+            <div className="oct-action-desc">{t("octagon.lobby.dueFriendDesc")}</div>
           </div>
 
           {/* Card 2: Peshqadamlar */}
