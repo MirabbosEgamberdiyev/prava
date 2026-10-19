@@ -4302,7 +4302,12 @@
       "rulesAndLicense": "Qoidalar va reglament",
       "duelFriendDesc": "Shaxsiy xona kodi orqali do'stingizni jangga chorlang",
       "leaderboardDesc": "Eng kuchli top haydovchilar reytingi",
-      "rulesDesc": "Oktagon 1v1 PvP reglamenti va ballar tizimi"
+      "rulesDesc": "Oktagon 1v1 PvP reglamenti va ballar tizimi",
+      "soundOn": "Ovozni o'chirish",
+      "soundOff": "Ovozni yoqish",
+      "rulesBtn": "Qoidalar",
+      "editNickname": "Taxallusni tahrirlash",
+      "saveNickname": "Saqlash"
     },
     "rank": {
       "brilliant": "Brilliant",
@@ -4311,11 +4316,11 @@
       "bronze": "Bronza"
     },
     "banner": {
-      "badge": "JONLI 1v1 / YANGILIK",
-      "title": "OKTAGON — Haydovchilar Jangi",
-      "desc": "Real vaqtda boshqa haydovchilar bilan bellashing, reytingingizni (ELO) oshiring va chempion bo‘ling!",
+      "badge": "ONLAYN PvP ARENA",
+      "title": "OKTAGON — 1v1 Intellektual Jang",
+      "desc": "Boshqa haydovchilar bilan real vaqtda bellashing va ligalarda ko'tariling!",
       "cta": "Jangga Kirish",
-      "myRank": "Sizning darajangiz: {{rank}} ({{elo}} ELO)"
+      "myRank": "{{rank}} • {{elo}} ELO"
     }
   }
 }

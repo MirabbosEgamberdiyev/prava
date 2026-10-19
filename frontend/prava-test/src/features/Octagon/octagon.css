@@ -1,116 +1,575 @@
 /* ==========================================================================
-   OCTAGON 1v1 PvP Real-Time Arena Styles (Duolingo 3D + Modern Dark Canvas)
+   OCTAGON 1v1 PvP Real-Time Arena Styles (Osonprava / Duolingo 3D Standard)
+   100% Native CSS — Zero Tailwind Dependency for Web & Desktop
    ========================================================================== */
 
-.oct-container {
+/* Page Wrapper & Ambient Arena Atmosphere */
+.oct-page-wrapper {
   min-height: calc(100vh - 70px);
+  width: 100%;
+  background: #060b13;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 24px 16px;
+  position: relative;
+  overflow-x: hidden;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.oct-ambient-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 750px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.18) 0%, rgba(79, 70, 229, 0.08) 50%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Central Game Console (Osonprava standard: max-width 580px) */
+.oct-console {
+  width: 100%;
+  max-width: 580px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+/* 1. Top Header & League Status */
+.oct-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 4px 0 8px;
+}
+
+.oct-header-center {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
-  position: relative;
-  overflow: hidden;
-  user-select: none;
 }
 
-/* 3D Duolingo Style Buttons */
-.oct-btn-3d-green {
-  background: #58cc02;
-  border: none;
-  border-bottom: 5px solid #46a302;
-  border-radius: 18px;
-  color: #ffffff;
-  font-weight: 900;
-  font-size: 19px;
-  letter-spacing: 0.5px;
-  padding: 16px 36px;
-  cursor: pointer;
-  transition: all 0.08s ease;
-  box-shadow: 0 8px 24px rgba(88, 204, 2, 0.35);
-  display: inline-flex;
+.oct-header-logo {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.oct-btn-3d-green:hover:not(:disabled) {
-  background: #61e002;
-  transform: translateY(-2px);
-  border-bottom-width: 7px;
-  box-shadow: 0 10px 28px rgba(88, 204, 2, 0.45);
-}
-
-.oct-btn-3d-green:active:not(:disabled) {
-  transform: translateY(4px);
-  border-bottom-width: 1px;
-  box-shadow: 0 2px 10px rgba(88, 204, 2, 0.2);
-}
-
-.oct-btn-3d-green:disabled {
-  background: #475569;
-  border-bottom: 4px solid #334155;
-  color: #94a3b8;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.oct-btn-3d-blue {
-  background: #0284c7;
-  border: none;
-  border-bottom: 4px solid #0369a1;
-  border-radius: 14px;
+  gap: 8px;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
   color: #ffffff;
-  font-weight: 800;
-  font-size: 15px;
-  padding: 12px 20px;
-  cursor: pointer;
-  transition: all 0.08s ease;
-  display: inline-flex;
+  text-shadow: 0 0 24px rgba(168, 85, 247, 0.45);
+}
+
+.oct-header-pvp-tag {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #0f172a;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  margin-left: 2px;
+}
+
+.oct-header-tagline {
+  font-size: 12.5px;
+  color: #94a3b8;
+  margin-top: 2px;
+  text-align: center;
+}
+
+.oct-header-actions {
+  display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.oct-btn-3d-blue:active {
-  transform: translateY(3px);
-  border-bottom-width: 1px;
-}
-
-.oct-btn-3d-red {
-  background: #ef4444;
-  border: none;
-  border-bottom: 4px solid #dc2626;
-  border-radius: 14px;
-  color: #ffffff;
-  font-weight: 800;
-  font-size: 15px;
-  padding: 12px 24px;
-  cursor: pointer;
-  transition: all 0.08s ease;
-}
-
-.oct-btn-3d-red:active {
-  transform: translateY(3px);
-  border-bottom-width: 1px;
-}
-
-/* Radar Animation */
-.oct-radar-box {
-  position: relative;
-  width: 260px;
-  height: 260px;
+.oct-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.oct-icon-btn:hover {
+  background: rgba(51, 65, 85, 0.9);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Metallic Shimmer League Badge */
+.oct-league-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.oct-league-badge.bronze {
+  background: rgba(217, 119, 6, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(217, 119, 6, 0.4);
+}
+
+.oct-league-badge.silver {
+  background: rgba(148, 163, 184, 0.18);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.oct-league-badge.gold {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fde047;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+}
+
+.oct-league-badge.brilliant {
+  background: rgba(168, 85, 247, 0.25);
+  color: #e9d5ff;
+  border: 1px solid rgba(168, 85, 247, 0.55);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.35);
+}
+
+/* 2. User Status & Stats Card (Duolingo / Gaming Card) */
+.oct-stats-card {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+}
+
+.oct-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.oct-user-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.oct-avatar-ring {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 2.5px solid #10b981;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.oct-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.oct-user-name {
+  font-size: 17.5px;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.oct-user-edit-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  transition: color 0.15s;
+}
+
+.oct-user-edit-btn:hover {
+  color: #ffffff;
+}
+
+.oct-user-rating-box {
+  text-align: right;
+}
+
+.oct-rating-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+}
+
+.oct-rating-num {
+  font-size: 24px;
+  font-weight: 900;
+  font-family: monospace;
+  color: #fbbf24;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+.oct-rating-num span {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+/* 4-Column Symmetrical Stats Grid */
+.oct-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.oct-stat-cell {
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 12px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.oct-stat-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.oct-stat-icon-wrap.star { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+.oct-stat-icon-wrap.trophy { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.oct-stat-icon-wrap.chart { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+.oct-stat-icon-wrap.flame { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+.oct-stat-val {
+  font-size: 17px;
+  font-weight: 900;
+  font-family: monospace;
+  color: #ffffff;
+}
+
+.oct-stat-val.gold { color: #fbbf24; }
+.oct-stat-val.emerald { color: #34d399; }
+.oct-stat-val.blue { color: #38bdf8; }
+.oct-stat-val.red { color: #f87171; }
+
+.oct-stat-lbl {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* 3. 3D "QIDIRISHNI BOSHLASH" Green Button (Osonprava style) */
+.oct-search-btn-3d {
+  width: 100%;
+  height: 64px;
+  border-radius: 20px;
+  background: #10b981;
+  border: none;
+  border-bottom: 5px solid #047857;
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);
+  transition: all 0.08s ease;
+  user-select: none;
+}
+
+.oct-search-btn-3d:hover {
+  background: #34d399;
+  transform: translateY(-2px);
+  border-bottom-width: 7px;
+}
+
+.oct-search-btn-3d:active {
+  transform: translateY(4px);
+  border-bottom-width: 1px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+/* 4. Bottom Quick Action Cards (3 columns) */
+.oct-actions-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.oct-action-card {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  user-select: none;
+}
+
+.oct-action-card:hover {
+  border-color: rgba(168, 85, 247, 0.45);
+  transform: translateY(-2px);
+  background: rgba(30, 41, 59, 0.85);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.oct-action-card:active {
+  transform: translateY(1px);
+}
+
+.oct-action-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  transition: transform 0.2s ease;
+}
+
+.oct-action-card:hover .oct-action-icon {
+  transform: scale(1.08);
+}
+
+.oct-action-icon.purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+.oct-action-icon.yellow { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+.oct-action-icon.blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+
+.oct-action-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.oct-action-desc {
+  font-size: 10.5px;
+  color: #94a3b8;
+  margin-top: 3px;
+  line-height: 1.3;
+}
+
+/* ==========================================================================
+   DASHBOARD OKTAGON BANNER CARD (Osonprava / Gaming Standard)
+   ========================================================================== */
+.oct-banner-card {
+  width: 100%;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(15, 23, 42, 0.96) 50%, rgba(59, 7, 100, 0.9) 100%);
+  border: 1.5px solid rgba(168, 85, 247, 0.35);
+  padding: 22px 26px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  margin: 18px 0;
+  transition: all 0.25s ease;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.oct-banner-card:hover {
+  border-color: rgba(168, 85, 247, 0.65);
+  box-shadow: 0 16px 40px rgba(147, 51, 234, 0.25);
+  transform: translateY(-2px);
+}
+
+.oct-banner-card:active {
+  transform: translateY(1px);
+}
+
+.oct-banner-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.oct-banner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.oct-banner-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: oct-pulse-glow 1.5s infinite;
+}
+
+@keyframes oct-pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.2); }
+}
+
+.oct-banner-title {
+  font-size: 21px;
+  font-weight: 900;
+  color: #ffffff;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.2px;
+}
+
+.oct-banner-desc {
+  font-size: 13.5px;
+  color: #cbd5e1;
+  margin-top: 4px;
+  line-height: 1.45;
+  max-width: 620px;
+}
+
+.oct-banner-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.oct-banner-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.oct-banner-btn {
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  border-bottom: 4px solid #047857;
+  border-radius: 14px;
+  padding: 10px 22px;
+  font-size: 14.5px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  transition: all 0.1s ease;
+}
+
+.oct-banner-btn:hover {
+  background: #34d399;
+}
+
+.oct-banner-btn:active {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
+}
+
+/* ==========================================================================
+   SONAR RADAR SEARCH VIEW
+   ========================================================================== */
+.oct-radar-box {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px auto 30px;
 }
 
 .oct-radar-center {
-  width: 72px;
-  height: 72px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
-  background: #58cc02;
-  box-shadow: 0 0 35px #58cc02;
+  background: #10b981;
+  box-shadow: 0 0 35px #10b981;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   color: #ffffff;
@@ -119,50 +578,41 @@
 
 .oct-radar-wave {
   position: absolute;
-  border: 2px solid rgba(88, 204, 2, 0.45);
+  border: 2px solid rgba(16, 185, 129, 0.45);
   border-radius: 50%;
   inset: 0;
   animation: oct-radar-pulse 2.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
-.oct-radar-wave:nth-child(2) {
-  animation-delay: 0.7s;
-}
-
-.oct-radar-wave:nth-child(3) {
-  animation-delay: 1.4s;
-}
+.oct-radar-wave:nth-child(2) { animation-delay: 0.7s; }
+.oct-radar-wave:nth-child(3) { animation-delay: 1.4s; }
 
 @keyframes oct-radar-pulse {
-  0% {
-    transform: scale(0.3);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
+  0% { transform: scale(0.3); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
 }
 
-/* Arena Layout */
+/* ==========================================================================
+   ARENA HUD & QUESTION CARDS
+   ========================================================================== */
 .oct-arena-card {
   width: 100%;
   max-width: 720px;
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 28px;
   padding: 24px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   position: relative;
+  box-sizing: border-box;
 }
 
-/* Opponent 10-Dot Progress Bar */
 .oct-dots-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin: 14px 0;
+  gap: 7px;
+  margin: 12px 0;
 }
 
 .oct-dot {
@@ -194,27 +644,27 @@
   to { opacity: 1; transform: scale(1.15); }
 }
 
-/* Option Buttons */
 .oct-option-btn {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: #334155;
+  gap: 14px;
+  background: #1e293b;
   border: 2px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 5px solid #1e293b;
+  border-bottom: 5px solid #0f172a;
   border-radius: 18px;
   color: #f8fafc;
   padding: 14px 18px;
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: all 0.08s ease;
+  box-sizing: border-box;
 }
 
 .oct-option-btn:hover {
-  background: #3b4c66;
+  background: #334155;
   border-color: #38bdf8;
   transform: translateY(-2px);
 }
@@ -232,7 +682,7 @@
 }
 
 .oct-hotkey-badge {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 3px 8px;
@@ -242,66 +692,481 @@
   flex-shrink: 0;
 }
 
-/* Flying Emoji Animation */
+.oct-reactions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.oct-reaction-btn {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 8px 14px;
+  font-size: 22px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.oct-reaction-btn:hover {
+  background: rgba(51, 65, 85, 0.9);
+  transform: scale(1.15);
+}
+
+.oct-reaction-btn:active {
+  transform: scale(0.95);
+}
+
+/* Flying Emoji */
 .oct-flying-emoji {
   position: fixed;
-  font-size: 42px;
+  font-size: 44px;
   pointer-events: none;
   z-index: 9999;
   animation: oct-fly 1.4s ease-out forwards;
 }
 
 @keyframes oct-fly {
-  0% {
-    transform: translate(0, 0) scale(0.5);
-    opacity: 0;
-  }
-  20% {
-    transform: translate(0, -60px) scale(1.4);
-    opacity: 1;
-  }
-  70% {
-    transform: translate(30px, -200px) scale(1.1);
-    opacity: 0.9;
-  }
-  100% {
-    transform: translate(50px, -340px) scale(0.7);
-    opacity: 0;
-  }
+  0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+  20% { transform: translate(0, -60px) scale(1.4); opacity: 1; }
+  70% { transform: translate(25px, -200px) scale(1.1); opacity: 0.9; }
+  100% { transform: translate(40px, -340px) scale(0.7); opacity: 0; }
 }
 
-/* ELO Rank Badges */
-.oct-rank-badge {
-  display: inline-flex;
+/* ==========================================================================
+   ARENA ANIMATIONS & HUD CLASSES
+   ========================================================================== */
+@keyframes oct-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes oct-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes oct-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.08); opacity: 0.85; }
+}
+
+/* Arena Top HUD */
+.oct-arena-hud {
+  width: 100%;
+  max-width: 720px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 20px;
+  padding: 16px 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.oct-hud-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.oct-hud-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.oct-hud-player.opponent {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.oct-hud-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 18px;
+  color: #fff;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.oct-hud-avatar.me {
+  background: #1e3a8a;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+}
+
+.oct-hud-avatar.opp {
+  background: #881337;
+  border: 2px solid #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.oct-hud-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.oct-hud-name-row {
+  display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
-  border-radius: 20px;
+}
+
+.oct-hud-name {
+  font-size: 14.5px;
   font-weight: 800;
+  color: #ffffff;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.oct-hud-badge-you {
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  padding: 1px 6px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.oct-hud-score {
+  font-size: 12.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.oct-hud-score.me { color: #60a5fa; }
+.oct-hud-score.opp { color: #f87171; justify-content: flex-end; }
+
+.oct-hud-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.oct-timer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-family: monospace;
+  font-weight: 900;
   font-size: 14px;
-}
-
-.oct-rank-bronze {
-  background: rgba(205, 127, 50, 0.18);
-  color: #f59e0b;
-  border: 1px solid rgba(205, 127, 50, 0.35);
-}
-
-.oct-rank-silver {
-  background: rgba(203, 213, 225, 0.18);
-  color: #e2e8f0;
-  border: 1px solid rgba(203, 213, 225, 0.35);
-}
-
-.oct-rank-gold {
-  background: rgba(251, 191, 36, 0.18);
+  background: #1e293b;
   color: #fbbf24;
-  border: 1px solid rgba(251, 191, 36, 0.35);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  transition: all 0.2s ease;
 }
 
-.oct-rank-brilliant {
-  background: rgba(56, 189, 248, 0.2);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.45);
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+.oct-timer-pill.urgent {
+  background: rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+  border-color: #ef4444;
+  animation: oct-pulse 0.8s infinite;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.5);
+}
+
+.oct-score-ratio {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffffff;
+  margin-top: 2px;
+  letter-spacing: 1px;
+}
+
+.oct-score-ratio .me { color: #60a5fa; }
+.oct-score-ratio .opp { color: #f87171; }
+
+.oct-hud-bars {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.oct-bars-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.oct-bars-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #94a3b8;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.oct-bar-segment {
+  height: 7px;
+  flex: 1;
+  border-radius: 999px;
+  background: #334155;
+  transition: all 0.25s ease;
+}
+
+.oct-bar-segment.done-me { background: #3b82f6; box-shadow: 0 0 6px rgba(59, 130, 246, 0.5); }
+.oct-bar-segment.done-opp { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
+.oct-bar-segment.active { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; animation: oct-pulse 1s infinite; }
+
+/* Options Grid */
+.oct-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+@media (max-width: 600px) {
+  .oct-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Question Image Box */
+.oct-question-img-box {
+  position: relative;
+  margin: 16px 0;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: #020617;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 280px;
+}
+
+.oct-question-img {
+  max-height: 280px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
+/* VS Pre-match Screen */
+.oct-vs-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  width: 100%;
+  text-align: center;
+  user-select: none;
+}
+
+.oct-vs-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+
+.oct-vs-badge {
+  font-size: 32px;
+  font-weight: 900;
+  color: #fbbf24;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+  animation: oct-pulse 1.2s infinite;
+}
+
+.oct-vs-user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.oct-vs-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 900;
+  color: #fff;
+  overflow: hidden;
+}
+
+.oct-vs-avatar.me {
+  background: #1e3a8a;
+  border: 3.5px solid #3b82f6;
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.5);
+}
+
+.oct-vs-avatar.opp {
+  background: #881337;
+  border: 3.5px solid #ef4444;
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.5);
+}
+
+.oct-vs-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.oct-vs-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.oct-countdown-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(251, 191, 36, 0.18);
+  border: 4px solid #fbbf24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 35px rgba(251, 191, 36, 0.45);
+  animation: oct-pulse 1s infinite;
+  margin-top: 20px;
+}
+
+.oct-countdown-num {
+  font-size: 44px;
+  font-weight: 900;
+  color: #fde047;
+}
+
+.oct-spinner {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 4px solid rgba(16, 185, 129, 0.25);
+  border-top-color: #10b981;
+  animation: oct-spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+/* Result View */
+.oct-result-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 65vh;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  text-align: center;
+  user-select: none;
+}
+
+.oct-result-badge-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.oct-result-badge-icon.win {
+  background: rgba(16, 185, 129, 0.2);
+  border: 4px solid #10b981;
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.oct-result-badge-icon.draw {
+  background: rgba(245, 158, 11, 0.2);
+  border: 4px solid #f59e0b;
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+.oct-result-badge-icon.lose {
+  background: rgba(239, 68, 68, 0.2);
+  border: 4px solid #ef4444;
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.oct-result-title {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+.oct-result-title.win { color: #34d399; }
+.oct-result-title.draw { color: #fbbf24; }
+.oct-result-title.lose { color: #f87171; }
+
+.oct-result-card {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  margin: 20px 0;
+  box-sizing: border-box;
+}
+
+.oct-result-matchup {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.oct-result-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.oct-result-score {
+  font-size: 34px;
+  font-weight: 900;
+  font-family: monospace;
+  margin-top: 4px;
+}
+
+.oct-result-score.me { color: #60a5fa; }
+.oct-result-score.opp { color: #f87171; }
+
+.oct-elo-delta-box {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
