@@ -68,7 +68,12 @@ const OctagonPage: React.FC = () => {
   const myRank = myStats?.rank || "bronze";
 
   return (
-    <div className="min-h-[85vh] bg-slate-950 text-slate-100 flex flex-col justify-start">
+    <div className="min-h-[90vh] bg-slate-950 text-slate-100 flex flex-col justify-start relative overflow-x-hidden">
+      {/* Cyber Ambient Glowing Orbs & Gradients */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[400px] bg-gradient-to-b from-purple-600/15 via-indigo-600/10 to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 -left-40 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 -right-40 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+
       {/* 1. LOBBY VIEW */}
       {(state === "IDLE" || state === "AUTH_CHECK") && (
         <OctagonLobbyView

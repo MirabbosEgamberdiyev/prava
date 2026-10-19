@@ -4297,13 +4297,25 @@
       "startSearch": "QIDIRISHNI BOSHLASH",
       "duelFriend": "Do'st bilan duel",
       "leaderboard": "Peshqadamlar",
-      "viewRules": "Oktagon qoidalari bilan tanishish"
+      "viewRules": "Oktagon qoidalari bilan tanishish",
+      "onlineCounter": "142 nafar haydovchi onlayn navbatda",
+      "rulesAndLicense": "Qoidalar va reglament",
+      "duelFriendDesc": "Shaxsiy xona kodi orqali do'stingizni jangga chorlang",
+      "leaderboardDesc": "Eng kuchli top haydovchilar reytingi",
+      "rulesDesc": "Oktagon 1v1 PvP reglamenti va ballar tizimi"
     },
     "rank": {
       "brilliant": "Brilliant",
       "gold": "Oltin",
       "silver": "Kumush",
       "bronze": "Bronza"
+    },
+    "banner": {
+      "badge": "JONLI 1v1 / YANGILIK",
+      "title": "OKTAGON — Haydovchilar Jangi",
+      "desc": "Real vaqtda boshqa haydovchilar bilan bellashing, reytingingizni (ELO) oshiring va chempion bo‘ling!",
+      "cta": "Jangga Kirish",
+      "myRank": "Sizning darajangiz: {{rank}} ({{elo}} ELO)"
     }
   }
 }
