@@ -159,5 +159,16 @@ public class OctagonDtos {
         private List<GroupRoomMemberDto> members;
         private String createdAt;
     }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReportRequest {
+        private String matchId;
+        private String reportedUserId;
+        private String reason; // "CHEATING", "AFK", "INAPPROPRIATE_BEHAVIOR", "OTHER"
+        private String comment;
+    }
 }
 

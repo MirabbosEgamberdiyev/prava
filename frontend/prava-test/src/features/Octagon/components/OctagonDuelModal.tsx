@@ -262,7 +262,7 @@ export const OctagonDuelModal: React.FC<Props> = ({
                               </Badge>
                             </Group>
                             <Text size="xs" c="dimmed">
-                              {user.rankEmoji} {user.eloRating} ELO • ID: {user.userId}
+                              {user.rankEmoji} {user.eloRating} {t("octagon.duel.eloAndId", "ELO • ID: {{id}}", { id: user.userId })}
                             </Text>
                           </div>
                         </Group>

@@ -22,6 +22,7 @@ const OctagonPage: React.FC = () => {
 
   const {
     state,
+    matchId,
     myStats,
     searchSeconds,
     countdown,
@@ -135,6 +136,7 @@ const OctagonPage: React.FC = () => {
       {/* 4. RESULT VIEW */}
       {state === "MATCH_FINISHED" && (
         <OctagonResultView
+          matchId={matchId}
           result={matchResult}
           myName={myDisplayName}
           opponent={opponent}

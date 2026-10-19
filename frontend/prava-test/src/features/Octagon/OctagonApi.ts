@@ -70,4 +70,24 @@ export const OctagonApi = {
     const res = await api.get(`/api/v1/octagon/room/${encodeURIComponent(code)}`);
     return res.data?.data || null;
   },
+
+  /**
+   * Retrieves match history for user
+   */
+  async getMatchHistory(page = 0, size = 10): Promise<{ content: any[]; totalPages: number }> {
+    const res = await api.get(`/api/v1/octagon/history?page=${page}&size=${size}`);
+    const data = res.data?.data || {};
+    return {
+      content: data.content || (Array.isArray(data) ? data : []),
+      totalPages: data.totalPages || 1,
+    };
+  },
+
+  /**
+   * Submit abuse report or complaint against an opponent
+   */
+  async reportMatch(request: { matchId?: string; reportedUserId: string; reason: string; comment?: string }): Promise<void> {
+    await api.post('/api/v1/octagon/report', request);
+  },
 };
+

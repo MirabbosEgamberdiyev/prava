@@ -13,6 +13,7 @@ import uz.pravaimtihon.octagon.dto.OctagonDtos.*;
 import uz.pravaimtihon.octagon.entity.OctagonChallenge;
 import uz.pravaimtihon.octagon.entity.OctagonMatch;
 import uz.pravaimtihon.octagon.entity.OctagonProfile;
+import uz.pravaimtihon.octagon.entity.OctagonReport;
 import uz.pravaimtihon.octagon.enums.OctagonChallengeStatus;
 import uz.pravaimtihon.octagon.enums.OctagonGameType;
 import uz.pravaimtihon.octagon.enums.OctagonMatchStatus;
@@ -20,6 +21,7 @@ import uz.pravaimtihon.octagon.enums.OctagonRank;
 import uz.pravaimtihon.octagon.repository.OctagonChallengeRepository;
 import uz.pravaimtihon.octagon.repository.OctagonMatchRepository;
 import uz.pravaimtihon.octagon.repository.OctagonProfileRepository;
+import uz.pravaimtihon.octagon.repository.OctagonReportRepository;
 import uz.pravaimtihon.repository.QuestionRepository;
 import uz.pravaimtihon.repository.UserRepository;
 
@@ -35,6 +37,7 @@ public class OctagonService {
     private final OctagonProfileRepository profileRepository;
     private final OctagonMatchRepository matchRepository;
     private final OctagonChallengeRepository challengeRepository;
+    private final OctagonReportRepository reportRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
     private final OctagonEloCalculator eloCalculator;
@@ -391,6 +394,23 @@ public class OctagonService {
         }
 
         return results;
+    }
+
+    @Transactional
+    public void submitReport(String reporterId, ReportRequest request) {
+        log.warn("[OCTAGON_SECURITY_AUDIT] User {} reported {} in match {}. Reason: {}, Comment: {}",
+                reporterId, request.getReportedUserId(), request.getMatchId(), request.getReason(), request.getComment());
+
+        OctagonReport report = OctagonReport.builder()
+                .matchId(request.getMatchId())
+                .reporterId(reporterId)
+                .reportedUserId(request.getReportedUserId())
+                .reason(request.getReason() != null ? request.getReason() : "OTHER")
+                .comment(request.getComment())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        reportRepository.save(report);
     }
 }
 

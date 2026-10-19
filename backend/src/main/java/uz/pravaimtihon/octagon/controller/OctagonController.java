@@ -182,5 +182,20 @@ public class OctagonController {
                 .map(room -> ResponseEntity.ok(ApiResponse.success(room)))
                 .orElseGet(() -> ResponseEntity.status(404).body(ApiResponse.error("Xona topilmadi")));
     }
+
+    @PostMapping("/report")
+    @Operation(summary = "Submit abuse report or complaint against a player")
+    public ResponseEntity<ApiResponse<String>> submitReport(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @RequestParam(value = "reporterId", required = false) String guestReporterId,
+            @RequestBody ReportRequest request) {
+
+        String reporterId = principal != null
+                ? principal.getId().toString()
+                : (guestReporterId != null && !guestReporterId.isBlank() ? guestReporterId : "guest_anonymous");
+
+        octagonService.submitReport(reporterId, request);
+        return ResponseEntity.ok(ApiResponse.success("Shikoyat qabul qilindi"));
+    }
 }
 

@@ -1,12 +1,14 @@
-import React, { useEffect } from "react";
-import { Text, Badge, Button } from "@mantine/core";
-import { IconTrophy, IconFlame, IconRefresh, IconArrowLeft, IconSwords } from "@tabler/icons-react";
+import React, { useEffect, useState } from "react";
+import { Text, Badge, Button, Modal, Radio, Textarea, Stack, Group } from "@mantine/core";
+import { IconTrophy, IconFlame, IconRefresh, IconArrowLeft, IconSwords, IconFlag, IconCheck } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { fireConfetti } from "../confetti";
+import { OctagonApi } from "../OctagonApi";
 import type { MatchResultData, MatchOpponent } from "../types";
 import "../octagon.css";
 
 interface Props {
+  matchId?: string | null;
   result: MatchResultData | null;
   myName: string;
   opponent: MatchOpponent | null;
@@ -16,6 +18,7 @@ interface Props {
 }
 
 export const OctagonResultView: React.FC<Props> = ({
+  matchId,
   result,
   myName,
   opponent,
@@ -24,6 +27,34 @@ export const OctagonResultView: React.FC<Props> = ({
   onReturnToLobby,
 }) => {
   const { t } = useTranslation();
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState<string>("CHEATING");
+  const [reportComment, setReportComment] = useState("");
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [reportSent, setReportSent] = useState(false);
+
+  const handleSubmitReport = async () => {
+    if (!opponent?.id) return;
+    setIsSubmittingReport(true);
+    try {
+      await OctagonApi.reportMatch({
+        matchId: matchId || undefined,
+        reportedUserId: opponent.id,
+        reason: reportReason,
+        comment: reportComment,
+      });
+      setReportSent(true);
+      setTimeout(() => {
+        setShowReportModal(false);
+        setReportSent(false);
+        setReportComment("");
+      }, 1600);
+    } catch {
+      alert("Xatolik yuz berdi");
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  };
 
   const isDraw = result?.isDraw ?? false;
   const isWin =
@@ -189,8 +220,86 @@ export const OctagonResultView: React.FC<Props> = ({
           >
             {t("octagon.result.backToLobby", "Lobbiyga qaytish")}
           </Button>
+
+          {opponent && (
+            <Button
+              variant="subtle"
+              color="red"
+              size="xs"
+              radius="xl"
+              leftSection={<IconFlag size={14} />}
+              onClick={() => setShowReportModal(true)}
+              style={{ alignSelf: "center", marginTop: 4, opacity: 0.7 }}
+            >
+              {t("octagon.report.button", "Raqib ustidan shikoyat qilish")}
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Report Modal */}
+      <Modal
+        opened={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        title={t("octagon.report.title", "Raqib ustidan shikoyat qilish")}
+        centered
+        styles={{
+          content: { background: "#111827", border: "1px solid #1f2937", borderRadius: 16, color: "#f8fafc" },
+          header: { background: "#111827", color: "#f8fafc" },
+        }}
+      >
+        {reportSent ? (
+          <div style={{ textAlign: "center", padding: "24px 0" }}>
+            <IconCheck size={48} color="#10b981" style={{ margin: "0 auto 12px" }} />
+            <Text fw={700} size="md" style={{ color: "#f8fafc" }}>
+              {t("octagon.report.sentSuccess", "Shikoyatingiz qabul qilindi!")}
+            </Text>
+            <Text size="xs" style={{ color: "#94a3b8", marginTop: 4 }}>
+              {t("octagon.report.sentDesc", "Moderatsiya xizmati o'yin yozuvini tekshirib chiqadi.")}
+            </Text>
+          </div>
+        ) : (
+          <Stack gap="md">
+            <Text size="xs" style={{ color: "#94a3b8" }}>
+              {t("octagon.report.desc", "Agar raqib qoidabuzarlik qilgan bo'lsa yoki shubhali harakat sezgan bo'lsangiz, sababini tanlang:")}
+            </Text>
+
+            <Radio.Group value={reportReason} onChange={setReportReason}>
+              <Stack gap="xs">
+                <Radio value="CHEATING" label={t("octagon.report.reasonCheating", "Shubhali harakat / Aldash / Bot")} />
+                <Radio value="AFK" label={t("octagon.report.reasonAfk", "O'yin davomida harakatsiz qoldi / AFK")} />
+                <Radio value="INAPPROPRIATE_BEHAVIOR" label={t("octagon.report.reasonBehavior", "Nomaqbul harakat yoki spam")} />
+                <Radio value="OTHER" label={t("octagon.report.reasonOther", "Boshqa sabab")} />
+              </Stack>
+            </Radio.Group>
+
+            <Textarea
+              placeholder={t("octagon.report.commentPlaceholder", "Qo'shimcha izoh (ixtiyoriy)...")}
+              value={reportComment}
+              onChange={(e) => setReportComment(e.currentTarget.value)}
+              minRows={2}
+              maxRows={4}
+              styles={{
+                input: { background: "#0b0f19", borderColor: "#1f2937", color: "#f8fafc" },
+              }}
+            />
+
+            <Group justify="flex-end" mt="sm">
+              <Button variant="default" onClick={() => setShowReportModal(false)} size="sm">
+                {t("octagon.common.cancel", "Bekor qilish")}
+              </Button>
+              <Button
+                color="red"
+                onClick={handleSubmitReport}
+                loading={isSubmittingReport}
+                size="sm"
+              >
+                {t("octagon.report.submit", "Yuborish")}
+              </Button>
+            </Group>
+          </Stack>
+        )}
+      </Modal>
     </div>
   );
 };

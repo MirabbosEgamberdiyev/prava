@@ -4273,7 +4273,8 @@
       "challengeBtn": "Jangga Chorlash",
       "noUsersFound": "Foydalanuvchi topilmadi",
       "searchHint": "Do'stingizning ismi yoki ID raqamini kiriting",
-      "searchError": "Qidirishda xatolik yuz berdi"
+      "searchError": "Qidirishda xatolik yuz berdi",
+      "eloAndId": "ELO • ID: {{id}}"
     },
     "arena": {
       "opponent": "Raqib",
@@ -4361,7 +4362,8 @@
       "leave": "Chiqish",
       "startGame": "O'yinni Boshlash",
       "setReady": "Men Tayyorman!",
-      "unready": "Bekor qilish"
+      "unready": "Bekor qilish",
+      "codePlaceholder": "Masalan: OCT-4821"
     },
     "history": {
       "title": "Bahslar Tarixi",
@@ -4378,6 +4380,22 @@
       "incomingPrompt": "Raqib siz bilan real vaqtda 1v1 Oktagonda kuch sinashmoqchi!",
       "accept": "Qabul qilish",
       "reject": "Rad etish"
+    },
+    "common": {
+      "cancel": "Bekor qilish"
+    },
+    "report": {
+      "button": "Raqib ustidan shikoyat qilish",
+      "title": "Raqib ustidan shikoyat qilish",
+      "desc": "Agar raqib qoidabuzarlik qilgan bo'lsa yoki nojo'ya xatti-harakat sodir etgan bo'lsa, xabar qiling.",
+      "reasonCheating": "Shubhali harakat / Aldash / Bot",
+      "reasonAfk": "O'yin davomida harakatsiz qoldi / AFK",
+      "reasonBehavior": "Nomaqbul harakat yoki haqorat",
+      "reasonOther": "Boshqa sabab",
+      "commentPlaceholder": "Qo'shimcha izoh (ixtiyoriy)...",
+      "submit": "Yuborish",
+      "sentSuccess": "Shikoyatingiz qabul qilindi!",
+      "sentDesc": "Moderatsiya xizmati ushbu o'yin yozuvini tekshirib chiqadi."
     }
   }
 }
