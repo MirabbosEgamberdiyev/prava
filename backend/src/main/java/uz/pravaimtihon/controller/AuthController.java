@@ -488,14 +488,12 @@ public class AuthController {
     }
 
     @PatchMapping("/me")
-    @Operation(summary = "O'z interfeys tilini saqlash", description = "Body: { \"preferredLanguage\": \"uzl\" | \"uzc\" | \"ru\" | \"en\" }")
-    public ResponseEntity<ApiResponse<UserResponse>> updateMyLanguage(
-            @RequestBody java.util.Map<String, String> body) {
-        String code = body == null ? null : body.get("preferredLanguage");
-        if (code == null || !AcceptLanguage.isValid(code)) {
-            throw new uz.pravaimtihon.exception.ValidationException("validation.field.required");
-        }
-        return ResponseEntity.ok(ApiResponse.success(authService.updateMyLanguage(AcceptLanguage.fromCode(code))));
+    @Operation(summary = "O'z profil ma'lumotlarini (ism, til) saqlash",
+            description = "Body: { \"fullName\": \"Ali Valiyev\", \"preferredLanguage\": \"uzl\" }")
+    public ResponseEntity<ApiResponse<UserResponse>> updateMyProfile(
+            @RequestBody java.util.Map<String, String> body,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        return ResponseEntity.ok(ApiResponse.success(authService.updateMyProfile(body, language)));
     }
 
     @DeleteMapping("/me")

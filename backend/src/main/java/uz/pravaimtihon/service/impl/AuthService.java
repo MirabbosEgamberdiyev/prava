@@ -247,10 +247,11 @@ public class AuthService {
 
     /**
      * Foydalanuvchi o'z interfeys tilini saqlaydi (web/desktop til almashtirganda).
-     * Faqat preferredLanguage o'zgaradi — boshqa profil maydonlariga tegilmaydi.
+    /**
+     * Foydalanuvchi profilini yangilash: fullName, firstName, lastName, preferredLanguage.
      */
     @Transactional
-    public UserResponse updateMyLanguage(AcceptLanguage newLanguage) {
+    public UserResponse updateMyProfile(java.util.Map<String, String> body, AcceptLanguage defaultLang) {
         Long userId = SecurityUtils.getCurrentUserId();
         if (userId == null) {
             throw new UnauthorizedException("error.auth.required");
@@ -258,8 +259,75 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .filter(u -> !u.getDeleted() && u.getIsActive())
                 .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
-        user.setPreferredLanguage(newLanguage);
-        return userMapper.toResponse(userRepository.save(user), newLanguage);
+
+        boolean modified = false;
+
+        if (body != null && body.containsKey("preferredLanguage")) {
+            String code = body.get("preferredLanguage");
+            if (code != null && AcceptLanguage.isValid(code)) {
+                user.setPreferredLanguage(AcceptLanguage.fromCode(code));
+                modified = true;
+            }
+        }
+
+        if (body != null && body.containsKey("fullName")) {
+            String fullName = body.get("fullName");
+            if (fullName != null) {
+                String trimmed = fullName.trim();
+                if (trimmed.length() < 2) {
+                    throw new uz.pravaimtihon.exception.ValidationException("validation.name.too_short");
+                }
+                if (trimmed.length() > 80) {
+                    throw new uz.pravaimtihon.exception.ValidationException("validation.name.too_long");
+                }
+                int spaceIdx = trimmed.indexOf(' ');
+                if (spaceIdx > 0) {
+                    String first = trimmed.substring(0, spaceIdx).trim();
+                    String last = trimmed.substring(spaceIdx + 1).trim();
+                    user.setFirstName(first.length() > 50 ? first.substring(0, 50) : first);
+                    user.setLastName(last.length() > 50 ? last.substring(0, 50) : last);
+                } else {
+                    user.setFirstName(trimmed.length() > 50 ? trimmed.substring(0, 50) : trimmed);
+                    user.setLastName(null);
+                }
+                modified = true;
+            }
+        } else if (body != null && (body.containsKey("firstName") || body.containsKey("lastName"))) {
+            if (body.containsKey("firstName")) {
+                String first = body.get("firstName");
+                if (first != null && !first.isBlank()) {
+                    String trimmed = first.trim();
+                    user.setFirstName(trimmed.length() > 50 ? trimmed.substring(0, 50) : trimmed);
+                    modified = true;
+                }
+            }
+            if (body.containsKey("lastName")) {
+                String last = body.get("lastName");
+                if (last != null) {
+                    String trimmed = last.trim();
+                    user.setLastName(trimmed.length() > 50 ? trimmed.substring(0, 50) : trimmed);
+                    modified = true;
+                }
+            }
+        }
+
+        if (!modified) {
+            throw new uz.pravaimtihon.exception.ValidationException("validation.field.required");
+        }
+
+        User saved = userRepository.save(user);
+        AcceptLanguage effectiveLang = saved.getPreferredLanguage() != null ? saved.getPreferredLanguage() : defaultLang;
+        return userMapper.toResponse(saved, effectiveLang);
+    }
+
+    /**
+     * Faqat preferredLanguage o'zgaradi — eski chaqiruvchilar uchun qoldirildi.
+     */
+    @Transactional
+    public UserResponse updateMyLanguage(AcceptLanguage newLanguage) {
+        java.util.Map<String, String> body = new java.util.HashMap<>();
+        body.put("preferredLanguage", newLanguage.getCode());
+        return updateMyProfile(body, newLanguage);
     }
 
     @Transactional
