@@ -4,6 +4,10 @@ import type { UserStats, LeaderboardUser, OctagonQuestion } from "./types";
 export interface TicketResponseData {
   ticket: string;
   expiresInSeconds: number;
+  /** Mehmon uchun server bergan imzolangan token (saqlab qo'yiladi). */
+  guestId?: string | null;
+  /** Ochiq o'yinchi ID'si (winnerId bilan solishtirish uchun). */
+  userId?: string;
 }
 
 export interface ChallengeResponseData {
@@ -16,13 +20,19 @@ export interface ChallengeResponseData {
 }
 
 export const OctagonApi = {
-  async getTicket(guestId?: string, displayName?: string): Promise<string> {
+  async getTicket(guestToken?: string, displayName?: string): Promise<TicketResponseData> {
     const params = new URLSearchParams();
-    if (guestId) params.append("guestId", guestId);
+    if (guestToken) params.append("guestId", guestToken);
     if (displayName) params.append("displayName", displayName);
 
     const res = await api.post(`/api/v1/octagon/ticket?${params.toString()}`);
-    return res.data?.data?.ticket || "";
+    const data = res.data?.data || {};
+    return {
+      ticket: data.ticket || "",
+      expiresInSeconds: data.expiresInSeconds || 0,
+      guestId: data.guestId,
+      userId: data.userId,
+    };
   },
 
   async getStats(userId?: string): Promise<UserStats | null> {
@@ -86,8 +96,12 @@ export const OctagonApi = {
   /**
    * Submit abuse report or complaint against an opponent
    */
-  async reportMatch(request: { matchId?: string; reportedUserId: string; reason: string; comment?: string }): Promise<void> {
-    await api.post('/api/v1/octagon/report', request);
+  async reportMatch(
+    request: { matchId?: string; reportedUserId: string; reason: string; comment?: string },
+    guestToken?: string
+  ): Promise<void> {
+    const q = guestToken ? `?reporterId=${encodeURIComponent(guestToken)}` : "";
+    await api.post(`/api/v1/octagon/report${q}`, request);
   },
 };
 

@@ -75,6 +75,39 @@ class RateLimitFilterTest {
     }
 
     @Test
+    void imageDownloadsDoNotStarveApiBucket() throws ServletException, IOException {
+        String ip = "192.0.2.3";
+        // General API limit is 60 in setUp(); an offline image warm-up sends far more than that.
+        for (int i = 0; i < 200; i++) {
+            MockHttpServletRequest img = new MockHttpServletRequest("GET", "/api/v1/files/general/i" + i + ".jpg");
+            img.setRemoteAddr(ip);
+            MockHttpServletResponse res = new MockHttpServletResponse();
+            filter.doFilter(img, res, new MockFilterChain());
+            assertThat(res.getStatus()).isEqualTo(200);
+        }
+        // The same IP can still call the API (e.g. OKTAGON ticket) right after the image burst
+        MockHttpServletRequest api = new MockHttpServletRequest("POST", "/api/v1/octagon/ticket");
+        api.setRemoteAddr(ip);
+        MockHttpServletResponse apiRes = new MockHttpServletResponse();
+        filter.doFilter(api, apiRes, new MockFilterChain());
+        assertThat(apiRes.getStatus()).isEqualTo(200);
+    }
+
+    @Test
+    void imageBucketItselfIsBounded() throws ServletException, IOException {
+        String ip = "192.0.2.4";
+        int ok = 0;
+        for (int i = 0; i < 300; i++) {
+            MockHttpServletRequest img = new MockHttpServletRequest("GET", "/api/v1/files/signs/s" + i + ".png");
+            img.setRemoteAddr(ip);
+            MockHttpServletResponse res = new MockHttpServletResponse();
+            filter.doFilter(img, res, new MockFilterChain());
+            if (res.getStatus() == 200) ok++;
+        }
+        assertThat(ok).isBetween(240, 245); // 240/min (+ refill during the loop)
+    }
+
+    @Test
     void guestExamIsRateLimited() throws ServletException, IOException {
         String ip = "192.0.2.2";
 

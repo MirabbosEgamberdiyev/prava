@@ -58,7 +58,8 @@ class AuthServiceUpdateProfileTest {
                 googleOAuthService,
                 telegramAuthService,
                 telegramTokenStore,
-                deviceManagementService
+                deviceManagementService,
+                mock(uz.pravaimtihon.security.SessionRevocationService.class)
         );
 
         existingUser = User.builder()

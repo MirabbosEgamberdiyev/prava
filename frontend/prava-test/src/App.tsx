@@ -74,6 +74,23 @@ function ApiErrorListener() {
 
 import GlobalSearchHost from "./features/Search/GlobalSearchHost";
 import DesktopFrame from "./shell/DesktopFrame";
+import { syncEngine } from "./sync/syncEngine";
+
+/**
+ * Background sync (outbox push: locally graded exam/ticket results, wrong answers, progress).
+ * Started once the UI is up, as on desktop. Without it the web queued every result in IndexedDB
+ * and only sent it on logout, so the server (and the other platforms) never saw web results.
+ * On the web the pull phase is a no-op (questions are loaded on demand).
+ */
+function SyncBootstrap() {
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      syncEngine.start().catch(() => {});
+    }, 1500);
+    return () => window.clearTimeout(handle);
+  }, []);
+  return null;
+}
 
 /**
  * Inner app wrapper that resets ErrorBoundary on route change.
@@ -90,6 +107,7 @@ function AppInner() {
             <TariffPaywallProvider>
               <LanguageProvider>
                 <ApiErrorListener />
+                <SyncBootstrap />
                 {allowGoogleOneTap && <GoogleOneTap />}
                 <ScrollManager />
                 <GlobalSearchHost />

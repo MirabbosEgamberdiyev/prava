@@ -122,10 +122,13 @@ class NetworkHeartbeat {
 
     const startTime = Date.now();
     try {
-      // Fast, lightweight, non-authenticated endpoint using isolated probeClient
+      // Fast, lightweight, non-authenticated endpoint using isolated probeClient.
+      // No custom request headers: `Cache-Control` is not in the backend CORS allow-list, so a
+      // cross-origin probe (dev server, embedded/desktop builds) failed at the preflight and the app
+      // declared itself offline. Cache bypass via a timestamp query parameter instead (as on desktop).
       await probeClient.get("/api/v1/auth/config", {
         timeout: this.PING_TIMEOUT_MS,
-        headers: { "Cache-Control": "no-cache" },
+        params: { _: Date.now() },
       });
 
       const latency = Date.now() - startTime;

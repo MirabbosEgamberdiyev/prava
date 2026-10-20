@@ -4,6 +4,7 @@ import { IconTrophy, IconFlame, IconRefresh, IconArrowLeft, IconSwords, IconFlag
 import { useTranslation } from "react-i18next";
 import { fireConfetti } from "../confetti";
 import { OctagonApi } from "../OctagonApi";
+import { OctagonGuest } from "../guestIdentity";
 import type { MatchResultData, MatchOpponent } from "../types";
 import "../octagon.css";
 
@@ -37,12 +38,15 @@ export const OctagonResultView: React.FC<Props> = ({
     if (!opponent?.id) return;
     setIsSubmittingReport(true);
     try {
-      await OctagonApi.reportMatch({
-        matchId: matchId || undefined,
-        reportedUserId: opponent.id,
-        reason: reportReason,
-        comment: reportComment,
-      });
+      await OctagonApi.reportMatch(
+        {
+          matchId: matchId || undefined,
+          reportedUserId: opponent.id,
+          reason: reportReason,
+          comment: reportComment,
+        },
+        OctagonGuest.getToken()
+      );
       setReportSent(true);
       setTimeout(() => {
         setShowReportModal(false);

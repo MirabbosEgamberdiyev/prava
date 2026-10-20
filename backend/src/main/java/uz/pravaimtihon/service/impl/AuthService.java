@@ -49,6 +49,7 @@ public class AuthService {
     private final TelegramAuthService telegramAuthService;
     private final TelegramTokenStore telegramTokenStore;
     private final DeviceManagementService deviceManagementService;
+    private final uz.pravaimtihon.security.SessionRevocationService sessionRevocationService;
 
     @Value("${app.oauth.google.auto-register:true}")
     private boolean autoRegister;
@@ -124,7 +125,12 @@ public class AuthService {
     /**
      * ✅ Refresh token with rotation — revoke old, issue new refresh token.
      * If a revoked token is reused, the entire token family is revoked (security breach).
+     *
+     * <p>AUDIT 2026-10-20: {@code noRollbackFor} — oilani revoke qilgandan keyin {@link UnauthorizedException}
+     * tashlanadi; klass darajasidagi @Transactional uni rollback qilib, revoke'ni ham bekor qilardi
+     * (o'g'irlangan token bilan ochilgan sessiya tirik qolardi).
      */
+    @Transactional(noRollbackFor = UnauthorizedException.class)
     public AuthResponse refreshToken(RefreshTokenRequest request, AcceptLanguage language) {
         log.info("Refreshing token [lang={}]", language);
         if (request == null || request.getRefreshToken() == null || request.getRefreshToken().isBlank()) {
@@ -161,6 +167,8 @@ public class AuthService {
                 }
                 log.warn("Revoked refresh token reuse detected outside grace window! Revoking entire token family.");
                 refreshTokenRepository.revokeAllByFamily(revokedToken.getTokenFamily(), LocalDateTime.now());
+                // Shu sessiyaning access token'lari ham keshni kutmasdan rad etilsin
+                sessionRevocationService.evict(revokedToken.getTokenFamily());
             }
             throw new UnauthorizedException("error.token.invalid");
         }

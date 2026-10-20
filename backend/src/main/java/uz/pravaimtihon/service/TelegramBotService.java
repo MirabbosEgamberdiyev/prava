@@ -28,6 +28,7 @@ public class TelegramBotService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final TelegramTokenStore tokenStore;
+    private final TelegramAuthSessionStore authSessionStore;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -238,6 +239,11 @@ public class TelegramBotService {
         Map<String, Object> chat = (Map<String, Object>) message.get("chat");
         long chatId = ((Number) chat.get("id")).longValue();
 
+        if (data.startsWith(SESSION_APPROVE_PREFIX) || data.startsWith(SESSION_REJECT_PREFIX)) {
+            handleSessionDecision(chatId, callbackQueryId, from, data);
+            return;
+        }
+
         if ("choose_lang".equals(data)) {
             AcceptLanguage currentLang = getUserLanguage(userId);
             sendLanguageSelectionKeyboard(chatId, currentLang);
@@ -365,6 +371,12 @@ public class TelegramBotService {
             }
         }
 
+        // Ilovadan boshlangan "bir bosishda kirish" sessiyasi: kod yubormaymiz, aniq tasdiq so'raymiz
+        if (payload != null && payload.startsWith("auth_")) {
+            sendSessionConfirmation(chatId, lang, payload);
+            return;
+        }
+
         // Generate one-time login token with user metadata
         String token = tokenStore.generateToken(telegramUserId, firstName, lastName, username);
         String loginUrl = baseUrl + "/auth/telegram-callback?token=" + token;
@@ -380,6 +392,127 @@ public class TelegramBotService {
         }
 
         sendWelcomeMessage(chatId, lang, token, loginUrl);
+    }
+
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Telegram session login (deep link + explicit confirmation)
+    // ─────────────────────────────────────────────────────────────────────
+
+    static final String SESSION_APPROVE_PREFIX = "tga:";
+    static final String SESSION_REJECT_PREFIX = "tgr:";
+
+    private static String platformLabel(String platform, AcceptLanguage lang) {
+        String p = platform == null ? "web" : platform;
+        return switch (p) {
+            case "desktop" -> lang == AcceptLanguage.RU ? "Windows-приложение" : (lang == AcceptLanguage.UZC ? "Windows илова" : "Windows ilova");
+            case "android", "ios", "mobile" -> lang == AcceptLanguage.RU ? "Мобильное приложение" : (lang == AcceptLanguage.UZC ? "Мобил илова" : "Mobil ilova");
+            default -> lang == AcceptLanguage.RU ? "Веб-браузер" : (lang == AcceptLanguage.UZC ? "Веб-браузер" : "Veb-brauzer");
+        };
+    }
+
+    /**
+     * /start auth_<token>: so'rov qaysi qurilmadan kelganini ko'rsatib, "Tasdiqlash"/"Rad etish" tugmalarini yuboradi.
+     * Avtomatik tasdiqlash YO'Q — aks holda begona odam yaratgan havolani bosgan foydalanuvchi o'z akkauntini
+     * o'sha odamga topshirib qo'yardi (login phishing).
+     */
+    void sendSessionConfirmation(long chatId, AcceptLanguage lang, String sessionToken) {
+        Optional<TelegramAuthSessionStore.DeviceInfo> info = authSessionStore.pendingDeviceInfo(sessionToken);
+        if (info.isEmpty()) {
+            String expired = switch (lang) {
+                case RU -> "⌛ Ссылка для входа устарела. Нажмите «Войти через Telegram» в приложении ещё раз.";
+                case UZC -> "⌛ Кириш ҳаволаси эскирган. Иловада «Telegram орқали кириш» тугмасини қайта босинг.";
+                default -> "⌛ Kirish havolasi eskirgan. Ilovada «Telegram orqali kirish» tugmasini qayta bosing.";
+            };
+            sendMessage(chatId, expired, null);
+            return;
+        }
+        TelegramAuthSessionStore.DeviceInfo d = info.get();
+        // parse_mode=HTML: klient yuborgan qurilma nomi teg/havola sifatida talqin qilinmasin
+        String device = platformLabel(d.platform(), lang) + (d.deviceName() != null ? " · " + htmlEscape(d.deviceName()) : "");
+        String text = switch (lang) {
+            case RU -> "🔐 Запрос на вход в Prava Online\n\nУстройство: " + device
+                    + "\n\nЕсли это вы — нажмите «Подтвердить». Если вы не начинали вход, нажмите «Отклонить».";
+            case UZC -> "🔐 Prava Online'га кириш сўрови\n\nҚурилма: " + device
+                    + "\n\nАгар бу сиз бўлсангиз — «Тасдиқлаш»ни босинг. Кириш сўровини сиз юбормаган бўлсангиз, «Рад этиш»ни босинг.";
+            default -> "🔐 Prava Online'ga kirish so'rovi\n\nQurilma: " + device
+                    + "\n\nAgar bu siz bo'lsangiz — «Tasdiqlash»ni bosing. Kirishni siz boshlamagan bo'lsangiz, «Rad etish»ni bosing.";
+        };
+        String approve = lang == AcceptLanguage.RU ? "✅ Подтвердить" : (lang == AcceptLanguage.UZC ? "✅ Тасдиқлаш" : "✅ Tasdiqlash");
+        String reject = lang == AcceptLanguage.RU ? "❌ Отклонить" : (lang == AcceptLanguage.UZC ? "❌ Рад этиш" : "❌ Rad etish");
+        Map<String, Object> markup = Map.of("inline_keyboard", List.of(List.of(
+                Map.of("text", approve, "callback_data", SESSION_APPROVE_PREFIX + sessionToken),
+                Map.of("text", reject, "callback_data", SESSION_REJECT_PREFIX + sessionToken)
+        )));
+        sendMessage(chatId, text, markup);
+    }
+
+    static String htmlEscape(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    void handleSessionDecision(long chatId, String callbackQueryId, Map<String, Object> from, String data) {
+        answerCallbackQuery(callbackQueryId);
+        long telegramUserId = ((Number) from.get("id")).longValue();
+        AcceptLanguage lang = getUserLanguage(telegramUserId);
+        String sessionToken = data.substring(4);
+
+        if (data.startsWith(SESSION_REJECT_PREFIX)) {
+            authSessionStore.reject(sessionToken);
+            sendMessage(chatId, switch (lang) {
+                case RU -> "Вход отклонён. Никто не получил доступ к вашему аккаунту.";
+                case UZC -> "Кириш рад этилди. Ҳеч ким аккаунтингизга кира олмади.";
+                default -> "Kirish rad etildi. Hech kim akkauntingizga kira olmadi.";
+            }, null);
+            return;
+        }
+
+        String tgId = String.valueOf(telegramUserId);
+        Optional<User> user = userRepository.findByTelegramIdAndDeletedFalse(tgId);
+        if (user.isEmpty()) {
+            String firstName = from.get("first_name") instanceof String f ? f : "";
+            String lastName = from.get("last_name") instanceof String l ? l : "";
+            String rawUsername = from.get("username") instanceof String u ? u : null;
+            String safeFirst = sanitizeFirstName(firstName, rawUsername);
+            String safeLast = sanitizeLastName(lastName);
+            String safeUsername = sanitizeUsername(rawUsername);
+            try {
+                User newUser = userRepository.save(User.builder()
+                        .telegramId(tgId)
+                        .telegramUsername(safeUsername)
+                        .firstName(safeFirst)
+                        .lastName(safeLast)
+                        .oauthProvider(OAuthProvider.TELEGRAM)
+                        .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
+                        .role(Role.USER)
+                        .preferredLanguage(lang)
+                        .isActive(true)
+                        .build());
+                user = Optional.of(newUser);
+                log.info("Auto-registered new Telegram user during session approval: tg_id={}", telegramUserId);
+            } catch (Exception e) {
+                log.error("Failed to auto-register Telegram user during approval {}: {}", telegramUserId, e.getMessage());
+            }
+        }
+        if (user.isEmpty() || !Boolean.TRUE.equals(user.get().getIsActive())) {
+            sendMessage(chatId, lang == AcceptLanguage.RU ? "❌ Аккаунт недоступен." : "❌ Akkaunt faol emas.", null);
+            return;
+        }
+        String username = from.get("username") instanceof String u ? u : null;
+        boolean ok = authSessionStore.approve(sessionToken, telegramUserId, username, user.get().getId(),
+                user.get().getPreferredLanguage());
+        String reply = ok
+                ? switch (lang) {
+                    case RU -> "✅ Вход подтверждён. Вернитесь в приложение — вход выполнится автоматически.";
+                    case UZC -> "✅ Кириш тасдиқланди. Иловага қайтинг — тизимга автоматик кирасиз.";
+                    default -> "✅ Kirish tasdiqlandi. Ilovaga qayting — tizimga avtomatik kirasiz.";
+                }
+                : switch (lang) {
+                    case RU -> "⌛ Запрос устарел или уже использован. Начните вход заново в приложении.";
+                    case UZC -> "⌛ Сўров эскирган ёки ишлатилган. Иловада қайта кириб кўринг.";
+                    default -> "⌛ So'rov eskirgan yoki allaqachon ishlatilgan. Ilovada qaytadan urinib ko'ring.";
+                };
+        sendMessage(chatId, reply, null);
     }
 
     private void handleContactMessage(long chatId, long userId, Map<String, Object> from, Map<String, Object> contact) {

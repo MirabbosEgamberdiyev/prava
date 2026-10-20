@@ -1,17 +1,35 @@
-import { OCTAGON_CONFIG, type MatchOpponent, type OpponentProgress, type MatchResultData, type GroupRoom, type IncomingChallenge } from "./types";
+import { OCTAGON_CONFIG, type MatchOpponent, type OpponentProgress, type MatchResultData, type GroupRoom, type IncomingChallenge, type OctagonQuestion } from "./types";
 import { ENV } from "../../config/env";
 
 export interface OctagonSocketCallbacks {
   onConnected?: () => void;
-  onMatchFound?: (data: { matchId: string; opponent: MatchOpponent; questionIds: number[]; preloadDurationMs: number }) => void;
+  onMatchFound?: (data: { matchId: string; opponent: MatchOpponent; questionIds: number[]; questions?: OctagonQuestion[]; preloadDurationMs: number }) => void;
   onCountdownTick?: (count: number) => void;
   onMatchStarted?: (data: { totalDurationSec: number; startTime: number }) => void;
   onOpponentProgress?: (data: OpponentProgress) => void;
   onOpponentReaction?: (emojiId: string) => void;
   onMatchEnded?: (data: MatchResultData) => void;
-  onReconnect?: (data: { matchId: string; questionIndex: number; myAnswers: Record<string, number>; remainingTimeSec: number }) => void;
+  onReconnect?: (data: {
+    matchId: string;
+    started?: boolean;
+    questionIndex: number;
+    myAnswers: Record<string, number>;
+    myScore?: number;
+    opponent?: MatchOpponent;
+    opponentProgress?: { answeredCount: number; correctCount: number };
+    remainingTimeSec: number;
+    questionIds?: number[];
+    questions?: OctagonQuestion[];
+  }) => void;
+  /** Server o'z javobimiz natijasini yuboradi (to'g'ri variant indeksi oshkor qilinmaydi). */
+  onAnswerResult?: (data: { questionId: number; isCorrect: boolean; myScore: number; answeredCount: number }) => void;
+  /** Jang ochib bo'lmadi (masalan savollar bazasi bo'sh). */
+  onMatchError?: (data: { code: string; message: string }) => void;
+  onRevengeRequested?: (data: { matchId: string }) => void;
   onError?: (err: Event | Error) => void;
   onClose?: (code: number, reason: string) => void;
+  /** All reconnect attempts failed (server unreachable, handshake rejected…) — the UI must leave "searching". */
+  onConnectionLost?: () => void;
 
   // Challenge callbacks
   onChallengeReceived?: (data: IncomingChallenge) => void;
@@ -26,7 +44,7 @@ export interface OctagonSocketCallbacks {
   onRoomLeft?: (data: { roomCode: string }) => void;
   onRoomError?: (data: { code: string; message: string }) => void;
   onRoomGameCountdown?: (count: number) => void;
-  onRoomGameStarted?: (data: { roomCode: string; questionIds: number[]; totalDurationSec: number; startTime: number }) => void;
+  onRoomGameStarted?: (data: { roomCode: string; questionIds: number[]; questions?: OctagonQuestion[]; totalDurationSec: number; startTime: number }) => void;
   onGroupProgress?: (data: { userId: string; displayName: string; questionIndex: number; answeredCount: number; score: number }) => void;
   onGroupMatchEnded?: (data: { roomCode: string; standings: Array<{ userId: string; displayName: string; avatarUrl: string; score: number; answeredCount: number }> }) => void;
 }
@@ -38,9 +56,12 @@ export class OctagonSocket {
   private ticket: string = "";
   private isIntentionallyClosed: boolean = false;
   private reconnectAttempts: number = 0;
+  /** Bir martalik ticket: qayta ulanishda har safar yangisi olinadi (eskisini server rad etadi). */
+  private ticketProvider?: () => Promise<string>;
 
-  constructor(callbacks: OctagonSocketCallbacks) {
+  constructor(callbacks: OctagonSocketCallbacks, ticketProvider?: () => Promise<string>) {
     this.callbacks = callbacks;
+    this.ticketProvider = ticketProvider;
   }
 
   public connect(ticket: string) {
@@ -48,8 +69,14 @@ export class OctagonSocket {
     this.isIntentionallyClosed = false;
 
     if (this.ws) {
+      // Eski socket'ning onclose'i yana reconnect rejalashtirmasin
+      const old = this.ws;
+      old.onopen = null;
+      old.onmessage = null;
+      old.onerror = null;
+      old.onclose = null;
       try {
-        this.ws.close();
+        old.close();
       } catch {}
     }
 
@@ -58,8 +85,10 @@ export class OctagonSocket {
       const isHttps = window.location.protocol === "https:";
       const proto = isHttps ? "wss:" : "ws:";
 
-      // If ENV.API_URL is configured (e.g. http://localhost:8080 or https://api.pravaonline.uz)
-      const apiUrl = (ENV as unknown as { API_URL?: string })?.API_URL;
+      // REST bilan bir xil server: ENV.API_BASE_URL (Tauri'da https://pravaonline.uz, dev'da localhost:8081,
+      // prod web'da "" = shu origin). Avval mavjud bo'lmagan ENV.API_URL o'qilardi — Desktop'da socket
+      // ws://tauri.localhost ga ulanishga urinib, OKTAGON umuman ishlamasdi.
+      const apiUrl = (ENV as unknown as { API_BASE_URL?: string })?.API_BASE_URL;
       if (apiUrl && (apiUrl.startsWith("http://") || apiUrl.startsWith("https://"))) {
         const u = new URL(apiUrl);
         wsBaseUrl = `${u.protocol === "https:" ? "wss:" : "ws:"}//${u.host}`;
@@ -77,6 +106,7 @@ export class OctagonSocket {
         this.reconnectAttempts = 0;
         this.startHeartbeat();
         this.callbacks.onConnected?.();
+        this.flushPending();
       };
 
       this.ws.onmessage = (event) => {
@@ -106,6 +136,15 @@ export class OctagonSocket {
               break;
             case "game_reconnect":
               this.callbacks.onReconnect?.(data);
+              break;
+            case "answer_result":
+              this.callbacks.onAnswerResult?.(data);
+              break;
+            case "match_error":
+              this.callbacks.onMatchError?.(data);
+              break;
+            case "revenge_requested":
+              this.callbacks.onRevengeRequested?.(data);
               break;
             case "heartbeat_ping":
               // Server acknowledged ping
@@ -170,22 +209,42 @@ export class OctagonSocket {
         this.stopHeartbeat();
         this.callbacks.onClose?.(ev.code, ev.reason);
 
-        // Attempt reconnect if not intentionally closed and under limit
-        if (!this.isIntentionallyClosed && this.reconnectAttempts < OCTAGON_CONFIG.MAX_RECONNECT_ATTEMPTS) {
-          this.reconnectAttempts++;
-          const jitter = Math.random() * OCTAGON_CONFIG.RECONNECT_JITTER_MS;
-          const delay = OCTAGON_CONFIG.RECONNECT_BASE_DELAY_MS + jitter;
-
-          setTimeout(() => {
-            if (!this.isIntentionallyClosed && this.ticket) {
-              this.connect(this.ticket);
-            }
-          }, delay);
-        }
+        // 4001 = ticket rad etildi; yangi ticket bilan urinish mantiqiy, eski bilan esa — yo'q
+        this.scheduleReconnect();
       };
     } catch (e) {
       this.callbacks.onError?.(e as Error);
     }
+  }
+
+  /**
+   * Exponential-backoff reconnect with a FRESH one-time ticket. A failed ticket fetch (offline, 429…)
+   * counts as a failed attempt and schedules the next one — before, the chain silently stopped there.
+   * When the attempts are used up the owner is told (onConnectionLost) instead of spinning forever.
+   */
+  private scheduleReconnect() {
+    if (this.isIntentionallyClosed) return;
+    if (this.reconnectAttempts >= OCTAGON_CONFIG.MAX_RECONNECT_ATTEMPTS) {
+      this.giveUp();
+      return;
+    }
+    this.reconnectAttempts++;
+    const jitter = Math.random() * OCTAGON_CONFIG.RECONNECT_JITTER_MS;
+    const backoff = Math.min(OCTAGON_CONFIG.RECONNECT_BASE_DELAY_MS * 2 ** (this.reconnectAttempts - 1), 10000);
+
+    setTimeout(async () => {
+      if (this.isIntentionallyClosed) return;
+      let fresh: string | undefined;
+      try {
+        // Ticket bir martalik — eski ticket bilan qayta ulanish har doim 4001 bilan yopilardi
+        fresh = this.ticketProvider ? await this.ticketProvider() : this.ticket;
+      } catch (e) {
+        this.callbacks.onError?.(e as Error);
+      }
+      if (this.isIntentionallyClosed) return;
+      if (fresh) this.connect(fresh);
+      else this.scheduleReconnect();
+    }, backoff + jitter);
   }
 
   public joinQueue(userProgress: number, currentElo: number) {
@@ -257,6 +316,7 @@ export class OctagonSocket {
 
   public close() {
     this.isIntentionallyClosed = true;
+    this.pending = [];
     this.stopHeartbeat();
     if (this.ws) {
       try {
@@ -266,10 +326,33 @@ export class OctagonSocket {
     }
   }
 
+  /**
+   * Messages sent while the socket is still CONNECTING (or reconnecting) are kept and flushed on open.
+   * Before, "join_queue" sent right after the lobby (re)connected was silently dropped and the UI kept
+   * "searching" without ever being in the queue. Heartbeats are never buffered.
+   */
+  private pending: string[] = [];
+  private static readonly MAX_PENDING = 20;
+
   private send(event: string, data: Record<string, unknown>) {
+    const msg = JSON.stringify({ event, data });
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ event, data }));
+      this.ws.send(msg);
+    } else if (!this.isIntentionallyClosed && event !== "heartbeat_ping" && this.pending.length < OctagonSocket.MAX_PENDING) {
+      this.pending.push(msg);
     }
+  }
+
+  private flushPending() {
+    const queued = this.pending.splice(0);
+    for (const msg of queued) {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) this.ws.send(msg);
+    }
+  }
+
+  private giveUp() {
+    this.pending = [];
+    this.callbacks.onConnectionLost?.();
   }
 
   private startHeartbeat() {

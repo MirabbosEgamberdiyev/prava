@@ -522,13 +522,13 @@ export class SyncEngine {
         payload = {};
       }
 
+      // No X-Idempotency-Key header: the backend never reads it and it is not in the CORS allow-list
+      // (a cross-origin push failed at the preflight — same fix as desktop). Idempotency comes from
+      // the payload itself (record-offline `clientSessionId`, PUT-like progress endpoints).
       const response = await api.request({
         url: item.endpoint,
         method: item.http_method,
         data: payload,
-        headers: {
-          "X-Idempotency-Key": item.id,
-        },
       });
 
       await this.handlePostSyncSuccess(item, response.data);

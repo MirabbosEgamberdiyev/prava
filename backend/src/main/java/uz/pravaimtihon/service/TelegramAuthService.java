@@ -34,8 +34,8 @@ public class TelegramAuthService {
     @Value("${app.oauth.telegram.enabled:true}")
     private boolean enabled;
 
-    @Value("${app.oauth.telegram.auth-data-max-age-seconds:86400}")
-    private long authDataMaxAgeSeconds; // Default: 24 hours
+    @Value("${app.oauth.telegram.auth-data-max-age-seconds:3600}")
+    private long authDataMaxAgeSeconds; // Default: 1 soat (Widget ma'lumoti darhol yuboriladi; 24 soatlik replay oynasi keraksiz)
 
     /**
      * Verify Telegram Login Widget authentication data.
@@ -55,7 +55,7 @@ public class TelegramAuthService {
 
         // Verify auth_date is not too old
         long currentTime = Instant.now().getEpochSecond();
-        if (currentTime - request.getAuthDate() > authDataMaxAgeSeconds) {
+        if (currentTime - request.getAuthDate() > authDataMaxAgeSeconds || request.getAuthDate() - currentTime > 300) {
             log.warn("Telegram auth data expired: auth_date={}, current={}",
                     request.getAuthDate(), currentTime);
             throw new BusinessException("error.telegram.auth.expired");
@@ -68,7 +68,9 @@ public class TelegramAuthService {
         String expectedHash = calculateHash(dataCheckString);
 
         // Compare hashes (case-insensitive)
-        if (!expectedHash.equalsIgnoreCase(request.getHash())) {
+        // Constant-time solishtirish (timing orqali hash'ni bayt-baytlab topishning oldini olish)
+        String received = request.getHash() == null ? "" : request.getHash().toLowerCase();
+        if (!MessageDigest.isEqual(expectedHash.getBytes(StandardCharsets.US_ASCII), received.getBytes(StandardCharsets.US_ASCII))) {
             log.warn("Telegram auth hash mismatch for user_id={}", request.getId());
             throw new BusinessException("error.telegram.auth.invalid");
         }

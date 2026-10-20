@@ -5,19 +5,29 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import uz.pravaimtihon.dto.response.ApiResponse;
+import uz.pravaimtihon.exception.ForbiddenException;
+import uz.pravaimtihon.exception.UnauthorizedException;
 import uz.pravaimtihon.octagon.dto.OctagonDtos.*;
-import uz.pravaimtihon.octagon.entity.OctagonChallenge;
+import uz.pravaimtihon.octagon.service.OctagonGuestIdentity;
 import uz.pravaimtihon.octagon.service.OctagonService;
 import uz.pravaimtihon.octagon.service.OctagonTicketService;
+import uz.pravaimtihon.octagon.websocket.OctagonMatchmaker;
 import uz.pravaimtihon.security.CustomUserDetails;
 
 import java.util.List;
-import java.util.UUID;
 
+/**
+ * Oktagon REST API. Butun prefiks permitAll (mehmon rejimi), shuning uchun har bir endpoint chaqiruvchini
+ * o'zi aniqlaydi: JWT bo'lsa — foydalanuvchi, aks holda faqat server imzolagan mehmon tokeni
+ * ({@link OctagonGuestIdentity}). Klient yuborgan ixtiyoriy {@code guestId}/{@code reporterId} endi
+ * identifikatsiya sifatida qabul qilinmaydi.
+ */
 @RestController
 @RequestMapping({"/api/app/octagon", "/api/v1/octagon"})
 @RequiredArgsConstructor
@@ -27,7 +37,27 @@ public class OctagonController {
 
     private final OctagonTicketService ticketService;
     private final OctagonService octagonService;
-    private final uz.pravaimtihon.octagon.websocket.OctagonMatchmaker matchmaker;
+    private final OctagonMatchmaker matchmaker;
+    private final OctagonGuestIdentity guestIdentity;
+
+    /** JWT foydalanuvchisi yoki imzolangan mehmon tokeni egasi; aniqlanmasa null. */
+    private String resolveCaller(CustomUserDetails principal, String guestToken) {
+        if (principal != null) return principal.getId().toString();
+        return guestIdentity.verifyToken(guestToken);
+    }
+
+    private String requireCaller(CustomUserDetails principal, String guestToken) {
+        String id = resolveCaller(principal, guestToken);
+        if (id == null) throw new UnauthorizedException("Oktagon uchun tizimga kiring yoki mehmon sifatida qayta ulaning");
+        return id;
+    }
+
+    static String sanitizeGuestName(String raw) {
+        if (raw == null) return null;
+        String cleaned = raw.replaceAll("[\\p{Cntrl}<>\"'`]", "").strip();
+        if (cleaned.length() > 24) cleaned = cleaned.substring(0, 24).strip();
+        return cleaned.isEmpty() ? null : cleaned;
+    }
 
     @PostMapping("/ticket")
     @Operation(summary = "Generate 30-second One-Time Ticket for WebSocket authentication (CWE-598 protected)")
@@ -38,40 +68,46 @@ public class OctagonController {
 
         String userId;
         String name;
+        String guestToken = null;
 
         if (principal != null) {
             userId = principal.getId().toString();
             name = octagonService.resolveDisplayName(userId);
         } else {
-            // Guest mode
-            if (guestId != null && !guestId.isBlank()) {
-                userId = guestId.startsWith("guest_") ? guestId : "guest_" + guestId;
-            } else {
-                userId = "guest_" + UUID.randomUUID().toString().substring(0, 8);
+            // Mehmon: faqat server imzolagan token qayta ishlatiladi, aks holda yangi mehmon identifikatori beriladi
+            userId = guestIdentity.verifyToken(guestId);
+            guestToken = guestId;
+            if (userId == null) {
+                guestToken = guestIdentity.issueToken();
+                userId = guestIdentity.verifyToken(guestToken);
             }
-            name = (guestDisplayName != null && !guestDisplayName.isBlank())
-                    ? guestDisplayName
-                    : octagonService.resolveDisplayName(userId);
+            String nick = sanitizeGuestName(guestDisplayName);
+            name = nick != null ? nick : octagonService.resolveDisplayName(userId);
         }
 
         String ticket = ticketService.createTicket(userId, name);
         TicketResponse res = TicketResponse.builder()
                 .ticket(ticket)
-                .expiresInSeconds(30)
+                .expiresInSeconds(OctagonTicketService.TICKET_TTL_SECONDS)
+                .guestId(guestToken)
+                .userId(userId)
                 .build();
 
         return ResponseEntity.ok(ApiResponse.success(res));
     }
 
     @GetMapping("/stats")
-    @Operation(summary = "Get user ELO, rank and combat statistics")
+    @Operation(summary = "Get user ELO, rank and combat statistics (public profile card)")
     public ResponseEntity<ApiResponse<StatsResponse>> getStats(
             @AuthenticationPrincipal CustomUserDetails principal,
             @RequestParam(value = "userId", required = false) String queryUserId) {
 
         String effectiveId;
         if (queryUserId != null && !queryUserId.isBlank()) {
-            effectiveId = queryUserId;
+            // Mehmon o'z tokenini yuborsa — o'z statistikasi; aks holda ochiq profil kartasi (leaderboard'dagi kabi)
+            String fromToken = guestIdentity.verifyToken(queryUserId);
+            effectiveId = fromToken != null ? fromToken : queryUserId.trim();
+            if (effectiveId.length() > 64) effectiveId = effectiveId.substring(0, 64);
         } else if (principal != null) {
             effectiveId = principal.getId().toString();
         } else {
@@ -92,23 +128,20 @@ public class OctagonController {
     }
 
     @GetMapping("/history")
-    @Operation(summary = "Get user match history")
+    @Operation(summary = "Get the caller's own match history")
     public ResponseEntity<ApiResponse<Page<MatchHistoryEntry>>> getHistory(
             @AuthenticationPrincipal CustomUserDetails principal,
             @RequestParam(value = "userId", required = false) String queryUserId,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size) {
 
-        String effectiveId;
-        if (queryUserId != null && !queryUserId.isBlank()) {
-            effectiveId = queryUserId;
-        } else if (principal != null) {
-            effectiveId = principal.getId().toString();
-        } else {
-            effectiveId = "guest_default";
+        // Faqat o'z tarixi (avval ?userId= bilan har kimning raqiblari va natijalarini ko'rish mumkin edi)
+        String caller = resolveCaller(principal, queryUserId);
+        if (caller == null) {
+            return ResponseEntity.ok(ApiResponse.success(new PageImpl<>(List.of(), PageRequest.of(0, 1), 0)));
         }
 
-        Page<MatchHistoryEntry> history = octagonService.getUserHistory(effectiveId, page, size);
+        Page<MatchHistoryEntry> history = octagonService.getUserHistory(caller, page, size);
         return ResponseEntity.ok(ApiResponse.success(history));
     }
 
@@ -119,11 +152,9 @@ public class OctagonController {
             @RequestParam(value = "guestId", required = false) String guestId,
             @RequestParam(value = "targetUserId", required = false) String targetUserId) {
 
-        String challengerId = principal != null
-                ? principal.getId().toString()
-                : (guestId != null ? guestId : "guest_" + UUID.randomUUID().toString().substring(0, 8));
-
-        ChallengeResponse response = octagonService.createChallenge(challengerId, targetUserId);
+        String challengerId = requireCaller(principal, guestId);
+        String target = targetUserId != null && !targetUserId.isBlank() && targetUserId.length() <= 64 ? targetUserId : null;
+        ChallengeResponse response = octagonService.createChallenge(challengerId, target);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -148,25 +179,36 @@ public class OctagonController {
     }
 
     @PostMapping("/questions")
-    @Operation(summary = "Get match question details (text, options, images) without correct answers (Anti-Cheat)")
+    @Operation(summary = "Get question details of an ACTIVE match/room (no correct answers, no explanations)")
     public ResponseEntity<ApiResponse<List<QuestionDto>>> getQuestions(
             @RequestBody List<Long> questionIds) {
+        if (questionIds == null || questionIds.isEmpty()) {
+            return ResponseEntity.ok(ApiResponse.success(List.of()));
+        }
+        if (questionIds.size() > OctagonService.MAX_QUESTIONS_PER_REQUEST
+                || !matchmaker.areQuestionsInActiveGame(questionIds)) {
+            // Ixtiyoriy ID'lar bilan butun (shu jumladan pullik) savollar bazasini yig'ib olishning oldini olish
+            throw new ForbiddenException("Bu savollar faol jangga tegishli emas");
+        }
         List<QuestionDto> list = octagonService.getQuestionsByIds(questionIds);
         return ResponseEntity.ok(ApiResponse.success(list));
     }
 
     @GetMapping("/users/search")
-    @Operation(summary = "Search users for 1v1 challenge by username, name, phone or ID")
+    @Operation(summary = "Search players by name or exact ID (authenticated users only)")
     public ResponseEntity<ApiResponse<List<UserSearchResult>>> searchUsers(
             @AuthenticationPrincipal CustomUserDetails principal,
             @RequestParam("q") String query) {
 
-        String currentUserId = principal != null ? principal.getId().toString() : "";
+        // Avval anonim so'rov telefon/e-mail bo'yicha ism va avatarni qaytarardi (PII enumeratsiyasi)
+        if (principal == null) {
+            throw new UnauthorizedException("Qidiruv uchun tizimga kiring");
+        }
+        String currentUserId = principal.getId().toString();
         List<UserSearchResult> results = octagonService.searchUsers(query, currentUserId);
 
         for (UserSearchResult r : results) {
-            boolean online = matchmaker.isUserOnline(r.getUserId());
-            r.setOnline(online);
+            r.setOnline(matchmaker.isUserOnline(r.getUserId()));
             r.setStatus(matchmaker.getUserStatus(r.getUserId()));
         }
 
@@ -187,15 +229,11 @@ public class OctagonController {
     @Operation(summary = "Submit abuse report or complaint against a player")
     public ResponseEntity<ApiResponse<String>> submitReport(
             @AuthenticationPrincipal CustomUserDetails principal,
-            @RequestParam(value = "reporterId", required = false) String guestReporterId,
+            @RequestParam(value = "reporterId", required = false) String guestReporterToken,
             @RequestBody ReportRequest request) {
 
-        String reporterId = principal != null
-                ? principal.getId().toString()
-                : (guestReporterId != null && !guestReporterId.isBlank() ? guestReporterId : "guest_anonymous");
-
+        String reporterId = requireCaller(principal, guestReporterToken);
         octagonService.submitReport(reporterId, request);
         return ResponseEntity.ok(ApiResponse.success("Shikoyat qabul qilindi"));
     }
 }
-

@@ -46,9 +46,9 @@ class OctagonMatchmakerTest {
         OctagonSession session = new OctagonSession("user_100", "Player_100", wsSession);
         matchmaker.registerSession(session);
 
-        // Joining queue should record queued timestamp and ELO
+        // Joining queue records queued timestamp; ELO comes from the server profile, NOT the client (150 is ignored)
         matchmaker.joinQueue(session, 0, 150);
-        assertEquals(150, session.getCurrentElo());
+        assertEquals(0, session.getCurrentElo());
         assertNotNull(session.getQueuedAt());
 
         // Leaving queue should reset queued timestamp
@@ -143,14 +143,9 @@ class OctagonMatchmakerTest {
         assertEquals("IN_ROOM", matchmaker.getUserStatus("host_1"));
 
         // Retrieve room
-        String roomCode = null;
-        for (int i = 1000; i <= 9999; i++) {
-            if (matchmaker.getRoomDto("OCT-" + i).isPresent()) {
-                roomCode = "OCT-" + i;
-                break;
-            }
-        }
+        String roomCode = matchmaker.getUserRoomCode("host_1");
         assertNotNull(roomCode);
+        assertTrue(roomCode.matches("OCT-[A-Z2-9]{6}"), roomCode);
 
         // Guest joins room
         matchmaker.handleJoinRoom(guest, roomCode);

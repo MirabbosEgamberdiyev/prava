@@ -21,6 +21,8 @@ import { ENV } from "../../config/env";
 import { getErrorMessage } from "../../types/errors";
 import { isTauriRuntime } from "../../auth/runtime";
 import { IconBrandTelegram, IconKey, IconExternalLink } from "@tabler/icons-react";
+import { TelegramOneTapSection } from "./TelegramOneTapSection";
+import type { TelegramSessionStatusResponse } from "../../auth/telegramSession";
 
 export interface TelegramLoginButtonProps {
   mode?: "login" | "register";
@@ -217,6 +219,31 @@ export const TelegramLoginButton = ({
     (window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1" ||
       window.location.hostname.endsWith(".local"));
+
+  /** Telegram sessiya oqimi (bot «Tasdiqlash» tugmasi) muvaffaqiyatli tugadi. */
+  const handleOneTapApproved = useCallback(
+    (res: TelegramSessionStatusResponse & { accessToken: string }) => {
+      if (!res.user) return;
+      const userLang = res.user.preferredLanguage;
+      if (userLang) {
+        i18n.changeLanguage(userLang);
+      }
+      authLogin({ accessToken: res.accessToken, refreshToken: res.refreshToken || "", user: res.user });
+      setInternalModalOpened(false);
+      onBotModalClose?.();
+      showToast({
+        id: "auth-telegram-auth-success",
+        dedupeKey: "auth-telegram-auth-success",
+        title: t("auth.telegram.successTitle", { defaultValue: "Muvaffaqiyat" }),
+        message: t("auth.telegram.successMessage", { defaultValue: "Telegram orqali tizimga kirdingiz!" }),
+        color: "green",
+        withBorder: true,
+      });
+      onSuccess?.(res);
+      executePending();
+    },
+    [i18n, authLogin, onBotModalClose, t, onSuccess, executePending]
+  );
 
   const botUsername = ENV.TELEGRAM_BOT_USERNAME || "pravaonlineuzbot";
   const botUrl = `https://t.me/${botUsername}?start=desktop`;
@@ -500,6 +527,15 @@ export const TelegramLoginButton = ({
           <Text size="sm" c="dimmed">
             {isRegister ? t("auth.telegram.modalDescRegister") : t("auth.telegram.modalDescLogin")}
           </Text>
+
+          <TelegramOneTapSection
+            platform={isTauri ? "desktop" : "web"}
+            active={isModalOpen}
+            openExternalUrl={openExternalUrl}
+            onApproved={handleOneTapApproved}
+          />
+
+          <Divider label={t("auth.telegram.orUseCode")} labelPosition="center" />
 
           <Stack
             gap="xs"

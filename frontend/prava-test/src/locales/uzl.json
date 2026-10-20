@@ -37,7 +37,15 @@
       "then": "va keyin",
       "step2": "Bot sizga yuborgan 5 xonali tasdiqlash kodini bu yerga kiriting:",
       "codePlaceholder": "Masalan: 12345",
-      "codeLabel": "Tasdiqlash kodi"
+      "codeLabel": "Tasdiqlash kodi",
+      "oneTapButton": "Telegram ilovasida tasdiqlash",
+      "oneTapHint": "Telegram ochiladi — botdagi «Tasdiqlash» tugmasini bosing, ilova o'zi tizimga kiradi.",
+      "oneTapWaiting": "Telegram'dagi tasdiqlash kutilmoqda…",
+      "oneTapNotOpened": "Telegram ochilmadimi? Havolani ochish",
+      "oneTapRejected": "Kirish Telegram'da rad etildi.",
+      "oneTapExpired": "Kutish vaqti tugadi. Qaytadan urinib ko'ring.",
+      "oneTapError": "Telegram sessiyasini boshlab bo'lmadi. Quyidagi kod usulidan foydalaning.",
+      "orUseCode": "yoki kod bilan"
     },
     "loginWithGoogle": "Google bilan kirish",
     "loginWithTelegram": "Telegram orqali kirish",
@@ -307,7 +315,8 @@
     "and": "va",
     "unit": "ta",
     "exit": "Chiqish",
-    "mainContent": "Asosiy kontent"
+    "mainContent": "Asosiy kontent",
+    "soundToggle": "Ovozni yoqish / ochirish"
   },
   "notFound": {
     "title": "Sahifa topilmadi",
@@ -403,7 +412,8 @@
       "trustMistakes": "Xatolar ustida ishlash",
       "trustDevices": "Barcha qurilmalarda mavjud",
       "ariaLabel": "Asosiy qism",
-      "feature1Title": "1200+ savollar bazasi"
+      "feature1Title": "1200+ savollar bazasi",
+      "phoneBiletCount": "48 / 70 bilet"
     },
     "stats": {
       "ariaLabel": "Statistika"
@@ -720,7 +730,8 @@
       "telegramTitle": "Telegram Bot",
       "telegramDesc": "Rasmiy bot orqali tezkor bildirishnomalar va mini testlar.",
       "telegramAction": "Telegramda ochish",
-      "ariaLabel": "Mavjud qurilmalar"
+      "ariaLabel": "Mavjud qurilmalar",
+      "windowsCardDesc": "Kompyuter uchun mustaqil dastur (.exe). Barcha 70 ta bilet va 1200+ savollar internetsiz to'liq ishlaydi."
     },
     "correctBadge": "TO'G'RI ✓",
     "simulator": "Simulyator",
@@ -1369,7 +1380,9 @@
     "modalTitle": "Mavzulashtirilgan test",
     "questionCountLabel": "Savollar soni",
     "selectTopic": "Mavzuni tanlang",
-    "subtitleFull": "Yo'l harakati qoidalarini mavzulashtirilgan tarzda tizimli o'rganing va testdan o'ting."
+    "subtitleFull": "Yo'l harakati qoidalarini mavzulashtirilgan tarzda tizimli o'rganing va testdan o'ting.",
+    "catVehicle": "Avtomobil",
+    "catFirstAid": "Birinchi yordam"
   },
   "statistics": {
     "title": "Statistika",
@@ -3197,7 +3210,9 @@
       "passwordComplexity": "Parol kamida 8 ta belgi, katta-kichik harf, raqam va maxsus belgidan (@$!%*?&) iborat bo'lishi kerak",
       "passwordValid": "Parol xavfsizlik talablariga javob beradi",
       "passwordHint": "8+ belgi, A-Z, 0-9, @$!",
-      "step2Badge": "2-bosqich: Tasdiqlash"
+      "step2Badge": "2-bosqich: Tasdiqlash",
+      "description": "Ro'yxatdan o'ting va 1200+ rasmiy savollar, 70 ta bilet va davlat imtihoni simulyatori bilan bilimlaringizni mustahkamlang.",
+      "b1Desc": "1200+ rasmiy savollar va 70 ta bilet."
     },
     "forgot": {
       "backToLogin": "Kirishga qaytish",
@@ -3525,7 +3540,21 @@
       "platformAndroidSpecs": "Android 8.0+ • Google Play & APK",
       "platformIos": "iOS / iPadOS",
       "platformIosSpecs": "iOS 15.0+ • iPhone va iPad"
-    }
+    },
+    "categoryB": "B (Yengil avtomobil)",
+    "categoryC": "C (Yuk mashinasi)",
+    "categoryD": "D (Avtobus)",
+    "cameras": "Kameralar",
+    "camChase": "Orqa ko'rinish (3-shaxs)",
+    "camCockpit": "Kabina ko'rinishi (1-shaxs)",
+    "camRear": "Orqa kamera (Parkovka)",
+    "camTopDown": "Yuqoridan ko'rinish",
+    "camFree": "Erkin 3D kamera",
+    "noErrorsLogged": "Hozircha xatolar qayd etilmadi. Qoidalarga amal qilib davom eting!",
+    "leftMirror": "Chap ko'zgu",
+    "centerMirror": "Markaziy salon ko'zgusi",
+    "rightMirror": "O'ng ko'zgu",
+    "jumpToMoment": "Ushbu daqiqaga o'tish"
   },
   "practicalExam": {
     "controlsTitle": "Boshqaruv tugmalari (Klaviatura):",
@@ -3534,7 +3563,8 @@
     "steering": "Rul burilishi",
     "handbrake": "Qo'l tormozi",
     "loadError": "Amaliy imtihon malumotlarini yuklashda xatolik yuz berdi. Qayta urinib koring.",
-    "guideTitle": "Amaliy imtihon qoidalari"
+    "guideTitle": "Amaliy imtihon qoidalari",
+    "voiceInstructor": "Ovozli instruktor: Ozbekcha / Kirill / Ruscha"
   },
   "a11y": {
     "timerFiveMinutesLeft": "Imtihon tugashiga 5 daqiqa qoldi",
@@ -4326,7 +4356,8 @@
       "groupBattle": "Guruhli Bahs",
       "groupBattleDesc": "Do'stlar bilan xona ochib birgalikda bellashing",
       "history": "Bahslar Tarixi",
-      "historyDesc": "Oldingi janglaringiz va ELO o'zgarishlari"
+      "historyDesc": "Oldingi janglaringiz va ELO o'zgarishlari",
+      "title": "Oktagon"
     },
     "rank": {
       "brilliant": "Brilliant",
@@ -4382,7 +4413,9 @@
       "reject": "Rad etish"
     },
     "common": {
-      "cancel": "Bekor qilish"
+      "cancel": "Bekor qilish",
+      "error": "Xatolik yuz berdi",
+      "connectionLost": "Oktagon serveriga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."
     },
     "report": {
       "button": "Raqib ustidan shikoyat qilish",

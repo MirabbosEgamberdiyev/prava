@@ -129,6 +129,57 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Path/query parametri noto'g'ri turda (masalan {@code /exams/abc/result}, {@code ?page=abc}) — avval 500 edi.
+     */
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<?>> handleArgumentTypeMismatch(
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Parameter type mismatch on {}: {}", request.getRequestURI(), ex.getName());
+        ApiResponse<?> response = ApiResponse.error("Invalid value for parameter: " + ex.getName(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * Noto'g'ri argument (masalan manfiy sahifa raqami: PageRequest "Page index must not be less than zero") — 500 emas, 400.
+     * Xabar matni klientga chiqarilmaydi (ichki tafsilot bo'lishi mumkin), faqat logga yoziladi.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<?>> handleIllegalArgument(
+            IllegalArgumentException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Illegal argument on {}: {}", request.getRequestURI(), ex.getMessage());
+        ApiResponse<?> response = ApiResponse.error("Invalid request parameters", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * Klient Accept sarlavhasiga mos format yo'q — 406 (tanasiz: JSON tana ham "acceptable" bo'lmasligi mumkin).
+     */
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<Void> handleNotAcceptable(
+            org.springframework.web.HttpMediaTypeNotAcceptableException ex,
+            HttpServletRequest request
+    ) {
+        log.debug("Not acceptable on {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
+    }
+
+    /**
+     * Mavjud bo'lmagan statik resurs / yo'l (Spring 6.1+) — 404.
+     */
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleNoResourceFound(
+            org.springframework.web.servlet.resource.NoResourceFoundException ex,
+            HttpServletRequest request
+    ) {
+        log.debug("No resource: {}", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Not found", request.getRequestURI()));
+    }
+
+    /**
      * Malformed JSON request body
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)

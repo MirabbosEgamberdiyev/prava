@@ -17,18 +17,34 @@ import uz.pravaimtihon.octagon.enums.OctagonRank;
 import uz.pravaimtihon.octagon.service.OctagonService;
 import uz.pravaimtihon.repository.QuestionRepository;
 
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+/**
+ * Oktagon real-time o'yin mexanizmi (navbat, 1v1 jang, bot, do'st chaqiruvi, guruh xonalari).
+ *
+ * Ishonch manbai — server: ELO profildan olinadi (klient yuborgan qiymat e'tiborga olinmaydi), javoblar
+ * faqat shu jang savollari uchun va faqat o'yin vaqtida qabul qilinadi, jang natijasi bir marta yoziladi.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class OctagonMatchmaker {
+
+    static final int QUESTIONS_PER_MATCH = 10;
+    static final int MATCH_DURATION_SEC = 300;
+    static final long PRELOAD_MS = 8000;
+    static final long DISCONNECT_GRACE_SEC = 45;
+    /** Tugagan jang/xona revansh va natija uchun shuncha vaqt xotirada turadi, keyin o'chiriladi. */
+    static final long ENDED_RETENTION_SEC = 120;
+    static final int MAX_CHALLENGES_PER_MINUTE = 5;
+    static final int MAX_FAILED_ROOM_JOINS_PER_MINUTE = 10;
+    private static final String ROOM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final OctagonService octagonService;
     private final QuestionRepository questionRepository;
@@ -44,13 +60,14 @@ public class OctagonMatchmaker {
     private final Map<String, GroupRoom> groupRooms = new ConcurrentHashMap<>();
     private final Map<String, String> userRoomMap = new ConcurrentHashMap<>();
 
+    /** Navbat va jang yaratish bitta qulf ostida — bir o'yinchi bir vaqtda ikki jangga tushmasin. */
+    private final Object matchLock = new Object();
+
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
     @PostConstruct
     public void init() {
-        // Run matchmaker loop every 1000ms
         scheduler.scheduleWithFixedDelay(this::matchmakingTick, 1000, 1000, TimeUnit.MILLISECONDS);
-        // Run game timeout & disconnect grace-period cleaner every 3000ms
         scheduler.scheduleWithFixedDelay(this::cleanupAndTimeoutTick, 3000, 3000, TimeUnit.MILLISECONDS);
     }
 
@@ -59,10 +76,18 @@ public class OctagonMatchmaker {
         scheduler.shutdownNow();
     }
 
-    public void registerSession(OctagonSession session) {
-        activeSessions.put(session.getUserId(), session);
+    // ----------------------------------------------------
+    // SESSIONS
+    // ----------------------------------------------------
 
-        // Check if user has an active reconnectable match
+    public void registerSession(OctagonSession session) {
+        applyProfile(session);
+        OctagonSession previous = activeSessions.put(session.getUserId(), session);
+        if (previous != null && previous != session) {
+            // Eski ulanish (boshqa tab/qurilma) navbatda qolib ketmasin
+            waitingQueue.remove(previous);
+        }
+
         UUID ongoingId = userOngoingMatchMap.get(session.getUserId());
         if (ongoingId != null) {
             ActiveMatch match = activeMatches.get(ongoingId);
@@ -72,12 +97,36 @@ public class OctagonMatchmaker {
         }
     }
 
+    /** ELO va ligani bazadagi profildan oladi. */
+    private void applyProfile(OctagonSession session) {
+        try {
+            OctagonProfile profile = octagonService.getProfileSnapshot(session.getUserId());
+            if (profile != null) {
+                session.setCurrentElo(profile.getEloRating());
+                session.setRank(profile.getRank() != null ? profile.getRank() : OctagonRank.BRONZE);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to load Octagon profile for {}: {}", session.getUserId(), e.getMessage());
+        }
+    }
+
+    /** Eski API (testlar uchun): foydalanuvchining joriy sessiyasini yopilgan deb belgilaydi. */
     public void removeSession(String userId) {
-        OctagonSession session = activeSessions.remove(userId);
-        if (session != null) {
-            leaveQueue(session);
+        OctagonSession session = activeSessions.get(userId);
+        if (session != null) removeSession(session);
+    }
+
+    /**
+     * Ulanish yopildi. Foydalanuvchi allaqachon YANGI ulanish bilan qaytgan bo'lsa (reconnect eski socket
+     * yopilishidan oldin kelgan), yangi sessiya o'chirilmaydi.
+     */
+    public void removeSession(OctagonSession session) {
+        session.setDisconnectedAt(Instant.now());
+        boolean wasCurrent = activeSessions.remove(session.getUserId(), session);
+        waitingQueue.remove(session);
+        session.setQueuedAt(null);
+        if (wasCurrent) {
             handleLeaveRoom(session);
-            session.setDisconnectedAt(Instant.now());
         }
     }
 
@@ -106,107 +155,139 @@ public class OctagonMatchmaker {
         return "OFFLINE";
     }
 
-    public void joinQueue(OctagonSession session, int userProgress, int currentElo) {
-        if (session.getCurrentMatchId() != null) {
-            ActiveMatch match = activeMatches.get(session.getCurrentMatchId());
-            if (match != null && !match.isEnded()) {
-                log.info("User {} already in active match {}", session.getUserId(), match.getMatchId());
+    private boolean hasLiveMatch(String userId) {
+        UUID id = userOngoingMatchMap.get(userId);
+        if (id == null) return false;
+        ActiveMatch m = activeMatches.get(id);
+        return m != null && !m.isEnded();
+    }
+
+    // ----------------------------------------------------
+    // QUEUE
+    // ----------------------------------------------------
+
+    /**
+     * Navbatga kirish. {@code userProgress}/{@code clientElo} eski klientlar bilan moslik uchun qabul qilinadi,
+     * lekin juftlash uchun faqat serverdagi ELO ishlatiladi.
+     */
+    public void joinQueue(OctagonSession session, int userProgress, int clientElo) {
+        synchronized (matchLock) {
+            if (hasLiveMatch(session.getUserId())) {
+                log.info("User {} already in an active match — join_queue ignored", session.getUserId());
                 return;
             }
-        }
+            if (userRoomMap.containsKey(session.getUserId())) {
+                handleLeaveRoom(session);
+            }
+            applyProfile(session);
+            session.setQueuedAt(Instant.now());
 
-        session.setCurrentElo(currentElo);
-        session.setQueuedAt(Instant.now());
-
-        if (!waitingQueue.contains(session)) {
-            waitingQueue.add(session);
-            log.info("User {} (ELO {}) joined Octagon queue. Queue size: {}",
-                    session.getUserId(), currentElo, waitingQueue.size());
+            // Bir foydalanuvchining eski sessiyasi navbatda qolgan bo'lsa — almashtiramiz
+            waitingQueue.removeIf(s -> s != session && s.getUserId().equals(session.getUserId()));
+            if (!waitingQueue.contains(session)) {
+                waitingQueue.add(session);
+                log.info("User {} (ELO {}) joined Octagon queue. Queue size: {}",
+                        session.getUserId(), session.getCurrentElo(), waitingQueue.size());
+            }
         }
     }
 
     public void leaveQueue(OctagonSession session) {
-        waitingQueue.remove(session);
-        session.setQueuedAt(null);
+        synchronized (matchLock) {
+            waitingQueue.remove(session);
+            session.setQueuedAt(null);
+        }
     }
 
-    private void matchmakingTick() {
+    void matchmakingTick() {
         try {
-            if (waitingQueue.isEmpty()) return;
+            synchronized (matchLock) {
+                if (waitingQueue.isEmpty()) return;
 
-            Instant now = Instant.now();
-            Set<OctagonSession> matched = new HashSet<>();
+                Instant now = Instant.now();
+                Set<OctagonSession> matched = new HashSet<>();
+                List<OctagonSession> snapshot = new ArrayList<>(waitingQueue);
 
-            for (int i = 0; i < waitingQueue.size(); i++) {
-                OctagonSession p1 = waitingQueue.get(i);
-                if (matched.contains(p1) || !p1.isOpen()) continue;
+                for (int i = 0; i < snapshot.size(); i++) {
+                    OctagonSession p1 = snapshot.get(i);
+                    if (matched.contains(p1)) continue;
+                    if (!p1.isOpen() || p1.getQueuedAt() == null) {
+                        matched.add(p1); // yopilgan sessiya navbatdan chiqariladi
+                        continue;
+                    }
 
-                long waitSec = Duration.between(p1.getQueuedAt(), now).getSeconds();
+                    long waitSec = Duration.between(p1.getQueuedAt(), now).getSeconds();
 
-                // 1. Try finding live human opponent
-                OctagonSession p2 = null;
-                for (int j = i + 1; j < waitingQueue.size(); j++) {
-                    OctagonSession candidate = waitingQueue.get(j);
-                    if (matched.contains(candidate) || !candidate.isOpen()) continue;
-                    if (candidate.getUserId().equals(p1.getUserId())) continue;
+                    // 1. Try finding live human opponent (ELO oynasi kutish bilan kengayadi)
+                    OctagonSession p2 = null;
+                    for (int j = i + 1; j < snapshot.size(); j++) {
+                        OctagonSession candidate = snapshot.get(j);
+                        if (matched.contains(candidate) || !candidate.isOpen() || candidate.getQueuedAt() == null) continue;
+                        if (candidate.getUserId().equals(p1.getUserId())) continue;
 
-                    int eloDiff = Math.abs(p1.getCurrentElo() - candidate.getCurrentElo());
+                        int eloDiff = Math.abs(p1.getCurrentElo() - candidate.getCurrentElo());
+                        if ((waitSec < 5 && eloDiff <= 30)
+                                || (waitSec < 15 && eloDiff <= 80)
+                                || waitSec >= 15) {
+                            p2 = candidate;
+                            break;
+                        }
+                    }
 
-                    if (waitSec < 5 && eloDiff <= 30) {
-                        p2 = candidate;
-                        break;
-                    } else if (waitSec >= 5 && waitSec < 15 && eloDiff <= 80) {
-                        p2 = candidate;
-                        break;
-                    } else if (waitSec >= 15 && waitSec < 20) {
-                        p2 = candidate;
-                        break;
+                    if (p2 != null) {
+                        matched.add(p1);
+                        matched.add(p2);
+                        createMatch(p1, p2, OctagonGameType.RANKED_QUEUE);
+                    } else if (waitSec >= 20) {
+                        // 2. 20 soniyada inson topilmadi — bot
+                        matched.add(p1);
+                        createBotMatch(p1);
                     }
                 }
 
-                if (p2 != null) {
-                    matched.add(p1);
-                    matched.add(p2);
-                    createMatch(p1, p2, false);
-                } else if (waitSec >= 20) {
-                    // 2. Timeout reached (> 20s): Spawn OctagonGameBot!
-                    matched.add(p1);
-                    createBotMatch(p1);
-                }
+                waitingQueue.removeAll(matched);
+                for (OctagonSession s : matched) s.setQueuedAt(null);
             }
-
-            waitingQueue.removeAll(matched);
-
         } catch (Exception e) {
             log.error("Error in matchmaking tick: {}", e.getMessage(), e);
         }
     }
 
-    private void createMatch(OctagonSession p1, OctagonSession p2, boolean isBot) {
-        createMatch(p1, p2, isBot, OctagonGameType.RANKED_QUEUE);
-    }
+    // ----------------------------------------------------
+    // MATCH CREATION
+    // ----------------------------------------------------
 
     public void createDirectMatch(OctagonSession p1, OctagonSession p2, OctagonGameType gameType) {
-        createMatch(p1, p2, false, gameType);
+        synchronized (matchLock) {
+            createMatch(p1, p2, gameType);
+        }
     }
 
-    private void createMatch(OctagonSession p1, OctagonSession p2, boolean isBot, OctagonGameType gameType) {
-        UUID matchId = UUID.randomUUID();
-        List<Long> questionIds = octagonService.getRandomQuestionIds(10);
+    /** matchLock ostida chaqiriladi. */
+    private ActiveMatch createMatch(OctagonSession p1, OctagonSession p2, OctagonGameType gameType) {
+        if (hasLiveMatch(p1.getUserId()) || hasLiveMatch(p2.getUserId())) {
+            log.warn("Refusing to create match: {} or {} already in a live match", p1.getUserId(), p2.getUserId());
+            return null;
+        }
+        List<Long> questionIds = octagonService.getRandomQuestionIds(QUESTIONS_PER_MATCH);
+        if (questionIds.isEmpty()) {
+            sendMatchError(p1);
+            sendMatchError(p2);
+            return null;
+        }
         Map<Long, Integer> correctOptions = loadCorrectOptions(questionIds);
+        waitingQueue.remove(p1);
+        waitingQueue.remove(p2);
+        p1.setQueuedAt(null);
+        p2.setQueuedAt(null);
 
+        UUID matchId = UUID.randomUUID();
         ActiveMatch match = new ActiveMatch(
-                matchId,
-                p1,
-                p2,
-                p2.getUserId(),
-                p2.getDisplayName(),
-                p2.getCurrentElo(),
-                isBot,
-                gameType,
-                questionIds,
-                correctOptions
+                matchId, p1, p2,
+                p2.getUserId(), p2.getDisplayName(), p2.getCurrentElo(),
+                false, gameType, questionIds, correctOptions
         );
+        match.setQuestionPayload(loadQuestionPayload(questionIds));
 
         p1.setCurrentMatchId(matchId);
         p2.setCurrentMatchId(matchId);
@@ -216,35 +297,37 @@ public class OctagonMatchmaker {
 
         log.info("Created match {} ({}) between {} and {}", matchId, gameType, p1.getUserId(), p2.getUserId());
 
-        // Send match_found to both
-        sendMatchFound(match, p1, p2.getUserId(), p2.getDisplayName(), p2.getCurrentElo(), p2.getRank().name().toLowerCase());
-        sendMatchFound(match, p2, p1.getUserId(), p1.getDisplayName(), p1.getCurrentElo(), p1.getRank().name().toLowerCase());
+        sendMatchFound(match, p1, p2.getUserId(), p2.getDisplayName(), p2.getCurrentElo(), rankName(p2.getRank()));
+        sendMatchFound(match, p2, p1.getUserId(), p1.getDisplayName(), p1.getCurrentElo(), rankName(p1.getRank()));
 
         schedulePreloadAndCountdown(match);
+        return match;
     }
 
-    private void createBotMatch(OctagonSession p1) {
-        UUID matchId = UUID.randomUUID();
-        List<Long> questionIds = octagonService.getRandomQuestionIds(10);
+    /** matchLock ostida chaqiriladi. */
+    private ActiveMatch createBotMatch(OctagonSession p1) {
+        if (hasLiveMatch(p1.getUserId())) return null;
+        List<Long> questionIds = octagonService.getRandomQuestionIds(QUESTIONS_PER_MATCH);
+        if (questionIds.isEmpty()) {
+            sendMatchError(p1);
+            return null;
+        }
         Map<Long, Integer> correctOptions = loadCorrectOptions(questionIds);
+        waitingQueue.remove(p1);
+        p1.setQueuedAt(null);
 
+        UUID matchId = UUID.randomUUID();
         String botId = "bot_" + UUID.randomUUID().toString().substring(0, 6);
         String[] botNames = {"Sardor_Pro", "Dilshod_77", "Shaxzod_R", "Kamola_Avto", "Begzod_Turbo", "Malibu_Driver"};
-        String botName = botNames[new Random().nextInt(botNames.length)];
-        int botElo = Math.max(0, p1.getCurrentElo() + (new Random().nextInt(41) - 20));
+        String botName = botNames[RANDOM.nextInt(botNames.length)];
+        int botElo = Math.max(0, p1.getCurrentElo() + (RANDOM.nextInt(41) - 20));
 
         ActiveMatch match = new ActiveMatch(
-                matchId,
-                p1,
-                null,
-                botId,
-                botName,
-                botElo,
-                true,
-                OctagonGameType.BOT_TRAINING,
-                questionIds,
-                correctOptions
+                matchId, p1, null,
+                botId, botName, botElo,
+                true, OctagonGameType.BOT_TRAINING, questionIds, correctOptions
         );
+        match.setQuestionPayload(loadQuestionPayload(questionIds));
 
         OctagonGameBot bot = new OctagonGameBot(botId, botName, botElo, match, scheduler,
                 this::sendBotProgressToPlayer,
@@ -258,8 +341,17 @@ public class OctagonMatchmaker {
 
         log.info("Created BOT match {} for user {} against bot {}", matchId, p1.getUserId(), botName);
 
-        sendMatchFound(match, p1, botId, botName, botElo, "bronze");
+        sendMatchFound(match, p1, botId, botName, botElo, rankName(OctagonRank.fromElo(botElo)));
         schedulePreloadAndCountdown(match);
+        return match;
+    }
+
+    private static String rankName(OctagonRank rank) {
+        return (rank != null ? rank : OctagonRank.BRONZE).name().toLowerCase();
+    }
+
+    private void sendMatchError(OctagonSession s) {
+        sendEvent(s, "match_error", Map.of("code", "NO_QUESTIONS", "message", "Savollar topilmadi, keyinroq urinib ko'ring"));
     }
 
     private void sendMatchFound(ActiveMatch match, OctagonSession session,
@@ -275,41 +367,43 @@ public class OctagonMatchmaker {
         data.put("matchId", match.getMatchId().toString());
         data.put("opponent", opp);
         data.put("questionIds", match.getQuestionIds());
-        data.put("preloadDurationMs", 8000);
+        data.put("questions", match.getQuestionPayload());
+        data.put("preloadDurationMs", PRELOAD_MS);
 
         sendEvent(session, "match_found", data);
     }
 
     private void schedulePreloadAndCountdown(ActiveMatch match) {
-        // At 8000ms: countdown 3
-        scheduler.schedule(() -> sendBroadcastEvent(match, "countdown_tick", Map.of("count", 3)), 8000, TimeUnit.MILLISECONDS);
-        // At 9000ms: countdown 2
-        scheduler.schedule(() -> sendBroadcastEvent(match, "countdown_tick", Map.of("count", 2)), 9000, TimeUnit.MILLISECONDS);
-        // At 10000ms: countdown 1
-        scheduler.schedule(() -> sendBroadcastEvent(match, "countdown_tick", Map.of("count", 1)), 10000, TimeUnit.MILLISECONDS);
+        scheduler.schedule(() -> sendBroadcastEvent(match, "countdown_tick", Map.of("count", 3)), PRELOAD_MS, TimeUnit.MILLISECONDS);
+        scheduler.schedule(() -> sendBroadcastEvent(match, "countdown_tick", Map.of("count", 2)), PRELOAD_MS + 1000, TimeUnit.MILLISECONDS);
+        scheduler.schedule(() -> sendBroadcastEvent(match, "countdown_tick", Map.of("count", 1)), PRELOAD_MS + 2000, TimeUnit.MILLISECONDS);
 
-        // At 11000ms: match_started
         scheduler.schedule(() -> {
-            match.setStartedAt(Instant.now());
-            match.setDeadlineAt(Instant.now().plusSeconds(300));
+            if (match.isEnded()) return;
+            Instant start = Instant.now();
+            match.setDeadlineAt(start.plusSeconds(MATCH_DURATION_SEC));
+            match.setStartedAt(start);
 
             Map<String, Object> startData = Map.of(
-                    "totalDurationSec", 300,
-                    "startTime", System.currentTimeMillis()
+                    "totalDurationSec", MATCH_DURATION_SEC,
+                    "startTime", start.toEpochMilli()
             );
             sendBroadcastEvent(match, "match_started", startData);
 
             if (match.isBotMatch() && match.getBot() != null) {
                 match.getBot().start();
             }
-        }, 11000, TimeUnit.MILLISECONDS);
+        }, PRELOAD_MS + 3000, TimeUnit.MILLISECONDS);
     }
+
+    // ----------------------------------------------------
+    // GAMEPLAY
+    // ----------------------------------------------------
 
     public void handleSubmitAnswer(OctagonSession session, UUID matchId, Long questionId, int selectedIndex, long clientTimestamp) {
         ActiveMatch match = activeMatches.get(matchId);
-        if (match == null || match.isEnded()) return;
+        if (match == null || match.isEnded() || !match.isParticipant(session.getUserId())) return;
 
-        // Anti-Cheat: check minimum latency (350ms)
         Instant now = Instant.now();
         if (match.getStartedAt() != null) {
             long msSinceStart = Duration.between(match.getStartedAt(), now).toMillis();
@@ -318,14 +412,25 @@ public class OctagonMatchmaker {
             }
         }
 
-        match.recordAnswer(session.getUserId(), questionId, selectedIndex, now);
+        ActiveMatch.AnswerOutcome outcome = match.recordAnswer(session.getUserId(), questionId, selectedIndex, now);
+        if (outcome == ActiveMatch.AnswerOutcome.REJECTED) {
+            log.debug("Rejected answer from {} for question {} in match {}", session.getUserId(), questionId, matchId);
+            return;
+        }
 
         boolean isP1 = session.getUserId().equals(match.getPlayer1Id());
         int answeredCount = isP1 ? match.getPlayer1Answers().size() : match.getPlayer2Answers().size();
         int correctCount = isP1 ? match.getPlayer1Score() : match.getPlayer2Score();
         int questionIndex = match.getQuestionIds().indexOf(questionId);
 
-        // Notify opponent about progress
+        // O'yinchining o'ziga natija (to'g'ri variant indeksi oshkor qilinmaydi — raqib xuddi shu savollarni yechmoqda)
+        sendEvent(session, "answer_result", Map.of(
+                "questionId", questionId,
+                "isCorrect", outcome == ActiveMatch.AnswerOutcome.CORRECT,
+                "myScore", correctCount,
+                "answeredCount", answeredCount
+        ));
+
         Map<String, Object> progress = Map.of(
                 "questionIndex", questionIndex,
                 "answeredCount", answeredCount,
@@ -337,7 +442,6 @@ public class OctagonMatchmaker {
             sendEvent(oppSession, "opponent_progress", progress);
         }
 
-        // Check if both finished
         checkAndEndMatchIfFinished(match);
     }
 
@@ -359,6 +463,8 @@ public class OctagonMatchmaker {
         }
     }
 
+    private static final Set<String> ALLOWED_REACTIONS = Set.of("fire", "thumbs_up", "mindblown", "laugh");
+
     public void handleSendReaction(OctagonSession session, UUID matchId, String emojiId) {
         // Rate-limit & anti-flood check: 3 reactions in 1.5s -> 8s mute
         Instant now = Instant.now();
@@ -377,8 +483,9 @@ public class OctagonMatchmaker {
             }
         }
 
+        if (emojiId == null || !ALLOWED_REACTIONS.contains(emojiId)) return;
         ActiveMatch match = activeMatches.get(matchId);
-        if (match == null || match.isEnded()) return;
+        if (match == null || match.isEnded() || !match.isParticipant(session.getUserId())) return;
 
         OctagonSession opp = match.getOpponentSession(session.getUserId());
         if (opp != null) {
@@ -386,42 +493,45 @@ public class OctagonMatchmaker {
         }
     }
 
-
     public void handleRequestRevenge(OctagonSession session, UUID matchId) {
         ActiveMatch match = activeMatches.get(matchId);
-        if (match == null) return;
+        if (match == null || !match.isEnded() || !match.isParticipant(session.getUserId())) return;
 
-        if (session.getUserId().equals(match.getPlayer1Id())) {
+        boolean isP1 = session.getUserId().equals(match.getPlayer1Id());
+        if (isP1) {
             match.setP1WantsRevenge(true);
-        } else if (session.getUserId().equals(match.getPlayer2Id())) {
+        } else {
             match.setP2WantsRevenge(true);
         }
 
-        if (match.isBotMatch() && match.isP1WantsRevenge()) {
-            // Instant revenge against bot
-            createBotMatch(session);
-        } else if (match.isP1WantsRevenge() && match.isP2WantsRevenge()) {
-            // Both live players want revenge -> start instant rematch!
-            OctagonSession p1 = match.getP1Session();
-            OctagonSession p2 = match.getP2Session();
-            if (p1 != null && p2 != null && p1.isOpen() && p2.isOpen()) {
-                createMatch(p1, p2, false);
+        synchronized (matchLock) {
+            if (match.isBotMatch()) {
+                if (match.isP1WantsRevenge() && match.tryClaimRematch()) {
+                    createBotMatch(session);
+                }
+            } else if (match.isP1WantsRevenge() && match.isP2WantsRevenge()) {
+                OctagonSession p1 = activeSessions.get(match.getPlayer1Id());
+                OctagonSession p2 = activeSessions.get(match.getPlayer2Id());
+                if (p1 != null && p2 != null && p1.isOpen() && p2.isOpen() && match.tryClaimRematch()) {
+                    createMatch(p1, p2, match.getGameType());
+                }
+            } else {
+                OctagonSession opp = activeSessions.get(isP1 ? match.getPlayer2Id() : match.getPlayer1Id());
+                sendEvent(opp, "revenge_requested", Map.of("matchId", matchId.toString()));
             }
         }
     }
 
-    private synchronized void checkAndEndMatchIfFinished(ActiveMatch match) {
+    private void checkAndEndMatchIfFinished(ActiveMatch match) {
         if (match.isEnded()) return;
-
         if (match.isBothFinished()) {
-            finalizeMatch(match);
+            finalizeMatch(match, null);
         }
     }
 
-    private void finalizeMatch(ActiveMatch match) {
-        if (match.isEnded()) return;
-        match.setEnded(true);
-        match.setDeadlineAt(Instant.now());
+    /** Jangni bir martagina yakunlaydi (timeout, tashlab ketish va oxirgi javob bir vaqtda kelishi mumkin). */
+    private void finalizeMatch(ActiveMatch match, String forfeitUserId) {
+        if (!match.tryEnd(Instant.now())) return;
 
         if (match.getBot() != null) {
             match.getBot().stop();
@@ -431,51 +541,52 @@ public class OctagonMatchmaker {
                 ? (int) Duration.between(match.getStartedAt(), Instant.now()).getSeconds()
                 : 0;
 
-        OctagonMatch persisted = octagonService.recordMatchResult(
-                match.getMatchId(),
-                match.getPlayer1Id(),
-                match.getPlayer2Id(),
-                match.getPlayer1Score(),
-                match.getPlayer2Score(),
-                match.getQuestionIds(),
-                durationSec,
-                match.getGameType()
-        );
-
-        userOngoingMatchMap.remove(match.getPlayer1Id());
-        userOngoingMatchMap.remove(match.getPlayer2Id());
-
-        // Send personalized match_ended to P1
-        if (match.getP1Session() != null) {
-            Map<String, Object> p1Scores = Map.of(
-                    "me", match.getPlayer1Score(),
-                    "opponent", match.getPlayer2Score()
+        OctagonMatch persisted;
+        try {
+            persisted = octagonService.recordMatchResult(
+                    match.getMatchId(),
+                    match.getPlayer1Id(),
+                    match.getPlayer2Id(),
+                    match.getPlayer1Score(),
+                    match.getPlayer2Score(),
+                    match.getQuestionIds(),
+                    durationSec,
+                    match.getGameType(),
+                    forfeitUserId
             );
-            Map<String, Object> p1Data = Map.of(
-                    "winnerId", persisted.getWinnerId() != null ? persisted.getWinnerId() : "",
-                    "isDraw", persisted.getIsDraw(),
-                    "myDeltaElo", persisted.getP1EloChange(),
-                    "opponentDeltaElo", persisted.getP2EloChange(),
-                    "finalScores", p1Scores
-            );
-            sendEvent(match.getP1Session(), "match_ended", p1Data);
+        } catch (Exception e) {
+            log.error("Failed to persist Octagon match {}: {}", match.getMatchId(), e.getMessage(), e);
+            persisted = null;
+        } finally {
+            userOngoingMatchMap.remove(match.getPlayer1Id(), match.getMatchId());
+            userOngoingMatchMap.remove(match.getPlayer2Id(), match.getMatchId());
         }
 
-        // Send personalized match_ended to P2 (if human)
-        if (match.getP2Session() != null) {
-            Map<String, Object> p2Scores = Map.of(
-                    "me", match.getPlayer2Score(),
-                    "opponent", match.getPlayer1Score()
-            );
-            Map<String, Object> p2Data = Map.of(
-                    "winnerId", persisted.getWinnerId() != null ? persisted.getWinnerId() : "",
-                    "isDraw", persisted.getIsDraw(),
-                    "myDeltaElo", persisted.getP2EloChange(),
-                    "opponentDeltaElo", persisted.getP1EloChange(),
-                    "finalScores", p2Scores
-            );
-            sendEvent(match.getP2Session(), "match_ended", p2Data);
+        String winnerId = persisted != null && persisted.getWinnerId() != null ? persisted.getWinnerId() : "";
+        boolean isDraw = persisted != null ? Boolean.TRUE.equals(persisted.getIsDraw()) : match.getPlayer1Score() == match.getPlayer2Score();
+        int p1Delta = persisted != null ? persisted.getP1EloChange() : 0;
+        int p2Delta = persisted != null ? persisted.getP2EloChange() : 0;
+
+        sendMatchEnded(activeSessions.getOrDefault(match.getPlayer1Id(), match.getP1Session()), match,
+                winnerId, isDraw, p1Delta, p2Delta, match.getPlayer1Score(), match.getPlayer2Score(), forfeitUserId);
+        if (!match.isBotMatch()) {
+            sendMatchEnded(activeSessions.getOrDefault(match.getPlayer2Id(), match.getP2Session()), match,
+                    winnerId, isDraw, p2Delta, p1Delta, match.getPlayer2Score(), match.getPlayer1Score(), forfeitUserId);
         }
+    }
+
+    private void sendMatchEnded(OctagonSession s, ActiveMatch match, String winnerId, boolean isDraw,
+                                int myDelta, int oppDelta, int myScore, int oppScore, String forfeitUserId) {
+        if (s == null) return;
+        Map<String, Object> data = new HashMap<>();
+        data.put("matchId", match.getMatchId().toString());
+        data.put("winnerId", winnerId);
+        data.put("isDraw", isDraw);
+        data.put("myDeltaElo", myDelta);
+        data.put("opponentDeltaElo", oppDelta);
+        data.put("finalScores", Map.of("me", myScore, "opponent", oppScore));
+        data.put("forfeit", forfeitUserId != null);
+        sendEvent(s, "match_ended", data);
     }
 
     private void handleReconnect(OctagonSession session, ActiveMatch match) {
@@ -486,66 +597,103 @@ public class OctagonMatchmaker {
         } else {
             match.setP2Session(session);
         }
+        sendGameState(session, match);
+    }
 
-        int answeredCount = isP1 ? match.getPlayer1Answers().size() : match.getPlayer2Answers().size();
+    /** Klient "game_reconnect" so'rasa (ilova fondan qaytdi) — joriy holatni qayta yuboradi. */
+    public void handleClientReconnectRequest(OctagonSession session) {
+        UUID id = userOngoingMatchMap.get(session.getUserId());
+        ActiveMatch match = id != null ? activeMatches.get(id) : null;
+        if (match != null && !match.isEnded()) {
+            sendGameState(session, match);
+        }
+    }
+
+    private void sendGameState(OctagonSession session, ActiveMatch match) {
+        boolean isP1 = session.getUserId().equals(match.getPlayer1Id());
+        Map<Long, Integer> mine = isP1 ? match.getPlayer1Answers() : match.getPlayer2Answers();
         int oppAnswered = isP1 ? match.getPlayer2Answers().size() : match.getPlayer1Answers().size();
         int oppScore = isP1 ? match.getPlayer2Score() : match.getPlayer1Score();
 
         long remainingSec = match.getDeadlineAt() != null
                 ? Math.max(0, Duration.between(Instant.now(), match.getDeadlineAt()).getSeconds())
-                : 300;
+                : MATCH_DURATION_SEC;
+
+        Map<String, Object> opp = new HashMap<>();
+        opp.put("id", isP1 ? match.getPlayer2Id() : match.getPlayer1Id());
+        opp.put("name", isP1 ? match.getPlayer2Name() : match.getPlayer1Name());
+        opp.put("score", isP1 ? match.getPlayer2Elo() : match.getPlayer1Elo());
+        opp.put("rank", rankName(OctagonRank.fromElo(isP1 ? match.getPlayer2Elo() : match.getPlayer1Elo())));
+        opp.put("avatar", "/images/default-avatar.webp");
 
         Map<String, Object> reconnectData = new HashMap<>();
         reconnectData.put("matchId", match.getMatchId().toString());
-        reconnectData.put("questionIndex", answeredCount);
-        reconnectData.put("myAnswers", isP1 ? match.getPlayer1Answers() : match.getPlayer2Answers());
+        reconnectData.put("started", match.getStartedAt() != null);
+        reconnectData.put("questionIndex", mine.size());
+        reconnectData.put("myAnswers", mine);
+        reconnectData.put("myScore", isP1 ? match.getPlayer1Score() : match.getPlayer2Score());
+        reconnectData.put("opponent", opp);
         reconnectData.put("opponentProgress", Map.of("answeredCount", oppAnswered, "correctCount", oppScore));
         reconnectData.put("remainingTimeSec", remainingSec);
+        reconnectData.put("questionIds", match.getQuestionIds());
+        reconnectData.put("questions", match.getQuestionPayload());
 
         sendEvent(session, "game_reconnect", reconnectData);
     }
 
-    private void cleanupAndTimeoutTick() {
-        Instant now = Instant.now();
+    void cleanupAndTimeoutTick() {
+        try {
+            Instant now = Instant.now();
 
-        // 1. Check match timeout (exceeded 300s)
-        for (ActiveMatch match : activeMatches.values()) {
-            if (!match.isEnded() && match.getDeadlineAt() != null && now.isAfter(match.getDeadlineAt())) {
-                log.info("Match {} timed out after 300 seconds. Finalizing...", match.getMatchId());
-                finalizeMatch(match);
-            }
-        }
+            for (ActiveMatch match : activeMatches.values()) {
+                if (match.isEnded()) {
+                    // Xotira oqishi: tugagan janglar avval hech qachon o'chirilmasdi
+                    if (match.getEndedAt() != null && now.isAfter(match.getEndedAt().plusSeconds(ENDED_RETENTION_SEC))) {
+                        activeMatches.remove(match.getMatchId());
+                    }
+                    continue;
+                }
 
-        // 2. Check disconnect grace period (45s)
-        for (ActiveMatch match : activeMatches.values()) {
-            if (match.isEnded()) continue;
+                // 1. Jang vaqti tugadi
+                if (match.getDeadlineAt() != null && now.isAfter(match.getDeadlineAt())) {
+                    log.info("Match {} timed out after {} seconds. Finalizing...", match.getMatchId(), MATCH_DURATION_SEC);
+                    finalizeMatch(match, null);
+                    continue;
+                }
 
-            if (match.getP1Session() != null && match.getP1Session().getDisconnectedAt() != null) {
-                long dSec = Duration.between(match.getP1Session().getDisconnectedAt(), now).getSeconds();
-                if (dSec > 45) {
+                // 2. Uzilgan o'yinchi grace-period ichida qaytmadi — texnik mag'lubiyat
+                if (isAbandoned(match.getPlayer1Id(), match.getP1Session(), now)) {
                     log.info("Player 1 {} abandoned match {}", match.getPlayer1Id(), match.getMatchId());
-                    match.setPlayer1Score(0);
-                    finalizeMatch(match);
-                }
-            }
-
-            if (match.getP2Session() != null && match.getP2Session().getDisconnectedAt() != null) {
-                long dSec = Duration.between(match.getP2Session().getDisconnectedAt(), now).getSeconds();
-                if (dSec > 45) {
+                    finalizeMatch(match, match.getPlayer1Id());
+                } else if (!match.isBotMatch() && isAbandoned(match.getPlayer2Id(), match.getP2Session(), now)) {
                     log.info("Player 2 {} abandoned match {}", match.getPlayer2Id(), match.getMatchId());
-                    match.setPlayer2Score(0);
-                    finalizeMatch(match);
+                    finalizeMatch(match, match.getPlayer2Id());
                 }
             }
-        }
 
-        // 3. Check group room timeouts (exceeded 300s)
-        for (GroupRoom room : groupRooms.values()) {
-            if ("PLAYING".equals(room.getStatus()) && !room.isEnded() && room.getDeadlineAt() != null && now.isAfter(room.getDeadlineAt())) {
-                log.info("Group room {} timed out. Finalizing...", room.getRoomCode());
-                finalizeGroupRoom(room);
+            for (GroupRoom room : groupRooms.values()) {
+                if ("PLAYING".equals(room.getStatus()) && !room.isEnded() && room.getDeadlineAt() != null && now.isAfter(room.getDeadlineAt())) {
+                    log.info("Group room {} timed out. Finalizing...", room.getRoomCode());
+                    finalizeGroupRoom(room);
+                } else if (room.isEnded() && room.getEndedAt() != null && now.isAfter(room.getEndedAt().plusSeconds(ENDED_RETENTION_SEC))) {
+                    groupRooms.remove(room.getRoomCode());
+                    for (String memberId : room.getMembers().keySet()) {
+                        userRoomMap.remove(memberId, room.getRoomCode());
+                    }
+                }
             }
+
+            pendingChallenges.values().removeIf(PendingChallenge::isExpired);
+        } catch (Exception e) {
+            log.error("Error in Octagon cleanup tick: {}", e.getMessage(), e);
         }
+    }
+
+    private boolean isAbandoned(String userId, OctagonSession matchSession, Instant now) {
+        OctagonSession live = activeSessions.get(userId);
+        if (live != null && live.isOpen()) return false;
+        Instant disconnectedAt = matchSession != null ? matchSession.getDisconnectedAt() : null;
+        return disconnectedAt != null && Duration.between(disconnectedAt, now).getSeconds() > DISCONNECT_GRACE_SEC;
     }
 
     // ----------------------------------------------------
@@ -553,6 +701,20 @@ public class OctagonMatchmaker {
     // ----------------------------------------------------
     public void handleSendChallenge(OctagonSession challenger, String targetUserId) {
         if (targetUserId == null || targetUserId.isBlank()) return;
+
+        Instant now = Instant.now();
+        if (Duration.between(challenger.getChallengeWindowStart(), now).getSeconds() >= 60) {
+            challenger.setChallengeWindowStart(now);
+            challenger.setChallengesInWindow(0);
+        }
+        if (challenger.getChallengesInWindow() >= MAX_CHALLENGES_PER_MINUTE) {
+            sendEvent(challenger, "challenge_error", Map.of(
+                    "code", "RATE_LIMITED",
+                    "message", "Juda ko'p taklif yuborildi, birozdan keyin urinib ko'ring"
+            ));
+            return;
+        }
+        challenger.setChallengesInWindow(challenger.getChallengesInWindow() + 1);
 
         if (targetUserId.equals(challenger.getUserId())) {
             sendEvent(challenger, "challenge_error", Map.of(
@@ -609,7 +771,7 @@ public class OctagonMatchmaker {
                         "userId", challenger.getUserId(),
                         "displayName", challenger.getDisplayName(),
                         "eloRating", challenger.getCurrentElo(),
-                        "rank", challenger.getRank() != null ? challenger.getRank().name().toLowerCase() : "bronze",
+                        "rank", rankName(challenger.getRank()),
                         "rankEmoji", challenger.getRank() != null ? challenger.getRank().getEmoji() : "🥉"
                 ),
                 "expiresInSec", 30
@@ -627,7 +789,16 @@ public class OctagonMatchmaker {
     }
 
     public void handleAcceptChallenge(OctagonSession targetSession, UUID challengeId) {
-        PendingChallenge pc = pendingChallenges.remove(challengeId);
+        PendingChallenge pc = pendingChallenges.get(challengeId);
+        if (pc != null && !pc.targetUserId.equals(targetSession.getUserId())) {
+            // Taklif boshqa foydalanuvchiga yuborilgan — qabul qilib bo'lmaydi
+            sendEvent(targetSession, "challenge_error", Map.of(
+                    "code", "CHALLENGE_EXPIRED",
+                    "message", "Taklif muddati tugagan"
+            ));
+            return;
+        }
+        pc = pendingChallenges.remove(challengeId);
         if (pc == null || pc.isExpired()) {
             sendEvent(targetSession, "challenge_error", Map.of(
                     "code", "CHALLENGE_EXPIRED",
@@ -637,7 +808,7 @@ public class OctagonMatchmaker {
         }
 
         OctagonSession challengerSession = activeSessions.get(pc.challengerId);
-        if (challengerSession == null || !challengerSession.isOpen() || "IN_MATCH".equals(getUserStatus(pc.challengerId))) {
+        if (challengerSession == null || !challengerSession.isOpen() || hasLiveMatch(pc.challengerId)) {
             sendEvent(targetSession, "challenge_error", Map.of(
                     "code", "CHALLENGER_UNAVAILABLE",
                     "message", "Raqib hozir mavjud emas"
@@ -646,19 +817,22 @@ public class OctagonMatchmaker {
         }
 
         log.info("Direct duel accepted: {} vs {}", pc.challengerId, targetSession.getUserId());
+        handleLeaveRoom(challengerSession);
+        handleLeaveRoom(targetSession);
         createDirectMatch(challengerSession, targetSession, OctagonGameType.DUEL_FRIEND);
     }
 
-    public void handleRejectChallenge(OctagonSession targetSession, UUID challengeId) {
-        PendingChallenge pc = pendingChallenges.remove(challengeId);
-        if (pc != null) {
-            OctagonSession ch = activeSessions.get(pc.challengerId);
-            if (ch != null) {
-                sendEvent(ch, "challenge_rejected", Map.of(
-                        "challengeId", challengeId.toString(),
-                        "byUserId", targetSession.getUserId()
-                ));
-            }
+    public void handleRejectChallenge(OctagonSession session, UUID challengeId) {
+        PendingChallenge pc = pendingChallenges.get(challengeId);
+        if (pc == null) return;
+        if (!pc.targetUserId.equals(session.getUserId()) && !pc.challengerId.equals(session.getUserId())) return;
+        pendingChallenges.remove(challengeId);
+        OctagonSession ch = activeSessions.get(pc.challengerId);
+        if (ch != null) {
+            sendEvent(ch, "challenge_rejected", Map.of(
+                    "challengeId", challengeId.toString(),
+                    "byUserId", session.getUserId()
+            ));
         }
     }
 
@@ -666,20 +840,14 @@ public class OctagonMatchmaker {
     // GROUP ROOMS (GURUHLI BAHS)
     // ----------------------------------------------------
     public void handleCreateRoom(OctagonSession session, int maxPlayers, boolean isPrivate) {
+        if (hasLiveMatch(session.getUserId())) return;
         handleLeaveRoom(session);
+        leaveQueue(session);
 
         String roomCode = generateRoomCode();
         GroupRoom room = new GroupRoom(roomCode, session.getUserId(), maxPlayers, isPrivate);
 
-        OctagonProfile profile = octagonService.getOrCreateProfile(session.getUserId());
-        GroupRoomMember host = new GroupRoomMember(
-                session.getUserId(),
-                session.getDisplayName(),
-                "/images/default-avatar.webp",
-                profile.getEloRating(),
-                profile.getRank() != null ? profile.getRank().getEmoji() : "🥉",
-                true
-        );
+        GroupRoomMember host = newMember(session, true);
         room.getMembers().put(session.getUserId(), host);
         groupRooms.put(roomCode, room);
         userRoomMap.put(session.getUserId(), roomCode);
@@ -688,12 +856,39 @@ public class OctagonMatchmaker {
         broadcastRoomUpdated(room);
     }
 
+    private GroupRoomMember newMember(OctagonSession session, boolean isHost) {
+        OctagonProfile profile = octagonService.getProfileSnapshot(session.getUserId());
+        int elo = profile != null ? profile.getEloRating() : session.getCurrentElo();
+        OctagonRank rank = profile != null && profile.getRank() != null ? profile.getRank() : OctagonRank.BRONZE;
+        return new GroupRoomMember(
+                session.getUserId(),
+                session.getDisplayName(),
+                "/images/default-avatar.webp",
+                elo,
+                rank.getEmoji(),
+                isHost
+        );
+    }
+
     public void handleJoinRoom(OctagonSession session, String roomCode) {
-        if (roomCode == null || roomCode.isBlank()) return;
+        if (roomCode == null || roomCode.isBlank() || roomCode.length() > 16) return;
+        if (hasLiveMatch(session.getUserId())) return;
+
+        Instant now = Instant.now();
+        if (Duration.between(session.getRoomJoinWindowStart(), now).getSeconds() >= 60) {
+            session.setRoomJoinWindowStart(now);
+            session.setFailedRoomJoinsInWindow(0);
+        }
+        if (session.getFailedRoomJoinsInWindow() >= MAX_FAILED_ROOM_JOINS_PER_MINUTE) {
+            sendEvent(session, "room_error", Map.of("code", "RATE_LIMITED", "message", "Juda ko'p urinish, birozdan keyin qayta urinib ko'ring"));
+            return;
+        }
+
         String code = roomCode.trim().toUpperCase();
         GroupRoom room = groupRooms.get(code);
 
         if (room == null) {
+            session.setFailedRoomJoinsInWindow(session.getFailedRoomJoinsInWindow() + 1);
             sendEvent(session, "room_error", Map.of("code", "ROOM_NOT_FOUND", "message", "Xona topilmadi"));
             return;
         }
@@ -708,18 +903,12 @@ public class OctagonMatchmaker {
             return;
         }
 
-        handleLeaveRoom(session);
+        if (!code.equals(userRoomMap.get(session.getUserId()))) {
+            handleLeaveRoom(session);
+        }
+        leaveQueue(session);
 
-        OctagonProfile profile = octagonService.getOrCreateProfile(session.getUserId());
-        GroupRoomMember member = new GroupRoomMember(
-                session.getUserId(),
-                session.getDisplayName(),
-                "/images/default-avatar.webp",
-                profile.getEloRating(),
-                profile.getRank() != null ? profile.getRank().getEmoji() : "🥉",
-                false
-        );
-        room.getMembers().put(session.getUserId(), member);
+        room.getMembers().put(session.getUserId(), newMember(session, session.getUserId().equals(room.getHostUserId())));
         userRoomMap.put(session.getUserId(), code);
 
         sendEvent(session, "room_joined", Map.of("room", toRoomDto(room)));
@@ -738,14 +927,20 @@ public class OctagonMatchmaker {
 
         if (room.getMembers().isEmpty()) {
             groupRooms.remove(code);
-        } else {
-            if (session.getUserId().equals(room.getHostUserId())) {
-                GroupRoomMember nextHost = room.getMembers().values().iterator().next();
-                nextHost.setHost(true);
-                nextHost.setReady(true);
-                room.setHostUserId(nextHost.getUserId());
-            }
-            broadcastRoomUpdated(room);
+            return;
+        }
+        if (session.getUserId().equals(room.getHostUserId())) {
+            GroupRoomMember nextHost = room.getMembers().values().iterator().next();
+            nextHost.setHost(true);
+            nextHost.setReady(true);
+            room.setHostUserId(nextHost.getUserId());
+        }
+        broadcastRoomUpdated(room);
+
+        // O'yin davomida chiqib ketdi — qolganlar tugatgan bo'lsa, xona yakunlanadi
+        if ("PLAYING".equals(room.getStatus()) && !room.isEnded()
+                && room.getMembers().values().stream().allMatch(GroupRoomMember::isFinished)) {
+            finalizeGroupRoom(room);
         }
     }
 
@@ -754,7 +949,7 @@ public class OctagonMatchmaker {
         if (code == null) return;
 
         GroupRoom room = groupRooms.get(code);
-        if (room == null) return;
+        if (room == null || !"WAITING".equals(room.getStatus())) return;
 
         GroupRoomMember member = room.getMembers().get(session.getUserId());
         if (member != null && !member.isHost()) {
@@ -780,55 +975,81 @@ public class OctagonMatchmaker {
             return;
         }
 
-        room.setStatus("COUNTDOWN");
-        List<Long> questionIds = octagonService.getRandomQuestionIds(10);
-        room.setQuestionIds(questionIds);
-        room.setCorrectOptions(loadCorrectOptions(questionIds));
+        // Faqat kutish holatidan boshlanadi (avval o'yin davomida qayta "start" savollarni almashtirardi)
+        if (!"WAITING".equals(room.getStatus())) return;
+        List<Long> questionIds = octagonService.getRandomQuestionIds(QUESTIONS_PER_MATCH);
+        if (questionIds.isEmpty()) {
+            sendEvent(session, "room_error", Map.of("code", "NO_QUESTIONS", "message", "Savollar topilmadi, keyinroq urinib ko'ring"));
+            return;
+        }
+
+        synchronized (room) {
+            if (!"WAITING".equals(room.getStatus())) return;
+            room.setStatus("COUNTDOWN");
+            room.setQuestionIds(questionIds);
+            room.setCorrectOptions(loadCorrectOptions(questionIds));
+            room.setQuestionPayload(loadQuestionPayload(questionIds));
+        }
 
         broadcastRoomEvent(room, "room_game_countdown", Map.of("count", 3));
         scheduler.schedule(() -> broadcastRoomEvent(room, "room_game_countdown", Map.of("count", 2)), 1000, TimeUnit.MILLISECONDS);
         scheduler.schedule(() -> broadcastRoomEvent(room, "room_game_countdown", Map.of("count", 1)), 2000, TimeUnit.MILLISECONDS);
         scheduler.schedule(() -> {
+            Instant start = Instant.now();
+            room.setStartedAt(start);
+            room.setDeadlineAt(start.plusSeconds(MATCH_DURATION_SEC));
             room.setStatus("PLAYING");
-            room.setStartedAt(Instant.now());
-            room.setDeadlineAt(Instant.now().plusSeconds(300));
             broadcastRoomEvent(room, "room_game_started", Map.of(
                     "roomCode", room.getRoomCode(),
                     "questionIds", room.getQuestionIds(),
-                    "totalDurationSec", 300,
-                    "startTime", System.currentTimeMillis()
+                    "questions", room.getQuestionPayload(),
+                    "totalDurationSec", MATCH_DURATION_SEC,
+                    "startTime", start.toEpochMilli()
             ));
         }, 3000, TimeUnit.MILLISECONDS);
     }
 
     public void handleSubmitRoomAnswer(OctagonSession session, Long questionId, int selectedIndex, long clientTimestamp) {
         String code = userRoomMap.get(session.getUserId());
-        if (code == null) return;
+        if (code == null || questionId == null) return;
 
         GroupRoom room = groupRooms.get(code);
         if (room == null || !"PLAYING".equals(room.getStatus()) || room.isEnded()) return;
+        Instant now = Instant.now();
+        if (room.getDeadlineAt() != null && now.isAfter(room.getDeadlineAt())) return;
+        if (!room.getQuestionIds().contains(questionId) || selectedIndex < 0 || selectedIndex > 9) return;
 
         GroupRoomMember member = room.getMembers().get(session.getUserId());
-        if (member == null || member.getAnswers().containsKey(questionId)) return;
+        if (member == null) return;
 
-        member.getAnswers().put(questionId, selectedIndex);
-        member.getAnswerTimes().put(questionId, Instant.now());
-        Integer correct = room.getCorrectOptions().get(questionId);
-        boolean isCorrect = (correct != null && correct == selectedIndex);
-        if (isCorrect) {
-            member.setScore(member.getScore() + 1);
+        boolean isCorrect;
+        int answeredCount;
+        synchronized (member) {
+            if (member.getAnswers().containsKey(questionId)) return;
+            member.getAnswers().put(questionId, selectedIndex);
+            member.getAnswerTimes().put(questionId, now);
+            Integer correct = room.getCorrectOptions().get(questionId);
+            isCorrect = (correct != null && correct == selectedIndex);
+            if (isCorrect) {
+                member.setScore(member.getScore() + 1);
+            }
+            answeredCount = member.getAnswers().size();
+            if (answeredCount >= room.getQuestionIds().size()) {
+                member.setFinished(true);
+            }
         }
 
-        int answeredCount = member.getAnswers().size();
-        int questionIndex = room.getQuestionIds().indexOf(questionId);
-        if (answeredCount >= room.getQuestionIds().size()) {
-            member.setFinished(true);
-        }
+        sendEvent(session, "answer_result", Map.of(
+                "questionId", questionId,
+                "isCorrect", isCorrect,
+                "myScore", member.getScore(),
+                "answeredCount", answeredCount
+        ));
 
         broadcastRoomEvent(room, "group_progress", Map.of(
                 "userId", member.getUserId(),
                 "displayName", member.getDisplayName(),
-                "questionIndex", questionIndex,
+                "questionIndex", room.getQuestionIds().indexOf(questionId),
                 "answeredCount", answeredCount,
                 "score", member.getScore()
         ));
@@ -839,10 +1060,13 @@ public class OctagonMatchmaker {
         }
     }
 
-    private synchronized void finalizeGroupRoom(GroupRoom room) {
-        if (room.isEnded()) return;
-        room.setEnded(true);
-        room.setStatus("FINISHED");
+    private void finalizeGroupRoom(GroupRoom room) {
+        synchronized (room) {
+            if (room.isEnded()) return;
+            room.setEnded(true);
+            room.setEndedAt(Instant.now());
+            room.setStatus("FINISHED");
+        }
 
         List<Map<String, Object>> standings = room.getMembers().values().stream()
                 .sorted((m1, m2) -> Integer.compare(m2.getScore(), m1.getScore()))
@@ -869,8 +1093,19 @@ public class OctagonMatchmaker {
         return room != null ? Optional.of(toRoomDto(room)) : Optional.empty();
     }
 
+    /** Diagnostika/testlar uchun: xotiradagi jang (tugagan bo'lsa ham, retention muddati ichida). */
+    public Optional<ActiveMatch> findActiveMatch(UUID matchId) {
+        return Optional.ofNullable(matchId != null ? activeMatches.get(matchId) : null);
+    }
+
+    /** Foydalanuvchi turgan xona kodi (yoki null). */
+    public String getUserRoomCode(String userId) {
+        return userId != null ? userRoomMap.get(userId) : null;
+    }
+
     public GroupRoomDto toRoomDto(GroupRoom room) {
-        String hostName = octagonService.resolveDisplayName(room.getHostUserId());
+        GroupRoomMember hostMember = room.getMembers().get(room.getHostUserId());
+        String hostName = hostMember != null ? hostMember.getDisplayName() : octagonService.resolveDisplayName(room.getHostUserId());
         List<GroupRoomMemberDto> memberDtos = room.getMembers().values().stream()
                 .map(m -> GroupRoomMemberDto.builder()
                         .userId(m.getUserId())
@@ -911,8 +1146,17 @@ public class OctagonMatchmaker {
         }
     }
 
+    /** OCT-XXXXXX (32^6 ≈ 1 mlrd variant; avval 9000 ta raqamli kod bo'lib, taxmin qilinardi va to'qnashardi). */
     private String generateRoomCode() {
-        return "OCT-" + (1000 + new Random().nextInt(9000));
+        for (int attempt = 0; attempt < 20; attempt++) {
+            StringBuilder sb = new StringBuilder("OCT-");
+            for (int i = 0; i < 6; i++) {
+                sb.append(ROOM_ALPHABET.charAt(RANDOM.nextInt(ROOM_ALPHABET.length())));
+            }
+            String code = sb.toString();
+            if (!groupRooms.containsKey(code)) return code;
+        }
+        throw new IllegalStateException("Could not allocate a unique Octagon room code");
     }
 
     private Map<Long, Integer> loadCorrectOptions(List<Long> qIds) {
@@ -929,6 +1173,32 @@ public class OctagonMatchmaker {
             map.putIfAbsent(id, 0);
         }
         return map;
+    }
+
+    private List<QuestionDto> loadQuestionPayload(List<Long> qIds) {
+        try {
+            List<QuestionDto> list = octagonService.getQuestionsByIds(qIds);
+            return list != null ? list : List.of();
+        } catch (Exception e) {
+            log.warn("Failed to load Octagon question payload: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * REST /questions uchun: so'ralgan ID'larning barchasi hozir faol (yoki yaqinda tugagan) jang/xonaga
+     * tegishlimi. Ixtiyoriy ID'lar bilan butun savollar bazasini yig'ib olishning oldini oladi.
+     */
+    public boolean areQuestionsInActiveGame(List<Long> questionIds) {
+        if (questionIds == null || questionIds.isEmpty()) return false;
+        Set<Long> wanted = new HashSet<>(questionIds);
+        for (ActiveMatch m : activeMatches.values()) {
+            if (m.getQuestionIds().containsAll(wanted)) return true;
+        }
+        for (GroupRoom r : groupRooms.values()) {
+            if (r.getQuestionIds().containsAll(wanted)) return true;
+        }
+        return false;
     }
 
     private void sendBroadcastEvent(ActiveMatch match, String event, Map<String, Object> data) {
@@ -1017,10 +1287,12 @@ public class OctagonMatchmaker {
         private volatile String status = "WAITING";
         private final Map<String, GroupRoomMember> members = new ConcurrentHashMap<>();
         private final Instant createdAt = Instant.now();
-        private Instant startedAt;
-        private Instant deadlineAt;
-        private List<Long> questionIds = new ArrayList<>();
-        private Map<Long, Integer> correctOptions = new HashMap<>();
+        private volatile Instant startedAt;
+        private volatile Instant deadlineAt;
+        private volatile Instant endedAt;
+        private volatile List<Long> questionIds = new ArrayList<>();
+        private volatile Map<Long, Integer> correctOptions = new HashMap<>();
+        private volatile List<?> questionPayload = List.of();
         private volatile boolean isEnded = false;
 
         public GroupRoom(String roomCode, String hostUserId, int maxPlayers, boolean isPrivate) {

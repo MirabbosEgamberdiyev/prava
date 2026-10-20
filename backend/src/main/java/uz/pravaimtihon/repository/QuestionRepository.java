@@ -231,4 +231,28 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findByIdsWithOptions(@Param("ids") List<Long> ids);
 
     @Query("SELECT q FROM Question q LEFT JOIN FETCH q.options WHERE q.id = :id AND q.deleted = false")
-    Optional<Question> findByIdWithOptions(@Param("id") Long id);}
+    Optional<Question> findByIdWithOptions(@Param("id") Long id);
+
+    /**
+     * Incremental sync: find question IDs modified since given timestamp.
+     */
+    @Query("SELECT q.id FROM Question q WHERE q.deleted = false AND q.isActive = true " +
+            "AND (q.updatedAt > :since OR (q.updatedAt IS NULL AND q.createdAt > :since)) " +
+            "ORDER BY q.updatedAt ASC")
+    List<Long> findUpdatedQuestionIdsSince(@Param("since") java.time.LocalDateTime since, Pageable pageable);
+
+    @Query("SELECT COUNT(q) FROM Question q WHERE q.deleted = false AND q.isActive = true " +
+            "AND (q.updatedAt > :since OR (q.updatedAt IS NULL AND q.createdAt > :since))")
+    long countUpdatedQuestionIdsSince(@Param("since") java.time.LocalDateTime since);
+
+    @Query("SELECT q.id FROM Question q WHERE q.deleted = true AND q.deletedAt > :since")
+    List<Long> findDeletedQuestionIdsSince(@Param("since") java.time.LocalDateTime since);
+
+    @Query("SELECT q.id, q.imageUrl FROM Question q " +
+            "WHERE q.deleted = false AND q.isActive = true AND q.imageUrl IS NOT NULL AND q.imageUrl != '' " +
+            "ORDER BY q.id ASC")
+    List<Object[]> findActiveQuestionImages();
+
+    @Query("SELECT q.id FROM Question q WHERE q.topic.id = :topicId AND q.deleted = false AND q.isActive = true ORDER BY q.id ASC")
+    List<Long> findActiveIdsByTopicId(@Param("topicId") Long topicId);
+}

@@ -54,7 +54,17 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 || path.startsWith("/api/v1/auth/reset-password")
                 || path.startsWith("/api/v1/auth/change-password")
                 || path.startsWith("/api/v1/auth/google")
-                || path.startsWith("/api/v1/auth/telegram");
+                || (path.startsWith("/api/v1/auth/telegram") && !path.startsWith("/api/v1/auth/telegram/session"));
+    }
+
+    /** Ochiq (permitAll) rasm fayllari — o'z bucket'iga ega, API limitini sarflamaydi. */
+    static boolean isPublicImagePath(String path) {
+        return path.startsWith("/api/v1/files/general/")
+                || path.startsWith("/api/v1/files/questions/")
+                || path.startsWith("/api/v1/files/signs/")
+                || path.startsWith("/api/v1/files/markings/")
+                || path.startsWith("/api/v1/files/defaults/")
+                || path.startsWith("/api/v1/files/profiles/");
     }
 
     /** Eskirgan bucket'larni tozalash (map cheksiz o'smasligi uchun). */
@@ -96,18 +106,28 @@ public class RateLimitFilter extends OncePerRequestFilter {
         } else if (path.contains("telegram/webhook")) {
             limit = 30;
             bucketKey = clientIp + ":tg-webhook";
+        } else if (path.startsWith("/api/v1/auth/telegram/session/status")) {
+            // Telegram tasdig'ini kutayotgan klient ~2 soniyada bir so'raydi; pollSecret (256 bit) himoyalaydi
+            limit = 60;
+            bucketKey = clientIp + ":tg-session-poll";
         } else if (isCredentialEndpoint(path)) {
             limit = authRequestsPerMinute;
             bucketKey = clientIp + ":auth";
         } else if (path.startsWith("/api/v1/public/guest-exam")) {
             limit = 10;
             bucketKey = clientIp + ":guest-exam";
-        } else if (path.startsWith("/api/v1/files/questions/")) {
-            limit = 180;
-            bucketKey = clientIp + ":q-img";
+        } else if (isPublicImagePath(path)) {
+            // AUDIT 2026-10-20: savol rasmlari asosan /files/general/ da. Avval ular umumiy (API) bucket'ni
+            // ishlatardi — Desktop/Mobile oflayn rasm yuklashi (~750 ta) bir necha daqiqa davomida shu IP'ning
+            // oddiy API so'rovlarini (Oktagon ticket, statistika...) 429 bilan bo'g'ib qo'yardi.
+            limit = 240;
+            bucketKey = clientIp + ":img";
         } else if (path.startsWith("/api/v2/exams/") || path.startsWith("/api/v2/tickets/")) {
             limit = 60;
             bucketKey = clientIp + ":exam";
+        } else if (path.startsWith("/api/v1/content/") || path.startsWith("/api/v2/content/")) {
+            limit = 120;
+            bucketKey = clientIp + ":content";
         } else if (path.startsWith("/api/v1/app/")) {
             limit = 60;
             bucketKey = clientIp + ":app";

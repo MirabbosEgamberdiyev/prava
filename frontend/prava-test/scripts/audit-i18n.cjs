@@ -11,7 +11,7 @@ console.log('\n======================================================');
 console.log('  PRAVAONLINE AUTOMATED I18N AUDIT GATE');
 console.log('======================================================\n');
 
-// 1. Load locale files (runtime bundles: src/locales/<lng>.json — see src/utils/i18n.ts)
+// 1. Load source locale files (src/locales/<lng>.json; runtime copies in public/locales are checked in 1b)
 const locales = ['uzl', 'uzc', 'ru'];
 const dictionaries = {};
 
@@ -57,6 +57,28 @@ console.log(`[PARITY] Total keys registered in UZC: ${uzcKeys.size}`);
 console.log(`[PARITY] Total keys registered in RU:  ${ruKeys.size}`);
 
 let totalErrors = 0;
+
+// 1b. Runtime parity: the app loads public/locales/<lng>/translation.json (i18next-http-backend, see
+// src/utils/i18n.ts), while new keys are added to src/locales/<lng>.json. If they drift, the audit passes
+// but users see raw keys (2026-10-20: 72 Telegram one-tap / OKTAGON keys were missing at runtime).
+for (const loc of locales) {
+  const runtimePath = path.join(ROOT, 'public', 'locales', loc, 'translation.json');
+  if (!fs.existsSync(runtimePath)) {
+    console.error(`[RUNTIME] Missing runtime locale file: ${runtimePath}`);
+    totalErrors++;
+    continue;
+  }
+  const runtime = flattenKeys(JSON.parse(fs.readFileSync(runtimePath, 'utf8').replace(/^﻿/, '')));
+  const source = flattenKeys(dictionaries[loc]);
+  const notShipped = Object.keys(source).filter(k => !(k in runtime));
+  const differs = Object.keys(source).filter(k => k in runtime && JSON.stringify(runtime[k]) !== JSON.stringify(source[k]));
+  if (notShipped.length || differs.length) {
+    console.error(`[RUNTIME] ${loc}: ${notShipped.length} keys missing in public/locales, ${differs.length} values differ (sync src/locales → public/locales)`);
+    notShipped.slice(0, 10).forEach(k => console.error(`    - ${k}`));
+    differs.slice(0, 10).forEach(k => console.error(`    ~ ${k}`));
+    totalErrors += notShipped.length + differs.length;
+  }
+}
 
 // 2. Check Key Parity (UZC and RU against UZL)
 const missingInUzc = uzlKeys.filter(k => !uzcKeys.has(k));

@@ -32,10 +32,12 @@ export const OctagonGuestModal: React.FC<Props> = ({ opened, onContinueAsGuest, 
 
   const handleGuestSubmit = () => {
     const finalNick = nickname.trim() || generateRandomNickname();
-    localStorage.setItem("octagon_guest_nickname", finalNick);
-    if (!localStorage.getItem("octagon_guest_id")) {
-      localStorage.setItem("octagon_guest_id", "guest_" + Math.random().toString(36).substring(2, 10));
+    try {
+      localStorage.setItem("octagon_guest_nickname", finalNick);
+    } catch {
+      // storage blocked
     }
+    // Mehmon ID'sini endi server beradi (imzolangan token) — klientda yaratilmaydi
     onContinueAsGuest(finalNick);
   };
 

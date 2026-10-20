@@ -28,6 +28,12 @@ public class OctagonSession {
     private int reactionCountInWindow = 0;
     private Instant reactionWindowStart = Instant.now();
     private Instant reactionMutedUntil;
+    // send_challenge spam himoyasi
+    private Instant challengeWindowStart = Instant.now();
+    private int challengesInWindow = 0;
+    // xona kodini taxmin qilish (brute-force) himoyasi
+    private Instant roomJoinWindowStart = Instant.now();
+    private int failedRoomJoinsInWindow = 0;
 
     public OctagonSession(String userId, String displayName, WebSocketSession session) {
         this.userId = userId;

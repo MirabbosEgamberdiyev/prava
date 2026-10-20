@@ -1037,7 +1037,9 @@ export async function getFullStats(_userId?: UserScopeId): Promise<FullStats> {
   const dbQCount = (await questionRepository.getQuestionCount().catch(() => 0)) || 0;
   const ticketsSumQ = localTickets.reduce((sum, tk) => sum + (tk.question_count || 0), 0);
   const serverTotalQ = Number(serverStats?.summary?.totalQuestions || 0);
-  const totalQ = dbQCount || ticketsSumQ || serverTotalQ || (attemptKeys.length > 0 ? attemptKeys.length : 1000);
+  // 0 = unknown: the dashboard then falls back to the real catalog count (useCurriculumCounts) instead of
+  // a made-up denominator (a magic 1000 was shown as "0/1000" to every new user).
+  const totalQ = dbQCount || ticketsSumQ || serverTotalQ || attemptKeys.length;
 
   // If local questions attempts are empty, reflect questions answered on server
   if (readyQ + averageQ + weakQ === 0 && serverStats?.summary) {

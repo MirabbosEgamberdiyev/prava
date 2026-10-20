@@ -22,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class OctagonWebSocketHandler extends TextWebSocketHandler {
 
+    /** Bitta xabar hajmi chegarasi (eng katta haqiqiy xabar ~200 bayt). */
+    static final int MAX_MESSAGE_CHARS = 4096;
+
     private final OctagonTicketService ticketService;
     private final OctagonMatchmaker matchmaker;
     private final ObjectMapper objectMapper;
@@ -43,14 +46,18 @@ public class OctagonWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        String userId = ticketService.consumeTicketAndGetUserId(ticket);
-        if (userId == null) {
-            log.warn("Rejected Octagon WS connection with invalid/expired ticket: {}", ticket);
+        OctagonTicketService.TicketData td = ticketService.consumeTicket(ticket);
+        if (td == null) {
+            // Ticket qiymati logga yozilmaydi
+            log.warn("Rejected Octagon WS connection with invalid/expired ticket from {}", session.getRemoteAddress());
             session.close(new CloseStatus(4001, "Invalid or expired ticket"));
             return;
         }
 
-        String displayName = "Player_" + (userId.length() > 6 ? userId.substring(userId.length() - 4) : userId);
+        String userId = td.userId();
+        String displayName = td.displayName() != null && !td.displayName().isBlank()
+                ? td.displayName()
+                : "Player_" + (userId.length() > 6 ? userId.substring(userId.length() - 4) : userId);
         OctagonSession octSession = new OctagonSession(userId, displayName, session);
         session.getAttributes().put("userId", userId);
         sessionMap.put(session.getId(), octSession);
@@ -59,109 +66,105 @@ public class OctagonWebSocketHandler extends TextWebSocketHandler {
         log.info("Octagon WS connection established for userId={} (session={})", userId, session.getId());
     }
 
+    private static UUID uuid(JsonNode data, String field) {
+        JsonNode n = data.get(field);
+        return n != null && n.isTextual() ? UUID.fromString(n.asText()) : null;
+    }
+
+    private static Long longVal(JsonNode data, String field) {
+        JsonNode n = data.get(field);
+        return n != null && n.canConvertToLong() ? n.asLong() : null;
+    }
+
+    private static int intVal(JsonNode data, String field, int def) {
+        JsonNode n = data.get(field);
+        return n != null && n.canConvertToInt() ? n.asInt() : def;
+    }
+
+    private static String text(JsonNode data, String field) {
+        JsonNode n = data.get(field);
+        return n != null && n.isValueNode() ? n.asText() : null;
+    }
+
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         OctagonSession octSession = sessionMap.get(session.getId());
         if (octSession == null) return;
+        if (message.getPayloadLength() > MAX_MESSAGE_CHARS) {
+            log.warn("Octagon WS message too large from {} ({} chars)", octSession.getUserId(), message.getPayloadLength());
+            return;
+        }
 
         try {
             JsonNode root = objectMapper.readTree(message.getPayload());
             String event = root.has("event") ? root.get("event").asText() : (root.has("type") ? root.get("type").asText() : "");
-            JsonNode data = root.has("data") ? root.get("data") : root;
+            JsonNode data = root.has("data") && root.get("data").isObject() ? root.get("data") : root;
 
             switch (event) {
-                case "join_queue":
-                    int progress = data.has("userProgress") ? data.get("userProgress").asInt(0) : 0;
-                    int elo = data.has("currentElo") ? data.get("currentElo").asInt(0) : 0;
-                    matchmaker.joinQueue(octSession, progress, elo);
-                    break;
-
-                case "leave_queue":
-                    matchmaker.leaveQueue(octSession);
-                    break;
-
-                case "submit_answer":
-                    UUID matchId = UUID.fromString(data.get("matchId").asText());
-                    Long questionId = data.get("questionId").asLong();
-                    int selectedIndex = data.get("selectedIndex").asInt();
+                case "join_queue" ->
+                        // currentElo eski klientlar uchun qabul qilinadi, lekin juftlashda serverdagi ELO ishlatiladi
+                        matchmaker.joinQueue(octSession, intVal(data, "userProgress", 0), intVal(data, "currentElo", 0));
+                case "leave_queue" -> matchmaker.leaveQueue(octSession);
+                case "submit_answer" -> {
+                    UUID matchId = uuid(data, "matchId");
+                    Long questionId = longVal(data, "questionId");
+                    if (matchId == null || questionId == null) return;
                     long clientTimestamp = data.has("clientTimestamp") ? data.get("clientTimestamp").asLong() : System.currentTimeMillis();
-                    matchmaker.handleSubmitAnswer(octSession, matchId, questionId, selectedIndex, clientTimestamp);
-                    break;
-
-                case "send_reaction":
-                    UUID rxMatchId = UUID.fromString(data.get("matchId").asText());
-                    String emojiId = data.get("emojiId").asText();
-                    matchmaker.handleSendReaction(octSession, rxMatchId, emojiId);
-                    break;
-
-                case "request_revenge":
-                    UUID revMatchId = UUID.fromString(data.get("matchId").asText());
-                    matchmaker.handleRequestRevenge(octSession, revMatchId);
-                    break;
+                    matchmaker.handleSubmitAnswer(octSession, matchId, questionId, intVal(data, "selectedIndex", -1), clientTimestamp);
+                }
+                case "send_reaction" -> {
+                    UUID rxMatchId = uuid(data, "matchId");
+                    if (rxMatchId != null) matchmaker.handleSendReaction(octSession, rxMatchId, text(data, "emojiId"));
+                }
+                case "request_revenge" -> {
+                    UUID revMatchId = uuid(data, "matchId");
+                    if (revMatchId != null) matchmaker.handleRequestRevenge(octSession, revMatchId);
+                }
+                case "game_reconnect" -> matchmaker.handleClientReconnectRequest(octSession);
 
                 // Friend Challenge Events
-                case "send_challenge":
-                    String targetId = data.get("targetUserId").asText();
-                    matchmaker.handleSendChallenge(octSession, targetId);
-                    break;
-
-                case "accept_challenge":
-                    UUID accChallengeId = UUID.fromString(data.get("challengeId").asText());
-                    matchmaker.handleAcceptChallenge(octSession, accChallengeId);
-                    break;
-
-                case "reject_challenge":
-                    UUID rejChallengeId = UUID.fromString(data.get("challengeId").asText());
-                    matchmaker.handleRejectChallenge(octSession, rejChallengeId);
-                    break;
+                case "send_challenge" -> {
+                    String targetId = text(data, "targetUserId");
+                    if (targetId != null && targetId.length() <= 64) matchmaker.handleSendChallenge(octSession, targetId);
+                }
+                case "accept_challenge" -> {
+                    UUID id = uuid(data, "challengeId");
+                    if (id != null) matchmaker.handleAcceptChallenge(octSession, id);
+                }
+                case "reject_challenge" -> {
+                    UUID id = uuid(data, "challengeId");
+                    if (id != null) matchmaker.handleRejectChallenge(octSession, id);
+                }
 
                 // Group Room Events
-                case "create_room":
-                    int maxP = data.has("maxPlayers") ? data.get("maxPlayers").asInt(4) : 4;
-                    boolean isPriv = data.has("isPrivate") && data.get("isPrivate").asBoolean();
-                    matchmaker.handleCreateRoom(octSession, maxP, isPriv);
-                    break;
-
-                case "join_room":
-                    String rCode = data.get("roomCode").asText();
-                    matchmaker.handleJoinRoom(octSession, rCode);
-                    break;
-
-                case "leave_room":
-                    matchmaker.handleLeaveRoom(octSession);
-                    break;
-
-                case "toggle_ready":
-                    boolean ready = data.has("isReady") && data.get("isReady").asBoolean();
-                    matchmaker.handleToggleReady(octSession, ready);
-                    break;
-
-                case "start_room_game":
-                    matchmaker.handleStartRoomGame(octSession);
-                    break;
-
-                case "submit_room_answer":
-                    Long roomQId = data.get("questionId").asLong();
-                    int roomSelIdx = data.get("selectedIndex").asInt();
+                case "create_room" -> matchmaker.handleCreateRoom(octSession, intVal(data, "maxPlayers", 4),
+                        data.has("isPrivate") && data.get("isPrivate").asBoolean());
+                case "join_room" -> matchmaker.handleJoinRoom(octSession, text(data, "roomCode"));
+                case "leave_room" -> matchmaker.handleLeaveRoom(octSession);
+                case "toggle_ready" -> matchmaker.handleToggleReady(octSession, data.has("isReady") && data.get("isReady").asBoolean());
+                case "start_room_game" -> matchmaker.handleStartRoomGame(octSession);
+                case "submit_room_answer" -> {
+                    Long roomQId = longVal(data, "questionId");
+                    if (roomQId == null) return;
                     long roomClientTime = data.has("clientTimestamp") ? data.get("clientTimestamp").asLong() : System.currentTimeMillis();
-                    matchmaker.handleSubmitRoomAnswer(octSession, roomQId, roomSelIdx, roomClientTime);
-                    break;
+                    matchmaker.handleSubmitRoomAnswer(octSession, roomQId, intVal(data, "selectedIndex", -1), roomClientTime);
+                }
 
-                case "heartbeat_ping":
+                case "heartbeat_ping" -> {
                     octSession.setLastPingTime(java.time.Instant.now());
                     String pong = objectMapper.writeValueAsString(Map.of(
                             "event", "heartbeat_ping",
                             "data", Map.of("t", System.currentTimeMillis())
                     ));
                     octSession.send(pong);
-                    break;
+                }
 
-                default:
-                    log.debug("Unknown Octagon WS event: {}", event);
-                    break;
+                default -> log.debug("Unknown Octagon WS event: {}", event);
             }
+        } catch (IllegalArgumentException e) {
+            log.debug("Malformed Octagon WS payload from {}: {}", octSession.getUserId(), e.getMessage());
         } catch (Exception e) {
-            log.error("Failed to process Octagon WS message from {}: {}", octSession.getUserId(), e.getMessage());
+            log.warn("Failed to process Octagon WS message from {}: {}", octSession.getUserId(), e.getMessage());
         }
     }
 
@@ -169,7 +172,7 @@ public class OctagonWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         OctagonSession octSession = sessionMap.remove(session.getId());
         if (octSession != null) {
-            matchmaker.removeSession(octSession.getUserId());
+            matchmaker.removeSession(octSession);
             log.info("Octagon WS connection closed for userId={} (code={}, reason={})",
                     octSession.getUserId(), status.getCode(), status.getReason());
         }

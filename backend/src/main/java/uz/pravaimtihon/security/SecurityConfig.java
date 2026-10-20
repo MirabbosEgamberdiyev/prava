@@ -97,7 +97,8 @@ public class SecurityConfig {
 
                                 // ✅ Curriculum & Simulator Public Endpoints
                                 "/api/v1/curriculum/**",
-                                "/api/v2/content/manifest",
+                                "/api/v1/content/**",
+                                "/api/v2/content/**",
 
                                 // ✅ Octagon WebSocket Handshake & Public Endpoints
                                 "/ws/octagon/**",
@@ -263,16 +264,7 @@ public class SecurityConfig {
                     "aniq domenlar ro'yxatini ko'rsating (ALLOWED_ORIGINS).");
         }
 
-        java.util.Set<String> expandedOrigins = new java.util.LinkedHashSet<>();
-        for (String o : origins) {
-            expandedOrigins.add(o);
-            if (o.contains("localhost")) {
-                expandedOrigins.add(o.replace("localhost", "127.0.0.1"));
-            } else if (o.contains("127.0.0.1")) {
-                expandedOrigins.add(o.replace("127.0.0.1", "localhost"));
-            }
-        }
-        List<String> finalOrigins = new java.util.ArrayList<>(expandedOrigins);
+        List<String> finalOrigins = expandLoopbackAliases(origins);
 
         log.info("Configuring CORS with allowed origins: {}", finalOrigins);
 
@@ -288,6 +280,24 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    /**
+     * localhost ↔ 127.0.0.1 juftligini qo'shadi. REST CORS ham, Oktagon WebSocket handshake'i ham shu
+     * ro'yxatdan foydalanadi (avval WS ro'yxati kengaytirilmagani uchun 127.0.0.1 dagi dev klient REST'ga
+     * kira olardi, lekin WS 403 olardi va UI cheksiz "qidirilmoqda" holatida qolardi).
+     */
+    public static List<String> expandLoopbackAliases(List<String> origins) {
+        java.util.Set<String> expanded = new java.util.LinkedHashSet<>();
+        for (String o : origins) {
+            expanded.add(o);
+            if (o.contains("localhost")) {
+                expanded.add(o.replace("localhost", "127.0.0.1"));
+            } else if (o.contains("127.0.0.1")) {
+                expanded.add(o.replace("127.0.0.1", "localhost"));
+            }
+        }
+        return new java.util.ArrayList<>(expanded);
     }
 
     @Bean

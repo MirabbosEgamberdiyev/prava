@@ -50,6 +50,16 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             "OR u.email LIKE CONCAT('%', :search, '%'))")
     Page<User> searchUsers(@Param("search") String search, Pageable pageable);
 
+    /**
+     * Oktagon o'yinchi qidiruvi: faqat ism/familiya bo'yicha (telefon va e-mail bo'yicha EMAS —
+     * aks holda raqam orqali begona odamning ismini aniqlash mumkin bo'lardi).
+     * {@code search} ichidagi {@code % _ \} chaqiruvchi tomonidan ekranlangan bo'lishi kerak.
+     */
+    @Query("SELECT u FROM User u WHERE u.deleted = false AND u.isActive = true " +
+            "AND (LOWER(u.firstName) LIKE LOWER(CONCAT('%', :search, '%')) ESCAPE '\\' " +
+            "OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :search, '%')) ESCAPE '\\')")
+    Page<User> searchActiveUsersByName(@Param("search") String search, Pageable pageable);
+
     @Query("SELECT COUNT(u) FROM User u WHERE u.deleted = false AND u.isActive = true")
     long countActiveUsers();
 

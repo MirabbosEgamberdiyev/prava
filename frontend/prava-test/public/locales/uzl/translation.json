@@ -37,7 +37,15 @@
       "then": "va keyin",
       "step2": "Bot sizga yuborgan 5 xonali tasdiqlash kodini bu yerga kiriting:",
       "codePlaceholder": "Masalan: 12345",
-      "codeLabel": "Tasdiqlash kodi"
+      "codeLabel": "Tasdiqlash kodi",
+      "oneTapButton": "Telegram ilovasida tasdiqlash",
+      "oneTapHint": "Telegram ochiladi — botdagi «Tasdiqlash» tugmasini bosing, ilova o'zi tizimga kiradi.",
+      "oneTapWaiting": "Telegram'dagi tasdiqlash kutilmoqda…",
+      "oneTapNotOpened": "Telegram ochilmadimi? Havolani ochish",
+      "oneTapRejected": "Kirish Telegram'da rad etildi.",
+      "oneTapExpired": "Kutish vaqti tugadi. Qaytadan urinib ko'ring.",
+      "oneTapError": "Telegram sessiyasini boshlab bo'lmadi. Quyidagi kod usulidan foydalaning.",
+      "orUseCode": "yoki kod bilan"
     },
     "loginWithGoogle": "Google bilan kirish",
     "loginWithTelegram": "Telegram orqali kirish",
@@ -4282,7 +4290,21 @@
       "copied": "Nusxalandi!",
       "orCode": "Yoki taklif kodini kiriting",
       "enterCodePlaceholder": "Duel kodi (masalan: 123456)",
-      "join": "Qo'shilish"
+      "join": "Qo'shilish",
+      "tabSearch": "Foydalanuvchini qidirish",
+      "tabLink": "Havola va QR-kod",
+      "searchPlaceholder": "Ism, telefon yoki ID kiriting...",
+      "searchBtn": "Qidirish",
+      "statusInMatch": "Jangda",
+      "statusInQueue": "Qidiruvda",
+      "statusOnline": "Onlayn",
+      "statusOffline": "Oflayn",
+      "challengeSent": "Yuborildi...",
+      "challengeBtn": "Jangga Chorlash",
+      "noUsersFound": "Foydalanuvchi topilmadi",
+      "searchHint": "Do'stingizning ismi yoki ID raqamini kiriting",
+      "searchError": "Qidirishda xatolik yuz berdi",
+      "eloAndId": "ELO • ID: {{id}}"
     },
     "arena": {
       "opponent": "Raqib",
@@ -4330,7 +4352,12 @@
       "rulesBtn": "Qoidalar",
       "editNickname": "Taxallusni tahrirlash",
       "saveNickname": "Saqlash",
-      "dueFriendDesc": "Do'stingizga maxsus havola yuborib, xususiy jangga chorlang"
+      "dueFriendDesc": "Do'stingizga maxsus havola yuborib, xususiy jangga chorlang",
+      "groupBattle": "Guruhli Bahs",
+      "groupBattleDesc": "Do'stlar bilan xona ochib birgalikda bellashing",
+      "history": "Bahslar Tarixi",
+      "historyDesc": "Oldingi janglaringiz va ELO o'zgarishlari",
+      "title": "Oktagon"
     },
     "rank": {
       "brilliant": "Brilliant",
@@ -4344,6 +4371,64 @@
       "desc": "Haqiqiy raqiblar bilan real vaqtda yo'l qoidalari bo'yicha bellashing, ELO yig'ing va ligalarda ko'tariling!",
       "cta": "Jangga Kirish",
       "myRank": "Sizning ligangiz: {{rank}} • {{elo}} ELO"
+    },
+    "group": {
+      "title": "Guruhli Bahs (Party)",
+      "tabCreate": "Xona yaratish",
+      "tabJoin": "Xonaga qo'shilish",
+      "maxPlayers": "Maksimal ishtirokchilar soni:",
+      "privateRoom": "Xususiy xona",
+      "privateDesc": "Faqat kod orqali kirish mumkin",
+      "createBtn": "Xonani Yaratish",
+      "enterCode": "Xona kodi:",
+      "joinBtn": "Xonaga Kirish",
+      "roomCodeLabel": "XONA KODI",
+      "copied": "Nusxalandi!",
+      "copy": "Nusxalash",
+      "members": "Ishtirokchilar:",
+      "host": "Xona egasi",
+      "hostBadge": "Host",
+      "ready": "Tayyor",
+      "waiting": "Kutilmoqda...",
+      "leave": "Chiqish",
+      "startGame": "O'yinni Boshlash",
+      "setReady": "Men Tayyorman!",
+      "unready": "Bekor qilish",
+      "codePlaceholder": "Masalan: OCT-4821"
+    },
+    "history": {
+      "title": "Bahslar Tarixi",
+      "empty": "Hozircha yakunlangan janglar mavjud emas",
+      "win": "G'alaba",
+      "draw": "Durang",
+      "loss": "Mag'lubiyat",
+      "opponent": "Raqib",
+      "prev": "Oldingi",
+      "next": "Keyingi"
+    },
+    "challenge": {
+      "incomingTitle": "Jangga Chorlov!",
+      "incomingPrompt": "Raqib siz bilan real vaqtda 1v1 Oktagonda kuch sinashmoqchi!",
+      "accept": "Qabul qilish",
+      "reject": "Rad etish"
+    },
+    "common": {
+      "cancel": "Bekor qilish",
+      "error": "Xatolik yuz berdi",
+      "connectionLost": "Oktagon serveriga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."
+    },
+    "report": {
+      "button": "Raqib ustidan shikoyat qilish",
+      "title": "Raqib ustidan shikoyat qilish",
+      "desc": "Agar raqib qoidabuzarlik qilgan bo'lsa yoki nojo'ya xatti-harakat sodir etgan bo'lsa, xabar qiling.",
+      "reasonCheating": "Shubhali harakat / Aldash / Bot",
+      "reasonAfk": "O'yin davomida harakatsiz qoldi / AFK",
+      "reasonBehavior": "Nomaqbul harakat yoki haqorat",
+      "reasonOther": "Boshqa sabab",
+      "commentPlaceholder": "Qo'shimcha izoh (ixtiyoriy)...",
+      "submit": "Yuborish",
+      "sentSuccess": "Shikoyatingiz qabul qilindi!",
+      "sentDesc": "Moderatsiya xizmati ushbu o'yin yozuvini tekshirib chiqadi."
     }
   }
 }

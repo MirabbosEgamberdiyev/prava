@@ -1,5 +1,6 @@
 package uz.pravaimtihon.octagon.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,10 @@ public class OctagonDtos {
     public static class TicketResponse {
         private String ticket;
         private int expiresInSeconds;
+        /** Mehmon uchun server bergan imzolangan token — klient uni saqlab, keyingi so'rovlarda guestId sifatida yuboradi. */
+        private String guestId;
+        /** Ochiq o'yinchi ID'si (winnerId bilan solishtirish uchun). */
+        private String userId;
     }
 
     @Data
@@ -125,6 +130,7 @@ public class OctagonDtos {
         private OctagonRank rank;
         private String rankEmoji;
         private String rankName;
+        @JsonProperty("isOnline")
         private boolean isOnline;
         private String status; // "AVAILABLE", "IN_MATCH", "IN_QUEUE"
     }
@@ -139,7 +145,9 @@ public class OctagonDtos {
         private String avatarUrl;
         private int eloRating;
         private String rankEmoji;
+        @JsonProperty("isHost")
         private boolean isHost;
+        @JsonProperty("isReady")
         private boolean isReady;
         private int currentScore;
         private int answeredCount;
@@ -154,6 +162,7 @@ public class OctagonDtos {
         private String hostId;
         private String hostName;
         private int maxPlayers;
+        @JsonProperty("isPrivate")
         private boolean isPrivate;
         private String status; // "WAITING", "COUNTDOWN", "PLAYING", "FINISHED"
         private List<GroupRoomMemberDto> members;

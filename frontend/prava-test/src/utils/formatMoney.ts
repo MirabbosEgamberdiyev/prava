@@ -7,7 +7,7 @@
  * grouping when Intl is unavailable or returns something unexpected.
  */
 
-export const NBSP = " ";
+export const NBSP = "\u00A0";
 
 const CURRENCY_LABELS: Record<string, string> = {
   uzl: "so'm",
@@ -45,10 +45,10 @@ export function formatAmount(value: number, lang: string): string {
               .formatToParts(n)
               .map((p) => (p.type === "group" ? NBSP : p.value))
               .join("")
-          : nf.format(n).replace(/[\s  ,.]/g, NBSP);
+          : nf.format(n).replace(/[\s\u00A0\u202F,.]/g, NBSP);
       const normalised = out.replace(/−/g, "-");
       // Only accept ASCII digits + separators; anything else (other numbering systems) → fallback.
-      if (/^-?\d{1,3}(?: \d{3})*$/.test(normalised)) return normalised;
+      if (/^-?\d{1,3}(?:\u00A0\d{3})*$/.test(normalised)) return normalised;
     }
   } catch {
     // unsupported locale / Intl missing — manual fallback below
@@ -75,7 +75,7 @@ export function formatMultiplier(value: number, lang: string): string {
   try {
     if (typeof Intl !== "undefined" && typeof Intl.NumberFormat === "function") {
       const out = new Intl.NumberFormat(numberLocale(lang), { maximumFractionDigits: 2 }).format(rounded);
-      if (/^-?[\d\s  .,]+$/.test(out)) return out.replace(/[\s ]/g, NBSP);
+      if (/^-?[\d\s\u00A0\u202F.,]+$/.test(out)) return out.replace(/[\s\u202F]/g, NBSP);
     }
   } catch {
     // fallback below

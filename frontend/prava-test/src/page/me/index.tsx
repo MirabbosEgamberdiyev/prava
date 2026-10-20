@@ -9,7 +9,6 @@ import { resolveUserScopeId } from "@/utils/userScope";
 import type { FullStats } from "../../types/desktop";
 import { useCurriculumCounts } from "../../hooks/useCurriculumCounts";
 import { QRCodeSVG } from "qrcode.react";
-import { OctagonBannerCard } from "../../components/dashboard/OctagonBannerCard";
 import "./dashboard.css";
 import {
   IconBook2,
@@ -299,9 +298,6 @@ export default function User_Page() {
               </div>
             </div>
           </section>
-
-          {/* Oktagon 1v1 PvP Live Banner */}
-          <OctagonBannerCard />
 
           {/* Section 1: Main Actions */}
           <section className="ref-section" aria-label={t("refDashboard.mainActions", "Asosiy amallar")}>

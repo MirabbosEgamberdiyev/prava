@@ -21,7 +21,7 @@ export const OCTAGON_CONFIG = {
   // Tarmoq va Qayta Ulanish (Resilience)
   WS_HEARTBEAT_INTERVAL_MS: 15000,   // Ping-pong intervali (15 soniya)
   RECONNECT_GRACE_PERIOD_SEC: 45,    // O'yinchi 45 soniya ichida qaytsa match tiklanadi
-  MAX_RECONNECT_ATTEMPTS: 3,         // Maksimal 3 marta avtomatik urinish
+  MAX_RECONNECT_ATTEMPTS: 6,         // Eksponensial kechikish bilan ~45 s grace-period ichida
   RECONNECT_BASE_DELAY_MS: 2000,     // Boshlang'ich kechikish
   RECONNECT_JITTER_MS: 1500,         // To'qnashuvni oldini oluvchi tasodifiy jitter
 

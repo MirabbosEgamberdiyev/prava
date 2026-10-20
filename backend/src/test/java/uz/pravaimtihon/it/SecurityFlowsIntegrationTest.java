@@ -8,14 +8,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import uz.pravaimtihon.entity.User;
 import uz.pravaimtihon.enums.Role;
 import uz.pravaimtihon.repository.UserRepository;
@@ -30,9 +29,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Audit Faza 1–3 xavfsizlik tuzatishlarining uchidan-uchiga (HTTP → DB) tekshiruvi.
- * Haqiqiy PostgreSQL (Testcontainers). Docker bo'lmasa o'tkazib yuboriladi — CI'da doim ishlaydi.
+ * Haqiqiy PostgreSQL: Testcontainers (CI) yoki {@code IT_JDBC_URL} dagi lokal test bazasi — {@link ItDatabase}.
+ * Ikkalasi ham bo'lmasa o'tkazib yuboriladi.
  */
-@Testcontainers(disabledWithoutDocker = true)
+@EnabledIf("uz.pravaimtihon.it.ItDatabase#available")
 @SpringBootTest(properties = {
         "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=create-drop",
@@ -55,9 +55,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class SecurityFlowsIntegrationTest {
 
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+    @DynamicPropertySource
+    static void database(DynamicPropertyRegistry registry) {
+        ItDatabase.register(registry);
+    }
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
@@ -208,8 +209,15 @@ class SecurityFlowsIntegrationTest {
     @Test
     void offlineRealExamReportsMaxWrongBasedPassingScore() throws Exception {
         String token = accessToken(login(false));
+        // Klientlar (web/desktop/mobile) BARCHA savollarni yuboradi, javobsizlari selectedOptionIndex=null bilan;
+        // bo'sh "answers" @NotEmpty bilan 422 bo'ladi (bu kontrakt — klient hech qachon bo'sh ro'yxat yubormaydi).
+        StringBuilder unanswered = new StringBuilder();
+        for (int i = 1; i <= 20; i++) {
+            unanswered.append(i > 1 ? "," : "").append("{\"questionId\":").append(900_000 + i)
+                    .append(",\"selectedOptionIndex\":null,\"timeSpentSeconds\":30}");
+        }
         String payload = "{\"clientSessionId\":\"real_pass_" + UUID.randomUUID() + "\",\"examType\":\"real\","
-                + "\"durationSeconds\":600,\"totalQuestions\":20,\"answers\":[]}";
+                + "\"durationSeconds\":600,\"totalQuestions\":20,\"answers\":[" + unanswered + "]}";
         mvc.perform(post("/api/v2/exams/record-offline").header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON).content(payload))
                 .andExpect(status().isOk())
@@ -293,23 +301,101 @@ class SecurityFlowsIntegrationTest {
                 .andExpect(jsonPath("$.data.cancelled").value(true));
     }
 
-    // ── Faza 5: offline-bundle v2 (savollar + mavzular + biletlar, ETag) ────────
+    // ── Faza 5 + 2026-10-18: offline-bundle (faqat imzolangan Desktop/Mobile, AES-256-GCM, ETag) ──
     @Test
     void offlineBundleHasTopicsTicketsAndSupportsEtag() throws Exception {
-        String token = accessToken(login(false));
-        MvcResult first = mvc.perform(get("/api/v1/app/offline-bundle").header("Authorization", "Bearer " + token))
+        MvcResult loginResult = login(false);
+        String token = accessToken(loginResult);
+        long userId = json.readTree(loginResult.getResponse().getContentAsString()).at("/data/user/id").asLong();
+
+        // Brauzer yoki imzosiz so'rov — rad etiladi
+        mvc.perform(get("/api/v1/app/offline-bundle").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/app/offline-bundle").header("Authorization", "Bearer " + token)
+                        .header("X-Client-Platform", "web"))
+                .andExpect(status().isForbidden());
+
+        String ts = String.valueOf(java.time.Instant.now().getEpochSecond());
+        MvcResult first = mvc.perform(get("/api/v1/app/offline-bundle").header("Authorization", "Bearer " + token)
+                        .header("X-Client-Platform", "desktop")
+                        .header("X-App-Timestamp", ts)
+                        .header("X-App-Signature", appSignature(userId, ts, "desktop")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.version").isNotEmpty())
-                .andExpect(jsonPath("$.data.questions").isArray())
-                .andExpect(jsonPath("$.data.topics").isArray())
-                .andExpect(jsonPath("$.data.tickets").isArray())
+                .andExpect(header().string("X-Encrypted-Algorithm", "AES-256-GCM"))
                 .andReturn();
         String etag = first.getResponse().getHeader("ETag");
         assertThat(etag).isNotBlank();
 
+        JsonNode bundle = json.readTree(bundleCrypto.decryptBundle(first.getResponse().getContentAsByteArray()));
+        assertThat(bundle.at("/version").asText()).isNotBlank();
+        assertThat(bundle.at("/questions").isArray()).isTrue();
+        assertThat(bundle.at("/topics").isArray()).isTrue();
+        assertThat(bundle.at("/tickets").isArray()).isTrue();
+
+        String ts2 = String.valueOf(java.time.Instant.now().getEpochSecond());
         mvc.perform(get("/api/v1/app/offline-bundle").header("Authorization", "Bearer " + token)
+                        .header("X-Client-Platform", "desktop")
+                        .header("X-App-Timestamp", ts2)
+                        .header("X-App-Signature", appSignature(userId, ts2, "desktop"))
                         .header("If-None-Match", etag))
                 .andExpect(status().isNotModified());
+    }
+
+    @Autowired uz.pravaimtihon.service.BundleCryptoService bundleCrypto;
+
+    /** Klientlar bilan bir xil imzo: HMAC-SHA256("offline-bundle:<userId>:<ts>:<platform>"). */
+    private static String appSignature(long userId, String ts, String platform) throws Exception {
+        javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+        mac.init(new javax.crypto.spec.SecretKeySpec(
+                uz.pravaimtihon.service.BundleCryptoService.APP_HMAC_SECRET.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+        byte[] raw = mac.doFinal(("offline-bundle:" + userId + ":" + ts + ":" + platform).getBytes(StandardCharsets.UTF_8));
+        return java.util.HexFormat.of().formatHex(raw);
+    }
+
+    // ── 2026-10-20: refresh token reuse (grace oynasidan keyin) butun oilani bekor qiladi ──
+    @Autowired uz.pravaimtihon.repository.RefreshTokenRepository refreshTokens;
+
+    @Test
+    void refreshReuseAfterGraceWindowRevokesWholeFamily() throws Exception {
+        JsonNode first = json.readTree(login(false).getResponse().getContentAsString()).at("/data");
+        String oldRefresh = first.at("/refreshToken").asText();
+
+        JsonNode rotated = json.readTree(mvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"" + oldRefresh + "\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString()).at("/data");
+        String newRefresh = rotated.at("/refreshToken").asText();
+        String newAccess = rotated.at("/accessToken").asText();
+        assertThat(newRefresh).isNotEqualTo(oldRefresh);
+
+        // 15 s grace oynasi o'tgan deb belgilaymiz (testni 16 s kutmasdan)
+        var old = refreshTokens.findByToken(oldRefresh).orElseThrow();
+        old.setRevokedAt(java.time.LocalDateTime.now().minusMinutes(1));
+        refreshTokens.saveAndFlush(old);
+
+        mvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"" + oldRefresh + "\"}"))
+                .andExpect(status().isUnauthorized());
+
+        // Oila bekor qilingan: yangi refresh ham, shu sessiyaning access token'i ham ishlamaydi
+        mvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"" + newRefresh + "\"}"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + newAccess))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // ── 2026-10-20: noto'g'ri parametrlar 500 emas, 400 (stack trace/ichki xabar yo'q) ──
+    @Test
+    void badParametersAreClientErrorsNot500() throws Exception {
+        String token = accessToken(login(false));
+        mvc.perform(get("/api/v2/exams/abc/result").header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/api/v1/public/news").param("page", "abc"))
+                .andExpect(status().isBadRequest());
+        String body = mvc.perform(get("/api/v1/public/news").param("page", "-5").param("size", "10"))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(body).doesNotContain("Page index").doesNotContain("java.");
     }
 
     // ── Faza 3: Accept-Language tahlili ────────────────────────────────────────

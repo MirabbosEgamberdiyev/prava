@@ -68,7 +68,7 @@ export const WebAuthLayout = () => {
                 {t("auth.privacyPolicy", { defaultValue: "Maxfiylik siyosati" })}
               </Link>
               <Link to="/faq" style={{ color: "inherit", textDecoration: "none" }}>
-                {t("home.faq", { defaultValue: "Savol-javob" })}
+                {t("footer.faq", { defaultValue: "Savol-javob" })}
               </Link>
             </Group>
           </Group>

@@ -9,6 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import uz.pravaimtihon.entity.Question;
 import uz.pravaimtihon.entity.QuestionOption;
 import uz.pravaimtihon.entity.User;
+import uz.pravaimtihon.exception.ForbiddenException;
+import uz.pravaimtihon.exception.RateLimitExceededException;
+import uz.pravaimtihon.exception.ValidationException;
 import uz.pravaimtihon.octagon.dto.OctagonDtos.*;
 import uz.pravaimtihon.octagon.entity.OctagonChallenge;
 import uz.pravaimtihon.octagon.entity.OctagonMatch;
@@ -25,14 +28,24 @@ import uz.pravaimtihon.octagon.repository.OctagonReportRepository;
 import uz.pravaimtihon.repository.QuestionRepository;
 import uz.pravaimtihon.repository.UserRepository;
 
+import java.security.SecureRandom;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class OctagonService {
+
+    /** /questions bir so'rovda qaytaradigan savollar chegarasi (jang = 10 savol). */
+    public static final int MAX_QUESTIONS_PER_REQUEST = 20;
+    private static final Set<String> REPORT_REASONS = Set.of("CHEATING", "AFK", "INAPPROPRIATE_BEHAVIOR", "OTHER");
+    private static final int MAX_REPORTS_PER_HOUR = 5;
+    private static final String INVITE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final OctagonProfileRepository profileRepository;
     private final OctagonMatchRepository matchRepository;
@@ -42,28 +55,46 @@ public class OctagonService {
     private final UserRepository userRepository;
     private final OctagonEloCalculator eloCalculator;
 
+    private final Map<String, Deque<Instant>> reportTimes = new ConcurrentHashMap<>();
+
+    public static boolean isBotId(String userId) {
+        return userId != null && userId.startsWith("bot");
+    }
+
+    private static OctagonProfile defaultProfile(String userId) {
+        return OctagonProfile.builder()
+                .userId(userId)
+                .eloRating(0)
+                .rank(OctagonRank.BRONZE)
+                .wins(0)
+                .losses(0)
+                .draws(0)
+                .winStreak(0)
+                .maxWinStreak(0)
+                .totalMatches(0)
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
     @Transactional
     public OctagonProfile getOrCreateProfile(String userId) {
-        return profileRepository.findById(userId).orElseGet(() -> {
-            OctagonProfile profile = OctagonProfile.builder()
-                    .userId(userId)
-                    .eloRating(0)
-                    .rank(OctagonRank.BRONZE)
-                    .wins(0)
-                    .losses(0)
-                    .draws(0)
-                    .winStreak(0)
-                    .maxWinStreak(0)
-                    .totalMatches(0)
-                    .updatedAt(LocalDateTime.now())
-                    .build();
-            return profileRepository.save(profile);
-        });
+        if (isBotId(userId)) {
+            // Bot profillari bazaga yozilmaydi (avval har bot-jang yangi "bot_xxxx" qatorini yaratardi).
+            return defaultProfile(userId);
+        }
+        return profileRepository.findById(userId).orElseGet(() -> profileRepository.save(defaultProfile(userId)));
+    }
+
+    /** Bazaga yozmasdan profil holatini qaytaradi (yo'q bo'lsa — boshlang'ich qiymatlar). */
+    @Transactional(readOnly = true)
+    public OctagonProfile getProfileSnapshot(String userId) {
+        if (userId == null || isBotId(userId)) return defaultProfile(userId);
+        return profileRepository.findById(userId).orElseGet(() -> defaultProfile(userId));
     }
 
     @Transactional(readOnly = true)
     public StatsResponse getStats(String userId) {
-        OctagonProfile profile = getOrCreateProfile(userId);
+        OctagonProfile profile = getProfileSnapshot(userId);
         String displayName = resolveDisplayName(userId);
 
         double winRate = profile.getTotalMatches() > 0
@@ -100,6 +131,9 @@ public class OctagonService {
             profiles = profileRepository.findTopLeaderboard(pr);
         }
 
+        // N+1 o'rniga bitta so'rov bilan ismlar
+        Map<String, String> names = resolveDisplayNames(profiles.stream().map(OctagonProfile::getUserId).toList());
+
         List<LeaderboardEntry> result = new ArrayList<>();
         int position = 1;
         for (OctagonProfile p : profiles) {
@@ -110,7 +144,7 @@ public class OctagonService {
             result.add(LeaderboardEntry.builder()
                     .position(position++)
                     .userId(p.getUserId())
-                    .displayName(resolveDisplayName(p.getUserId()))
+                    .displayName(names.getOrDefault(p.getUserId(), "Foydalanuvchi"))
                     .eloRating(p.getEloRating())
                     .rank(p.getRank())
                     .rankEmoji(p.getRank().getEmoji())
@@ -128,6 +162,10 @@ public class OctagonService {
         PageRequest pr = PageRequest.of(Math.max(0, page), Math.min(50, Math.max(1, size)));
         Page<OctagonMatch> matches = matchRepository.findUserMatches(userId, pr);
 
+        Map<String, String> names = resolveDisplayNames(matches.getContent().stream()
+                .map(m -> userId.equals(m.getPlayer1Id()) ? m.getPlayer2Id() : m.getPlayer1Id())
+                .toList());
+
         return matches.map(m -> {
             boolean isP1 = userId.equals(m.getPlayer1Id());
             String oppId = isP1 ? m.getPlayer2Id() : m.getPlayer1Id();
@@ -136,7 +174,7 @@ public class OctagonService {
             int myDelta = isP1 ? m.getP1EloChange() : m.getP2EloChange();
 
             String outcome;
-            if (m.getIsDraw()) {
+            if (Boolean.TRUE.equals(m.getIsDraw())) {
                 outcome = "DRAW";
             } else if (userId.equals(m.getWinnerId())) {
                 outcome = "WIN";
@@ -147,7 +185,7 @@ public class OctagonService {
             return MatchHistoryEntry.builder()
                     .matchId(m.getId())
                     .opponentId(oppId)
-                    .opponentName(resolveDisplayName(oppId))
+                    .opponentName(names.getOrDefault(oppId, "Foydalanuvchi"))
                     .myScore(myScore)
                     .opponentScore(oppScore)
                     .result(outcome)
@@ -188,58 +226,58 @@ public class OctagonService {
 
     @Transactional(readOnly = true)
     public Optional<OctagonChallenge> getChallenge(String inviteCode) {
-        return challengeRepository.findByInviteCode(inviteCode)
+        if (inviteCode == null || inviteCode.isBlank() || inviteCode.length() > 32) return Optional.empty();
+        return challengeRepository.findByInviteCode(inviteCode.trim().toUpperCase())
                 .filter(c -> c.getStatus() == OctagonChallengeStatus.PENDING && LocalDateTime.now().isBefore(c.getExpiresAt()));
     }
 
     @Transactional
     public OctagonMatch recordMatchResult(UUID matchId, String p1Id, String p2Id, int p1Score, int p2Score,
                                           List<Long> questionIds, int durationSec, OctagonGameType gameType) {
+        return recordMatchResult(matchId, p1Id, p2Id, p1Score, p2Score, questionIds, durationSec, gameType, null);
+    }
+
+    /**
+     * Jang natijasini yozadi. {@code forfeitUserId} berilsa (jangni tashlab ketgan o'yinchi), u
+     * hisobidan qat'i nazar mag'lub, raqibi esa g'olib hisoblanadi.
+     */
+    @Transactional
+    public OctagonMatch recordMatchResult(UUID matchId, String p1Id, String p2Id, int p1Score, int p2Score,
+                                          List<Long> questionIds, int durationSec, OctagonGameType gameType,
+                                          String forfeitUserId) {
+        // Bir jang ikki marta hisoblanmasin (masalan, timeout va oxirgi javob bir vaqtda kelsa).
+        if (matchId != null) {
+            Optional<OctagonMatch> existing = matchRepository.findById(matchId);
+            if (existing.isPresent()) {
+                log.warn("Octagon match {} already recorded — skipping duplicate ELO update", matchId);
+                return existing.get();
+            }
+        }
+
         OctagonProfile p1 = getOrCreateProfile(p1Id);
         OctagonProfile p2 = getOrCreateProfile(p2Id);
 
-        OctagonEloCalculator.EloResult eloRes = eloCalculator.calculate(p1, p2, p1Score, p2Score);
+        // outcome: >0 — P1 yutdi, <0 — P2 yutdi, 0 — durang
+        int outcome;
+        if (forfeitUserId != null && forfeitUserId.equals(p1Id)) outcome = -1;
+        else if (forfeitUserId != null && forfeitUserId.equals(p2Id)) outcome = 1;
+        else outcome = Integer.compare(p1Score, p2Score);
 
-        // Update P1 Profile
-        p1.setEloRating(eloRes.p1NewElo);
-        p1.setRank(OctagonRank.fromElo(eloRes.p1NewElo));
-        p1.setTotalMatches(p1.getTotalMatches() + 1);
-        if (p1Score > p2Score) {
-            p1.setWins(p1.getWins() + 1);
-            p1.setWinStreak(p1.getWinStreak() + 1);
-            p1.setMaxWinStreak(Math.max(p1.getMaxWinStreak(), p1.getWinStreak()));
-        } else if (p1Score < p2Score) {
-            p1.setLosses(p1.getLosses() + 1);
-            p1.setWinStreak(0);
-        } else {
-            p1.setDraws(p1.getDraws() + 1);
-        }
-        p1.setUpdatedAt(LocalDateTime.now());
+        // ELO kalkulyatori natijani hisobga qarab aniqlaydi — forfeit uchun shartli hisob beramiz.
+        int eloP1Score = outcome > 0 ? 1 : 0;
+        int eloP2Score = outcome < 0 ? 1 : 0;
+        OctagonEloCalculator.EloResult eloRes = eloCalculator.calculate(p1, p2, eloP1Score, eloP2Score);
+
+        applyOutcome(p1, eloRes.p1NewElo, outcome);
         profileRepository.save(p1);
 
-        // Update P2 Profile (unless bot)
-        if (!p2Id.startsWith("bot")) {
-            p2.setEloRating(eloRes.p2NewElo);
-            p2.setRank(OctagonRank.fromElo(eloRes.p2NewElo));
-            p2.setTotalMatches(p2.getTotalMatches() + 1);
-            if (p2Score > p1Score) {
-                p2.setWins(p2.getWins() + 1);
-                p2.setWinStreak(p2.getWinStreak() + 1);
-                p2.setMaxWinStreak(Math.max(p2.getMaxWinStreak(), p2.getWinStreak()));
-            } else if (p2Score < p1Score) {
-                p2.setLosses(p2.getLosses() + 1);
-                p2.setWinStreak(0);
-            } else {
-                p2.setDraws(p2.getDraws() + 1);
-            }
-            p2.setUpdatedAt(LocalDateTime.now());
+        if (!isBotId(p2Id)) {
+            applyOutcome(p2, eloRes.p2NewElo, -outcome);
             profileRepository.save(p2);
         }
 
-        // Persist Match
         String qIdsString = questionIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-        String winnerId = p1Score > p2Score ? p1Id : (p2Score > p1Score ? p2Id : null);
-        boolean isDraw = (p1Score == p2Score);
+        String winnerId = outcome > 0 ? p1Id : (outcome < 0 ? p2Id : null);
 
         OctagonMatch match = OctagonMatch.builder()
                 .id(matchId != null ? matchId : UUID.randomUUID())
@@ -248,40 +286,60 @@ public class OctagonService {
                 .player1Score(p1Score)
                 .player2Score(p2Score)
                 .winnerId(winnerId)
-                .isDraw(isDraw)
+                .isDraw(outcome == 0)
                 .gameType(gameType)
                 .status(OctagonMatchStatus.FINISHED)
                 .questionIds(qIdsString)
                 .durationSeconds(durationSec)
                 .p1EloChange(eloRes.p1Delta)
-                .p2EloChange(eloRes.p2Delta)
+                .p2EloChange(isBotId(p2Id) ? 0 : eloRes.p2Delta)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         return matchRepository.save(match);
     }
 
+    private static void applyOutcome(OctagonProfile p, int newElo, int outcome) {
+        p.setEloRating(newElo);
+        p.setRank(OctagonRank.fromElo(newElo));
+        p.setTotalMatches(p.getTotalMatches() + 1);
+        if (outcome > 0) {
+            p.setWins(p.getWins() + 1);
+            p.setWinStreak(p.getWinStreak() + 1);
+            p.setMaxWinStreak(Math.max(p.getMaxWinStreak(), p.getWinStreak()));
+        } else if (outcome < 0) {
+            p.setLosses(p.getLosses() + 1);
+            p.setWinStreak(0);
+        } else {
+            p.setDraws(p.getDraws() + 1);
+        }
+        p.setUpdatedAt(LocalDateTime.now());
+    }
+
+    /**
+     * Tasodifiy faol savollar. Bazada savol bo'lmasa bo'sh ro'yxat qaytaradi — avvalgi
+     * "1..10" soxta ID'lar fallback'i mavjud bo'lmagan savollar bilan jang ochardi.
+     */
     public List<Long> getRandomQuestionIds(int count) {
         try {
             List<Long> ids = questionRepository.findRandomQuestionIds(PageRequest.of(0, count));
-            if (ids != null && !ids.isEmpty()) {
+            if (ids != null) {
                 return ids;
             }
         } catch (Exception e) {
             log.warn("Failed to fetch random question IDs via questionRepository: {}", e.getMessage());
         }
-        // Fallback default sample IDs if DB has empty random or error
-        return List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L);
+        return List.of();
     }
 
     public String resolveDisplayName(String userId) {
         if (userId == null || userId.isBlank()) {
             return "Mehmon";
         }
-        if (userId.startsWith("bot")) {
+        if (isBotId(userId)) {
             return "OctagonBot ⚡";
         }
-        if (userId.startsWith("guest_")) {
+        if (OctagonGuestIdentity.isGuestId(userId)) {
             String shortCode = userId.length() > 10 ? userId.substring(6, 10).toUpperCase() : userId;
             return "Mehmon #" + shortCode;
         }
@@ -289,30 +347,61 @@ public class OctagonService {
             Long uid = Long.parseLong(userId);
             Optional<User> uOpt = userRepository.findById(uid);
             if (uOpt.isPresent()) {
-                User u = uOpt.get();
-                String name = u.getFirstName();
-                if (u.getLastName() != null && !u.getLastName().isBlank()) {
-                    name += " " + u.getLastName().charAt(0) + ".";
-                }
-                return name;
+                return shortName(uOpt.get());
             }
         } catch (NumberFormatException ignored) {}
 
         return "Foydalanuvchi";
     }
 
-    private String generateInviteCode() {
-        return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    /** Ko'p foydalanuvchi ismini bitta so'rov bilan aniqlaydi. */
+    public Map<String, String> resolveDisplayNames(Collection<String> userIds) {
+        Map<String, String> result = new HashMap<>();
+        List<Long> numeric = new ArrayList<>();
+        for (String id : userIds) {
+            if (id == null) continue;
+            try {
+                numeric.add(Long.parseLong(id));
+            } catch (NumberFormatException e) {
+                result.put(id, resolveDisplayName(id));
+            }
+        }
+        if (!numeric.isEmpty()) {
+            for (User u : userRepository.findAllById(numeric)) {
+                result.put(String.valueOf(u.getId()), shortName(u));
+            }
+        }
+        return result;
     }
 
+    private static String shortName(User u) {
+        String name = u.getFirstName() != null ? u.getFirstName() : "Foydalanuvchi";
+        if (u.getLastName() != null && !u.getLastName().isBlank()) {
+            name += " " + u.getLastName().charAt(0) + ".";
+        }
+        return name;
+    }
+
+    private String generateInviteCode() {
+        StringBuilder sb = new StringBuilder(10);
+        for (int i = 0; i < 10; i++) {
+            sb.append(INVITE_ALPHABET.charAt(RANDOM.nextInt(INVITE_ALPHABET.length())));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Savol matni/variantlari/rasmi — to'g'ri javob ham, izoh ham YO'Q (izoh ko'pincha javobni aytadi).
+     */
     @Transactional(readOnly = true)
     public List<QuestionDto> getQuestionsByIds(List<Long> questionIds) {
         if (questionIds == null || questionIds.isEmpty()) return Collections.emptyList();
-        List<Question> questions = questionRepository.findAllById(questionIds);
+        List<Long> ids = questionIds.stream().filter(Objects::nonNull).distinct().limit(MAX_QUESTIONS_PER_REQUEST).toList();
+        List<Question> questions = questionRepository.findAllById(ids);
         Map<Long, Question> qMap = questions.stream().collect(Collectors.toMap(Question::getId, q -> q));
 
         List<QuestionDto> dtos = new ArrayList<>();
-        for (Long id : questionIds) {
+        for (Long id : ids) {
             Question q = qMap.get(id);
             if (q == null) continue;
 
@@ -326,6 +415,7 @@ public class OctagonService {
                             .textRu(o.getTextRu())
                             .build());
                 }
+                opts.sort(Comparator.comparingInt(QuestionOptionDto::getIndex));
             }
 
             dtos.add(QuestionDto.builder()
@@ -335,9 +425,6 @@ public class OctagonService {
                     .textRu(q.getTextRu())
                     .imageUrl(q.getImageUrl())
                     .options(opts)
-                    .explanationUzl(q.getExplanationUzl())
-                    .explanationUzc(q.getExplanationUzc())
-                    .explanationRu(q.getExplanationRu())
                     .build());
         }
         return dtos;
@@ -345,26 +432,24 @@ public class OctagonService {
 
     @Transactional(readOnly = true)
     public List<UserSearchResult> searchUsers(String query, String currentUserId) {
-        if (query == null || query.trim().length() < 2) {
+        if (query == null || query.trim().length() < 2 || query.trim().length() > 64) {
             return Collections.emptyList();
         }
         String cleanQuery = query.trim();
         List<User> foundUsers = new ArrayList<>();
 
-        try {
-            Long uid = Long.parseLong(cleanQuery);
-            userRepository.findById(uid).ifPresent(foundUsers::add);
-        } catch (NumberFormatException ignored) {}
-
-        try {
-            Page<User> page = userRepository.searchUsers(cleanQuery, PageRequest.of(0, 10));
-            for (User u : page.getContent()) {
-                if (foundUsers.stream().noneMatch(existing -> existing.getId().equals(u.getId()))) {
-                    foundUsers.add(u);
-                }
+        if (cleanQuery.matches("\\d{1,18}")) {
+            userRepository.findById(Long.parseLong(cleanQuery))
+                    .filter(u -> !Boolean.TRUE.equals(u.getDeleted()) && !Boolean.FALSE.equals(u.getIsActive()))
+                    .ifPresent(foundUsers::add);
+        } else {
+            String escaped = cleanQuery.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+            try {
+                Page<User> page = userRepository.searchActiveUsersByName(escaped, PageRequest.of(0, 10));
+                foundUsers.addAll(page.getContent());
+            } catch (Exception e) {
+                log.warn("Search users error: {}", e.getMessage());
             }
-        } catch (Exception e) {
-            log.warn("Search users error for query '{}': {}", cleanQuery, e.getMessage());
         }
 
         List<UserSearchResult> results = new ArrayList<>();
@@ -374,15 +459,10 @@ public class OctagonService {
                 continue;
             }
 
-            OctagonProfile profile = getOrCreateProfile(uidStr);
-            String name = u.getFirstName();
-            if (u.getLastName() != null && !u.getLastName().isBlank()) {
-                name += " " + u.getLastName().charAt(0) + ".";
-            }
-
+            OctagonProfile profile = getProfileSnapshot(uidStr);
             results.add(UserSearchResult.builder()
                     .userId(uidStr)
-                    .displayName(name)
+                    .displayName(shortName(u))
                     .avatarUrl(u.getProfileImageUrl() != null ? u.getProfileImageUrl() : "/images/default-avatar.webp")
                     .eloRating(profile.getEloRating())
                     .rank(profile.getRank())
@@ -398,19 +478,61 @@ public class OctagonService {
 
     @Transactional
     public void submitReport(String reporterId, ReportRequest request) {
-        log.warn("[OCTAGON_SECURITY_AUDIT] User {} reported {} in match {}. Reason: {}, Comment: {}",
-                reporterId, request.getReportedUserId(), request.getMatchId(), request.getReason(), request.getComment());
+        if (request == null || request.getReportedUserId() == null || request.getReportedUserId().isBlank()
+                || request.getReportedUserId().length() > 64) {
+            throw new ValidationException("reportedUserId majburiy");
+        }
+        if (request.getReportedUserId().equals(reporterId)) {
+            throw new ValidationException("O'zingiz ustingizdan shikoyat qila olmaysiz");
+        }
+
+        // Shikoyat spami: bir foydalanuvchi soatiga ko'pi bilan 5 ta
+        Instant now = Instant.now();
+        Deque<Instant> times = reportTimes.computeIfAbsent(reporterId, k -> new ArrayDeque<>());
+        synchronized (times) {
+            while (!times.isEmpty() && times.peekFirst().isBefore(now.minusSeconds(3600))) times.pollFirst();
+            if (times.size() >= MAX_REPORTS_PER_HOUR) {
+                throw new RateLimitExceededException("Shikoyatlar soni chegaradan oshdi, keyinroq urinib ko'ring");
+            }
+            times.addLast(now);
+        }
+
+        // matchId haqiqiy jang bo'lsa, ikkala tomon ham shu jang ishtirokchisi bo'lishi shart
+        String matchId = request.getMatchId();
+        if (matchId != null && !matchId.isBlank()) {
+            try {
+                Optional<OctagonMatch> m = matchRepository.findById(UUID.fromString(matchId));
+                if (m.isPresent()) {
+                    Set<String> players = Set.of(m.get().getPlayer1Id(), m.get().getPlayer2Id());
+                    if (!players.contains(reporterId) || !players.contains(request.getReportedUserId())) {
+                        throw new ForbiddenException("Siz bu jang ishtirokchisi emassiz");
+                    }
+                }
+            } catch (IllegalArgumentException notUuid) {
+                // eski klientlar / guruh xonasi — matchId tekshirib bo'lmaydi
+            }
+        }
+
+        String reason = request.getReason() != null && REPORT_REASONS.contains(request.getReason().toUpperCase())
+                ? request.getReason().toUpperCase() : "OTHER";
+        String comment = request.getComment();
+        if (comment != null) {
+            comment = comment.strip();
+            if (comment.length() > 500) comment = comment.substring(0, 500);
+        }
+
+        log.warn("[OCTAGON_SECURITY_AUDIT] User {} reported {} in match {}. Reason: {}",
+                reporterId, request.getReportedUserId(), matchId, reason);
 
         OctagonReport report = OctagonReport.builder()
-                .matchId(request.getMatchId())
+                .matchId(matchId != null && matchId.length() > 64 ? matchId.substring(0, 64) : matchId)
                 .reporterId(reporterId)
                 .reportedUserId(request.getReportedUserId())
-                .reason(request.getReason() != null ? request.getReason() : "OTHER")
-                .comment(request.getComment())
+                .reason(reason)
+                .comment(comment)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         reportRepository.save(report);
     }
 }
-

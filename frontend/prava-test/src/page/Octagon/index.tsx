@@ -13,9 +13,13 @@ import { OctagonDuelModal } from "../../features/Octagon/components/OctagonDuelM
 import { OctagonHistoryModal } from "../../features/Octagon/components/OctagonHistoryModal";
 import { OctagonGroupModal } from "../../features/Octagon/components/OctagonGroupModal";
 import { OctagonChallengeToast } from "../../features/Octagon/components/OctagonChallengeToast";
+import { OctagonGuest } from "../../features/Octagon/guestIdentity";
 import "../../features/Octagon/octagon.css";
+import { useTranslation } from "react-i18next";
+import SEO from "../../components/common/SEO";
 
 const OctagonPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const duelParam = searchParams.get("duel");
@@ -88,6 +92,11 @@ const OctagonPage: React.FC = () => {
 
   return (
     <div style={{ width: "100%", minHeight: "calc(100vh - 70px)", background: "#060b13", position: "relative" }}>
+      <SEO
+        title={`${t("octagon.lobby.title", "Oktagon")} - Prava Online`}
+        description={t("octagon.lobby.tagline", "Haqiqiy raqiblar bilan real vaqt rejimida bilim sinovi!")}
+        canonical="/octagon"
+      />
 
       {/* 1. LOBBY VIEW */}
       {(state === "IDLE" || state === "AUTH_CHECK") && (
@@ -180,7 +189,7 @@ const OctagonPage: React.FC = () => {
       <OctagonGroupModal
         opened={showGroupModal}
         onClose={() => setShowGroupModal(false)}
-        currentUserId={user ? String(user.id) : (localStorage.getItem("octagon_guest_id") || "")}
+        currentUserId={user ? String(user.id) : (OctagonGuest.getPublicId() || "")}
         currentRoom={currentRoom}
         errorMessage={roomErrorMessage}
         onCreateRoom={createRoom}
@@ -193,7 +202,7 @@ const OctagonPage: React.FC = () => {
       <OctagonHistoryModal
         opened={showHistoryModal}
         onClose={() => setShowHistoryModal(false)}
-        userId={user ? String(user.id) : undefined}
+        userId={user ? String(user.id) : OctagonGuest.getToken()}
       />
 
       <OctagonChallengeToast
