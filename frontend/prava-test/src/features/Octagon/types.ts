@@ -26,11 +26,14 @@ export const OCTAGON_CONFIG = {
   RECONNECT_JITTER_MS: 1500,         // To'qnashuvni oldini oluvchi tasodifiy jitter
 
   // ELO Ligalari Shkalasi
+  // Server OctagonRank bilan bir xil (6 liga); "brilliant" = Olmos
   RANK_THRESHOLDS: [
-    { rank: "brilliant", minScore: 300, emoji: "💎", name: "Brilliant", deltaWin: 25, deltaLoss: 10 },
-    { rank: "gold",      minScore: 150, emoji: "🥇", name: "Oltin",     deltaWin: 20, deltaLoss: 12 },
-    { rank: "silver",    minScore: 50,  emoji: "🥈", name: "Kumush",    deltaWin: 18, deltaLoss: 15 },
-    { rank: "bronze",    minScore: 0,   emoji: "🥉", name: "Bronza",    deltaWin: 15, deltaLoss: 15 }
+    { rank: "master",    minScore: 800, emoji: "👑", name: "Master",  deltaWin: 28, deltaLoss: 10 },
+    { rank: "brilliant", minScore: 500, emoji: "💎", name: "Olmos",   deltaWin: 25, deltaLoss: 10 },
+    { rank: "platinum",  minScore: 300, emoji: "💠", name: "Platina", deltaWin: 22, deltaLoss: 12 },
+    { rank: "gold",      minScore: 150, emoji: "🥇", name: "Oltin",   deltaWin: 20, deltaLoss: 12 },
+    { rank: "silver",    minScore: 50,  emoji: "🥈", name: "Kumush",  deltaWin: 18, deltaLoss: 15 },
+    { rank: "bronze",    minScore: 0,   emoji: "🥉", name: "Bronza",  deltaWin: 15, deltaLoss: 15 }
   ],
 
   // Zaxira Bot Dvigateli
@@ -38,7 +41,7 @@ export const OCTAGON_CONFIG = {
   BOT_PROBABILITY_CORRECT: 0.65      // Botning to'g'ri topish ehtimoli (65%)
 } as const;
 
-export type OctagonRankId = "bronze" | "silver" | "gold" | "brilliant";
+export type OctagonRankId = "bronze" | "silver" | "gold" | "platinum" | "brilliant" | "master";
 
 export type OctagonState =
   | "IDLE"
@@ -54,9 +57,13 @@ export type OctagonState =
 export interface MatchOpponent {
   id: string;
   name: string;
+  /** ELO (eski server faqat "score" yuboradi). */
   score: number;
+  elo?: number;
   rank: OctagonRankId;
-  avatar?: string;
+  rankEmoji?: string;
+  /** Profil rasmi; null — rasm yo'q (bosh harfli avatar chiziladi). */
+  avatar?: string | null;
 }
 
 export interface QuestionOptionItem {
@@ -109,6 +116,7 @@ export interface MatchResultData {
 export interface UserStats {
   userId: string;
   displayName: string;
+  avatarUrl?: string | null;
   eloRating: number;
   rank: OctagonRankId;
   rankEmoji: string;
@@ -128,6 +136,7 @@ export interface LeaderboardUser {
   userId: string;
   name?: string;
   displayName: string;
+  avatarUrl?: string | null;
   eloRating: number;
   rank: OctagonRankId;
   rankEmoji: string;
@@ -149,11 +158,13 @@ export interface FlyingEmoji {
 export interface UserSearchResult {
   userId: string;
   displayName: string;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
   eloRating: number;
   rank: OctagonRankId;
   rankEmoji: string;
   rankName: string;
+  wins?: number;
+  totalMatches?: number;
   isOnline: boolean;
   status: "AVAILABLE" | "IN_MATCH" | "IN_QUEUE" | "OFFLINE" | string;
 }
@@ -161,7 +172,7 @@ export interface UserSearchResult {
 export interface GroupRoomMember {
   userId: string;
   displayName: string;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
   eloRating: number;
   rankEmoji: string;
   isHost: boolean;
@@ -201,7 +212,29 @@ export interface IncomingChallenge {
     eloRating: number;
     rank: string;
     rankEmoji: string;
+    avatarUrl?: string | null;
   };
   expiresInSec: number;
+}
+
+/** Biz yuborgan duel chaqiruvi (30 soniyalik kutish oynasi). */
+export interface OutgoingChallenge {
+  targetUserId: string;
+  targetName: string;
+  targetAvatar?: string | null;
+  targetElo?: number;
+  challengeId?: string;
+  expiresInSec: number;
+  /** waiting — javob kutilmoqda; rejected/timeout/error — yakunlandi (xabar ko'rsatiladi). */
+  status: "sending" | "waiting" | "rejected" | "timeout" | "error";
+  message?: string;
+}
+
+export interface GroupStanding {
+  userId: string;
+  displayName: string;
+  avatarUrl?: string | null;
+  score: number;
+  answeredCount: number;
 }
 

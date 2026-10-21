@@ -21,6 +21,8 @@ public class OctagonSession {
 
     private int currentElo = 0;
     private OctagonRank rank = OctagonRank.BRONZE;
+    /** Profil rasmi (Google/Telegram); yo'q bo'lsa null — klient bosh harfli avatar chizadi. */
+    private String avatarUrl;
     private UUID currentMatchId;
     private Instant queuedAt;
     private Instant lastPingTime;

@@ -1,7 +1,7 @@
 /* ==========================================================================
-   Real Exam State Testing Interface (DYXHX / YHXBB AVTECH Replica)
-   Authentic workstation / terminal environment with dark-blue/teal theme,
-   subtle technical roadway guidelines, and high-contrast exam panels.
+   PRAVA-ONLINE — PREMIUM EXAMINATION INTERFACE
+   Authentic high-contrast testing workstation with deep dark-navy base,
+   refined cyan/blue accents, modern typography, and responsive split view.
    Prefix: .real-exam-*
    ========================================================================== */
 
@@ -18,13 +18,13 @@
   -webkit-user-select: none;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: #ffffff;
-  /* Deep dark-blue / dark-teal technical base */
+  /* Deep dark navy / sapphire base */
   background-color: #030e1a;
   background-image:
     /* Vignette darkening the outer edges for maximum center panel focus */
-    radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(1, 6, 12, 0.85) 100%),
-    /* Soft dark teal atmospheric presence in the upper-center */
-    radial-gradient(ellipse at 50% 26%, rgba(8, 48, 68, 0.45) 0%, transparent 65%),
+    radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(1, 6, 12, 0.90) 100%),
+    /* Soft dark cyan/sky atmospheric presence in the upper-center */
+    radial-gradient(ellipse at 50% 20%, rgba(14, 165, 233, 0.08) 0%, transparent 60%),
     /* Deep navy gradient transition */
     linear-gradient(180deg, #051628 0%, #03101e 50%, #020a14 100%);
 }
@@ -36,43 +36,10 @@
   inset: 0;
   pointer-events: none;
   background-image:
-    /* Perspective roadway vanishing lines (angled technical guidelines) */
-    repeating-linear-gradient(
-      -38deg,
-      transparent,
-      transparent 76px,
-      rgba(20, 160, 190, 0.025) 76px,
-      rgba(20, 160, 190, 0.025) 77px
-    ),
-    repeating-linear-gradient(
-      52deg,
-      transparent,
-      transparent 110px,
-      rgba(15, 140, 175, 0.02) 110px,
-      rgba(15, 140, 175, 0.02) 111px
-    ),
-    /* Faint road lane dashed accents */
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 160px,
-      rgba(30, 180, 200, 0.015) 160px,
-      rgba(30, 180, 200, 0.015) 161px
-    );
-  z-index: 1;
-}
-
-/* Subtle corner technical telemetry marks */
-.real-exam-viewport::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(to right, rgba(20, 140, 180, 0.08) 1px, transparent 1px) 0 0 / 48px 48px,
-    linear-gradient(to bottom, rgba(20, 140, 180, 0.08) 1px, transparent 1px) 0 0 / 48px 48px;
-  mask-image: radial-gradient(circle at 50% 50%, transparent 75%, black 100%);
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 75%, black 100%);
+    linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: -1px -1px;
   opacity: 0.35;
   z-index: 1;
 }
@@ -87,9 +54,9 @@
   padding: 6px 20px;
   flex-shrink: 0;
   min-height: 48px;
-  border-bottom: 1px solid rgba(25, 75, 115, 0.25);
-  background: rgba(3, 16, 28, 0.6);
-  backdrop-filter: blur(4px);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.16);
+  background: rgba(4, 18, 32, 0.75);
+  backdrop-filter: blur(10px);
 }
 
 .real-exam-lang-tabs {
@@ -100,53 +67,60 @@
 }
 
 .real-exam-lang-tab {
-  background: #06192c;
-  border: 1px solid #143e62;
-  color: #9cbcdb;
-  padding: 6px 16px;
-  border-radius: 3px;
-  font-size: 13.5px;
+  background: #071c32;
+  border: 1.5px solid #143e65;
+  color: #94a3b8;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   outline: none;
-  transition: all 0.12s ease;
+  transition: all 0.14s ease;
   white-space: nowrap;
 }
 
 .real-exam-lang-tab:hover {
-  background: #0a2542;
+  background: #0d2c4e;
   color: #ffffff;
-  border-color: #205c92;
+  border-color: #38bdf8;
+}
+
+.real-exam-lang-tab:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 .real-exam-lang-tab.is-active {
-  background: #061729;
-  border: 2px solid #ffffff;
+  background: #0369a1;
+  border: 1.5px solid #38bdf8;
   color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
 }
 
 .real-exam-candidate-name {
   flex: 1;
   text-align: center;
-  margin: 0 20px;
+  margin: 0 18px;
   color: #ffffff;
-  font-size: 19px;
+  font-size: 17.5px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.9px;
+  letter-spacing: 0.8px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .real-exam-header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   -webkit-app-region: no-drag;
+  flex-shrink: 0;
 }
 
 .real-exam-header-extra {
@@ -158,11 +132,11 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #06192c;
-  border: 1px solid #174268;
+  background: #071c32;
+  border: 1.5px solid #1b4d79;
   border-radius: 4px;
   padding: 5px 12px;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
   color: #ffffff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
@@ -193,84 +167,96 @@
 }
 
 .real-exam-desk-code {
-  color: #ffffff;
-  font-size: 40px;
+  color: #38bdf8;
+  font-size: 28px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 1.2px;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
   user-select: none;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 
 .real-exam-desk-code.is-label {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.5px;
 }
 
 .real-exam-exit-btn {
-  width: 40px;
-  height: 40px;
-  background: #06192c;
-  border: 1px solid #174268;
+  width: 38px;
+  height: 38px;
+  background: #071c32;
+  border: 1.5px solid #143e65;
   border-radius: 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #ffffff;
-  transition: all 0.12s ease;
+  color: #94a3b8;
+  transition: all 0.14s ease;
   outline: none;
   padding: 0;
 }
 
 .real-exam-exit-btn:hover {
-  background: #0b2848;
-  border-color: #2b70ab;
-  box-shadow: 0 0 8px rgba(43, 112, 171, 0.4);
+  background: #241416;
+  border-color: #ef4444;
+  color: #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);
+}
+
+.real-exam-exit-btn:focus-visible {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
 }
 
 .real-exam-exit-icon {
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
-  color: #ffffff;
+  color: inherit;
 }
 
 .real-exam-exit-label {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
-  color: #8daecf;
+  color: inherit;
   line-height: 1;
   margin-top: 2px;
   text-transform: uppercase;
+  opacity: 0.85;
 }
 
-/* ── Green Question Bar (High-Contrast Grounded Panel) ── */
+/* ── Question Banner (Premium Deep Navy Card with Blue Accent) ── */
 .real-exam-question-bar {
   position: relative;
   z-index: 10;
   margin: 6px 20px 8px 20px;
-  padding: 8px 20px;
-  min-height: 44px;
-  background: linear-gradient(180deg, #1b632c 0%, #134e23 100%);
-  border: 1.5px solid #288c3e;
-  border-radius: 4px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+  padding: 10px 20px;
+  min-height: 48px;
+  background: linear-gradient(180deg, #0a2542 0%, #06192d 100%);
+  border: 1.5px solid #1a4d7a;
+  border-left: 4px solid #38bdf8;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-shrink: 0;
 }
 
 .real-exam-question-text {
   color: #ffffff;
-  font-size: clamp(15.5px, 1.1vw + 4px, 20px);
-  font-weight: 700;
-  text-align: center;
-  line-height: 1.35;
+  font-size: clamp(15.5px, 0.85vw + 7px, 20.5px);
+  font-weight: 600;
+  text-align: left;
+  line-height: 1.45;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  width: 100%;
 }
 
 /* ── Main 2-Column Content ── */
@@ -283,11 +269,12 @@
   margin: 0 20px;
   flex: 1;
   min-height: 0;
+  min-width: 0;
 }
 
-/* Left Column: Options (Authentic ~35-38% proportion matching AVTECH reference) */
+/* Left Column: Options (Adaptive 34-38% desktop proportion) */
 .real-exam-options-col {
-  flex: 0 0 clamp(360px, 34vw, 620px);
+  flex: 0 0 clamp(360px, 34vw, 580px);
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -305,14 +292,14 @@
 .real-exam-option-card {
   display: flex;
   align-items: stretch;
-  border-radius: 4px;
+  border-radius: 6px;
   overflow: hidden;
-  min-height: 48px;
+  min-height: 52px;
   cursor: pointer;
-  border: 1.5px solid #153c63;
-  background: #081d33;
-  color: #ffffff;
-  transition: background 0.12s ease, border-color 0.12s ease;
+  border: 1.5px solid #143e65;
+  background: #071c32;
+  color: #f1f5f9;
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
   outline: none;
   text-align: left;
   padding: 0;
@@ -321,56 +308,77 @@
 }
 
 .real-exam-option-card:hover:not(:disabled) {
-  background: #0c2745;
-  border-color: #21598f;
+  background: #0d2c4e;
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+  transform: translateY(-1px);
+}
+
+.real-exam-option-card:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+.real-exam-option-card:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 .real-exam-option-fbadge {
-  width: 48px;
-  min-width: 48px;
-  background: #0056b3;
-  color: #ffffff;
-  font-weight: 800;
-  font-size: 15px;
+  width: 44px;
+  min-width: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-right: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: #051525;
+  border-right: 1.5px solid #143e65;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color: #38bdf8;
+  transition: all 0.12s ease;
   flex-shrink: 0;
-  transition: background 0.12s ease;
+}
+
+.real-exam-option-card:hover:not(:disabled) .real-exam-option-fbadge {
+  background: #09223d;
+  color: #ffffff;
+  border-right-color: #38bdf8;
 }
 
 .real-exam-option-text {
-  flex: 1;
-  padding: 10px 16px;
-  font-size: 15.5px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  line-height: 1.35;
+  padding: 10px 14px;
+  font-size: clamp(14px, 0.75vw + 6px, 16.5px);
+  line-height: 1.45;
   color: #f1f5f9;
+  flex: 1;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
-/* Selected Wrong Option (e.g. F3 in reference photo) */
-.real-exam-option-card.is-wrong {
-  background: #b71c1c !important;
-  border-color: #d32f2f !important;
-  color: #ffffff !important;
-  box-shadow: 0 0 10px rgba(211, 47, 47, 0.45);
-}
-.real-exam-option-card.is-wrong .real-exam-option-fbadge {
-  background: #8e1414 !important;
-}
-
-/* Correct Option */
+/* Option States: Correct (Green) & Wrong (Red) */
 .real-exam-option-card.is-correct {
-  background: #1b632c !important;
-  border-color: #288c3e !important;
+  border-color: #22c55e !important;
+  background: #0c3319 !important;
   color: #ffffff !important;
-  box-shadow: 0 0 10px rgba(40, 140, 62, 0.45);
 }
+
 .real-exam-option-card.is-correct .real-exam-option-fbadge {
-  background: #144e22 !important;
+  background: #15803d !important;
+  color: #ffffff !important;
+  border-right-color: #22c55e !important;
+}
+
+.real-exam-option-card.is-wrong {
+  border-color: #ef4444 !important;
+  background: #3b1114 !important;
+  color: #ffffff !important;
+}
+
+.real-exam-option-card.is-wrong .real-exam-option-fbadge {
+  background: #b91c1c !important;
+  color: #ffffff !important;
+  border-right-color: #ef4444 !important;
 }
 
 .real-exam-option-card:disabled {
@@ -387,9 +395,9 @@
 }
 
 .real-exam-action-btn {
-  padding: 6px 18px;
+  padding: 8px 18px;
   background: #071c32;
-  border: 1px solid #164067;
+  border: 1.5px solid #164067;
   border-radius: 4px;
   color: #ffffff;
   font-size: 13.5px;
@@ -405,15 +413,20 @@
 
 .real-exam-action-btn:hover {
   background: #0d2c4e;
-  border-color: #24639e;
-  box-shadow: 0 0 8px rgba(36, 99, 158, 0.4);
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.real-exam-action-btn:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 .real-exam-bookmark-btn.is-active {
-  background: #132e4d;
+  background: #1e2616;
   border-color: #f59e0b;
   color: #fbbf24;
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
 }
 
 .real-exam-kbd {
@@ -432,7 +445,7 @@
   margin-left: 2px;
 }
 
-/* Right Column: Image Card (Takes authentic ~58-64% proportion) */
+/* Right Column: Image Card */
 .real-exam-image-col {
   flex: 1;
   display: flex;
@@ -444,10 +457,10 @@
 
 .real-exam-image-card {
   flex: 1;
-  background: #3e4b59;
-  border-radius: 6px;
-  border: 1.5px solid #526070;
-  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.55);
+  background: radial-gradient(ellipse at 50% 50%, #0c2339 0%, #051526 100%);
+  border-radius: 8px;
+  border: 1.5px solid #174268;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.4), 0 4px 20px rgba(0, 0, 0, 0.6);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -466,16 +479,16 @@
   padding: 0 2px 6px 2px;
 }
 
-/* Digital Timer Box in Top-Right (Clean monospace block, dock separated from image) */
+/* Digital Timer Box in Top-Right */
 .real-exam-timer-box {
-  background: #000000;
-  border: 1.5px solid #222222;
-  border-radius: 3px;
+  background: #020a14;
+  border: 1.5px solid #1e4976;
+  border-radius: 4px;
   padding: 3px 14px;
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
-  color: #ffffff;
+  color: #38bdf8;
   letter-spacing: 2px;
   user-select: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
@@ -484,8 +497,8 @@
 }
 
 .real-exam-timer-box.is-urgent {
-  color: #ff5252;
-  border-color: #d32f2f;
+  color: #ef4444;
+  border-color: #dc2626;
   animation: real-exam-pulse 1s infinite alternate;
 }
 
@@ -540,36 +553,79 @@
   box-sizing: border-box !important;
 }
 
-/* Suppress any hint overlay badge on top of the image */
-.real-exam-image-wrap .xd-media__hint {
-  display: none !important;
-}
-
-/* Optimal Image Area: 78-88% optimal container occupancy, balanced breathing room */
-.real-exam-image-wrap img,
-.real-exam-image-wrap .xd-media__img {
+/* Optimal Image Area: balanced breathing room */
+.real-exam-image-wrap img.xd-media__img {
   width: auto !important;
   height: auto !important;
-  max-width: 90% !important;
-  max-height: 90% !important;
+  max-width: 96% !important;
+  max-height: 96% !important;
   object-fit: contain !important;
   object-position: center !important;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: auto;
   border-radius: 6px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
   transition: transform 0.12s ease;
   user-select: none;
   -webkit-user-select: none;
   pointer-events: auto;
 }
 
-/* Wheel placeholder for questions without an image */
-.real-exam-wheel-placeholder {
-  width: clamp(140px, 16vw, 220px);
-  height: clamp(140px, 16vw, 220px);
-  opacity: 0.35;
-  color: #9cbcdb;
+/* Logo Fallback: Centered, aspect-ratio preserved, clean background, no zoom */
+.real-exam-image-wrap .xd-media--fallback {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  user-select: none !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+.real-exam-image-wrap .xd-media__fallback-wrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+.real-exam-image-wrap .xd-media__fallback-logo {
+  width: auto !important;
+  height: auto !important;
+  max-width: min(52%, 240px) !important;
+  max-height: min(52%, 240px) !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  filter: drop-shadow(0 4px 20px rgba(56, 189, 248, 0.18)) !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* Loading spinner */
+.real-exam-image-wrap .xd-media--loading {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.xd-media__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(56, 189, 248, 0.15);
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: real-exam-spin 0.8s linear infinite;
+}
+
+@keyframes real-exam-spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ── Bottom Navigation Strip (1 to N) ── */
@@ -598,12 +654,12 @@
 }
 
 .real-exam-bottom-box {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
   font-size: 14px;
   font-weight: 700;
-  border-radius: 2px;
+  border-radius: 3px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -619,8 +675,13 @@
 
 .real-exam-bottom-box:hover {
   transform: translateY(-1px);
-  border-color: #2b70ab;
+  border-color: #38bdf8;
   color: #ffffff;
+}
+
+.real-exam-bottom-box:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 /* Flagged / Saved Indicator */
@@ -638,22 +699,23 @@
 
 /* Answered Correct (Green) */
 .real-exam-bottom-box.is-correct {
-  background: #1b632c !important;
-  border-color: #288c3e !important;
+  background: #15803d !important;
+  border-color: #22c55e !important;
   color: #ffffff !important;
 }
 
-/* Answered Wrong (Red - e.g. #8 in reference photo) */
+/* Answered Wrong (Red) */
 .real-exam-bottom-box.is-wrong {
-  background: #b71c1c !important;
-  border-color: #d32f2f !important;
+  background: #b91c1c !important;
+  border-color: #ef4444 !important;
   color: #ffffff !important;
 }
 
-/* Current / Active Question (Thick white border - e.g. #20 in reference photo) */
+/* Current / Active Question */
 .real-exam-bottom-box.is-current {
-  border: 2px solid #ffffff !important;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8) !important;
+  border: 2px solid #38bdf8 !important;
+  background: #0e3256 !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.6) !important;
   color: #ffffff !important;
 }
 
@@ -661,51 +723,42 @@
 .real-exam-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(1, 6, 14, 0.85);
-  backdrop-filter: blur(5px);
-  z-index: 1000;
+  z-index: 10000;
+  background: rgba(2, 10, 20, 0.85);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
 }
 
 .real-exam-modal-card {
-  width: 100%;
-  max-width: 540px;
-  background: #06182c;
-  border: 1.5px solid #18446c;
-  border-radius: 6px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9);
-  color: #ffffff;
+  width: min(500px, 94vw);
+  background: #092036;
+  border: 1.5px solid #1a4d7a;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
   padding: 24px;
-  position: relative;
+  color: #ffffff;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  animation: real-exam-scale-in 0.14s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes real-exam-scale-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
 }
 
 .real-exam-modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #ffffff;
   margin: 0;
+  font-size: 19px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .real-exam-modal-desc {
+  margin: 0;
   font-size: 14.5px;
   line-height: 1.55;
   color: #cbd5e1;
-  margin: 0;
 }
 
 .real-exam-modal-actions {
@@ -713,65 +766,90 @@
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
 }
 
 .real-exam-modal-btn {
-  padding: 8px 18px;
-  border-radius: 4px;
-  font-size: 13.5px;
+  padding: 10px 18px;
+  border-radius: 6px;
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: all 0.14s ease;
+  border: none;
   outline: none;
-  border: 1px solid transparent;
+}
+
+.real-exam-modal-btn:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+.real-exam-modal-btn.primary {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.real-exam-modal-btn.primary:hover {
+  background: #0369a1;
 }
 
 .real-exam-modal-btn.secondary {
-  background: #0a2542;
-  border-color: #174268;
-  color: #e2e8f0;
+  background: #0f2d4a;
+  color: #94a3b8;
+  border: 1px solid #1a4d7a;
 }
+
 .real-exam-modal-btn.secondary:hover {
-  background: #0f3358;
-  border-color: #24639e;
+  background: #173d63;
   color: #ffffff;
 }
 
 .real-exam-modal-btn.danger {
-  background: #b71c1c;
-  border-color: #d32f2f;
+  background: #dc2626;
   color: #ffffff;
 }
+
 .real-exam-modal-btn.danger:hover {
-  background: #c62828;
-  box-shadow: 0 0 8px rgba(211, 47, 47, 0.4);
+  background: #b91c1c;
 }
 
-.real-exam-modal-btn.primary {
-  background: #1b632c;
-  border-color: #288c3e;
-  color: #ffffff;
-}
-.real-exam-modal-btn.primary:hover {
-  background: #238636;
-  box-shadow: 0 0 8px rgba(40, 140, 62, 0.4);
+/* =====================================================================
+   RESPONSIVE LAYOUTS & BREAKPOINTS
+   320px, 360px, 375px, 390px, 430px, 768px, 820px, 1024px, 1280px, 1920px, 2560px
+   ===================================================================== */
+
+/* Ultra-wide / 4K Screens (>= 1920px) */
+@media (min-width: 1920px) {
+  .real-exam-viewport {
+    max-width: 2200px;
+    margin-inline: auto;
+  }
+  .real-exam-options-col {
+    flex: 0 0 clamp(480px, 32vw, 640px);
+  }
+  .real-exam-option-card {
+    min-height: 58px;
+  }
+  .real-exam-option-fbadge {
+    width: 48px;
+    min-width: 48px;
+    font-size: 15px;
+  }
+  .real-exam-bottom-box {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    font-size: 15px;
+  }
 }
 
-/* ── Production Responsive & Screen Breakpoint Suite (1366x768, 1440x900, 1600x900, 1920x1080, 2560x1440, 3840x2160, Zoom) ── */
-
-/* Short Viewports / High Browser Zoom (125%, 150% on 1366x768 laptops) */
+/* Compact Height Viewports (< 740px height) */
 @media (max-height: 740px) {
   .real-exam-header {
-    padding: 3px 14px;
+    padding: 4px 14px;
     min-height: 42px;
-  }
-  .real-exam-candidate-name {
-    font-size: 15px;
-    margin: 0 10px;
-  }
-  .real-exam-desk-code {
-    font-size: 28px;
   }
   .real-exam-question-bar {
     margin: 4px 14px 6px 14px;
@@ -783,13 +861,10 @@
   }
   .real-exam-main {
     margin: 0 14px;
-    gap: 12px;
-  }
-  .real-exam-options-col {
-    flex: 0 0 clamp(320px, 35vw, 420px);
+    gap: 10px;
   }
   .real-exam-option-card {
-    min-height: 42px;
+    min-height: 44px;
   }
   .real-exam-option-text {
     font-size: 13.5px;
@@ -798,90 +873,35 @@
   .real-exam-option-fbadge {
     width: 40px;
     min-width: 40px;
-    font-size: 13.5px;
+    font-size: 13px;
   }
   .real-exam-actions-row {
     margin-top: 8px;
     gap: 8px;
   }
   .real-exam-action-btn {
-    padding: 4px 12px;
-    font-size: 12px;
-  }
-  .real-exam-image-card {
-    padding: 6px 10px 10px 10px;
-  }
-  .real-exam-timer-box {
-    font-size: 20px;
-    padding: 2px 10px;
-  }
-  .real-exam-bottom-container {
-    margin: 4px auto 6px auto;
+    padding: 6px 14px;
+    font-size: 12.5px;
   }
   .real-exam-bottom-box {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
-  }
-}
-
-/* Very Short Viewports (< 640px height, extreme zoom) */
-@media (max-height: 640px) {
-  .real-exam-header {
-    padding: 2px 10px;
-    min-height: 36px;
-  }
-  .real-exam-candidate-name {
-    font-size: 13.5px;
-  }
-  .real-exam-desk-code {
-    font-size: 24px;
-  }
-  .real-exam-question-bar {
-    margin: 2px 10px 4px 10px;
-    padding: 4px 10px;
-    min-height: 32px;
-  }
-  .real-exam-question-text {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
     font-size: 13px;
   }
-  .real-exam-main {
-    margin: 0 10px;
-    gap: 8px;
-  }
-  .real-exam-option-card {
-    min-height: 36px;
-  }
-  .real-exam-option-text {
-    font-size: 12.5px;
-    padding: 4px 8px;
-  }
-  .real-exam-option-fbadge {
-    width: 34px;
-    min-width: 34px;
-    font-size: 12px;
-  }
-  .real-exam-bottom-box {
-    width: 24px;
-    height: 24px;
-    font-size: 11px;
-  }
 }
 
-/* Narrow Displays (< 1024px width, e.g. tablets or half-screen windows) */
+/* Narrow Tablets / Split Screen (< 1024px width) */
 @media (max-width: 1024px) {
   .real-exam-options-col {
-    flex: 0 0 320px;
+    flex: 0 0 340px;
   }
   .real-exam-question-text {
     font-size: 15px;
   }
 }
 
-/* =====================================================================
-   MOBILE & TABLET RESPONSIVE RULES (DYXHX / AVTECH EXAM UI)
-   Supports 320px, 360px, 375px, 390px, 414px, 430px, 768px
-   ===================================================================== */
+/* Tablets Portrait & Mobile (< 900px width) */
 @media (max-width: 900px) {
   .real-exam-viewport {
     height: auto !important;
@@ -912,38 +932,28 @@
     font-size: 12px;
   }
 
-  .real-exam-candidate-info {
-    order: 2;
-    gap: 8px;
-  }
-
   .real-exam-candidate-name {
+    order: 2;
     font-size: 13px;
     max-width: 140px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    margin: 0 6px;
+  }
+
+  .real-exam-header-right {
+    order: 3;
+    gap: 8px;
   }
 
   .real-exam-desk-code {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .real-exam-exit-btn {
     width: 34px;
     height: 34px;
-  }
-
-  .real-exam-clock-container {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-    margin-top: 4px;
-  }
-
-  .real-exam-timer-box {
-    font-size: 20px;
-    padding: 3px 12px;
   }
 
   /* Question Banner */
@@ -955,9 +965,7 @@
 
   .real-exam-question-text {
     font-size: 15px;
-    line-height: 1.4;
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    line-height: 1.45;
   }
 
   /* 2-Column layout STACKS VERTICALLY on mobile */
@@ -975,20 +983,30 @@
     width: 100% !important;
     flex: none !important;
     height: auto !important;
-    min-height: 160px !important;
-    max-height: 36vh !important;
+    min-height: 180px !important;
+    max-height: 34vh !important;
   }
 
   .real-exam-image-card {
-    min-height: 160px;
-    max-height: 36vh;
+    min-height: 180px;
+    max-height: 34vh;
     height: auto;
+    padding: 6px 10px 10px 10px;
   }
 
-  .real-exam-image-wrap img,
-  .real-exam-image-wrap .xd-media__img {
+  .real-exam-timer-box {
+    font-size: 19px;
+    padding: 2px 10px;
+  }
+
+  .real-exam-image-wrap img.xd-media__img {
     max-width: 96% !important;
-    max-height: 34vh !important;
+    max-height: 28vh !important;
+  }
+
+  .real-exam-image-wrap .xd-media__fallback-logo {
+    max-width: min(48%, 180px) !important;
+    max-height: min(48%, 180px) !important;
   }
 
   /* Options stack below image at full width */
@@ -1012,14 +1030,12 @@
   .real-exam-option-fbadge {
     width: 42px;
     min-width: 42px;
-    font-size: 14px;
+    font-size: 13.5px;
   }
 
   .real-exam-option-text {
     padding: 8px 12px;
     font-size: 14px;
-    word-break: break-word;
-    overflow-wrap: anywhere;
   }
 
   /* Action buttons row */
@@ -1037,7 +1053,7 @@
 
   /* Navigator bar at bottom */
   .real-exam-bottom-container {
-    margin: 12px auto 16px auto;
+    margin: 12px auto 18px auto;
     padding: 0 10px;
   }
 
@@ -1054,7 +1070,7 @@
   }
 }
 
-/* Extra Compact Phones: 320px to 380px */
+/* Extra Compact Phones (320px to 380px) */
 @media (max-width: 380px) {
   .real-exam-header {
     padding: 6px 8px;
@@ -1094,110 +1110,12 @@
   }
 }
 
-/* 1920x1080 Full HD Screen (Comfortable balance & clarity) */
-@media (min-width: 1920px) and (min-height: 900px) {
-  .real-exam-options-col {
-    flex: 0 0 620px;
-  }
-  .real-exam-question-text {
-    font-size: 20px;
-  }
-  .real-exam-option-text {
-    font-size: 16px;
-  }
-  .real-exam-timer-box {
-    font-size: 26px;
-    padding: 4px 16px;
-  }
-}
-
-/* 2560x1440 QHD 2K Screen */
-@media (min-width: 2560px) {
-  .real-exam-options-col {
-    flex: 0 0 640px;
-  }
-  .real-exam-question-text {
-    font-size: 23px;
-  }
-  .real-exam-option-text {
-    font-size: 17.5px;
-  }
-  .real-exam-option-card {
-    min-height: 56px;
-  }
-  .real-exam-option-fbadge {
-    width: 56px;
-    min-width: 56px;
-    font-size: 17px;
-  }
-  .real-exam-timer-box {
-    font-size: 30px;
-    padding: 6px 20px;
-  }
-  .real-exam-bottom-box {
-    width: 38px;
-    height: 38px;
-    font-size: 14px;
-  }
-}
-
-/* 3840x2160 4K UHD Screen */
-@media (min-width: 3840px) {
-  .real-exam-options-col {
-    flex: 0 0 820px;
-  }
-  .real-exam-header {
-    min-height: 68px;
-    padding: 12px 36px;
-  }
-  .real-exam-lang-tab {
-    font-size: 18px;
-    padding: 10px 24px;
-  }
-  .real-exam-candidate-name {
-    font-size: 26px;
-  }
-  .real-exam-desk-code {
-    font-size: 58px;
-  }
-  .real-exam-question-bar {
-    margin: 14px 36px 18px 36px;
-    padding: 14px 32px;
-    min-height: 64px;
-  }
-  .real-exam-question-text {
-    font-size: 28px;
-  }
-  .real-exam-main {
-    margin: 0 36px;
-    gap: 28px;
-  }
-  .real-exam-option-card {
-    min-height: 68px;
-  }
-  .real-exam-option-text {
-    font-size: 21px;
-    padding: 16px 24px;
-  }
-  .real-exam-option-fbadge {
-    width: 68px;
-    min-width: 68px;
-    font-size: 21px;
-  }
-  .real-exam-action-btn {
-    padding: 10px 28px;
-    font-size: 18px;
-  }
-  .real-exam-timer-box {
-    font-size: 38px;
-    padding: 8px 26px;
-  }
-  .real-exam-bottom-container {
-    margin: 12px auto 16px auto;
-  }
-  .real-exam-bottom-box {
-    width: 48px;
-    height: 48px;
-    font-size: 18px;
+@media (prefers-reduced-motion: reduce) {
+  .real-exam-viewport *,
+  .real-exam-viewport *::before,
+  .real-exam-viewport *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

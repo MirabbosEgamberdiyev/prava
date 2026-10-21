@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Tabs, Table, Text, Group, ThemeIcon, Avatar, Badge, Loader, Center } from "@mantine/core";
+import { Modal, Tabs, Table, Text, Group, ThemeIcon, Loader, Center } from "@mantine/core";
 import { IconTrophy } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { OctagonApi } from "../OctagonApi";
 import type { LeaderboardEntry } from "../types";
+import { OctagonAvatar } from "./OctagonAvatar";
+import { OctagonRankBadge } from "./OctagonRankBadge";
+import { safeName } from "../rank";
 
 interface Props {
   opened: boolean;
@@ -36,14 +39,6 @@ export const OctagonLeaderboardModal: React.FC<Props> = ({ opened, onClose }) =>
       isMounted = false;
     };
   }, [opened, period]);
-
-  const getRankBadge = (rank: string) => {
-    const r = rank?.toLowerCase();
-    if (r === "brilliant") return <Badge color="violet" variant="light">{`💎 ${t("octagon.rank.brilliant", "Brilliant")}`}</Badge>;
-    if (r === "gold") return <Badge color="yellow" variant="light">{`🥇 ${t("octagon.rank.gold", "Oltin")}`}</Badge>;
-    if (r === "silver") return <Badge color="gray" variant="light">{`🥈 ${t("octagon.rank.silver", "Kumush")}`}</Badge>;
-    return <Badge color="orange" variant="light">{`🥉 ${t("octagon.rank.bronze", "Bronza")}`}</Badge>;
-  };
 
   const getMedalIcon = (position: number) => {
     if (position === 1) return <span className="text-xl">🥇</span>;
@@ -101,7 +96,7 @@ export const OctagonLeaderboardModal: React.FC<Props> = ({ opened, onClose }) =>
               </Table.Thead>
               <Table.Tbody>
                 {entries.map((item, idx) => {
-                  const playerName = item.displayName || item.name || "O'yinchi";
+                  const playerName = safeName(item.displayName || item.name, t("octagon.lobby.defaultUser"));
                   const playerPos = item.position || item.rankPosition || idx + 1;
                   return (
                     <Table.Tr key={item.userId || idx}>
@@ -110,9 +105,7 @@ export const OctagonLeaderboardModal: React.FC<Props> = ({ opened, onClose }) =>
                       </Table.Td>
                       <Table.Td>
                         <Group gap="sm" wrap="nowrap">
-                          <Avatar size="sm" radius="xl" color="blue">
-                            {playerName.charAt(0).toUpperCase()}
-                          </Avatar>
+                          <OctagonAvatar name={playerName} src={item.avatarUrl} size={34} />
                           <div>
                             <Text size="sm" fw={700}>
                               {playerName}
@@ -126,7 +119,9 @@ export const OctagonLeaderboardModal: React.FC<Props> = ({ opened, onClose }) =>
                           </div>
                         </Group>
                       </Table.Td>
-                      <Table.Td>{getRankBadge(item.rank)}</Table.Td>
+                      <Table.Td>
+                        <OctagonRankBadge rank={item.rank} elo={item.eloRating} variant="light" />
+                      </Table.Td>
                       <Table.Td style={{ textAlign: "right" }}>
                         <Text fw={800} size="sm" c="yellow">
                           {item.eloRating}

@@ -1,12 +1,10 @@
 import api from "../../api/api";
-import type { UserStats, LeaderboardUser, OctagonQuestion } from "./types";
+import type { UserStats, LeaderboardUser, OctagonQuestion, MatchHistoryEntry } from "./types";
 
 export interface TicketResponseData {
   ticket: string;
   expiresInSeconds: number;
-  /** Mehmon uchun server bergan imzolangan token (saqlab qo'yiladi). */
-  guestId?: string | null;
-  /** Ochiq o'yinchi ID'si (winnerId bilan solishtirish uchun). */
+  /** O'yinchi ID'si (winnerId bilan solishtirish uchun). */
   userId?: string;
 }
 
@@ -20,17 +18,13 @@ export interface ChallengeResponseData {
 }
 
 export const OctagonApi = {
-  async getTicket(guestToken?: string, displayName?: string): Promise<TicketResponseData> {
-    const params = new URLSearchParams();
-    if (guestToken) params.append("guestId", guestToken);
-    if (displayName) params.append("displayName", displayName);
-
-    const res = await api.post(`/api/v1/octagon/ticket?${params.toString()}`);
+  /** Faqat tizimga kirgan foydalanuvchi (mehmonga server 401 qaytaradi). */
+  async getTicket(): Promise<TicketResponseData> {
+    const res = await api.post("/api/v1/octagon/ticket");
     const data = res.data?.data || {};
     return {
       ticket: data.ticket || "",
       expiresInSeconds: data.expiresInSeconds || 0,
-      guestId: data.guestId,
       userId: data.userId,
     };
   },
@@ -46,17 +40,15 @@ export const OctagonApi = {
     return res.data?.data || [];
   },
 
-  async getHistory(page = 0, size = 10, userId?: string) {
+  async getHistory(page = 0, size = 10) {
     const params = new URLSearchParams({ page: String(page), size: String(size) });
-    if (userId) params.append("userId", userId);
     const res = await api.get(`/api/v1/octagon/history?${params.toString()}`);
     return res.data?.data || { content: [] };
   },
 
-  async createChallenge(targetUserId?: string, guestId?: string): Promise<ChallengeResponseData | null> {
+  async createChallenge(targetUserId?: string): Promise<ChallengeResponseData | null> {
     const params = new URLSearchParams();
     if (targetUserId) params.append("targetUserId", targetUserId);
-    if (guestId) params.append("guestId", guestId);
     const res = await api.post(`/api/v1/octagon/challenge/create?${params.toString()}`);
     return res.data?.data || null;
   },
@@ -84,7 +76,7 @@ export const OctagonApi = {
   /**
    * Retrieves match history for user
    */
-  async getMatchHistory(page = 0, size = 10): Promise<{ content: any[]; totalPages: number }> {
+  async getMatchHistory(page = 0, size = 10): Promise<{ content: MatchHistoryEntry[]; totalPages: number }> {
     const res = await api.get(`/api/v1/octagon/history?page=${page}&size=${size}`);
     const data = res.data?.data || {};
     return {
@@ -96,12 +88,8 @@ export const OctagonApi = {
   /**
    * Submit abuse report or complaint against an opponent
    */
-  async reportMatch(
-    request: { matchId?: string; reportedUserId: string; reason: string; comment?: string },
-    guestToken?: string
-  ): Promise<void> {
-    const q = guestToken ? `?reporterId=${encodeURIComponent(guestToken)}` : "";
-    await api.post(`/api/v1/octagon/report${q}`, request);
+  async reportMatch(request: { matchId?: string; reportedUserId: string; reason: string; comment?: string }): Promise<void> {
+    await api.post("/api/v1/octagon/report", request);
   },
 };
 

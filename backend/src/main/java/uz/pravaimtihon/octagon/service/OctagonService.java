@@ -96,6 +96,8 @@ public class OctagonService {
     public StatsResponse getStats(String userId) {
         OctagonProfile profile = getProfileSnapshot(userId);
         String displayName = resolveDisplayName(userId);
+        // Liga har doim ELO'dan hisoblanadi (ligalar shkalasi o'zgarganda eski qatorlar ham to'g'ri ko'rinadi)
+        OctagonRank rank = OctagonRank.fromElo(profile.getEloRating());
 
         double winRate = profile.getTotalMatches() > 0
                 ? ((double) profile.getWins() / profile.getTotalMatches()) * 100.0
@@ -104,10 +106,11 @@ public class OctagonService {
         return StatsResponse.builder()
                 .userId(userId)
                 .displayName(displayName)
+                .avatarUrl(resolveAvatarUrl(userId))
                 .eloRating(profile.getEloRating())
-                .rank(profile.getRank())
-                .rankEmoji(profile.getRank().getEmoji())
-                .rankName(profile.getRank().getDisplayName())
+                .rank(rank)
+                .rankEmoji(rank.getEmoji())
+                .rankName(rank.getDisplayName())
                 .wins(profile.getWins())
                 .losses(profile.getLosses())
                 .draws(profile.getDraws())
@@ -131,8 +134,10 @@ public class OctagonService {
             profiles = profileRepository.findTopLeaderboard(pr);
         }
 
-        // N+1 o'rniga bitta so'rov bilan ismlar
-        Map<String, String> names = resolveDisplayNames(profiles.stream().map(OctagonProfile::getUserId).toList());
+        // N+1 o'rniga bitta so'rov bilan ismlar va rasmlar
+        List<String> ids = profiles.stream().map(OctagonProfile::getUserId).toList();
+        Map<String, String> names = resolveDisplayNames(ids);
+        Map<String, String> avatars = resolveAvatarUrls(ids);
 
         List<LeaderboardEntry> result = new ArrayList<>();
         int position = 1;
@@ -140,14 +145,16 @@ public class OctagonService {
             double winRate = p.getTotalMatches() > 0
                     ? ((double) p.getWins() / p.getTotalMatches()) * 100.0
                     : 0.0;
+            OctagonRank rank = OctagonRank.fromElo(p.getEloRating());
 
             result.add(LeaderboardEntry.builder()
                     .position(position++)
                     .userId(p.getUserId())
                     .displayName(names.getOrDefault(p.getUserId(), "Foydalanuvchi"))
+                    .avatarUrl(avatars.get(p.getUserId()))
                     .eloRating(p.getEloRating())
-                    .rank(p.getRank())
-                    .rankEmoji(p.getRank().getEmoji())
+                    .rank(rank)
+                    .rankEmoji(rank.getEmoji())
                     .wins(p.getWins())
                     .totalMatches(p.getTotalMatches())
                     .winRate(Math.round(winRate * 10.0) / 10.0)
@@ -229,6 +236,15 @@ public class OctagonService {
         if (inviteCode == null || inviteCode.isBlank() || inviteCode.length() > 32) return Optional.empty();
         return challengeRepository.findByInviteCode(inviteCode.trim().toUpperCase())
                 .filter(c -> c.getStatus() == OctagonChallengeStatus.PENDING && LocalDateTime.now().isBefore(c.getExpiresAt()));
+    }
+
+    /** Havola/kod orqali duel boshlandi — taklif qayta ishlatilmasin. */
+    @Transactional
+    public void markInviteAccepted(UUID challengeId) {
+        challengeRepository.findById(challengeId).ifPresent(c -> {
+            c.setStatus(OctagonChallengeStatus.ACCEPTED);
+            challengeRepository.save(c);
+        });
     }
 
     @Transactional
@@ -337,7 +353,7 @@ public class OctagonService {
             return "Mehmon";
         }
         if (isBotId(userId)) {
-            return "OctagonBot ⚡";
+            return OctagonBotPersonas.nameFor(userId);
         }
         if (OctagonGuestIdentity.isGuestId(userId)) {
             String shortCode = userId.length() > 10 ? userId.substring(6, 10).toUpperCase() : userId;
@@ -352,6 +368,26 @@ public class OctagonService {
         } catch (NumberFormatException ignored) {}
 
         return "Foydalanuvchi";
+    }
+
+    /** O'yinchi rasmi (Google/Telegram profili); yo'q yoki xavfsiz bo'lmasa — null (klient bosh harfli avatar chizadi). */
+    public String resolveAvatarUrl(String userId) {
+        if (userId == null || isBotId(userId) || OctagonGuestIdentity.isGuestId(userId)) return null;
+        try {
+            return userRepository.findById(Long.parseLong(userId)).map(u -> safeAvatarUrl(u.getProfileImageUrl())).orElse(null);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    static String safeAvatarUrl(String raw) {
+        if (raw == null) return null;
+        String url = raw.strip();
+        if (url.isEmpty() || url.length() > 1024 || url.chars().anyMatch(ch -> ch < 0x20 || ch == '"' || ch == '<' || ch == '>')) {
+            return null;
+        }
+        if (url.startsWith("https://") || url.startsWith("/api/v1/files/")) return url;
+        return null;
     }
 
     /** Ko'p foydalanuvchi ismini bitta so'rov bilan aniqlaydi. */
@@ -374,12 +410,68 @@ public class OctagonService {
         return result;
     }
 
-    private static String shortName(User u) {
-        String name = u.getFirstName() != null ? u.getFirstName() : "Foydalanuvchi";
-        if (u.getLastName() != null && !u.getLastName().isBlank()) {
-            name += " " + u.getLastName().charAt(0) + ".";
+    /** Ko'p foydalanuvchi rasmini bitta so'rov bilan aniqlaydi (rasmsizlar xaritada bo'lmaydi). */
+    public Map<String, String> resolveAvatarUrls(Collection<String> userIds) {
+        List<Long> numeric = new ArrayList<>();
+        for (String id : userIds) {
+            if (id == null) continue;
+            try {
+                numeric.add(Long.parseLong(id));
+            } catch (NumberFormatException ignored) {
+                // bot/mehmon — rasm yo'q
+            }
         }
-        return name;
+        Map<String, String> result = new HashMap<>();
+        if (!numeric.isEmpty()) {
+            for (User u : userRepository.findAllById(numeric)) {
+                String avatar = safeAvatarUrl(u.getProfileImageUrl());
+                if (avatar != null) result.put(String.valueOf(u.getId()), avatar);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Ekranda ko'rinadigan ism: "Ism F." → niqoblangan telefon ("+998 90 *** ** 12") → "Haydovchi #ID".
+     * Hech qachon null, bo'sh yoki "null"/"undefined" qaytarmaydi.
+     */
+    static String shortName(User u) {
+        String first = cleanNamePart(u.getFirstName());
+        String last = cleanNamePart(u.getLastName());
+        if (first != null) {
+            return last != null ? first + " " + last.charAt(0) + "." : first;
+        }
+        if (last != null) {
+            return last;
+        }
+        String masked = maskPhone(u.getPhoneNumber());
+        if (masked != null) {
+            return masked;
+        }
+        return "Haydovchi #" + (u.getId() != null ? u.getId() : "");
+    }
+
+    private static String cleanNamePart(String raw) {
+        if (raw == null) return null;
+        String s = raw.replaceAll("[\\p{Cntrl}<>\"`]", "").strip();
+        if (s.isEmpty() || s.equalsIgnoreCase("null") || s.equalsIgnoreCase("undefined")) return null;
+        return s.length() > 32 ? s.substring(0, 32).strip() : s;
+    }
+
+    /** "+998901234512" → "+998 90 *** ** 12"; boshqa formatlar uchun oxirgi 2 raqam qoladi. */
+    static String maskPhone(String phone) {
+        if (phone == null) return null;
+        String digits = phone.replaceAll("\\D", "");
+        if (digits.length() == 12 && digits.startsWith("998")) {
+            return "+998 " + digits.substring(3, 5) + " *** ** " + digits.substring(10);
+        }
+        if (digits.length() == 9) {
+            return "+998 " + digits.substring(0, 2) + " *** ** " + digits.substring(7);
+        }
+        if (digits.length() >= 6) {
+            return "+" + digits.substring(0, Math.min(3, digits.length() - 4)) + " *** ** " + digits.substring(digits.length() - 2);
+        }
+        return null;
     }
 
     private String generateInviteCode() {
@@ -463,11 +555,13 @@ public class OctagonService {
             results.add(UserSearchResult.builder()
                     .userId(uidStr)
                     .displayName(shortName(u))
-                    .avatarUrl(u.getProfileImageUrl() != null ? u.getProfileImageUrl() : "/images/default-avatar.webp")
+                    .avatarUrl(safeAvatarUrl(u.getProfileImageUrl()))
                     .eloRating(profile.getEloRating())
-                    .rank(profile.getRank())
-                    .rankEmoji(profile.getRank() != null ? profile.getRank().getEmoji() : "🥉")
-                    .rankName(profile.getRank() != null ? profile.getRank().getDisplayName() : "Bronza")
+                    .rank(OctagonRank.fromElo(profile.getEloRating()))
+                    .rankEmoji(OctagonRank.fromElo(profile.getEloRating()).getEmoji())
+                    .rankName(OctagonRank.fromElo(profile.getEloRating()).getDisplayName())
+                    .wins(profile.getWins())
+                    .totalMatches(profile.getTotalMatches())
                     .isOnline(false)
                     .status("OFFLINE")
                     .build());

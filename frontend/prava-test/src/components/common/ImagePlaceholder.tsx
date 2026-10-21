@@ -113,8 +113,8 @@ export function ImagePlaceholder({
           }}
         >
           <Image
-            src="/logo.svg"
-            fallbackSrc="/question-default.svg"
+            src="/logo.png"
+            fallbackSrc="/logo.svg"
             alt=""
             maw={180}
             mah={180}

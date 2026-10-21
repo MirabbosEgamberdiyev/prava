@@ -81,6 +81,10 @@ export const RealExamView = memo(function RealExamView(props: ExamDesktopViewPro
 
   const total = questions.length;
   const q = questions[current];
+  // Rasm yo'li klaviatura ishlovchisidan (Z — kattalashtirish) OLDIN aniqlanadi: avval u `if (!q) return null`
+  // dan keyin e'lon qilinardi va savol bo'lmaganda Z bosilsa ReferenceError (TDZ) berardi.
+  const rawImagePath = typeof q?.image_path === "string" ? q.image_path.trim() : null;
+  const isRealImageAvailable = Boolean(rawImagePath && rawImagePath.length > 0 && !rawImagePath.includes("logo.") && !rawImagePath.includes("question-default."));
   const answered = q ? answers[current] : undefined;
   const isBookmarked = q && bookmarkedIds ? bookmarkedIds.has(q.id) : false;
   const { wrong } = useMemo(() => countResults(answers), [answers]);
@@ -104,8 +108,8 @@ export const RealExamView = memo(function RealExamView(props: ExamDesktopViewPro
     if (user?.email) {
       return user.email.split("@")[0].toUpperCase();
     }
-    return "ERGASHEV UMAR FAXRIDDIN O‘G‘LI";
-  }, [user]);
+    return t("examDesktop.candidateFallback", "NOMZOD").toUpperCase();
+  }, [user, t]);
 
   // Session-stable realistic desk code (e.g. "A-13", "B-7", "C-21", "D-14")
   const [sessionDeskCode] = useState(() => generateRandomDeskCode());
@@ -336,8 +340,11 @@ export const RealExamView = memo(function RealExamView(props: ExamDesktopViewPro
     },
     onZoom: () => {
       if (exitModalOpen || izohModalOpen) return;
-      if (zoomSrc) setZoomSrc(null);
-      else if (q?.image_path) setZoomSrc(q.image_path);
+      if (zoomSrc) {
+        setZoomSrc(null);
+      } else if (isRealImageAvailable && rawImagePath) {
+        setZoomSrc(rawImagePath);
+      }
     },
   });
 
@@ -354,8 +361,6 @@ export const RealExamView = memo(function RealExamView(props: ExamDesktopViewPro
 
   if (!q) return null;
 
-  const DEFAULT_QUESTION_IMAGE = "/question-default.svg";
-  const imagePath = q.image_path || DEFAULT_QUESTION_IMAGE;
   const isUrgentTimer = deadline ? secondsLeft <= 60 : false;
 
   return (
@@ -501,10 +506,10 @@ export const RealExamView = memo(function RealExamView(props: ExamDesktopViewPro
             {/* Question Illustration (Maximized, 90-95% container, zero overlay, object-fit contain) */}
             <div className="real-exam-image-wrap">
               <QuestionImage
-                key={imagePath + "_" + q.id}
-                path={imagePath}
+                key={String(q.id) + "_" + (rawImagePath || "no-img")}
+                path={rawImagePath}
                 alt={questionText}
-                onZoom={setZoomSrc}
+                onZoom={isRealImageAvailable ? setZoomSrc : undefined}
                 zoomHint={t("examDesktop.zoomOpen", "Kattalashtirish (Z)")}
                 brokenLabel={t("examDesktop.imageUnavailable", "Rasm mavjud emas")}
               />

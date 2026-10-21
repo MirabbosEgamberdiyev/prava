@@ -18,10 +18,9 @@ import type { MatchHistoryEntry } from "../types";
 interface Props {
   opened: boolean;
   onClose: () => void;
-  userId?: string;
 }
 
-export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose, userId }) => {
+export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [historyList, setHistoryList] = useState<MatchHistoryEntry[]>([]);
@@ -33,7 +32,7 @@ export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose, userId }
     let isMounted = true;
     setLoading(true);
 
-    OctagonApi.getHistory(page, 10, userId)
+    OctagonApi.getHistory(page, 10)
       .then((res) => {
         if (!isMounted) return;
         const items = res?.content || (Array.isArray(res) ? res : []);
@@ -48,7 +47,7 @@ export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose, userId }
     return () => {
       isMounted = false;
     };
-  }, [opened, page, userId]);
+  }, [opened, page]);
 
   return (
     <Modal

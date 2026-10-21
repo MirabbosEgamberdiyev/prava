@@ -33,8 +33,12 @@ export interface OctagonSocketCallbacks {
 
   // Challenge callbacks
   onChallengeReceived?: (data: IncomingChallenge) => void;
-  onChallengeSent?: (data: { challengeId: string; targetUserId: string }) => void;
+  onChallengeSent?: (data: { challengeId: string; targetUserId: string; targetName?: string; expiresInSec?: number }) => void;
   onChallengeRejected?: (data: { challengeId: string; byUserId?: string }) => void;
+  /** Chaqiruvchi bekor qildi yoki 30 s o'tdi — kiruvchi taklif oynasi yopiladi. */
+  onChallengeCancelled?: (data: { challengeId: string; reason?: string }) => void;
+  /** Server mehmon ulanishini rad etdi (4003) — kirish talab qilinadi. */
+  onLoginRequired?: () => void;
   onChallengeError?: (data: { code: string; message: string }) => void;
 
   // Group Room callbacks
@@ -160,6 +164,9 @@ export class OctagonSocket {
             case "challenge_rejected":
               this.callbacks.onChallengeRejected?.(data);
               break;
+            case "challenge_cancelled":
+              this.callbacks.onChallengeCancelled?.(data);
+              break;
             case "challenge_error":
               this.callbacks.onChallengeError?.(data);
               break;
@@ -209,6 +216,13 @@ export class OctagonSocket {
         this.stopHeartbeat();
         this.callbacks.onClose?.(ev.code, ev.reason);
 
+        // 4003 = mehmon (kirish talab qilinadi) — qayta urinishning ma'nosi yo'q
+        if (ev.code === 4003) {
+          this.isIntentionallyClosed = true;
+          this.pending = [];
+          this.callbacks.onLoginRequired?.();
+          return;
+        }
         // 4001 = ticket rad etildi; yangi ticket bilan urinish mantiqiy, eski bilan esa — yo'q
         this.scheduleReconnect();
       };
@@ -283,6 +297,37 @@ export class OctagonSocket {
 
   public rejectChallenge(challengeId: string) {
     this.send("reject_challenge", { challengeId });
+  }
+
+  public cancelChallenge(challengeId: string) {
+    this.send("cancel_challenge", { challengeId });
+  }
+
+  /** Havola/QR/kod orqali do'st jangiga qo'shilish. */
+  public joinInvite(inviteCode: string) {
+    this.send("join_invite", { inviteCode: inviteCode.trim().toUpperCase() });
+  }
+
+  public isOpen(): boolean {
+    return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
+  }
+
+  /**
+   * Internet qaytdi / sahifa yana ko'rindi: backoff kutmasdan darhol yangi ticket bilan ulanadi
+   * (server 45 s grace ichida jangni tiklaydi).
+   */
+  public reconnectNow() {
+    if (this.isIntentionallyClosed || this.isOpen()) return;
+    if (this.ws && this.ws.readyState === WebSocket.CONNECTING) return;
+    this.reconnectAttempts = 0;
+    void (async () => {
+      try {
+        const fresh = this.ticketProvider ? await this.ticketProvider() : this.ticket;
+        if (fresh && !this.isIntentionallyClosed && !this.isOpen()) this.connect(fresh);
+      } catch (e) {
+        this.callbacks.onError?.(e as Error);
+      }
+    })();
   }
 
   // Group Room methods

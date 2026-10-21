@@ -10,7 +10,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "octagon_challenges", indexes = {
         @Index(name = "idx_octagon_challenges_code", columnList = "invite_code", unique = true),
-        @Index(name = "idx_octagon_challenges_status", columnList = "status")
+        @Index(name = "idx_octagon_challenges_status", columnList = "status"),
+        @Index(name = "idx_octagon_challenges_challenger", columnList = "challenger_id")
 })
 @Getter
 @Setter

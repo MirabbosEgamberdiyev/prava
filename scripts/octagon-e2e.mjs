@@ -128,9 +128,10 @@ async function main() {
   check("SEC-1", "Anonymous user search rejected (no PII enumeration)", r.status === 401, r.status);
   r = await http("POST", "/api/v1/octagon/questions", { body: [1, 2, 3] });
   check("SEC-2", "Questions REST refuses ids outside a live game", r.status === 403, r.status);
-  r = await http("POST", `/api/v1/octagon/ticket?guestId=${u1.id}`);
-  const spoofedId = r.json?.data?.userId;
-  check("SEC-3", "Guest ticket with another user's id is not honoured", r.status === 200 && spoofedId !== u1.id && /^guest_[0-9a-f]{16}$/.test(spoofedId || ""), spoofedId);
+  r = await http("POST", `/api/v1/octagon/ticket?guestId=${u1.id}&displayName=Hacker`);
+  check("SEC-3", "Mandatory login: anonymous ticket refused (no guest mode, guestId ignored)", r.status === 401, `${r.status} ${JSON.stringify(r.json).slice(0, 80)}`);
+  r = await http("POST", "/api/v1/octagon/challenge/create");
+  check("SEC-3b", "Anonymous duel invite refused", r.status === 401, r.status);
   r = await http("GET", `/api/v1/octagon/history?userId=${u1.id}`);
   check("SEC-4", "Anonymous ?userId= history IDOR closed", r.status === 200 && (r.json.data.content || []).length === 0, JSON.stringify(r.json.data).slice(0, 80));
   r = await http("POST", "/api/v1/octagon/report", { body: { reportedUserId: u2.id, reason: "AFK" } });
@@ -152,10 +153,17 @@ async function main() {
   let p2 = await connect(await ticketFor(u2.token), "P2");
   p1.send("join_queue", { userProgress: 0, currentElo: 9999 });
   p2.send("join_queue", { userProgress: 0, currentElo: 9999 });
-  const f1 = await p1.next("match_found", 10000);
-  const f2 = await p2.next("match_found", 10000);
+  // ELO farqi katta bo'lsa matchmaker 15 s dan keyin har qanday raqib bilan juftlaydi
+  const f1 = await p1.next("match_found", 20000);
+  const f2 = await p2.next("match_found", 20000);
   check("M-1", "Both players got the same matchId", f1.matchId === f2.matchId, f1.matchId);
   check("M-2", "Opponents cross-identified", f1.opponent.id === u2.id && f2.opponent.id === u1.id, `${f1.opponent.id}/${f2.opponent.id}`);
+  const LEAGUES = ["bronze", "silver", "gold", "platinum", "brilliant", "master"];
+  const cardOk = (o) =>
+    typeof o.name === "string" && o.name.trim() !== "" && !/^(null|undefined)$/i.test(o.name.trim()) &&
+    LEAGUES.includes(o.rank) && typeof o.elo === "number" && o.elo === o.score && "avatar" in o &&
+    (o.avatar === null || /^(https:\/\/|\/api\/v1\/files\/)/.test(o.avatar));
+  check("M-2b", "Opponent card: real name (never null/undefined), ELO, 6-league rank, avatar or null", cardOk(f1.opponent) && cardOk(f2.opponent), JSON.stringify(f1.opponent));
   check("M-3", "Client-sent ELO 9999 ignored (opponent card shows server ELO)", f1.opponent.score !== 9999 && f2.opponent.score !== 9999, f1.opponent.score);
   const qs = f1.questions || [];
   const leaks = qs.filter((q) => "correctAnswerIndex" in q || "correctOption" in q || (q.explanationUzl ?? null) !== null);
@@ -220,6 +228,15 @@ async function main() {
   p2 = await connect(await ticketFor(u2.token), "P2b");
   const search = (await http("GET", "/api/v1/octagon/users/search?q=Ikkinchi", { token: u1.token })).json.data;
   check("C-1", "Search shows the online friend with isOnline=true", search.some((u) => u.userId === u2.id && u.isOnline === true && u.status === "AVAILABLE"), JSON.stringify(search).slice(0, 160));
+  // Cancel: the challenger withdraws during the 30 s window — the target's prompt closes
+  p1.send("send_challenge", { targetUserId: u2.id });
+  const sent0 = await p1.next("challenge_sent", 4000);
+  const inc0 = await p2.next("challenge_received", 4000);
+  check("C-1b", "Challenge carries a 30 s window and the challenger card", sent0.expiresInSec === 30 && inc0.expiresInSec === 30 && inc0.challenger.displayName && "avatarUrl" in inc0.challenger, JSON.stringify(inc0.challenger).slice(0, 120));
+  p1.send("cancel_challenge", { challengeId: sent0.challengeId });
+  const cancelled = await p2.next("challenge_cancelled", 4000);
+  check("C-1c", "Cancelled challenge closes the target's prompt", cancelled.challengeId === sent0.challengeId && cancelled.reason === "CANCELLED", JSON.stringify(cancelled));
+
   p1.send("send_challenge", { targetUserId: u2.id });
   const inc = await p2.next("challenge_received", 4000);
   check("C-2", "Challenge delivered to target", inc.challenger.userId === u1.id, JSON.stringify(inc.challenger).slice(0, 100));
@@ -231,6 +248,27 @@ async function main() {
   await playBoth(p1, p2, d1.matchId, d1.questions, { aCorrect: 4, bCorrect: 4 });
   const de = await p1.next("match_ended", 8000);
   check("C-4", "Equal score duel ends in a draw", de.isDraw === true && de.finalScores.me === de.finalScores.opponent, JSON.stringify(de.finalScores));
+
+  // ── Invite link / QR / code (?duel=CODE) ────────────────────────────
+  const inv = (await http("POST", "/api/v1/octagon/challenge/create", { token: u1.token })).json.data;
+  check("I-1", "Invite code created for a logged-in user", /^[A-Z2-9]{10}$/.test(inv.inviteCode || ""), inv.inviteCode);
+  p1.send("join_invite", { inviteCode: inv.inviteCode });
+  const own = await p1.next("challenge_error", 3000);
+  check("I-2", "Own invite cannot be joined", own.code === "OWN_INVITE", own.code);
+  p2.send("join_invite", { inviteCode: "NOSUCHCODE" });
+  const nf = await p2.next("challenge_error", 3000);
+  check("I-3", "Unknown invite code → INVITE_NOT_FOUND", nf.code === "INVITE_NOT_FOUND", nf.code);
+  p2.send("join_invite", { inviteCode: inv.inviteCode.toLowerCase() });
+  const j1 = await p1.next("match_found", 5000);
+  const j2 = await p2.next("match_found", 3000);
+  check("I-4", "Invite code starts a friend duel with the inviter (not a random search)", j1.matchId === j2.matchId && j1.opponent.id === u2.id && j2.opponent.id === u1.id, `${j1.opponent.id}/${j2.opponent.id}`);
+  await p1.next("match_started", 13000);
+  await playBoth(p1, p2, j1.matchId, j1.questions, { aCorrect: 6, bCorrect: 2 });
+  await p1.next("match_ended", 8000);
+  await p2.next("match_ended", 8000);
+  p2.send("join_invite", { inviteCode: inv.inviteCode });
+  const used = await p2.next("challenge_error", 3000);
+  check("I-5", "An invite is single-use", used.code === "INVITE_NOT_FOUND", used.code);
 
   // ── Group room ──────────────────────────────────────────────────────
   p1.send("create_room", { maxPlayers: 4, isPrivate: true });
@@ -263,6 +301,7 @@ async function main() {
   p1.send("join_queue", {});
   const bf = await p1.next("match_found", 26000);
   check("B-1", "Bot opponent after ~20 s without humans", String(bf.opponent.id).startsWith("bot_"), bf.opponent.id);
+  check("B-1b", "Bot looks like a real player (human name, nearby ELO, league)", /^\S+ \S\.$/.test(bf.opponent.name) && !/bot|_/i.test(bf.opponent.name) && LEAGUES.includes(bf.opponent.rank), `${bf.opponent.name} ${bf.opponent.elo} ${bf.opponent.rank}`);
   await p1.next("match_started", 13000);
   bf.questions.forEach((q) => p1.send("submit_answer", { matchId: bf.matchId, questionId: q.id, selectedIndex: rightIndex(q) }));
   const be = await p1.next("match_ended", 60000);

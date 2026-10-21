@@ -117,6 +117,10 @@ function StandardExamDesktopViewImpl(props: ExamDesktopViewProps) {
   const { t, i18n } = useTranslation();
   const total = questions.length;
   const q = questions[current];
+  // Rasm yo'li klaviatura ishlovchisidan (Z — kattalashtirish) OLDIN aniqlanadi: avval u `if (!q) return null`
+  // dan keyin e'lon qilinardi va savol bo'lmaganda Z bosilsa ReferenceError (TDZ) berardi.
+  const rawImagePath = typeof q?.image_path === "string" ? q.image_path.trim() : null;
+  const isRealImageAvailable = Boolean(rawImagePath && rawImagePath.length > 0 && !rawImagePath.includes("logo.") && !rawImagePath.includes("question-default."));
   const answered = q ? answers[current] : undefined;
   const { correct, wrong, answered: answeredCount } = useMemo(() => countResults(answers), [answers]);
   const isLast = current >= total - 1;
@@ -447,8 +451,6 @@ function StandardExamDesktopViewImpl(props: ExamDesktopViewProps) {
 
   if (!q) return null;
   const bookmarked = bookmarkedIds.has(q.id);
-  const DEFAULT_QUESTION_IMAGE = "/question-default.svg";
-  const imagePath = q.image_path || DEFAULT_QUESTION_IMAGE;
   const mistakesLeftDanger = maxMistakes != null && wrong >= maxMistakes;
 
   return (
@@ -501,10 +503,10 @@ function StandardExamDesktopViewImpl(props: ExamDesktopViewProps) {
             <p className="xd-qtext">{questionText}</p>
           </div>
           <QuestionImage
-            key={imagePath + "_" + q.id}
-            path={imagePath}
+            key={String(q.id) + "_" + (rawImagePath || "no-img")}
+            path={rawImagePath}
             alt={questionText}
-            onZoom={setZoomSrc}
+            onZoom={isRealImageAvailable ? setZoomSrc : undefined}
             zoomHint={t("examDesktop.zoomOpen", "Kattalashtirish (Z)")}
             brokenLabel={t("examDesktop.imageUnavailable", "Rasm mavjud emas")}
           />

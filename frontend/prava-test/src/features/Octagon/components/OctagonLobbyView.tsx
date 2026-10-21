@@ -8,19 +8,23 @@ import {
   IconPercentage,
   IconVolume,
   IconVolumeOff,
-  IconPencil,
-  IconCheck,
   IconUsers,
   IconHistory,
+  IconUserPlus,
+  IconLock,
+  IconLogin2,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { OctagonAudio } from "../OctagonAudio";
 import type { UserStats } from "../types";
+import { OctagonAvatar } from "./OctagonAvatar";
+import { OctagonRankBadge } from "./OctagonRankBadge";
 import "../octagon.css";
 
 interface Props {
+  /** null — mehmon: jang tugmalari kirish oynasini ochadi. */
   user: { id?: number | string; firstName?: string; lastName?: string } | null;
-  guestNickname?: string;
+  displayName: string;
   stats: UserStats | null;
   onStartSearch: () => void;
   onOpenDuel: () => void;
@@ -28,12 +32,12 @@ interface Props {
   onOpenLeaderboard: () => void;
   onOpenHistory: () => void;
   onOpenRules: () => void;
-  onUpdateNickname?: (name: string) => void;
+  onLogin: () => void;
 }
 
 export const OctagonLobbyView: React.FC<Props> = ({
   user,
-  guestNickname,
+  displayName,
   stats,
   onStartSearch,
   onOpenDuel,
@@ -41,12 +45,10 @@ export const OctagonLobbyView: React.FC<Props> = ({
   onOpenLeaderboard,
   onOpenHistory,
   onOpenRules,
-  onUpdateNickname,
+  onLogin,
 }) => {
   const { t } = useTranslation();
-  const [isMuted, setIsMuted] = useState(false);
-  const [isEditingNick, setIsEditingNick] = useState(false);
-  const [nickInput, setNickInput] = useState(guestNickname || "");
+  const [isMuted, setIsMuted] = useState(() => OctagonAudio.getMuted());
 
   const toggleSound = () => {
     const next = !isMuted;
@@ -54,69 +56,19 @@ export const OctagonLobbyView: React.FC<Props> = ({
     OctagonAudio.setMuted(next);
   };
 
-  const initialDisplayName = user
-    ? [user.firstName, user.lastName].filter(Boolean).join(" ") || "Haydovchi"
-    : guestNickname || t("octagon.lobby.guest", "Mehmon");
-
-  const [customName, setCustomName] = useState<string | null>(null);
-  const displayName = customName || initialDisplayName;
-
-  const handleSaveNick = () => {
-    if (nickInput.trim()) {
-      localStorage.setItem("octagon_guest_nickname", nickInput.trim());
-      setCustomName(nickInput.trim());
-      if (onUpdateNickname) onUpdateNickname(nickInput.trim());
-    }
-    setIsEditingNick(false);
-  };
-
   const elo = stats?.eloRating ?? 0;
-  const rawRank = stats?.rank ?? "bronze";
   const wins = stats?.wins ?? 0;
   const streak = stats?.winStreak ?? 0;
   const total = stats?.totalMatches ?? 0;
   const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
-
-  const getRankData = (r: string) => {
-    const lower = r.toLowerCase();
-    if (lower === "brilliant") {
-      return {
-        name: t("octagon.rank.brilliant"),
-        emoji: "💎",
-        className: "brilliant",
-      };
-    }
-    if (lower === "gold") {
-      return {
-        name: t("octagon.rank.gold"),
-        emoji: "🥇",
-        className: "gold",
-      };
-    }
-    if (lower === "silver") {
-      return {
-        name: t("octagon.rank.silver"),
-        emoji: "🥈",
-        className: "silver",
-      };
-    }
-    return {
-      name: t("octagon.rank.bronze"),
-      emoji: "🥉",
-      className: "bronze",
-    };
-  };
-
-  const rankData = getRankData(rawRank);
+  const isGuest = !user;
 
   return (
     <div className="oct-page-wrapper">
-      {/* Background Ambient Glow */}
       <div className="oct-ambient-glow" />
 
-      {/* Central Game Console (Osonprava style: 580px max-width) */}
       <div className="oct-console">
-        {/* 1. Header Row */}
+        {/* Header */}
         <div className="oct-header">
           <button
             type="button"
@@ -147,234 +99,114 @@ export const OctagonLobbyView: React.FC<Props> = ({
           </button>
         </div>
 
-        {/* 2. User Profile & Symmetrical Stats Card */}
-        <div className="oct-stats-card">
-          {/* User Row (Clean layout without duplicate rating box) */}
-          <div className="oct-user-row">
-            <div className="oct-user-left">
-              <div className="oct-avatar-ring">
-                {displayName.charAt(0).toUpperCase()}
-              </div>
-
-              <div className="oct-user-info">
-                {isEditingNick ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <input
-                      type="text"
-                      value={nickInput}
-                      onChange={(e) => setNickInput(e.target.value)}
-                      placeholder={t("octagon.lobby.editNickname")}
-                      maxLength={18}
-                      style={{
-                        background: "#1e293b",
-                        border: "1px solid #38bdf8",
-                        borderRadius: 8,
-                        padding: "4px 8px",
-                        color: "#ffffff",
-                        fontSize: 14,
-                        fontWeight: 700,
-                        outline: "none",
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSaveNick();
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSaveNick}
-                      style={{
-                        background: "#10b981",
-                        border: "none",
-                        borderRadius: 8,
-                        padding: "5px 8px",
-                        color: "#ffffff",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <IconCheck size={16} stroke={2.8} />
-                    </button>
-                  </div>
-                ) : (
+        {/* Profile & stats */}
+        {isGuest ? (
+          <div className="oct-stats-card oct-guest-card">
+            <div className="oct-guest-lock">
+              <IconLock size={26} stroke={2.4} />
+            </div>
+            <div className="oct-guest-text">
+              <div className="oct-guest-title">{t("octagon.authGate.title")}</div>
+              <div className="oct-guest-desc">{t("octagon.authGate.message")}</div>
+            </div>
+            <button type="button" className="oct-3d-btn blue oct-guest-login" onClick={onLogin}>
+              <IconLogin2 size={18} stroke={2.6} />
+              <span>{t("octagon.authGate.loginButton")}</span>
+            </button>
+          </div>
+        ) : (
+          <div className="oct-stats-card">
+            <div className="oct-user-row">
+              <div className="oct-user-left">
+                <OctagonAvatar name={displayName} src={stats?.avatarUrl} size={56} ring="#38bdf8" />
+                <div className="oct-user-info">
                   <div className="oct-user-name">
                     <span>{displayName}</span>
-                    {!user && (
-                      <button
-                        type="button"
-                        onClick={() => setIsEditingNick(true)}
-                        className="oct-user-edit-btn"
-                        title={t("octagon.lobby.editNickname")}
-                        aria-label={t("octagon.lobby.editNickname")}
-                      >
-                        <IconPencil size={15} />
-                      </button>
-                    )}
                   </div>
-                )}
-
-                {/* League Badge under player name */}
-                <div style={{ marginTop: 4 }}>
-                  <div className={`oct-league-badge ${rankData.className}`} style={{ marginTop: 0, padding: "3px 10px", fontSize: "11.5px" }}>
-                    <span>{rankData.emoji}</span>
-                    <span>{rankData.name}</span>
+                  <div style={{ marginTop: 4 }}>
+                    <OctagonRankBadge elo={elo} rank={stats?.rank} size="sm" />
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* 4-Column High-Contrast Symmetrical Stats Grid */}
-          <div className="oct-stats-grid">
-            {/* 1. Reyting */}
-            <div className="oct-stat-cell">
-              <div className="oct-stat-icon-wrap star">
-                <IconStar size={17} stroke={2.6} />
+            <div className="oct-stats-grid">
+              <div className="oct-stat-cell">
+                <div className="oct-stat-icon-wrap star">
+                  <IconStar size={17} stroke={2.6} />
+                </div>
+                <div className="oct-stat-val gold">{elo}</div>
+                <div className="oct-stat-lbl">{t("octagon.lobby.rating")}</div>
               </div>
-              <div className="oct-stat-val gold">{elo}</div>
-              <div className="oct-stat-lbl">{t("octagon.lobby.rating")}</div>
-            </div>
-
-            {/* 2. G'alabalar */}
-            <div className="oct-stat-cell">
-              <div className="oct-stat-icon-wrap trophy">
-                <IconTrophy size={17} stroke={2.6} />
+              <div className="oct-stat-cell">
+                <div className="oct-stat-icon-wrap trophy">
+                  <IconTrophy size={17} stroke={2.6} />
+                </div>
+                <div className="oct-stat-val emerald">{wins}</div>
+                <div className="oct-stat-lbl">{t("octagon.lobby.wins")}</div>
               </div>
-              <div className="oct-stat-val emerald">{wins}</div>
-              <div className="oct-stat-lbl">{t("octagon.lobby.wins")}</div>
-            </div>
-
-            {/* 3. G'alaba % */}
-            <div className="oct-stat-cell">
-              <div className="oct-stat-icon-wrap chart">
-                <IconPercentage size={17} stroke={2.6} />
+              <div className="oct-stat-cell">
+                <div className="oct-stat-icon-wrap chart">
+                  <IconPercentage size={17} stroke={2.6} />
+                </div>
+                <div className="oct-stat-val blue">{winRate}%</div>
+                <div className="oct-stat-lbl">{t("octagon.lobby.winRate")}</div>
               </div>
-              <div className="oct-stat-val blue">{winRate}%</div>
-              <div className="oct-stat-lbl">{t("octagon.lobby.winRate")}</div>
-            </div>
-
-            {/* 4. Seriya */}
-            <div className="oct-stat-cell">
-              <div className="oct-stat-icon-wrap flame">
-                <IconFlame size={17} stroke={2.6} />
+              <div className="oct-stat-cell">
+                <div className="oct-stat-icon-wrap flame">
+                  <IconFlame size={17} stroke={2.6} />
+                </div>
+                <div className="oct-stat-val red">{streak}</div>
+                <div className="oct-stat-lbl">{t("octagon.lobby.streak")}</div>
               </div>
-              <div className="oct-stat-val red">{streak}</div>
-              <div className="oct-stat-lbl">{t("octagon.lobby.streak")}</div>
             </div>
           </div>
+        )}
+
+        {/* Three big modes */}
+        <div className="oct-modes">
+          <button type="button" className="oct-3d-btn green oct-mode-btn" onClick={onStartSearch}>
+            <span className="oct-mode-icon"><IconSwords size={28} stroke={2.5} /></span>
+            <span className="oct-mode-text">
+              <span className="oct-mode-title">{t("octagon.modes.random")}</span>
+              <span className="oct-mode-desc">{t("octagon.modes.randomDesc")}</span>
+            </span>
+            {isGuest && <IconLock size={18} className="oct-mode-lock" />}
+          </button>
+
+          <button type="button" className="oct-3d-btn blue oct-mode-btn" onClick={onOpenGroup}>
+            <span className="oct-mode-icon"><IconUsers size={28} stroke={2.5} /></span>
+            <span className="oct-mode-text">
+              <span className="oct-mode-title">{t("octagon.modes.group")}</span>
+              <span className="oct-mode-desc">{t("octagon.modes.groupDesc")}</span>
+            </span>
+            {isGuest && <IconLock size={18} className="oct-mode-lock" />}
+          </button>
+
+          <button type="button" className="oct-3d-btn purple oct-mode-btn" onClick={onOpenDuel}>
+            <span className="oct-mode-icon"><IconUserPlus size={28} stroke={2.5} /></span>
+            <span className="oct-mode-text">
+              <span className="oct-mode-title">{t("octagon.modes.friend")}</span>
+              <span className="oct-mode-desc">{t("octagon.modes.friendDesc")}</span>
+            </span>
+            {isGuest && <IconLock size={18} className="oct-mode-lock" />}
+          </button>
         </div>
 
-        {/* 3. Primary 3D Search Button: Mode 1 - Random 1v1 */}
-        <button
-          type="button"
-          onClick={onStartSearch}
-          className="oct-search-btn-3d"
-        >
-          <IconSwords size={26} stroke={2.5} />
-          <span>{t("octagon.lobby.startSearch", "Tezkor 1v1 Jang")}</span>
-        </button>
-
-        {/* 4. Secondary Battle Modes: Mode 2 - Guruhli bahs & Mode 3 - Do'st bilan duel */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", width: "100%" }}>
-          {/* Mode 2: Guruhli Bahs (Party) */}
-          <div
-            onClick={onOpenGroup}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") onOpenGroup();
-            }}
-            className="oct-action-card"
-            style={{
-              background: "linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(15, 23, 42, 0.8))",
-              border: "1px solid rgba(6, 182, 212, 0.35)",
-              padding: "14px 12px",
-              cursor: "pointer",
-            }}
-          >
-            <div className="oct-action-icon cyan" style={{ background: "rgba(6, 182, 212, 0.2)", color: "#06b6d4" }}>
-              <IconUsers size={22} stroke={2.2} />
-            </div>
-            <div className="oct-action-title" style={{ color: "#38bdf8" }}>{t("octagon.lobby.groupBattle", "Guruhli Bahs")}</div>
-            <div className="oct-action-desc">{t("octagon.lobby.groupBattleDesc", "Do'stlar bilan xona ochib birgalikda bellashing")}</div>
-          </div>
-
-          {/* Mode 3: Do'st bilan 1v1 Duel */}
-          <div
-            onClick={onOpenDuel}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") onOpenDuel();
-            }}
-            className="oct-action-card"
-            style={{
-              background: "linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(15, 23, 42, 0.8))",
-              border: "1px solid rgba(168, 85, 247, 0.35)",
-              padding: "14px 12px",
-              cursor: "pointer",
-            }}
-          >
-            <div className="oct-action-icon purple" style={{ background: "rgba(168, 85, 247, 0.2)", color: "#c084fc" }}>
-              <IconSwords size={22} stroke={2.2} />
-            </div>
-            <div className="oct-action-title" style={{ color: "#e879f9" }}>{t("octagon.lobby.duelFriend", "Do'st bilan 1v1")}</div>
-            <div className="oct-action-desc">{t("octagon.lobby.dueFriendDesc", "ID yoki username qidirib to'g'ridan-to'g'ri chaqiring")}</div>
-          </div>
-        </div>
-
-        {/* 5. Informational & Records Cards (3 columns) */}
-        <div className="oct-actions-row">
-          {/* Card 1: Peshqadamlar */}
-          <div
-            onClick={onOpenLeaderboard}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") onOpenLeaderboard();
-            }}
-            className="oct-action-card"
-          >
-            <div className="oct-action-icon yellow">
-              <IconTrophy size={22} stroke={2.2} />
-            </div>
-            <div className="oct-action-title">{t("octagon.lobby.leaderboard", "Peshqadamlar")}</div>
-            <div className="oct-action-desc">{t("octagon.lobby.leaderboardDesc", "Haftalik va global peshqadamlar ro'yxati")}</div>
-          </div>
-
-          {/* Card 2: Bahslar tarixi */}
-          <div
-            onClick={onOpenHistory}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") onOpenHistory();
-            }}
-            className="oct-action-card"
-          >
-            <div className="oct-action-icon emerald" style={{ background: "rgba(16, 185, 129, 0.15)", color: "#10b981" }}>
-              <IconHistory size={22} stroke={2.2} />
-            </div>
-            <div className="oct-action-title">{t("octagon.lobby.history", "Bahslar Tarixi")}</div>
-            <div className="oct-action-desc">{t("octagon.lobby.historyDesc", "Oldingi janglaringiz va ELO o'zgarishlari")}</div>
-          </div>
-
-          {/* Card 3: Oktagon qoidalari */}
-          <div
-            onClick={onOpenRules}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") onOpenRules();
-            }}
-            className="oct-action-card"
-          >
-            <div className="oct-action-icon blue">
-              <IconInfoCircle size={22} stroke={2.2} />
-            </div>
-            <div className="oct-action-title">{t("octagon.lobby.rulesAndLicense", "Qoidalar va Ligalar")}</div>
-            <div className="oct-action-desc">{t("octagon.lobby.rulesDesc", "Bahs qoidalari, ligalar shkalasi va anti-cheat")}</div>
-          </div>
+        {/* Secondary links */}
+        <div className="oct-secondary-row">
+          <button type="button" className="oct-secondary-btn" onClick={onOpenLeaderboard}>
+            <IconTrophy size={18} color="#fbbf24" />
+            <span>{t("octagon.lobby.leaderboard")}</span>
+          </button>
+          <button type="button" className="oct-secondary-btn" onClick={onOpenHistory}>
+            <IconHistory size={18} color="#10b981" />
+            <span>{t("octagon.lobby.history")}</span>
+          </button>
+          <button type="button" className="oct-secondary-btn" onClick={onOpenRules}>
+            <IconInfoCircle size={18} color="#38bdf8" />
+            <span>{t("octagon.lobby.rulesBtn")}</span>
+          </button>
         </div>
       </div>
     </div>

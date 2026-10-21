@@ -14,7 +14,8 @@ import {
   IconFileText,
 } from "@tabler/icons-react";
 import { QRCodeSVG } from "qrcode.react";
-import SimScene, { type SimRuntime } from "./SimScene";
+import SimScene, { MODEL_AVTODROM, MODEL_CAR, type SimRuntime } from "./SimScene";
+import { releaseSimulatorAssets } from "./simAssets";
 import { type OBB, initialState } from "./carPhysics";
 import { detectGpu, canvasSettings } from "./quality";
 import "./simulator.css";
@@ -299,11 +300,18 @@ export default function SimulatorScreen({ onBack }: Props) {
     return () => clearInterval(id);
   }, [started]);
 
-  // Clean audio on unmount
+  // Chiqishda: ovozlar to'xtatiladi va bo'shatiladi, modellar keshi tozalanadi (xotira oqishi yo'q)
   useEffect(() => () => {
     for (const a of Object.values(audio.current)) {
-      a?.pause();
+      if (!a) continue;
+      a.pause();
+      // src olib tashlanadi — dekoder va audio bufer xotiradan bo'shaydi
+      a.removeAttribute("src");
+      a.load();
     }
+    audio.current = {};
+    // R3F Canvas avval to'liq unmount bo'lsin, keyin model keshi bo'shatiladi
+    setTimeout(() => releaseSimulatorAssets([MODEL_AVTODROM, MODEL_CAR]), 0);
   }, []);
 
   const start = () => {

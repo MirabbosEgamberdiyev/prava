@@ -19,6 +19,7 @@ import java.util.List;
 @Table(name = "exam_sessions", indexes = {
         @Index(name = "idx_session_user", columnList = "user_id"),
         @Index(name = "idx_session_package", columnList = "package_id"),
+        @Index(name = "idx_session_ticket", columnList = "ticket_id"),
         @Index(name = "idx_session_status", columnList = "status"),
         @Index(name = "idx_session_started", columnList = "started_at")
 })

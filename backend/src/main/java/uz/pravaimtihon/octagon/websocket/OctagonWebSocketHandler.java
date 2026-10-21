@@ -10,6 +10,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponentsBuilder;
+import uz.pravaimtihon.octagon.service.OctagonGuestIdentity;
 import uz.pravaimtihon.octagon.service.OctagonTicketService;
 
 import java.net.URI;
@@ -55,6 +56,11 @@ public class OctagonWebSocketHandler extends TextWebSocketHandler {
         }
 
         String userId = td.userId();
+        if (OctagonGuestIdentity.isGuestId(userId)) {
+            // Majburiy avtorizatsiya: mehmon ticketi (eski server versiyasidan qolgan) qabul qilinmaydi
+            session.close(new CloseStatus(4003, "Login required"));
+            return;
+        }
         String displayName = td.displayName() != null && !td.displayName().isBlank()
                 ? td.displayName()
                 : "Player_" + (userId.length() > 6 ? userId.substring(userId.length() - 4) : userId);
@@ -134,6 +140,14 @@ public class OctagonWebSocketHandler extends TextWebSocketHandler {
                 case "reject_challenge" -> {
                     UUID id = uuid(data, "challengeId");
                     if (id != null) matchmaker.handleRejectChallenge(octSession, id);
+                }
+                case "cancel_challenge" -> {
+                    UUID id = uuid(data, "challengeId");
+                    if (id != null) matchmaker.handleCancelChallenge(octSession, id);
+                }
+                case "join_invite" -> {
+                    String code = text(data, "inviteCode");
+                    if (code != null && code.length() <= 32) matchmaker.handleJoinInvite(octSession, code);
                 }
 
                 // Group Room Events

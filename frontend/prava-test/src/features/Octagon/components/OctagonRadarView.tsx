@@ -1,5 +1,5 @@
 import React from "react";
-import { IconX, IconRadar, IconRobot } from "@tabler/icons-react";
+import { IconX, IconRadar } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import "../octagon.css";
 
@@ -15,7 +15,8 @@ export const OctagonRadarView: React.FC<Props> = ({ searchSeconds, onCancel }) =
   const seconds = searchSeconds % 60;
   const timeFormatted = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
-  const isBotThreshold = searchSeconds >= 20;
+  // 20 s dan keyin qidiruv doirasi kengayadi (server mos raqibni ulaydi)
+  const isWideSearch = searchSeconds >= 20;
 
   return (
     <div className="oct-page-wrapper" style={{ justifyContent: "center", alignItems: "center" }}>
@@ -50,11 +51,7 @@ export const OctagonRadarView: React.FC<Props> = ({ searchSeconds, onCancel }) =
 
           {/* Center glowing focal point */}
           <div className="oct-sonar-center">
-            {isBotThreshold ? (
-              <IconRobot size={36} className="oct-radar-icon-bounce" />
-            ) : (
-              <IconRadar size={36} className="oct-radar-icon-pulse" />
-            )}
+            <IconRadar size={36} className="oct-radar-icon-pulse" />
           </div>
         </div>
 
@@ -67,14 +64,14 @@ export const OctagonRadarView: React.FC<Props> = ({ searchSeconds, onCancel }) =
           </div>
 
           <div className="oct-radar-title">
-            {isBotThreshold
-              ? t("octagon.radar.connectingBot", "Zaxira botga ulanmoqda...")
+            {isWideSearch
+              ? t("octagon.radar.widening")
               : t("octagon.radar.searchingOpponent", "Teng kuchli raqib qidirilmoqda...")}
           </div>
 
           <div className="oct-radar-desc">
-            {isBotThreshold
-              ? t("octagon.radar.botDesc", "Kutib qolmasligingiz uchun insondek o'ylanuvchi bot ulanmoqda")
+            {isWideSearch
+              ? t("octagon.radar.wideningDesc")
               : t("octagon.radar.eloMatchDesc", "Sizning ELO reytingingizga mos raqib saralanmoqda")}
           </div>
 

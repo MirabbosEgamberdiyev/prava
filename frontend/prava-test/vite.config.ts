@@ -187,24 +187,23 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    chunkSizeWarningLimit: 500,
+    // Eng katta chunk — "vendor-three" (~1 MB: three + @react-three). U faqat /simulator ichida lazy
+    // yuklanadi (entry'ga kirmaydi); entry JS/CSS byudjeti scripts/check-bundle-size.mjs da (gzip) tekshiriladi.
+    chunkSizeWarningLimit: 1100,
     rollupOptions: {
       output: {
-        manualChunks: {
-          mantine: [
-            '@mantine/core',
-            '@mantine/hooks',
-            '@mantine/notifications',
-            '@mantine/form',
-          ],
-          vendor: [
-            'react',
-            'react-dom',
-            'react-router-dom',
-          ],
-          icons: [
-            '@tabler/icons-react',
-          ],
+        // Three.js (+ @react-three) faqat 3D simulyatorda kerak: alohida "vendor-three" chunk'iga ajratiladi,
+        // boshqa sahifalar uni yuklamaydi. Qolgan kutubxonalar barqaror vendor chunk'larida (kesh uchun).
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (/node_modules[\\/](three|@react-three|three-stdlib|troika-[^\\/]+|camera-controls|maath|meshline)[\\/]/.test(id)) {
+            return 'vendor-three';
+          }
+          if (/node_modules[\\/]@mantine[\\/]/.test(id)) return 'mantine';
+          if (/node_modules[\\/]@tabler[\\/]icons-react[\\/]/.test(id)) return 'icons';
+          if (/node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) return 'vendor';
+          if (/node_modules[\\/](i18next|react-i18next|i18next-[^\\/]+)[\\/]/.test(id)) return 'i18n';
+          return undefined;
         },
       },
     },

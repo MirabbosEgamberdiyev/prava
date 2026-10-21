@@ -2,12 +2,18 @@ package uz.pravaimtihon.octagon.enums;
 
 import lombok.Getter;
 
+/**
+ * Oktagon ligalari: Bronza → Kumush → Oltin → Platina → Olmos → Master.
+ * {@code BRILLIANT} nomi bazadagi mavjud qatorlar uchun saqlab qolingan (ekranda "Olmos").
+ */
 @Getter
 public enum OctagonRank {
     BRONZE(0, "🥉", "Bronza", 15, 15),
     SILVER(50, "🥈", "Kumush", 18, 15),
     GOLD(150, "🥇", "Oltin", 20, 12),
-    BRILLIANT(300, "💎", "Brilliant", 25, 10);
+    PLATINUM(300, "💠", "Platina", 22, 12),
+    BRILLIANT(500, "💎", "Olmos", 25, 10),
+    MASTER(800, "👑", "Master", 28, 10);
 
     private final int minScore;
     private final String emoji;
@@ -24,9 +30,10 @@ public enum OctagonRank {
     }
 
     public static OctagonRank fromElo(int elo) {
-        if (elo >= BRILLIANT.minScore) return BRILLIANT;
-        if (elo >= GOLD.minScore) return GOLD;
-        if (elo >= SILVER.minScore) return SILVER;
+        OctagonRank[] all = values();
+        for (int i = all.length - 1; i >= 0; i--) {
+            if (elo >= all[i].minScore) return all[i];
+        }
         return BRONZE;
     }
 }

@@ -33,6 +33,7 @@ public class OctagonDtos {
     public static class StatsResponse {
         private String userId;
         private String displayName;
+        private String avatarUrl;
         private int eloRating;
         private OctagonRank rank;
         private String rankEmoji;
@@ -54,6 +55,7 @@ public class OctagonDtos {
         private int position;
         private String userId;
         private String displayName;
+        private String avatarUrl;
         private int eloRating;
         private OctagonRank rank;
         private String rankEmoji;
@@ -130,6 +132,8 @@ public class OctagonDtos {
         private OctagonRank rank;
         private String rankEmoji;
         private String rankName;
+        private int wins;
+        private int totalMatches;
         @JsonProperty("isOnline")
         private boolean isOnline;
         private String status; // "AVAILABLE", "IN_MATCH", "IN_QUEUE"

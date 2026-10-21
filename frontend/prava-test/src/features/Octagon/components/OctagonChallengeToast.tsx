@@ -3,6 +3,9 @@ import { Modal, Text, Group, Button, Progress, ThemeIcon } from "@mantine/core";
 import { IconSwords, IconCheck, IconX } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import type { IncomingChallenge } from "../types";
+import { OctagonAvatar } from "./OctagonAvatar";
+import { OctagonRankBadge } from "./OctagonRankBadge";
+import { safeName } from "../rank";
 
 interface Props {
   challenge: IncomingChallenge | null;
@@ -37,6 +40,7 @@ export const OctagonChallengeToast: React.FC<Props> = ({ challenge, onAccept, on
 
   if (!challenge) return null;
 
+  const challengerName = safeName(challenge.challenger.displayName, t("octagon.lobby.defaultUser"));
   const pct = Math.max(0, Math.min(100, (timeLeft / (challenge.expiresInSec || 30)) * 100));
 
   return (
@@ -83,29 +87,17 @@ export const OctagonChallengeToast: React.FC<Props> = ({ challenge, onAccept, on
             gap: 12,
           }}
         >
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, #a855f7, #6366f1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 800,
-              color: "#ffffff",
-              fontSize: 18,
-            }}
-          >
-            {challenge.challenger.displayName?.charAt(0)?.toUpperCase() || "C"}
-          </div>
+          <OctagonAvatar name={challengerName} src={challenge.challenger.avatarUrl} size={52} ring="#a855f7" />
           <div>
             <Text fw={800} size="md">
-              {challenge.challenger.displayName}
+              {challengerName}
             </Text>
-            <Text size="xs" c="dimmed">
-              {challenge.challenger.rankEmoji} {challenge.challenger.eloRating} ELO
-            </Text>
+            <Group gap={6} mt={2}>
+              <Text size="xs" c="dimmed">
+                {challenge.challenger.eloRating} ELO
+              </Text>
+              <OctagonRankBadge rank={challenge.challenger.rank} elo={challenge.challenger.eloRating} size="xs" />
+            </Group>
           </div>
         </div>
 
