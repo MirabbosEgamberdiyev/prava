@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { getImageUrl } from "../../../utils/imageUtils";
+import { getAvatarUrl } from "../../../utils/imageUtils";
 import { initialsOf } from "../layout";
 
 interface Props {
@@ -33,7 +33,7 @@ function hash(text: string): number {
  * aks holda ismdan barqaror rangli bosh harflar. Bo'sh/buzilgan rasm hech qachon ko'rinmaydi.
  */
 export const OctagonAvatar: React.FC<Props> = ({ name, src, size = 48, ring, className }) => {
-  const resolved = src ? getImageUrl(src) : undefined;
+  const resolved = src ? getAvatarUrl(src) : undefined;
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const showImage = Boolean(resolved) && failedSrc !== resolved;
   const [from, to] = GRADIENTS[hash(name || "?") % GRADIENTS.length];

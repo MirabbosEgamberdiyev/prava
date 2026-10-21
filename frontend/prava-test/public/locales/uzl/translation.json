@@ -1117,7 +1117,22 @@
     "passwordChangeError": "Parolni o'zgartirishda xatolik",
     "passwordMismatch": "Parollar mos kelmaydi",
     "passwordRequirements": "Parol talablari",
-    "save": "Saqlash"
+    "save": "Saqlash",
+    "avatar": {
+      "change": "Profil rasmini o'zgartirish",
+      "changeShort": "O'zgartirish",
+      "title": "Profil rasmi",
+      "upload": "Rasm yuklash",
+      "uploadHint": "JPEG, PNG yoki WebP. Rasm kvadrat shaklida kesiladi va kichraytiriladi",
+      "presets": "Tayyor avatarlar",
+      "choosePreset": "{{name}} avatarini tanlash",
+      "remove": "Rasmni o'chirish",
+      "updated": "Profil rasmi yangilandi",
+      "removed": "Profil rasmi o'chirildi",
+      "error": "Rasmni saqlab bo'lmadi. Qayta urinib ko'ring",
+      "tooLarge": "Rasm juda katta (3 MB gacha)",
+      "unsupported": "Faqat JPEG, PNG yoki WebP rasm yuklash mumkin"
+    }
   },
   "settings": {
     "title": "Sozlamalar",
@@ -4283,7 +4298,7 @@
       "enterCodePlaceholder": "Duel kodi (masalan: 123456)",
       "join": "Qo'shilish",
       "tabSearch": "Foydalanuvchini qidirish",
-      "tabLink": "Havola va QR-kod",
+      "tabLink": "Kod va havola",
       "searchPlaceholder": "Ism, telefon yoki ID kiriting...",
       "searchBtn": "Qidirish",
       "statusInMatch": "Jangda",
@@ -4305,7 +4320,17 @@
       "noAnswer": "{{name}} 30 soniya ichida javob bermadi",
       "pickAnother": "Boshqa raqib tanlash",
       "keepPageOpen": "Do'stingiz havolani ochguncha shu sahifada qoling — jang darhol boshlanadi.",
-      "joiningInvite": "Do'stingiz bilan jang ochilmoqda..."
+      "joiningInvite": "Do'stingiz bilan jang ochilmoqda...",
+      "enterFriendCode": "Do'stingizning 4 xonali kodini kiriting",
+      "enterFriendCodeHint": "4-raqam kiritilishi bilan jang avtomatik boshlanadi",
+      "orYourCode": "yoki o'z kodingizni do'stingizga yuboring",
+      "yourCode": "Sizning taklif kodingiz",
+      "copyCode": "Kodni nusxalash",
+      "share": "Ulashish",
+      "shareText": "⚔️ Men bilan PRAVA ONLINE Oktagonida kuch sinash!\nMening taklif kodim: {{code}}\nO'yinga to'g'ridan-to'g'ri qo'shilish: {{url}}",
+      "shareCopied": "Taklif matni nusxalandi — do'stingizga yuboring",
+      "codeValidity": "Kod 1 soat amal qiladi. Do'stingiz kodni kiritishi bilan jang boshlanadi",
+      "codeNotFound": "Bunday kod topilmadi yoki muddati o'tgan"
     },
     "arena": {
       "opponent": "Raqib",
@@ -4322,7 +4347,14 @@
       "imageFailed": "Rasm yuklanmadi",
       "imageRetry": "Qayta yuklash",
       "reconnecting": "Aloqa uzildi — qayta ulanmoqda (45 soniya ichida jang saqlanadi)...",
-      "fight": "JANG!"
+      "fight": "JANG!",
+      "oppThinking": "O'ylamoqda…",
+      "oppOnQuestion": "{{n}}-savolda",
+      "oppFinishedShort": "Yakunladi",
+      "oppFinishedTitle": "Raqib barcha savollarni yakunladi!",
+      "oppFinishedSub": "Sizning natijangizni kutmoqda…",
+      "meFinishedTitle": "Siz barcha savollarga javob berdingiz",
+      "meFinishedSub": "Raqib {{done}}/{{total}} — yakunlashini kutmoqdamiz…"
     },
     "result": {
       "victory": "G'ALABA!",
@@ -4401,7 +4433,7 @@
       "startGame": "O'yinni Boshlash",
       "setReady": "Men Tayyorman!",
       "unready": "Bekor qilish",
-      "codePlaceholder": "Masalan: OCT-4821"
+      "codePlaceholder": "Masalan: 4821"
     },
     "history": {
       "title": "Bahslar Tarixi",
@@ -4454,5 +4486,23 @@
       "friend": "Do'st bilan 1 vs 1",
       "friendDesc": "Sherigingizni toping va duelga chorlang"
     }
+  },
+  "devices": {
+    "title": "Qurilmalarim",
+    "activeCount": "Faol qurilmalar ({{used}}/{{max}})",
+    "limitHint": "Bir akkauntdan bir vaqtda {{max}} ta qurilmada foydalanish mumkin. Yangi qurilmadan kirilganda eng eski qurilma avtomatik chiqariladi.",
+    "current": "Joriy qurilma",
+    "lastActive": "Oxirgi faollik: {{time}}",
+    "signOut": "Chiqarish",
+    "signOutNamed": "{{name}} qurilmasini chiqarish",
+    "removed": "{{name}} qurilmasi chiqarildi",
+    "removeError": "Qurilmani chiqarib bo'lmadi. Qayta urinib ko'ring",
+    "loadError": "Qurilmalar ro'yxatini yuklab bo'lmadi"
+  },
+  "share": {
+    "withFriends": "Do'stlarga ulashish",
+    "appMessage": "🚗 PRAVA ONLINE bilan haydovchilik guvohnomasi imtihonlariga oson va qulay tayyorlaning! Hoziroq yuklab oling: {{url}}",
+    "copied": "Taklif matni nusxalandi — do'stlaringizga yuboring",
+    "failed": "Ulashib bo'lmadi"
   }
 }

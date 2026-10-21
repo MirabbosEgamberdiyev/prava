@@ -45,6 +45,8 @@ export interface AuthContextType {
   /** Explicit logout. Flushes the outbox (≤5 s), then clears this user's local data. */
   logout: (opts?: { redirectTo?: string }) => Promise<void>;
   transitionTo: (nextState: AuthState) => void;
+  /** Profil o'zgarganda (masalan, yangi avatar) joriy foydalanuvchini qayta kirishsiz yangilaydi. */
+  updateUser: (patch: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -441,9 +443,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, [navigate, transitionTo]);
 
+  const updateUser = useCallback((patch: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      try {
+        // userData cookie access token bilan bir xil muddatda yashaydi (eslab qolish tanlovi ham saqlanadi)
+        const token = Cookies.get(ACCESS_TOKEN_KEY);
+        const exp = token ? getTokenExpiry(token) : null;
+        const days = exp ? Math.max((exp - Date.now()) / 86_400_000, 1 / 24) : 1;
+        Cookies.set(USER_DATA_KEY, JSON.stringify(next), authCookieOptions("access", readRememberMePreference() ? days : null));
+      } catch {
+        // cookie yozilmasa ham joriy sessiyada yangilangan ma'lumot ko'rinadi
+      }
+      return next;
+    });
+  }, []);
+
   const value = useMemo(
-    () => ({ authState, isAuthenticated, user, login, register, logout, transitionTo }),
-    [authState, isAuthenticated, user, login, register, logout, transitionTo],
+    () => ({ authState, isAuthenticated, user, login, register, logout, transitionTo, updateUser }),
+    [authState, isAuthenticated, user, login, register, logout, transitionTo, updateUser],
   );
 
   return (

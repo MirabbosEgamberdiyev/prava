@@ -16,7 +16,7 @@ export interface OctagonSocketCallbacks {
     myAnswers: Record<string, number>;
     myScore?: number;
     opponent?: MatchOpponent;
-    opponentProgress?: { answeredCount: number; correctCount: number };
+    opponentProgress?: { answeredCount: number; correctCount: number; questionIndex?: number; totalQuestions?: number; finished?: boolean };
     remainingTimeSec: number;
     questionIds?: number[];
     questions?: OctagonQuestion[];

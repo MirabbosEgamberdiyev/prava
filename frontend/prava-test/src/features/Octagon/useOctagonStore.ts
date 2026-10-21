@@ -13,6 +13,7 @@ import {
   type IncomingChallenge,
   type OutgoingChallenge,
   type UserSearchResult,
+  type InviteJoinState,
 } from "./types";
 import { OctagonApi } from "./OctagonApi";
 import { OctagonSocket } from "./OctagonSocket";
@@ -73,6 +74,8 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
 
   const [incomingChallenge, setIncomingChallenge] = useState<IncomingChallenge | null>(null);
   const [outgoingChallenge, setOutgoingChallenge] = useState<OutgoingChallenge | null>(null);
+  /** 4 xonali kod bilan qo'shilish holati — duel oynasida xato shu yerda ko'rinadi (oyna yopilmaydi). */
+  const [inviteJoin, setInviteJoin] = useState<InviteJoinState>({ status: "idle" });
 
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showAuthGate, setShowAuthGate] = useState(false);
@@ -88,6 +91,13 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
   const stateRef = useRef<OctagonState>(state);
   const outgoingRef = useRef<OutgoingChallenge | null>(null);
   const incomingRef = useRef<IncomingChallenge | null>(null);
+  const inviteJoinTimeoutRef = useRef<number | null>(null);
+  const inviteJoinPendingRef = useRef(false);
+  const showDuelModalRef = useRef(false);
+
+  useEffect(() => {
+    showDuelModalRef.current = showDuelModal;
+  }, [showDuelModal]);
 
   useEffect(() => {
     stateRef.current = state;
@@ -131,6 +141,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
       clearTimer(outgoingTimeoutRef);
+      clearTimer(inviteJoinTimeoutRef);
       imagePreloader.clear();
     };
   }, []);
@@ -195,6 +206,9 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
 
         onMatchFound: async (data) => {
           clearTimer(outgoingTimeoutRef);
+          clearTimer(inviteJoinTimeoutRef);
+          inviteJoinPendingRef.current = false;
+          setInviteJoin({ status: "idle" });
           setOutgoingChallenge(null);
           setShowDuelModal(false);
           setShowGroupModal(false);
@@ -269,9 +283,11 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
           if (data.opponent) setOpponent(data.opponent);
           if (data.opponentProgress) {
             setOppProgress({
-              questionIndex: Math.max(0, data.opponentProgress.answeredCount - 1),
+              questionIndex: data.opponentProgress.questionIndex ?? Math.max(0, data.opponentProgress.answeredCount - 1),
               answeredCount: data.opponentProgress.answeredCount,
               correctCount: data.opponentProgress.correctCount,
+              totalQuestions: data.opponentProgress.totalQuestions,
+              finished: data.opponentProgress.finished,
             });
           }
           const answers: Record<number, number> = {};
@@ -335,6 +351,15 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
           }
         },
         onChallengeError: (data) => {
+          if (inviteJoinPendingRef.current) {
+            // Kod bilan qo'shilish javobi: oyna ochiq bo'lsa xato shu yerda, aks holda (havola orqali) — toast
+            inviteJoinPendingRef.current = false;
+            clearTimer(inviteJoinTimeoutRef);
+            const message = data.message || i18n.t("octagon.duel.codeNotFound");
+            setInviteJoin({ status: "error", code: data.code, message });
+            if (!showDuelModalRef.current) showToast({ color: "red", message });
+            return;
+          }
           if (outgoingRef.current) {
             clearTimer(outgoingTimeoutRef);
             setOutgoingChallenge((prev) =>
@@ -607,22 +632,42 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     setOutgoingChallenge(null);
   }, []);
 
-  /** Havola (?duel=KOD), QR yoki qo'lda kiritilgan kod orqali do'st jangiga qo'shilish. */
+  /**
+   * Havola (?code=1234 / eski ?duel=KOD), QR yoki 4 katakli PIN orqali do'st jangiga qo'shilish.
+   * Duel oynasi ochiq qoladi: jang topilsa o'zi yopiladi, xato bo'lsa xabar oynada ko'rinadi.
+   */
   const joinInvite = useCallback(
     async (code: string) => {
-      const clean = code.trim().toUpperCase();
+      const clean = code.replace(/\s+/g, "").toUpperCase();
       if (!clean || !requireAuth()) return;
+      setInviteJoin({ status: "joining", code: clean });
       try {
         const socket = await initSocket();
+        inviteJoinPendingRef.current = true;
         socket.joinInvite(clean);
-        setShowDuelModal(false);
-        showToast({ id: "octagon-invite", color: "grape", message: i18n.t("octagon.duel.joiningInvite") });
+        if (!showDuelModalRef.current) {
+          showToast({ id: "octagon-invite", color: "grape", message: i18n.t("octagon.duel.joiningInvite") });
+        }
+        clearTimer(inviteJoinTimeoutRef);
+        inviteJoinTimeoutRef.current = window.setTimeout(() => {
+          if (!inviteJoinPendingRef.current) return;
+          inviteJoinPendingRef.current = false;
+          setInviteJoin({ status: "error", message: i18n.t("octagon.common.connectionLost") });
+        }, 10_000);
       } catch {
+        inviteJoinPendingRef.current = false;
+        setInviteJoin({ status: "error", message: i18n.t("octagon.common.connectionLost") });
         showToast({ color: "red", message: i18n.t("octagon.common.connectionLost") });
       }
     },
     [initSocket, requireAuth]
   );
+
+  const resetInviteJoin = useCallback(() => {
+    inviteJoinPendingRef.current = false;
+    clearTimer(inviteJoinTimeoutRef);
+    setInviteJoin({ status: "idle" });
+  }, []);
 
   const acceptChallenge = useCallback((challengeId: string) => {
     socketRef.current?.acceptChallenge(challengeId);
@@ -743,6 +788,8 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     cancelChallenge,
     clearOutgoing,
     joinInvite,
+    inviteJoin,
+    resetInviteJoin,
     acceptChallenge,
     rejectChallenge,
     createRoom,

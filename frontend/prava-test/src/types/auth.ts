@@ -12,6 +12,8 @@ export interface User {
   packageActive?: boolean;
   subscriptionPlan?: string;
   subscriptionExpiresAt?: string;
+  /** Profil rasmi: yuklangan (/api/v1/files/profiles/…), tayyor avatar (/api/v1/public/avatars/…) yoki Google/Telegram. */
+  profileImageUrl?: string | null;
 }
 
 export interface AuthData {
@@ -35,6 +37,7 @@ export interface UserResponse {
   phoneVerified?: boolean;
   createdAt?: string;
   lastLoginAt?: string;
+  profileImageUrl?: string | null;
 }
 
 export interface ChangePasswordRequest {
