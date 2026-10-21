@@ -27,7 +27,9 @@ spring:
       # DB biror joyda entity'lardan farq qilsa, 'validate' keyingi deploy'ni CRASH qiladi.
       # Qadam: staging DB'da spring.profiles.active=prod,SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       # bilan sinab ko'ring; xato chiqmasa, shu yerda ddl-auto:validate ga o'zgartiring.
-      ddl-auto: update
+      # 2026-10-21: FK indekslari V21 bilan Flyway'ga ko'chirildi. Kod o'zgartirmasdan o'tish uchun
+      # serverdagi .env da JPA_DDL_AUTO=validate qo'yiladi (standart — update, xavfsiz).
+      ddl-auto: ${JPA_DDL_AUTO:update}
     properties:
       hibernate:
         format_sql: false
