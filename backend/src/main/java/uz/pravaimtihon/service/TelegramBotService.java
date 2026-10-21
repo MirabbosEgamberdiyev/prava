@@ -47,6 +47,31 @@ public class TelegramBotService {
     @Value("${app.telegram.webhook-secret:}")
     private String configuredWebhookSecret;
 
+    /** Texnik yordam akkaunti (t.me/<username>); kanal alohida — {@link #newsChannel}. */
+    @Value("${app.telegram.support-username:pravaonline_support}")
+    private String supportUsername;
+
+    @Value("${app.telegram.news-channel:pravaonlineuz}")
+    private String newsChannel;
+
+    @Value("${app.telegram.web-app-url:https://web.pravaonline.uz}")
+    private String webAppUrl;
+
+    @Value("${app.telegram.android-download-url:https://pravaonline.uz/downloads}")
+    private String androidDownloadUrl;
+
+    /** @BotFather /setdescription — /start dan oldin bo'sh chatda ko'rinadi. */
+    static final Map<String, String> BOT_DESCRIPTION = Map.of(
+            "uz", "PRAVA ONLINE — Haydovchilik guvohnomasi imtihonlariga tayyorlanish bo‘yicha rasmiy bot.",
+            "ru", "PRAVA ONLINE — официальный бот для подготовки к экзаменам на водительское удостоверение."
+    );
+
+    /** @BotFather /setabouttext — bot profilidagi qisqa matn. */
+    static final Map<String, String> BOT_ABOUT = Map.of(
+            "uz", "Avtomaktab testlari, biletlar, avtodrom simulyatori va 1v1 Oktagon bellashuvlari.",
+            "ru", "Тесты автошколы, билеты, симулятор автодрома и дуэли 1 на 1 в Октагоне."
+    );
+
     /** Secret token for webhook verification */
     private String webhookSecretToken;
 
@@ -135,6 +160,39 @@ public class TelegramBotService {
             log.info("Telegram bot commands set successfully (auth + language + help)");
         } catch (Exception e) {
             log.warn("Failed to set Telegram bot commands: {}", e.getMessage());
+        }
+        setupBotProfile();
+    }
+
+    /**
+     * @BotFather parametrlari API orqali: tavsif (/setdescription), qisqa ma'lumot (/setabouttext) va
+     * menyu tugmasi (/setmenubutton → Web App). Har ishga tushishda bir xil qiymat yoziladi (idempotent).
+     */
+    void setupBotProfile() {
+        BOT_DESCRIPTION.forEach((lang, text) ->
+                callBotApi("setMyDescription", localized(Map.of("description", text), lang)));
+        BOT_ABOUT.forEach((lang, text) ->
+                callBotApi("setMyShortDescription", localized(Map.of("short_description", text), lang)));
+        callBotApi("setChatMenuButton", Map.of("menu_button", Map.of(
+                "type", "web_app",
+                "text", "Prava Online",
+                "web_app", Map.of("url", baseUrl))));
+    }
+
+    /** "uz" — standart (til ko'rsatilmagan) qiymat; boshqalari language_code bilan. */
+    private static Map<String, Object> localized(Map<String, Object> body, String lang) {
+        Map<String, Object> copy = new HashMap<>(body);
+        if (!"uz".equals(lang)) copy.put("language_code", lang);
+        return copy;
+    }
+
+    private void callBotApi(String method, Map<String, Object> body) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            restTemplate.postForObject(getApiUrl() + "/" + method, new HttpEntity<>(body, headers), String.class);
+        } catch (Exception e) {
+            log.warn("Telegram {} failed: {}", method, e.getMessage());
         }
     }
 
@@ -287,7 +345,7 @@ public class TelegramBotService {
             String username = from.get("username") != null ? (String) from.get("username") : "";
             String token = tokenStore.generateToken(userId, firstName, lastName, username);
             String loginUrl = baseUrl + "/auth/telegram-callback?token=" + token;
-            sendWelcomeMessage(chatId, selectedLang, token, loginUrl);
+            sendWelcomeMessage(chatId, selectedLang, firstName, token, loginUrl);
         }
     }
 
@@ -391,7 +449,7 @@ public class TelegramBotService {
             }
         }
 
-        sendWelcomeMessage(chatId, lang, token, loginUrl);
+        sendWelcomeMessage(chatId, lang, firstName, token, loginUrl);
     }
 
 
@@ -638,7 +696,8 @@ public class TelegramBotService {
 
                     <b>Служба поддержки:</b>
                     📞 Телефон: +998 99 391 25 05
-                    💬 Telegram: @pravaonlineuz
+                    💬 Telegram: @{support}
+                    📣 {channelLabel}: @{channel}
                     🌐 Сайт: https://pravaonline.uz
                     """;
             case UZC -> """
@@ -657,7 +716,8 @@ public class TelegramBotService {
 
                     <b>Қўллаб-қувватлаш хизмати:</b>
                     📞 Телефон: +998 99 391 25 05
-                    💬 Telegram: @pravaonlineuz
+                    💬 Telegram: @{support}
+                    📣 {channelLabel}: @{channel}
                     🌐 Сайт: https://pravaonline.uz
                     """;
             default -> """
@@ -676,16 +736,29 @@ public class TelegramBotService {
 
                     <b>Qo'llab-quvvatlash xizmati:</b>
                     📞 Telefon: +998 99 391 25 05
-                    💬 Telegram: @pravaonlineuz
+                    💬 Telegram: @{support}
+                    📣 {channelLabel}: @{channel}
                     🌐 Sayt: https://pravaonline.uz
                     """;
         };
+
+        String channelLabel = switch (lang) {
+            case RU -> "Канал";
+            case UZC -> "Канал";
+            default -> "Kanal";
+        };
+        message = message.replace("{support}", supportUsername)
+                .replace("{channel}", newsChannel)
+                .replace("{channelLabel}", channelLabel);
 
         Map<String, Object> replyMarkup = Map.of(
                 "inline_keyboard", List.of(
                         List.of(
                                 Map.of("text", "🌐 Saytga o'tish / Перейти на сайт", "url", baseUrl),
-                                Map.of("text", "📞 Aloqa / Поддержка", "url", "https://t.me/pravaonlineuz")
+                                Map.of("text", "💬 Yordam / Поддержка", "url", "https://t.me/" + supportUsername)
+                        ),
+                        List.of(
+                                Map.of("text", "📣 Kanal / Канал", "url", "https://t.me/" + newsChannel)
                         )
                 )
         );
@@ -702,37 +775,72 @@ public class TelegramBotService {
         };
     }
 
-    private void sendWelcomeMessage(long chatId, AcceptLanguage lang, String token, String loginUrl) {
+    /**
+     * /start javobi: ism bilan salomlashish, bir martalik kirish kodi va tugmalar — bir bosishda kirish,
+     * Android ilova, veb talqin, texnik yordam va til. Matn tanlangan tilda (Lotin, Kirill, Rus).
+     */
+    void sendWelcomeMessage(long chatId, AcceptLanguage lang, String firstName, String token, String loginUrl) {
+        WelcomeMessage welcome = buildWelcome(lang, firstName, token, loginUrl);
+        sendMessage(chatId, welcome.text(), welcome.markup());
+    }
+
+    record WelcomeMessage(String text, Map<String, Object> markup) {
+    }
+
+    WelcomeMessage buildWelcome(AcceptLanguage lang, String firstName, String token, String loginUrl) {
+        String name = htmlEscape(sanitizeFirstName(firstName, null));
+        String code = htmlEscape(token);
         String message;
         String enterSiteText;
+        String androidText;
+        String webText;
+        String supportText;
         String changeLangText;
 
         switch (lang) {
             case RU -> {
-                message = "🔐 <b>Prava Online</b>\n\n" +
-                        "Ваш код подтверждения:\n\n" +
-                        "<code>" + token + "</code>\n\n" +
-                        "Введите этот код в приложение Prava Online (нажмите на код для копирования).\n\n" +
-                        "⚠️ Не передавайте код третьим лицам.";
-                enterSiteText = "🚀 Войти на сайт (В один клик)";
+                message = "👋 Здравствуйте, <b>" + name + "</b>!\n\n" +
+                        "🚗 <b>PRAVA ONLINE</b> — подготовка к экзамену на водительские права: билеты, " +
+                        "реальный экзамен, марафон, симулятор автодрома и дуэли 1 на 1 в Октагоне.\n\n" +
+                        "🔐 Ваш код для входа:\n\n" +
+                        "<code>" + code + "</code>\n\n" +
+                        "Введите код в приложении Prava Online (нажмите на код, чтобы скопировать) " +
+                        "или войдите в один клик кнопкой ниже.\n\n" +
+                        "⚠️ Никому не передавайте этот код.";
+                enterSiteText = "🚀 Войти в приложение";
+                androidText = "📱 Android-приложение";
+                webText = "🌐 Веб-версия";
+                supportText = "💬 Техподдержка";
                 changeLangText = "🌐 Сменить язык";
             }
             case UZC -> {
-                message = "🔐 <b>Prava Online</b>\n\n" +
-                        "Тасдиқлаш кодингиз:\n\n" +
-                        "<code>" + token + "</code>\n\n" +
-                        "Ушбу кодни Prava Online иловасига киритинг (нусха олиш учун код устига босинг).\n\n" +
-                        "⚠️ Кодни бошқа одамларга берманг.";
-                enterSiteText = "🚀 Сайтга кириш (Бир босишда)";
+                message = "👋 Ассалому алайкум, <b>" + name + "</b>!\n\n" +
+                        "🚗 <b>PRAVA ONLINE</b> — ҳайдовчилик гувоҳномаси имтиҳонига тайёргарлик: билетлар, " +
+                        "реал имтиҳон, марафон, автодром симулятори ва Октагон 1v1 беллашувлари.\n\n" +
+                        "🔐 Кириш кодингиз:\n\n" +
+                        "<code>" + code + "</code>\n\n" +
+                        "Кодни Prava Online иловасига киритинг (нусха олиш учун код устига босинг) " +
+                        "ёки пастдаги тугма орқали бир босишда киринг.\n\n" +
+                        "⚠️ Кодни ҳеч кимга берманг.";
+                enterSiteText = "🚀 Иловага кириш";
+                androidText = "📱 Android илова";
+                webText = "🌐 Веб талқин";
+                supportText = "💬 Техник ёрдам";
                 changeLangText = "🌐 Тилни ўзгартириш";
             }
             default -> {
-                message = "🔐 <b>Prava Online</b>\n\n" +
-                        "Tasdiqlash kodingiz:\n\n" +
-                        "<code>" + token + "</code>\n\n" +
-                        "Ushbu kodni Prava Online ilovasiga kiriting (nusxa olish uchun kod ustiga bosing).\n\n" +
-                        "⚠️ Kodni boshqa odamlarga bermang.";
-                enterSiteText = "🚀 Saytga kirish (Bir bosishda)";
+                message = "👋 Assalomu alaykum, <b>" + name + "</b>!\n\n" +
+                        "🚗 <b>PRAVA ONLINE</b> — haydovchilik guvohnomasi imtihoniga tayyorgarlik: biletlar, " +
+                        "real imtihon, marafon, avtodrom simulyatori va Oktagon 1v1 bellashuvlari.\n\n" +
+                        "🔐 Kirish kodingiz:\n\n" +
+                        "<code>" + code + "</code>\n\n" +
+                        "Kodni Prava Online ilovasiga kiriting (nusxa olish uchun kod ustiga bosing) " +
+                        "yoki pastdagi tugma orqali bir bosishda kiring.\n\n" +
+                        "⚠️ Kodni hech kimga bermang.";
+                enterSiteText = "🚀 Ilovaga kirish";
+                androidText = "📱 Android ilova";
+                webText = "🌐 Veb talqin";
+                supportText = "💬 Texnik yordam";
                 changeLangText = "🌐 Tilni o'zgartirish";
             }
         }
@@ -741,10 +849,14 @@ public class TelegramBotService {
         if (loginUrl != null && !loginUrl.isBlank()) {
             keyboardRows.add(List.of(Map.of("text", enterSiteText, "url", loginUrl)));
         }
-        keyboardRows.add(List.of(Map.of("text", changeLangText, "callback_data", "choose_lang")));
+        keyboardRows.add(List.of(
+                Map.of("text", androidText, "url", androidDownloadUrl),
+                Map.of("text", webText, "url", webAppUrl)));
+        keyboardRows.add(List.of(
+                Map.of("text", supportText, "url", "https://t.me/" + supportUsername),
+                Map.of("text", changeLangText, "callback_data", "choose_lang")));
 
-        Map<String, Object> replyMarkup = Map.of("inline_keyboard", keyboardRows);
-        sendMessage(chatId, message, replyMarkup);
+        return new WelcomeMessage(message, Map.of("inline_keyboard", keyboardRows));
     }
 
     private void sendLanguageSelectionKeyboard(long chatId, AcceptLanguage currentLang) {
