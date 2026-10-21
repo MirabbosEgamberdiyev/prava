@@ -26,6 +26,8 @@ interface Props {
   user: { id?: number | string; firstName?: string; lastName?: string } | null;
   displayName: string;
   stats: UserStats | null;
+  /** Statistika hali yuklanmoqda — skeleton ko'rsatiladi. */
+  loading?: boolean;
   onStartSearch: () => void;
   onOpenDuel: () => void;
   onOpenGroup: () => void;
@@ -39,6 +41,7 @@ export const OctagonLobbyView: React.FC<Props> = ({
   user,
   displayName,
   stats,
+  loading = false,
   onStartSearch,
   onOpenDuel,
   onOpenGroup,
@@ -114,6 +117,26 @@ export const OctagonLobbyView: React.FC<Props> = ({
               <span>{t("octagon.authGate.loginButton")}</span>
             </button>
           </div>
+        ) : loading && !stats ? (
+          <div className="oct-stats-card oct-skeleton-card" aria-busy="true" aria-label={t("octagon.lobby.loading")}>
+            <div className="oct-user-row">
+              <div className="oct-user-left">
+                <div className="oct-skel oct-skel-avatar" />
+                <div className="oct-user-info">
+                  <div className="oct-skel oct-skel-line" style={{ width: 140 }} />
+                  <div className="oct-skel oct-skel-line" style={{ width: 90, marginTop: 8 }} />
+                </div>
+              </div>
+              <div className="oct-skel oct-skel-elo" />
+            </div>
+            <div className="oct-stats-grid">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="oct-stat-cell">
+                  <div className="oct-skel oct-skel-cell" />
+                </div>
+              ))}
+            </div>
+          </div>
         ) : (
           <div className="oct-stats-card">
             <div className="oct-user-row">
@@ -127,6 +150,10 @@ export const OctagonLobbyView: React.FC<Props> = ({
                     <OctagonRankBadge elo={elo} rank={stats?.rank} size="sm" />
                   </div>
                 </div>
+              </div>
+              <div className="oct-elo-big" aria-label={`${elo} ELO`}>
+                <span className="oct-elo-big-num">{elo}</span>
+                <span className="oct-elo-big-unit">ELO</span>
               </div>
             </div>
 

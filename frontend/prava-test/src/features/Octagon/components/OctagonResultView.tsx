@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Text, Badge, Button, Modal, Radio, Textarea, Stack, Group } from "@mantine/core";
-import { IconTrophy, IconFlame, IconRefresh, IconArrowLeft, IconSwords, IconFlag, IconCheck } from "@tabler/icons-react";
+import { IconTrophy, IconHeartBroken, IconRefresh, IconArrowLeft, IconHeartHandshake, IconFlag, IconCheck } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { fireConfetti } from "../confetti";
 import { OctagonApi } from "../OctagonApi";
@@ -8,6 +8,8 @@ import type { MatchResultData, MatchOpponent, GroupStanding } from "../types";
 import { OctagonAvatar } from "./OctagonAvatar";
 import { OctagonRankBadge } from "./OctagonRankBadge";
 import { safeName } from "../rank";
+import { accuracyPercent } from "../arena";
+import { OCTAGON_CONFIG } from "../types";
 import { showToast } from "../../../utils/notificationUtils";
 import "../octagon.css";
 
@@ -95,6 +97,9 @@ export const OctagonResultView: React.FC<Props> = ({
 
   const deltaElo = result?.myDeltaElo ?? 0;
   const isPositive = deltaElo > 0;
+  const myCorrect = result?.finalScores?.me ?? 0;
+  const totalQ = result?.totalQuestions || OCTAGON_CONFIG.QUESTIONS_PER_MATCH;
+  const accuracy = accuracyPercent(myCorrect, totalQ);
 
   return (
     <div className="oct-page-wrapper" style={{ justifyContent: "center", alignItems: "center" }}>
@@ -106,9 +111,9 @@ export const OctagonResultView: React.FC<Props> = ({
           {isWin ? (
             <IconTrophy size={48} />
           ) : isDraw ? (
-            <IconSwords size={48} />
+            <IconHeartHandshake size={48} />
           ) : (
-            <IconFlame size={48} />
+            <IconHeartBroken size={48} />
           )}
         </div>
 
@@ -178,6 +183,13 @@ export const OctagonResultView: React.FC<Props> = ({
               </div>
             </div>
 
+            {/* To'g'ri javoblar va aniqlik: "8/10 to'g'ri (80% aniqlik)" */}
+            <div className={`oct-accuracy-line ${accuracy >= 70 ? "good" : accuracy >= 40 ? "mid" : "low"}`}>
+              <IconCheck size={16} stroke={2.8} />
+              <span>{t("octagon.result.accuracy", { correct: myCorrect, total: totalQ, percent: accuracy })}</span>
+            </div>
+            {result?.forfeit && <div className="oct-forfeit-note">{t("octagon.result.forfeitNote")}</div>}
+
             {/* ELO Delta Badge */}
             <div className="oct-elo-delta-box">
               <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 700 }}>
@@ -188,11 +200,18 @@ export const OctagonResultView: React.FC<Props> = ({
                 radius="md"
                 variant="filled"
                 color={isPositive ? "teal" : deltaElo < 0 ? "red" : "gray"}
+                className={isPositive ? "oct-elo-glow" : undefined}
                 style={{ fontWeight: 900, fontFamily: "monospace" }}
               >
                 {isPositive ? `+${deltaElo}` : deltaElo} ELO
               </Badge>
             </div>
+            {typeof result?.myNewElo === "number" && (
+              <div className="oct-new-elo">
+                {t("octagon.result.newRating")}{" "}
+                <strong>{result.myNewElo} ELO</strong>
+              </div>
+            )}
           </div>
         )}
 

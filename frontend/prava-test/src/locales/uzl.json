@@ -4266,26 +4266,39 @@
       "rule3Title": "Reyting va Ligalar (ELO)",
       "rule3Desc": "G'alaba qozonib Bronzadan Kumush, Oltin, Platina, Olmos va Master ligalarigacha ko'tariling!",
       "waitCountdown": "{{sec}} soniya kuting...",
-      "understand": "TUSHUNDIM"
+      "understand": "TUSHUNDIM",
+      "battleTitle": "Jang qoidasi: 10 ta savol, 300 soniya",
+      "battleDesc": "Har jangda 10 ta tasodifiy haydovchilik savoli va umumiy 300 soniya (5 daqiqa). Har savolga bir marta javob berasiz.",
+      "winTitle": "G'alaba qoidasi",
+      "winDesc": "Ko'proq to'g'ri javob bergan o'yinchi g'olib bo'ladi. Ballar teng bo'lsa — durang (ikkalangizga +2 ELO).",
+      "eloTitle": "ELO reyting va 6 liga",
+      "eloDesc": "G'alaba: ligangizga qarab +15…+28 ELO (3 va undan ortiq ketma-ket g'alabada +3 bonus), mag'lubiyat: −10…−15 ELO. Ligalar: Bronza, Kumush, Oltin, Platina, Olmos, Master.",
+      "fairTitle": "Adolatli o'yin",
+      "fairDesc": "350 ms dan tez berilgan javoblar hisobga olinmaydi. Internet uzilsa, 45 soniya ichida qaytsangiz jang davom etadi; qaytmasangiz texnik mag'lubiyat yoziladi."
     },
     "radar": {
-      "searchingOpponent": "Teng kuchli raqib qidirilmoqda...",
+      "searchingOpponent": "Mos darajadagi raqib qidirilmoqda…",
       "eloMatchDesc": "Sizning ELO reytingingizga mos raqib saralanmoqda",
       "cancel": "Qidiruvni bekor qilish",
       "widening": "Qidiruv doirasi kengaytirildi...",
-      "wideningDesc": "Sizga mos raqib bir necha soniyada ulanadi"
+      "wideningDesc": "Sizga mos raqib bir necha soniyada ulanadi",
+      "onlineNow": "Onlayn: {{count}}",
+      "searchingNow": "Qidiruvda: {{count}}"
     },
     "leaderboard": {
       "title": "Peshqadamlar Jadvali",
       "weekly": "Haftalik",
       "monthly": "Oylik",
-      "allTime": "Umumiy",
+      "allTime": "Barcha davrlar",
       "empty": "Hozircha natijalar mavjud emas",
       "rankCol": "O'rin",
       "userCol": "Foydalanuvchi",
       "leagueCol": "Liga",
       "scoreCol": "ELO Ball",
-      "winsAndMatches": "{{wins}} G'alaba • {{total}} Jang"
+      "winsAndMatches": "{{wins}} G'alaba • {{total}} Jang",
+      "myPosition": "Sizning o'rningiz",
+      "onPodium": "Siz podiumdasiz — {{pos}}-o'rin! 🎉",
+      "notRanked": "Bu davrda hali jang o'tkazmadingiz — birinchi jang sizni jadvalga olib chiqadi"
     },
     "duel": {
       "title": "Do'st bilan Duel",
@@ -4354,7 +4367,13 @@
       "oppFinishedTitle": "Raqib barcha savollarni yakunladi!",
       "oppFinishedSub": "Sizning natijangizni kutmoqda…",
       "meFinishedTitle": "Siz barcha savollarga javob berdingiz",
-      "meFinishedSub": "Raqib {{done}}/{{total}} — yakunlashini kutmoqdamiz…"
+      "meFinishedSub": "Raqib {{done}}/{{total}} — yakunlashini kutmoqdamiz…",
+      "reconnectingLeft": "⚠️ Internet uzildi. Qayta ulanmoqda… (qolgan vaqt: {{sec}}s)",
+      "reactionsMuted": "Juda tez! Reaksiyalar 8 soniyaga o'chdi",
+      "reaction_fire": "Olov",
+      "reaction_thumbs_up": "Layk",
+      "reaction_mindblown": "Hayrat",
+      "reaction_laugh": "Kulgi"
     },
     "result": {
       "victory": "G'ALABA!",
@@ -4366,7 +4385,10 @@
       "eloChange": "Reyting o'zgarishi:",
       "waitingRevenge": "Raqib javobi kutilmoqda...",
       "requestRevenge": "Qasos (Rematch) talab qilish",
-      "backToLobby": "Lobbiyga qaytish"
+      "backToLobby": "Lobbiyga qaytish",
+      "accuracy": "{{correct}}/{{total}} to'g'ri ({{percent}}% aniqlik)",
+      "forfeitNote": "Raqib 45 soniya ichida qaytmadi — texnik natija",
+      "newRating": "Yangi reyting:"
     },
     "lobby": {
       "guest": "Mehmon O'yinchi",
@@ -4391,10 +4413,11 @@
       "dueFriendDesc": "Do'stingizga maxsus havola yuborib, xususiy jangga chorlang",
       "groupBattle": "Guruhli Bahs",
       "groupBattleDesc": "Do'stlar bilan xona ochib birgalikda bellashing",
-      "history": "Bahslar tarixi",
+      "history": "Janglar tarixi",
       "historyDesc": "Oldingi janglaringiz va ELO o'zgarishlari",
       "title": "Oktagon",
-      "defaultUser": "Haydovchi"
+      "defaultUser": "Haydovchi",
+      "loading": "Statistika yuklanmoqda…"
     },
     "rank": {
       "brilliant": "Olmos",
@@ -4433,17 +4456,20 @@
       "startGame": "O'yinni Boshlash",
       "setReady": "Men Tayyorman!",
       "unready": "Bekor qilish",
-      "codePlaceholder": "Masalan: 4821"
+      "codePlaceholder": "Masalan: 4821",
+      "needTwoReady": "Jangni boshlash uchun kamida 2 o'yinchi tayyor bo'lishi kerak"
     },
     "history": {
-      "title": "Bahslar Tarixi",
+      "title": "Janglar tarixi",
       "empty": "Hozircha yakunlangan janglar mavjud emas",
       "win": "G'alaba",
       "draw": "Durang",
       "loss": "Mag'lubiyat",
       "opponent": "Raqib",
       "prev": "Oldingi",
-      "next": "Keyingi"
+      "next": "Keyingi",
+      "emptyCta": "Siz hali janglarda qatnashmadingiz. Birinchi jangni boshlang!",
+      "startFirst": "Birinchi jangni boshlash"
     },
     "challenge": {
       "incomingTitle": "Jangga Chorlov!",
@@ -4476,7 +4502,10 @@
       "message": "Oktagon 1v1 PvP janglarida qatnashish, o'z reytingingizni oshirish va do'stlaringiz bilan bellashish uchun tizimga kiring!",
       "phone": "Telefon",
       "loginButton": "Kirish / Ro'yxatdan o'tish",
-      "later": "Keyinroq"
+      "later": "Keyinroq",
+      "welcomeTitle": "Oktagon Janglariga Xush Kelibsiz!",
+      "welcomeText": "O'z reytingingizni saqlash, ligalarda ko'tarilish va do'stlaringiz bilan bellashish uchun tizimga kiring.",
+      "otherMethods": "Telefon yoki boshqa usul bilan kirish"
     },
     "modes": {
       "random": "Random 1 vs 1",
@@ -4485,6 +4514,10 @@
       "groupDesc": "Xona oching yoki kod orqali guruhga qo'shiling",
       "friend": "Do'st bilan 1 vs 1",
       "friendDesc": "Sherigingizni toping va duelga chorlang"
+    },
+    "disconnected": {
+      "title": "Aloqa uzildi",
+      "message": "45 soniya ichida serverga qayta ulanib bo'lmadi. Jang natijasi serverda hisoblanadi — uni janglar tarixida ko'rasiz."
     }
   },
   "devices": {

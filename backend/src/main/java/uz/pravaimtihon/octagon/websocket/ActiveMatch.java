@@ -49,6 +49,10 @@ public class ActiveMatch {
     private volatile boolean player1Finished = false;
     private volatile boolean player2Finished = false;
 
+    /** Javoblar orasidagi minimal vaqt (ms); testlarda 0 qilib o'chiriladi. */
+    public static final long MIN_ANSWER_INTERVAL_MS = 350;
+    private volatile long minAnswerIntervalMs = MIN_ANSWER_INTERVAL_MS;
+
     private Instant matchFoundAt;
     private volatile Instant startedAt;
     private volatile Instant deadlineAt;
@@ -103,6 +107,7 @@ public class ActiveMatch {
         if (isEnded || startedAt == null || questionId == null) return AnswerOutcome.REJECTED;
         if (deadlineAt != null && now.isAfter(deadlineAt)) return AnswerOutcome.REJECTED;
         if (!questionIds.contains(questionId) || selectedIndex < 0 || selectedIndex > 9) return AnswerOutcome.REJECTED;
+        if (isTooFast(userId, now)) return AnswerOutcome.REJECTED;
 
         Integer correctIdx = correctOptions.get(questionId);
         boolean isCorrect = (correctIdx != null && correctIdx == selectedIndex);
@@ -131,6 +136,23 @@ public class ActiveMatch {
             return AnswerOutcome.REJECTED;
         }
         return isCorrect ? AnswerOutcome.CORRECT : AnswerOutcome.WRONG;
+    }
+
+    /**
+     * Anti-cheat: jang boshlanganidan yoki shu o'yinchining oldingi javobidan {@link #minAnswerIntervalMs} (350 ms)
+     * o'tmasdan kelgan javob hisobga olinmaydi — inson savolni o'qib bunchalik tez javob bera olmaydi (skript/bot).
+     * Klient yangi savolni 300 ms dan keyin ko'rsatadi va shu oraliqdagi bosishlarni o'zi e'tiborsiz qoldiradi.
+     */
+    private boolean isTooFast(String userId, Instant now) {
+        if (minAnswerIntervalMs <= 0) return false;
+        Map<Long, Instant> times = userId.equals(player1Id) ? player1AnswerTimes
+                : userId.equals(player2Id) ? player2AnswerTimes : null;
+        if (times == null) return false;
+        Instant last = startedAt;
+        for (Instant t : times.values()) {
+            if (t.isAfter(last)) last = t;
+        }
+        return java.time.Duration.between(last, now).toMillis() < minAnswerIntervalMs;
     }
 
     /** Jangni bir marta yakunlash huquqini oladi (ikki marta ELO hisoblanishining oldini oladi). */

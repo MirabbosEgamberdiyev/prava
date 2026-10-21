@@ -16,7 +16,10 @@ export const OCTAGON_CONFIG = {
   // Emodjilar va Anti-Flood
   REACTION_FLIGHT_MS: 1400,          // Ekranda emodji uchib o'tish animatsiyasi (1.4s)
   REACTION_COOLDOWN_MS: 1500,        // Reaksiya yuborish oralig'i
-  REACTION_FLOOD_LIMIT: 3,           // 3 marta ketma-ket spam qilinsa 8 soniyaga bloklash
+  REACTION_FLOOD_LIMIT: 3,           // 1.5 s ichida 3 tadan ko'p bosilsa…
+  REACTION_MUTE_MS: 8000,            // …8 soniya reaksiyalar o'chadi (o'zimniki ham, raqibniki ham)
+  ANSWER_INPUT_GUARD_MS: 350,        // Savol chiqqanidan 350 ms ichidagi bosish hisobga olinmaydi (server anti-cheat bilan bir xil)
+  RADAR_WIDEN_AFTER_SEC: 4,          // Server 3 s dan keyin ELO oralig'ini kengaytiradi, 7 s da bot ulanadi
 
   // Tarmoq va Qayta Ulanish (Resilience)
   WS_HEARTBEAT_INTERVAL_MS: 15000,   // Ping-pong intervali (15 soniya)
@@ -52,7 +55,9 @@ export type OctagonState =
   | "COUNTDOWN"
   | "PLAYING"
   | "MATCH_FINISHED"
-  | "RECONNECTING";
+  | "RECONNECTING"
+  /** 45 s ichida qayta ulanib bo'lmadi — "Aloqa uzildi" ekrani. */
+  | "DISCONNECTED";
 
 export interface MatchOpponent {
   id: string;
@@ -122,6 +127,20 @@ export interface MatchResultData {
     me: number;
     opponent: number;
   };
+  /** Jangdagi savollar soni — aniqlik foizi uchun (eski server yubormaydi). */
+  totalQuestions?: number;
+  /** Jangdan keyingi yangi ELO. */
+  myNewElo?: number;
+  /** Raqib uzilib qaytmadi — texnik g'alaba/mag'lubiyat. */
+  forfeit?: boolean;
+}
+
+/** Radar: server har 2 s da yuboradigan real navbat holati. */
+export interface QueueStatus {
+  /** Men bilan birga qidirayotgan boshqa o'yinchilar. */
+  searching: number;
+  /** Oktagonga ulangan o'yinchilar. */
+  online: number;
 }
 
 export interface UserStats {
@@ -207,6 +226,7 @@ export interface MatchHistoryEntry {
   matchId: string;
   opponentId: string;
   opponentName: string;
+  opponentAvatarUrl?: string | null;
   myScore: number;
   opponentScore: number;
   result: "WIN" | "LOSS" | "DRAW";

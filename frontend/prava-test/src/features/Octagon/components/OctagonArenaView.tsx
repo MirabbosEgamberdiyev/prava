@@ -7,6 +7,7 @@ import { OctagonAvatar } from "./OctagonAvatar";
 import { OctagonRankBadge } from "./OctagonRankBadge";
 import { OctagonQuestionImage } from "./OctagonQuestionImage";
 import { safeName } from "../rank";
+import { formatClock, type TrackCell } from "../arena";
 import "../octagon.css";
 
 interface Props {
@@ -21,6 +22,8 @@ interface Props {
   opponent: MatchOpponent | null;
   /** Tarmoq uzildi — 45 s ichida avtomatik qayta ulanish ketmoqda. */
   reconnecting?: boolean;
+  /** 45 s grace'dan qolgan soniyalar (banner: "qolgan vaqt: 38s"). */
+  reconnectLeftSec?: number | null;
   oppProgress: OpponentProgress;
   question: OctagonQuestion | null;
   currentIndex: number;
@@ -28,6 +31,11 @@ interface Props {
   /** Men javob bergan savollar soni — hammasi tugasa "raqibni kutmoqdamiz" banneri. */
   myAnsweredCount?: number;
   myAnswerIndex?: number;
+  /** Har bir savol bo'yicha mening natijam (yashil/qizil) va raqibniki. */
+  myTrack?: TrackCell[];
+  oppTrack?: TrackCell[];
+  /** Spam filtri: reaksiyalar vaqtincha o'chiq. */
+  reactionsMuted?: boolean;
   flyingEmojis: FlyingEmoji[];
   onSubmitAnswer: (questionId: number, optionIndex: number) => void;
   onSendReaction: (emojiId: string) => void;
@@ -38,7 +46,7 @@ const HOTKEY_LABELS = ["A", "B", "C", "D"];
 const REACTION_EMOJIS = [
   { id: "fire", char: "🔥" },
   { id: "thumbs_up", char: "👍" },
-  { id: "mindblown", char: "😱" },
+  { id: "mindblown", char: "🤯" },
   { id: "laugh", char: "😂" },
 ];
 
@@ -53,12 +61,16 @@ export const OctagonArenaView: React.FC<Props> = ({
   myAvatar,
   opponent,
   reconnecting,
+  reconnectLeftSec,
   oppProgress,
   question,
   currentIndex,
   totalQuestions,
   myAnsweredCount = 0,
   myAnswerIndex,
+  myTrack = [],
+  oppTrack = [],
+  reactionsMuted = false,
   flyingEmojis,
   onSubmitAnswer,
   onSendReaction,
@@ -111,7 +123,11 @@ export const OctagonArenaView: React.FC<Props> = ({
   const reconnectBanner = reconnecting ? (
     <div className="oct-reconnect-banner" role="status">
       <IconWifiOff size={16} />
-      <span>{t("octagon.arena.reconnecting")}</span>
+      <span>
+        {typeof reconnectLeftSec === "number"
+          ? t("octagon.arena.reconnectingLeft", { sec: reconnectLeftSec })
+          : t("octagon.arena.reconnecting")}
+      </span>
     </div>
   ) : null;
 
@@ -219,7 +235,7 @@ export const OctagonArenaView: React.FC<Props> = ({
           <div className="oct-hud-center">
             <div className={`oct-timer-pill ${isLowTime ? "urgent" : ""}`}>
               <IconClock size={16} />
-              <span>{remainingTimeSec}s</span>
+              <span>{formatClock(remainingTimeSec)}</span>
             </div>
             <div className="oct-score-ratio">
               <span className="me">{myScore}</span> : <span className="opp">{oppProgress.correctCount}</span>
@@ -257,11 +273,9 @@ export const OctagonArenaView: React.FC<Props> = ({
           <div className="oct-bars-group">
             <span className="oct-bars-label">{t("octagon.arena.you", "Siz")}:</span>
             {Array.from({ length: totalQuestions }).map((_, idx) => {
-              const isCurrent = idx === currentIndex;
-              let segClass = "";
-              if (idx < currentIndex) segClass = "done-me";
-              else if (isCurrent) segClass = "active";
-
+              // javob berilgan savol: yashil (to'g'ri) / qizil (xato); joriy savol oq nur bilan pulsatsiya qiladi
+              const cell = myTrack[idx] ?? null;
+              const segClass = cell ? `done ${cell}` : idx === currentIndex && !iFinished ? "active" : "";
               return <div key={`my-dot-${idx}`} className={`oct-bar-segment ${segClass}`} />;
             })}
           </div>
@@ -274,12 +288,8 @@ export const OctagonArenaView: React.FC<Props> = ({
             )}
             <span className="oct-bars-label">{t("octagon.arena.opponent", "Raqib")}:</span>
             {Array.from({ length: totalQuestions }).map((_, idx) => {
-              const isOppAnswered = idx < oppProgress.answeredCount;
-              const isOppCurrent = idx === oppProgress.questionIndex;
-              let segClass = "";
-              if (isOppAnswered) segClass = "done-opp";
-              else if (isOppCurrent) segClass = "active";
-
+              const cell = oppTrack[idx] ?? (idx < oppProgress.answeredCount ? "answered" : null);
+              const segClass = cell ? `done ${cell}` : idx === oppProgress.answeredCount && !oppFinished ? "active" : "";
               return <div key={`opp-dot-${idx}`} className={`oct-bar-segment ${segClass}`} />;
             })}
           </div>
@@ -367,17 +377,19 @@ export const OctagonArenaView: React.FC<Props> = ({
       )}
 
       {/* Floating Emojis Toolbar */}
-      <div className="oct-reactions-bar">
+      <div className={`oct-reactions-bar ${reactionsMuted ? "muted" : ""}`}>
         <span style={{ fontSize: "12px", fontWeight: 800, color: "#94a3b8", marginRight: 4 }}>
-          {t("octagon.arena.reactions", "Reaksiyalar:")}
+          {reactionsMuted ? t("octagon.arena.reactionsMuted") : t("octagon.arena.reactions", "Reaksiyalar:")}
         </span>
         {REACTION_EMOJIS.map((emoji) => (
           <button
             key={emoji.id}
             type="button"
+            disabled={reactionsMuted}
             onClick={() => onSendReaction(emoji.id)}
             className="oct-reaction-btn"
-            title={emoji.id}
+            aria-label={t(`octagon.arena.reaction_${emoji.id}`)}
+            title={t(`octagon.arena.reaction_${emoji.id}`)}
           >
             {emoji.char}
           </button>

@@ -7,6 +7,7 @@ import { OctagonLobbyView } from "../../features/Octagon/components/OctagonLobby
 import { OctagonRadarView } from "../../features/Octagon/components/OctagonRadarView";
 import { OctagonArenaView } from "../../features/Octagon/components/OctagonArenaView";
 import { OctagonResultView } from "../../features/Octagon/components/OctagonResultView";
+import { OctagonDisconnectedView } from "../../features/Octagon/components/OctagonDisconnectedView";
 import { OctagonRulesModal } from "../../features/Octagon/components/OctagonRulesModal";
 import { OctagonAuthGateModal } from "../../features/Octagon/components/OctagonAuthGateModal";
 import { OctagonLeaderboardModal } from "../../features/Octagon/components/OctagonLeaderboardModal";
@@ -31,7 +32,9 @@ const OctagonPage: React.FC = () => {
     state,
     matchId,
     myStats,
+    statsLoaded,
     searchSeconds,
+    queueStatus,
     countdown,
     remainingTimeSec,
     opponent,
@@ -41,10 +44,14 @@ const OctagonPage: React.FC = () => {
     myAnswers,
     myScore,
     oppProgress,
+    myTrack,
+    oppTrack,
     matchResult,
     flyingEmojis,
     revengeRequested,
     reconnecting,
+    reconnectLeftSec,
+    reactionsMuted,
     currentRoom,
     roomErrorMessage,
     roomStandings,
@@ -110,11 +117,12 @@ const OctagonPage: React.FC = () => {
     setSearchParams(next, { replace: true });
   }, [duelParam, user, state, joinInvite, searchParams, setSearchParams]);
 
+  // Kirgandan keyin aynan ochilmoqchi bo'lgan duelga qaytiladi
+  const authReturnUrl = duelParam ? `/octagon?code=${encodeURIComponent(duelParam)}` : "/octagon";
   const handleLogin = useCallback(() => {
     setShowAuthGate(false);
-    const returnUrl = duelParam ? `/octagon?code=${encodeURIComponent(duelParam)}` : "/octagon";
-    openAuthModal({ returnUrl });
-  }, [openAuthModal, duelParam, setShowAuthGate]);
+    openAuthModal({ returnUrl: authReturnUrl });
+  }, [openAuthModal, authReturnUrl, setShowAuthGate]);
 
   const myDisplayName = user
     ? safeName([user.firstName, user.lastName].filter(Boolean).join(" ") || myStats?.displayName, t("octagon.lobby.defaultUser"))
@@ -136,6 +144,7 @@ const OctagonPage: React.FC = () => {
           user={user}
           displayName={myDisplayName}
           stats={myStats}
+          loading={Boolean(user) && !statsLoaded}
           onStartSearch={startSearch}
           onOpenDuel={openDuel}
           onOpenGroup={openGroup}
@@ -146,7 +155,14 @@ const OctagonPage: React.FC = () => {
         />
       )}
 
-      {state === "SEARCHING" && <OctagonRadarView searchSeconds={searchSeconds} onCancel={cancelSearch} />}
+      {state === "SEARCHING" && (
+        <OctagonRadarView
+          searchSeconds={searchSeconds}
+          queueStatus={queueStatus}
+          reconnecting={reconnecting}
+          onCancel={cancelSearch}
+        />
+      )}
 
       {(state === "MATCH_FOUND" || state === "COUNTDOWN" || state === "PLAYING" || state === "RECONNECTING") && (
         <OctagonArenaView
@@ -160,17 +176,23 @@ const OctagonPage: React.FC = () => {
           myAvatar={myAvatar}
           opponent={opponent}
           reconnecting={reconnecting}
+          reconnectLeftSec={reconnectLeftSec}
           oppProgress={oppProgress}
           question={currentQuestion}
           currentIndex={currentIndex}
           totalQuestions={totalQuestions}
           myAnsweredCount={Object.keys(myAnswers).length}
           myAnswerIndex={currentQuestion ? myAnswers[currentQuestion.id] : undefined}
+          myTrack={myTrack}
+          oppTrack={oppTrack}
+          reactionsMuted={reactionsMuted}
           flyingEmojis={flyingEmojis}
           onSubmitAnswer={submitAnswer}
           onSendReaction={sendReaction}
         />
       )}
+
+      {state === "DISCONNECTED" && <OctagonDisconnectedView onReturnToLobby={returnToLobby} />}
 
       {state === "MATCH_FINISHED" && (
         <OctagonResultView
@@ -189,9 +211,18 @@ const OctagonPage: React.FC = () => {
 
       <OctagonRulesModal opened={showRulesModal} onConfirm={confirmRulesAndSearch} onClose={() => setShowRulesModal(false)} />
 
-      <OctagonAuthGateModal opened={showAuthGate && !user} onLogin={handleLogin} onClose={() => setShowAuthGate(false)} />
+      <OctagonAuthGateModal
+        opened={showAuthGate && !user}
+        returnUrl={authReturnUrl}
+        onLogin={handleLogin}
+        onClose={() => setShowAuthGate(false)}
+      />
 
-      <OctagonLeaderboardModal opened={showLeaderboard} onClose={() => setShowLeaderboard(false)} />
+      <OctagonLeaderboardModal
+        opened={showLeaderboard}
+        onClose={() => setShowLeaderboard(false)}
+        myUserId={user ? String(user.id) : null}
+      />
 
       <OctagonDuelModal
         opened={showDuelModal}
@@ -222,7 +253,7 @@ const OctagonPage: React.FC = () => {
         onStartRoomGame={startRoomGame}
       />
 
-      <OctagonHistoryModal opened={showHistoryModal} onClose={() => setShowHistoryModal(false)} />
+      <OctagonHistoryModal opened={showHistoryModal} onClose={() => setShowHistoryModal(false)} onStartBattle={startSearch} />
 
       <OctagonChallengeToast challenge={incomingChallenge} onAccept={acceptChallenge} onReject={rejectChallenge} />
     </div>

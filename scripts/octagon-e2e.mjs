@@ -103,12 +103,16 @@ async function closeCodeOf(ticket) {
 function rightIndex(q) { return ANSWERS[String(q.id)]; }
 function wrongIndex(q) { const n = (q.options || []).length || 4; return (rightIndex(q) + 1) % n; }
 
+// Server anti-cheat: answers within 350 ms of the start / previous answer are not counted
+const ANSWER_GAP_MS = 380;
+
 async function playBoth(a, b, matchId, questions, { aCorrect = 10, bCorrect = 0, skipB = false } = {}) {
+  await sleep(ANSWER_GAP_MS);
   for (let i = 0; i < questions.length; i++) {
     const q = questions[i];
     a.send("submit_answer", { matchId, questionId: q.id, selectedIndex: i < aCorrect ? rightIndex(q) : wrongIndex(q) });
     if (!skipB && b) b.send("submit_answer", { matchId, questionId: q.id, selectedIndex: i < bCorrect ? rightIndex(q) : wrongIndex(q) });
-    await sleep(60);
+    await sleep(ANSWER_GAP_MS);
   }
 }
 
@@ -162,7 +166,7 @@ async function main() {
   const cardOk = (o) =>
     typeof o.name === "string" && o.name.trim() !== "" && !/^(null|undefined)$/i.test(o.name.trim()) &&
     LEAGUES.includes(o.rank) && typeof o.elo === "number" && o.elo === o.score && "avatar" in o &&
-    (o.avatar === null || /^(https:\/\/|\/api\/v1\/files\/)/.test(o.avatar));
+    (o.avatar === null || /^(https:\/\/|\/api\/v1\/files\/|\/api\/v1\/public\/avatars\/[a-z-]+\.svg$)/.test(o.avatar));
   check("M-2b", "Opponent card: real name (never null/undefined), ELO, 6-league rank, avatar or null", cardOk(f1.opponent) && cardOk(f2.opponent), JSON.stringify(f1.opponent));
   check("M-3", "Client-sent ELO 9999 ignored (opponent card shows server ELO)", f1.opponent.score !== 9999 && f2.opponent.score !== 9999, f1.opponent.score);
   const qs = f1.questions || [];
@@ -176,6 +180,7 @@ async function main() {
   await p1.next("match_started", 8000);
   await p2.next("match_started", 2000);
   check("M-8", "match_started on both clients", true);
+  await sleep(ANSWER_GAP_MS);
 
   p1.send("submit_answer", { matchId: f1.matchId, questionId: 99999999, selectedIndex: 0 });
   const foreign = await p1.next("answer_result", 800).catch(() => null);
@@ -193,11 +198,15 @@ async function main() {
   const rx = await p2.next("opponent_reaction", 3000).catch(() => null);
   check("M-13", "Reaction relayed to opponent", rx?.emojiId === "fire");
 
-  for (let i = 1; i < 10; i++) p1.send("submit_answer", { matchId: f1.matchId, questionId: qs[i].id, selectedIndex: rightIndex(qs[i]) });
-  for (let i = 0; i < 10; i++) p2.send("submit_answer", { matchId: f1.matchId, questionId: qs[i].id, selectedIndex: i < 3 ? rightIndex(qs[i]) : wrongIndex(qs[i]) });
+  for (let i = 0; i < 10; i++) {
+    if (i > 0) p1.send("submit_answer", { matchId: f1.matchId, questionId: qs[i].id, selectedIndex: rightIndex(qs[i]) });
+    p2.send("submit_answer", { matchId: f1.matchId, questionId: qs[i].id, selectedIndex: i < 3 ? rightIndex(qs[i]) : wrongIndex(qs[i]) });
+    await sleep(ANSWER_GAP_MS);
+  }
   const e1 = await p1.next("match_ended", 8000);
   const e2 = await p2.next("match_ended", 3000);
   const lastProg = p2.drain("opponent_progress").at(-1);
+  check("M-14b", "match_ended carries totalQuestions and the new rating (result screen)", e1.totalQuestions === 10 && typeof e1.myNewElo === "number" && typeof e2.myNewElo === "number", JSON.stringify({ t: e1.totalQuestions, n1: e1.myNewElo, n2: e2.myNewElo }));
   check("M-11b", "When the rival answers all 10 questions the other player gets finished=true", lastProg?.answeredCount === 10 && lastProg?.finished === true, JSON.stringify(lastProg));
   check("M-14", "Server scoring matches the DB answer key (10:3)", e1.finalScores.me === 10 && e1.finalScores.opponent === 3 && e2.finalScores.me === 3, JSON.stringify(e1.finalScores));
   check("M-15", "Winner = P1, ELO deltas from server", e1.winnerId === u1.id && e1.myDeltaElo > 0 && e2.myDeltaElo <= 0, `w=${e1.winnerId} d1=${e1.myDeltaElo} d2=${e2.myDeltaElo}`);
@@ -313,16 +322,31 @@ async function main() {
   // ── Bot fallback ────────────────────────────────────────────────────
   p2.close();
   await sleep(300);
+  const queuedAt = Date.now();
   p1.send("join_queue", {});
-  const bf = await p1.next("match_found", 26000);
-  check("B-1", "Bot opponent after ~20 s without humans", String(bf.opponent.id).startsWith("bot_"), bf.opponent.id);
+  const qst = await p1.next("queue_status", 4000).catch(() => null);
+  check("Q-1", "Radar gets real queue_status (others searching, players online)", qst && qst.searching === 0 && qst.online >= 1, JSON.stringify(qst));
+  const bf = await p1.next("match_found", 15000);
+  const waited = (Date.now() - queuedAt) / 1000;
+  check("B-1", "Bot opponent after ~7 s without humans (never an endless search)", String(bf.opponent.id).startsWith("bot_") && waited < 11, `${bf.opponent.id} after ${waited.toFixed(1)} s`);
   check("B-1b", "Bot looks like a real player (human name, nearby ELO, league)", /^\S+ \S\.$/.test(bf.opponent.name) && !/bot|_/i.test(bf.opponent.name) && LEAGUES.includes(bf.opponent.rank), `${bf.opponent.name} ${bf.opponent.elo} ${bf.opponent.rank}`);
   await p1.next("match_started", 13000);
-  bf.questions.forEach((q) => p1.send("submit_answer", { matchId: bf.matchId, questionId: q.id, selectedIndex: rightIndex(q) }));
+  await sleep(ANSWER_GAP_MS);
+  for (const q of bf.questions) {
+    p1.send("submit_answer", { matchId: bf.matchId, questionId: q.id, selectedIndex: rightIndex(q) });
+    await sleep(ANSWER_GAP_MS);
+  }
   const be = await p1.next("match_ended", 60000);
   check("B-2", "Bot match finished and scored", be.finalScores.me === 10, JSON.stringify(be.finalScores));
   const lb = (await http("GET", "/api/v1/octagon/leaderboard")).json.data;
   check("B-3", "Leaderboard has no bot/guest rows", lb.every((e) => !/^(bot|guest_)/.test(e.userId)) && lb.some((e) => e.userId === u1.id), `n=${lb.length}`);
+  const myPos = (await http("GET", "/api/v1/octagon/leaderboard/me?period=all_time", { token: u1.token })).json.data;
+  const inTable = lb.find((e) => e.userId === u1.id);
+  check("L-1", "Own leaderboard position matches the table row", myPos && inTable && myPos.position === inTable.position && myPos.eloRating === inTable.eloRating, `me=${myPos?.position} table=${inTable?.position}`);
+  r = await http("GET", "/api/v1/octagon/leaderboard/me");
+  check("L-2", "Anonymous own-position lookup refused", r.status === 401, r.status);
+  const hist = (await http("GET", "/api/v1/octagon/history", { token: u1.token })).json.data.content;
+  check("H-1", "History rows carry the opponent avatar field", hist.length > 0 && hist.every((h) => "opponentAvatarUrl" in h), `n=${hist.length}`);
   p1.close();
 
   // ── Telegram session login (bot simulated through the real webhook) ─

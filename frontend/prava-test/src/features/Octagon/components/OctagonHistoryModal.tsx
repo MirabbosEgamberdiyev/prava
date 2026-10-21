@@ -1,208 +1,155 @@
 import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  Text,
-  Stack,
-  Group,
-  Badge,
-  Loader,
-  Center,
-  ThemeIcon,
-  Button,
-} from "@mantine/core";
-import { IconHistory, IconTrophy, IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
+import { Modal } from "@mantine/core";
+import { IconHistory, IconArrowLeft, IconArrowRight, IconSwords } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { OctagonApi } from "../OctagonApi";
 import type { MatchHistoryEntry } from "../types";
+import { OctagonAvatar } from "./OctagonAvatar";
+import { safeName } from "../rank";
+import { formatMatchDate } from "../arena";
+import "../octagon.css";
 
 interface Props {
   opened: boolean;
   onClose: () => void;
+  /** Bo'sh tarix: "Birinchi jangni boshlang" tugmasi (tasodifiy raqib qidiruvi). */
+  onStartBattle?: () => void;
 }
 
-export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose }) => {
-  const { t } = useTranslation();
+export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose, onStartBattle }) => {
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [historyList, setHistoryList] = useState<MatchHistoryEntry[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     if (!opened) return;
-    let isMounted = true;
+    let alive = true;
     setLoading(true);
-
+    setFailed(false);
     OctagonApi.getHistory(page, 10)
       .then((res) => {
-        if (!isMounted) return;
+        if (!alive) return;
         const items = res?.content || (Array.isArray(res) ? res : []);
         setHistoryList(items);
         setTotalPages(res?.totalPages || 1);
-        setLoading(false);
       })
       .catch(() => {
-        if (isMounted) setLoading(false);
+        if (alive) setFailed(true);
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
       });
-
     return () => {
-      isMounted = false;
+      alive = false;
     };
   }, [opened, page]);
+
+  const lang = i18n.language || "uzl";
 
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      title={
-        <Group gap="xs">
-          <ThemeIcon color="indigo" variant="light" size="lg" radius="xl">
-            <IconHistory size={20} />
-          </ThemeIcon>
-          <Text fw={800} size="lg">
-            {t("octagon.history.title", "Bahslar Tarixi")}
-          </Text>
-        </Group>
-      }
       centered
+      size="lg"
       radius="lg"
       padding="lg"
-      size="lg"
-      overlayProps={{ backgroundOpacity: 0.65, blur: 4 }}
-      styles={{
-        content: {
-          backgroundColor: "#0f172a",
-          border: "1px solid rgba(148, 163, 184, 0.15)",
-          color: "#f8fafc",
-        },
-        header: {
-          backgroundColor: "#0f172a",
-          color: "#f8fafc",
-        },
-      }}
+      overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
+      classNames={{ content: "oct-modal-dark", header: "oct-modal-dark-header", close: "oct-modal-dark-close" }}
+      title={
+        <span className="oct-modal-title">
+          <span className="oct-modal-title-icon green">
+            <IconHistory size={20} />
+          </span>
+          {t("octagon.history.title")}
+        </span>
+      }
     >
-      <Stack gap="md">
-        {loading ? (
-          <Center py="xl">
-            <Loader color="indigo" />
-          </Center>
-        ) : historyList.length === 0 ? (
-          <Center py="xl">
-            <Stack align="center" gap="xs">
-              <IconTrophy size={48} className="text-slate-500 opacity-40" />
-              <Text size="sm" c="dimmed">
-                {t("octagon.history.empty", "Hozircha yakunlangan janglar mavjud emas")}
-              </Text>
-            </Stack>
-          </Center>
-        ) : (
-          <Stack gap="xs">
-            {historyList.map((m) => {
-              const isWin = m.result === "WIN";
-              const isDraw = m.result === "DRAW";
-              const badgeColor = isWin ? "emerald" : isDraw ? "yellow" : "red";
-              const resultText = isWin
-                ? t("octagon.history.win", "G'alaba")
-                : isDraw
-                ? t("octagon.history.draw", "Durang")
-                : t("octagon.history.loss", "Mag'lubiyat");
-
-              return (
-                <div
-                  key={m.matchId}
-                  style={{
-                    background: "rgba(30, 41, 59, 0.7)",
-                    borderRadius: 12,
-                    padding: "12px 16px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    border: "1px solid rgba(148, 163, 184, 0.1)",
-                  }}
-                >
-                  <Group gap="sm">
-                    <div
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: "50%",
-                        background: "linear-gradient(135deg, #6366f1, #a855f7)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: 800,
-                        color: "#ffffff",
-                        fontSize: 16,
-                      }}
-                    >
-                      {m.opponentName?.charAt(0)?.toUpperCase() || "R"}
-                    </div>
-                    <div>
-                      <Text fw={700} size="sm">
-                        {m.opponentName || t("octagon.history.opponent", "Raqib")}
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        {m.durationSeconds
-                          ? `${m.durationSeconds}s`
-                          : ""}{" "}
-                        {m.createdAt ? `• ${new Date(m.createdAt).toLocaleDateString()}` : ""}
-                      </Text>
-                    </div>
-                  </Group>
-
-                  <Group gap="md">
-                    <div style={{ textAlign: "center" }}>
-                      <Text fw={800} size="md">
-                        {m.myScore} : {m.opponentScore}
-                      </Text>
-                      <Badge size="xs" color={badgeColor} variant="light">
-                        {resultText}
-                      </Badge>
-                    </div>
-
-                    <div style={{ minWidth: 50, textAlign: "right" }}>
-                      <Text
-                        fw={800}
-                        size="sm"
-                        style={{
-                          color: m.deltaElo > 0 ? "#10b981" : m.deltaElo < 0 ? "#ef4444" : "#94a3b8",
-                        }}
-                      >
-                        {m.deltaElo > 0 ? `+${m.deltaElo}` : m.deltaElo} ELO
-                      </Text>
-                    </div>
-                  </Group>
+      {loading ? (
+        <div aria-busy="true">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="oct-skel oct-skel-row" />
+          ))}
+        </div>
+      ) : failed ? (
+        <div className="oct-empty">{t("octagon.common.error")}</div>
+      ) : historyList.length === 0 ? (
+        <div className="oct-empty">
+          <div className="oct-empty-icon">⚔️</div>
+          <div className="oct-empty-text">{t("octagon.history.emptyCta")}</div>
+          {onStartBattle && (
+            <button
+              type="button"
+              className="oct-3d-btn green oct-empty-btn"
+              onClick={() => {
+                onClose();
+                onStartBattle();
+              }}
+            >
+              <IconSwords size={20} stroke={2.5} />
+              <span>{t("octagon.history.startFirst")}</span>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="oct-history-list">
+          {historyList.map((m) => {
+            const kind = m.result === "WIN" ? "win" : m.result === "DRAW" ? "draw" : "loss";
+            const name = safeName(m.opponentName, t("octagon.history.opponent"));
+            return (
+              <div key={m.matchId} className={`oct-history-card ${kind}`}>
+                <OctagonAvatar name={name} src={m.opponentAvatarUrl} size={42} />
+                <div className="oct-history-main">
+                  <div className="oct-history-name">{name}</div>
+                  <div className="oct-history-date">{formatMatchDate(m.createdAt, lang)}</div>
                 </div>
-              );
-            })}
-          </Stack>
-        )}
+                <div className="oct-history-score">
+                  <span className="oct-history-score-num">
+                    {m.myScore} : {m.opponentScore}
+                  </span>
+                  <span className={`oct-history-result ${kind}`}>
+                    {kind === "win"
+                      ? t("octagon.history.win")
+                      : kind === "draw"
+                      ? t("octagon.history.draw")
+                      : t("octagon.history.loss")}
+                  </span>
+                </div>
+                <div className={`oct-history-elo ${m.deltaElo > 0 ? "up" : m.deltaElo < 0 ? "down" : ""}`}>
+                  {m.deltaElo > 0 ? `+${m.deltaElo}` : m.deltaElo} ELO
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-        {totalPages > 1 && (
-          <Group justify="space-between" pt="sm">
-            <Button
-              variant="default"
-              size="xs"
-              disabled={page <= 0}
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              leftSection={<IconArrowLeft size={14} />}
-            >
-              {t("octagon.history.prev", "Oldingi")}
-            </Button>
-            <Text size="xs" c="dimmed">
-              {page + 1} / {totalPages}
-            </Text>
-            <Button
-              variant="default"
-              size="xs"
-              disabled={page + 1 >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              rightSection={<IconArrowRight size={14} />}
-            >
-              {t("octagon.history.next", "Keyingi")}
-            </Button>
-          </Group>
-        )}
-      </Stack>
+      {!loading && totalPages > 1 && (
+        <div className="oct-pager">
+          <button
+            type="button"
+            className="oct-pager-btn"
+            disabled={page <= 0}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+          >
+            <IconArrowLeft size={14} /> {t("octagon.history.prev")}
+          </button>
+          <span className="oct-pager-info">
+            {page + 1} / {totalPages}
+          </span>
+          <button
+            type="button"
+            className="oct-pager-btn"
+            disabled={page + 1 >= totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            {t("octagon.history.next")} <IconArrowRight size={14} />
+          </button>
+        </div>
+      )}
     </Modal>
   );
 };

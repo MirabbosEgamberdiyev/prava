@@ -25,6 +25,8 @@ public class OctagonSession {
     private String avatarUrl;
     private UUID currentMatchId;
     private Instant queuedAt;
+    /** Radar uchun oxirgi queue_status vaqti (chastotani cheklash). */
+    private Instant lastQueueStatusAt;
     private Instant lastPingTime;
     private Instant disconnectedAt;
     private int reactionCountInWindow = 0;
