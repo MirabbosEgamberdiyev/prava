@@ -1,8 +1,12 @@
 import React, { useEffect, useCallback } from "react";
 import { Badge, Text } from "@mantine/core";
-import { IconFlame, IconClock, IconBolt } from "@tabler/icons-react";
+import { IconFlame, IconClock, IconBolt, IconWifiOff } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import type { MatchOpponent, OctagonQuestion, OpponentProgress, FlyingEmoji, OctagonState, QuestionOptionItem } from "../types";
+import { OctagonAvatar } from "./OctagonAvatar";
+import { OctagonRankBadge } from "./OctagonRankBadge";
+import { OctagonQuestionImage } from "./OctagonQuestionImage";
+import { safeName } from "../rank";
 import "../octagon.css";
 
 interface Props {
@@ -12,7 +16,11 @@ interface Props {
   myScore: number;
   myName: string;
   myRank: string;
+  myElo: number;
+  myAvatar?: string | null;
   opponent: MatchOpponent | null;
+  /** Tarmoq uzildi — 45 s ichida avtomatik qayta ulanish ketmoqda. */
+  reconnecting?: boolean;
   oppProgress: OpponentProgress;
   question: OctagonQuestion | null;
   currentIndex: number;
@@ -24,10 +32,11 @@ interface Props {
 }
 
 const HOTKEY_LABELS = ["A", "B", "C", "D"];
+// ID'lar serverdagi ruxsat etilgan ro'yxat bilan bir xil (avval "thumbs"/"shock" yuborilib, server ularni tashlab yuborardi)
 const REACTION_EMOJIS = [
   { id: "fire", char: "🔥" },
-  { id: "thumbs", char: "👍" },
-  { id: "shock", char: "😱" },
+  { id: "thumbs_up", char: "👍" },
+  { id: "mindblown", char: "😱" },
   { id: "laugh", char: "😂" },
 ];
 
@@ -38,7 +47,10 @@ export const OctagonArenaView: React.FC<Props> = ({
   myScore,
   myName,
   myRank,
+  myElo,
+  myAvatar,
   opponent,
+  reconnecting,
   oppProgress,
   question,
   currentIndex,
@@ -89,43 +101,41 @@ export const OctagonArenaView: React.FC<Props> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  const getRankBadge = (rank?: string) => {
-    const r = rank?.toLowerCase();
-    if (r === "brilliant") return <Badge color="violet" size="sm">{`💎 ${t("octagon.rank.brilliant", "Brilliant")}`}</Badge>;
-    if (r === "gold") return <Badge color="yellow" size="sm">{`🥇 ${t("octagon.rank.gold", "Oltin")}`}</Badge>;
-    if (r === "silver") return <Badge color="gray" size="sm">{`🥈 ${t("octagon.rank.silver", "Kumush")}`}</Badge>;
-    return <Badge color="orange" size="sm">{`🥉 ${t("octagon.rank.bronze", "Bronza")}`}</Badge>;
-  };
+  const oppName = safeName(opponent?.name, t("octagon.arena.opponent"));
+  const oppElo = opponent?.elo ?? opponent?.score ?? 0;
+  const meName = safeName(myName, t("octagon.lobby.defaultUser"));
+
+  const reconnectBanner = reconnecting ? (
+    <div className="oct-reconnect-banner" role="status">
+      <IconWifiOff size={16} />
+      <span>{t("octagon.arena.reconnecting")}</span>
+    </div>
+  ) : null;
 
   // Preloading or Countdown Overlay
   if (state === "MATCH_FOUND" || state === "COUNTDOWN") {
     return (
       <div className="oct-page-wrapper" style={{ justifyContent: "center", alignItems: "center" }}>
         <div className="oct-ambient-glow" />
+        {reconnectBanner}
         <div className="oct-vs-screen">
           <div className="oct-vs-row">
             {/* Me */}
             <div className="oct-vs-user">
-              <div className="oct-vs-avatar me">
-                {myName ? myName.charAt(0).toUpperCase() : "U"}
-              </div>
-              <div className="oct-vs-name">{myName}</div>
-              {getRankBadge(myRank)}
+              <OctagonAvatar name={meName} src={myAvatar} size={84} ring="#3b82f6" />
+              <div className="oct-vs-name">{meName}</div>
+              <div className="oct-vs-elo">{myElo} ELO</div>
+              <OctagonRankBadge rank={myRank} elo={myElo} />
             </div>
 
             <div className="oct-vs-badge">VS</div>
 
             {/* Opponent */}
             <div className="oct-vs-user">
-              <div className="oct-vs-avatar opp">
-                {opponent?.avatar ? (
-                  <img src={opponent.avatar} alt="" />
-                ) : (
-                  opponent?.name?.charAt(0).toUpperCase() || "R"
-                )}
-              </div>
-              <div className="oct-vs-name">{opponent?.name || t("octagon.arena.opponent", "Raqib")}</div>
-              {getRankBadge(opponent?.rank)}
+              <OctagonAvatar name={oppName} src={opponent?.avatar} size={84} ring="#ef4444" />
+              <div className="oct-vs-name">{oppName}</div>
+              <div className="oct-vs-elo">{oppElo} ELO</div>
+              <OctagonRankBadge rank={opponent?.rank} elo={oppElo} />
             </div>
           </div>
 
@@ -142,7 +152,7 @@ export const OctagonArenaView: React.FC<Props> = ({
           ) : (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
               <div className="oct-countdown-circle">
-                <span className="oct-countdown-num">{countdown > 0 ? countdown : "JANG!"}</span>
+                <span className="oct-countdown-num">{countdown > 0 ? countdown : t("octagon.arena.fight")}</span>
               </div>
               <Text size="sm" fw={700} style={{ color: "#94a3b8", marginTop: 16 }}>
                 {t("octagon.arena.countdownDesc", "Diqqat qiling, jang hoziroq boshlanadi!")}
@@ -159,6 +169,7 @@ export const OctagonArenaView: React.FC<Props> = ({
   return (
     <div className="oct-page-wrapper">
       <div className="oct-ambient-glow" />
+      {reconnectBanner}
 
       {/* Flying Emojis */}
       {flyingEmojis.map((item) => (
@@ -179,12 +190,10 @@ export const OctagonArenaView: React.FC<Props> = ({
         <div className="oct-hud-main">
           {/* Me */}
           <div className="oct-hud-player">
-            <div className="oct-hud-avatar me">
-              {myName ? myName.charAt(0).toUpperCase() : "U"}
-            </div>
+            <OctagonAvatar name={meName} src={myAvatar} size={44} ring="#3b82f6" />
             <div className="oct-hud-info">
               <div className="oct-hud-name-row">
-                <span className="oct-hud-name">{myName}</span>
+                <span className="oct-hud-name">{meName}</span>
                 <span className="oct-hud-badge-you">{t("octagon.arena.you", "Siz")}</span>
               </div>
               <div className="oct-hud-score me">
@@ -206,18 +215,13 @@ export const OctagonArenaView: React.FC<Props> = ({
 
           {/* Opponent */}
           <div className="oct-hud-player opponent">
-            <div className="oct-hud-avatar opp">
-              {opponent?.avatar ? (
-                <img src={opponent.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              ) : (
-                opponent?.name?.charAt(0).toUpperCase() || "R"
-              )}
-            </div>
+            <OctagonAvatar name={oppName} src={opponent?.avatar} size={44} ring="#ef4444" />
             <div className="oct-hud-info">
               <div className="oct-hud-name-row" style={{ justifyContent: "flex-end" }}>
-                <span className="oct-hud-name">{opponent?.name || t("octagon.arena.opponent", "Raqib")}</span>
-                {getRankBadge(opponent?.rank)}
+                <span className="oct-hud-name">{oppName}</span>
+                <OctagonRankBadge rank={opponent?.rank} elo={oppElo} size="xs" />
               </div>
+              <div className="oct-hud-elo">{oppElo} ELO</div>
               <div className="oct-hud-score opp">
                 {oppProgress.correctCount} {t("octagon.arena.points", "ball")} <IconFlame size={14} />
               </div>
@@ -275,21 +279,8 @@ export const OctagonArenaView: React.FC<Props> = ({
             {getQuestionText(question)}
           </Text>
 
-          {/* Question Image */}
-          <div className="oct-question-img-box">
-            <img
-              src={question.imageUrl || question.image || "/question-default.svg"}
-              alt={t("octagon.arena.imageAlt", "Savol chizmasi")}
-              className="oct-question-img"
-              loading="eager"
-              onError={(e) => {
-                const target = e.currentTarget;
-                if (!target.src.includes("question-default.svg")) {
-                  target.src = "/question-default.svg";
-                }
-              }}
-            />
-          </div>
+          {/* Question Image — oldindan yuklangan; yuklanmasa placeholder + "Qayta yuklash" */}
+          <OctagonQuestionImage path={question.imageUrl || question.image} questionId={question.id} />
 
           {/* 4 Options Grid */}
           <div className="oct-options-grid">

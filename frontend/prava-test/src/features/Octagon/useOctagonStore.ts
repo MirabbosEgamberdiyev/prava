@@ -9,27 +9,48 @@ import {
   type UserStats,
   type FlyingEmoji,
   type GroupRoom,
+  type GroupStanding,
   type IncomingChallenge,
+  type OutgoingChallenge,
+  type UserSearchResult,
 } from "./types";
 import { OctagonApi } from "./OctagonApi";
 import { OctagonSocket } from "./OctagonSocket";
 import { OctagonAudio } from "./OctagonAudio";
 import { imagePreloader } from "./OctagonImagePreloader";
 import { fireConfetti } from "./confetti";
-import { OctagonGuest } from "./guestIdentity";
 import { showToast } from "../../utils/notificationUtils";
 import i18n from "../../utils/i18n";
 
+const REACTION_EMOJI: Record<string, string> = {
+  fire: "🔥",
+  thumbs_up: "👍",
+  mindblown: "😱",
+  laugh: "😂",
+};
+
+function clearTimer(ref: { current: number | null }) {
+  if (ref.current) {
+    window.clearTimeout(ref.current);
+    ref.current = null;
+  }
+}
+
+const LIVE_MATCH_STATES: OctagonState[] = ["MATCH_FOUND", "COUNTDOWN", "PLAYING", "RECONNECTING"];
+
+/**
+ * Oktagon holati. 2026-10-21 dan Oktagon FAQAT ro'yxatdan o'tgan foydalanuvchilar uchun: mehmon
+ * har qanday jang tugmasini bosganda kirish oynasi ochiladi (`showAuthGate`), socket faqat
+ * tizimga kirgan foydalanuvchi uchun ochiladi.
+ */
 export function useOctagonStore(user: { id?: number | string; firstName?: string } | null) {
   const [state, setState] = useState<OctagonState>("IDLE");
   const [myStats, setMyStats] = useState<UserStats | null>(null);
 
-  // Search & Match timers
   const [searchSeconds, setSearchSeconds] = useState(0);
   const [countdown, setCountdown] = useState(3);
   const [remainingTimeSec, setRemainingTimeSec] = useState(300);
 
-  // Match information
   const [matchId, setMatchId] = useState<string>("");
   const [opponent, setOpponent] = useState<MatchOpponent | null>(null);
   const [questions, setQuestions] = useState<OctagonQuestion[]>([]);
@@ -44,18 +65,17 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
   const [matchResult, setMatchResult] = useState<MatchResultData | null>(null);
   const [flyingEmojis, setFlyingEmojis] = useState<FlyingEmoji[]>([]);
   const [revengeRequested, setRevengeRequested] = useState(false);
+  const [reconnecting, setReconnecting] = useState(false);
 
-  // Group room states
   const [currentRoom, setCurrentRoom] = useState<GroupRoom | null>(null);
   const [roomErrorMessage, setRoomErrorMessage] = useState<string | null>(null);
-  const [roomStandings, setRoomStandings] = useState<Array<{ userId: string; displayName: string; avatarUrl: string; score: number; answeredCount: number }> | null>(null);
+  const [roomStandings, setRoomStandings] = useState<GroupStanding[] | null>(null);
 
-  // Incoming challenge
   const [incomingChallenge, setIncomingChallenge] = useState<IncomingChallenge | null>(null);
+  const [outgoingChallenge, setOutgoingChallenge] = useState<OutgoingChallenge | null>(null);
 
-  // Modal triggers
   const [showRulesModal, setShowRulesModal] = useState(false);
-  const [showGuestModal, setShowGuestModal] = useState(false);
+  const [showAuthGate, setShowAuthGate] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showDuelModal, setShowDuelModal] = useState(false);
   const [showGroupModal, setShowGroupModal] = useState(false);
@@ -64,16 +84,40 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
   const socketRef = useRef<OctagonSocket | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
   const searchIntervalRef = useRef<number | null>(null);
+  const outgoingTimeoutRef = useRef<number | null>(null);
+  const stateRef = useRef<OctagonState>(state);
+  const outgoingRef = useRef<OutgoingChallenge | null>(null);
+  const incomingRef = useRef<IncomingChallenge | null>(null);
 
-  // Load user stats on mount
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+  useEffect(() => {
+    outgoingRef.current = outgoingChallenge;
+  }, [outgoingChallenge]);
+  useEffect(() => {
+    incomingRef.current = incomingChallenge;
+  }, [incomingChallenge]);
+
+  const isAuthed = Boolean(user && user.id != null);
+
+  /** Mehmon bo'lsa kirish oynasini ochadi va false qaytaradi. */
+  const requireAuth = useCallback((): boolean => {
+    if (isAuthed) return true;
+    setShowAuthGate(true);
+    return false;
+  }, [isAuthed]);
+
   const refreshStats = useCallback(async () => {
+    if (!user || user.id == null) {
+      setMyStats(null);
+      return;
+    }
     try {
-      // Mehmon o'z statistikasini server bergan token bilan oladi
-      const uid = user ? String(user.id) : OctagonGuest.getToken();
-      const stats = await OctagonApi.getStats(uid);
+      const stats = await OctagonApi.getStats(String(user.id));
       if (stats) setMyStats(stats);
     } catch {
-      // Offline or network error
+      // tarmoq yo'q — oxirgi ma'lum statistika qoladi
     }
   }, [user]);
 
@@ -81,16 +125,16 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     refreshStats();
   }, [refreshStats]);
 
-  // Clean up timers on unmount
   useEffect(() => {
     return () => {
       if (socketRef.current) socketRef.current.close();
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
+      clearTimer(outgoingTimeoutRef);
+      imagePreloader.clear();
     };
   }, []);
 
-  // Flying emojis cleanup
   const addFlyingEmoji = useCallback((emoji: string, isMine: boolean) => {
     OctagonAudio.playReaction();
     const id = Math.random().toString(36).substring(2, 9);
@@ -102,274 +146,289 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
       startY: window.innerHeight * 0.7,
     };
     setFlyingEmojis((prev) => [...prev, newEmoji]);
-
     setTimeout(() => {
       setFlyingEmojis((prev) => prev.filter((e) => e.id !== id));
     }, OCTAGON_CONFIG.REACTION_FLIGHT_MS);
   }, []);
 
-  // Connect socket and handle events
+  const startMatchClock = useCallback((seconds: number) => {
+    setRemainingTimeSec(seconds);
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    timerIntervalRef.current = window.setInterval(() => {
+      setRemainingTimeSec((prev) => {
+        if (prev <= 1) {
+          if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
   const createSocket = useCallback(async (): Promise<OctagonSocket> => {
     if (socketRef.current) return socketRef.current;
+    if (!user || user.id == null) throw new Error("login required");
 
     // Ticket bir martalik: birinchi ulanishda ham, har bir qayta ulanishda ham yangisi olinadi.
-    // Avval laqab "octagon_guest_name" kalitidan o'qilardi, saqlanishi esa "octagon_guest_nickname"da edi.
-    const fetchTicket = async (): Promise<string> => {
-      const info = await OctagonApi.getTicket(
-        user ? undefined : OctagonGuest.getToken(),
-        user ? undefined : OctagonGuest.getNickname()
-      );
-      if (!user) OctagonGuest.save(info.guestId, info.userId);
-      return info.ticket;
-    };
+    const fetchTicket = async (): Promise<string> => (await OctagonApi.getTicket()).ticket;
 
     const ticket = await fetchTicket();
-    if (!ticket) {
-      throw new Error("Failed to obtain One-Time Ticket");
-    }
+    if (!ticket) throw new Error("Failed to obtain One-Time Ticket");
 
     const loadQuestions = async (ids: number[], embedded?: OctagonQuestion[]) => {
       // Server savollarni event ichida yuboradi; eski server bo'lsa REST'dan olinadi
       const qList = embedded && embedded.length > 0 ? embedded : await OctagonApi.getQuestions(ids);
       setQuestions(qList);
-      const imageUrls = qList.map((q) => q.imageUrl).filter((u): u is string => Boolean(u));
-      imagePreloader.preloadImages(imageUrls);
+      // 8 soniyalik preload oynasida barcha rasmlar parallel yuklanadi (xotiradan 0 ms chiziladi)
+      void imagePreloader.preloadImages(qList.map((q) => q.imageUrl || q.image));
     };
 
-    const socket = new OctagonSocket({
-      onMatchFound: async (data) => {
-        setMatchId(data.matchId);
-        setOpponent(data.opponent);
-        setOppProgress({ questionIndex: 0, answeredCount: 0, correctCount: 0 });
-        setState("MATCH_FOUND");
-        if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
+    const socket = new OctagonSocket(
+      {
+        onConnected: () => {
+          setReconnecting(false);
+        },
 
-        // Fetch question details without answers (OWASP anti-cheat)
-        try {
-          if (data.questions && data.questions.length > 0) {
-            await loadQuestions(data.questionIds, data.questions);
-            return;
-          }
-          const qList = await OctagonApi.getQuestions(data.questionIds);
-          setQuestions(qList);
+        onClose: () => {
+          if (LIVE_MATCH_STATES.includes(stateRef.current)) setReconnecting(true);
+        },
 
-          // Preload images via worker pool
-          const imageUrls = qList.map((q) => q.imageUrl).filter((u): u is string => Boolean(u));
-          imagePreloader.preloadImages(imageUrls);
-        } catch {
-          // Preload failover
-        }
-      },
-
-      onCountdownTick: (count) => {
-        setState("COUNTDOWN");
-        setCountdown(count);
-        OctagonAudio.playCountdownTick(count);
-      },
-
-      onMatchStarted: (data) => {
-        setState("PLAYING");
-        setCurrentIndex(0);
-        setMyAnswers({});
-        setMyScore(0);
-        setRevengeRequested(false);
-        setRemainingTimeSec(data.totalDurationSec || 300);
-        OctagonAudio.playMatchStart();
-
-        // Start match timer
-        if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = window.setInterval(() => {
-          setRemainingTimeSec((prev) => {
-            if (prev <= 1) {
-              if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      },
-
-      onOpponentProgress: (progress) => {
-        setOppProgress(progress);
-      },
-
-      onOpponentReaction: (emojiId) => {
-        const emojiMap: Record<string, string> = {
-          fire: "🔥",
-          thumbs_up: "👍",
-          mindblown: "😱",
-          laugh: "😂",
-        };
-        addFlyingEmoji(emojiMap[emojiId] || "🔥", false);
-      },
-
-      onMatchEnded: (data) => {
-        if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-        const myId = user ? String(user.id) : OctagonGuest.getPublicId();
-        const isWin = !data.isDraw && Boolean(
-          (data.winnerId && myId && data.winnerId === myId) ||
-          (data.finalScores && data.finalScores.me > data.finalScores.opponent) ||
-          (data.myDeltaElo && data.myDeltaElo > 0)
-        );
-        const enrichedResult: MatchResultData = {
-          ...data,
-          isWin,
-        };
-        setMatchResult(enrichedResult);
-        setState("MATCH_FINISHED");
-
-        if (data.isDraw) {
-          OctagonAudio.playDefeat();
-        } else if (isWin) {
-          OctagonAudio.playVictory();
-          fireConfetti();
-        } else {
-          OctagonAudio.playDefeat();
-        }
-
-        refreshStats();
-      },
-
-      onReconnect: async (data) => {
-        // Sahifa yangilangan yoki tarmoq uzilgan bo'lsa ham jang to'liq tiklanadi
-        if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
-        setMatchId(data.matchId);
-        if (data.opponent) setOpponent(data.opponent);
-        if (data.opponentProgress) {
-          setOppProgress({
-            questionIndex: Math.max(0, data.opponentProgress.answeredCount - 1),
-            answeredCount: data.opponentProgress.answeredCount,
-            correctCount: data.opponentProgress.correctCount,
-          });
-        }
-        const answers: Record<number, number> = {};
-        Object.entries(data.myAnswers || {}).forEach(([k, v]) => {
-          answers[Number(k)] = v;
-        });
-        setMyAnswers(answers);
-        if (typeof data.myScore === "number") setMyScore(data.myScore);
-        if (data.questionIds && data.questionIds.length > 0) {
+        onMatchFound: async (data) => {
+          clearTimer(outgoingTimeoutRef);
+          setOutgoingChallenge(null);
+          setShowDuelModal(false);
+          setShowGroupModal(false);
+          setIncomingChallenge(null);
+          setMatchId(data.matchId);
+          setOpponent(data.opponent);
+          setOppProgress({ questionIndex: 0, answeredCount: 0, correctCount: 0 });
+          setMatchResult(null);
+          setRoomStandings(null);
+          setState("MATCH_FOUND");
+          OctagonAudio.playMatchFound();
+          if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
           try {
             await loadQuestions(data.questionIds, data.questions);
           } catch {
-            // REST zaxira ham ishlamadi — savollar keyingi urinishda yuklanadi
+            // REST zaxira ham ishlamadi — game_reconnect/qayta ulanishda tiklanadi
           }
-        }
-        setCurrentIndex(data.questionIndex);
-        setRemainingTimeSec(data.remainingTimeSec);
-        if (data.started === false) {
-          setState("MATCH_FOUND");
-          return;
-        }
-        setState("PLAYING");
-        if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = window.setInterval(() => {
-          setRemainingTimeSec((prev) => {
-            if (prev <= 1) {
-              if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-              return 0;
-            }
-            return prev - 1;
+        },
+
+        onCountdownTick: (count) => {
+          setState("COUNTDOWN");
+          setCountdown(count);
+          OctagonAudio.playCountdownTick(count);
+        },
+
+        onMatchStarted: (data) => {
+          setState("PLAYING");
+          setCurrentIndex(0);
+          setMyAnswers({});
+          setMyScore(0);
+          setRevengeRequested(false);
+          OctagonAudio.playMatchStart();
+          startMatchClock(data.totalDurationSec || OCTAGON_CONFIG.TOTAL_GAME_TIME_SEC);
+        },
+
+        onOpponentProgress: (progress) => {
+          setOppProgress(progress);
+        },
+
+        onOpponentReaction: (emojiId) => {
+          addFlyingEmoji(REACTION_EMOJI[emojiId] || "🔥", false);
+        },
+
+        onMatchEnded: (data) => {
+          if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+          const myId = user ? String(user.id) : undefined;
+          const isWin =
+            !data.isDraw &&
+            Boolean(
+              (data.winnerId && myId && data.winnerId === myId) ||
+                (data.finalScores && data.finalScores.me > data.finalScores.opponent) ||
+                (data.myDeltaElo && data.myDeltaElo > 0)
+            );
+          setMatchResult({ ...data, isWin });
+          setState("MATCH_FINISHED");
+          setReconnecting(false);
+
+          if (isWin) {
+            OctagonAudio.playVictory();
+            fireConfetti();
+          } else {
+            OctagonAudio.playDefeat();
+          }
+          refreshStats();
+        },
+
+        onReconnect: async (data) => {
+          // Sahifa yangilangan yoki tarmoq uzilgan bo'lsa ham jang to'liq tiklanadi
+          if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
+          setReconnecting(false);
+          setMatchId(data.matchId);
+          if (data.opponent) setOpponent(data.opponent);
+          if (data.opponentProgress) {
+            setOppProgress({
+              questionIndex: Math.max(0, data.opponentProgress.answeredCount - 1),
+              answeredCount: data.opponentProgress.answeredCount,
+              correctCount: data.opponentProgress.correctCount,
+            });
+          }
+          const answers: Record<number, number> = {};
+          Object.entries(data.myAnswers || {}).forEach(([k, v]) => {
+            answers[Number(k)] = v;
           });
-        }, 1000);
-      },
+          setMyAnswers(answers);
+          if (typeof data.myScore === "number") setMyScore(data.myScore);
+          if (data.questionIds && data.questionIds.length > 0) {
+            try {
+              await loadQuestions(data.questionIds, data.questions);
+            } catch {
+              // savollar keyingi urinishda yuklanadi
+            }
+          }
+          setCurrentIndex(data.questionIndex);
+          if (data.started === false) {
+            setState("MATCH_FOUND");
+            return;
+          }
+          setState("PLAYING");
+          startMatchClock(data.remainingTimeSec);
+        },
 
-      onAnswerResult: (data) => {
-        // Avval o'z balli o'yin davomida doim 0 ko'rinardi — server natija yubormasdi
-        setMyScore(data.myScore);
-      },
+        onAnswerResult: (data) => {
+          setMyScore(data.myScore);
+        },
 
-      onMatchError: (data) => {
-        if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
-        setState("IDLE");
-        setSearchSeconds(0);
-        showToast({ color: "red", message: data.message || "Jang ochilmadi, keyinroq urinib ko'ring" });
-      },
+        onMatchError: (data) => {
+          if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
+          setState("IDLE");
+          setSearchSeconds(0);
+          showToast({ color: "red", message: data.message || i18n.t("octagon.common.matchError") });
+        },
 
-      // Direct Challenge callbacks
-      onChallengeReceived: (data) => {
-        setIncomingChallenge(data);
-        OctagonAudio.playMatchFound();
-      },
-      onChallengeRejected: () => {
-        // Target rejected challenge
-      },
-      onChallengeError: (data) => {
-        showToast({ color: "red", message: data.message || i18n.t("octagon.common.error", "Xatolik yuz berdi") });
-      },
+        onChallengeReceived: (data) => {
+          setIncomingChallenge(data);
+          OctagonAudio.playMatchFound();
+        },
+        onChallengeSent: (data) => {
+          const current = outgoingRef.current;
+          if (!current || current.targetUserId !== data.targetUserId) return;
+          const expiresInSec = data.expiresInSec || 30;
+          setOutgoingChallenge({ ...current, challengeId: data.challengeId, expiresInSec, status: "waiting" });
+          clearTimer(outgoingTimeoutRef);
+          // Server CHALLENGE_TIMEOUT yubormasa ham (tarmoq) kutish abadiy davom etmasin
+          outgoingTimeoutRef.current = window.setTimeout(() => {
+            setOutgoingChallenge((prev) => (prev && prev.status === "waiting" ? { ...prev, status: "timeout" } : prev));
+          }, (expiresInSec + 3) * 1000);
+        },
+        onChallengeRejected: (data) => {
+          clearTimer(outgoingTimeoutRef);
+          setOutgoingChallenge((prev) =>
+            prev && (!prev.challengeId || prev.challengeId === data.challengeId) ? { ...prev, status: "rejected" } : prev
+          );
+        },
+        onChallengeCancelled: (data) => {
+          if (incomingRef.current?.challengeId === data.challengeId) {
+            setIncomingChallenge(null);
+            showToast({ color: "gray", message: i18n.t("octagon.challenge.cancelled") });
+          }
+        },
+        onChallengeError: (data) => {
+          if (outgoingRef.current) {
+            clearTimer(outgoingTimeoutRef);
+            setOutgoingChallenge((prev) =>
+              prev
+                ? { ...prev, status: data.code === "CHALLENGE_TIMEOUT" ? "timeout" : "error", message: data.message }
+                : prev
+            );
+            return;
+          }
+          showToast({ color: "red", message: data.message || i18n.t("octagon.common.error") });
+        },
 
-      // Every reconnect attempt failed: leave "searching" instead of spinning forever, and let the next
-      // "Qidirish" click build a fresh socket.
-      onConnectionLost: () => {
-        if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
-        socketRef.current = null;
-        setSearchSeconds(0);
-        setState((prev) => (prev === "SEARCHING" || prev === "AUTH_CHECK" ? "IDLE" : prev));
-        showToast({
-          id: "octagon-connection-lost",
-          color: "red",
-          message: i18n.t("octagon.common.connectionLost", "Oktagon serveriga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."),
-        });
-      },
+        onLoginRequired: () => {
+          socketRef.current = null;
+          setState("IDLE");
+          setShowAuthGate(true);
+        },
 
-      // Group Room callbacks
-      onRoomCreated: (room) => {
-        setCurrentRoom(room);
-        setShowGroupModal(true);
-        setRoomErrorMessage(null);
-      },
-      onRoomJoined: (room) => {
-        setCurrentRoom(room);
-        setShowGroupModal(true);
-        setRoomErrorMessage(null);
-      },
-      onRoomUpdated: (room) => {
-        setCurrentRoom(room);
-      },
-      onRoomLeft: () => {
-        setCurrentRoom(null);
-      },
-      onRoomError: (data) => {
-        setRoomErrorMessage(data.message);
-      },
-      onRoomGameCountdown: (count) => {
-        setState("COUNTDOWN");
-        setCountdown(count);
-        OctagonAudio.playCountdownTick(count);
-        setShowGroupModal(false);
-      },
-      onRoomGameStarted: async (data) => {
-        setState("PLAYING");
-        setCurrentIndex(0);
-        setMyAnswers({});
-        setMyScore(0);
-        setRevengeRequested(false);
-        setRemainingTimeSec(data.totalDurationSec || 300);
-        setShowGroupModal(false);
-        OctagonAudio.playMatchStart();
+        // Barcha qayta ulanishlar muvaffaqiyatsiz: "qidirilmoqda"da abadiy qolmaslik
+        onConnectionLost: () => {
+          if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
+          socketRef.current = null;
+          setSearchSeconds(0);
+          setReconnecting(false);
+          setState((prev) => (prev === "SEARCHING" || prev === "AUTH_CHECK" ? "IDLE" : prev));
+          showToast({
+            id: "octagon-connection-lost",
+            color: "red",
+            message: i18n.t("octagon.common.connectionLost"),
+          });
+        },
 
-        try {
-          await loadQuestions(data.questionIds, data.questions);
-        } catch {
-          // Failover
-        }
+        // Group Room callbacks
+        onRoomCreated: (room) => {
+          setCurrentRoom(room);
+          setShowGroupModal(true);
+          setRoomErrorMessage(null);
+        },
+        onRoomJoined: (room) => {
+          setCurrentRoom(room);
+          setShowGroupModal(true);
+          setRoomErrorMessage(null);
+        },
+        onRoomUpdated: (room) => {
+          setCurrentRoom(room);
+        },
+        onRoomLeft: () => {
+          setCurrentRoom(null);
+        },
+        onRoomError: (data) => {
+          setRoomErrorMessage(data.message);
+        },
+        onRoomGameCountdown: (count) => {
+          setState("COUNTDOWN");
+          setCountdown(count);
+          OctagonAudio.playCountdownTick(count);
+          setShowGroupModal(false);
+        },
+        onRoomGameStarted: async (data) => {
+          setState("PLAYING");
+          setCurrentIndex(0);
+          setMyAnswers({});
+          setMyScore(0);
+          setRevengeRequested(false);
+          setRoomStandings(null);
+          setShowGroupModal(false);
+          OctagonAudio.playMatchStart();
+          startMatchClock(data.totalDurationSec || OCTAGON_CONFIG.TOTAL_GAME_TIME_SEC);
+          try {
+            await loadQuestions(data.questionIds, data.questions);
+          } catch {
+            // Failover
+          }
+        },
+        onGroupProgress: () => {
+          // guruh balli yakunda ko'rsatiladi
+        },
+        onGroupMatchEnded: (data) => {
+          if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+          setRoomStandings(data.standings);
+          setMatchResult(null);
+          setState("MATCH_FINISHED");
+          OctagonAudio.playVictory();
+          fireConfetti();
+          refreshStats();
+        },
       },
-      onGroupProgress: (_data) => {
-        // live group score sync
-      },
-      onGroupMatchEnded: (data) => {
-        setRoomStandings(data.standings);
-        setState("MATCH_FINISHED");
-        OctagonAudio.playVictory();
-        fireConfetti();
-        refreshStats();
-      },
-    }, fetchTicket);
+      fetchTicket
+    );
 
     socket.connect(ticket);
     socketRef.current = socket;
     return socket;
-  }, [user, addFlyingEmoji, refreshStats]);
+  }, [user, addFlyingEmoji, refreshStats, startMatchClock]);
 
   const pendingSocketRef = useRef<Promise<OctagonSocket> | null>(null);
   const initSocket = useCallback((): Promise<OctagonSocket> => {
@@ -382,38 +441,37 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     return pendingSocketRef.current;
   }, [createSocket]);
 
-  // Lobbiga kirilganda ulanamiz: aks holda do'stlar "offline" ko'rinadi (chaqiruv yuborib bo'lmaydi)
-  // va sahifa yangilangandan keyin davom etayotgan jang tiklanmaydi.
+  // Tizimga kirgan foydalanuvchi lobbiga kirishi bilan ulanadi: do'stlar uni "onlayn" ko'radi
+  // (chaqiruv keladi) va sahifa yangilanganda davom etayotgan jang tiklanadi.
   const socketOwnerRef = useRef<string | null>(null);
   useEffect(() => {
-    // Mehmon sifatida ochilgan socket tizimga kirgandan keyin foydalanuvchi socketiga almashtiriladi
-    const owner = user?.id != null ? String(user.id) : "guest";
+    const owner = user?.id != null ? String(user.id) : null;
     if (socketRef.current && socketOwnerRef.current !== owner) {
       socketRef.current.close();
       socketRef.current = null;
     }
     socketOwnerRef.current = owner;
-    if (!user && !OctagonGuest.getToken()) return;
+    if (!owner) return;
     initSocket().catch(() => {
-      // tarmoq yo'q — foydalanuvchi "Qidirish"ni bosganda qayta uriniladi
+      // tarmoq yo'q — foydalanuvchi jang tugmasini bosganda qayta uriniladi
     });
   }, [user, initSocket]);
 
-  // Click: "QIDIRISHNI BOSHLASH"
-  const startSearch = useCallback(async () => {
-    // If not authenticated and no guest pass, prompt modal
-    if (!user && !OctagonGuest.hasPass()) {
-      setShowGuestModal(true);
-      return;
-    }
+  // Internet qaytdi yoki tab qayta ochildi — 45 s grace tugamasdan darhol qayta ulanamiz
+  useEffect(() => {
+    const nudge = () => {
+      if (document.visibilityState === "hidden") return;
+      socketRef.current?.reconnectNow();
+    };
+    window.addEventListener("online", nudge);
+    document.addEventListener("visibilitychange", nudge);
+    return () => {
+      window.removeEventListener("online", nudge);
+      document.removeEventListener("visibilitychange", nudge);
+    };
+  }, []);
 
-    // Check rules confirmation (once per session)
-    const rulesAccepted = sessionStorage.getItem("octagon_rules_accepted");
-    if (!rulesAccepted) {
-      setShowRulesModal(true);
-      return;
-    }
-
+  const beginSearch = useCallback(async () => {
     try {
       setState("SEARCHING");
       setSearchSeconds(0);
@@ -425,30 +483,50 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
       const socket = await initSocket();
       socket.joinQueue(0, myStats?.eloRating || 0);
     } catch {
+      if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
       setState("IDLE");
+      showToast({ color: "red", message: i18n.t("octagon.common.connectionLost") });
     }
-  }, [user, myStats, initSocket]);
+  }, [myStats, initSocket]);
 
-  const confirmRulesAndSearch = useCallback((_duelCode?: string) => {
+  // "Random 1 vs 1"
+  const startSearch = useCallback(() => {
+    if (!requireAuth()) return;
+    const rulesAccepted = sessionStorage.getItem("octagon_rules_accepted");
+    if (!rulesAccepted) {
+      setShowRulesModal(true);
+      return;
+    }
+    void beginSearch();
+  }, [requireAuth, beginSearch]);
+
+  const confirmRulesAndSearch = useCallback(() => {
     sessionStorage.setItem("octagon_rules_accepted", "true");
     setShowRulesModal(false);
-    startSearch();
-  }, [startSearch]);
+    if (!requireAuth()) return;
+    void beginSearch();
+  }, [requireAuth, beginSearch]);
+
+  const openDuel = useCallback(() => {
+    if (requireAuth()) setShowDuelModal(true);
+  }, [requireAuth]);
+
+  const openGroup = useCallback(() => {
+    if (requireAuth()) setShowGroupModal(true);
+  }, [requireAuth]);
+
+  const openHistory = useCallback(() => {
+    if (requireAuth()) setShowHistoryModal(true);
+  }, [requireAuth]);
 
   const cancelSearch = useCallback(() => {
-    if (socketRef.current) {
-      socketRef.current.leaveQueue();
-    }
-    if (searchIntervalRef.current) {
-      clearInterval(searchIntervalRef.current);
-    }
+    socketRef.current?.leaveQueue();
+    if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
     setState("IDLE");
     setSearchSeconds(0);
   }, []);
 
-  // (questionId, selectedIndex) — the arena calls onSubmitAnswer(question.id, optionIndex). The old
-  // one-argument signature took question.id AS the selected option (TypeScript accepts a shorter
-  // parameter list), so every web/desktop answer was sent as an invalid index and scored 0.
+  // (questionId, selectedIndex) — arena onSubmitAnswer(question.id, optionIndex) chaqiradi.
   const submitAnswer = useCallback(
     (questionId: number, selectedIndex: number) => {
       if (state !== "PLAYING" || questions.length === 0) return;
@@ -456,10 +534,8 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
       if (!currentQ || currentQ.id !== questionId || myAnswers[currentQ.id] !== undefined) return;
       if (!Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= (currentQ.options?.length ?? 0)) return;
 
-      // Update state locally
       setMyAnswers((prev) => ({ ...prev, [currentQ.id]: selectedIndex }));
 
-      // Send via socket
       if (socketRef.current) {
         if (currentRoom) {
           socketRef.current.submitRoomAnswer(currentQ.id, selectedIndex);
@@ -468,7 +544,6 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
         }
       }
 
-      // Move to next question after small delay
       if (currentIndex + 1 < questions.length) {
         setTimeout(() => {
           setCurrentIndex((idx) => idx + 1);
@@ -482,13 +557,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     (emojiId: string) => {
       if (!socketRef.current || !matchId) return;
       socketRef.current.sendReaction(matchId, emojiId);
-      const emojiMap: Record<string, string> = {
-        fire: "🔥",
-        thumbs_up: "👍",
-        mindblown: "😱",
-        laugh: "😂",
-      };
-      addFlyingEmoji(emojiMap[emojiId] || "🔥", true);
+      addFlyingEmoji(REACTION_EMOJI[emojiId] || "🔥", true);
     },
     [matchId, addFlyingEmoji]
   );
@@ -499,67 +568,111 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     socketRef.current.requestRevenge(matchId);
   }, [matchId]);
 
-  // Friend Duel Actions
-  const sendChallenge = useCallback(async (targetUserId: string) => {
-    try {
-      const socket = await initSocket();
-      socket.sendChallenge(targetUserId);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [initSocket]);
+  // --- Do'st bilan 1v1 ---
+  const sendChallenge = useCallback(
+    async (target: UserSearchResult) => {
+      if (!requireAuth()) return;
+      clearTimer(outgoingTimeoutRef);
+      const pending: OutgoingChallenge = {
+        targetUserId: target.userId,
+        targetName: target.displayName,
+        targetAvatar: target.avatarUrl,
+        targetElo: target.eloRating,
+        expiresInSec: 30,
+        status: "sending",
+      };
+      outgoingRef.current = pending;
+      setOutgoingChallenge(pending);
+      try {
+        const socket = await initSocket();
+        socket.sendChallenge(target.userId);
+      } catch {
+        setOutgoingChallenge({ ...pending, status: "error", message: i18n.t("octagon.common.connectionLost") });
+      }
+    },
+    [initSocket, requireAuth]
+  );
+
+  const cancelChallenge = useCallback(() => {
+    const current = outgoingRef.current;
+    clearTimer(outgoingTimeoutRef);
+    if (current?.challengeId) socketRef.current?.cancelChallenge(current.challengeId);
+    outgoingRef.current = null;
+    setOutgoingChallenge(null);
+  }, []);
+
+  const clearOutgoing = useCallback(() => {
+    clearTimer(outgoingTimeoutRef);
+    outgoingRef.current = null;
+    setOutgoingChallenge(null);
+  }, []);
+
+  /** Havola (?duel=KOD), QR yoki qo'lda kiritilgan kod orqali do'st jangiga qo'shilish. */
+  const joinInvite = useCallback(
+    async (code: string) => {
+      const clean = code.trim().toUpperCase();
+      if (!clean || !requireAuth()) return;
+      try {
+        const socket = await initSocket();
+        socket.joinInvite(clean);
+        setShowDuelModal(false);
+        showToast({ id: "octagon-invite", color: "grape", message: i18n.t("octagon.duel.joiningInvite") });
+      } catch {
+        showToast({ color: "red", message: i18n.t("octagon.common.connectionLost") });
+      }
+    },
+    [initSocket, requireAuth]
+  );
 
   const acceptChallenge = useCallback((challengeId: string) => {
-    if (socketRef.current) {
-      socketRef.current.acceptChallenge(challengeId);
-    }
+    socketRef.current?.acceptChallenge(challengeId);
     setIncomingChallenge(null);
   }, []);
 
   const rejectChallenge = useCallback((challengeId: string) => {
-    if (socketRef.current) {
-      socketRef.current.rejectChallenge(challengeId);
-    }
+    socketRef.current?.rejectChallenge(challengeId);
     setIncomingChallenge(null);
   }, []);
 
-  // Group Room Actions
-  const createRoom = useCallback(async (maxPlayers = 4, isPrivate = false) => {
-    try {
-      const socket = await initSocket();
-      socket.createRoom(maxPlayers, isPrivate);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [initSocket]);
+  // --- Guruhli jang ---
+  const createRoom = useCallback(
+    async (maxPlayers = 4, isPrivate = false) => {
+      if (!requireAuth()) return;
+      try {
+        const socket = await initSocket();
+        socket.createRoom(maxPlayers, isPrivate);
+      } catch {
+        setRoomErrorMessage(i18n.t("octagon.common.connectionLost"));
+      }
+    },
+    [initSocket, requireAuth]
+  );
 
-  const joinRoom = useCallback(async (roomCode: string) => {
-    try {
-      const socket = await initSocket();
-      socket.joinRoom(roomCode);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [initSocket]);
+  const joinRoom = useCallback(
+    async (roomCode: string) => {
+      if (!requireAuth()) return;
+      try {
+        const socket = await initSocket();
+        socket.joinRoom(roomCode);
+      } catch {
+        setRoomErrorMessage(i18n.t("octagon.common.connectionLost"));
+      }
+    },
+    [initSocket, requireAuth]
+  );
 
   const leaveRoom = useCallback(() => {
-    if (socketRef.current) {
-      socketRef.current.leaveRoom();
-    }
+    socketRef.current?.leaveRoom();
     setCurrentRoom(null);
     setShowGroupModal(false);
   }, []);
 
   const toggleReady = useCallback((ready: boolean) => {
-    if (socketRef.current) {
-      socketRef.current.toggleReady(ready);
-    }
+    socketRef.current?.toggleReady(ready);
   }, []);
 
   const startRoomGame = useCallback(() => {
-    if (socketRef.current) {
-      socketRef.current.startRoomGame();
-    }
+    socketRef.current?.startRoomGame();
   }, []);
 
   const returnToLobby = useCallback(() => {
@@ -574,6 +687,8 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     setRevengeRequested(false);
     setCurrentRoom(null);
     setRoomStandings(null);
+    setReconnecting(false);
+    imagePreloader.clear();
     refreshStats();
   }, [refreshStats]);
 
@@ -595,14 +710,16 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     matchResult,
     flyingEmojis,
     revengeRequested,
+    reconnecting,
     currentRoom,
     roomErrorMessage,
     roomStandings,
     incomingChallenge,
+    outgoingChallenge,
     showRulesModal,
     setShowRulesModal,
-    showGuestModal,
-    setShowGuestModal,
+    showAuthGate,
+    setShowAuthGate,
     showLeaderboard,
     setShowLeaderboard,
     showDuelModal,
@@ -619,7 +736,13 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     requestRevenge,
     returnToLobby,
     refreshStats,
+    openDuel,
+    openGroup,
+    openHistory,
     sendChallenge,
+    cancelChallenge,
+    clearOutgoing,
+    joinInvite,
     acceptChallenge,
     rejectChallenge,
     createRoom,

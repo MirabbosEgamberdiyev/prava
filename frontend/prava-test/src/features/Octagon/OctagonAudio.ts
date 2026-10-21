@@ -24,6 +24,10 @@ class OctagonAudioSynthesizer {
     this.isMuted = muted;
   }
 
+  public getMuted(): boolean {
+    return this.isMuted;
+  }
+
   public playCountdownTick(count: number) {
     if (this.isMuted) return;
     const ctx = this.getContext();

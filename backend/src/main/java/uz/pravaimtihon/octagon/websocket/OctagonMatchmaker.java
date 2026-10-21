@@ -10,10 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uz.pravaimtihon.entity.Question;
 import uz.pravaimtihon.octagon.dto.OctagonDtos.*;
+import uz.pravaimtihon.octagon.entity.OctagonChallenge;
 import uz.pravaimtihon.octagon.entity.OctagonMatch;
 import uz.pravaimtihon.octagon.entity.OctagonProfile;
 import uz.pravaimtihon.octagon.enums.OctagonGameType;
 import uz.pravaimtihon.octagon.enums.OctagonRank;
+import uz.pravaimtihon.octagon.service.OctagonBotPersonas;
 import uz.pravaimtihon.octagon.service.OctagonService;
 import uz.pravaimtihon.repository.QuestionRepository;
 
@@ -42,6 +44,7 @@ public class OctagonMatchmaker {
     /** Tugagan jang/xona revansh va natija uchun shuncha vaqt xotirada turadi, keyin o'chiriladi. */
     static final long ENDED_RETENTION_SEC = 120;
     static final int MAX_CHALLENGES_PER_MINUTE = 5;
+    static final int CHALLENGE_TTL_SEC = 30;
     static final int MAX_FAILED_ROOM_JOINS_PER_MINUTE = 10;
     private static final String ROOM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -103,8 +106,9 @@ public class OctagonMatchmaker {
             OctagonProfile profile = octagonService.getProfileSnapshot(session.getUserId());
             if (profile != null) {
                 session.setCurrentElo(profile.getEloRating());
-                session.setRank(profile.getRank() != null ? profile.getRank() : OctagonRank.BRONZE);
+                session.setRank(OctagonRank.fromElo(profile.getEloRating()));
             }
+            session.setAvatarUrl(octagonService.resolveAvatarUrl(session.getUserId()));
         } catch (Exception e) {
             log.warn("Failed to load Octagon profile for {}: {}", session.getUserId(), e.getMessage());
         }
@@ -288,6 +292,8 @@ public class OctagonMatchmaker {
                 false, gameType, questionIds, correctOptions
         );
         match.setQuestionPayload(loadQuestionPayload(questionIds));
+        match.setPlayer1Avatar(p1.getAvatarUrl());
+        match.setPlayer2Avatar(p2.getAvatarUrl());
 
         p1.setCurrentMatchId(matchId);
         p2.setCurrentMatchId(matchId);
@@ -297,8 +303,8 @@ public class OctagonMatchmaker {
 
         log.info("Created match {} ({}) between {} and {}", matchId, gameType, p1.getUserId(), p2.getUserId());
 
-        sendMatchFound(match, p1, p2.getUserId(), p2.getDisplayName(), p2.getCurrentElo(), rankName(p2.getRank()));
-        sendMatchFound(match, p2, p1.getUserId(), p1.getDisplayName(), p1.getCurrentElo(), rankName(p1.getRank()));
+        sendMatchFound(match, p1, opponentCard(p2.getUserId(), p2.getDisplayName(), p2.getCurrentElo(), p2.getAvatarUrl()));
+        sendMatchFound(match, p2, opponentCard(p1.getUserId(), p1.getDisplayName(), p1.getCurrentElo(), p1.getAvatarUrl()));
 
         schedulePreloadAndCountdown(match);
         return match;
@@ -306,6 +312,14 @@ public class OctagonMatchmaker {
 
     /** matchLock ostida chaqiriladi. */
     private ActiveMatch createBotMatch(OctagonSession p1) {
+        // Bot oddiy o'yinchidek: haqiqiy ism (ID'dan deterministik), o'yinchiga yaqin ELO
+        String botId = OctagonBotPersonas.newBotId();
+        return createBotMatch(p1, botId, OctagonBotPersonas.nameFor(botId),
+                Math.max(0, p1.getCurrentElo() + (RANDOM.nextInt(61) - 30)));
+    }
+
+    /** Revansh botga qarshi bo'lsa — o'sha raqib (ism/ELO) qaytadi. */
+    private ActiveMatch createBotMatch(OctagonSession p1, String botId, String botName, int botElo) {
         if (hasLiveMatch(p1.getUserId())) return null;
         List<Long> questionIds = octagonService.getRandomQuestionIds(QUESTIONS_PER_MATCH);
         if (questionIds.isEmpty()) {
@@ -317,10 +331,6 @@ public class OctagonMatchmaker {
         p1.setQueuedAt(null);
 
         UUID matchId = UUID.randomUUID();
-        String botId = "bot_" + UUID.randomUUID().toString().substring(0, 6);
-        String[] botNames = {"Sardor_Pro", "Dilshod_77", "Shaxzod_R", "Kamola_Avto", "Begzod_Turbo", "Malibu_Driver"};
-        String botName = botNames[RANDOM.nextInt(botNames.length)];
-        int botElo = Math.max(0, p1.getCurrentElo() + (RANDOM.nextInt(41) - 20));
 
         ActiveMatch match = new ActiveMatch(
                 matchId, p1, null,
@@ -328,6 +338,7 @@ public class OctagonMatchmaker {
                 true, OctagonGameType.BOT_TRAINING, questionIds, correctOptions
         );
         match.setQuestionPayload(loadQuestionPayload(questionIds));
+        match.setPlayer1Avatar(p1.getAvatarUrl());
 
         OctagonGameBot bot = new OctagonGameBot(botId, botName, botElo, match, scheduler,
                 this::sendBotProgressToPlayer,
@@ -341,7 +352,7 @@ public class OctagonMatchmaker {
 
         log.info("Created BOT match {} for user {} against bot {}", matchId, p1.getUserId(), botName);
 
-        sendMatchFound(match, p1, botId, botName, botElo, rankName(OctagonRank.fromElo(botElo)));
+        sendMatchFound(match, p1, opponentCard(botId, botName, botElo, null));
         schedulePreloadAndCountdown(match);
         return match;
     }
@@ -350,19 +361,29 @@ public class OctagonMatchmaker {
         return (rank != null ? rank : OctagonRank.BRONZE).name().toLowerCase();
     }
 
+    /**
+     * Raqib kartasi (match_found / game_reconnect): ism hech qachon bo'sh emas, liga ELO'dan,
+     * rasm bo'lmasa {@code avatar: null} (avval mavjud bo'lmagan "/images/default-avatar.webp" yuborilib,
+     * klientda buzilgan rasm chiqardi).
+     */
+    static Map<String, Object> opponentCard(String id, String name, int elo, String avatarUrl) {
+        OctagonRank rank = OctagonRank.fromElo(elo);
+        Map<String, Object> opp = new HashMap<>();
+        opp.put("id", id);
+        opp.put("name", name != null && !name.isBlank() ? name : "Haydovchi");
+        opp.put("score", elo);
+        opp.put("elo", elo);
+        opp.put("rank", rankName(rank));
+        opp.put("rankEmoji", rank.getEmoji());
+        opp.put("avatar", avatarUrl);
+        return opp;
+    }
+
     private void sendMatchError(OctagonSession s) {
         sendEvent(s, "match_error", Map.of("code", "NO_QUESTIONS", "message", "Savollar topilmadi, keyinroq urinib ko'ring"));
     }
 
-    private void sendMatchFound(ActiveMatch match, OctagonSession session,
-                                String oppId, String oppName, int oppElo, String oppRank) {
-        Map<String, Object> opp = new HashMap<>();
-        opp.put("id", oppId);
-        opp.put("name", oppName);
-        opp.put("score", oppElo);
-        opp.put("rank", oppRank);
-        opp.put("avatar", "/images/default-avatar.webp");
-
+    private void sendMatchFound(ActiveMatch match, OctagonSession session, Map<String, Object> opp) {
         Map<String, Object> data = new HashMap<>();
         data.put("matchId", match.getMatchId().toString());
         data.put("opponent", opp);
@@ -507,7 +528,7 @@ public class OctagonMatchmaker {
         synchronized (matchLock) {
             if (match.isBotMatch()) {
                 if (match.isP1WantsRevenge() && match.tryClaimRematch()) {
-                    createBotMatch(session);
+                    createBotMatch(session, match.getPlayer2Id(), match.getPlayer2Name(), match.getPlayer2Elo());
                 }
             } else if (match.isP1WantsRevenge() && match.isP2WantsRevenge()) {
                 OctagonSession p1 = activeSessions.get(match.getPlayer1Id());
@@ -619,12 +640,9 @@ public class OctagonMatchmaker {
                 ? Math.max(0, Duration.between(Instant.now(), match.getDeadlineAt()).getSeconds())
                 : MATCH_DURATION_SEC;
 
-        Map<String, Object> opp = new HashMap<>();
-        opp.put("id", isP1 ? match.getPlayer2Id() : match.getPlayer1Id());
-        opp.put("name", isP1 ? match.getPlayer2Name() : match.getPlayer1Name());
-        opp.put("score", isP1 ? match.getPlayer2Elo() : match.getPlayer1Elo());
-        opp.put("rank", rankName(OctagonRank.fromElo(isP1 ? match.getPlayer2Elo() : match.getPlayer1Elo())));
-        opp.put("avatar", "/images/default-avatar.webp");
+        Map<String, Object> opp = isP1
+                ? opponentCard(match.getPlayer2Id(), match.getPlayer2Name(), match.getPlayer2Elo(), match.getPlayer2Avatar())
+                : opponentCard(match.getPlayer1Id(), match.getPlayer1Name(), match.getPlayer1Elo(), match.getPlayer1Avatar());
 
         Map<String, Object> reconnectData = new HashMap<>();
         reconnectData.put("matchId", match.getMatchId().toString());
@@ -762,19 +780,22 @@ public class OctagonMatchmaker {
 
         sendEvent(challenger, "challenge_sent", Map.of(
                 "challengeId", challengeId.toString(),
-                "targetUserId", targetUserId
+                "targetUserId", targetUserId,
+                "targetName", target.getDisplayName() != null ? target.getDisplayName() : "Haydovchi",
+                "expiresInSec", CHALLENGE_TTL_SEC
         ));
 
+        Map<String, Object> challengerCard = new HashMap<>();
+        challengerCard.put("userId", challenger.getUserId());
+        challengerCard.put("displayName", challenger.getDisplayName());
+        challengerCard.put("eloRating", challenger.getCurrentElo());
+        challengerCard.put("rank", rankName(OctagonRank.fromElo(challenger.getCurrentElo())));
+        challengerCard.put("rankEmoji", OctagonRank.fromElo(challenger.getCurrentElo()).getEmoji());
+        challengerCard.put("avatarUrl", challenger.getAvatarUrl());
         sendEvent(target, "challenge_received", Map.of(
                 "challengeId", challengeId.toString(),
-                "challenger", Map.of(
-                        "userId", challenger.getUserId(),
-                        "displayName", challenger.getDisplayName(),
-                        "eloRating", challenger.getCurrentElo(),
-                        "rank", rankName(challenger.getRank()),
-                        "rankEmoji", challenger.getRank() != null ? challenger.getRank().getEmoji() : "🥉"
-                ),
-                "expiresInSec", 30
+                "challenger", challengerCard,
+                "expiresInSec", CHALLENGE_TTL_SEC
         ));
 
         scheduler.schedule(() -> {
@@ -784,8 +805,59 @@ public class OctagonMatchmaker {
                 if (ch != null) {
                     sendEvent(ch, "challenge_error", Map.of("code", "CHALLENGE_TIMEOUT", "message", "Taklifga javob berilmadi"));
                 }
+                OctagonSession tg = activeSessions.get(exp.targetUserId);
+                if (tg != null) {
+                    sendEvent(tg, "challenge_cancelled", Map.of("challengeId", challengeId.toString(), "reason", "TIMEOUT"));
+                }
             }
-        }, 30, TimeUnit.SECONDS);
+        }, CHALLENGE_TTL_SEC, TimeUnit.SECONDS);
+    }
+
+    /** Chaqiruvchi kutishni bekor qildi — raqibdagi taklif oynasi yopiladi. */
+    public void handleCancelChallenge(OctagonSession challenger, UUID challengeId) {
+        PendingChallenge pc = pendingChallenges.get(challengeId);
+        if (pc == null || !pc.challengerId.equals(challenger.getUserId())) return;
+        pendingChallenges.remove(challengeId);
+        OctagonSession target = activeSessions.get(pc.targetUserId);
+        if (target != null) {
+            sendEvent(target, "challenge_cancelled", Map.of("challengeId", challengeId.toString(), "reason", "CANCELLED"));
+        }
+    }
+
+    /**
+     * Havola/QR/kod orqali duel: taklif egasi Oktagon'da onlayn bo'lsa, ikkalasi o'rtasida darhol jang ochiladi.
+     * Avval klient kodni e'tiborsiz qoldirib, tasodifiy raqib qidirardi.
+     */
+    public void handleJoinInvite(OctagonSession joiner, String inviteCode) {
+        Optional<OctagonChallenge> invite = octagonService.getChallenge(inviteCode);
+        if (invite.isEmpty()) {
+            sendEvent(joiner, "challenge_error", Map.of("code", "INVITE_NOT_FOUND",
+                    "message", "Duel taklifi topilmadi yoki muddati o'tgan"));
+            return;
+        }
+        OctagonChallenge c = invite.get();
+        if (c.getChallengerId().equals(joiner.getUserId())) {
+            sendEvent(joiner, "challenge_error", Map.of("code", "OWN_INVITE",
+                    "message", "Bu sizning taklifingiz — havolani do'stingizga yuboring"));
+            return;
+        }
+        OctagonSession inviter = activeSessions.get(c.getChallengerId());
+        if (inviter == null || !inviter.isOpen() || hasLiveMatch(c.getChallengerId())) {
+            sendEvent(joiner, "challenge_error", Map.of("code", "INVITER_OFFLINE",
+                    "message", "Taklif egasi hozir Oktagon'da emas. Keyinroq urinib ko'ring"));
+            return;
+        }
+        if (hasLiveMatch(joiner.getUserId())) return;
+
+        log.info("Invite duel {}: {} vs {}", c.getInviteCode(), c.getChallengerId(), joiner.getUserId());
+        handleLeaveRoom(inviter);
+        handleLeaveRoom(joiner);
+        leaveQueue(inviter);
+        leaveQueue(joiner);
+        createDirectMatch(inviter, joiner, OctagonGameType.DUEL_FRIEND);
+        if (hasLiveMatch(joiner.getUserId())) {
+            octagonService.markInviteAccepted(c.getId());
+        }
     }
 
     public void handleAcceptChallenge(OctagonSession targetSession, UUID challengeId) {
@@ -859,11 +931,11 @@ public class OctagonMatchmaker {
     private GroupRoomMember newMember(OctagonSession session, boolean isHost) {
         OctagonProfile profile = octagonService.getProfileSnapshot(session.getUserId());
         int elo = profile != null ? profile.getEloRating() : session.getCurrentElo();
-        OctagonRank rank = profile != null && profile.getRank() != null ? profile.getRank() : OctagonRank.BRONZE;
+        OctagonRank rank = OctagonRank.fromElo(elo);
         return new GroupRoomMember(
                 session.getUserId(),
                 session.getDisplayName(),
-                "/images/default-avatar.webp",
+                session.getAvatarUrl(),
                 elo,
                 rank.getEmoji(),
                 isHost
@@ -1234,7 +1306,7 @@ public class OctagonMatchmaker {
         private final OctagonRank challengerRank;
         private final String targetUserId;
         private final Instant createdAt = Instant.now();
-        private final Instant expiresAt = Instant.now().plusSeconds(30);
+        private final Instant expiresAt = Instant.now().plusSeconds(CHALLENGE_TTL_SEC);
 
         public PendingChallenge(UUID challengeId, String challengerId, String challengerName,
                                 int challengerElo, OctagonRank challengerRank, String targetUserId) {
@@ -1269,7 +1341,7 @@ public class OctagonMatchmaker {
         public GroupRoomMember(String userId, String displayName, String avatarUrl, int eloRating, String rankEmoji, boolean isHost) {
             this.userId = userId;
             this.displayName = displayName;
-            this.avatarUrl = avatarUrl != null ? avatarUrl : "/images/default-avatar.webp";
+            this.avatarUrl = avatarUrl;
             this.eloRating = eloRating;
             this.rankEmoji = rankEmoji != null ? rankEmoji : "🥉";
             this.isHost = isHost;

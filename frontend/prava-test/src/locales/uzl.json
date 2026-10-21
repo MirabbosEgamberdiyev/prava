@@ -3969,7 +3969,8 @@
     "bookmarkHint": "Savolni saqlash / belgilash (B)",
     "navigation": "Savollar navigatsiyasi",
     "noExplanation": "Ushbu savol uchun qo'shimcha izoh kiritilmagan.",
-    "startExam": "Imtihon topshirish"
+    "startExam": "Imtihon topshirish",
+    "candidateFallback": "Nomzod"
   },
   "guest": {
     "loginCta": "Tizimga kirish",
@@ -4248,26 +4249,16 @@
       "rule2Title": "Tezlik va Aniqlik",
       "rule2Desc": "Qancha tezroq to'g'ri topsangiz, shuncha yuqori ball olasiz.",
       "rule3Title": "Reyting va Ligalar (ELO)",
-      "rule3Desc": "G'alaba qozonib Bronzadan Brilliant ligasigacha ko'tariling!",
+      "rule3Desc": "G'alaba qozonib Bronzadan Kumush, Oltin, Platina, Olmos va Master ligalarigacha ko'tariling!",
       "waitCountdown": "{{sec}} soniya kuting...",
       "understand": "TUSHUNDIM"
     },
-    "guest": {
-      "title": "Oktagon Arenaga Kirish",
-      "desc": "Jangni mehmon sifatida boshlashingiz yoki natijalaringiz saqlanib qolishi uchun tizimga kirishingiz mumkin.",
-      "nicknameLabel": "Sizning Laqabingiz (Nickname):",
-      "randomize": "Boshqa nom tanlash",
-      "continueAsGuest": "Mehmon sifatida o'ynash",
-      "or": "Yoki",
-      "loginToSave": "Tizimga kirish (Natijalarni saqlash)",
-      "placeholder": "Masalan: Tezkor_Haydovchi"
-    },
     "radar": {
-      "connectingBot": "Zaxira botga ulanmoqda...",
       "searchingOpponent": "Teng kuchli raqib qidirilmoqda...",
-      "botDesc": "Kutib qolmasligingiz uchun insondek o'ylanuvchi bot ulanmoqda",
       "eloMatchDesc": "Sizning ELO reytingingizga mos raqib saralanmoqda",
-      "cancel": "Qidiruvni bekor qilish"
+      "cancel": "Qidiruvni bekor qilish",
+      "widening": "Qidiruv doirasi kengaytirildi...",
+      "wideningDesc": "Sizga mos raqib bir necha soniyada ulanadi"
     },
     "leaderboard": {
       "title": "Peshqadamlar Jadvali",
@@ -4300,11 +4291,21 @@
       "statusOnline": "Onlayn",
       "statusOffline": "Oflayn",
       "challengeSent": "Yuborildi...",
-      "challengeBtn": "Jangga Chorlash",
+      "challengeBtn": "Duelga chorlash",
       "noUsersFound": "Foydalanuvchi topilmadi",
       "searchHint": "Do'stingizning ismi yoki ID raqamini kiriting",
       "searchError": "Qidirishda xatolik yuz berdi",
-      "eloAndId": "ELO • ID: {{id}}"
+      "eloAndId": "ELO • ID: {{id}}",
+      "radarLabel": "Topilgan o'yinchilar",
+      "pickHint": "{{count}} ta o'yinchi topildi — bittasini tanlang",
+      "tapToSelect": "Duelga chorlash uchun profilni bosing",
+      "waitingFor": "{{name}} javobini kutyapmiz...",
+      "cancelChallenge": "Bekor qilish",
+      "rejectedBy": "{{name}} taklifni rad etdi",
+      "noAnswer": "{{name}} 30 soniya ichida javob bermadi",
+      "pickAnother": "Boshqa raqib tanlash",
+      "keepPageOpen": "Do'stingiz havolani ochguncha shu sahifada qoling — jang darhol boshlanadi.",
+      "joiningInvite": "Do'stingiz bilan jang ochilmoqda..."
     },
     "arena": {
       "opponent": "Raqib",
@@ -4317,7 +4318,11 @@
       "hotkeyTip": "1-4 yoki A-D klavishlarini bosishingiz mumkin",
       "loadingQuestion": "Savol yuklanmoqda...",
       "reactions": "Reaksiyalar:",
-      "imageAlt": "Savol chizmasi"
+      "imageAlt": "Savol chizmasi",
+      "imageFailed": "Rasm yuklanmadi",
+      "imageRetry": "Qayta yuklash",
+      "reconnecting": "Aloqa uzildi — qayta ulanmoqda (45 soniya ichida jang saqlanadi)...",
+      "fight": "JANG!"
     },
     "result": {
       "victory": "G'ALABA!",
@@ -4342,7 +4347,6 @@
       "duelFriend": "Do'st bilan duel",
       "leaderboard": "Peshqadamlar",
       "viewRules": "Oktagon qoidalari bilan tanishish",
-      "onlineCounter": "142 nafar haydovchi onlayn navbatda",
       "rulesAndLicense": "Oktagon qoidalari",
       "duelFriendDesc": "Do'stingizga maxsus havola yuborib, xususiy jangga chorlang",
       "leaderboardDesc": "Eng kuchli o'yinchilar va haftalik peshqadamlar ro'yxati",
@@ -4355,15 +4359,18 @@
       "dueFriendDesc": "Do'stingizga maxsus havola yuborib, xususiy jangga chorlang",
       "groupBattle": "Guruhli Bahs",
       "groupBattleDesc": "Do'stlar bilan xona ochib birgalikda bellashing",
-      "history": "Bahslar Tarixi",
+      "history": "Bahslar tarixi",
       "historyDesc": "Oldingi janglaringiz va ELO o'zgarishlari",
-      "title": "Oktagon"
+      "title": "Oktagon",
+      "defaultUser": "Haydovchi"
     },
     "rank": {
-      "brilliant": "Brilliant",
+      "brilliant": "Olmos",
       "gold": "Oltin",
       "silver": "Kumush",
-      "bronze": "Bronza"
+      "bronze": "Bronza",
+      "platinum": "Platina",
+      "master": "Master"
     },
     "banner": {
       "badge": "JONLI 1v1 ARENA",
@@ -4410,12 +4417,14 @@
       "incomingTitle": "Jangga Chorlov!",
       "incomingPrompt": "Raqib siz bilan real vaqtda 1v1 Oktagonda kuch sinashmoqchi!",
       "accept": "Qabul qilish",
-      "reject": "Rad etish"
+      "reject": "Rad etish",
+      "cancelled": "Jangga chorlov bekor qilindi"
     },
     "common": {
       "cancel": "Bekor qilish",
       "error": "Xatolik yuz berdi",
-      "connectionLost": "Oktagon serveriga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."
+      "connectionLost": "Oktagon serveriga ulanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.",
+      "matchError": "Jang ochilmadi, keyinroq urinib ko'ring"
     },
     "report": {
       "button": "Raqib ustidan shikoyat qilish",
@@ -4429,6 +4438,21 @@
       "submit": "Yuborish",
       "sentSuccess": "Shikoyatingiz qabul qilindi!",
       "sentDesc": "Moderatsiya xizmati ushbu o'yin yozuvini tekshirib chiqadi."
+    },
+    "authGate": {
+      "title": "Oktagon faqat ro'yxatdan o'tganlar uchun",
+      "message": "Oktagon 1v1 PvP janglarida qatnashish, o'z reytingingizni oshirish va do'stlaringiz bilan bellashish uchun tizimga kiring!",
+      "phone": "Telefon",
+      "loginButton": "Kirish / Ro'yxatdan o'tish",
+      "later": "Keyinroq"
+    },
+    "modes": {
+      "random": "Random 1 vs 1",
+      "randomDesc": "Tizim teng darajadagi raqibni avtomatik topadi",
+      "group": "Guruhli jang",
+      "groupDesc": "Xona oching yoki kod orqali guruhga qo'shiling",
+      "friend": "Do'st bilan 1 vs 1",
+      "friendDesc": "Sherigingizni toping va duelga chorlang"
     }
   }
 }

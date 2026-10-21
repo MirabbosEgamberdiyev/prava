@@ -26,6 +26,10 @@ public class ActiveMatch {
     private OctagonSession p1Session;
     private OctagonSession p2Session;
 
+    /** O'yinchilar rasmlari (null — rasm yo'q). */
+    private String player1Avatar;
+    private String player2Avatar;
+
     private final boolean isBotMatch;
     private OctagonGameBot bot;
     private final OctagonGameType gameType;

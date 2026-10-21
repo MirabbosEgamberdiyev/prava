@@ -1460,3 +1460,576 @@
   justify-content: center;
   gap: 8px;
 }
+
+/* =====================================================================
+   2026-10-21 — Oktagon UX: 3 ta katta 3D rejim tugmasi, majburiy kirish oynasi,
+   radar orqali raqib tanlash, rasm placeholder + "Qayta yuklash", qayta ulanish banneri
+   ===================================================================== */
+
+/* --- Duolingo uslubidagi 3D tugmalar --- */
+.oct-3d-btn {
+  --oct-btn: #10b981;
+  --oct-btn-hover: #34d399;
+  --oct-btn-edge: #047857;
+  --oct-btn-glow: rgba(16, 185, 129, 0.35);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  border: none;
+  border-radius: 20px;
+  border-bottom: 5px solid var(--oct-btn-edge);
+  background: var(--oct-btn);
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px var(--oct-btn-glow);
+  transition: transform 0.08s ease, border-bottom-width 0.08s ease, background 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.oct-3d-btn.blue {
+  --oct-btn: #0ea5e9;
+  --oct-btn-hover: #38bdf8;
+  --oct-btn-edge: #0369a1;
+  --oct-btn-glow: rgba(14, 165, 233, 0.32);
+}
+.oct-3d-btn.purple {
+  --oct-btn: #a855f7;
+  --oct-btn-hover: #c084fc;
+  --oct-btn-edge: #7e22ce;
+  --oct-btn-glow: rgba(168, 85, 247, 0.32);
+}
+.oct-3d-btn:hover:not(:disabled) {
+  background: var(--oct-btn-hover);
+  transform: translateY(-2px);
+  border-bottom-width: 7px;
+}
+.oct-3d-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  border-bottom-width: 1px;
+  box-shadow: 0 2px 8px var(--oct-btn-glow);
+}
+.oct-3d-btn:focus-visible {
+  outline: 3px solid #fde047;
+  outline-offset: 3px;
+}
+.oct-3d-btn:disabled {
+  background: #475569;
+  border-bottom-color: #334155;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.oct-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+.oct-mode-btn {
+  justify-content: flex-start;
+  min-height: 84px;
+  padding: 14px 18px;
+  text-align: left;
+}
+.oct-mode-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.2);
+}
+.oct-mode-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.oct-mode-title {
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+.oct-mode-desc {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.92;
+  line-height: 1.35;
+}
+.oct-mode-lock {
+  opacity: 0.85;
+}
+
+.oct-secondary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+.oct-secondary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.8);
+  color: #e2e8f0;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.oct-secondary-btn:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+.oct-secondary-btn:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+@media (max-width: 480px) {
+  .oct-secondary-row {
+    grid-template-columns: 1fr;
+  }
+  .oct-mode-title {
+    font-size: 17px;
+  }
+}
+
+/* --- Mehmon kartasi (lobby) --- */
+.oct-guest-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+.oct-guest-lock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+.oct-guest-title {
+  font-size: 17px;
+  font-weight: 900;
+  color: #ffffff;
+}
+.oct-guest-desc {
+  font-size: 13.5px;
+  color: #94a3b8;
+  line-height: 1.5;
+  max-width: 420px;
+}
+.oct-guest-login {
+  max-width: 320px;
+  min-height: 52px;
+  font-size: 15px;
+}
+
+/* --- Majburiy kirish oynasi --- */
+.oct-auth-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+.oct-auth-gate-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #10b981, #0ea5e9);
+  color: #ffffff;
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.35);
+}
+.oct-auth-gate-title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 900;
+  color: #ffffff;
+}
+.oct-auth-gate-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #cbd5e1;
+}
+.oct-auth-gate-methods {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.oct-auth-gate-methods span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+  color: #e2e8f0;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.oct-auth-gate-btn {
+  min-height: 58px;
+  font-size: 17px;
+  margin-top: 4px;
+}
+.oct-auth-gate-later {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+.oct-auth-gate-later:hover {
+  color: #e2e8f0;
+}
+
+/* --- Savol rasmi: placeholder va qayta yuklash --- */
+.oct-question-img-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 180px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+}
+.oct-img-fallback-text {
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 700;
+}
+.oct-img-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: none;
+  border-bottom: 3px solid #0369a1;
+  background: #0ea5e9;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+}
+.oct-img-retry-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+.oct-spin-icon {
+  animation: oct-spin 1s linear infinite;
+}
+
+/* --- Qayta ulanish banneri --- */
+.oct-reconnect-banner {
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.95);
+  color: #1f1300;
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* --- Raqib kartasi qo'shimchalari --- */
+.oct-vs-elo,
+.oct-hud-elo {
+  color: #94a3b8;
+  font-weight: 800;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.oct-vs-elo {
+  margin: 2px 0 6px;
+  font-size: 14px;
+}
+.oct-hud-elo {
+  text-align: right;
+}
+
+/* --- Guruhli jang natijalari --- */
+.oct-group-standings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.oct-standing-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(30, 41, 59, 0.7);
+}
+.oct-standing-row.mine {
+  background: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+.oct-standing-pos {
+  width: 22px;
+  text-align: center;
+  font-weight: 900;
+  color: #fbbf24;
+}
+.oct-standing-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffffff;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oct-standing-score {
+  color: #34d399;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+/* --- Do'st qidiruvi: radar orqali tanlash --- */
+.oct-pick-radar {
+  position: relative;
+  width: min(100%, 340px);
+  aspect-ratio: 1 / 1;
+  margin: 4px auto 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(15, 23, 42, 0.2) 70%);
+}
+.oct-pick-ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 50%;
+  border: 1px solid rgba(232, 121, 249, 0.18);
+  pointer-events: none;
+}
+.oct-pick-ring.r1 {
+  width: 100%;
+  height: 100%;
+}
+.oct-pick-ring.r2 {
+  width: 66%;
+  height: 66%;
+}
+.oct-pick-ring.r3 {
+  width: 33%;
+  height: 33%;
+}
+.oct-pick-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(232, 121, 249, 0.22), transparent 25%);
+  animation: oct-sweep-spin 4s linear infinite;
+  pointer-events: none;
+}
+.oct-pick-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #e879f9;
+  opacity: 0.8;
+}
+.oct-pick-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: 96px;
+  padding: 4px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  color: #e2e8f0;
+  cursor: pointer;
+  animation: oct-pick-pop 0.35s ease both;
+  transition: transform 0.18s ease;
+}
+.oct-pick-node:hover {
+  transform: translate(-50%, -50%) scale(1.06);
+}
+.oct-pick-node.selected {
+  z-index: 2;
+  transform: translate(-50%, -50%) scale(1.12);
+}
+.oct-pick-node.selected .oct-pick-avatar {
+  box-shadow: 0 0 0 4px rgba(232, 121, 249, 0.35), 0 0 26px rgba(232, 121, 249, 0.55);
+}
+.oct-pick-node.offline {
+  opacity: 0.6;
+}
+.oct-pick-node:focus-visible {
+  outline: 2px solid #e879f9;
+  outline-offset: 2px;
+}
+.oct-pick-avatar {
+  position: relative;
+  display: inline-flex;
+  border-radius: 50%;
+}
+.oct-pick-dot {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #0f172a;
+}
+.oct-pick-dot.on {
+  background: #10b981;
+}
+.oct-pick-dot.off {
+  background: #64748b;
+}
+.oct-pick-name {
+  max-width: 92px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+}
+.oct-pick-elo {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fbbf24;
+}
+@keyframes oct-pick-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  to {
+    opacity: 1;
+  }
+}
+.oct-pick-overflow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.oct-pick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(30, 41, 59, 0.8);
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.oct-pick-chip.selected {
+  border-color: #e879f9;
+  background: rgba(168, 85, 247, 0.2);
+}
+.oct-pick-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #1e293b;
+  border: 1px solid rgba(232, 121, 249, 0.35);
+  animation: oct-pick-pop-in 0.25s ease both;
+}
+.oct-pick-card-info {
+  flex: 1;
+  min-width: 0;
+}
+.oct-pick-cta {
+  width: auto;
+  min-height: 50px;
+  padding: 0 18px;
+  font-size: 14.5px;
+  white-space: nowrap;
+}
+@keyframes oct-pick-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 480px) {
+  .oct-pick-card {
+    flex-wrap: wrap;
+  }
+  .oct-pick-cta {
+    width: 100%;
+  }
+}
+
+/* --- Chaqiruvni kutish --- */
+.oct-outgoing-pulse {
+  border-radius: 50%;
+  animation: oct-outgoing-pulse 1.6s ease-in-out infinite;
+}
+@keyframes oct-outgoing-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(232, 121, 249, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(232, 121, 249, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oct-pick-sweep,
+  .oct-outgoing-pulse,
+  .oct-pick-node,
+  .oct-pick-card {
+    animation: none;
+  }
+}

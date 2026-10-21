@@ -24,6 +24,8 @@ import uz.pravaimtihon.octagon.service.OctagonTicketService;
 import uz.pravaimtihon.octagon.websocket.OctagonMatchmaker;
 import uz.pravaimtihon.repository.QuestionRepository;
 import uz.pravaimtihon.repository.UserRepository;
+import uz.pravaimtihon.entity.User;
+import uz.pravaimtihon.security.CustomUserDetails;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +59,7 @@ class OctagonApiSecurityTest {
         guests = new OctagonGuestIdentity("test-secret-for-unit-tests-only-0123456789");
         matchmaker = mock(OctagonMatchmaker.class);
         tickets = new OctagonTicketService();
-        controller = new OctagonController(tickets, service, matchmaker, guests);
+        controller = new OctagonController(tickets, service, matchmaker);
     }
 
     @Test
@@ -87,19 +89,28 @@ class OctagonApiSecurityTest {
     }
 
     @Test
-    @DisplayName("Ticket: a spoofed guestId (or a real user id) is not honoured")
-    void ticketGuestSpoof() {
-        var res = controller.getOneTimeTicket(null, "42", "Hacker<script>").getBody().getData();
-        assertNotEquals("42", res.getUserId());
-        assertTrue(res.getUserId().startsWith("guest_"));
-        assertNotNull(res.getGuestId());
-        OctagonTicketService.TicketData td = tickets.consumeTicket(res.getTicket());
-        assertEquals(res.getUserId(), td.userId());
-        assertEquals("Hackerscript", td.displayName());
+    @DisplayName("Ticket: guests are refused (mandatory login since 2026-10-21)")
+    void ticketRequiresLogin() {
+        assertThrows(UnauthorizedException.class, () -> controller.getOneTimeTicket(null));
+    }
 
-        // re-using the issued token keeps the same identity
-        var again = controller.getOneTimeTicket(null, res.getGuestId(), null).getBody().getData();
-        assertEquals(res.getUserId(), again.getUserId());
+    @Test
+    @DisplayName("Ticket: a logged-in user gets a ticket bound to their own id and server-side name")
+    void ticketForUser() {
+        CustomUserDetails principal = mock(CustomUserDetails.class);
+        when(principal.getId()).thenReturn(42L);
+        User u = new User();
+        u.setId(42L);
+        u.setFirstName("Ali");
+        u.setLastName("Valiyev");
+        when(userRepo.findById(42L)).thenReturn(Optional.of(u));
+
+        var res = controller.getOneTimeTicket(principal).getBody().getData();
+        assertEquals("42", res.getUserId());
+        assertNull(res.getGuestId());
+        OctagonTicketService.TicketData td = tickets.consumeTicket(res.getTicket());
+        assertEquals("42", td.userId());
+        assertEquals("Ali V.", td.displayName());
     }
 
     @Test
@@ -131,15 +142,15 @@ class OctagonApiSecurityTest {
     @DisplayName("History is the caller's own only (no ?userId= IDOR)")
     void historyOwnOnly() {
         when(matchRepo.findUserMatches(anyString(), any())).thenReturn(new PageImpl<>(List.of()));
-        controller.getHistory(null, "77", 0, 10);
-        verify(matchRepo, never()).findUserMatches(eq("77"), any());
+        controller.getHistory(null, 0, 10);
+        verify(matchRepo, never()).findUserMatches(anyString(), any());
     }
 
     @Test
     @DisplayName("Challenge/report need an identified caller")
     void challengeRequiresCaller() {
-        assertThrows(UnauthorizedException.class, () -> controller.createChallenge(null, "42", null));
-        assertThrows(UnauthorizedException.class, () -> controller.submitReport(null, "42",
+        assertThrows(UnauthorizedException.class, () -> controller.createChallenge(null, null));
+        assertThrows(UnauthorizedException.class, () -> controller.submitReport(null,
                 ReportRequest.builder().reportedUserId("7").reason("AFK").build()));
     }
 

@@ -3,7 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("../api/api", () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
 import { pollTelegramSession, type TelegramSessionStatusResponse } from "../auth/telegramSession";
-import { OctagonGuest } from "../features/Octagon/guestIdentity";
 
 describe("pollTelegramSession", () => {
   beforeEach(() => vi.useFakeTimers());
@@ -51,48 +50,5 @@ describe("pollTelegramSession", () => {
     stop();
     await vi.advanceTimersByTimeAsync(500);
     expect(onFinal).not.toHaveBeenCalled();
-  });
-});
-
-describe("OctagonGuest identity", () => {
-  const store = new Map<string, string>();
-  beforeEach(() => {
-    store.clear();
-    vi.stubGlobal("localStorage", {
-      getItem: (k: string) => store.get(k) ?? null,
-      setItem: (k: string, v: string) => void store.set(k, v),
-      removeItem: (k: string) => void store.delete(k),
-    });
-  });
-  afterEach(() => vi.unstubAllGlobals());
-
-  it("ignores legacy client-generated guest ids (they are not credentials any more)", () => {
-    store.set("octagon_guest_id", "guest_ab12cd34");
-    expect(OctagonGuest.getToken()).toBeUndefined();
-  });
-
-  it("stores and returns the server-signed token and the public id", () => {
-    OctagonGuest.save("g1.0123456789abcdef.SIG", "guest_0123456789abcdef");
-    expect(OctagonGuest.getToken()).toBe("g1.0123456789abcdef.SIG");
-    expect(OctagonGuest.getPublicId()).toBe("guest_0123456789abcdef");
-  });
-
-  it("guest pass = chosen nickname", () => {
-    expect(OctagonGuest.hasPass()).toBe(false);
-    store.set("octagon_guest_nickname", "Tezkor_Pilot_123");
-    expect(OctagonGuest.hasPass()).toBe(true);
-  });
-
-  it("does not throw when storage is blocked", () => {
-    vi.stubGlobal("localStorage", {
-      getItem: () => {
-        throw new Error("blocked");
-      },
-      setItem: () => {
-        throw new Error("blocked");
-      },
-    });
-    expect(OctagonGuest.getToken()).toBeUndefined();
-    expect(() => OctagonGuest.save("g1.x.y", "guest_x")).not.toThrow();
   });
 });
