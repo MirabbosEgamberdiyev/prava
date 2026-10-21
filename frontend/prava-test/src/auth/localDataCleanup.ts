@@ -4,6 +4,7 @@
  * Shared content (question bank, topics, tickets) is never touched here.
  */
 import { dbClient } from "../database/dbClient";
+import { syncEngine } from "../sync/syncEngine";
 import storageService from "../services/storageService";
 import { STATS_CACHE_BASE_KEY, statsCacheKey } from "../utils/userScope";
 import { AccountManager, readRememberMePreference } from "./accountManager";
@@ -59,8 +60,9 @@ export async function flushOutboxBeforeLogout(timeoutMs = LOGOUT_FLUSH_TIMEOUT_M
   const timeout = new Promise<void>((resolve) => {
     timer = setTimeout(resolve, timeoutMs);
   });
-  const flush = import("../sync/syncEngine")
-    .then(({ syncEngine }) => syncEngine.flushOutbox())
+  // Statik import: syncEngine App.tsx orqali baribir asosiy chunk'da (dinamik import faqat Vite ogohlantirishi berardi)
+  const flush = Promise.resolve()
+    .then(() => syncEngine.flushOutbox())
     .then(() => undefined)
     .catch(() => undefined);
   try {

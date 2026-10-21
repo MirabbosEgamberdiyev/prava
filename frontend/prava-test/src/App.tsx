@@ -75,6 +75,8 @@ function ApiErrorListener() {
 import GlobalSearchHost from "./features/Search/GlobalSearchHost";
 import DesktopFrame from "./shell/DesktopFrame";
 import { syncEngine } from "./sync/syncEngine";
+import { offlineDatasetManager } from "./services/offlineDatasetManager";
+import { isTauriRuntime } from "./auth/runtime";
 
 /**
  * Background sync (outbox push: locally graded exam/ticket results, wrong answers, progress).
@@ -85,7 +87,13 @@ import { syncEngine } from "./sync/syncEngine";
 function SyncBootstrap() {
   useEffect(() => {
     const handle = window.setTimeout(() => {
-      syncEngine.start().catch(() => {});
+      syncEngine
+        .start()
+        .then(() => {
+          // Desktop (Tauri): savollar bazasi bo'sh bo'lsa fonda offline to'plamni yuklash
+          if (isTauriRuntime()) return offlineDatasetManager.autoSeedIfEmpty();
+        })
+        .catch(() => {});
     }, 1500);
     return () => window.clearTimeout(handle);
   }, []);

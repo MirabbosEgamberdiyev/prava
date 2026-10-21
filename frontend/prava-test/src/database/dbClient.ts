@@ -270,12 +270,9 @@ export const dbClient = {
     try {
       await openIndexedDb();
       isInitialized = true;
-      if (isTauriRuntime()) {
-        // Desktop environment: background auto-seed if question database is empty
-        import("../services/offlineDatasetManager")
-          .then((m) => m.offlineDatasetManager.autoSeedIfEmpty())
-          .catch(() => {});
-      } else {
+      // Desktop (Tauri): bo'sh savollar bazasi App bootstrap'da (SyncBootstrap) to'ldiriladi — bu yerdagi
+      // dinamik import offlineDatasetManager bilan sikl va Vite "dynamic + static import" ogohlantirishini berardi.
+      if (!isTauriRuntime()) {
         // Web environment (web.pravaonline.uz):
         // 1. DO NOT seed full question database into browser IndexedDB.
         // 2. Safe migration: purge stale/leaked questions from local IndexedDB,

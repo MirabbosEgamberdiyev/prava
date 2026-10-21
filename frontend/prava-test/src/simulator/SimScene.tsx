@@ -13,6 +13,7 @@ import {
 } from "./carPhysics";
 import { applyBranding, LOGO_URL } from "./carBranding";
 import { setupCarLights, type CarLights } from "./carLights";
+import { trackSimScene } from "./simAssets";
 
 export const MODEL_AVTODROM = "/simulator/models/avtodrom.glb";
 export const MODEL_CAR = "/simulator/models/cobalt.glb";
@@ -44,6 +45,9 @@ const TL_CYCLE: [string, number][] = [
 
 function Avtodrom({ onReady }: { onReady: (curbs: OBB[], estacada: THREE.Object3D[]) => void }) {
   const { scene, materials } = useGLTF(MODEL_AVTODROM, DRACO_PATH);
+  useEffect(() => {
+    trackSimScene(scene);
+  }, [scene]);
 
   useEffect(() => {
     scene.updateMatrixWorld(true);
@@ -238,6 +242,9 @@ function findNode(root: THREE.Object3D, name: string) {
 
 function Car({ rt, groupRef }: { rt: React.MutableRefObject<SimRuntime>; groupRef: React.RefObject<THREE.Group | null> }) {
   const { scene } = useGLTF(MODEL_CAR, DRACO_PATH);
+  useEffect(() => {
+    trackSimScene(scene);
+  }, [scene]);
   const wheels = useMemo(() => WHEELS.map((n) => findNode(scene, n)), [scene]);
   const blink = useRef(0);
   const lights = useRef<CarLights | null>(null);

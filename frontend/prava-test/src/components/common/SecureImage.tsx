@@ -13,7 +13,7 @@ interface Props {
   lazy?: boolean;
 }
 
-const DEFAULT_IMAGE = "/question-default.svg";
+const DEFAULT_IMAGE = "/logo.png";
 
 export default function SecureImage({ path, alt = "", className, style, onOpen, lazy }: Props) {
   const [hasError, setHasError] = useState(false);
@@ -50,7 +50,8 @@ export default function SecureImage({ path, alt = "", className, style, onOpen, 
   }, [effectivePath, isDirect]);
 
   const rawSrc = localSrc || getImageUrl(effectivePath) || effectivePath;
-  const src = (!rawSrc || hasError) ? DEFAULT_IMAGE : rawSrc;
+  const isFallback = !rawSrc || hasError || rawSrc === DEFAULT_IMAGE || rawSrc === "/question-default.svg" || rawSrc === "/question-default.png";
+  const src = isFallback ? DEFAULT_IMAGE : rawSrc;
 
   return (
     <img
@@ -67,8 +68,8 @@ export default function SecureImage({ path, alt = "", className, style, onOpen, 
           setHasError(true);
         }
       }}
-      onClick={onOpen ? () => onOpen(src) : undefined}
-      style={{ ...style, ...(onOpen ? { cursor: "zoom-in" } : {}) }}
+      onClick={!isFallback && onOpen ? () => onOpen(src) : undefined}
+      style={{ ...style, ...(!isFallback && onOpen ? { cursor: "zoom-in" } : { cursor: "default" }) }}
     />
   );
 }

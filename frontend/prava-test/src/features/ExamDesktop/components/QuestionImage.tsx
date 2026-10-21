@@ -1,95 +1,233 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState, useCallback } from "react";
 import { IconZoomIn } from "@tabler/icons-react";
 import { offlineMediaManager } from "../../../services/offlineMediaManager";
 import { networkModeManager } from "../../../sync/networkModeManager";
 import { getImageUrl } from "../../../utils/imageUtils";
 
-interface QuestionImageProps {
-  path: string;
+export const OFFICIAL_BRAND_LOGO = "/logo.png";
+export const OFFICIAL_BRAND_LOGO_SVG = "/logo.svg";
+
+export type MediaState =
+  | "available"   // Real image path present and attempting to load / loaded
+  | "missing"     // No image provided (null, undefined, "", or whitespace)
+  | "loading"     // Currently loading/resolving
+  | "failed"      // Image failed to load or network error
+  | "fallback";   // Fallback logo actively displayed
+
+export interface QuestionImageProps {
+  path?: string | null;
   alt: string;
-  onZoom: (src: string) => void;
-  zoomHint: string;
+  onZoom?: (src: string) => void;
+  zoomHint?: string;
   brokenLabel?: string;
+  className?: string;
 }
 
-/** Render with key={path}: a new question remounts this component (fresh state, no stale flash). */
-type Resolved = { path: string; src: string | null; done: boolean };
+function isBlank(val: string | null | undefined): boolean {
+  return !val || typeof val !== "string" || val.trim().length === 0;
+}
 
-const DEFAULT_QUESTION_IMAGE = "/logo.png";
+function isBrandAsset(val: string | null | undefined): boolean {
+  if (!val) return false;
+  const clean = val.trim();
+  return (
+    clean === OFFICIAL_BRAND_LOGO ||
+    clean === OFFICIAL_BRAND_LOGO_SVG ||
+    clean === "/logo.png" ||
+    clean === "logo.png" ||
+    clean === "/logo.svg" ||
+    clean === "logo.svg" ||
+    clean === "/question-default.svg" ||
+    clean === "question-default.svg" ||
+    clean === "/question-default.png" ||
+    clean === "question-default.png"
+  );
+}
+
+function isDirectLocalAsset(url: string | null | undefined): boolean {
+  if (!url) return false;
+  if (isBrandAsset(url)) return true;
+  if (
+    url === "/images/malibu.webp" ||
+    url === "/malibu.webp" ||
+    url.startsWith("data:") ||
+    url.startsWith("blob:") ||
+    url.startsWith("/icons/") ||
+    url.startsWith("/cars/") ||
+    url.startsWith("/signs/")
+  ) {
+    return true;
+  }
+  return false;
+}
 
 /**
- * Local-first question image: uses the offline media cache (synchronously when the object URL
- * is already warm), falls back to the remote URL only when online use is allowed and the image
- * is not cached (it is then cached in the background). Auto-fits the pane (object-fit: contain).
- * Questions without an image or with broken images 100% render /logo.png.
+ * Universal Question Media Component
+ *
+ * Manages the 5 canonical image states:
+ * - "available": Real diagram/image loaded, click to zoom with 'Z' key hint.
+ * - "missing": No image provided (null, undefined, empty, or whitespace-only) -> official PRAVA-ONLINE logo fallback.
+ * - "loading": Asynchronously resolving from local IndexedDB cache or network -> gentle loading skeleton.
+ * - "failed": Network/404 error or decode failure -> seamlessly displays official logo fallback.
+ * - "fallback": Fallback logo actively visible, centered with aspect ratio preserved, no zoom button/hints.
  */
-export const QuestionImage = memo(function QuestionImage({ path, alt, onZoom, zoomHint }: QuestionImageProps) {
-  const effectivePath = path || DEFAULT_QUESTION_IMAGE;
-  const isDirect = effectivePath.startsWith("/") || effectivePath.startsWith("http://") || effectivePath.startsWith("https://") || effectivePath.startsWith("data:");
+export const QuestionImage = memo(function QuestionImage({
+  path,
+  alt,
+  onZoom,
+  zoomHint = "Kattalashtirish (Z)",
+  brokenLabel = "Rasm mavjud emas",
+  className,
+}: QuestionImageProps) {
+  const trimmed = typeof path === "string" ? path.trim() : "";
+  const hasNoRealImage = isBlank(trimmed) || isBrandAsset(trimmed);
 
-  const [res, setRes] = useState<Resolved>(() => {
-    if (isDirect) {
-      return { path: effectivePath, src: effectivePath, done: true };
+  const [resolved, setResolved] = useState<{
+    src: string;
+    state: MediaState;
+    done: boolean;
+  }>(() => {
+    if (hasNoRealImage) {
+      return { src: OFFICIAL_BRAND_LOGO, state: "missing", done: true };
     }
-    const warm = offlineMediaManager.peekLocalImageUrl(effectivePath);
-    return { path: effectivePath, src: warm, done: !!warm };
+    if (isDirectLocalAsset(trimmed)) {
+      return { src: trimmed, state: "available", done: true };
+    }
+    const warm = offlineMediaManager.peekLocalImageUrl(trimmed);
+    if (warm) {
+      return { src: warm, state: "available", done: true };
+    }
+    if (networkModeManager.isOnlineAllowed()) {
+      const remote = getImageUrl(trimmed);
+      if (remote) {
+        return { src: remote, state: "available", done: true };
+      }
+    }
+    return { src: OFFICIAL_BRAND_LOGO, state: "loading", done: false };
   });
-  const [broken, setBroken] = useState(false);
 
-  const current = res;
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    if (current.done) return;
-    if (isDirect) {
-      setRes({ path: effectivePath, src: effectivePath, done: true });
+    if (hasNoRealImage) {
+      setResolved({ src: OFFICIAL_BRAND_LOGO, state: "missing", done: true });
       return;
     }
-    let alive = true;
+    if (isDirectLocalAsset(trimmed)) {
+      setResolved({ src: trimmed, state: "available", done: true });
+      return;
+    }
+
+    let active = true;
     offlineMediaManager
-      .getLocalImageUrl(effectivePath)
+      .getLocalImageUrl(trimmed)
       .then((local) => {
-        if (!alive) return;
+        if (!active) return;
         if (local) {
-          setRes({ path: effectivePath, src: local, done: true });
+          setResolved({ src: local, state: "available", done: true });
           return;
         }
-        const remote = networkModeManager.isOnlineAllowed() ? getImageUrl(effectivePath) || DEFAULT_QUESTION_IMAGE : DEFAULT_QUESTION_IMAGE;
-        setRes({ path: effectivePath, src: remote, done: true });
-        if (remote && remote !== DEFAULT_QUESTION_IMAGE) offlineMediaManager.cacheImage(effectivePath).catch(() => {});
+        if (networkModeManager.isOnlineAllowed()) {
+          const remote = getImageUrl(trimmed);
+          if (remote) {
+            setResolved({ src: remote, state: "available", done: true });
+            offlineMediaManager.cacheImage(trimmed).catch(() => {});
+            return;
+          }
+        }
+        setResolved({ src: OFFICIAL_BRAND_LOGO, state: "fallback", done: true });
       })
       .catch(() => {
-        if (alive) setRes({ path: effectivePath, src: DEFAULT_QUESTION_IMAGE, done: true });
+        if (!active) return;
+        const remote = networkModeManager.isOnlineAllowed() ? getImageUrl(trimmed) : null;
+        if (remote) {
+          setResolved({ src: remote, state: "available", done: true });
+        } else {
+          setResolved({ src: OFFICIAL_BRAND_LOGO, state: "failed", done: true });
+        }
       });
+
     return () => {
-      alive = false;
+      active = false;
     };
-  }, [effectivePath, current.done, isDirect]);
+  }, [trimmed, hasNoRealImage]);
 
-  if (!current.done) return <div className="xd-media xd-media--loading" aria-busy="true" />;
+  const handleError = useCallback(() => {
+    setHasError(true);
+    setResolved({ src: OFFICIAL_BRAND_LOGO, state: "failed", done: true });
+  }, []);
 
-  const src = (!current.src || broken) ? DEFAULT_QUESTION_IMAGE : current.src;
+  const isFallbackVisible =
+    hasNoRealImage ||
+    hasError ||
+    resolved.state === "missing" ||
+    resolved.state === "failed" ||
+    resolved.state === "fallback" ||
+    resolved.src === OFFICIAL_BRAND_LOGO ||
+    resolved.src === OFFICIAL_BRAND_LOGO_SVG;
+
+  const currentSrc = isFallbackVisible ? OFFICIAL_BRAND_LOGO : resolved.src;
+  const currentState: MediaState = isFallbackVisible
+    ? hasError
+      ? "failed"
+      : hasNoRealImage
+      ? "missing"
+      : "fallback"
+    : resolved.state;
+
+  if (!resolved.done && !isFallbackVisible) {
+    return (
+      <div
+        className={`xd-media xd-media--loading ${className || ""}`}
+        data-media-state="loading"
+        aria-busy="true"
+      >
+        <div className="xd-media__spinner" />
+      </div>
+    );
+  }
+
+  if (isFallbackVisible) {
+    return (
+      <div
+        className={`xd-media xd-media--fallback ${className || ""}`}
+        data-media-state={currentState}
+      >
+        <div className="xd-media__fallback-wrap">
+          <img
+            src={OFFICIAL_BRAND_LOGO}
+            alt="" aria-hidden="true"
+            className="xd-media__fallback-logo"
+            draggable={false}
+            decoding="async"
+            loading="eager"
+            onContextMenu={(e) => e.preventDefault()}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="xd-media">
+    <div
+      className={`xd-media xd-media--available ${className || ""}`}
+      data-media-state="available"
+    >
       <button
         type="button"
         className="xd-media__btn"
-        onClick={() => onZoom(src)}
-        onDoubleClick={() => onZoom(src)}
+        onClick={() => onZoom?.(currentSrc)}
+        onDoubleClick={() => onZoom?.(currentSrc)}
         onMouseDown={(e) => e.preventDefault()}
         title={zoomHint}
       >
         <img
-          src={src}
-          alt={alt}
+          src={currentSrc}
+          alt={alt || brokenLabel}
           className="xd-media__img"
           draggable={false}
           decoding="async"
-          onError={() => {
-            if (src !== DEFAULT_QUESTION_IMAGE) {
-              setBroken(true);
-            }
-          }}
+          onError={handleError}
           onContextMenu={(e) => e.preventDefault()}
         />
         <span className="xd-media__hint" aria-hidden="true">
