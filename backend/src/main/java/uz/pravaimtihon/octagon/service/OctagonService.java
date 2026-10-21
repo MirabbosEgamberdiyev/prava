@@ -44,7 +44,16 @@ public class OctagonService {
     public static final int MAX_QUESTIONS_PER_REQUEST = 20;
     private static final Set<String> REPORT_REASONS = Set.of("CHEATING", "AFK", "INAPPROPRIATE_BEHAVIOR", "OTHER");
     private static final int MAX_REPORTS_PER_HOUR = 5;
-    private static final String INVITE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    /**
+     * Do'st taklifi kodi — 4 raqamli PIN (1000–9999): og'zaki aytish va yozish oson.
+     * Faqat PENDING takliflar orasida unikal (V23 qisman unikal indeks); taklif qabul qilinganda yoki
+     * muddati tugaganda kod bo'shaydi, har bir foydalanuvchida bir vaqtda bitta faol kod bo'ladi.
+     */
+    static final int INVITE_CODE_MIN = 1000;
+    static final int INVITE_CODE_SPAN = 9000;
+    static final int INVITE_CODE_ATTEMPTS = 25;
+    static final long INVITE_TTL_MINUTES = 60;
+    private static final String PUBLIC_BASE_URL = "https://pravaonline.uz";
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final OctagonProfileRepository profileRepository;
@@ -203,11 +212,27 @@ public class OctagonService {
         });
     }
 
+    /** Ulashiladigan havola: pravaonline.uz/oktagon?code=4821 (sayt va mobil ilova kodni o'zi kiritadi). */
+    public static String inviteUrl(String code) {
+        return PUBLIC_BASE_URL + "/oktagon?code=" + code;
+    }
+
+    /**
+     * Yangi taklif kodi. Avvalgi faol taklif(lar) yopiladi — foydalanuvchida bitta faol kod.
+     * Bir vaqtda ikki so'rov bir xil kodni tanlasa, qisman unikal indeks saqlashni rad etadi
+     * ({@link org.springframework.dao.DataIntegrityViolationException}); controller qayta urinadi.
+     */
     @Transactional
     public ChallengeResponse createChallenge(String challengerId, String targetUserId) {
-        String code = generateInviteCode();
+        LocalDateTime now = LocalDateTime.now();
+        for (OctagonChallenge previous : challengeRepository.findByChallengerIdAndStatus(challengerId, OctagonChallengeStatus.PENDING)) {
+            previous.setStatus(OctagonChallengeStatus.EXPIRED);
+            challengeRepository.save(previous);
+        }
+
+        String code = generateInviteCode(now);
         UUID challengeId = UUID.randomUUID();
-        LocalDateTime expiresAt = LocalDateTime.now().plusHours(24);
+        LocalDateTime expiresAt = now.plusMinutes(INVITE_TTL_MINUTES);
 
         OctagonChallenge challenge = OctagonChallenge.builder()
                 .id(challengeId)
@@ -215,27 +240,45 @@ public class OctagonService {
                 .targetUserId(targetUserId)
                 .inviteCode(code)
                 .status(OctagonChallengeStatus.PENDING)
-                .createdAt(LocalDateTime.now())
+                .createdAt(now)
                 .expiresAt(expiresAt)
                 .build();
 
-        challengeRepository.save(challenge);
+        challengeRepository.saveAndFlush(challenge);
 
         return ChallengeResponse.builder()
                 .challengeId(challengeId)
                 .inviteCode(code)
-                .inviteUrl("https://pravaonline.uz/octagon?duel=" + code)
+                .inviteUrl(inviteUrl(code))
                 .challengerId(challengerId)
                 .challengerName(resolveDisplayName(challengerId))
                 .expiresAt(expiresAt)
                 .build();
     }
 
+    /** Faol (PENDING, muddati o'tmagan) taklifni kod bo'yicha topadi. */
     @Transactional(readOnly = true)
     public Optional<OctagonChallenge> getChallenge(String inviteCode) {
-        if (inviteCode == null || inviteCode.isBlank() || inviteCode.length() > 32) return Optional.empty();
-        return challengeRepository.findByInviteCode(inviteCode.trim().toUpperCase())
-                .filter(c -> c.getStatus() == OctagonChallengeStatus.PENDING && LocalDateTime.now().isBefore(c.getExpiresAt()));
+        String code = normalizeInviteCode(inviteCode);
+        if (code == null) return Optional.empty();
+        return challengeRepository.findFirstByInviteCodeAndStatusOrderByCreatedAtDesc(code, OctagonChallengeStatus.PENDING)
+                .filter(c -> LocalDateTime.now().isBefore(c.getExpiresAt()));
+    }
+
+    /** Bo'shliqlar olib tashlanadi; eski 10 belgili kodlar ham (muddati tugaguncha) qabul qilinadi. */
+    static String normalizeInviteCode(String raw) {
+        if (raw == null) return null;
+        String code = raw.replaceAll("\\s+", "").toUpperCase(Locale.ROOT);
+        return code.matches("[A-Z0-9]{4,16}") ? code : null;
+    }
+
+    /** Muddati o'tgan takliflar kodlarini bo'shatadi (4 xonali kod maydoni cheklangan). */
+    @org.springframework.scheduling.annotation.Scheduled(fixedDelay = 10 * 60 * 1000L, initialDelay = 60 * 1000L)
+    @Transactional
+    public void expireStaleInvites() {
+        int expired = challengeRepository.expirePendingBefore(LocalDateTime.now(),
+                OctagonChallengeStatus.PENDING, OctagonChallengeStatus.EXPIRED);
+        if (expired > 0) log.debug("Expired {} stale Octagon invites", expired);
     }
 
     /** Havola/kod orqali duel boshlandi — taklif qayta ishlatilmasin. */
@@ -386,7 +429,7 @@ public class OctagonService {
         if (url.isEmpty() || url.length() > 1024 || url.chars().anyMatch(ch -> ch < 0x20 || ch == '"' || ch == '<' || ch == '>')) {
             return null;
         }
-        if (url.startsWith("https://") || url.startsWith("/api/v1/files/")) return url;
+        if (url.startsWith("https://") || url.startsWith("/api/v1/files/") || url.startsWith("/api/v1/public/avatars/")) return url;
         return null;
     }
 
@@ -474,12 +517,24 @@ public class OctagonService {
         return null;
     }
 
-    private String generateInviteCode() {
-        StringBuilder sb = new StringBuilder(10);
-        for (int i = 0; i < 10; i++) {
-            sb.append(INVITE_ALPHABET.charAt(RANDOM.nextInt(INVITE_ALPHABET.length())));
+    /**
+     * 4 raqamli bo'sh kod: faol taklif egallagan kod tashlab ketiladi (25 martagacha), muddati o'tgan
+     * lekin hali PENDING turgan taklif kodi esa shu yerda bo'shatiladi.
+     */
+    String generateInviteCode(LocalDateTime now) {
+        for (int attempt = 0; attempt < INVITE_CODE_ATTEMPTS; attempt++) {
+            String code = String.valueOf(INVITE_CODE_MIN + RANDOM.nextInt(INVITE_CODE_SPAN));
+            Optional<OctagonChallenge> holder =
+                    challengeRepository.findFirstByInviteCodeAndStatusOrderByCreatedAtDesc(code, OctagonChallengeStatus.PENDING);
+            if (holder.isEmpty()) return code;
+            OctagonChallenge stale = holder.get();
+            if (!now.isBefore(stale.getExpiresAt())) {
+                stale.setStatus(OctagonChallengeStatus.EXPIRED);
+                challengeRepository.saveAndFlush(stale);
+                return code;
+            }
         }
-        return sb.toString();
+        throw new RateLimitExceededException("Hozir bo'sh taklif kodi yo'q. Birozdan keyin qayta urinib ko'ring");
     }
 
     /**

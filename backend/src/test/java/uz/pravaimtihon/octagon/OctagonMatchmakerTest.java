@@ -29,7 +29,7 @@ class OctagonMatchmakerTest {
         octagonService = mock(OctagonService.class);
         questionRepository = mock(QuestionRepository.class);
         objectMapper = new ObjectMapper();
-        matchmaker = new OctagonMatchmaker(octagonService, questionRepository, objectMapper);
+        matchmaker = new OctagonMatchmaker(octagonService, questionRepository, objectMapper, new uz.pravaimtihon.octagon.service.OctagonCodeGuard());
     }
 
     @AfterEach
@@ -145,7 +145,7 @@ class OctagonMatchmakerTest {
         // Retrieve room
         String roomCode = matchmaker.getUserRoomCode("host_1");
         assertNotNull(roomCode);
-        assertTrue(roomCode.matches("OCT-[A-Z2-9]{6}"), roomCode);
+        assertTrue(roomCode.matches("[1-9][0-9]{3}"), roomCode);
 
         // Guest joins room
         matchmaker.handleJoinRoom(guest, roomCode);

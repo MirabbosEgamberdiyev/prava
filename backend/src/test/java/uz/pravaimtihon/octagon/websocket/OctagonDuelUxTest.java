@@ -43,7 +43,7 @@ class OctagonDuelUxTest {
     @BeforeEach
     void setUp() {
         octagonService = mock(OctagonService.class);
-        matchmaker = new OctagonMatchmaker(octagonService, mock(QuestionRepository.class), om);
+        matchmaker = new OctagonMatchmaker(octagonService, mock(QuestionRepository.class), om, new uz.pravaimtihon.octagon.service.OctagonCodeGuard());
         when(octagonService.getRandomQuestionIds(anyInt())).thenReturn(QIDS);
         when(octagonService.getQuestionsByIds(anyList())).thenReturn(List.of());
     }
@@ -161,9 +161,9 @@ class OctagonDuelUxTest {
         OctagonSession joiner = new OctagonSession("2", "Vali A.", w2);
         matchmaker.registerSession(inviter);
         matchmaker.registerSession(joiner);
-        OctagonChallenge c = invite("ABCDEFGH23", "1");
+        OctagonChallenge c = invite("4821", "1");
 
-        matchmaker.handleJoinInvite(joiner, "ABCDEFGH23");
+        matchmaker.handleJoinInvite(joiner, "4821");
 
         JsonNode found = events(w2, "match_found").get(0);
         assertEquals("1", found.get("opponent").get("id").asText());
@@ -192,6 +192,82 @@ class OctagonDuelUxTest {
         assertEquals(List.of("INVITE_NOT_FOUND", "OWN_INVITE", "INVITER_OFFLINE"), codes);
         assertTrue(events(w2, "match_found").isEmpty());
         verify(octagonService, never()).markInviteAccepted(any());
+    }
+
+    @Test
+    @DisplayName("4-digit codes cannot be brute-forced: 10 wrong guesses per user per minute, shared by invites and rooms")
+    void codeGuessingIsThrottledPerUser() throws Exception {
+        profile("2", 0, null);
+        when(octagonService.getChallenge(anyString())).thenReturn(Optional.empty());
+        WebSocketSession w2 = ws();
+        OctagonSession joiner = new OctagonSession("2", "Vali A.", w2);
+        matchmaker.registerSession(joiner);
+
+        for (int i = 0; i < 6; i++) matchmaker.handleJoinInvite(joiner, String.valueOf(1000 + i));
+        for (int i = 0; i < 4; i++) matchmaker.handleJoinRoom(joiner, String.valueOf(2000 + i));
+        matchmaker.handleJoinInvite(joiner, "3000");
+        matchmaker.handleJoinRoom(joiner, "3001");
+
+        List<String> inviteCodes = events(w2, "challenge_error").stream().map(n -> n.get("code").asText()).toList();
+        assertEquals(Collections.nCopies(6, "INVITE_NOT_FOUND"), inviteCodes.subList(0, 6));
+        assertEquals("RATE_LIMITED", inviteCodes.get(6));
+        List<String> roomCodes = events(w2, "room_error").stream().map(n -> n.get("code").asText()).toList();
+        assertEquals(List.of("ROOM_NOT_FOUND", "ROOM_NOT_FOUND", "ROOM_NOT_FOUND", "ROOM_NOT_FOUND", "RATE_LIMITED"), roomCodes);
+
+        // Reconnecting (new WebSocket session) does not reset the budget
+        WebSocketSession w3 = ws();
+        OctagonSession again = new OctagonSession("2", "Vali A.", w3);
+        matchmaker.registerSession(again);
+        matchmaker.handleJoinInvite(again, "3002");
+        assertEquals("RATE_LIMITED", events(w3, "challenge_error").get(0).get("code").asText());
+        verify(octagonService, times(6)).getChallenge(anyString());
+    }
+
+    @Test
+    @DisplayName("opponent_progress tells the rival which question I'm on and when I've finished all questions")
+    void opponentProgressCarriesFinishedFlag() throws Exception {
+        profile("1", 0, null);
+        profile("2", 0, null);
+        WebSocketSession w1 = ws(), w2 = ws();
+        OctagonSession inviter = new OctagonSession("1", "Ali V.", w1);
+        OctagonSession joiner = new OctagonSession("2", "Vali A.", w2);
+        matchmaker.registerSession(inviter);
+        matchmaker.registerSession(joiner);
+        invite("4821", "1");
+        matchmaker.handleJoinInvite(joiner, "4821");
+        ActiveMatch m = matchmaker.findActiveMatch(
+                UUID.fromString(events(w2, "match_found").get(0).get("matchId").asText())).orElseThrow();
+        m.setStartedAt(Instant.now().minusSeconds(5));
+        m.setDeadlineAt(Instant.now().plusSeconds(300));
+
+        for (Long q : QIDS) matchmaker.handleSubmitAnswer(joiner, m.getMatchId(), q, 0, 0);
+
+        List<JsonNode> progress = events(w1, "opponent_progress");
+        assertEquals(QIDS.size(), progress.size());
+        JsonNode third = progress.get(2);
+        assertEquals(2, third.get("questionIndex").asInt());
+        assertEquals(3, third.get("answeredCount").asInt());
+        assertEquals(10, third.get("totalQuestions").asInt());
+        assertFalse(third.get("finished").asBoolean());
+        JsonNode last = progress.get(QIDS.size() - 1);
+        assertEquals(10, last.get("answeredCount").asInt());
+        assertTrue(last.get("finished").asBoolean());
+        // the finishing player gets no opponent_progress about himself
+        assertTrue(events(w2, "opponent_progress").isEmpty());
+    }
+
+    @Test
+    @DisplayName("Room codes are 4-digit PINs and unique among open rooms")
+    void roomCodesAreFourDigits() {
+        Set<String> codes = new HashSet<>();
+        for (int i = 0; i < 40; i++) {
+            OctagonSession host = new OctagonSession("h" + i, "Host " + i, ws());
+            matchmaker.registerSession(host);
+            matchmaker.handleCreateRoom(host, 4, true);
+            String code = matchmaker.getUserRoomCode("h" + i);
+            assertTrue(code.matches("[1-9][0-9]{3}"), code);
+            assertTrue(codes.add(code), "duplicate room code " + code);
+        }
     }
 
     @Test

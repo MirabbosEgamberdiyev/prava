@@ -59,7 +59,7 @@ class OctagonApiSecurityTest {
         guests = new OctagonGuestIdentity("test-secret-for-unit-tests-only-0123456789");
         matchmaker = mock(OctagonMatchmaker.class);
         tickets = new OctagonTicketService();
-        controller = new OctagonController(tickets, service, matchmaker);
+        controller = new OctagonController(tickets, service, matchmaker, new uz.pravaimtihon.octagon.service.OctagonCodeGuard());
     }
 
     @Test

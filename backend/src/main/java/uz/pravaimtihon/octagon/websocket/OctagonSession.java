@@ -33,9 +33,7 @@ public class OctagonSession {
     // send_challenge spam himoyasi
     private Instant challengeWindowStart = Instant.now();
     private int challengesInWindow = 0;
-    // xona kodini taxmin qilish (brute-force) himoyasi
-    private Instant roomJoinWindowStart = Instant.now();
-    private int failedRoomJoinsInWindow = 0;
+    // Kodlarni taxmin qilish himoyasi foydalanuvchi bo'yicha — OctagonCodeGuard (sessiya qayta ulanishda nollanardi)
 
     public OctagonSession(String userId, String displayName, WebSocketSession session) {
         this.userId = userId;
