@@ -106,11 +106,11 @@ public class User extends BaseEntity {
 
     /**
      * Maksimal qurilmalar soni (1-10).
-     * Default: 4 ta qurilma.
+     * Default: 2 ta qurilma (biznes talabi, V22; avval 4 edi).
      */
-    @Column(name = "max_devices", columnDefinition = "INTEGER DEFAULT 4")
+    @Column(name = "max_devices", columnDefinition = "INTEGER DEFAULT 2")
     @Builder.Default
-    private Integer maxDevices = 4;
+    private Integer maxDevices = 2;
 
     /**
      * Hozirgi faol qurilmalar/sessiyalar soni.
