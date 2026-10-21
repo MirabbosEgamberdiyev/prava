@@ -18,6 +18,7 @@ import uz.pravaimtihon.repository.UserRepository;
 import uz.pravaimtihon.security.CustomUserDetails;
 import uz.pravaimtihon.security.JwtTokenProvider;
 import uz.pravaimtihon.service.impl.AuthService;
+import uz.pravaimtihon.service.impl.AvatarService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +34,7 @@ class AuthServiceUpdateProfileTest {
     private UserRepository userRepository;
     private UserMapper userMapper;
     private AuthService authService;
+    private AvatarService avatarService;
     private User existingUser;
 
     @BeforeEach
@@ -47,6 +49,7 @@ class AuthServiceUpdateProfileTest {
         TelegramAuthService telegramAuthService = mock(TelegramAuthService.class);
         TelegramTokenStore telegramTokenStore = mock(TelegramTokenStore.class);
         DeviceManagementService deviceManagementService = mock(DeviceManagementService.class);
+        avatarService = mock(AvatarService.class);
 
         authService = new AuthService(
                 userRepository,
@@ -59,7 +62,8 @@ class AuthServiceUpdateProfileTest {
                 telegramAuthService,
                 telegramTokenStore,
                 deviceManagementService,
-                mock(uz.pravaimtihon.security.SessionRevocationService.class)
+                mock(uz.pravaimtihon.security.SessionRevocationService.class),
+                avatarService
         );
 
         existingUser = User.builder()
@@ -157,5 +161,17 @@ class AuthServiceUpdateProfileTest {
         assertThrows(ValidationException.class, () -> {
             authService.updateMyProfile(body, AcceptLanguage.UZL);
         });
+    }
+
+    @Test
+    @DisplayName("profileImageUrl alone is a valid update and is delegated to AvatarService")
+    void testUpdateProfileImageOnly() {
+        when(userMapper.toResponse(any(User.class), any(AcceptLanguage.class))).thenReturn(UserResponse.builder().id(10L).build());
+        Map<String, String> body = new HashMap<>();
+        body.put("profileImageUrl", "/api/v1/public/avatars/driver.svg");
+
+        assertNotNull(authService.updateMyProfile(body, AcceptLanguage.UZL));
+        verify(avatarService).applyProfileImage(existingUser, "/api/v1/public/avatars/driver.svg");
+        verify(userRepository).save(existingUser);
     }
 }
