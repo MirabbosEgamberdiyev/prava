@@ -22,6 +22,7 @@ import {
   IconX,
   IconHome,
   IconSparkles,
+  IconSwords,
   IconBuildingCommunity,
   IconDownload,
   IconInfoCircle,
@@ -249,6 +250,24 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
               styles={{ root: { fontWeight: 600 } }}
             >
               {t("guestExam.tryFree")}
+            </Button>
+
+            <Button
+              component="a"
+              href={getWebAppUrl("/octagon")}
+              onClick={onClose}
+              fullWidth
+              size="md"
+              h={44}
+              radius="md"
+              style={{
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                color: "#ffffff",
+                fontWeight: 700,
+              }}
+              leftSection={<IconSwords size={18} />}
+            >
+              {t("octagon.lobby.title", "OKTAGON (1v1 PvP)")}
             </Button>
           </Stack>
 

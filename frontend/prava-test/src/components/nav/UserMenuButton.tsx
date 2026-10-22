@@ -4,6 +4,7 @@ import {
   IconUser,
   IconHistory,
   IconTrophy,
+  IconSwords,
 } from "@tabler/icons-react";
 import { Group, Text, Menu, UnstyledButton, Box } from "@mantine/core";
 import { UserAvatar } from "../common/UserAvatar";
@@ -151,6 +152,12 @@ function UserMenuButton() {
           onClick={() => navigate("/leaderboard")}
         >
           {t("leaderboard.title", "Reyting")}
+        </Menu.Item>
+        <Menu.Item
+          leftSection={<IconSwords size={15} color="#10b981" />}
+          onClick={() => navigate("/octagon")}
+        >
+          {t("octagon.lobby.title", "OKTAGON (1v1 PvP)")}
         </Menu.Item>
 
         <Menu.Divider />

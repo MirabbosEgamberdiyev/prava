@@ -33,6 +33,7 @@ import {
   IconFlame,
   IconTrophy,
   IconBooks,
+  IconSwords,
 } from "@tabler/icons-react";
 
 /** Simulator vehicle image rendered from 3D model */
@@ -528,6 +529,27 @@ export default function User_Page() {
                   <div>
                     <div className="ref-secondary-title">{t("refDashboard.survival", "Xatogacha marafon")}</div>
                     <div className="ref-secondary-desc">{t("refDashboard.survivalDesc", "Xato qilmaguningizcha")}</div>
+                  </div>
+                </div>
+                <div className="ref-secondary-arrow-btn" aria-hidden="true">
+                  <IconChevronRight size={16} stroke={2.5} />
+                </div>
+              </div>
+
+              {/* Learn 5: Oktagon 1v1 PvP */}
+              <div
+                className="ref-secondary-card"
+                onClick={() => navigate("/octagon")}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="ref-secondary-left">
+                  <div className="ref-secondary-icon" style={{ background: "#10b981", color: "#ffffff" }}>
+                    <IconSwords size={24} stroke={2} />
+                  </div>
+                  <div>
+                    <div className="ref-secondary-title">{t("octagon.lobby.title", "OKTAGON (1v1 PvP)")}</div>
+                    <div className="ref-secondary-desc">{t("octagon.lobby.tagline", "Haqiqiy raqiblar bilan real vaqt rejimida bilim sinovi!")}</div>
                   </div>
                 </div>
                 <div className="ref-secondary-arrow-btn" aria-hidden="true">

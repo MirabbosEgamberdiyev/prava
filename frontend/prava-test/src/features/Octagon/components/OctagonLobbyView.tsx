@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
+  IconArrowLeft,
   IconSwords,
   IconTrophy,
   IconFlame,
@@ -51,6 +53,7 @@ export const OctagonLobbyView: React.FC<Props> = ({
   onLogin,
 }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isMuted, setIsMuted] = useState(() => OctagonAudio.getMuted());
 
   const toggleSound = () => {
@@ -73,15 +76,26 @@ export const OctagonLobbyView: React.FC<Props> = ({
       <div className="oct-console">
         {/* Header */}
         <div className="oct-header">
-          <button
-            type="button"
-            onClick={toggleSound}
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <button
+              type="button"
+              onClick={() => navigate("/me")}
+              className="oct-icon-btn"
+              title={t("common.back", "Bosh sahifa")}
+              aria-label={t("common.back", "Bosh sahifa")}
+            >
+              <IconArrowLeft size={20} />
+            </button>
+            <button
+              type="button"
+              onClick={toggleSound}
             className="oct-icon-btn"
             title={isMuted ? t("octagon.lobby.soundOff") : t("octagon.lobby.soundOn")}
             aria-label={isMuted ? t("octagon.lobby.soundOff") : t("octagon.lobby.soundOn")}
           >
             {isMuted ? <IconVolumeOff size={20} /> : <IconVolume size={20} />}
           </button>
+          </div>
 
           <div className="oct-header-center">
             <div className="oct-header-logo">
