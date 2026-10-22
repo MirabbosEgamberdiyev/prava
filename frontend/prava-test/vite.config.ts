@@ -195,6 +195,10 @@ export default defineConfig(({ mode }) => ({
         // Three.js (+ @react-three) faqat 3D simulyatorda kerak: alohida "vendor-three" chunk'iga ajratiladi,
         // boshqa sahifalar uni yuklamaydi. Qolgan kutubxonalar barqaror vendor chunk'larida (kesh uchun).
         manualChunks(id) {
+          // Rollup'ning CommonJS yordamchisi (getDefaultExportFromCjs) React bilan bir chunk'da bo'lishi shart:
+          // u "i18n" chunk'iga tushib qolganda vendor ↔ i18n aylanma importi paydo bo'lib, react-i18next
+          // yuklanayotganda React hali undefined edi — butun sayt oq ekran (2026-10-22 prod).
+          if (id.includes('commonjsHelpers')) return 'vendor';
           if (!id.includes('node_modules')) return undefined;
           if (/node_modules[\\/](three|@react-three|three-stdlib|troika-[^\\/]+|camera-controls|maath|meshline)[\\/]/.test(id)) {
             return 'vendor-three';
