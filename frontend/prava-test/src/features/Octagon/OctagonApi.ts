@@ -40,6 +40,12 @@ export const OctagonApi = {
     return res.data?.data || [];
   },
 
+  /** Mening o'rnim (jadval ostida alohida); davrda o'ynamagan bo'lsam — null. Faqat tizimga kirganda. */
+  async getMyLeaderboardPosition(period: "weekly" | "monthly" | "all_time" = "all_time"): Promise<LeaderboardUser | null> {
+    const res = await api.get(`/api/v1/octagon/leaderboard/me?period=${period}`);
+    return res.data?.data || null;
+  },
+
   async getHistory(page = 0, size = 10) {
     const params = new URLSearchParams({ page: String(page), size: String(size) });
     const res = await api.get(`/api/v1/octagon/history?${params.toString()}`);

@@ -2223,3 +2223,683 @@
     font-size: 26px;
   }
 }
+
+/* ===================================================================
+   UI/UX 2026-10-22: 11 ekran — trek, radar, uzilish, natija, modallar
+   =================================================================== */
+
+/* --- Arena: variantlar katta bosish maydoni --- */
+.oct-option-btn {
+  min-height: 56px;
+}
+
+/* --- 10 segmentli trek: yashil (to'g'ri) / qizil (xato), joriy savol oq nur bilan pulsatsiya --- */
+.oct-bar-segment.done.correct {
+  background: #10b981;
+  box-shadow: 0 0 7px rgba(16, 185, 129, 0.65);
+}
+.oct-bar-segment.done.wrong {
+  background: #ef4444;
+  box-shadow: 0 0 7px rgba(239, 68, 68, 0.6);
+}
+.oct-bar-segment.done.answered {
+  background: #64748b;
+}
+.oct-bar-segment.active {
+  background: #f8fafc;
+  box-shadow: 0 0 10px rgba(248, 250, 252, 0.85);
+  animation: oct-track-glow 1.1s ease-in-out infinite;
+}
+@keyframes oct-track-glow {
+  0%, 100% { opacity: 0.55; box-shadow: 0 0 4px rgba(248, 250, 252, 0.4); }
+  50% { opacity: 1; box-shadow: 0 0 14px rgba(248, 250, 252, 0.95); }
+}
+
+/* --- Reaksiyalar: spam filtri yoqilganda --- */
+.oct-reaction-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(0.8);
+}
+.oct-reactions-bar.muted span {
+  color: #fbbf24 !important;
+}
+
+/* --- PIN: xato kodda katakchalar qizil silkinadi --- */
+.oct-pin.error {
+  animation: oct-pin-shake 0.42s ease-in-out;
+}
+.oct-pin.error .oct-pin-cell {
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.22);
+  color: #fecaca;
+}
+@keyframes oct-pin-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+/* --- Lobby: katta ELO va skeleton --- */
+.oct-elo-big {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1;
+}
+.oct-elo-big-num {
+  font-size: 34px;
+  font-weight: 900;
+  color: #fbbf24;
+  text-shadow: 0 0 18px rgba(251, 191, 36, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+.oct-elo-big-unit {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #f59e0b;
+}
+.oct-skel {
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(51, 65, 85, 0.55) 0%, rgba(71, 85, 105, 0.85) 50%, rgba(51, 65, 85, 0.55) 100%);
+  background-size: 200% 100%;
+  animation: oct-skel-shimmer 1.3s ease-in-out infinite;
+}
+.oct-skel-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+.oct-skel-line {
+  height: 12px;
+}
+.oct-skel-elo {
+  width: 70px;
+  height: 38px;
+}
+.oct-skel-cell {
+  width: 100%;
+  height: 64px;
+  border-radius: 14px;
+}
+.oct-skel-row {
+  height: 58px;
+  margin-bottom: 10px;
+  border-radius: 14px;
+}
+@keyframes oct-skel-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --- Radar: real navbatdagi o'yinchilar --- */
+.oct-sonar-blip.live {
+  position: absolute;
+}
+.oct-radar-live {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 2px auto 14px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #a7f3d0;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+.oct-radar-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: oct-pulse 1.4s infinite;
+}
+.oct-radar-live-sep {
+  color: #475569;
+}
+
+/* --- Aloqa uzildi ekrani --- */
+.oct-disconnected {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 32px 24px;
+  text-align: center;
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+.oct-disconnected-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.12);
+  border: 2px solid rgba(245, 158, 11, 0.45);
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.25);
+}
+.oct-disconnected-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+  color: #ffffff;
+}
+.oct-disconnected-text {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #cbd5e1;
+}
+.oct-disconnected-btn {
+  min-height: 54px;
+  margin-top: 6px;
+}
+
+/* --- Natija: aniqlik va yangi reyting --- */
+.oct-accuracy-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 14px auto 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+}
+.oct-accuracy-line.good { color: #6ee7b7; background: rgba(16, 185, 129, 0.14); }
+.oct-accuracy-line.mid { color: #fcd34d; background: rgba(245, 158, 11, 0.14); }
+.oct-accuracy-line.low { color: #fca5a5; background: rgba(239, 68, 68, 0.14); }
+.oct-forfeit-note {
+  margin-top: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fbbf24;
+}
+.oct-new-elo {
+  margin-top: 8px;
+  font-size: 13.5px;
+  color: #94a3b8;
+  font-weight: 700;
+}
+.oct-new-elo strong {
+  color: #fbbf24;
+  font-weight: 900;
+}
+.oct-elo-glow {
+  animation: oct-elo-glow 1.6s ease-in-out infinite;
+}
+@keyframes oct-elo-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 18px rgba(16, 185, 129, 0.9); }
+}
+
+/* --- Qorong'i neon modallar (reyting, tarix, qoidalar, kirish) --- */
+.oct-modal-dark {
+  background: #0f172a !important;
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 0 40px rgba(56, 189, 248, 0.12), 0 24px 60px rgba(0, 0, 0, 0.55) !important;
+}
+.oct-modal-dark-header {
+  background: #0f172a !important;
+  color: #f8fafc;
+}
+.oct-modal-dark-close {
+  color: #94a3b8 !important;
+}
+.oct-modal-dark-close:hover {
+  background: rgba(148, 163, 184, 0.12) !important;
+}
+.oct-modal-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffffff;
+}
+.oct-modal-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+}
+.oct-modal-title-icon.gold { color: #fbbf24; background: rgba(251, 191, 36, 0.14); }
+.oct-modal-title-icon.green { color: #34d399; background: rgba(16, 185, 129, 0.14); }
+.oct-modal-title-icon.orange { color: #fb923c; background: rgba(249, 115, 22, 0.14); }
+
+.oct-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 36px 12px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
+}
+.oct-empty-icon {
+  font-size: 44px;
+  line-height: 1;
+}
+.oct-empty-text {
+  max-width: 320px;
+  color: #e2e8f0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.oct-empty-btn {
+  max-width: 300px;
+  min-height: 52px;
+  margin-top: 4px;
+}
+
+/* --- Peshqadamlar: davr tugmalari, podium, o'z o'rni --- */
+.oct-seg {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 5px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  background: rgba(30, 41, 59, 0.75);
+}
+.oct-seg-btn {
+  min-height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #94a3b8;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.oct-seg-btn:hover {
+  color: #e2e8f0;
+}
+.oct-seg-btn.active {
+  background: #fbbf24;
+  color: #1f1300;
+  box-shadow: 0 3px 0 #b45309;
+}
+.oct-podium {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: end;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.oct-podium-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  text-align: center;
+}
+.oct-podium-crown {
+  color: #fbbf24;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.8));
+  margin-bottom: 2px;
+}
+.oct-podium-name {
+  max-width: 100%;
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+.oct-podium-elo {
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 900;
+}
+.oct-podium-step {
+  width: 100%;
+  margin-top: 8px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8px;
+  border-radius: 14px 14px 6px 6px;
+  border-bottom: 5px solid rgba(0, 0, 0, 0.35);
+}
+.oct-podium-col.p1 .oct-podium-step {
+  height: 92px;
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.55), rgba(180, 83, 9, 0.35));
+  box-shadow: 0 0 24px rgba(251, 191, 36, 0.3);
+}
+.oct-podium-col.p2 .oct-podium-step {
+  height: 68px;
+  background: linear-gradient(180deg, rgba(203, 213, 225, 0.45), rgba(71, 85, 105, 0.35));
+}
+.oct-podium-col.p3 .oct-podium-step {
+  height: 52px;
+  background: linear-gradient(180deg, rgba(217, 119, 6, 0.5), rgba(120, 53, 15, 0.35));
+}
+.oct-podium-col.mine .oct-podium-name {
+  color: #7dd3fc;
+}
+.oct-podium-medal {
+  font-size: 26px;
+  line-height: 1;
+}
+.oct-lb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.oct-lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+.oct-lb-row.mine {
+  background: rgba(14, 165, 233, 0.14);
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.18);
+}
+.oct-lb-pos {
+  min-width: 38px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.oct-lb-user {
+  flex: 1;
+  min-width: 0;
+}
+.oct-lb-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 800;
+}
+.oct-lb-sub {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+}
+.oct-lb-elo {
+  min-width: 44px;
+  text-align: right;
+  color: #fbbf24;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.oct-lb-me {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(148, 163, 184, 0.25);
+}
+.oct-lb-me-label {
+  margin-bottom: 8px;
+  color: #7dd3fc;
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.oct-lb-me-podium,
+.oct-lb-me-empty {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.6);
+  color: #cbd5e1;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* --- Janglar tarixi --- */
+.oct-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.oct-history-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 12px;
+  border-radius: 14px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-left: 5px solid #64748b;
+}
+.oct-history-card.win { border-left-color: #10b981; }
+.oct-history-card.loss { border-left-color: #ef4444; }
+.oct-history-card.draw { border-left-color: #94a3b8; }
+.oct-history-main {
+  flex: 1;
+  min-width: 0;
+}
+.oct-history-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 800;
+}
+.oct-history-date {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+}
+.oct-history-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.oct-history-score-num {
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.oct-history-result {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.oct-history-result.win { color: #6ee7b7; background: rgba(16, 185, 129, 0.15); }
+.oct-history-result.loss { color: #fca5a5; background: rgba(239, 68, 68, 0.15); }
+.oct-history-result.draw { color: #cbd5e1; background: rgba(148, 163, 184, 0.15); }
+.oct-history-elo {
+  min-width: 64px;
+  text-align: right;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.oct-history-elo.up { color: #34d399; }
+.oct-history-elo.down { color: #f87171; }
+.oct-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+.oct-pager-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(30, 41, 59, 0.8);
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.oct-pager-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.oct-pager-info {
+  color: #94a3b8;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+/* --- Qoidalar --- */
+.oct-rules-subtitle {
+  margin: 0 0 14px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+.oct-rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.oct-rule-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-left: 4px solid #38bdf8;
+}
+.oct-rule-card.green { border-left-color: #10b981; }
+.oct-rule-card.gold { border-left-color: #fbbf24; }
+.oct-rule-card.purple { border-left-color: #a855f7; }
+.oct-rule-icon {
+  font-size: 22px;
+  line-height: 1.2;
+}
+.oct-rule-title {
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 900;
+}
+.oct-rule-desc {
+  margin-top: 2px;
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.oct-rules-confirm {
+  min-height: 54px;
+  margin-top: 18px;
+}
+.oct-rules-confirm.waiting {
+  --oct-btn: #475569;
+  --oct-btn-edge: #334155;
+  --oct-btn-glow: transparent;
+}
+
+/* --- Kirish eshigi: Telegram + Google --- */
+.oct-auth-gate-modal {
+  border-color: rgba(56, 189, 248, 0.35);
+}
+.oct-auth-gate-icon {
+  position: relative;
+}
+.oct-auth-gate-spark {
+  position: absolute;
+  right: -10px;
+  bottom: -8px;
+  font-size: 24px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+.oct-auth-gate-social {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+.oct-auth-gate-social-btn {
+  width: 100%;
+}
+.oct-auth-gate-other {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(30, 41, 59, 0.75);
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.oct-auth-gate-other:hover {
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .oct-elo-big-num { font-size: 26px; }
+  .oct-podium { gap: 6px; }
+  .oct-podium-col.p1 .oct-podium-step { height: 76px; }
+  .oct-podium-col.p2 .oct-podium-step { height: 56px; }
+  .oct-podium-col.p3 .oct-podium-step { height: 42px; }
+  .oct-seg-btn { font-size: 12px; }
+  .oct-history-card { gap: 10px; padding: 10px; }
+  .oct-history-elo { min-width: 54px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oct-bar-segment.active,
+  .oct-pin.error,
+  .oct-skel,
+  .oct-radar-live-dot,
+  .oct-elo-glow {
+    animation: none;
+  }
+}

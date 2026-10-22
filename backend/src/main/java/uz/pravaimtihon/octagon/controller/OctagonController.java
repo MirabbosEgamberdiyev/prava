@@ -105,6 +105,16 @@ public class OctagonController {
         return ResponseEntity.ok(ApiResponse.success(list));
     }
 
+    @GetMapping("/leaderboard/me")
+    @Operation(summary = "Caller's own position in the leaderboard (null when not ranked in the period)")
+    public ResponseEntity<ApiResponse<LeaderboardEntry>> getMyLeaderboardPosition(
+            @AuthenticationPrincipal CustomUserDetails principal,
+            @RequestParam(value = "period", defaultValue = "all_time") String period) {
+
+        String caller = requireCaller(principal);
+        return ResponseEntity.ok(ApiResponse.success(octagonService.getMyLeaderboardPosition(caller, period).orElse(null)));
+    }
+
     @GetMapping("/history")
     @Operation(summary = "Get the caller's own match history")
     public ResponseEntity<ApiResponse<Page<MatchHistoryEntry>>> getHistory(

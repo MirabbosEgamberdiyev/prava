@@ -46,6 +46,12 @@ public class OctagonMatchmaker {
     static final long ENDED_RETENTION_SEC = 120;
     static final int MAX_CHALLENGES_PER_MINUTE = 5;
     static final int CHALLENGE_TTL_SEC = 30;
+    /** Qidiruv: 3 s gacha ±30 ELO, 6 s gacha ±80, keyin istalgan inson; 7 s da inson bo'lmasa — bot. */
+    static final long ELO_STRICT_SEC = 3;
+    static final long ELO_WIDE_SEC = 6;
+    static final long BOT_FALLBACK_SEC = 7;
+    /** Radar uchun navbat holati (real son: qidirayotganlar va onlayn o'yinchilar) shu oraliqda yuboriladi. */
+    static final long QUEUE_STATUS_INTERVAL_MS = 2000;
     /** Guruh xonasi kodi ham 4 raqamli (1000–9999); faol xonalar orasida unikal. */
     static final int ROOM_CODE_ATTEMPTS = 25;
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -133,6 +139,22 @@ public class OctagonMatchmaker {
         session.setQueuedAt(null);
         if (wasCurrent) {
             handleLeaveRoom(session);
+        }
+    }
+
+    /**
+     * Qidirayotgan o'yinchilarga radar uchun haqiqiy ma'lumot: navbatda yana nechta odam bor va hozir
+     * Oktagon'da nechta o'yinchi onlayn (kimligi oshkor qilinmaydi). Har o'yinchiga ko'pi bilan 2 s da bir marta.
+     */
+    void broadcastQueueStatus(Instant now) {
+        if (waitingQueue.isEmpty()) return;
+        long online = activeSessions.values().stream().filter(OctagonSession::isOpen).count();
+        int searching = Math.max(0, waitingQueue.size() - 1);
+        for (OctagonSession s : waitingQueue) {
+            Instant last = s.getLastQueueStatusAt();
+            if (last != null && Duration.between(last, now).toMillis() < QUEUE_STATUS_INTERVAL_MS) continue;
+            s.setLastQueueStatusAt(now);
+            sendEvent(s, "queue_status", Map.of("searching", searching, "online", online));
         }
     }
 
@@ -232,9 +254,9 @@ public class OctagonMatchmaker {
                         if (candidate.getUserId().equals(p1.getUserId())) continue;
 
                         int eloDiff = Math.abs(p1.getCurrentElo() - candidate.getCurrentElo());
-                        if ((waitSec < 5 && eloDiff <= 30)
-                                || (waitSec < 15 && eloDiff <= 80)
-                                || waitSec >= 15) {
+                        if ((waitSec < ELO_STRICT_SEC && eloDiff <= 30)
+                                || (waitSec < ELO_WIDE_SEC && eloDiff <= 80)
+                                || waitSec >= ELO_WIDE_SEC) {
                             p2 = candidate;
                             break;
                         }
@@ -244,8 +266,8 @@ public class OctagonMatchmaker {
                         matched.add(p1);
                         matched.add(p2);
                         createMatch(p1, p2, OctagonGameType.RANKED_QUEUE);
-                    } else if (waitSec >= 20) {
-                        // 2. 20 soniyada inson topilmadi — bot
+                    } else if (waitSec >= BOT_FALLBACK_SEC) {
+                        // 2. 7 soniyada inson topilmadi — o'yinchi cheksiz kutib qolmasin, bot ulanadi
                         matched.add(p1);
                         createBotMatch(p1);
                     }
@@ -253,6 +275,7 @@ public class OctagonMatchmaker {
 
                 waitingQueue.removeAll(matched);
                 for (OctagonSession s : matched) s.setQueuedAt(null);
+                broadcastQueueStatus(now);
             }
         } catch (Exception e) {
             log.error("Error in matchmaking tick: {}", e.getMessage(), e);
@@ -612,6 +635,18 @@ public class OctagonMatchmaker {
         data.put("opponentDeltaElo", oppDelta);
         data.put("finalScores", Map.of("me", myScore, "opponent", oppScore));
         data.put("forfeit", forfeitUserId != null);
+        // Natija ekrani: "8/10 to'g'ri (80%)" va "Yangi reyting" — ELO bazadan (jang yozilgandan keyin)
+        data.put("totalQuestions", match.getQuestionIds().size());
+        try {
+            OctagonProfile profile = octagonService.getProfileSnapshot(s.getUserId());
+            if (profile != null) {
+                data.put("myNewElo", profile.getEloRating());
+                s.setCurrentElo(profile.getEloRating());
+                s.setRank(OctagonRank.fromElo(profile.getEloRating()));
+            }
+        } catch (Exception e) {
+            log.debug("New ELO unavailable for {}: {}", s.getUserId(), e.getMessage());
+        }
         sendEvent(s, "match_ended", data);
     }
 

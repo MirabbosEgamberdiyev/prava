@@ -102,6 +102,7 @@ class OctagonMatchSecurityTest {
         ActiveMatch m = matchmaker.findActiveMatch(UUID.fromString(id)).orElseThrow();
         m.setStartedAt(Instant.now());
         m.setDeadlineAt(Instant.now().plusSeconds(300));
+        m.setMinAnswerIntervalMs(0); // 350 ms anti-cheat alohida testda (tooFastAnswersNotCounted)
         return m;
     }
 
@@ -339,5 +340,48 @@ class OctagonMatchSecurityTest {
         matchmaker.matchmakingTick();
         assertTrue(events(wsA, "match_found").isEmpty());
         assertEquals(1, events(wsA, "match_error").size());
+    }
+
+    @Test
+    @DisplayName("Anti-cheat: answers within 350 ms of the start or of the previous answer are not counted")
+    void tooFastAnswersNotCounted() throws Exception {
+        WebSocketSession wsA = ws(), wsB = ws();
+        OctagonSession a = new OctagonSession("1", "A", wsA);
+        OctagonSession b = new OctagonSession("2", "B", wsB);
+        ActiveMatch m = startedMatch(a, b, wsA);
+        m.setMinAnswerIntervalMs(ActiveMatch.MIN_ANSWER_INTERVAL_MS);
+
+        m.setStartedAt(Instant.now());
+        matchmaker.handleSubmitAnswer(a, m.getMatchId(), 101L, 2, 0); // 0 ms after start — script
+        assertEquals(0, m.getPlayer1Answers().size());
+        assertTrue(events(wsA, "answer_result").isEmpty());
+
+        m.setStartedAt(Instant.now().minusSeconds(2));
+        matchmaker.handleSubmitAnswer(a, m.getMatchId(), 101L, 2, 0); // human pace — counted
+        matchmaker.handleSubmitAnswer(a, m.getMatchId(), 102L, 2, 0); // instantly after — not counted
+        assertEquals(1, m.getPlayer1Answers().size());
+        assertTrue(m.getPlayer1Answers().containsKey(101L));
+    }
+
+    @Test
+    @DisplayName("Searching players get real queue_status (others searching, players online)")
+    void queueStatusForRadar() throws Exception {
+        profile("1", 100);
+        profile("2", 900);
+        WebSocketSession wsA = ws(), wsB = ws(), wsC = ws();
+        OctagonSession a = new OctagonSession("1", "A", wsA);
+        OctagonSession b = new OctagonSession("2", "B", wsB);
+        OctagonSession c = new OctagonSession("3", "C", wsC);
+        matchmaker.registerSession(a);
+        matchmaker.registerSession(b);
+        matchmaker.registerSession(c);
+        matchmaker.joinQueue(a, 0, 0);
+        matchmaker.joinQueue(b, 0, 0); // ELO gap 800 — not matched in the first seconds
+        matchmaker.matchmakingTick();
+
+        JsonNode st = events(wsA, "queue_status").get(0);
+        assertEquals(1, st.get("searching").asInt());
+        assertEquals(3, st.get("online").asInt());
+        assertTrue(events(wsC, "queue_status").isEmpty(), "only searching players get it");
     }
 }

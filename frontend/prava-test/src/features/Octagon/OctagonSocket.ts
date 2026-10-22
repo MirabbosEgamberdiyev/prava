@@ -1,8 +1,10 @@
-import { OCTAGON_CONFIG, type MatchOpponent, type OpponentProgress, type MatchResultData, type GroupRoom, type IncomingChallenge, type OctagonQuestion } from "./types";
+import { OCTAGON_CONFIG, type MatchOpponent, type OpponentProgress, type MatchResultData, type GroupRoom, type IncomingChallenge, type OctagonQuestion, type QueueStatus } from "./types";
 import { ENV } from "../../config/env";
 
 export interface OctagonSocketCallbacks {
   onConnected?: () => void;
+  /** Qidiruv paytida: nechta o'yinchi qidirmoqda / onlayn (radar uchun real ma'lumot). */
+  onQueueStatus?: (data: QueueStatus) => void;
   onMatchFound?: (data: { matchId: string; opponent: MatchOpponent; questionIds: number[]; questions?: OctagonQuestion[]; preloadDurationMs: number }) => void;
   onCountdownTick?: (count: number) => void;
   onMatchStarted?: (data: { totalDurationSec: number; startTime: number }) => void;
@@ -120,6 +122,12 @@ export class OctagonSocket {
           const data = msg.data || {};
 
           switch (ev) {
+            case "queue_status":
+              this.callbacks.onQueueStatus?.({
+                searching: Number(data.searching) || 0,
+                online: Number(data.online) || 0,
+              });
+              break;
             case "match_found":
               this.callbacks.onMatchFound?.(data);
               break;

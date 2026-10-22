@@ -24,3 +24,35 @@ if (js > BUDGET.entryJsGzipKb || css > BUDGET.entryCssGzipKb) {
   console.error("Bundle budget exceeded");
   process.exit(1);
 }
+
+// Chunk'lar orasida statik aylanma import (masalan vendor ↔ i18n) bo'lsa, yuklanishda import hali undefined
+// bo'ladi va sayt oq ekran (2026-10-22 prod). Dinamik import("./x.js") hisobga olinmaydi.
+const assetsDir = path.join(dist, "assets");
+const chunkFiles = fs.readdirSync(assetsDir).filter((f) => f.endsWith(".js"));
+const edges = new Map(
+  chunkFiles.map((f) => {
+    const src = fs.readFileSync(path.join(assetsDir, f), "utf8");
+    const deps = [...src.matchAll(/\bfrom\s*["']\.\/([\w.-]+\.js)["']|\bimport\s*["']\.\/([\w.-]+\.js)["']/g)].map((m) => m[1] || m[2]);
+    return [f, new Set(deps)];
+  })
+);
+const cycles = [];
+const visit = new Map();
+const trail = [];
+const dfs = (node) => {
+  visit.set(node, 1);
+  trail.push(node);
+  for (const dep of edges.get(node) || []) {
+    if (!edges.has(dep)) continue;
+    if (visit.get(dep) === 1) cycles.push([...trail.slice(trail.indexOf(dep)), dep].join(" -> "));
+    else if (!visit.get(dep)) dfs(dep);
+  }
+  trail.pop();
+  visit.set(node, 2);
+};
+for (const f of edges.keys()) if (!visit.get(f)) dfs(f);
+if (cycles.length) {
+  console.error(`Chunk import cycle(s):\n  ${cycles.join("\n  ")}`);
+  process.exit(1);
+}
+console.log(`chunks    ${chunkFiles.length} JS, no static import cycles`);

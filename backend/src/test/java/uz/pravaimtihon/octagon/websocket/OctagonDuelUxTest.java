@@ -239,6 +239,7 @@ class OctagonDuelUxTest {
                 UUID.fromString(events(w2, "match_found").get(0).get("matchId").asText())).orElseThrow();
         m.setStartedAt(Instant.now().minusSeconds(5));
         m.setDeadlineAt(Instant.now().plusSeconds(300));
+        m.setMinAnswerIntervalMs(0);
 
         for (Long q : QIDS) matchmaker.handleSubmitAnswer(joiner, m.getMatchId(), q, 0, 0);
 
@@ -300,5 +301,48 @@ class OctagonDuelUxTest {
         // a cancelled challenge can no longer be accepted
         matchmaker.handleAcceptChallenge(target, challengeId);
         assertEquals("CHALLENGE_EXPIRED", events(w2, "challenge_error").get(0).get("code").asText());
+    }
+
+    @Test
+    @DisplayName("Bot joins after 7 s without a human (the player is never left waiting)")
+    void botAfterSevenSeconds() throws Exception {
+        profile("1", 200, null);
+        WebSocketSession w1 = ws();
+        OctagonSession a = new OctagonSession("1", "Ali V.", w1);
+        matchmaker.registerSession(a);
+        matchmaker.joinQueue(a, 0, 0);
+        a.setQueuedAt(Instant.now().minusSeconds(5));
+        matchmaker.matchmakingTick();
+        assertTrue(events(w1, "match_found").isEmpty());
+        a.setQueuedAt(Instant.now().minusSeconds(8));
+        matchmaker.matchmakingTick();
+        assertTrue(OctagonService.isBotId(events(w1, "match_found").get(0).get("opponent").get("id").asText()));
+    }
+
+    @Test
+    @DisplayName("match_ended carries the question count and the new rating for the result screen")
+    void matchEndedHasAccuracyAndNewElo() throws Exception {
+        profile("1", 150, null);
+        profile("2", 150, null);
+        WebSocketSession w1 = ws(), w2 = ws();
+        OctagonSession inviter = new OctagonSession("1", "Ali V.", w1);
+        OctagonSession joiner = new OctagonSession("2", "Vali A.", w2);
+        matchmaker.registerSession(inviter);
+        matchmaker.registerSession(joiner);
+        invite("4821", "1");
+        matchmaker.handleJoinInvite(joiner, "4821");
+        ActiveMatch m = matchmaker.findActiveMatch(
+                UUID.fromString(events(w2, "match_found").get(0).get("matchId").asText())).orElseThrow();
+        m.setStartedAt(Instant.now().minusSeconds(5));
+        m.setDeadlineAt(Instant.now().plusSeconds(300));
+        m.setMinAnswerIntervalMs(0);
+        for (Long q : QIDS) {
+            matchmaker.handleSubmitAnswer(inviter, m.getMatchId(), q, 0, 0);
+            matchmaker.handleSubmitAnswer(joiner, m.getMatchId(), q, 1, 0);
+        }
+
+        JsonNode ended = events(w1, "match_ended").get(0);
+        assertEquals(10, ended.get("totalQuestions").asInt());
+        assertEquals(150, ended.get("myNewElo").asInt());
     }
 }

@@ -365,6 +365,11 @@ export const OctagonGroupModal: React.FC<Props> = ({
                 </Button>
               )}
             </Group>
+            {isHost && !canStart && (
+              <Text size="xs" c="dimmed" ta="center" role="status">
+                {t("octagon.group.needTwoReady")}
+              </Text>
+            )}
           </Stack>
         )}
       </Stack>

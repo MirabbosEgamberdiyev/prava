@@ -173,14 +173,52 @@ public class OctagonService {
         return result;
     }
 
+    /**
+     * Peshqadamlar jadvalida foydalanuvchining o'z o'rni (jadval pastida alohida ko'rsatiladi). Shu davrda
+     * jang o'ynamagan bo'lsa (haftalik/oylik) yoki profili bo'lmasa — empty.
+     */
+    @Transactional(readOnly = true)
+    public Optional<LeaderboardEntry> getMyLeaderboardPosition(String userId, String period) {
+        if (userId == null || isBotId(userId)) return Optional.empty();
+        Optional<OctagonProfile> profile = profileRepository.findById(userId);
+        if (profile.isEmpty() || profile.get().getTotalMatches() <= 0) return Optional.empty();
+        OctagonProfile p = profile.get();
+
+        long ahead;
+        if ("weekly".equalsIgnoreCase(period) || "monthly".equalsIgnoreCase(period)) {
+            LocalDateTime since = LocalDateTime.now().minusDays("weekly".equalsIgnoreCase(period) ? 7 : 30);
+            if (p.getUpdatedAt() == null || p.getUpdatedAt().isBefore(since)) return Optional.empty();
+            ahead = profileRepository.countAheadSince(since, p.getEloRating(), p.getWins());
+        } else {
+            ahead = profileRepository.countAhead(p.getEloRating(), p.getWins());
+        }
+
+        OctagonRank rank = OctagonRank.fromElo(p.getEloRating());
+        double winRate = p.getTotalMatches() > 0 ? ((double) p.getWins() / p.getTotalMatches()) * 100.0 : 0.0;
+        return Optional.of(LeaderboardEntry.builder()
+                .position((int) Math.min(Integer.MAX_VALUE, ahead + 1))
+                .userId(userId)
+                .displayName(resolveDisplayName(userId))
+                .avatarUrl(resolveAvatarUrl(userId))
+                .eloRating(p.getEloRating())
+                .rank(rank)
+                .rankEmoji(rank.getEmoji())
+                .wins(p.getWins())
+                .totalMatches(p.getTotalMatches())
+                .winRate(Math.round(winRate * 10.0) / 10.0)
+                .build());
+    }
+
     @Transactional(readOnly = true)
     public Page<MatchHistoryEntry> getUserHistory(String userId, int page, int size) {
         PageRequest pr = PageRequest.of(Math.max(0, page), Math.min(50, Math.max(1, size)));
         Page<OctagonMatch> matches = matchRepository.findUserMatches(userId, pr);
 
-        Map<String, String> names = resolveDisplayNames(matches.getContent().stream()
+        List<String> opponentIds = matches.getContent().stream()
                 .map(m -> userId.equals(m.getPlayer1Id()) ? m.getPlayer2Id() : m.getPlayer1Id())
-                .toList());
+                .toList();
+        Map<String, String> names = resolveDisplayNames(opponentIds);
+        Map<String, String> avatars = resolveAvatarUrls(opponentIds);
 
         return matches.map(m -> {
             boolean isP1 = userId.equals(m.getPlayer1Id());
@@ -202,6 +240,7 @@ public class OctagonService {
                     .matchId(m.getId())
                     .opponentId(oppId)
                     .opponentName(names.getOrDefault(oppId, "Foydalanuvchi"))
+                    .opponentAvatarUrl(avatars.get(oppId))
                     .myScore(myScore)
                     .opponentScore(oppScore)
                     .result(outcome)

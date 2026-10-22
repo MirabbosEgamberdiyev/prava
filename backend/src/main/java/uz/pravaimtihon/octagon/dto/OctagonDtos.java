@@ -72,6 +72,8 @@ public class OctagonDtos {
         private UUID matchId;
         private String opponentId;
         private String opponentName;
+        /** Raqib rasmi (yo'q bo'lsa null — klient bosh harflarni chizadi). */
+        private String opponentAvatarUrl;
         private int myScore;
         private int opponentScore;
         private String result; // "WIN", "LOSS", "DRAW"

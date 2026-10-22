@@ -14,19 +14,21 @@ import {
   type OutgoingChallenge,
   type UserSearchResult,
   type InviteJoinState,
+  type QueueStatus,
 } from "./types";
 import { OctagonApi } from "./OctagonApi";
 import { OctagonSocket } from "./OctagonSocket";
 import { OctagonAudio } from "./OctagonAudio";
 import { imagePreloader } from "./OctagonImagePreloader";
 import { fireConfetti } from "./confetti";
+import { buildMyTrack, buildOppTrack, createFloodGate, nextOppResults } from "./arena";
 import { showToast } from "../../utils/notificationUtils";
 import i18n from "../../utils/i18n";
 
 const REACTION_EMOJI: Record<string, string> = {
   fire: "🔥",
   thumbs_up: "👍",
-  mindblown: "😱",
+  mindblown: "🤯",
   laugh: "😂",
 };
 
@@ -38,6 +40,11 @@ function clearTimer(ref: { current: number | null }) {
 }
 
 const LIVE_MATCH_STATES: OctagonState[] = ["MATCH_FOUND", "COUNTDOWN", "PLAYING", "RECONNECTING"];
+const EMPTY_PROGRESS: OpponentProgress = { questionIndex: 0, answeredCount: 0, correctCount: 0 };
+const GRACE_SEC = OCTAGON_CONFIG.RECONNECT_GRACE_PERIOD_SEC;
+
+const reactionGate = () =>
+  createFloodGate(OCTAGON_CONFIG.REACTION_FLOOD_LIMIT, OCTAGON_CONFIG.REACTION_COOLDOWN_MS, OCTAGON_CONFIG.REACTION_MUTE_MS);
 
 /**
  * Oktagon holati. 2026-10-21 dan Oktagon FAQAT ro'yxatdan o'tgan foydalanuvchilar uchun: mehmon
@@ -58,15 +65,22 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
   const [currentIndex, setCurrentIndex] = useState(0);
   const [myAnswers, setMyAnswers] = useState<Record<number, number>>({});
   const [myScore, setMyScore] = useState(0);
-  const [oppProgress, setOppProgress] = useState<OpponentProgress>({
-    questionIndex: 0,
-    answeredCount: 0,
-    correctCount: 0,
-  });
+  const [oppProgress, setOppProgress] = useState<OpponentProgress>(EMPTY_PROGRESS);
   const [matchResult, setMatchResult] = useState<MatchResultData | null>(null);
   const [flyingEmojis, setFlyingEmojis] = useState<FlyingEmoji[]>([]);
   const [revengeRequested, setRevengeRequested] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
+  /** Uzilish boshlangan vaqt — 45 s grace hisoblagichi ("qolgan vaqt: 38s"). */
+  const [reconnectSince, setReconnectSince] = useState<number | null>(null);
+  const [clockNow, setClockNow] = useState(() => Date.now());
+  /** Radar: server yuboradigan real navbat holati (nechta o'yinchi qidirmoqda / onlayn). */
+  const [queueStatus, setQueueStatus] = useState<QueueStatus | null>(null);
+  /** Server answer_result: savol id → to'g'ri/xato (trek yashil/qizil to'ladi). */
+  const [myResults, setMyResults] = useState<Record<number, boolean>>({});
+  /** Raqib javoblari tartib bo'yicha: to'g'ri/xato yoki null (noma'lum). */
+  const [oppResults, setOppResults] = useState<Array<boolean | null>>([]);
+  const [reactionsMuted, setReactionsMuted] = useState(false);
+  const [statsLoaded, setStatsLoaded] = useState(false);
 
   const [currentRoom, setCurrentRoom] = useState<GroupRoom | null>(null);
   const [roomErrorMessage, setRoomErrorMessage] = useState<string | null>(null);
@@ -94,6 +108,19 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
   const inviteJoinTimeoutRef = useRef<number | null>(null);
   const inviteJoinPendingRef = useRef(false);
   const showDuelModalRef = useRef(false);
+  const linkDownRef = useRef(false);
+  const oppProgressRef = useRef<OpponentProgress>(EMPTY_PROGRESS);
+  const questionShownAtRef = useRef(0);
+  const myFloodRef = useRef(reactionGate());
+  const oppFloodRef = useRef(reactionGate());
+  const muteTimerRef = useRef<number | null>(null);
+
+  /** Tarmoq holati: uzildi (45 s hisoblagich boshlanadi) yoki tiklandi. */
+  const setLinkDown = useCallback((down: boolean) => {
+    linkDownRef.current = down;
+    setReconnecting(down);
+    setReconnectSince((prev) => (down ? prev ?? Date.now() : null));
+  }, []);
 
   useEffect(() => {
     showDuelModalRef.current = showDuelModal;
@@ -128,6 +155,8 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
       if (stats) setMyStats(stats);
     } catch {
       // tarmoq yo'q — oxirgi ma'lum statistika qoladi
+    } finally {
+      setStatsLoaded(true);
     }
   }, [user]);
 
@@ -142,9 +171,30 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
       if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
       clearTimer(outgoingTimeoutRef);
       clearTimer(inviteJoinTimeoutRef);
+      clearTimer(muteTimerRef);
       imagePreloader.clear();
     };
   }, []);
+
+  // 45 s grace: banner soniyalarni sanaydi; shu vaqtda ulanib bo'lmasa — "Aloqa uzildi" ekrani
+  useEffect(() => {
+    if (reconnectSince === null) return;
+    const id = window.setInterval(() => {
+      const now = Date.now();
+      setClockNow(now);
+      if (now - reconnectSince < GRACE_SEC * 1000) return;
+      window.clearInterval(id);
+      if (!LIVE_MATCH_STATES.includes(stateRef.current)) return;
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      setLinkDown(false);
+      setState("DISCONNECTED");
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [reconnectSince, setLinkDown]);
+  const reconnectLeftSec =
+    reconnectSince === null
+      ? null
+      : Math.max(0, Math.min(GRACE_SEC, GRACE_SEC - Math.floor((clockNow - reconnectSince) / 1000)));
 
   const addFlyingEmoji = useCallback((emoji: string, isMine: boolean) => {
     OctagonAudio.playReaction();
@@ -197,11 +247,18 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     const socket = new OctagonSocket(
       {
         onConnected: () => {
-          setReconnecting(false);
+          const wasDown = linkDownRef.current;
+          setLinkDown(false);
+          // Qidiruv paytida uzilgan bo'lsak — navbatga qayta yozilamiz (server eski sessiyani almashtiradi)
+          if (wasDown && stateRef.current === "SEARCHING") socketRef.current?.joinQueue(0, 0);
         },
 
         onClose: () => {
-          if (LIVE_MATCH_STATES.includes(stateRef.current)) setReconnecting(true);
+          if (LIVE_MATCH_STATES.includes(stateRef.current) || stateRef.current === "SEARCHING") setLinkDown(true);
+        },
+
+        onQueueStatus: (data) => {
+          setQueueStatus(data);
         },
 
         onMatchFound: async (data) => {
@@ -215,7 +272,13 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
           setIncomingChallenge(null);
           setMatchId(data.matchId);
           setOpponent(data.opponent);
-          setOppProgress({ questionIndex: 0, answeredCount: 0, correctCount: 0 });
+          oppProgressRef.current = EMPTY_PROGRESS;
+          setOppProgress(EMPTY_PROGRESS);
+          setOppResults([]);
+          setMyResults({});
+          setQueueStatus(null);
+          myFloodRef.current.reset();
+          oppFloodRef.current.reset();
           setMatchResult(null);
           setRoomStandings(null);
           setState("MATCH_FOUND");
@@ -238,6 +301,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
           setState("PLAYING");
           setCurrentIndex(0);
           setMyAnswers({});
+          setMyResults({});
           setMyScore(0);
           setRevengeRequested(false);
           OctagonAudio.playMatchStart();
@@ -245,10 +309,15 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
         },
 
         onOpponentProgress: (progress) => {
+          const prev = oppProgressRef.current;
+          oppProgressRef.current = progress;
+          setOppResults((r) => nextOppResults(r, prev, progress));
           setOppProgress(progress);
         },
 
         onOpponentReaction: (emojiId) => {
+          // Raqib spam qilsa (1.5 s da 3 tadan ko'p) — 8 soniya uning reaksiyalari ko'rsatilmaydi
+          if (!oppFloodRef.current.hit(Date.now())) return;
           addFlyingEmoji(REACTION_EMOJI[emojiId] || "🔥", false);
         },
 
@@ -264,7 +333,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
             );
           setMatchResult({ ...data, isWin });
           setState("MATCH_FINISHED");
-          setReconnecting(false);
+          setLinkDown(false);
 
           if (isWin) {
             OctagonAudio.playVictory();
@@ -278,17 +347,21 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
         onReconnect: async (data) => {
           // Sahifa yangilangan yoki tarmoq uzilgan bo'lsa ham jang to'liq tiklanadi
           if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
-          setReconnecting(false);
+          setLinkDown(false);
           setMatchId(data.matchId);
           if (data.opponent) setOpponent(data.opponent);
           if (data.opponentProgress) {
-            setOppProgress({
+            const restored: OpponentProgress = {
               questionIndex: data.opponentProgress.questionIndex ?? Math.max(0, data.opponentProgress.answeredCount - 1),
               answeredCount: data.opponentProgress.answeredCount,
               correctCount: data.opponentProgress.correctCount,
               totalQuestions: data.opponentProgress.totalQuestions,
               finished: data.opponentProgress.finished,
-            });
+            };
+            const prev = oppProgressRef.current;
+            oppProgressRef.current = restored;
+            setOppResults((r) => nextOppResults(r, prev, restored));
+            setOppProgress(restored);
           }
           const answers: Record<number, number> = {};
           Object.entries(data.myAnswers || {}).forEach(([k, v]) => {
@@ -314,6 +387,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
 
         onAnswerResult: (data) => {
           setMyScore(data.myScore);
+          setMyResults((prev) => ({ ...prev, [data.questionId]: data.isCorrect }));
         },
 
         onMatchError: (data) => {
@@ -383,8 +457,12 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
           if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
           socketRef.current = null;
           setSearchSeconds(0);
-          setReconnecting(false);
-          setState((prev) => (prev === "SEARCHING" || prev === "AUTH_CHECK" ? "IDLE" : prev));
+          setLinkDown(false);
+          if (LIVE_MATCH_STATES.includes(stateRef.current) && timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+          // Jang paytida barcha urinishlar tugadi — "Aloqa uzildi" ekrani (Lobbiga qaytish tugmasi bilan)
+          setState((prev) =>
+            prev === "SEARCHING" || prev === "AUTH_CHECK" ? "IDLE" : LIVE_MATCH_STATES.includes(prev) ? "DISCONNECTED" : prev
+          );
           showToast({
             id: "octagon-connection-lost",
             color: "red",
@@ -422,6 +500,8 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
           setState("PLAYING");
           setCurrentIndex(0);
           setMyAnswers({});
+          setMyResults({});
+          setOppResults([]);
           setMyScore(0);
           setRevengeRequested(false);
           setRoomStandings(null);
@@ -453,7 +533,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     socket.connect(ticket);
     socketRef.current = socket;
     return socket;
-  }, [user, addFlyingEmoji, refreshStats, startMatchClock]);
+  }, [user, addFlyingEmoji, refreshStats, startMatchClock, setLinkDown]);
 
   const pendingSocketRef = useRef<Promise<OctagonSocket> | null>(null);
   const initSocket = useCallback((): Promise<OctagonSocket> => {
@@ -500,6 +580,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     try {
       setState("SEARCHING");
       setSearchSeconds(0);
+      setQueueStatus(null);
       if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
       searchIntervalRef.current = window.setInterval(() => {
         setSearchSeconds((s) => s + 1);
@@ -549,12 +630,21 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
     setState("IDLE");
     setSearchSeconds(0);
-  }, []);
+    setQueueStatus(null);
+    setLinkDown(false);
+  }, [setLinkDown]);
+
+  // 350 ms himoya: savol endigina chiqqanda (oldingi savolga mo'ljallangan) bosish hisobga olinmaydi —
+  // server ham 350 ms dan tez javobni sanamaydi
+  useEffect(() => {
+    questionShownAtRef.current = Date.now();
+  }, [currentIndex, questions, state]);
 
   // (questionId, selectedIndex) — arena onSubmitAnswer(question.id, optionIndex) chaqiradi.
   const submitAnswer = useCallback(
     (questionId: number, selectedIndex: number) => {
       if (state !== "PLAYING" || questions.length === 0) return;
+      if (Date.now() - questionShownAtRef.current < OCTAGON_CONFIG.ANSWER_INPUT_GUARD_MS) return;
       const currentQ = questions[currentIndex];
       if (!currentQ || currentQ.id !== questionId || myAnswers[currentQ.id] !== undefined) return;
       if (!Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= (currentQ.options?.length ?? 0)) return;
@@ -580,11 +670,18 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
 
   const sendReaction = useCallback(
     (emojiId: string) => {
-      if (!socketRef.current || !matchId) return;
+      if (!socketRef.current || !matchId || reactionsMuted) return;
+      if (!myFloodRef.current.hit(Date.now())) {
+        // 1.5 s ichida 3 tadan ko'p — reaksiyalar 8 soniya o'chadi
+        setReactionsMuted(true);
+        clearTimer(muteTimerRef);
+        muteTimerRef.current = window.setTimeout(() => setReactionsMuted(false), OCTAGON_CONFIG.REACTION_MUTE_MS);
+        return;
+      }
       socketRef.current.sendReaction(matchId, emojiId);
       addFlyingEmoji(REACTION_EMOJI[emojiId] || "🔥", true);
     },
-    [matchId, addFlyingEmoji]
+    [matchId, addFlyingEmoji, reactionsMuted]
   );
 
   const requestRevenge = useCallback(() => {
@@ -732,15 +829,22 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     setRevengeRequested(false);
     setCurrentRoom(null);
     setRoomStandings(null);
-    setReconnecting(false);
+    setMyResults({});
+    setOppResults([]);
+    setQueueStatus(null);
+    setLinkDown(false);
     imagePreloader.clear();
     refreshStats();
-  }, [refreshStats]);
+    // "Aloqa uzildi"dan qaytilganda socket yo'q — lobbida yana onlayn bo'lamiz (jang tirik bo'lsa server tiklaydi)
+    if (!socketRef.current && user?.id != null) initSocket().catch(() => {});
+  }, [refreshStats, setLinkDown, user, initSocket]);
 
   return {
     state,
     myStats,
+    statsLoaded,
     searchSeconds,
+    queueStatus,
     countdown,
     remainingTimeSec,
     matchId,
@@ -752,10 +856,18 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     myAnswers,
     myScore,
     oppProgress,
+    myTrack: buildMyTrack(
+      questions.map((q) => q.id),
+      myAnswers,
+      myResults
+    ),
+    oppTrack: buildOppTrack(questions.length || OCTAGON_CONFIG.QUESTIONS_PER_MATCH, oppProgress.answeredCount, oppResults),
     matchResult,
     flyingEmojis,
     revengeRequested,
     reconnecting,
+    reconnectLeftSec,
+    reactionsMuted,
     currentRoom,
     roomErrorMessage,
     roomStandings,
