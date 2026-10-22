@@ -8,8 +8,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+// invite_code faqat PENDING takliflar orasida unikal — qisman indeks V23 migratsiyasida (JPA ifodalay olmaydi)
 @Table(name = "octagon_challenges", indexes = {
-        @Index(name = "idx_octagon_challenges_code", columnList = "invite_code", unique = true),
+        @Index(name = "idx_octagon_challenges_code", columnList = "invite_code"),
         @Index(name = "idx_octagon_challenges_status", columnList = "status"),
         @Index(name = "idx_octagon_challenges_challenger", columnList = "challenger_id")
 })
@@ -30,7 +31,7 @@ public class OctagonChallenge {
     @Column(name = "target_user_id", length = 64)
     private String targetUserId;
 
-    @Column(name = "invite_code", length = 32, nullable = false, unique = true)
+    @Column(name = "invite_code", length = 32, nullable = false)
     private String inviteCode;
 
     @Builder.Default

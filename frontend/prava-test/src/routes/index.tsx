@@ -11,6 +11,7 @@ import { isLandingDomain } from "../utils/domain";
 import {
   DomainRedirectToWebApp,
   DomainRedirectToLanding,
+  RedirectPreservingQuery,
 } from "../components/common/DomainRedirect";
 
 // Simulator promo / download page on web; interactive 3D in desktop
@@ -177,6 +178,8 @@ export default function AppRoutes() {
             <Route path="/marafon" element={<DomainRedirectToWebApp targetPath="/marafon" />} />
             <Route path="/survival" element={<DomainRedirectToWebApp targetPath="/survival" />} />
             <Route path="/octagon" element={<DomainRedirectToWebApp targetPath="/octagon" />} />
+            {/* Do'st jangi havolasi: pravaonline.uz/oktagon?code=1234 → web.pravaonline.uz/octagon?code=1234 */}
+            <Route path="/oktagon" element={<DomainRedirectToWebApp targetPath="/octagon" />} />
             <Route path="/exam" element={<DomainRedirectToWebApp targetPath="/exam" />} />
             <Route path="/exam/*" element={<DomainRedirectToWebApp />} />
             <Route path="/wrong-answers" element={<DomainRedirectToWebApp targetPath="/wrong-answers" />} />
@@ -230,6 +233,7 @@ export default function AppRoutes() {
               <Route path="/" element={<Navigate to="/me" replace />} />
               <Route path="/me" element={<User_Page />} />
               <Route path="/octagon" element={<Octagon_Page />} />
+              <Route path="/oktagon" element={<RedirectPreservingQuery to="/octagon" />} />
               <Route path="/packages" element={<Packages_Page />} />
               <Route path="/history" element={<History_Page />} />
               <Route path="/leaderboard" element={<Leaderboard_Page />} />
@@ -390,6 +394,7 @@ export default function AppRoutes() {
               <Route path="/topics" element={<Topics_Page />} />
               <Route path="/topics/:topicCode" element={<TopicDetail_Page />} />
               <Route path="/octagon" element={<Octagon_Page />} />
+              <Route path="/oktagon" element={<RedirectPreservingQuery to="/octagon" />} />
             </Route>
 
             <Route path="/try-exam" element={<GuestExam_Page />} />

@@ -24,7 +24,8 @@ const OctagonPage: React.FC = () => {
   const { user } = useAuth();
   const { openAuthModal } = useAuthModal();
   const [searchParams, setSearchParams] = useSearchParams();
-  const duelParam = searchParams.get("duel");
+  // pravaonline.uz/oktagon?code=4821 (yangi havola) yoki eski ?duel=KOD
+  const duelParam = searchParams.get("code") || searchParams.get("duel");
 
   const {
     state,
@@ -75,6 +76,8 @@ const OctagonPage: React.FC = () => {
     cancelChallenge,
     clearOutgoing,
     joinInvite,
+    inviteJoin,
+    resetInviteJoin,
     acceptChallenge,
     rejectChallenge,
     createRoom,
@@ -94,20 +97,22 @@ const OctagonPage: React.FC = () => {
     if (user) setShowAuthGate(false);
   }, [user, setShowAuthGate]);
 
-  // ?duel=KOD — havola/QR orqali kelgan do'st jangi (kirgandan keyin ham shu manzilga qaytiladi)
+  // ?code=1234 — havola/QR orqali kelgan do'st jangi: kod avtomatik kiritiladi
+  // (kirgandan keyin ham shu manzilga qaytiladi)
   const handledDuelRef = useRef<string | null>(null);
   useEffect(() => {
     if (!duelParam || !user || state !== "IDLE" || handledDuelRef.current === duelParam) return;
     handledDuelRef.current = duelParam;
     void joinInvite(duelParam);
     const next = new URLSearchParams(searchParams);
+    next.delete("code");
     next.delete("duel");
     setSearchParams(next, { replace: true });
   }, [duelParam, user, state, joinInvite, searchParams, setSearchParams]);
 
   const handleLogin = useCallback(() => {
     setShowAuthGate(false);
-    const returnUrl = duelParam ? `/octagon?duel=${encodeURIComponent(duelParam)}` : "/octagon";
+    const returnUrl = duelParam ? `/octagon?code=${encodeURIComponent(duelParam)}` : "/octagon";
     openAuthModal({ returnUrl });
   }, [openAuthModal, duelParam, setShowAuthGate]);
 
@@ -159,6 +164,7 @@ const OctagonPage: React.FC = () => {
           question={currentQuestion}
           currentIndex={currentIndex}
           totalQuestions={totalQuestions}
+          myAnsweredCount={Object.keys(myAnswers).length}
           myAnswerIndex={currentQuestion ? myAnswers[currentQuestion.id] : undefined}
           flyingEmojis={flyingEmojis}
           onSubmitAnswer={submitAnswer}
@@ -195,6 +201,8 @@ const OctagonPage: React.FC = () => {
           setShowDuelModal(false);
         }}
         onJoinInvite={joinInvite}
+        inviteJoin={inviteJoin}
+        onResetInviteJoin={resetInviteJoin}
         onSendChallenge={sendChallenge}
         onCancelChallenge={cancelChallenge}
         onClearOutgoing={clearOutgoing}

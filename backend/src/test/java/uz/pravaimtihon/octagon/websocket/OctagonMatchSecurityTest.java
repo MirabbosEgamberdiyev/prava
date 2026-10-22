@@ -46,7 +46,7 @@ class OctagonMatchSecurityTest {
     void setUp() {
         octagonService = mock(OctagonService.class);
         questionRepository = mock(QuestionRepository.class);
-        matchmaker = new OctagonMatchmaker(octagonService, questionRepository, om);
+        matchmaker = new OctagonMatchmaker(octagonService, questionRepository, om, new uz.pravaimtihon.octagon.service.OctagonCodeGuard());
 
         when(octagonService.getRandomQuestionIds(anyInt())).thenReturn(QIDS);
         when(octagonService.getQuestionsByIds(anyList())).thenReturn(List.of());
@@ -296,7 +296,7 @@ class OctagonMatchSecurityTest {
     }
 
     @Test
-    @DisplayName("Room game cannot be restarted while it is running; room codes are high-entropy")
+    @DisplayName("Room game cannot be restarted while it is running; room codes are 4-digit PINs")
     void roomRestartBlocked() throws Exception {
         WebSocketSession wsA = ws(), wsB = ws();
         OctagonSession host = new OctagonSession("1", "A", wsA);
@@ -305,7 +305,7 @@ class OctagonMatchSecurityTest {
         matchmaker.registerSession(g);
         matchmaker.handleCreateRoom(host, 4, false);
         String code = matchmaker.getUserRoomCode("1");
-        assertTrue(code.matches("OCT-[A-Z2-9]{6}"));
+        assertTrue(code.matches("[1-9][0-9]{3}"), code);
         matchmaker.handleJoinRoom(g, code);
 
         matchmaker.handleStartRoomGame(host);
@@ -320,7 +320,7 @@ class OctagonMatchSecurityTest {
         WebSocketSession wsA = ws();
         OctagonSession a = new OctagonSession("1", "A", wsA);
         matchmaker.registerSession(a);
-        for (int i = 0; i < 15; i++) matchmaker.handleJoinRoom(a, "OCT-" + (1000 + i));
+        for (int i = 0; i < 15; i++) matchmaker.handleJoinRoom(a, "nope" + i);
         assertEquals(10, events(wsA, "room_error").stream().filter(e -> "ROOM_NOT_FOUND".equals(e.get("code").asText())).count());
         assertEquals(5, events(wsA, "room_error").stream().filter(e -> "RATE_LIMITED".equals(e.get("code").asText())).count());
     }

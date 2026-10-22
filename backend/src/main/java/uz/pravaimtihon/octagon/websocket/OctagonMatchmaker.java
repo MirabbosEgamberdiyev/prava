@@ -16,6 +16,7 @@ import uz.pravaimtihon.octagon.entity.OctagonProfile;
 import uz.pravaimtihon.octagon.enums.OctagonGameType;
 import uz.pravaimtihon.octagon.enums.OctagonRank;
 import uz.pravaimtihon.octagon.service.OctagonBotPersonas;
+import uz.pravaimtihon.octagon.service.OctagonCodeGuard;
 import uz.pravaimtihon.octagon.service.OctagonService;
 import uz.pravaimtihon.repository.QuestionRepository;
 
@@ -45,13 +46,14 @@ public class OctagonMatchmaker {
     static final long ENDED_RETENTION_SEC = 120;
     static final int MAX_CHALLENGES_PER_MINUTE = 5;
     static final int CHALLENGE_TTL_SEC = 30;
-    static final int MAX_FAILED_ROOM_JOINS_PER_MINUTE = 10;
-    private static final String ROOM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    /** Guruh xonasi kodi ham 4 raqamli (1000–9999); faol xonalar orasida unikal. */
+    static final int ROOM_CODE_ATTEMPTS = 25;
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final OctagonService octagonService;
     private final QuestionRepository questionRepository;
     private final ObjectMapper objectMapper;
+    private final OctagonCodeGuard codeGuard;
 
     private final List<OctagonSession> waitingQueue = new CopyOnWriteArrayList<>();
     private final Map<UUID, ActiveMatch> activeMatches = new ConcurrentHashMap<>();
@@ -452,18 +454,27 @@ public class OctagonMatchmaker {
                 "answeredCount", answeredCount
         ));
 
-        Map<String, Object> progress = Map.of(
-                "questionIndex", questionIndex,
-                "answeredCount", answeredCount,
-                "correctCount", correctCount
-        );
-
         OctagonSession oppSession = match.getOpponentSession(session.getUserId());
         if (oppSession != null) {
-            sendEvent(oppSession, "opponent_progress", progress);
+            sendEvent(oppSession, "opponent_progress", progressPayload(match, questionIndex, answeredCount, correctCount));
         }
 
         checkAndEndMatchIfFinished(match);
+    }
+
+    /**
+     * Raqib holati: nechanchi savolda, nechtasiga javob bergan va hammasini tugatganmi ("finished") —
+     * klient "Raqib barcha savollarni yakunladi" bannerini shu flag bo'yicha ko'rsatadi.
+     */
+    static Map<String, Object> progressPayload(ActiveMatch match, int questionIndex, int answeredCount, int correctCount) {
+        int total = match.getQuestionIds().size();
+        return Map.of(
+                "questionIndex", questionIndex,
+                "answeredCount", answeredCount,
+                "correctCount", correctCount,
+                "totalQuestions", total,
+                "finished", total > 0 && answeredCount >= total
+        );
     }
 
     private void sendBotProgressToPlayer(ActiveMatch match, String optionalEmoji) {
@@ -471,13 +482,7 @@ public class OctagonMatchmaker {
         int correct = match.getPlayer2Score();
         int lastQIdx = Math.min(match.getQuestionIds().size() - 1, Math.max(0, answered - 1));
 
-        Map<String, Object> progress = Map.of(
-                "questionIndex", lastQIdx,
-                "answeredCount", answered,
-                "correctCount", correct
-        );
-
-        sendEvent(match.getP1Session(), "opponent_progress", progress);
+        sendEvent(match.getP1Session(), "opponent_progress", progressPayload(match, lastQIdx, answered, correct));
 
         if (optionalEmoji != null) {
             sendEvent(match.getP1Session(), "opponent_reaction", Map.of("emojiId", optionalEmoji));
@@ -651,7 +656,8 @@ public class OctagonMatchmaker {
         reconnectData.put("myAnswers", mine);
         reconnectData.put("myScore", isP1 ? match.getPlayer1Score() : match.getPlayer2Score());
         reconnectData.put("opponent", opp);
-        reconnectData.put("opponentProgress", Map.of("answeredCount", oppAnswered, "correctCount", oppScore));
+        reconnectData.put("opponentProgress",
+                progressPayload(match, Math.max(0, oppAnswered - 1), oppAnswered, oppScore));
         reconnectData.put("remainingTimeSec", remainingSec);
         reconnectData.put("questionIds", match.getQuestionIds());
         reconnectData.put("questions", match.getQuestionPayload());
@@ -829,10 +835,16 @@ public class OctagonMatchmaker {
      * Avval klient kodni e'tiborsiz qoldirib, tasodifiy raqib qidirardi.
      */
     public void handleJoinInvite(OctagonSession joiner, String inviteCode) {
+        if (codeGuard.isBlocked(joiner.getUserId())) {
+            sendEvent(joiner, "challenge_error", Map.of("code", "RATE_LIMITED",
+                    "message", "Juda ko'p noto'g'ri kod kiritildi. 1 daqiqadan so'ng qayta urinib ko'ring"));
+            return;
+        }
         Optional<OctagonChallenge> invite = octagonService.getChallenge(inviteCode);
         if (invite.isEmpty()) {
+            codeGuard.recordFailure(joiner.getUserId());
             sendEvent(joiner, "challenge_error", Map.of("code", "INVITE_NOT_FOUND",
-                    "message", "Duel taklifi topilmadi yoki muddati o'tgan"));
+                    "message", "Bunday kod topilmadi yoki muddati o'tgan"));
             return;
         }
         OctagonChallenge c = invite.get();
@@ -917,6 +929,11 @@ public class OctagonMatchmaker {
         leaveQueue(session);
 
         String roomCode = generateRoomCode();
+        if (roomCode == null) {
+            sendEvent(session, "room_error", Map.of("code", "ROOM_CODES_BUSY",
+                    "message", "Hozir bo'sh xona kodi yo'q. Birozdan keyin qayta urinib ko'ring"));
+            return;
+        }
         GroupRoom room = new GroupRoom(roomCode, session.getUserId(), maxPlayers, isPrivate);
 
         GroupRoomMember host = newMember(session, true);
@@ -946,21 +963,17 @@ public class OctagonMatchmaker {
         if (roomCode == null || roomCode.isBlank() || roomCode.length() > 16) return;
         if (hasLiveMatch(session.getUserId())) return;
 
-        Instant now = Instant.now();
-        if (Duration.between(session.getRoomJoinWindowStart(), now).getSeconds() >= 60) {
-            session.setRoomJoinWindowStart(now);
-            session.setFailedRoomJoinsInWindow(0);
-        }
-        if (session.getFailedRoomJoinsInWindow() >= MAX_FAILED_ROOM_JOINS_PER_MINUTE) {
+        // Kod maydoni kichik — noto'g'ri urinishlar foydalanuvchi bo'yicha sanaladi (qayta ulanish nollamaydi)
+        if (codeGuard.isBlocked(session.getUserId())) {
             sendEvent(session, "room_error", Map.of("code", "RATE_LIMITED", "message", "Juda ko'p urinish, birozdan keyin qayta urinib ko'ring"));
             return;
         }
 
-        String code = roomCode.trim().toUpperCase();
+        String code = roomCode.replaceAll("\\s+", "").toUpperCase(Locale.ROOT);
         GroupRoom room = groupRooms.get(code);
 
         if (room == null) {
-            session.setFailedRoomJoinsInWindow(session.getFailedRoomJoinsInWindow() + 1);
+            codeGuard.recordFailure(session.getUserId());
             sendEvent(session, "room_error", Map.of("code", "ROOM_NOT_FOUND", "message", "Xona topilmadi"));
             return;
         }
@@ -1218,17 +1231,17 @@ public class OctagonMatchmaker {
         }
     }
 
-    /** OCT-XXXXXX (32^6 ≈ 1 mlrd variant; avval 9000 ta raqamli kod bo'lib, taxmin qilinardi va to'qnashardi). */
-    private String generateRoomCode() {
-        for (int attempt = 0; attempt < 20; attempt++) {
-            StringBuilder sb = new StringBuilder("OCT-");
-            for (int i = 0; i < 6; i++) {
-                sb.append(ROOM_ALPHABET.charAt(RANDOM.nextInt(ROOM_ALPHABET.length())));
-            }
-            String code = sb.toString();
+    /**
+     * 4 raqamli xona kodi (hamkor talabi: og'zaki aytish oson). Faol xonalar orasida unikal — 25 martagacha
+     * qayta tanlanadi; xona yopilganda kod bo'shaydi. Taxmin qilishdan {@link OctagonCodeGuard} himoya qiladi.
+     */
+    String generateRoomCode() {
+        for (int attempt = 0; attempt < ROOM_CODE_ATTEMPTS; attempt++) {
+            String code = String.valueOf(1000 + RANDOM.nextInt(9000));
             if (!groupRooms.containsKey(code)) return code;
         }
-        throw new IllegalStateException("Could not allocate a unique Octagon room code");
+        log.warn("Could not allocate a unique Octagon room code after {} attempts", ROOM_CODE_ATTEMPTS);
+        return null;
     }
 
     private Map<Long, Integer> loadCorrectOptions(List<Long> qIds) {

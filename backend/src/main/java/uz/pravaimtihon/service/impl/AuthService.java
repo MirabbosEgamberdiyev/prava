@@ -50,6 +50,7 @@ public class AuthService {
     private final TelegramTokenStore telegramTokenStore;
     private final DeviceManagementService deviceManagementService;
     private final uz.pravaimtihon.security.SessionRevocationService sessionRevocationService;
+    private final AvatarService avatarService;
 
     @Value("${app.oauth.google.auto-register:true}")
     private boolean autoRegister;
@@ -254,9 +255,8 @@ public class AuthService {
     }
 
     /**
-     * Foydalanuvchi o'z interfeys tilini saqlaydi (web/desktop til almashtirganda).
-    /**
-     * Foydalanuvchi profilini yangilash: fullName, firstName, lastName, preferredLanguage.
+     * Foydalanuvchi profilini yangilash: fullName, firstName, lastName, preferredLanguage, profileImageUrl
+     * (tayyor avatar yoki null — o'chirish).
      */
     @Transactional
     public UserResponse updateMyProfile(java.util.Map<String, String> body, AcceptLanguage defaultLang) {
@@ -317,6 +317,12 @@ public class AuthService {
                     modified = true;
                 }
             }
+        }
+
+        // Tayyor avatar tanlash yoki avatarni o'chirish (rasm yuklash — POST /api/v1/auth/avatar)
+        if (body != null && body.containsKey("profileImageUrl")) {
+            avatarService.applyProfileImage(user, body.get("profileImageUrl"));
+            modified = true;
         }
 
         if (!modified) {

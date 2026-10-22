@@ -38,6 +38,19 @@ export const getImageUrl = (url: string | null | undefined): string | undefined 
   return `${base}${cleanPath}`;
 };
 
+/**
+ * Profil rasmi manzili. getImageUrl har qanday nisbiy yo'lni /api/v1/files/ ostiga o'giradi — tayyor
+ * avatarlar (/api/v1/public/avatars/…) buziladi, shuning uchun "/api/" bilan boshlanuvchi yo'l API manziliga
+ * o'zgarishsiz qo'shiladi. Google/Telegram rasmlari (https) o'z holicha qoladi.
+ */
+export const getAvatarUrl = (url: string | null | undefined): string | undefined => {
+  if (!url || url.trim() === "") return undefined;
+  const trimmed = url.trim();
+  if (/^(https:|http:|data:|blob:)/i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith("/api/")) return `${API_BASE_URL.replace(/\/+$/, "")}${trimmed}`;
+  return getImageUrl(trimmed);
+};
+
 /** In-memory set of preloaded/cached image URLs for instant synchronous frame-0 rendering */
 export const imageMemoryCache = new Set<string>();
 

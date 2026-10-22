@@ -185,7 +185,7 @@ async function main() {
   const ar = await p1.next("answer_result", 3000);
   check("M-10", "answer_result: correct, score 1, no correct index leaked", ar.isCorrect === true && ar.myScore === 1 && !("correctIndex" in ar), JSON.stringify(ar));
   const prog = await p2.next("opponent_progress", 3000);
-  check("M-11", "Opponent progress pushed to the other player", prog.answeredCount === 1 && prog.correctCount === 1, JSON.stringify(prog));
+  check("M-11", "Opponent progress pushed to the other player (question index, total, finished=false)", prog.answeredCount === 1 && prog.correctCount === 1 && prog.questionIndex === 0 && prog.totalQuestions === 10 && prog.finished === false, JSON.stringify(prog));
   p1.send("submit_answer", { matchId: f1.matchId, questionId: qs[0].id, selectedIndex: rightIndex(qs[0]) });
   const dup = await p1.next("answer_result", 800).catch(() => null);
   check("M-12", "Duplicate answer ignored", dup === null);
@@ -197,6 +197,8 @@ async function main() {
   for (let i = 0; i < 10; i++) p2.send("submit_answer", { matchId: f1.matchId, questionId: qs[i].id, selectedIndex: i < 3 ? rightIndex(qs[i]) : wrongIndex(qs[i]) });
   const e1 = await p1.next("match_ended", 8000);
   const e2 = await p2.next("match_ended", 3000);
+  const lastProg = p2.drain("opponent_progress").at(-1);
+  check("M-11b", "When the rival answers all 10 questions the other player gets finished=true", lastProg?.answeredCount === 10 && lastProg?.finished === true, JSON.stringify(lastProg));
   check("M-14", "Server scoring matches the DB answer key (10:3)", e1.finalScores.me === 10 && e1.finalScores.opponent === 3 && e2.finalScores.me === 3, JSON.stringify(e1.finalScores));
   check("M-15", "Winner = P1, ELO deltas from server", e1.winnerId === u1.id && e1.myDeltaElo > 0 && e2.myDeltaElo <= 0, `w=${e1.winnerId} d1=${e1.myDeltaElo} d2=${e2.myDeltaElo}`);
   const s1 = (await http("GET", "/api/v1/octagon/stats", { token: u1.token })).json.data;
@@ -249,9 +251,11 @@ async function main() {
   const de = await p1.next("match_ended", 8000);
   check("C-4", "Equal score duel ends in a draw", de.isDraw === true && de.finalScores.me === de.finalScores.opponent, JSON.stringify(de.finalScores));
 
-  // ── Invite link / QR / code (?duel=CODE) ────────────────────────────
+  // ── Invite link / QR / 4-digit code (pravaonline.uz/oktagon?code=1234) ─
   const inv = (await http("POST", "/api/v1/octagon/challenge/create", { token: u1.token })).json.data;
-  check("I-1", "Invite code created for a logged-in user", /^[A-Z2-9]{10}$/.test(inv.inviteCode || ""), inv.inviteCode);
+  check("I-1", "4-digit invite code + share link for a logged-in user", /^[1-9][0-9]{3}$/.test(inv.inviteCode || "") && inv.inviteUrl === `https://pravaonline.uz/oktagon?code=${inv.inviteCode}`, `${inv.inviteCode} ${inv.inviteUrl}`);
+  r = await http("GET", `/api/v1/octagon/challenge/${inv.inviteCode}`);
+  check("I-1b", "Anonymous invite lookup refused (4-digit codes are not enumerable)", r.status === 401, r.status);
   p1.send("join_invite", { inviteCode: inv.inviteCode });
   const own = await p1.next("challenge_error", 3000);
   check("I-2", "Own invite cannot be joined", own.code === "OWN_INVITE", own.code);
@@ -269,13 +273,24 @@ async function main() {
   p2.send("join_invite", { inviteCode: inv.inviteCode });
   const used = await p2.next("challenge_error", 3000);
   check("I-5", "An invite is single-use", used.code === "INVITE_NOT_FOUND", used.code);
+  const invOld = (await http("POST", "/api/v1/octagon/challenge/create", { token: u1.token })).json.data;
+  const invNew = (await http("POST", "/api/v1/octagon/challenge/create", { token: u1.token })).json.data;
+  if (invOld.inviteCode !== invNew.inviteCode) {
+    p2.send("join_invite", { inviteCode: invOld.inviteCode });
+    const replaced = await p2.next("challenge_error", 3000);
+    check("I-6", "A new invite replaces the previous one (one active code per user)", replaced.code === "INVITE_NOT_FOUND", replaced.code);
+  } else {
+    check("I-6", "A new invite replaces the previous one (same code re-drawn, skipped)", true);
+  }
 
   // ── Group room ──────────────────────────────────────────────────────
   p1.send("create_room", { maxPlayers: 4, isPrivate: true });
   const created = (await p1.next("room_created", 4000)).room;
-  check("G-1", "Room code is high-entropy OCT-XXXXXX", /^OCT-[A-Z2-9]{6}$/.test(created.roomCode), created.roomCode);
+  check("G-1", "Room code is a 4-digit PIN", /^[1-9][0-9]{3}$/.test(created.roomCode), created.roomCode);
   check("G-2", "Host flag serialised as isHost", created.members[0]?.isHost === true, JSON.stringify(created.members[0]).slice(0, 120));
-  p2.send("join_room", { roomCode: "OCT-AAAAAA" });
+  r = await http("GET", `/api/v1/octagon/room/${created.roomCode}`);
+  check("G-2b", "Anonymous room lookup refused", r.status === 401, r.status);
+  p2.send("join_room", { roomCode: "0000" });
   const notFound = await p2.next("room_error", 3000);
   check("G-3", "Unknown room code → ROOM_NOT_FOUND", notFound.code === "ROOM_NOT_FOUND");
   p2.send("join_room", { roomCode: created.roomCode.toLowerCase() });

@@ -25,6 +25,8 @@ interface Props {
   question: OctagonQuestion | null;
   currentIndex: number;
   totalQuestions: number;
+  /** Men javob bergan savollar soni — hammasi tugasa "raqibni kutmoqdamiz" banneri. */
+  myAnsweredCount?: number;
   myAnswerIndex?: number;
   flyingEmojis: FlyingEmoji[];
   onSubmitAnswer: (questionId: number, optionIndex: number) => void;
@@ -55,6 +57,7 @@ export const OctagonArenaView: React.FC<Props> = ({
   question,
   currentIndex,
   totalQuestions,
+  myAnsweredCount = 0,
   myAnswerIndex,
   flyingEmojis,
   onSubmitAnswer,
@@ -166,6 +169,16 @@ export const OctagonArenaView: React.FC<Props> = ({
 
   const isLowTime = remainingTimeSec <= 5;
 
+  // Raqib holati: nechanchi savolda, javob berdimi, hammasini tugatdimi (server "finished" yuboradi)
+  const total = oppProgress.totalQuestions || totalQuestions;
+  const oppFinished = oppProgress.finished ?? (total > 0 && oppProgress.answeredCount >= total);
+  const iFinished = totalQuestions > 0 && myAnsweredCount >= totalQuestions;
+  const oppStatusText = oppFinished
+    ? t("octagon.arena.oppFinishedShort")
+    : oppProgress.answeredCount === 0
+    ? t("octagon.arena.oppThinking")
+    : t("octagon.arena.oppOnQuestion", { n: Math.min(oppProgress.answeredCount + 1, total || 1) });
+
   return (
     <div className="oct-page-wrapper">
       <div className="oct-ambient-glow" />
@@ -225,6 +238,16 @@ export const OctagonArenaView: React.FC<Props> = ({
               <div className="oct-hud-score opp">
                 {oppProgress.correctCount} {t("octagon.arena.points", "ball")} <IconFlame size={14} />
               </div>
+              {/* key: har yangi javobda pulsatsiya qaytadan boshlanadi */}
+              <div
+                key={`opp-status-${oppProgress.answeredCount}-${oppFinished}`}
+                className={`oct-opp-status ${oppFinished ? "finished" : oppProgress.answeredCount > 0 ? "pulse" : ""}`}
+                role="status"
+                aria-live="polite"
+              >
+                {!oppFinished && <span className="oct-opp-status-dot" />}
+                {oppStatusText}
+              </div>
             </div>
           </div>
         </div>
@@ -244,6 +267,11 @@ export const OctagonArenaView: React.FC<Props> = ({
           </div>
 
           <div className="oct-bars-group" style={{ justifyContent: "flex-end" }}>
+            {oppFinished && (
+              <span className="oct-opp-finish-flag" title={t("octagon.arena.oppFinishedShort")}>
+                🏁
+              </span>
+            )}
             <span className="oct-bars-label">{t("octagon.arena.opponent", "Raqib")}:</span>
             {Array.from({ length: totalQuestions }).map((_, idx) => {
               const isOppAnswered = idx < oppProgress.answeredCount;
@@ -257,6 +285,27 @@ export const OctagonArenaView: React.FC<Props> = ({
           </div>
         </div>
       </div>
+
+      {oppFinished && !iFinished && (
+        <div className="oct-finish-banner opp" role="status">
+          <span className="oct-finish-banner-icon">🏁</span>
+          <div>
+            <div className="oct-finish-banner-title">{t("octagon.arena.oppFinishedTitle")}</div>
+            <div className="oct-finish-banner-sub">{t("octagon.arena.oppFinishedSub")}</div>
+          </div>
+        </div>
+      )}
+      {iFinished && !oppFinished && (
+        <div className="oct-finish-banner me" role="status">
+          <span className="oct-finish-banner-icon">✅</span>
+          <div>
+            <div className="oct-finish-banner-title">{t("octagon.arena.meFinishedTitle")}</div>
+            <div className="oct-finish-banner-sub">
+              {t("octagon.arena.meFinishedSub", { done: oppProgress.answeredCount, total: total || totalQuestions })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Question Arena */}
       {question ? (

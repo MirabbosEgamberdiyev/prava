@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { redirectToWebApp, redirectToLanding } from "../../utils/domain";
 
@@ -43,6 +43,15 @@ export function DomainRedirectToWebApp({
       </span>
     </div>
   );
+}
+
+/**
+ * Shu domen ichidagi taxallus manzil (masalan /oktagon → /octagon), so'rov parametrlari bilan
+ * (?code=1234 — do'st jangi taklifi yo'qolmasin).
+ */
+export function RedirectPreservingQuery({ to }: { to: string }) {
+  const location = useLocation();
+  return <Navigate to={{ pathname: to, search: location.search }} replace />;
 }
 
 /**

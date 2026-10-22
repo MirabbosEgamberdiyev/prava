@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -12,8 +13,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import uz.pravaimtihon.dto.response.ApiResponse;
 import uz.pravaimtihon.exception.ForbiddenException;
+import uz.pravaimtihon.exception.RateLimitExceededException;
 import uz.pravaimtihon.exception.UnauthorizedException;
 import uz.pravaimtihon.octagon.dto.OctagonDtos.*;
+import uz.pravaimtihon.octagon.service.OctagonCodeGuard;
 import uz.pravaimtihon.octagon.service.OctagonService;
 import uz.pravaimtihon.octagon.service.OctagonTicketService;
 import uz.pravaimtihon.octagon.websocket.OctagonMatchmaker;
@@ -37,6 +40,7 @@ public class OctagonController {
     private final OctagonTicketService ticketService;
     private final OctagonService octagonService;
     private final OctagonMatchmaker matchmaker;
+    private final OctagonCodeGuard codeGuard;
 
     static final String LOGIN_REQUIRED = "Oktagon janglarida qatnashish uchun tizimga kiring";
 
@@ -118,36 +122,58 @@ public class OctagonController {
         return ResponseEntity.ok(ApiResponse.success(history));
     }
 
+    /** Bir vaqtda ikki foydalanuvchi bir xil 4 xonali kodni tanlasa, saqlash rad etiladi — yangi kod bilan qayta. */
+    static final int CREATE_INVITE_ATTEMPTS = 3;
+
     @PostMapping("/challenge/create")
-    @Operation(summary = "Create duel invite link for friends")
+    @Operation(summary = "Create a 4-digit duel invite code and share link for friends")
     public ResponseEntity<ApiResponse<ChallengeResponse>> createChallenge(
             @AuthenticationPrincipal CustomUserDetails principal,
             @RequestParam(value = "targetUserId", required = false) String targetUserId) {
 
         String challengerId = requireCaller(principal);
         String target = targetUserId != null && !targetUserId.isBlank() && targetUserId.length() <= 64 ? targetUserId : null;
-        ChallengeResponse response = octagonService.createChallenge(challengerId, target);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        for (int attempt = 1; ; attempt++) {
+            try {
+                ChallengeResponse response = octagonService.createChallenge(challengerId, target);
+                return ResponseEntity.ok(ApiResponse.success(response));
+            } catch (DataIntegrityViolationException e) {
+                if (attempt >= CREATE_INVITE_ATTEMPTS) throw e;
+                log.debug("Invite code collision, retrying ({}/{})", attempt, CREATE_INVITE_ATTEMPTS);
+            }
+        }
     }
 
+    /**
+     * Kod bo'yicha taklif ma'lumoti. 4 xonali kodlarni ketma-ket tekshirib, faol takliflar va ularning
+     * egalarini yig'ib olishning oldini olish uchun faqat tizimga kirganlarga va noto'g'ri urinishlar limiti bilan.
+     */
     @GetMapping("/challenge/{code}")
-    @Operation(summary = "Get duel invite details by code")
+    @Operation(summary = "Get duel invite details by code (authenticated, brute-force limited)")
     public ResponseEntity<ApiResponse<ChallengeResponse>> getChallenge(
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable("code") String code) {
 
+        String caller = requireCaller(principal);
+        if (codeGuard.isBlocked(caller)) {
+            throw new RateLimitExceededException("Juda ko'p noto'g'ri kod kiritildi. 1 daqiqadan so'ng qayta urinib ko'ring");
+        }
         return octagonService.getChallenge(code)
                 .map(c -> {
                     ChallengeResponse res = ChallengeResponse.builder()
                             .challengeId(c.getId())
                             .inviteCode(c.getInviteCode())
-                            .inviteUrl("https://pravaonline.uz/octagon?duel=" + c.getInviteCode())
+                            .inviteUrl(OctagonService.inviteUrl(c.getInviteCode()))
                             .challengerId(c.getChallengerId())
                             .challengerName(octagonService.resolveDisplayName(c.getChallengerId()))
                             .expiresAt(c.getExpiresAt())
                             .build();
                     return ResponseEntity.ok(ApiResponse.success(res));
                 })
-                .orElseGet(() -> ResponseEntity.status(404).body(ApiResponse.error("Duel taklifi topilmadi yoki muddati o'tgan")));
+                .orElseGet(() -> {
+                    codeGuard.recordFailure(caller);
+                    return ResponseEntity.status(404).body(ApiResponse.error("Bunday kod topilmadi yoki muddati o'tgan"));
+                });
     }
 
     @PostMapping("/questions")
@@ -188,13 +214,21 @@ public class OctagonController {
     }
 
     @GetMapping("/room/{code}")
-    @Operation(summary = "Get group room details by code")
+    @Operation(summary = "Get group room details by code (authenticated, brute-force limited)")
     public ResponseEntity<ApiResponse<GroupRoomDto>> getRoom(
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable("code") String code) {
 
+        String caller = requireCaller(principal);
+        if (codeGuard.isBlocked(caller)) {
+            throw new RateLimitExceededException("Juda ko'p urinish, birozdan keyin qayta urinib ko'ring");
+        }
         return matchmaker.getRoomDto(code)
                 .map(room -> ResponseEntity.ok(ApiResponse.success(room)))
-                .orElseGet(() -> ResponseEntity.status(404).body(ApiResponse.error("Xona topilmadi")));
+                .orElseGet(() -> {
+                    codeGuard.recordFailure(caller);
+                    return ResponseEntity.status(404).body(ApiResponse.error("Xona topilmadi"));
+                });
     }
 
     @PostMapping("/report")

@@ -2,7 +2,9 @@ package uz.pravaimtihon.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import uz.pravaimtihon.exception.FileStorageException;
 
@@ -48,6 +50,19 @@ public class CachedFileService {
      * Cache key: folder + filename
      * TTL: 1 hour (configured in application.yaml)
      */
+    /**
+     * Fayl o'chirilgandan keyin keshdan ham chiqariladi — aks holda (masalan, o'chirilgan profil rasmi)
+     * kesh muddati tugaguncha ochiq manzil orqali berilib turardi.
+     */
+    @Caching(evict = {
+            @CacheEvict(value = "fileCache", key = "#folder + ':' + #filename"),
+            @CacheEvict(value = "contentTypeCache", key = "#folder + ':' + #filename"),
+            @CacheEvict(value = "fileExistsCache", key = "#folder + ':' + #filename")
+    })
+    public void evict(String folder, String filename) {
+        log.debug("Evicted cached file {}/{}", folder, filename);
+    }
+
     @Cacheable(value = "fileCache", key = "#folder + ':' + #filename")
     public byte[] getCachedFile(String folder, String filename) {
         try {

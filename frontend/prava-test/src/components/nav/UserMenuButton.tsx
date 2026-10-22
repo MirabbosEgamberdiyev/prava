@@ -5,7 +5,8 @@ import {
   IconHistory,
   IconTrophy,
 } from "@tabler/icons-react";
-import { Group, Avatar, Text, Menu, UnstyledButton, Box } from "@mantine/core";
+import { Group, Text, Menu, UnstyledButton, Box } from "@mantine/core";
+import { UserAvatar } from "../common/UserAvatar";
 import { showToast } from "../../utils/notificationUtils";
 import { useAuth } from "../../auth/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -45,7 +46,7 @@ function UserMenuButton() {
       ? t("roles.student", "O'QUVCHI")
       : t("roles.passenger", "YO'LOVCHI");
 
-  const isSubscribed = Boolean((user as any)?.hasSubscription || (user as any)?.packageActive);
+  const isSubscribed = Boolean(user?.hasSubscription || user?.packageActive);
   const badgeText = isSubscribed ? t("tariff.plans.1y.name", "1 yil (VIP)") : roleText;
 
   return (
@@ -57,7 +58,9 @@ function UserMenuButton() {
           style={{ paddingLeft: 4, paddingRight: 6 }}
         >
           <Group gap={8} wrap="nowrap" style={{ cursor: "pointer", alignItems: "center" }}>
-            <Avatar
+            <UserAvatar
+              imageUrl={user?.profileImageUrl}
+              initials={initials}
               size={32}
               radius="xl"
               style={{
@@ -68,9 +71,7 @@ function UserMenuButton() {
                 flexShrink: 0,
                 boxShadow: isSubscribed ? "0 2px 8px rgba(245, 158, 11, 0.4)" : "0 2px 8px rgba(2, 132, 199, 0.4)",
               }}
-            >
-              {initials}
-            </Avatar>
+            />
 
             <Box style={{ lineHeight: 1.15, textAlign: "left" }} visibleFrom="xs">
               <div

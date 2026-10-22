@@ -15,6 +15,7 @@ import {
   Tabs,
   Alert,
   RingProgress,
+  Divider,
 } from "@mantine/core";
 import {
   IconSwords,
@@ -26,11 +27,14 @@ import {
   IconUser,
   IconX,
   IconArrowBack,
+  IconShare,
 } from "@tabler/icons-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useTranslation } from "react-i18next";
 import { OctagonApi } from "../OctagonApi";
-import type { OutgoingChallenge, UserSearchResult } from "../types";
+import type { InviteJoinState, OutgoingChallenge, UserSearchResult } from "../types";
+import { OctagonPinInput } from "./OctagonPinInput";
+import { showToast } from "../../../utils/notificationUtils";
 import { OctagonOpponentRadar } from "./OctagonOpponentRadar";
 import { RADAR_MAX } from "../layout";
 import { OctagonAvatar } from "./OctagonAvatar";
@@ -40,18 +44,27 @@ import { safeName } from "../rank";
 interface Props {
   opened: boolean;
   onClose: () => void;
-  /** Havola/QR kodi orqali do'st jangiga qo'shilish. */
+  /** 4 xonali kod / havola / QR orqali do'st jangiga qo'shilish. */
   onJoinInvite: (code: string) => void;
+  /** Kod bilan qo'shilish holati (xato oynada ko'rsatiladi). */
+  inviteJoin?: InviteJoinState;
+  onResetInviteJoin?: () => void;
   onSendChallenge: (target: UserSearchResult) => void;
   onCancelChallenge: () => void;
   onClearOutgoing: () => void;
   outgoing: OutgoingChallenge | null;
 }
 
+const CODE_LENGTH = 4;
+/** Taklif havolasi asosiy domenda: pravaonline.uz/oktagon?code=1234 (saytda kod o'zi kiritiladi). */
+const INVITE_BASE_URL = "https://pravaonline.uz/oktagon?code=";
+
 export const OctagonDuelModal: React.FC<Props> = ({
   opened,
   onClose,
   onJoinInvite,
+  inviteJoin,
+  onResetInviteJoin,
   onSendChallenge,
   onCancelChallenge,
   onClearOutgoing,
@@ -61,7 +74,10 @@ export const OctagonDuelModal: React.FC<Props> = ({
   const [activeTab, setActiveTab] = useState<string | null>("search");
   const [loading, setLoading] = useState(false);
   const [inviteCode, setInviteCode] = useState<string>("");
+  const [inviteUrl, setInviteUrl] = useState<string>("");
   const [inputCode, setInputCode] = useState<string>("");
+  const joining = inviteJoin?.status === "joining";
+  const joinError = inviteJoin?.status === "error" ? inviteJoin.message || t("octagon.duel.codeNotFound") : null;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -74,12 +90,14 @@ export const OctagonDuelModal: React.FC<Props> = ({
   useEffect(() => {
     if (!opened) {
       setInviteCode("");
+      setInviteUrl("");
       setInputCode("");
       setSearchQuery("");
       setSearchResults([]);
       setSearched(false);
       setSelectedId(null);
       setErrorMessage(null);
+      onResetInviteJoin?.();
       return;
     }
     if (activeTab !== "link" || inviteCode) return;
@@ -88,7 +106,10 @@ export const OctagonDuelModal: React.FC<Props> = ({
     setLoading(true);
     OctagonApi.createChallenge()
       .then((res) => {
-        if (isMounted && res?.inviteCode) setInviteCode(res.inviteCode);
+        if (isMounted && res?.inviteCode) {
+          setInviteCode(res.inviteCode);
+          setInviteUrl(res.inviteUrl || `${INVITE_BASE_URL}${res.inviteCode}`);
+        }
       })
       .catch(() => {
         if (isMounted) setErrorMessage(t("octagon.common.error"));
@@ -99,7 +120,12 @@ export const OctagonDuelModal: React.FC<Props> = ({
     return () => {
       isMounted = false;
     };
-  }, [opened, activeTab, inviteCode, t]);
+  }, [opened, activeTab, inviteCode, t, onResetInviteJoin]);
+
+  // Xato kod — kataklar tozalanadi, foydalanuvchi darhol qayta kiritadi
+  useEffect(() => {
+    if (inviteJoin?.status === "error") setInputCode("");
+  }, [inviteJoin?.status]);
 
   // 30 soniyalik kutish hisoblagichi
   useEffect(() => {
@@ -134,8 +160,28 @@ export const OctagonDuelModal: React.FC<Props> = ({
   const selected = searchResults.find((u) => u.userId === selectedId) || null;
   const overflow = searchResults.slice(RADAR_MAX);
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://web.pravaonline.uz";
-  const duelUrl = inviteCode ? `${origin}/octagon?duel=${inviteCode}` : "";
+  const duelUrl = inviteCode ? inviteUrl || `${INVITE_BASE_URL}${inviteCode}` : "";
+  const shareText = inviteCode ? t("octagon.duel.shareText", { code: inviteCode, url: duelUrl }) : "";
+
+  /** Telefon/brauzerda tizim "Ulashish" oynasi; bo'lmasa (desktop) tayyor matn nusxalanadi. */
+  const handleShare = async () => {
+    if (!shareText) return;
+    const nav = typeof navigator !== "undefined" ? navigator : undefined;
+    if (nav?.share) {
+      try {
+        await nav.share({ title: "PRAVA ONLINE", text: shareText });
+        return;
+      } catch (e) {
+        if ((e as DOMException)?.name === "AbortError") return;
+      }
+    }
+    try {
+      await nav?.clipboard?.writeText(shareText);
+      showToast({ color: "teal", message: t("octagon.duel.shareCopied") });
+    } catch {
+      showToast({ color: "red", message: t("octagon.common.error") });
+    }
+  };
 
   const statusText = (u: UserSearchResult) =>
     u.status === "IN_MATCH"
@@ -369,76 +415,121 @@ export const OctagonDuelModal: React.FC<Props> = ({
               </Stack>
             </Tabs.Panel>
 
-            {/* TAB 2: havola, QR va kod */}
+            {/* TAB 2: o'z kodim (4 raqam) + ulashish + QR, do'st kodini kiritish (4 katak) */}
             <Tabs.Panel value="link">
-              {loading ? (
-                <Center py="xl">
-                  <Loader color="grape" />
-                </Center>
-              ) : (
-                <Stack gap="md">
-                  <Text size="sm" c="dimmed">
-                    {t("octagon.duel.subtitle")}
+              <Stack gap="md">
+                {/* Do'stning kodi: 4-raqam kiritilishi bilan jang boshlanadi (Enter shart emas) */}
+                <Stack gap={8} align="center">
+                  <Text size="sm" fw={800} ta="center">
+                    {t("octagon.duel.enterFriendCode")}
                   </Text>
-
-                  {duelUrl && (
-                    <Stack align="center" gap="sm" my="xs">
-                      <div style={{ padding: 12, background: "#ffffff", borderRadius: 12 }}>
-                        <QRCodeSVG value={duelUrl} size={150} level="M" />
-                      </div>
+                  <OctagonPinInput
+                    value={inputCode}
+                    onChange={(v) => {
+                      setInputCode(v);
+                      if (inviteJoin?.status === "error") onResetInviteJoin?.();
+                    }}
+                    onComplete={(code) => onJoinInvite(code)}
+                    length={CODE_LENGTH}
+                    disabled={joining}
+                    error={Boolean(joinError)}
+                    label={t("octagon.duel.enterFriendCode")}
+                  />
+                  {joining ? (
+                    <Group gap={6}>
+                      <Loader color="grape" size="xs" />
                       <Text size="xs" c="dimmed">
-                        {t("octagon.duel.scanQr")}
+                        {t("octagon.duel.joiningInvite")}
                       </Text>
-                    </Stack>
-                  )}
-
-                  <Stack gap="xs">
-                    <Text size="xs" fw={700} c="dimmed">
-                      {t("octagon.duel.inviteLink")}
+                    </Group>
+                  ) : joinError ? (
+                    <Text size="xs" c="red.4" ta="center" role="alert">
+                      {joinError}
                     </Text>
-                    <Group gap="xs">
-                      <TextInput readOnly value={duelUrl} style={{ flex: 1 }} radius="md" aria-label={t("octagon.duel.inviteLink")} />
-                      <CopyButton value={duelUrl} timeout={2000}>
-                        {({ copied, copy }) => (
-                          <Tooltip label={copied ? t("octagon.duel.copied") : t("octagon.duel.copy")}>
-                            <ActionIcon
+                  ) : (
+                    <Text size="xs" c="dimmed" ta="center">
+                      {t("octagon.duel.enterFriendCodeHint")}
+                    </Text>
+                  )}
+                </Stack>
+
+                <Divider label={t("octagon.duel.orYourCode")} labelPosition="center" color="rgba(148,163,184,0.25)" />
+
+                {loading ? (
+                  <Center py="md">
+                    <Loader color="grape" />
+                  </Center>
+                ) : inviteCode ? (
+                  <>
+                    <div className="oct-code-card">
+                      <Text size="xs" fw={800} c="dimmed" tt="uppercase">
+                        {t("octagon.duel.yourCode")}
+                      </Text>
+                      <div className="oct-code-digits" aria-label={inviteCode}>
+                        {inviteCode.split("").map((d, i) => (
+                          <span key={i} className="oct-code-digit">
+                            {d}
+                          </span>
+                        ))}
+                      </div>
+                      <Group gap="xs" mt={4}>
+                        <CopyButton value={inviteCode} timeout={2000}>
+                          {({ copied, copy }) => (
+                            <Button
+                              variant="light"
                               color={copied ? "teal" : "grape"}
-                              variant="filled"
-                              size="lg"
                               radius="md"
+                              leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
                               onClick={copy}
-                              aria-label={t("octagon.duel.copy")}
                             >
-                              {copied ? <IconCheck size={18} /> : <IconCopy size={18} />}
-                            </ActionIcon>
-                          </Tooltip>
-                        )}
-                      </CopyButton>
+                              {copied ? t("octagon.duel.copied") : t("octagon.duel.copyCode")}
+                            </Button>
+                          )}
+                        </CopyButton>
+                        <Button color="grape" radius="md" leftSection={<IconShare size={16} />} onClick={() => void handleShare()}>
+                          {t("octagon.duel.share")}
+                        </Button>
+                      </Group>
+                      <Text size="xs" c="dimmed" ta="center">
+                        {t("octagon.duel.codeValidity")}
+                      </Text>
+                    </div>
+
+                    <Group align="center" gap="md" wrap="nowrap">
+                      <div style={{ padding: 8, background: "#ffffff", borderRadius: 10, flexShrink: 0 }}>
+                        <QRCodeSVG value={duelUrl} size={96} level="M" />
+                      </div>
+                      <Stack gap={6} style={{ flex: 1, minWidth: 0 }}>
+                        <Text size="xs" c="dimmed">
+                          {t("octagon.duel.scanQr")}
+                        </Text>
+                        <Group gap="xs" wrap="nowrap">
+                          <TextInput readOnly value={duelUrl} style={{ flex: 1, minWidth: 0 }} radius="md" size="xs" aria-label={t("octagon.duel.inviteLink")} />
+                          <CopyButton value={duelUrl} timeout={2000}>
+                            {({ copied, copy }) => (
+                              <Tooltip label={copied ? t("octagon.duel.copied") : t("octagon.duel.copy")}>
+                                <ActionIcon
+                                  color={copied ? "teal" : "grape"}
+                                  variant="filled"
+                                  size="md"
+                                  radius="md"
+                                  onClick={copy}
+                                  aria-label={t("octagon.duel.copy")}
+                                >
+                                  {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                                </ActionIcon>
+                              </Tooltip>
+                            )}
+                          </CopyButton>
+                        </Group>
+                      </Stack>
                     </Group>
                     <Text size="xs" c="dimmed">
                       {t("octagon.duel.keepPageOpen")}
                     </Text>
-                  </Stack>
-
-                  <Text size="xs" fw={700} c="dimmed" mt="xs">
-                    {t("octagon.duel.orCode")}
-                  </Text>
-                  <Group gap="xs">
-                    <TextInput
-                      placeholder={t("octagon.duel.enterCodePlaceholder")}
-                      value={inputCode}
-                      onChange={(e) => setInputCode(e.currentTarget.value.toUpperCase())}
-                      style={{ flex: 1 }}
-                      radius="md"
-                      maxLength={32}
-                      aria-label={t("octagon.duel.enterCodePlaceholder")}
-                    />
-                    <Button color="grape" radius="md" disabled={!inputCode.trim()} onClick={() => onJoinInvite(inputCode.trim())}>
-                      {t("octagon.duel.join")}
-                    </Button>
-                  </Group>
-                </Stack>
-              )}
+                  </>
+                ) : null}
+              </Stack>
             </Tabs.Panel>
           </Tabs>
         </Stack>

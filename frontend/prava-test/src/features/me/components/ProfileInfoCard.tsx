@@ -1,5 +1,5 @@
+import { useState } from "react";
 import {
-  Avatar,
   Badge,
   Center,
   Flex,
@@ -9,14 +9,19 @@ import {
   SimpleGrid,
   Stack,
   Text,
+  UnstyledButton,
 } from "@mantine/core";
-import { IconCheck, IconX } from "@tabler/icons-react";
+import { IconCamera, IconCheck, IconX } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import type { UserResponse } from "../../../types/auth";
+import { UserAvatar } from "../../../components/common/UserAvatar";
+import { AvatarPickerModal } from "./AvatarPickerModal";
+import "./ProfileInfoCard.css";
 
 export function ProfileInfoCard() {
   const { t } = useTranslation();
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const { data: meResponse, isLoading } = useSWR<{ data: UserResponse }>(
     "/api/v1/auth/me",
@@ -52,9 +57,27 @@ export function ProfileInfoCard() {
         align={{ base: "center", sm: "flex-start" }}
         gap="lg"
       >
-        <Avatar size="xl" radius="xl" color="blue">
-          {initials}
-        </Avatar>
+        <UnstyledButton
+          className="profile-avatar-btn"
+          onClick={() => setPickerOpen(true)}
+          aria-label={t("profile.avatar.change")}
+          title={t("profile.avatar.change")}
+        >
+          <UserAvatar imageUrl={user.profileImageUrl} initials={initials} size={84} radius={84} color="blue" />
+          <span className="profile-avatar-overlay" aria-hidden="true">
+            <IconCamera size={22} />
+            <span>{t("profile.avatar.changeShort")}</span>
+          </span>
+          <span className="profile-avatar-badge" aria-hidden="true">
+            <IconCamera size={14} />
+          </span>
+        </UnstyledButton>
+        <AvatarPickerModal
+          opened={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          currentUrl={user.profileImageUrl}
+          initials={initials}
+        />
 
         <Stack gap="xs" style={{ flex: 1 }}>
           <Text size="xl" fw={700}>

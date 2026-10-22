@@ -14,11 +14,16 @@ import {
   IconMessageCircle,
   IconFileText,
   IconCheck,
+  IconDevices,
+  IconShare,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../../utils/notificationUtils";
+import { shareApp } from "../../utils/shareApp";
+import { useAuth } from "../../auth/AuthContext";
 import { ProfileInfoCard } from "../../features/me/components/ProfileInfoCard";
+import { MyDevicesPanel } from "../../features/me/components/MyDevicesPanel";
 import { ChangePasswordForm } from "../../features/me/components/ChangePasswordForm";
 import SEO from "../../components/common/SEO";
 import { useLanguage, type AppLanguage } from "../../context/LanguageContext";
@@ -34,8 +39,11 @@ export default function Settings_Page() {
   const { lang, setLanguage } = useLanguage();
   const { theme, setTheme } = useDesktopTheme();
 
+  const { isAuthenticated } = useAuth();
+
   // Modals state
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [devicesModalOpen, setDevicesModalOpen] = useState(false);
   const [offlineModalOpen, setOfflineModalOpen] = useState(false);
   const [storageModalOpen, setStorageModalOpen] = useState(false);
   const [aboutModalOpen, setAboutModalOpen] = useState(false);
@@ -126,6 +134,50 @@ export default function Settings_Page() {
                   <span className="ref-settings-row-title">
                     {t("settings.profileInfo", "Profil ma'lumotlari")}
                   </span>
+                </div>
+                <div className="ref-settings-row-right">
+                  <IconChevronRight size={18} />
+                </div>
+              </div>
+
+              {/* Qurilmalarim (limit 2) — faqat tizimga kirganlar uchun */}
+              {isAuthenticated && (
+                <div
+                  className="ref-settings-row"
+                  onClick={() => setDevicesModalOpen(true)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <div className="ref-settings-row-left">
+                    <div
+                      className="ref-settings-row-icon"
+                      style={{ background: "linear-gradient(135deg, #14b8a6, #0d9488)" }}
+                    >
+                      <IconDevices size={20} />
+                    </div>
+                    <span className="ref-settings-row-title">{t("devices.title")}</span>
+                  </div>
+                  <div className="ref-settings-row-right">
+                    <IconChevronRight size={18} />
+                  </div>
+                </div>
+              )}
+
+              {/* Do'stlarga ulashish */}
+              <div
+                className="ref-settings-row"
+                onClick={() => void shareApp()}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="ref-settings-row-left">
+                  <div
+                    className="ref-settings-row-icon"
+                    style={{ background: "linear-gradient(135deg, #f59e0b, #ea580c)" }}
+                  >
+                    <IconShare size={20} />
+                  </div>
+                  <span className="ref-settings-row-title">{t("share.withFriends")}</span>
                 </div>
                 <div className="ref-settings-row-right">
                   <IconChevronRight size={18} />
@@ -355,6 +407,17 @@ export default function Settings_Page() {
             <ProfileInfoCard />
             <ChangePasswordForm />
           </div>
+        </Modal>
+
+        {/* ── Devices Modal ── */}
+        <Modal
+          opened={devicesModalOpen}
+          onClose={() => setDevicesModalOpen(false)}
+          title={t("devices.title")}
+          centered
+          radius="md"
+        >
+          {devicesModalOpen && <MyDevicesPanel />}
         </Modal>
 
         {/* ── Language Picker Modal ── */}

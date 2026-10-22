@@ -34,6 +34,7 @@ public class AuthController {
     private final MessageService messageService;
     private final uz.pravaimtihon.security.RefreshTokenCookies refreshTokenCookies;
     private final uz.pravaimtihon.service.impl.AccountDeletionService accountDeletionService;
+    private final uz.pravaimtihon.service.impl.AvatarService avatarService;
 
     /** Body'da token bo'lmasa (web cookie rejimi) HttpOnly cookie'dan olinadi. */
     private RefreshTokenRequest withCookieFallback(RefreshTokenRequest request, jakarta.servlet.http.HttpServletRequest httpRequest) {
@@ -488,12 +489,31 @@ public class AuthController {
     }
 
     @PatchMapping("/me")
-    @Operation(summary = "O'z profil ma'lumotlarini (ism, til) saqlash",
-            description = "Body: { \"fullName\": \"Ali Valiyev\", \"preferredLanguage\": \"uzl\" }")
+    @Operation(summary = "O'z profil ma'lumotlarini (ism, til, tayyor avatar) saqlash",
+            description = "Body: { \"fullName\": \"Ali Valiyev\", \"preferredLanguage\": \"uzl\", "
+                    + "\"profileImageUrl\": \"/api/v1/public/avatars/driver.svg\" } — profileImageUrl: tayyor avatar "
+                    + "URL'i yoki null/\"\" (avatarni o'chirish). Rasm yuklash uchun POST /avatar.")
     public ResponseEntity<ApiResponse<UserResponse>> updateMyProfile(
             @RequestBody java.util.Map<String, String> body,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
         return ResponseEntity.ok(ApiResponse.success(authService.updateMyProfile(body, language)));
+    }
+
+    @PostMapping(value = "/avatar", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Profil rasmini yuklash (JPEG/PNG/WebP, max 3 MB)",
+            description = "Faqat tizimga kirgan foydalanuvchi. Rasm kvadratga kesiladi, 1024 px gacha kichraytiriladi, "
+                    + "EXIF metama'lumotlari o'chiriladi. Javob — yangilangan foydalanuvchi.")
+    public ResponseEntity<ApiResponse<UserResponse>> uploadAvatar(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        return ResponseEntity.ok(ApiResponse.success(avatarService.uploadAvatar(file, language)));
+    }
+
+    @DeleteMapping("/avatar")
+    @Operation(summary = "Profil rasmini o'chirish (bosh harfli avatarga qaytish)")
+    public ResponseEntity<ApiResponse<UserResponse>> removeAvatar(
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+        return ResponseEntity.ok(ApiResponse.success(avatarService.removeAvatar(language)));
     }
 
     @DeleteMapping("/me")

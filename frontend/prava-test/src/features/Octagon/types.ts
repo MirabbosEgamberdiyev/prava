@@ -95,10 +95,21 @@ export interface UserAnswerRecord {
   isCorrect?: boolean;
 }
 
+/** 4 xonali kod bilan do'st jangiga qo'shilish holati (duel oynasidagi PIN). */
+export interface InviteJoinState {
+  status: "idle" | "joining" | "error";
+  code?: string;
+  message?: string;
+}
+
 export interface OpponentProgress {
   questionIndex: number;
   answeredCount: number;
   correctCount: number;
+  /** Jangdagi savollar soni (server yuboradi; eski server — undefined). */
+  totalQuestions?: number;
+  /** Raqib barcha savollarga javob berib bo'ldi — "Raqib yakunladi" banneri. */
+  finished?: boolean;
 }
 
 export interface MatchResultData {

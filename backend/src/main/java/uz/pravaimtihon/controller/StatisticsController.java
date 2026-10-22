@@ -34,6 +34,37 @@ import java.util.List;
 public class StatisticsController {
 
     private final StatisticsService statisticsService;
+    private final uz.pravaimtihon.service.DeviceManagementService deviceService;
+    private final uz.pravaimtihon.security.JwtTokenProvider jwtTokenProvider;
+
+    // ============================================
+    // Qurilmalar — /api/v2/my-statistics/devices bilan bir xil (eski klientlar v1 manzilini chaqiradi)
+    // ============================================
+
+    @GetMapping("/devices")
+    @Operation(summary = "Mening qurilmalarim (faol sessiyalar, limit: 2)")
+    public ResponseEntity<ApiResponse<DeviceInfoResponse>> getMyDevices(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        Long userId = uz.pravaimtihon.security.SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(ApiResponse.success(deviceService.getMyDevices(userId, currentSessionId(authHeader))));
+    }
+
+    @DeleteMapping("/devices/{deviceId}")
+    @Operation(summary = "O'z qurilma sessiyasini yopish")
+    public ResponseEntity<ApiResponse<Void>> revokeMyDevice(@PathVariable String deviceId) {
+        Long userId = uz.pravaimtihon.security.SecurityUtils.getCurrentUserId();
+        deviceService.revokeMyDevice(userId, deviceId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    private String currentSessionId(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) return null;
+        try {
+            return jwtTokenProvider.extractSessionId(authHeader.substring(7));
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     // ============================================
     // Mening Statistikam (User Statistics)

@@ -185,9 +185,11 @@ export const OctagonGroupModal: React.FC<Props> = ({
               <Stack gap="md">
                 <TextInput
                   label={t("octagon.group.enterCode", "Xona kodi:")}
-                  placeholder={t("octagon.group.codePlaceholder", "Masalan: OCT-4821")}
+                  placeholder={t("octagon.group.codePlaceholder", "Masalan: 4821")}
                   value={joinCode}
-                  onChange={(e) => setJoinCode(e.currentTarget.value.toUpperCase())}
+                  onChange={(e) => setJoinCode(e.currentTarget.value.replace(/\D/g, "").slice(0, 4))}
+                  inputMode="numeric"
+                  maxLength={4}
                   radius="md"
                   styles={{
                     input: {

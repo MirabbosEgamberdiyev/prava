@@ -29,6 +29,9 @@ import java.util.Map;
 @Slf4j
 public class DeviceManagementService {
 
+    /** Bir akkaunt bir vaqtda ishlatishi mumkin bo'lgan qurilmalar soni (individual limit o'rnatilmagan bo'lsa). */
+    public static final int DEFAULT_MAX_DEVICES = 2;
+
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final SessionRevocationService sessionRevocationService;
@@ -219,13 +222,15 @@ public class DeviceManagementService {
                 .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
 
         int actualActiveCount = refreshTokenRepository.countActiveTokensByUserId(userId, LocalDateTime.now());
+        int limit = effectiveLimit(user);
 
-        if (actualActiveCount >= user.getMaxDevices()) {
-            // Eng eski sessiyani o'chirish
-            removeOldestDevices(userId, 1);
+        // Yangi qurilmaga joy: limitdan oshgan barcha eski sessiyalar chiqariladi (avval faqat bittasi
+        // chiqarilardi — limit 4 dan 2 ga tushganda 4 ta faol qurilma 4 tasicha qolib ketardi)
+        if (actualActiveCount >= limit) {
+            removeOldestDevices(userId, actualActiveCount - limit + 1);
         }
 
-        user.incrementActiveDevices();
+        user.setActiveDeviceCount(Math.min(actualActiveCount, limit - 1) + 1);
         userRepository.save(user);
 
         log.info("New device registered for user {}. Active: {}/{}",
@@ -248,16 +253,24 @@ public class DeviceManagementService {
                 userId, user.getActiveDeviceCount(), user.getMaxDevices());
     }
 
+    private static int effectiveLimit(User user) {
+        Integer max = user.getMaxDevices();
+        return max == null || max < 1 ? DEFAULT_MAX_DEVICES : max;
+    }
+
     /**
-     * Eng eski qurilmalarni o'chirish.
+     * Eng uzoq ishlatilmagan qurilma sessiyalarini chiqarish: butun token oilasi (qurilma) bekor qilinadi va
+     * access token kesh'idan ham o'chiriladi — chiqarilgan qurilma 24 soatlik access token bilan ishlab qolmaydi.
      */
     private void removeOldestDevices(Long userId, int count) {
+        if (count <= 0) return;
+        LocalDateTime now = LocalDateTime.now();
         List<RefreshToken> tokens = refreshTokenRepository.findOldestActiveTokensByUserId(
-                userId, LocalDateTime.now(), PageRequest.of(0, count));
+                userId, now, PageRequest.of(0, count));
 
         for (RefreshToken token : tokens) {
-            token.setIsRevoked(true);
-            refreshTokenRepository.save(token);
+            refreshTokenRepository.revokeAllByFamily(token.getTokenFamily(), now);
+            sessionRevocationService.evict(token.getTokenFamily());
         }
 
         log.info("Removed {} oldest devices for user {}", tokens.size(), userId);
@@ -269,7 +282,7 @@ public class DeviceManagementService {
     @Transactional
     public void initializeDeviceSettings(User user) {
         if (user.getMaxDevices() == null) {
-            user.setMaxDevices(4); // Default 4 ta qurilma
+            user.setMaxDevices(DEFAULT_MAX_DEVICES);
         }
         if (user.getActiveDeviceCount() == null) {
             user.setActiveDeviceCount(0);
