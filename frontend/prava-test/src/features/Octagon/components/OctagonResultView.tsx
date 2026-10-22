@@ -1,14 +1,32 @@
 import React, { useEffect, useState } from "react";
-import { Text, Badge, Button, Modal, Radio, Textarea, Stack, Group } from "@mantine/core";
-import { IconTrophy, IconHeartBroken, IconRefresh, IconArrowLeft, IconHeartHandshake, IconFlag, IconCheck } from "@tabler/icons-react";
+import { Text, Button, Modal, Radio, Textarea, Stack, Group, Loader } from "@mantine/core";
+import {
+  IconTrophy,
+  IconHeartBroken,
+  IconRefresh,
+  IconArrowLeft,
+  IconHeartHandshake,
+  IconFlag,
+  IconCheck,
+  IconListCheck,
+  IconSwords,
+} from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { fireConfetti } from "../confetti";
 import { OctagonApi } from "../OctagonApi";
-import type { MatchResultData, MatchOpponent, GroupStanding } from "../types";
+import type { MatchResultData, MatchOpponent, GroupStanding, OctagonQuestion, RematchState } from "../types";
 import { OctagonAvatar } from "./OctagonAvatar";
 import { OctagonRankBadge } from "./OctagonRankBadge";
+import { OctagonReviewModal } from "./OctagonReviewModal";
 import { safeName } from "../rank";
-import { accuracyPercent } from "../arena";
+import { accuracyPercent, eloUnchangedReason, forfeitNote, formatDuration, type ForfeitNote } from "../arena";
+
+const FORFEIT_KEYS: Record<ForfeitNote, string> = {
+  selfLeft: "octagon.result.forfeitSelfLeft",
+  selfTimeout: "octagon.result.forfeitSelfTimeout",
+  oppLeft: "octagon.result.forfeitOppLeft",
+  oppTimeout: "octagon.result.forfeitNote",
+};
 import { OCTAGON_CONFIG } from "../types";
 import { showToast } from "../../../utils/notificationUtils";
 import "../octagon.css";
@@ -19,10 +37,13 @@ interface Props {
   myName: string;
   myAvatar?: string | null;
   myUserId?: string;
+  myElo?: number;
   opponent: MatchOpponent | null;
   /** Guruhli jang natijalari (bo'lsa — 1v1 kartasi o'rniga reyting jadvali). */
   standings?: GroupStanding[] | null;
-  revengeRequested: boolean;
+  /** Jang savollari — "Jang tahlili" uchun matn va variantlar. */
+  questions?: OctagonQuestion[];
+  rematch: RematchState;
   onRequestRevenge: () => void;
   onReturnToLobby: () => void;
 }
@@ -33,9 +54,11 @@ export const OctagonResultView: React.FC<Props> = ({
   myName,
   myAvatar,
   myUserId,
+  myElo,
   opponent,
   standings,
-  revengeRequested,
+  questions = [],
+  rematch,
   onRequestRevenge,
   onReturnToLobby,
 }) => {
@@ -44,6 +67,7 @@ export const OctagonResultView: React.FC<Props> = ({
   const oppElo = opponent?.elo ?? opponent?.score ?? 0;
   const meName = safeName(myName, t("octagon.lobby.defaultUser"));
   const isGroup = Boolean(standings && standings.length > 0);
+  const [showReview, setShowReview] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState<string>("CHEATING");
   const [reportComment, setReportComment] = useState("");
@@ -88,50 +112,37 @@ export const OctagonResultView: React.FC<Props> = ({
             (result?.myDeltaElo && result.myDeltaElo > 0)
         ));
 
-
   useEffect(() => {
-    if (isWin) {
-      fireConfetti();
-    }
+    if (isWin) fireConfetti();
   }, [isWin]);
 
+  const tone = isWin ? "win" : isDraw ? "draw" : "lose";
   const deltaElo = result?.myDeltaElo ?? 0;
-  const isPositive = deltaElo > 0;
   const myCorrect = result?.finalScores?.me ?? 0;
   const totalQ = result?.totalQuestions || OCTAGON_CONFIG.QUESTIONS_PER_MATCH;
   const accuracy = accuracyPercent(myCorrect, totalQ);
+  // Yangi ELO serverdan; eski = yangi − o'zgarish (server yubormasa — lobbidagi joriy qiymat)
+  const newElo = typeof result?.myNewElo === "number" ? result.myNewElo : undefined;
+  const oldElo = typeof newElo === "number" ? newElo - deltaElo : myElo;
+  const unchanged = eloUnchangedReason(deltaElo, newElo, Boolean(isWin), Boolean(isDraw));
+  const forfeitKind = result ? forfeitNote(result) : null;
+  const review = result?.review ?? [];
 
   return (
     <div className="oct-page-wrapper" style={{ justifyContent: "center", alignItems: "center" }}>
       <div className="oct-ambient-glow" />
 
-      <div className="oct-result-container">
-        {/* Result Status Banner */}
-        <div className={`oct-result-badge-icon ${isWin ? "win" : isDraw ? "draw" : "lose"}`}>
-          {isWin ? (
-            <IconTrophy size={48} />
-          ) : isDraw ? (
-            <IconHeartHandshake size={48} />
-          ) : (
-            <IconHeartBroken size={48} />
-          )}
+      <div className={`oct-result-container ${tone}`}>
+        <div className={`oct-result-badge-icon ${tone}`}>
+          {isWin ? <IconTrophy size={48} /> : isDraw ? <IconHeartHandshake size={48} /> : <IconHeartBroken size={48} />}
         </div>
 
-        <div className={`oct-result-title ${isWin ? "win" : isDraw ? "draw" : "lose"}`}>
-          {isWin
-            ? t("octagon.result.victory", "G'ALABA!")
-            : isDraw
-            ? t("octagon.result.draw", "DURANG!")
-            : t("octagon.result.defeat", "MAG'LUBIYAT")}
+        <div className={`oct-result-title ${tone}`}>
+          {isWin ? t("octagon.result.victory") : isDraw ? t("octagon.result.draw") : t("octagon.result.defeat")}
         </div>
-
-        <Text size="sm" style={{ color: "#94a3b8", marginTop: 6, maxWidth: 440 }}>
-          {isWin
-            ? t("octagon.result.winDesc", "Ajoyib g'alaba! Bilimlaringiz yuksak darajada.")
-            : isDraw
-            ? t("octagon.result.drawDesc", "Teng kurash! Ikkala tomon ham mahorat ko'rsatdi.")
-            : t("octagon.result.loseDesc", "Tushkunlikka tushmang! Xatolarni o'rganing va qasos oling.")}
-        </Text>
+        <p className="oct-result-sub">
+          {isWin ? t("octagon.result.winDesc") : isDraw ? t("octagon.result.drawDesc") : t("octagon.result.loseDesc")}
+        </p>
 
         {isGroup ? (
           <div className="oct-result-card">
@@ -156,102 +167,107 @@ export const OctagonResultView: React.FC<Props> = ({
             </div>
           </div>
         ) : (
-          <div className="oct-result-card">
-            <div className="oct-result-matchup">
-              {/* Me */}
-              <div className="oct-result-col">
-                <OctagonAvatar name={meName} src={myAvatar} size={56} ring="#3b82f6" />
-                <Text fw={800} size="sm" style={{ color: "#ffffff", marginTop: 8 }}>
-                  {meName}
-                </Text>
-                <div className="oct-result-score me">{result?.finalScores?.me ?? 0}</div>
+          <>
+            {/* Ikki o'yinchi: kartalar bir xil o'lcham va iyerarxiyada */}
+            <div className="oct-result-players">
+              <div className="oct-result-player me">
+                <OctagonAvatar name={meName} src={myAvatar} size={60} ring="var(--oct-blue)" />
+                <div className="oct-result-player-name">{meName}</div>
+                <div className="oct-result-player-score">{result?.finalScores?.me ?? 0}</div>
               </div>
-
-              <div style={{ fontSize: 28, fontWeight: 900, color: "#64748b" }}>:</div>
-
-              {/* Opponent: ism, rasm, ELO va liga */}
-              <div className="oct-result-col">
-                <OctagonAvatar name={oppName} src={opponent?.avatar} size={56} ring="#ef4444" />
-                <Text fw={800} size="sm" style={{ color: "#ffffff", marginTop: 8 }}>
-                  {oppName}
-                </Text>
-                <Text size="xs" fw={700} style={{ color: "#94a3b8" }}>
-                  {oppElo} ELO
-                </Text>
-                <OctagonRankBadge rank={opponent?.rank} elo={oppElo} size="xs" />
-                <div className="oct-result-score opp">{result?.finalScores?.opponent ?? 0}</div>
+              <div className="oct-result-colon">:</div>
+              <div className="oct-result-player opp">
+                <OctagonAvatar name={oppName} src={opponent?.avatar} size={60} ring="var(--oct-red)" />
+                <div className="oct-result-player-name">{oppName}</div>
+                <div className="oct-result-player-meta">
+                  <span>{oppElo} ELO</span>
+                  <OctagonRankBadge rank={opponent?.rank} elo={oppElo} size="xs" />
+                </div>
+                <div className="oct-result-player-score">{result?.finalScores?.opponent ?? 0}</div>
               </div>
             </div>
 
-            {/* To'g'ri javoblar va aniqlik: "8/10 to'g'ri (80% aniqlik)" */}
-            <div className={`oct-accuracy-line ${accuracy >= 70 ? "good" : accuracy >= 40 ? "mid" : "low"}`}>
-              <IconCheck size={16} stroke={2.8} />
-              <span>{t("octagon.result.accuracy", { correct: myCorrect, total: totalQ, percent: accuracy })}</span>
+            <div className="oct-result-stats">
+              <div className="oct-result-stat">
+                <span className="oct-result-stat-val">
+                  {myCorrect}/{totalQ}
+                </span>
+                <span className="oct-result-stat-lbl">{t("octagon.result.correctLbl")}</span>
+              </div>
+              <div className="oct-result-stat">
+                <span className={`oct-result-stat-val ${accuracy >= 70 ? "good" : accuracy >= 40 ? "mid" : "low"}`}>{accuracy}%</span>
+                <span className="oct-result-stat-lbl">{t("octagon.result.accuracyLbl")}</span>
+              </div>
+              <div className="oct-result-stat">
+                <span className="oct-result-stat-val">{typeof result?.myTimeSec === "number" ? formatDuration(result.myTimeSec) : "—"}</span>
+                <span className="oct-result-stat-lbl">{t("octagon.result.timeLbl")}</span>
+              </div>
             </div>
-            {result?.forfeit && <div className="oct-forfeit-note">{t("octagon.result.forfeitNote")}</div>}
 
-            {/* ELO Delta Badge */}
-            <div className="oct-elo-delta-box">
-              <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 700 }}>
-                {t("octagon.result.eloChange")}
+            <div className="oct-result-elo">
+              <span className="oct-result-elo-lbl">ELO</span>
+              <span className="oct-result-elo-flow">
+                {typeof oldElo === "number" ? oldElo : "—"} <span aria-hidden="true">→</span>{" "}
+                <strong>{typeof newElo === "number" ? newElo : "—"}</strong>
               </span>
-              <Badge
-                size="lg"
-                radius="md"
-                variant="filled"
-                color={isPositive ? "teal" : deltaElo < 0 ? "red" : "gray"}
-                className={isPositive ? "oct-elo-glow" : undefined}
-                style={{ fontWeight: 900, fontFamily: "monospace" }}
-              >
-                {isPositive ? `+${deltaElo}` : deltaElo} ELO
-              </Badge>
+              <span className={`oct-result-elo-delta ${deltaElo > 0 ? "up" : deltaElo < 0 ? "down" : "zero"}`}>
+                {deltaElo > 0 ? `+${deltaElo}` : deltaElo}
+              </span>
             </div>
-            {typeof result?.myNewElo === "number" && (
-              <div className="oct-new-elo">
-                {t("octagon.result.newRating")}{" "}
-                <strong>{result.myNewElo} ELO</strong>
-              </div>
-            )}
-          </div>
+            {unchanged === "floor" && <div className="oct-result-note">{t("octagon.result.eloFloor")}</div>}
+            {forfeitKind && <div className="oct-forfeit-note">{t(FORFEIT_KEYS[forfeitKind])}</div>}
+          </>
         )}
 
-        {/* Action Buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%" }}>
-          {!isGroup && (
-          <button
-            type="button"
-            disabled={revengeRequested}
-            onClick={onRequestRevenge}
-            className="oct-search-btn-3d"
-            style={{
-              height: 56,
-              fontSize: 16,
-              background: revengeRequested ? "#475569" : "#10b981",
-              borderBottomColor: revengeRequested ? "#334155" : "#047857",
-              boxShadow: revengeRequested ? "none" : undefined,
-              cursor: revengeRequested ? "not-allowed" : "pointer",
-            }}
-          >
-            <IconRefresh size={20} style={{ animation: revengeRequested ? "oct-spin 1s linear infinite" : "none" }} />
-            <span>
-              {revengeRequested
-                ? t("octagon.result.waitingRevenge", "Raqib javobi kutilmoqda...")
-                : t("octagon.result.requestRevenge", "Qasos (Rematch) talab qilish")}
-            </span>
-          </button>
+        {/* Amallar: revansh (raqib roziligi bilan), jang tahlili, lobbiga qaytish */}
+        <div className="oct-result-actions">
+          {!isGroup && rematch.status === "offered" && (
+            <div className="oct-rematch-offer" role="alert">
+              <IconSwords size={18} />
+              <span>{t("octagon.result.rematchOffered", { name: oppName })}</span>
+            </div>
+          )}
+          {!isGroup && (rematch.status === "unavailable" || rematch.status === "timeout") && (
+            <div className="oct-rematch-info" role="status">
+              {rematch.status === "timeout"
+                ? t("octagon.result.rematchTimeout")
+                : rematch.reason === "OPPONENT_BUSY"
+                ? t("octagon.result.rematchBusy")
+                : t("octagon.result.rematchOffline")}
+            </div>
+          )}
+          {!isGroup && rematch.status !== "unavailable" && (
+            <button
+              type="button"
+              disabled={rematch.status === "waiting"}
+              onClick={onRequestRevenge}
+              className={`oct-3d-btn green oct-result-cta ${rematch.status === "offered" ? "pulse" : ""}`}
+            >
+              {rematch.status === "waiting" ? <Loader size={18} color="white" /> : <IconRefresh size={20} />}
+              <span>
+                {rematch.status === "waiting"
+                  ? t("octagon.result.waitingRevenge")
+                  : rematch.status === "offered"
+                  ? t("octagon.result.acceptRematch")
+                  : rematch.status === "timeout"
+                  ? t("octagon.result.askAgain")
+                  : t("octagon.result.requestRevenge")}
+              </span>
+            </button>
           )}
 
-          <Button
-            variant="subtle"
-            color="gray"
-            radius="xl"
-            size="md"
-            leftSection={<IconArrowLeft size={18} />}
-            onClick={onReturnToLobby}
-            style={{ color: "#94a3b8" }}
-          >
-            {t("octagon.result.backToLobby", "Lobbiyga qaytish")}
-          </Button>
+          <div className="oct-result-secondary">
+            {!isGroup && review.length > 0 && (
+              <button type="button" className="oct-secondary-btn" onClick={() => setShowReview(true)}>
+                <IconListCheck size={18} color="var(--oct-green)" />
+                <span>{t("octagon.review.open")}</span>
+              </button>
+            )}
+            <button type="button" className="oct-secondary-btn" onClick={onReturnToLobby}>
+              <IconArrowLeft size={18} color="var(--oct-blue)" />
+              <span>{t("octagon.result.backToLobby")}</span>
+            </button>
+          </div>
 
           {opponent && !isGroup && (
             <Button
@@ -261,7 +277,7 @@ export const OctagonResultView: React.FC<Props> = ({
               radius="xl"
               leftSection={<IconFlag size={14} />}
               onClick={() => setShowReportModal(true)}
-              style={{ alignSelf: "center", marginTop: 4, opacity: 0.7 }}
+              style={{ alignSelf: "center", marginTop: 4, minHeight: 44, opacity: 0.75 }}
             >
               {t("octagon.report.button", "Raqib ustidan shikoyat qilish")}
             </Button>
@@ -269,30 +285,30 @@ export const OctagonResultView: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Report Modal */}
+      <OctagonReviewModal opened={showReview} onClose={() => setShowReview(false)} review={review} questions={questions} />
+
+      {/* Shikoyat */}
       <Modal
         opened={showReportModal}
         onClose={() => setShowReportModal(false)}
+        closeButtonProps={{ "aria-label": t("common.close") }}
         title={t("octagon.report.title", "Raqib ustidan shikoyat qilish")}
         centered
-        styles={{
-          content: { background: "#111827", border: "1px solid #1f2937", borderRadius: 16, color: "#f8fafc" },
-          header: { background: "#111827", color: "#f8fafc" },
-        }}
+        classNames={{ content: "oct-modal-dark", header: "oct-modal-dark-header", close: "oct-modal-dark-close" }}
       >
         {reportSent ? (
           <div style={{ textAlign: "center", padding: "24px 0" }}>
-            <IconCheck size={48} color="#10b981" style={{ margin: "0 auto 12px" }} />
-            <Text fw={700} size="md" style={{ color: "#f8fafc" }}>
+            <IconCheck size={48} color="var(--oct-green)" style={{ margin: "0 auto 12px" }} />
+            <Text fw={700} size="md" style={{ color: "var(--oct-text)" }}>
               {t("octagon.report.sentSuccess", "Shikoyatingiz qabul qilindi!")}
             </Text>
-            <Text size="xs" style={{ color: "#94a3b8", marginTop: 4 }}>
+            <Text size="xs" style={{ color: "var(--oct-muted)", marginTop: 4 }}>
               {t("octagon.report.sentDesc", "Moderatsiya xizmati o'yin yozuvini tekshirib chiqadi.")}
             </Text>
           </div>
         ) : (
           <Stack gap="md">
-            <Text size="xs" style={{ color: "#94a3b8" }}>
+            <Text size="xs" style={{ color: "var(--oct-muted)" }}>
               {t("octagon.report.desc", "Agar raqib qoidabuzarlik qilgan bo'lsa yoki shubhali harakat sezgan bo'lsangiz, sababini tanlang:")}
             </Text>
 
@@ -311,21 +327,14 @@ export const OctagonResultView: React.FC<Props> = ({
               onChange={(e) => setReportComment(e.currentTarget.value)}
               minRows={2}
               maxRows={4}
-              styles={{
-                input: { background: "#0b0f19", borderColor: "#1f2937", color: "#f8fafc" },
-              }}
+              styles={{ input: { background: "#0b0f19", borderColor: "#1f2937", color: "var(--oct-text)" } }}
             />
 
             <Group justify="flex-end" mt="sm">
               <Button variant="default" onClick={() => setShowReportModal(false)} size="sm">
                 {t("octagon.common.cancel", "Bekor qilish")}
               </Button>
-              <Button
-                color="red"
-                onClick={handleSubmitReport}
-                loading={isSubmittingReport}
-                size="sm"
-              >
+              <Button color="red" onClick={handleSubmitReport} loading={isSubmittingReport} size="sm">
                 {t("octagon.report.submit", "Yuborish")}
               </Button>
             </Group>

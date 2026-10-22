@@ -110,7 +110,12 @@ public class OctagonWebSocketHandler extends TextWebSocketHandler {
                 case "join_queue" ->
                         // currentElo eski klientlar uchun qabul qilinadi, lekin juftlashda serverdagi ELO ishlatiladi
                         matchmaker.joinQueue(octSession, intVal(data, "userProgress", 0), intVal(data, "currentElo", 0));
-                case "leave_queue" -> matchmaker.leaveQueue(octSession);
+                // Juftlab ulgurilgan, lekin boshlanmagan navbat jangi ham bekor qilinadi (bekor qilish poygasi)
+                case "leave_queue" -> matchmaker.cancelSearch(octSession);
+                case "forfeit_match" -> {
+                    UUID ffMatchId = uuid(data, "matchId");
+                    if (ffMatchId != null) matchmaker.handleForfeit(octSession, ffMatchId);
+                }
                 case "submit_answer" -> {
                     UUID matchId = uuid(data, "matchId");
                     Long questionId = longVal(data, "questionId");

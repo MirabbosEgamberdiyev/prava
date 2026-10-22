@@ -211,8 +211,22 @@ public class OctagonService {
 
     @Transactional(readOnly = true)
     public Page<MatchHistoryEntry> getUserHistory(String userId, int page, int size) {
+        return getUserHistory(userId, page, size, null);
+    }
+
+    /**
+     * Janglar tarixi; {@code result} = WIN / LOSS / DRAW bo'lsa — filtr bazada qo'llanadi (sahifalash to'g'ri
+     * ishlaydi), boshqa qiymat yoki null — barchasi.
+     */
+    public Page<MatchHistoryEntry> getUserHistory(String userId, int page, int size, String result) {
         PageRequest pr = PageRequest.of(Math.max(0, page), Math.min(50, Math.max(1, size)));
-        Page<OctagonMatch> matches = matchRepository.findUserMatches(userId, pr);
+        String filter = result == null ? "" : result.trim().toUpperCase(java.util.Locale.ROOT);
+        Page<OctagonMatch> matches = switch (filter) {
+            case "WIN" -> matchRepository.findUserWins(userId, pr);
+            case "LOSS" -> matchRepository.findUserLosses(userId, pr);
+            case "DRAW" -> matchRepository.findUserDraws(userId, pr);
+            default -> matchRepository.findUserMatches(userId, pr);
+        };
 
         List<String> opponentIds = matches.getContent().stream()
                 .map(m -> userId.equals(m.getPlayer1Id()) ? m.getPlayer2Id() : m.getPlayer1Id())

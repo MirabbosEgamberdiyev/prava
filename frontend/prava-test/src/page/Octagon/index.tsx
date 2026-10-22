@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import { useAuthModal } from "../../auth/AuthModalContext";
@@ -39,6 +39,7 @@ const OctagonPage: React.FC = () => {
     remainingTimeSec,
     opponent,
     currentQuestion,
+    questions,
     currentIndex,
     totalQuestions,
     myAnswers,
@@ -48,7 +49,7 @@ const OctagonPage: React.FC = () => {
     oppTrack,
     matchResult,
     flyingEmojis,
-    revengeRequested,
+    rematch,
     reconnecting,
     reconnectLeftSec,
     reactionsMuted,
@@ -75,6 +76,7 @@ const OctagonPage: React.FC = () => {
     submitAnswer,
     sendReaction,
     requestRevenge,
+    forfeitMatch,
     returnToLobby,
     openDuel,
     openGroup,
@@ -130,6 +132,8 @@ const OctagonPage: React.FC = () => {
   const myElo = myStats?.eloRating ?? 0;
   const myRank = rankFromElo(myElo);
   const myAvatar = myStats?.avatarUrl ?? null;
+  // VS ekrani: rasmlar oldindan yuklanishi (barqaror ro'yxat — preloader obunasi qayta yaratilmasin)
+  const preloadPaths = useMemo(() => questions.map((q) => q.imageUrl || q.image), [questions]);
 
   return (
     <div style={{ width: "100%", minHeight: "calc(100vh - 70px)", background: "#060b13", position: "relative" }}>
@@ -158,6 +162,8 @@ const OctagonPage: React.FC = () => {
       {state === "SEARCHING" && (
         <OctagonRadarView
           searchSeconds={searchSeconds}
+          myName={myDisplayName}
+          myAvatar={myAvatar}
           queueStatus={queueStatus}
           reconnecting={reconnecting}
           onCancel={cancelSearch}
@@ -167,6 +173,7 @@ const OctagonPage: React.FC = () => {
       {(state === "MATCH_FOUND" || state === "COUNTDOWN" || state === "PLAYING" || state === "RECONNECTING") && (
         <OctagonArenaView
           state={state}
+          preloadPaths={preloadPaths}
           countdown={countdown}
           remainingTimeSec={remainingTimeSec}
           myScore={myScore}
@@ -189,6 +196,7 @@ const OctagonPage: React.FC = () => {
           flyingEmojis={flyingEmojis}
           onSubmitAnswer={submitAnswer}
           onSendReaction={sendReaction}
+          onForfeit={state === "PLAYING" ? forfeitMatch : undefined}
         />
       )}
 
@@ -203,7 +211,9 @@ const OctagonPage: React.FC = () => {
           myUserId={user ? String(user.id) : undefined}
           opponent={opponent}
           standings={roomStandings}
-          revengeRequested={revengeRequested}
+          myElo={myElo}
+          questions={questions}
+          rematch={rematch}
           onRequestRevenge={requestRevenge}
           onReturnToLobby={returnToLobby}
         />

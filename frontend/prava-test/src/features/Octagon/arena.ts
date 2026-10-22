@@ -1,4 +1,4 @@
-import type { LeaderboardEntry, OpponentProgress } from "./types";
+import { OCTAGON_CONFIG, type LeaderboardEntry, type OctagonRankId, type OpponentProgress } from "./types";
 
 /** Bitta trek katagi: javob to'g'ri, xato, javob berilgan (natija noma'lum — qayta ulanishdan keyin) yoki hali yo'q. */
 export type TrackCell = "correct" | "wrong" | "answered" | null;
@@ -107,4 +107,65 @@ export function podiumOrder<T extends Pick<LeaderboardEntry, "position">>(entrie
   const top = entries.slice(0, 3);
   if (top.length < 2) return top;
   return top.length === 2 ? [top[1], top[0]] : [top[1], top[0], top[2]];
+}
+
+/** 135 → "2:15" (natija ekranidagi sarflangan vaqt). */
+export function formatDuration(totalSec: number | null | undefined): string {
+  const s = Math.max(0, Math.floor(Number.isFinite(totalSec) ? Number(totalSec) : 0));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+export interface LeagueProgress {
+  current: OctagonRankId;
+  /** Keyingi liga (Master'da — null). */
+  next: OctagonRankId | null;
+  /** Joriy ligadagi yo'l, 0..100. */
+  pct: number;
+  /** Keyingi ligagacha qolgan ELO. */
+  toNext: number;
+}
+
+/** Lobby liga zinapoyasi: server OctagonRank chegaralari bilan bir xil (0 / 50 / 150 / 300 / 500 / 800). */
+export function leagueProgress(elo: number | null | undefined): LeagueProgress {
+  const value = Math.max(0, Number.isFinite(elo) ? Number(elo) : 0);
+  const asc = [...OCTAGON_CONFIG.RANK_THRESHOLDS].sort((a, b) => a.minScore - b.minScore);
+  let idx = 0;
+  for (let i = 0; i < asc.length; i++) if (value >= asc[i].minScore) idx = i;
+  const cur = asc[idx];
+  const nxt = asc[idx + 1];
+  if (!nxt) return { current: cur.rank as OctagonRankId, next: null, pct: 100, toNext: 0 };
+  const span = nxt.minScore - cur.minScore;
+  return {
+    current: cur.rank as OctagonRankId,
+    next: nxt.rank as OctagonRankId,
+    pct: Math.round(((value - cur.minScore) / span) * 100),
+    toNext: nxt.minScore - value,
+  };
+}
+
+/**
+ * ELO o'zgarmaganining sababi (biznes qoidalari bo'yicha): mag'lubiyatda reyting 0 dan pastga tushmaydi.
+ * Boshqa holatda null — o'zgarish bor yoki tushuntirish kerak emas.
+ */
+export function eloUnchangedReason(delta: number | null | undefined, newElo: number | null | undefined, isWin: boolean, isDraw: boolean): "floor" | null {
+  if (delta !== 0 || isWin || isDraw) return null;
+  return newElo === 0 ? "floor" : null;
+}
+
+/** VS ekrani: rasmlar oldindan yuklanishi (rasmsiz savollar tayyor hisoblanadi). */
+export function preloadProgress(statuses: Array<"idle" | "loading" | "ready" | "error" | null>): { done: number; total: number; pct: number } {
+  const total = statuses.length;
+  if (total === 0) return { done: 0, total: 0, pct: 0 };
+  const done = statuses.filter((st) => st === null || st === "ready" || st === "error").length;
+  return { done, total, pct: Math.round((done / total) * 100) };
+}
+
+export type ForfeitNote = "selfLeft" | "selfTimeout" | "oppLeft" | "oppTimeout";
+
+/** Texnik natija izohi: o'zim chiqdim / 45 s qaytmadim / raqib chiqdi / raqib qaytmadi (eski server — oppTimeout). */
+export function forfeitNote(r: { forfeit?: boolean; forfeitByMe?: boolean; forfeitReason?: string | null }): ForfeitNote | null {
+  if (!r.forfeit) return null;
+  const left = r.forfeitReason === "LEFT";
+  if (r.forfeitByMe) return left ? "selfLeft" : "selfTimeout";
+  return left ? "oppLeft" : "oppTimeout";
 }

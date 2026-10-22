@@ -15,6 +15,7 @@ import {
   type UserSearchResult,
   type InviteJoinState,
   type QueueStatus,
+  type RematchState,
 } from "./types";
 import { OctagonApi } from "./OctagonApi";
 import { OctagonSocket } from "./OctagonSocket";
@@ -68,7 +69,8 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
   const [oppProgress, setOppProgress] = useState<OpponentProgress>(EMPTY_PROGRESS);
   const [matchResult, setMatchResult] = useState<MatchResultData | null>(null);
   const [flyingEmojis, setFlyingEmojis] = useState<FlyingEmoji[]>([]);
-  const [revengeRequested, setRevengeRequested] = useState(false);
+  /** Revansh: kutilmoqda / raqib taklif qildi / imkonsiz / javobsiz. */
+  const [rematch, setRematch] = useState<RematchState>({ status: "idle" });
   const [reconnecting, setReconnecting] = useState(false);
   /** Uzilish boshlangan vaqt — 45 s grace hisoblagichi ("qolgan vaqt: 38s"). */
   const [reconnectSince, setReconnectSince] = useState<number | null>(null);
@@ -114,6 +116,14 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
   const myFloodRef = useRef(reactionGate());
   const oppFloodRef = useRef(reactionGate());
   const muteTimerRef = useRef<number | null>(null);
+  const rematchTimerRef = useRef<number | null>(null);
+  /** Qidiruv bekor qilingan vaqt — undan keyin kelgan eskirgan navbat jangi e'tiborsiz qoldiriladi. */
+  const searchCancelledAtRef = useRef(0);
+
+  const resetRematch = useCallback(() => {
+    clearTimer(rematchTimerRef);
+    setRematch({ status: "idle" });
+  }, []);
 
   /** Tarmoq holati: uzildi (45 s hisoblagich boshlanadi) yoki tiklandi. */
   const setLinkDown = useCallback((down: boolean) => {
@@ -172,6 +182,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
       clearTimer(outgoingTimeoutRef);
       clearTimer(inviteJoinTimeoutRef);
       clearTimer(muteTimerRef);
+      clearTimer(rematchTimerRef);
       imagePreloader.clear();
     };
   }, []);
@@ -262,6 +273,18 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
         },
 
         onMatchFound: async (data) => {
+          // Qidiruv bekor qilingandan keyin kelgan navbat jangi (server bekor qilish poygasida uni o'zi bekor
+          // qiladi) — lobbidan tasodifan jangga o'tib ketmaymiz; bekor qilishni yana yuboramiz
+          const queueMatch = data.gameType === "RANKED_QUEUE" || data.gameType === "BOT_TRAINING";
+          if (
+            queueMatch &&
+            stateRef.current === "IDLE" &&
+            Date.now() - searchCancelledAtRef.current < OCTAGON_CONFIG.STALE_MATCH_IGNORE_MS
+          ) {
+            socketRef.current?.leaveQueue();
+            return;
+          }
+          resetRematch();
           clearTimer(outgoingTimeoutRef);
           clearTimer(inviteJoinTimeoutRef);
           inviteJoinPendingRef.current = false;
@@ -291,6 +314,35 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
           }
         },
 
+        onMatchCancelled: (data) => {
+          if (stateRef.current !== "MATCH_FOUND" && stateRef.current !== "COUNTDOWN") return;
+          imagePreloader.clear();
+          setOpponent(null);
+          setQuestions([]);
+          setMatchId("");
+          if (data.requeued) {
+            // Raqib qidiruvni bekor qildi — server bizni navbatga qaytardi, qidiruv davom etadi
+            setState("SEARCHING");
+            setSearchSeconds(0);
+            if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
+            searchIntervalRef.current = window.setInterval(() => setSearchSeconds((n) => n + 1), 1000);
+            showToast({ id: "octagon-opp-cancelled", color: "yellow", message: i18n.t("octagon.radar.opponentCancelled") });
+          } else {
+            setState("IDLE");
+          }
+        },
+
+        onRevengeRequested: () => {
+          // Raqib qayta o'ynashni so'radi — natija ekranida "Qabul qilish" tugmasi
+          setRematch((prev) => (prev.status === "waiting" ? prev : { status: "offered" }));
+          OctagonAudio.playMatchFound();
+        },
+
+        onRevengeUnavailable: (data) => {
+          clearTimer(rematchTimerRef);
+          setRematch({ status: "unavailable", reason: data.reason });
+        },
+
         onCountdownTick: (count) => {
           setState("COUNTDOWN");
           setCountdown(count);
@@ -303,7 +355,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
           setMyAnswers({});
           setMyResults({});
           setMyScore(0);
-          setRevengeRequested(false);
+          resetRematch();
           OctagonAudio.playMatchStart();
           startMatchClock(data.totalDurationSec || OCTAGON_CONFIG.TOTAL_GAME_TIME_SEC);
         },
@@ -503,7 +555,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
           setMyResults({});
           setOppResults([]);
           setMyScore(0);
-          setRevengeRequested(false);
+          resetRematch();
           setRoomStandings(null);
           setShowGroupModal(false);
           OctagonAudio.playMatchStart();
@@ -533,7 +585,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     socket.connect(ticket);
     socketRef.current = socket;
     return socket;
-  }, [user, addFlyingEmoji, refreshStats, startMatchClock, setLinkDown]);
+  }, [user, addFlyingEmoji, refreshStats, startMatchClock, setLinkDown, resetRematch]);
 
   const pendingSocketRef = useRef<Promise<OctagonSocket> | null>(null);
   const initSocket = useCallback((): Promise<OctagonSocket> => {
@@ -626,6 +678,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
   }, [requireAuth]);
 
   const cancelSearch = useCallback(() => {
+    searchCancelledAtRef.current = Date.now();
     socketRef.current?.leaveQueue();
     if (searchIntervalRef.current) clearInterval(searchIntervalRef.current);
     setState("IDLE");
@@ -686,8 +739,18 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
 
   const requestRevenge = useCallback(() => {
     if (!socketRef.current || !matchId) return;
-    setRevengeRequested(true);
+    setRematch({ status: "waiting" });
+    clearTimer(rematchTimerRef);
+    // Raqib 30 s ichida javob bermasa — kutish to'xtaydi ("Raqib javob bermadi")
+    rematchTimerRef.current = window.setTimeout(() => {
+      setRematch((prev) => (prev.status === "waiting" ? { status: "timeout" } : prev));
+    }, OCTAGON_CONFIG.REMATCH_WAIT_SEC * 1000);
     socketRef.current.requestRevenge(matchId);
+  }, [matchId]);
+
+  /** Jangni o'z ixtiyori bilan tark etish: raqib darhol texnik g'alaba oladi, server natijani yuboradi. */
+  const forfeitMatch = useCallback(() => {
+    if (socketRef.current && matchId) socketRef.current.forfeitMatch(matchId);
   }, [matchId]);
 
   // --- Do'st bilan 1v1 ---
@@ -826,7 +889,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     setCurrentIndex(0);
     setMyAnswers({});
     setMatchResult(null);
-    setRevengeRequested(false);
+    resetRematch();
     setCurrentRoom(null);
     setRoomStandings(null);
     setMyResults({});
@@ -837,7 +900,7 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     refreshStats();
     // "Aloqa uzildi"dan qaytilganda socket yo'q — lobbida yana onlayn bo'lamiz (jang tirik bo'lsa server tiklaydi)
     if (!socketRef.current && user?.id != null) initSocket().catch(() => {});
-  }, [refreshStats, setLinkDown, user, initSocket]);
+  }, [refreshStats, setLinkDown, user, initSocket, resetRematch]);
 
   return {
     state,
@@ -864,7 +927,9 @@ export function useOctagonStore(user: { id?: number | string; firstName?: string
     oppTrack: buildOppTrack(questions.length || OCTAGON_CONFIG.QUESTIONS_PER_MATCH, oppProgress.answeredCount, oppResults),
     matchResult,
     flyingEmojis,
-    revengeRequested,
+    revengeRequested: rematch.status === "waiting",
+    rematch,
+    forfeitMatch,
     reconnecting,
     reconnectLeftSec,
     reactionsMuted,

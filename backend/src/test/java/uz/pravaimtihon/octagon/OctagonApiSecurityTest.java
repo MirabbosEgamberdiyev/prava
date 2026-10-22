@@ -142,8 +142,10 @@ class OctagonApiSecurityTest {
     @DisplayName("History is the caller's own only (no ?userId= IDOR)")
     void historyOwnOnly() {
         when(matchRepo.findUserMatches(anyString(), any())).thenReturn(new PageImpl<>(List.of()));
-        controller.getHistory(null, 0, 10);
+        controller.getHistory(null, 0, 10, null);
+        controller.getHistory(null, 0, 10, "WIN");
         verify(matchRepo, never()).findUserMatches(anyString(), any());
+        verify(matchRepo, never()).findUserWins(anyString(), any());
     }
 
     @Test

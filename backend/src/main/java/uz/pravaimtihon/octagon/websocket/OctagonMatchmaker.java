@@ -154,8 +154,25 @@ public class OctagonMatchmaker {
             Instant last = s.getLastQueueStatusAt();
             if (last != null && Duration.between(last, now).toMillis() < QUEUE_STATUS_INTERVAL_MS) continue;
             s.setLastQueueStatusAt(now);
-            sendEvent(s, "queue_status", Map.of("searching", searching, "online", online));
+            sendEvent(s, "queue_status", queueStatusPayload(s, searching, online, now));
         }
+    }
+
+    /**
+     * Radar ma'lumoti matchmakingTick'dagi haqiqiy qoidalar bilan bir xil: dastlab ±30 ELO, 3 s dan keyin
+     * ±80, 6 s dan keyin har qanday raqib ({@code eloRange: null}); 7 s da inson topilmasa — bot.
+     */
+    static Map<String, Object> queueStatusPayload(OctagonSession s, int searching, long online, Instant now) {
+        long waitSec = s.getQueuedAt() != null ? Math.max(0, Duration.between(s.getQueuedAt(), now).getSeconds()) : 0;
+        Integer range = waitSec < ELO_STRICT_SEC ? Integer.valueOf(30) : waitSec < ELO_WIDE_SEC ? Integer.valueOf(80) : null;
+        Map<String, Object> data = new HashMap<>();
+        data.put("searching", searching);
+        data.put("online", online);
+        data.put("waitSec", waitSec);
+        data.put("elo", s.getCurrentElo());
+        data.put("eloRange", range);
+        data.put("botInSec", Math.max(0, BOT_FALLBACK_SEC - waitSec));
+        return data;
     }
 
     public boolean isUserOnline(String userId) {
@@ -225,6 +242,52 @@ public class OctagonMatchmaker {
             waitingQueue.remove(session);
             session.setQueuedAt(null);
         }
+    }
+
+    /**
+     * Klient "Qidiruvni bekor qilish"ni bosdi (leave_queue). Matchmaker shu orada uni juftlab ulgurgan
+     * bo'lsa (bekor qilish juftlashdan keyin yetib keldi), hali BOSHLANMAGAN navbat/bot jangi bekor
+     * qilinadi: ELO yozilmaydi, ikkala tomonga match_cancelled, inson raqib navbatga qaytariladi.
+     * Do'st dueli, xona va revansh jangiga tegilmaydi.
+     */
+    public void cancelSearch(OctagonSession session) {
+        synchronized (matchLock) {
+            leaveQueue(session);
+            UUID id = userOngoingMatchMap.get(session.getUserId());
+            ActiveMatch match = id != null ? activeMatches.get(id) : null;
+            if (match == null || match.getStartedAt() != null || match.isEnded()) return;
+            if (match.getGameType() != OctagonGameType.RANKED_QUEUE && match.getGameType() != OctagonGameType.BOT_TRAINING) return;
+            if (!match.tryEnd(Instant.now())) return;
+
+            if (match.getBot() != null) match.getBot().stop();
+            activeMatches.remove(match.getMatchId());
+            userOngoingMatchMap.remove(match.getPlayer1Id(), match.getMatchId());
+            userOngoingMatchMap.remove(match.getPlayer2Id(), match.getMatchId());
+            session.setCurrentMatchId(null);
+            log.info("Match {} cancelled before start: {} cancelled the search", match.getMatchId(), session.getUserId());
+
+            sendEvent(session, "match_cancelled", Map.of("matchId", id.toString(), "reason", "SEARCH_CANCELLED", "requeued", false));
+            if (!match.isBotMatch()) {
+                String oppId = session.getUserId().equals(match.getPlayer1Id()) ? match.getPlayer2Id() : match.getPlayer1Id();
+                OctagonSession opp = activeSessions.get(oppId);
+                if (opp != null && opp.isOpen()) {
+                    opp.setCurrentMatchId(null);
+                    joinQueue(opp, 0, opp.getCurrentElo());
+                    sendEvent(opp, "match_cancelled", Map.of("matchId", id.toString(), "reason", "OPPONENT_CANCELLED", "requeued", true));
+                }
+            }
+        }
+    }
+
+    /**
+     * O'yinchi jangni o'zi tark etdi (mobil Back → "Chiqish"): raqib 45 s kutmasdan, darhol texnik
+     * g'alaba oladi. Boshqa birovning jangiga ta'sir qilmaydi.
+     */
+    public void handleForfeit(OctagonSession session, UUID matchId) {
+        ActiveMatch match = matchId != null ? activeMatches.get(matchId) : null;
+        if (match == null || match.isEnded() || !match.isParticipant(session.getUserId())) return;
+        log.info("User {} forfeited match {}", session.getUserId(), matchId);
+        finalizeMatch(match, session.getUserId(), true);
     }
 
     void matchmakingTick() {
@@ -415,14 +478,19 @@ public class OctagonMatchmaker {
         data.put("questionIds", match.getQuestionIds());
         data.put("questions", match.getQuestionPayload());
         data.put("preloadDurationMs", PRELOAD_MS);
+        data.put("gameType", match.getGameType().name());
 
         sendEvent(session, "match_found", data);
     }
 
     private void schedulePreloadAndCountdown(ActiveMatch match) {
-        scheduler.schedule(() -> sendBroadcastEvent(match, "countdown_tick", Map.of("count", 3)), PRELOAD_MS, TimeUnit.MILLISECONDS);
-        scheduler.schedule(() -> sendBroadcastEvent(match, "countdown_tick", Map.of("count", 2)), PRELOAD_MS + 1000, TimeUnit.MILLISECONDS);
-        scheduler.schedule(() -> sendBroadcastEvent(match, "countdown_tick", Map.of("count", 1)), PRELOAD_MS + 2000, TimeUnit.MILLISECONDS);
+        // Jang shu orada bekor qilingan bo'lsa (qidiruv bekor qilindi / tark etildi) — countdown yuborilmaydi
+        for (int count = 3; count >= 1; count--) {
+            final int c = count;
+            scheduler.schedule(() -> {
+                if (!match.isEnded()) sendBroadcastEvent(match, "countdown_tick", Map.of("count", c));
+            }, PRELOAD_MS + (3 - c) * 1000L, TimeUnit.MILLISECONDS);
+        }
 
         scheduler.schedule(() -> {
             if (match.isEnded()) return;
@@ -558,15 +626,20 @@ public class OctagonMatchmaker {
                 if (match.isP1WantsRevenge() && match.tryClaimRematch()) {
                     createBotMatch(session, match.getPlayer2Id(), match.getPlayer2Name(), match.getPlayer2Elo());
                 }
-            } else if (match.isP1WantsRevenge() && match.isP2WantsRevenge()) {
-                OctagonSession p1 = activeSessions.get(match.getPlayer1Id());
-                OctagonSession p2 = activeSessions.get(match.getPlayer2Id());
-                if (p1 != null && p2 != null && p1.isOpen() && p2.isOpen() && match.tryClaimRematch()) {
-                    createMatch(p1, p2, match.getGameType());
-                }
             } else {
-                OctagonSession opp = activeSessions.get(isP1 ? match.getPlayer2Id() : match.getPlayer1Id());
-                sendEvent(opp, "revenge_requested", Map.of("matchId", matchId.toString()));
+                String oppId = isP1 ? match.getPlayer2Id() : match.getPlayer1Id();
+                OctagonSession opp = activeSessions.get(oppId);
+                if (opp == null || !opp.isOpen()) {
+                    sendEvent(session, "revenge_unavailable", Map.of("matchId", matchId.toString(), "reason", "OPPONENT_OFFLINE"));
+                } else if (hasLiveMatch(oppId)) {
+                    sendEvent(session, "revenge_unavailable", Map.of("matchId", matchId.toString(), "reason", "OPPONENT_BUSY"));
+                } else if (match.isP1WantsRevenge() && match.isP2WantsRevenge()) {
+                    if (match.tryClaimRematch()) {
+                        createMatch(isP1 ? session : opp, isP1 ? opp : session, match.getGameType());
+                    }
+                } else {
+                    sendEvent(opp, "revenge_requested", Map.of("matchId", matchId.toString()));
+                }
             }
         }
     }
@@ -578,8 +651,15 @@ public class OctagonMatchmaker {
         }
     }
 
-    /** Jangni bir martagina yakunlaydi (timeout, tashlab ketish va oxirgi javob bir vaqtda kelishi mumkin). */
     private void finalizeMatch(ActiveMatch match, String forfeitUserId) {
+        finalizeMatch(match, forfeitUserId, false);
+    }
+
+    /**
+     * Jangni bir martagina yakunlaydi (timeout, tashlab ketish va oxirgi javob bir vaqtda kelishi mumkin).
+     * {@code leftVoluntarily}: o'yinchi o'zi "Chiqish"ni bosdi (aks holda — 45 s ichida qaytmadi).
+     */
+    private void finalizeMatch(ActiveMatch match, String forfeitUserId, boolean leftVoluntarily) {
         if (!match.tryEnd(Instant.now())) return;
 
         if (match.getBot() != null) {
@@ -617,15 +697,16 @@ public class OctagonMatchmaker {
         int p2Delta = persisted != null ? persisted.getP2EloChange() : 0;
 
         sendMatchEnded(activeSessions.getOrDefault(match.getPlayer1Id(), match.getP1Session()), match,
-                winnerId, isDraw, p1Delta, p2Delta, match.getPlayer1Score(), match.getPlayer2Score(), forfeitUserId);
+                winnerId, isDraw, p1Delta, p2Delta, match.getPlayer1Score(), match.getPlayer2Score(), forfeitUserId, leftVoluntarily);
         if (!match.isBotMatch()) {
             sendMatchEnded(activeSessions.getOrDefault(match.getPlayer2Id(), match.getP2Session()), match,
-                    winnerId, isDraw, p2Delta, p1Delta, match.getPlayer2Score(), match.getPlayer1Score(), forfeitUserId);
+                    winnerId, isDraw, p2Delta, p1Delta, match.getPlayer2Score(), match.getPlayer1Score(), forfeitUserId, leftVoluntarily);
         }
     }
 
     private void sendMatchEnded(OctagonSession s, ActiveMatch match, String winnerId, boolean isDraw,
-                                int myDelta, int oppDelta, int myScore, int oppScore, String forfeitUserId) {
+                                int myDelta, int oppDelta, int myScore, int oppScore, String forfeitUserId,
+                                boolean leftVoluntarily) {
         if (s == null) return;
         Map<String, Object> data = new HashMap<>();
         data.put("matchId", match.getMatchId().toString());
@@ -635,8 +716,17 @@ public class OctagonMatchmaker {
         data.put("opponentDeltaElo", oppDelta);
         data.put("finalScores", Map.of("me", myScore, "opponent", oppScore));
         data.put("forfeit", forfeitUserId != null);
+        if (forfeitUserId != null) {
+            // Natija izohi: "Siz jangni tark etdingiz" / "Raqib jangni tark etdi" / "45 s ichida qaytmadi"
+            data.put("forfeitByMe", forfeitUserId.equals(s.getUserId()));
+            data.put("forfeitReason", leftVoluntarily ? "LEFT" : "DISCONNECT");
+        }
         // Natija ekrani: "8/10 to'g'ri (80%)" va "Yangi reyting" — ELO bazadan (jang yozilgandan keyin)
         data.put("totalQuestions", match.getQuestionIds().size());
+        Integer spent = match.secondsSpent(s.getUserId(), match.getEndedAt());
+        if (spent != null) data.put("myTimeSec", spent);
+        // "Jang tahlili" — faqat jang tugagach: o'z javobi va to'g'ri variant
+        data.put("review", match.reviewFor(s.getUserId()));
         try {
             OctagonProfile profile = octagonService.getProfileSnapshot(s.getUserId());
             if (profile != null) {

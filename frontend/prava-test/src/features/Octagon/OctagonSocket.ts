@@ -5,7 +5,11 @@ export interface OctagonSocketCallbacks {
   onConnected?: () => void;
   /** Qidiruv paytida: nechta o'yinchi qidirmoqda / onlayn (radar uchun real ma'lumot). */
   onQueueStatus?: (data: QueueStatus) => void;
-  onMatchFound?: (data: { matchId: string; opponent: MatchOpponent; questionIds: number[]; questions?: OctagonQuestion[]; preloadDurationMs: number }) => void;
+  onMatchFound?: (data: { matchId: string; opponent: MatchOpponent; questionIds: number[]; questions?: OctagonQuestion[]; preloadDurationMs: number; gameType?: string }) => void;
+  /** Boshlanmagan navbat jangi bekor qilindi (o'zim yoki raqib qidiruvni bekor qildi). */
+  onMatchCancelled?: (data: { matchId: string; reason: "SEARCH_CANCELLED" | "OPPONENT_CANCELLED" | string; requeued?: boolean }) => void;
+  /** Revansh imkonsiz: raqib oflayn yoki boshqa jangda. */
+  onRevengeUnavailable?: (data: { matchId: string; reason: string }) => void;
   onCountdownTick?: (count: number) => void;
   onMatchStarted?: (data: { totalDurationSec: number; startTime: number }) => void;
   onOpponentProgress?: (data: OpponentProgress) => void;
@@ -126,10 +130,20 @@ export class OctagonSocket {
               this.callbacks.onQueueStatus?.({
                 searching: Number(data.searching) || 0,
                 online: Number(data.online) || 0,
+                waitSec: typeof data.waitSec === "number" ? data.waitSec : undefined,
+                elo: typeof data.elo === "number" ? data.elo : undefined,
+                eloRange: typeof data.eloRange === "number" ? data.eloRange : data.eloRange === null ? null : undefined,
+                botInSec: typeof data.botInSec === "number" ? data.botInSec : undefined,
               });
               break;
             case "match_found":
               this.callbacks.onMatchFound?.(data);
+              break;
+            case "match_cancelled":
+              this.callbacks.onMatchCancelled?.(data);
+              break;
+            case "revenge_unavailable":
+              this.callbacks.onRevengeUnavailable?.(data);
               break;
             case "countdown_tick":
               this.callbacks.onCountdownTick?.(data.count);
@@ -292,6 +306,11 @@ export class OctagonSocket {
 
   public requestRevenge(matchId: string) {
     this.send("request_revenge", { matchId });
+  }
+
+  /** Jangni o'z ixtiyori bilan tark etish — raqib darhol texnik g'alaba oladi. */
+  public forfeitMatch(matchId: string) {
+    this.send("forfeit_match", { matchId });
   }
 
   // Friend Duel methods

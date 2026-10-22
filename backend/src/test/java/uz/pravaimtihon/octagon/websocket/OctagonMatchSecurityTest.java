@@ -227,6 +227,9 @@ class OctagonMatchSecurityTest {
         matchmaker.cleanupAndTimeoutTick();
         assertTrue(m.isEnded());
         verify(octagonService).recordMatchResult(eq(m.getMatchId()), eq("1"), eq("2"), anyInt(), anyInt(), anyList(), anyInt(), any(), eq("1"));
+        JsonNode ended = events(wsB, "match_ended").get(0);
+        assertEquals("DISCONNECT", ended.get("forfeitReason").asText(), "timeout, not an explicit leave");
+        assertFalse(ended.get("forfeitByMe").asBoolean());
     }
 
     @Test

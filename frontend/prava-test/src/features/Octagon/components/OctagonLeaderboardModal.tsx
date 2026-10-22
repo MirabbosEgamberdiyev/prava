@@ -71,6 +71,7 @@ export const OctagonLeaderboardModal: React.FC<Props> = ({ opened, onClose, myUs
     <Modal
       opened={opened}
       onClose={onClose}
+      closeButtonProps={{ "aria-label": t("common.close") }}
       centered
       size="lg"
       radius="lg"

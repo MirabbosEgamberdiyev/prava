@@ -3,10 +3,12 @@ import { Modal } from "@mantine/core";
 import { IconHistory, IconArrowLeft, IconArrowRight, IconSwords } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { OctagonApi } from "../OctagonApi";
-import type { MatchHistoryEntry } from "../types";
+import type { HistoryFilter, MatchHistoryEntry } from "../types";
 import { OctagonAvatar } from "./OctagonAvatar";
 import { safeName } from "../rank";
-import { formatMatchDate } from "../arena";
+import { formatDuration, formatMatchDate } from "../arena";
+
+const FILTERS: HistoryFilter[] = ["ALL", "WIN", "LOSS", "DRAW"];
 import "../octagon.css";
 
 interface Props {
@@ -22,6 +24,7 @@ export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose, onStartB
   const [failed, setFailed] = useState(false);
   const [historyList, setHistoryList] = useState<MatchHistoryEntry[]>([]);
   const [page, setPage] = useState(0);
+  const [filter, setFilter] = useState<HistoryFilter>("ALL");
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
@@ -29,7 +32,7 @@ export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose, onStartB
     let alive = true;
     setLoading(true);
     setFailed(false);
-    OctagonApi.getHistory(page, 10)
+    OctagonApi.getHistory(page, 10, filter)
       .then((res) => {
         if (!alive) return;
         const items = res?.content || (Array.isArray(res) ? res : []);
@@ -45,7 +48,7 @@ export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose, onStartB
     return () => {
       alive = false;
     };
-  }, [opened, page]);
+  }, [opened, page, filter]);
 
   const lang = i18n.language || "uzl";
 
@@ -53,6 +56,7 @@ export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose, onStartB
     <Modal
       opened={opened}
       onClose={onClose}
+      closeButtonProps={{ "aria-label": t("common.close") }}
       centered
       size="lg"
       radius="lg"
@@ -68,6 +72,24 @@ export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose, onStartB
         </span>
       }
     >
+      <div className="oct-seg oct-seg-4" role="tablist" aria-label={t("octagon.history.title")}>
+        {FILTERS.map((f) => (
+          <button
+            key={f}
+            type="button"
+            role="tab"
+            aria-selected={filter === f}
+            className={`oct-seg-btn ${filter === f ? "active" : ""} ${f.toLowerCase()}`}
+            onClick={() => {
+              setFilter(f);
+              setPage(0);
+            }}
+          >
+            {t(`octagon.history.filter${f}`)}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div aria-busy="true">
           {[0, 1, 2, 3].map((i) => (
@@ -76,6 +98,8 @@ export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose, onStartB
         </div>
       ) : failed ? (
         <div className="oct-empty">{t("octagon.common.error")}</div>
+      ) : historyList.length === 0 && filter !== "ALL" ? (
+        <div className="oct-empty">{t("octagon.history.emptyFiltered")}</div>
       ) : historyList.length === 0 ? (
         <div className="oct-empty">
           <div className="oct-empty-icon">⚔️</div>
@@ -104,7 +128,10 @@ export const OctagonHistoryModal: React.FC<Props> = ({ opened, onClose, onStartB
                 <OctagonAvatar name={name} src={m.opponentAvatarUrl} size={42} />
                 <div className="oct-history-main">
                   <div className="oct-history-name">{name}</div>
-                  <div className="oct-history-date">{formatMatchDate(m.createdAt, lang)}</div>
+                  <div className="oct-history-date">
+                    {formatMatchDate(m.createdAt, lang)}
+                    {m.durationSeconds ? ` · ${formatDuration(m.durationSeconds)}` : ""}
+                  </div>
                 </div>
                 <div className="oct-history-score">
                   <span className="oct-history-score-num">

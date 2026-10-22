@@ -1,8 +1,9 @@
-import React from "react";
-import { IconX, IconRadar, IconWifiOff } from "@tabler/icons-react";
+import React, { useEffect, useState } from "react";
+import { IconX, IconWifiOff, IconBulb } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { OCTAGON_CONFIG, type QueueStatus } from "../types";
 import { formatClock } from "../arena";
+import { OctagonAvatar } from "./OctagonAvatar";
 import "../octagon.css";
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
   queueStatus?: QueueStatus | null;
   /** Qidiruv paytida aloqa uzildi — avtomatik qayta ulanib navbatga qaytamiz. */
   reconnecting?: boolean;
+  myName: string;
+  myAvatar?: string | null;
   onCancel: () => void;
 }
 
@@ -24,12 +27,32 @@ const BLIP_SLOTS = [
   { top: "48%", left: "16%" },
 ];
 
-export const OctagonRadarView: React.FC<Props> = ({ searchSeconds, queueStatus, reconnecting, onCancel }) => {
+/** Qidiruv paytida aylanuvchi maslahatlar — hammasi haqiqiy qoidalar (qoidalar oynasi bilan bir xil). */
+const TIP_KEYS = ["tipHotkeys", "tipAntiCheat", "tipReconnect", "tipDraw"] as const;
+const TIP_INTERVAL_MS = 5000;
+
+export const OctagonRadarView: React.FC<Props> = ({ searchSeconds, queueStatus, reconnecting, myName, myAvatar, onCancel }) => {
   const { t } = useTranslation();
+  const [tipIdx, setTipIdx] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setTipIdx((i) => (i + 1) % TIP_KEYS.length), TIP_INTERVAL_MS);
+    return () => window.clearInterval(id);
+  }, []);
 
   // Server 3 s dan keyin ELO oralig'ini kengaytiradi, 7 s da mos odam bo'lmasa bot ulanadi
   const isWideSearch = searchSeconds >= OCTAGON_CONFIG.RADAR_WIDEN_AFTER_SEC;
   const blips = Math.min(queueStatus?.searching ?? 0, BLIP_SLOTS.length);
+
+  // ELO oralig'i faqat server yuborgan bo'lsa (ishonchli ma'lumot); null — har qanday raqib
+  let range: string = "—";
+  if (queueStatus && typeof queueStatus.elo === "number" && queueStatus.eloRange !== undefined) {
+    range =
+      queueStatus.eloRange === null
+        ? t("octagon.radar.anyElo")
+        : `${Math.max(0, queueStatus.elo - queueStatus.eloRange)}–${queueStatus.elo + queueStatus.eloRange}`;
+  }
+  const botIn = queueStatus?.botInSec;
 
   return (
     <div className="oct-page-wrapper" style={{ justifyContent: "center", alignItems: "center" }}>
@@ -45,18 +68,24 @@ export const OctagonRadarView: React.FC<Props> = ({ searchSeconds, queueStatus, 
       )}
 
       <div className="oct-console" style={{ alignItems: "center", textAlign: "center" }}>
+        <div className="oct-radar-head">
+          <div className="oct-radar-title">
+            {isWideSearch ? t("octagon.radar.widening") : t("octagon.radar.searchingOpponent")}
+          </div>
+          <div className="oct-radar-desc">
+            {isWideSearch ? t("octagon.radar.wideningDesc") : t("octagon.radar.eloMatchDesc")}
+          </div>
+        </div>
+
         <div className="oct-sonar-container">
           <div className="oct-sonar-ring oct-ring-1" />
           <div className="oct-sonar-ring oct-ring-2" />
           <div className="oct-sonar-ring oct-ring-3" />
-
           <div className="oct-sonar-cross-h" />
           <div className="oct-sonar-cross-v" />
-
           <div className="oct-sonar-wave wave-1" />
           <div className="oct-sonar-wave wave-2" />
           <div className="oct-sonar-wave wave-3" />
-
           <div className="oct-sonar-sweep" />
 
           {/* Haqiqatda navbatda turgan boshqa o'yinchilar */}
@@ -68,39 +97,46 @@ export const OctagonRadarView: React.FC<Props> = ({ searchSeconds, queueStatus, 
             />
           ))}
 
-          <div className="oct-sonar-center">
-            <IconRadar size={36} className="oct-radar-icon-pulse" />
+          <div className="oct-sonar-center oct-sonar-me">
+            <OctagonAvatar name={myName} src={myAvatar} size={64} />
           </div>
         </div>
 
-        <div className="oct-radar-status-card">
-          <div className="oct-radar-timer-pill">
-            <span className="oct-banner-dot" />
-            <span className="oct-radar-time-text">{formatClock(searchSeconds)}</span>
-          </div>
-
-          <div className="oct-radar-title">
-            {isWideSearch ? t("octagon.radar.widening") : t("octagon.radar.searchingOpponent")}
-          </div>
-
-          <div className="oct-radar-desc">
-            {isWideSearch ? t("octagon.radar.wideningDesc") : t("octagon.radar.eloMatchDesc")}
-          </div>
-
-          {queueStatus && (
-            <div className="oct-radar-live" aria-live="polite">
-              <span className="oct-radar-live-dot" />
-              <span>{t("octagon.radar.onlineNow", { count: queueStatus.online })}</span>
-              <span className="oct-radar-live-sep">•</span>
-              <span>{t("octagon.radar.searchingNow", { count: queueStatus.searching })}</span>
-            </div>
-          )}
-
-          <button type="button" onClick={onCancel} className="oct-radar-cancel-btn">
-            <IconX size={18} stroke={2.5} />
-            <span>{t("octagon.radar.cancel")}</span>
-          </button>
+        <div className="oct-radar-timer-pill" aria-live="off">
+          <span className="oct-banner-dot" />
+          <span className="oct-radar-time-text">{formatClock(searchSeconds)}</span>
         </div>
+
+        <div className="oct-radar-stats" aria-live="polite">
+          <div className="oct-radar-stat">
+            <span className="oct-radar-stat-val gold">{range}</span>
+            <span className="oct-radar-stat-lbl">{t("octagon.radar.eloRange")}</span>
+          </div>
+          <div className="oct-radar-stat">
+            <span className="oct-radar-stat-val green">{queueStatus ? queueStatus.online : "—"}</span>
+            <span className="oct-radar-stat-lbl">{t("octagon.radar.online")}</span>
+          </div>
+          <div className="oct-radar-stat">
+            <span className="oct-radar-stat-val blue">{queueStatus ? queueStatus.searching : "—"}</span>
+            <span className="oct-radar-stat-lbl">{t("octagon.radar.searching")}</span>
+          </div>
+        </div>
+
+        {typeof botIn === "number" && (
+          <div className="oct-radar-note">
+            {botIn > 0 ? t("octagon.radar.botIn", { sec: botIn }) : t("octagon.radar.botNow")}
+          </div>
+        )}
+
+        <div className="oct-radar-tip" aria-live="polite">
+          <IconBulb size={20} className="oct-radar-tip-icon" aria-hidden="true" />
+          <span key={tipIdx}>{t(`octagon.radar.${TIP_KEYS[tipIdx]}`)}</span>
+        </div>
+
+        <button type="button" onClick={onCancel} className="oct-3d-btn red oct-radar-cancel">
+          <IconX size={20} stroke={2.6} />
+          <span>{t("octagon.radar.cancel")}</span>
+        </button>
       </div>
     </div>
   );

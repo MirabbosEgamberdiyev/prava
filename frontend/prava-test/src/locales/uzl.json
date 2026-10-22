@@ -4283,7 +4283,18 @@
       "widening": "Qidiruv doirasi kengaytirildi...",
       "wideningDesc": "Sizga mos raqib bir necha soniyada ulanadi",
       "onlineNow": "Onlayn: {{count}}",
-      "searchingNow": "Qidiruvda: {{count}}"
+      "searchingNow": "Qidiruvda: {{count}}",
+      "anyElo": "Istalgan",
+      "eloRange": "ELO oralig'i",
+      "online": "Onlayn",
+      "searching": "Qidiruvda",
+      "botIn": "Mos raqib topilmasa, {{sec}} soniyada mashq raqibi ulanadi",
+      "botNow": "Mashq raqibi ulanmoqda…",
+      "tipHotkeys": "Javobni 1–4 yoki A–D tugmalari bilan tezroq belgilang",
+      "tipAntiCheat": "350 ms dan tez berilgan javoblar hisobga olinmaydi — savolni o'qib javob bering",
+      "tipReconnect": "Internet uzilsa, 45 soniya ichida qaytsangiz jang davom etadi",
+      "tipDraw": "Ballar teng bo'lsa — durang: ikkalangizga +2 ELO",
+      "opponentCancelled": "Raqib qidiruvni bekor qildi — qidiruv davom etmoqda"
     },
     "leaderboard": {
       "title": "Peshqadamlar Jadvali",
@@ -4343,7 +4354,9 @@
       "shareText": "⚔️ Men bilan PRAVA ONLINE Oktagonida kuch sinash!\nMening taklif kodim: {{code}}\nO'yinga to'g'ridan-to'g'ri qo'shilish: {{url}}",
       "shareCopied": "Taklif matni nusxalandi — do'stingizga yuboring",
       "codeValidity": "Kod 1 soat amal qiladi. Do'stingiz kodni kiritishi bilan jang boshlanadi",
-      "codeNotFound": "Bunday kod topilmadi yoki muddati o'tgan"
+      "codeNotFound": "Bunday kod topilmadi yoki muddati o'tgan",
+      "challengeShort": "Chaqirish",
+      "challengeNamed": "{{name}}ni jangga chaqirish"
     },
     "arena": {
       "opponent": "Raqib",
@@ -4373,7 +4386,12 @@
       "reaction_fire": "Olov",
       "reaction_thumbs_up": "Layk",
       "reaction_mindblown": "Hayrat",
-      "reaction_laugh": "Kulgi"
+      "reaction_laugh": "Kulgi",
+      "leave": "Jangdan chiqish",
+      "leaveTitle": "Jangdan chiqasizmi?",
+      "leaveMessage": "Chiqsangiz, texnik mag'lubiyat yoziladi va raqib g'alaba qozonadi.",
+      "leaveStay": "Jangda qolish",
+      "leaveConfirm": "Chiqish"
     },
     "result": {
       "victory": "G'ALABA!",
@@ -4384,11 +4402,24 @@
       "loseDesc": "Tushkunlikka tushmang! Xatolarni o'rganing va qasos oling.",
       "eloChange": "Reyting o'zgarishi:",
       "waitingRevenge": "Raqib javobi kutilmoqda...",
-      "requestRevenge": "Qasos (Rematch) talab qilish",
+      "requestRevenge": "Qayta o'ynash (revansh)",
       "backToLobby": "Lobbiyga qaytish",
       "accuracy": "{{correct}}/{{total}} to'g'ri ({{percent}}% aniqlik)",
       "forfeitNote": "Raqib 45 soniya ichida qaytmadi — texnik natija",
-      "newRating": "Yangi reyting:"
+      "newRating": "Yangi reyting:",
+      "correctLbl": "To'g'ri",
+      "accuracyLbl": "Aniqlik",
+      "timeLbl": "Vaqt",
+      "eloFloor": "Reyting 0 dan pastga tushmaydi, shuning uchun ELO o'zgarmadi",
+      "rematchOffered": "{{name}} revansh so'ramoqda!",
+      "acceptRematch": "Revanshni qabul qilish",
+      "rematchTimeout": "Raqib 30 soniya ichida javob bermadi",
+      "rematchBusy": "Raqib hozir boshqa jangda",
+      "rematchOffline": "Raqib o'yindan chiqib ketgan",
+      "askAgain": "Yana so'rash",
+      "forfeitSelfLeft": "Siz jangni tark etdingiz — texnik mag'lubiyat",
+      "forfeitSelfTimeout": "Siz 45 soniya ichida qaytmadingiz — texnik mag'lubiyat",
+      "forfeitOppLeft": "Raqib jangni tark etdi — texnik g'alaba"
     },
     "lobby": {
       "guest": "Mehmon O'yinchi",
@@ -4417,7 +4448,13 @@
       "historyDesc": "Oldingi janglaringiz va ELO o'zgarishlari",
       "title": "Oktagon",
       "defaultUser": "Haydovchi",
-      "loading": "Statistika yuklanmoqda…"
+      "loading": "Statistika yuklanmoqda…",
+      "matches": "Janglar",
+      "losses": "Mag'lubiyat",
+      "streakChip": "{{count}} seriya",
+      "leagueLadder": "Liga zinapoyasi",
+      "toNextLeague": "{{league}} ligasigacha {{elo}} ELO qoldi",
+      "topLeague": "Siz eng yuqori ligadasiz 👑"
     },
     "rank": {
       "brilliant": "Olmos",
@@ -4469,7 +4506,12 @@
       "prev": "Oldingi",
       "next": "Keyingi",
       "emptyCta": "Siz hali janglarda qatnashmadingiz. Birinchi jangni boshlang!",
-      "startFirst": "Birinchi jangni boshlash"
+      "startFirst": "Birinchi jangni boshlash",
+      "filterALL": "Barchasi",
+      "filterWIN": "G'alaba",
+      "filterLOSS": "Mag'lubiyat",
+      "filterDRAW": "Durang",
+      "emptyFiltered": "Bu bo'limda hali jang yo'q"
     },
     "challenge": {
       "incomingTitle": "Jangga Chorlov!",
@@ -4508,16 +4550,28 @@
       "otherMethods": "Telefon yoki boshqa usul bilan kirish"
     },
     "modes": {
-      "random": "Random 1 vs 1",
-      "randomDesc": "Tizim teng darajadagi raqibni avtomatik topadi",
+      "random": "Tezkor jang",
+      "randomDesc": "Tasodifiy raqib bilan 1v1 bellashuv",
       "group": "Guruhli jang",
-      "groupDesc": "Xona oching yoki kod orqali guruhga qo'shiling",
+      "groupDesc": "8 tagacha do'st bilan xona oching",
       "friend": "Do'st bilan 1 vs 1",
-      "friendDesc": "Sherigingizni toping va duelga chorlang"
+      "friendDesc": "4 xonali PIN yoki havola bilan chaqiring"
     },
     "disconnected": {
       "title": "Aloqa uzildi",
       "message": "45 soniya ichida serverga qayta ulanib bo'lmadi. Jang natijasi serverda hisoblanadi — uni janglar tarixida ko'rasiz."
+    },
+    "review": {
+      "title": "Jang tahlili",
+      "open": "Jang tahlili",
+      "summary": "{{total}} ta savoldan {{correct}} tasiga to'g'ri javob",
+      "right": "To'g'ri",
+      "wrong": "Xato",
+      "skipped": "Javob berilmagan",
+      "notAnswered": "Javob berilmagan",
+      "yourAnswer": "Sizning javobingiz:",
+      "correctAnswer": "To'g'ri javob:",
+      "questionN": "{{n}}-savol"
     }
   },
   "devices": {

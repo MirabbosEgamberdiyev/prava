@@ -1,6 +1,6 @@
-import React, { useEffect, useCallback } from "react";
-import { Badge, Text } from "@mantine/core";
-import { IconFlame, IconClock, IconBolt, IconWifiOff } from "@tabler/icons-react";
+import React, { useEffect, useCallback, useState } from "react";
+import { Badge, Modal, Text } from "@mantine/core";
+import { IconFlame, IconClock, IconBolt, IconWifiOff, IconDoorExit } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import type { MatchOpponent, OctagonQuestion, OpponentProgress, FlyingEmoji, OctagonState, QuestionOptionItem } from "../types";
 import { OctagonAvatar } from "./OctagonAvatar";
@@ -8,10 +8,15 @@ import { OctagonRankBadge } from "./OctagonRankBadge";
 import { OctagonQuestionImage } from "./OctagonQuestionImage";
 import { safeName } from "../rank";
 import { formatClock, type TrackCell } from "../arena";
+import { OctagonPreloadBar } from "./OctagonPreloadBar";
 import "../octagon.css";
+
+const NO_PATHS: Array<string | undefined> = [];
 
 interface Props {
   state: OctagonState;
+  /** VS ekrani: jang savollari rasmlari (oldindan yuklanish chizig'i uchun). */
+  preloadPaths?: Array<string | undefined>;
   countdown: number;
   remainingTimeSec: number;
   myScore: number;
@@ -39,6 +44,8 @@ interface Props {
   flyingEmojis: FlyingEmoji[];
   onSubmitAnswer: (questionId: number, optionIndex: number) => void;
   onSendReaction: (emojiId: string) => void;
+  /** Jangni tark etish — server texnik mag'lubiyat yozadi (tasdiqdan keyin). */
+  onForfeit?: () => void;
 }
 
 const HOTKEY_LABELS = ["A", "B", "C", "D"];
@@ -52,6 +59,7 @@ const REACTION_EMOJIS = [
 
 export const OctagonArenaView: React.FC<Props> = ({
   state,
+  preloadPaths = NO_PATHS,
   countdown,
   remainingTimeSec,
   myScore,
@@ -74,8 +82,10 @@ export const OctagonArenaView: React.FC<Props> = ({
   flyingEmojis,
   onSubmitAnswer,
   onSendReaction,
+  onForfeit,
 }) => {
   const { t, i18n } = useTranslation();
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const currentLang = i18n.language || "uzl";
 
   const getQuestionText = (q: OctagonQuestion) => {
@@ -159,14 +169,9 @@ export const OctagonArenaView: React.FC<Props> = ({
           </div>
 
           {state === "MATCH_FOUND" ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 24 }}>
-              <div className="oct-spinner" />
-              <Text size="lg" fw={800} style={{ color: "#34d399" }}>
-                {t("octagon.arena.preloadingTitle", "Raqib topildi!")}
-              </Text>
-              <Text size="sm" style={{ color: "#94a3b8", marginTop: 4 }}>
-                {t("octagon.arena.preloadingDesc", "Savollar va rasmlar oldindan yuklanmoqda (8 soniya)...")}
-              </Text>
+            <div className="oct-vs-preload">
+              <div className="oct-vs-found">{t("octagon.arena.preloadingTitle", "Raqib topildi!")}</div>
+              <OctagonPreloadBar paths={preloadPaths} />
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -395,6 +400,42 @@ export const OctagonArenaView: React.FC<Props> = ({
           </button>
         ))}
       </div>
+
+      {onForfeit && (
+        <button type="button" className="oct-leave-btn" onClick={() => setConfirmLeave(true)}>
+          <IconDoorExit size={16} aria-hidden="true" />
+          <span>{t("octagon.arena.leave")}</span>
+        </button>
+      )}
+
+      <Modal
+        opened={confirmLeave}
+        onClose={() => setConfirmLeave(false)}
+        closeButtonProps={{ "aria-label": t("common.close") }}
+        centered
+        radius="lg"
+        size="sm"
+        overlayProps={{ backgroundOpacity: 0.7, blur: 4 }}
+        classNames={{ content: "oct-modal-dark", header: "oct-modal-dark-header", close: "oct-modal-dark-close" }}
+        title={<span className="oct-modal-title">{t("octagon.arena.leaveTitle")}</span>}
+      >
+        <p className="oct-leave-msg">{t("octagon.arena.leaveMessage")}</p>
+        <div className="oct-leave-actions">
+          <button type="button" className="oct-3d-btn green oct-leave-stay" onClick={() => setConfirmLeave(false)} data-autofocus>
+            {t("octagon.arena.leaveStay")}
+          </button>
+          <button
+            type="button"
+            className="oct-3d-btn red oct-leave-confirm"
+            onClick={() => {
+              setConfirmLeave(false);
+              onForfeit?.();
+            }}
+          >
+            {t("octagon.arena.leaveConfirm")}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };

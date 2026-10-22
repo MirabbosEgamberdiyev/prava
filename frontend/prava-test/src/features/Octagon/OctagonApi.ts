@@ -46,8 +46,10 @@ export const OctagonApi = {
     return res.data?.data || null;
   },
 
-  async getHistory(page = 0, size = 10) {
+  /** result: WIN / LOSS / DRAW — filtr serverda (sahifalash to'g'ri ishlaydi); ALL yoki bo'sh — barchasi. */
+  async getHistory(page = 0, size = 10, result?: "ALL" | "WIN" | "LOSS" | "DRAW") {
     const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (result && result !== "ALL") params.append("result", result);
     const res = await api.get(`/api/v1/octagon/history?${params.toString()}`);
     return res.data?.data || { content: [] };
   },

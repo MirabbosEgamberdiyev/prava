@@ -215,9 +215,16 @@ async function main() {
   check("M-16", "Stats persisted (P1 win, P2 loss)", s1.wins >= 1 && s2.losses >= 1 && s1.eloRating >= e1.myDeltaElo, `p1 elo=${s1.eloRating} w=${s1.wins}; p2 l=${s2.losses}`);
   const h1 = (await http("GET", "/api/v1/octagon/history", { token: u1.token })).json.data.content;
   check("M-17", "History lists the match as WIN", h1[0]?.matchId === f1.matchId && h1[0]?.result === "WIN", JSON.stringify(h1[0]).slice(0, 120));
+  check("M-18", "Result data: time spent + 10-question review (answer key only after the end)", typeof e1.myTimeSec === "number" && Array.isArray(e1.review) && e1.review.length === 10, JSON.stringify({ t: e1.myTimeSec, n: (e1.review || []).length }));
+  check("M-18b", "Review matches the DB answer key and the player's own answers", e1.review.every((x) => x.correctIndex === ANSWERS[String(x.questionId)]) && e1.review.every((x) => x.correct === true) && e2.review.filter((x) => x.correct).length === 3, `p2 correct=${e2.review.filter((x) => x.correct).length}`);
+  const winsOnly = (await http("GET", "/api/v1/octagon/history?result=WIN", { token: u1.token })).json.data.content;
+  const lossesOnly = (await http("GET", "/api/v1/octagon/history?result=LOSS", { token: u2.token })).json.data.content;
+  check("H-2", "History filter tabs are applied by the server (wins / losses)", winsOnly.length > 0 && winsOnly.every((h) => h.result === "WIN") && lossesOnly.length > 0 && lossesOnly.every((h) => h.result === "LOSS"), `w=${winsOnly.length} l=${lossesOnly.length}`);
 
   // ── Rematch (exactly once) + reconnect + forfeit ─────────────────────
   p1.send("request_revenge", { matchId: f1.matchId });
+  const offer = await p2.next("revenge_requested", 3000).catch(() => null);
+  check("R-0", "The opponent is told about the rematch request (revenge_requested)", offer?.matchId === f1.matchId, JSON.stringify(offer));
   p1.send("request_revenge", { matchId: f1.matchId });
   p2.send("request_revenge", { matchId: f1.matchId });
   p2.send("request_revenge", { matchId: f1.matchId });
@@ -259,6 +266,38 @@ async function main() {
   await playBoth(p1, p2, d1.matchId, d1.questions, { aCorrect: 4, bCorrect: 4 });
   const de = await p1.next("match_ended", 8000);
   check("C-4", "Equal score duel ends in a draw", de.isDraw === true && de.finalScores.me === de.finalScores.opponent, JSON.stringify(de.finalScores));
+  await p2.next("match_ended", 3000);
+
+  // ── Explicit forfeit (mobile Back → "Chiqish") ──────────────────────
+  p1.send("send_challenge", { targetUserId: u2.id });
+  const incF = await p2.next("challenge_received", 4000);
+  p2.send("accept_challenge", { challengeId: incF.challengeId });
+  const ff1 = await p1.next("match_found", 5000);
+  await p2.next("match_found", 3000);
+  await p1.next("match_started", 13000);
+  const ffAt = Date.now();
+  p2.send("forfeit_match", { matchId: ff1.matchId });
+  const ffEnd = await p1.next("match_ended", 4000);
+  const ffMs = Date.now() - ffAt;
+  check("F-1", "Explicit forfeit ends the match at once (no 45 s wait); the opponent wins", ffEnd.forfeit === true && ffEnd.winnerId === u1.id && ffMs < 3000, `${ffMs} ms`);
+  const ffLeaver = await p2.next("match_ended", 3000);
+  check("F-2", "Forfeit reason: the winner sees LEFT by the opponent, the leaver sees their own forfeit", ffEnd.forfeitReason === "LEFT" && ffEnd.forfeitByMe === false && ffLeaver.forfeitByMe === true, JSON.stringify({ w: [ffEnd.forfeitReason, ffEnd.forfeitByMe], l: [ffLeaver.forfeitReason, ffLeaver.forfeitByMe] }));
+
+  // ── Cancel race: paired before the cancel arrived → match dropped, rival re-queued ─
+  // earlier matches left countdown/start events in the buffers — the X-2 check must only see new ones
+  for (const c of [p1, p2]) for (const ev of ["countdown_tick", "match_started", "match_found", "queue_status"]) c.drain(ev);
+  p1.send("join_queue", {});
+  p2.send("join_queue", {});
+  const cr1 = await p1.next("match_found", 15000);
+  await p2.next("match_found", 3000);
+  p1.send("leave_queue", {});
+  const cx1 = await p1.next("match_cancelled", 3000).catch(() => null);
+  const cx2 = await p2.next("match_cancelled", 3000).catch(() => null);
+  p2.send("leave_queue", {});
+  check("X-1", "Cancel after pairing (before start) drops the match; the rival is re-queued", cr1.gameType === "RANKED_QUEUE" && cx1?.reason === "SEARCH_CANCELLED" && cx2?.reason === "OPPONENT_CANCELLED" && cx2?.requeued === true, JSON.stringify({ cx1, cx2 }));
+  await sleep(11500);
+  check("X-2", "The cancelled match never starts (no countdown, no match_started, no new match)", p1.drain("countdown_tick").length === 0 && p1.drain("match_started").length === 0 && p2.drain("match_started").length === 0 && p2.drain("match_found").length === 0);
+  for (const c of [p1, p2]) c.drain("queue_status");
 
   // ── Invite link / QR / 4-digit code (pravaonline.uz/oktagon?code=1234) ─
   const inv = (await http("POST", "/api/v1/octagon/challenge/create", { token: u1.token })).json.data;
@@ -323,9 +362,10 @@ async function main() {
   p2.close();
   await sleep(300);
   const queuedAt = Date.now();
+  p1.drain("queue_status");
   p1.send("join_queue", {});
   const qst = await p1.next("queue_status", 4000).catch(() => null);
-  check("Q-1", "Radar gets real queue_status (others searching, players online)", qst && qst.searching === 0 && qst.online >= 1, JSON.stringify(qst));
+  check("Q-1", "Radar gets real queue_status (searching, online, ELO window ±30, bot countdown)", qst && qst.searching === 0 && qst.online >= 1 && qst.eloRange === 30 && typeof qst.elo === "number" && qst.botInSec > 0 && qst.botInSec <= 7, JSON.stringify(qst));
   const bf = await p1.next("match_found", 15000);
   const waited = (Date.now() - queuedAt) / 1000;
   check("B-1", "Bot opponent after ~7 s without humans (never an endless search)", String(bf.opponent.id).startsWith("bot_") && waited < 11, `${bf.opponent.id} after ${waited.toFixed(1)} s`);

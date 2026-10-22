@@ -120,7 +120,8 @@ public class OctagonController {
     public ResponseEntity<ApiResponse<Page<MatchHistoryEntry>>> getHistory(
             @AuthenticationPrincipal CustomUserDetails principal,
             @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size) {
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "result", required = false) String result) {
 
         // Faqat o'z tarixi (avval ?userId= bilan har kimning raqiblari va natijalarini ko'rish mumkin edi)
         String caller = resolveCaller(principal);
@@ -128,7 +129,8 @@ public class OctagonController {
             return ResponseEntity.ok(ApiResponse.success(new PageImpl<>(List.of(), PageRequest.of(0, 1), 0)));
         }
 
-        Page<MatchHistoryEntry> history = octagonService.getUserHistory(caller, page, size);
+        // result=WIN|LOSS|DRAW — tarix filtri (bazada, sahifalash bilan)
+        Page<MatchHistoryEntry> history = octagonService.getUserHistory(caller, page, size, result);
         return ResponseEntity.ok(ApiResponse.success(history));
     }
 

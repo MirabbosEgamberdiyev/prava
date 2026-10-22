@@ -38,6 +38,7 @@ export const OctagonAuthGateModal: React.FC<Props> = ({ opened, returnUrl, onLog
     <Modal
       opened={opened}
       onClose={later}
+      closeButtonProps={{ "aria-label": t("common.close") }}
       centered
       radius="lg"
       padding="xl"

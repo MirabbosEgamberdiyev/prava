@@ -46,6 +46,7 @@ export const OctagonRulesModal: React.FC<Props> = ({ opened, onConfirm, onClose 
     <Modal
       opened={opened}
       onClose={onClose}
+      closeButtonProps={{ "aria-label": t("common.close") }}
       centered
       radius="lg"
       padding="lg"

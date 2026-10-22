@@ -35,8 +35,6 @@ import { OctagonApi } from "../OctagonApi";
 import type { InviteJoinState, OutgoingChallenge, UserSearchResult } from "../types";
 import { OctagonPinInput } from "./OctagonPinInput";
 import { showToast } from "../../../utils/notificationUtils";
-import { OctagonOpponentRadar } from "./OctagonOpponentRadar";
-import { RADAR_MAX } from "../layout";
 import { OctagonAvatar } from "./OctagonAvatar";
 import { OctagonRankBadge } from "./OctagonRankBadge";
 import { safeName } from "../rank";
@@ -83,7 +81,6 @@ export const OctagonDuelModal: React.FC<Props> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [searched, setSearched] = useState(false);
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
 
@@ -95,7 +92,6 @@ export const OctagonDuelModal: React.FC<Props> = ({
       setSearchQuery("");
       setSearchResults([]);
       setSearched(false);
-      setSelectedId(null);
       setErrorMessage(null);
       onResetInviteJoin?.();
       return;
@@ -143,11 +139,9 @@ export const OctagonDuelModal: React.FC<Props> = ({
     if (q.length < 2) return;
     setIsSearching(true);
     setErrorMessage(null);
-    setSelectedId(null);
     try {
       const results: UserSearchResult[] = await OctagonApi.searchUsers(q);
       setSearchResults(results);
-      if (results.length === 1) setSelectedId(results[0].userId);
     } catch {
       setErrorMessage(t("octagon.duel.searchError"));
       setSearchResults([]);
@@ -156,9 +150,6 @@ export const OctagonDuelModal: React.FC<Props> = ({
       setIsSearching(false);
     }
   };
-
-  const selected = searchResults.find((u) => u.userId === selectedId) || null;
-  const overflow = searchResults.slice(RADAR_MAX);
 
   const duelUrl = inviteCode ? inviteUrl || `${INVITE_BASE_URL}${inviteCode}` : "";
   const shareText = inviteCode ? t("octagon.duel.shareText", { code: inviteCode, url: duelUrl }) : "";
@@ -258,6 +249,7 @@ export const OctagonDuelModal: React.FC<Props> = ({
     <Modal
       opened={opened}
       onClose={onClose}
+      closeButtonProps={{ "aria-label": t("common.close") }}
       title={
         <Group gap="xs">
           <ThemeIcon color="grape" variant="light" size="lg" radius="xl">
@@ -273,17 +265,7 @@ export const OctagonDuelModal: React.FC<Props> = ({
       padding="lg"
       size="lg"
       overlayProps={{ backgroundOpacity: 0.65, blur: 4 }}
-      styles={{
-        content: {
-          backgroundColor: "#0f172a",
-          border: "1px solid rgba(148, 163, 184, 0.15)",
-          color: "#f8fafc",
-        },
-        header: {
-          backgroundColor: "#0f172a",
-          color: "#f8fafc",
-        },
-      }}
+      classNames={{ content: "oct-modal-dark", header: "oct-modal-dark-header", close: "oct-modal-dark-close" }}
     >
       {outgoing ? (
         renderOutgoing(outgoing)
@@ -331,71 +313,42 @@ export const OctagonDuelModal: React.FC<Props> = ({
                     <Loader color="grape" size="sm" />
                   </Center>
                 ) : searchResults.length > 0 ? (
-                  <>
-                    {searchResults.length > 1 && (
-                      <Text size="xs" c="dimmed" ta="center">
-                        {t("octagon.duel.pickHint", { count: searchResults.length })}
-                      </Text>
-                    )}
-                    <OctagonOpponentRadar players={searchResults} selectedId={selectedId} onSelect={setSelectedId} />
-
-                    {overflow.length > 0 && (
-                      <div className="oct-pick-overflow">
-                        {overflow.map((u) => {
-                          const name = safeName(u.displayName, t("octagon.lobby.defaultUser"));
-                          return (
-                            <button
-                              key={u.userId}
-                              type="button"
-                              className={`oct-pick-chip ${u.userId === selectedId ? "selected" : ""}`}
-                              onClick={() => setSelectedId(u.userId)}
-                            >
-                              <OctagonAvatar name={name} src={u.avatarUrl} size={24} />
-                              <span>{name}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {selected ? (
-                      <div className="oct-pick-card">
-                        <OctagonAvatar
-                          name={safeName(selected.displayName, t("octagon.lobby.defaultUser"))}
-                          src={selected.avatarUrl}
-                          size={64}
-                          ring="#e879f9"
-                        />
-                        <div className="oct-pick-card-info">
-                          <Text fw={800} size="md">
-                            {safeName(selected.displayName, t("octagon.lobby.defaultUser"))}
-                          </Text>
-                          <Group gap={6} mt={2}>
-                            <Text size="xs" c="dimmed">
-                              {selected.eloRating} ELO
-                            </Text>
-                            <OctagonRankBadge rank={selected.rank} elo={selected.eloRating} size="xs" />
-                          </Group>
-                          <Text size="xs" mt={2} c={canChallenge(selected) ? "teal" : "dimmed"}>
-                            ● {statusText(selected)}
-                          </Text>
-                        </div>
-                        <button
-                          type="button"
-                          className="oct-3d-btn purple oct-pick-cta"
-                          disabled={!canChallenge(selected)}
-                          onClick={() => onSendChallenge(selected)}
-                        >
-                          <IconSwords size={20} stroke={2.5} />
-                          <span>{t("octagon.duel.challengeBtn")}</span>
-                        </button>
-                      </div>
-                    ) : (
-                      <Text size="xs" c="dimmed" ta="center">
-                        {t("octagon.duel.tapToSelect")}
-                      </Text>
-                    )}
-                  </>
+                  // Bir xil ismli o'yinchilar ID orqali farqlanadi; har qatorda — o'z "Chaqirish" tugmasi
+                  <ul className="oct-user-list" aria-label={t("octagon.duel.tabSearch")}>
+                    {searchResults.map((u) => {
+                      const name = safeName(u.displayName, t("octagon.lobby.defaultUser"));
+                      const ok = canChallenge(u);
+                      return (
+                        <li key={u.userId} className="oct-user-item">
+                          <span className="oct-user-item-avatar">
+                            <OctagonAvatar name={name} src={u.avatarUrl} size={44} />
+                            <span className={`oct-presence ${ok ? "on" : "off"}`} aria-hidden="true" />
+                          </span>
+                          <div className="oct-user-item-info">
+                            <div className="oct-user-item-name">
+                              <span className="oct-user-item-text">{name}</span>
+                              <span className="oct-user-id">#{u.userId}</span>
+                            </div>
+                            <div className="oct-user-item-meta">
+                              <span>{u.eloRating} ELO</span>
+                              <OctagonRankBadge rank={u.rank} elo={u.eloRating} size="xs" />
+                              <span className={`oct-user-status ${ok ? "on" : ""}`}>{statusText(u)}</span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="oct-3d-btn purple oct-invite-btn"
+                            disabled={!ok}
+                            onClick={() => onSendChallenge(u)}
+                            aria-label={t("octagon.duel.challengeNamed", { name })}
+                          >
+                            <IconSwords size={16} stroke={2.6} />
+                            <span>{t("octagon.duel.challengeShort")}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 ) : searched ? (
                   <Center py="sm">
                     <Text size="xs" c="dimmed">

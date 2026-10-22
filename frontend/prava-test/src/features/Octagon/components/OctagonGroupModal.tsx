@@ -74,6 +74,7 @@ export const OctagonGroupModal: React.FC<Props> = ({
     <Modal
       opened={opened}
       onClose={onClose}
+      closeButtonProps={{ "aria-label": t("common.close") }}
       title={
         <Group gap="xs">
           <ThemeIcon color="cyan" variant="light" size="lg" radius="xl">
@@ -89,17 +90,7 @@ export const OctagonGroupModal: React.FC<Props> = ({
       padding="lg"
       size="md"
       overlayProps={{ backgroundOpacity: 0.65, blur: 4 }}
-      styles={{
-        content: {
-          backgroundColor: "#0f172a",
-          border: "1px solid rgba(148, 163, 184, 0.15)",
-          color: "#f8fafc",
-        },
-        header: {
-          backgroundColor: "#0f172a",
-          color: "#f8fafc",
-        },
-      }}
+      classNames={{ content: "oct-modal-dark", header: "oct-modal-dark-header", close: "oct-modal-dark-close" }}
     >
       <Stack gap="md">
         {errorMessage && (

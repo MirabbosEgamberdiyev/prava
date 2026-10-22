@@ -20,6 +20,8 @@ export const OCTAGON_CONFIG = {
   REACTION_MUTE_MS: 8000,            // …8 soniya reaksiyalar o'chadi (o'zimniki ham, raqibniki ham)
   ANSWER_INPUT_GUARD_MS: 350,        // Savol chiqqanidan 350 ms ichidagi bosish hisobga olinmaydi (server anti-cheat bilan bir xil)
   RADAR_WIDEN_AFTER_SEC: 4,          // Server 3 s dan keyin ELO oralig'ini kengaytiradi, 7 s da bot ulanadi
+  REMATCH_WAIT_SEC: 30,              // Revansh so'rovi javobsiz qolsa — "Raqib javob bermadi"
+  STALE_MATCH_IGNORE_MS: 10000,      // Qidiruv bekor qilingandan keyin kelgan eskirgan navbat jangi e'tiborsiz qoldiriladi
 
   // Tarmoq va Qayta Ulanish (Resilience)
   WS_HEARTBEAT_INTERVAL_MS: 15000,   // Ping-pong intervali (15 soniya)
@@ -131,8 +133,16 @@ export interface MatchResultData {
   totalQuestions?: number;
   /** Jangdan keyingi yangi ELO. */
   myNewElo?: number;
+  /** Sarflangan vaqt (soniya): oxirgi javobgacha yoki jang tugaguncha. */
+  myTimeSec?: number;
+  /** Jang tahlili — faqat jang tugagach server yuboradi. */
+  review?: ReviewItem[];
   /** Raqib uzilib qaytmadi — texnik g'alaba/mag'lubiyat. */
   forfeit?: boolean;
+  /** Texnik natija menga yozildimi (men chiqdim / men qaytmadim). */
+  forfeitByMe?: boolean;
+  /** LEFT — "Chiqish" bosildi; DISCONNECT — 45 s ichida qaytmadi. */
+  forfeitReason?: "LEFT" | "DISCONNECT";
 }
 
 /** Radar: server har 2 s da yuboradigan real navbat holati. */
@@ -141,7 +151,31 @@ export interface QueueStatus {
   searching: number;
   /** Oktagonga ulangan o'yinchilar. */
   online: number;
+  /** Navbatda kutilgan soniyalar (server soati). */
+  waitSec?: number;
+  /** Serverdagi joriy ELO. */
+  elo?: number;
+  /** Hozirgi qidiruv oralig'i (±); null — har qanday raqib. */
+  eloRange?: number | null;
+  /** Mos odam topilmasa, mashq raqibi ulanishiga qolgan soniya. */
+  botInSec?: number;
 }
+
+/** Jang tahlili qatori: mening javobim va to'g'ri variant (jang tugagach). */
+export interface ReviewItem {
+  questionId: number;
+  myIndex: number | null;
+  correctIndex: number | null;
+  correct: boolean;
+}
+
+/** Revansh holati: kutilmoqda / raqib taklif qildi / imkonsiz / javobsiz. */
+export interface RematchState {
+  status: "idle" | "waiting" | "offered" | "unavailable" | "timeout";
+  reason?: string;
+}
+
+export type HistoryFilter = "ALL" | "WIN" | "LOSS" | "DRAW";
 
 export interface UserStats {
   userId: string;

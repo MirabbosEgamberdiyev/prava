@@ -175,6 +175,47 @@ public class ActiveMatch {
         return player1Finished && player2Finished;
     }
 
+    /**
+     * "Jang tahlili": jang TUGAGANDAN keyin o'yinchiga savollar tartibida o'z javobi va to'g'ri variant.
+     * Jang davomida to'g'ri javob hech qachon yuborilmaydi (anti-cheat) — tugamagan jang uchun bo'sh ro'yxat.
+     */
+    public List<Map<String, Object>> reviewFor(String userId) {
+        if (!isEnded) return List.of();
+        Map<Long, Integer> answers = userId.equals(player1Id) ? player1Answers
+                : userId.equals(player2Id) ? player2Answers : null;
+        if (answers == null) return List.of();
+        List<Map<String, Object>> out = new java.util.ArrayList<>();
+        for (Long qid : questionIds) {
+            Integer mine = answers.get(qid);
+            Integer correct = correctOptions.get(qid);
+            Map<String, Object> row = new java.util.HashMap<>();
+            row.put("questionId", qid);
+            row.put("myIndex", mine);
+            row.put("correctIndex", correct);
+            row.put("correct", mine != null && mine.equals(correct));
+            out.add(row);
+        }
+        return out;
+    }
+
+    /**
+     * Natija ekrani uchun o'yinchi sarflagan vaqt (soniya): hamma savolga javob bergan bo'lsa — oxirgi
+     * javobgacha, aks holda jang tugaguncha. Jang boshlanmagan bo'lsa — null.
+     */
+    public Integer secondsSpent(String userId, Instant end) {
+        if (startedAt == null) return null;
+        Map<Long, Instant> times = userId.equals(player1Id) ? player1AnswerTimes
+                : userId.equals(player2Id) ? player2AnswerTimes : null;
+        if (times == null) return null;
+        Instant until = end != null ? end : Instant.now();
+        if (times.size() >= questionIds.size()) {
+            Instant last = startedAt;
+            for (Instant t : times.values()) if (t.isAfter(last)) last = t;
+            until = last;
+        }
+        return (int) Math.max(0, java.time.Duration.between(startedAt, until).getSeconds());
+    }
+
     public OctagonSession getOpponentSession(String userId) {
         if (userId.equals(player1Id)) {
             return p2Session;

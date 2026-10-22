@@ -1,3 +1,67 @@
+/* ===================================================================
+   OKTAGON DESIGN TOKENS — yagona manba (web + desktop). Ranglar ma'noli:
+   yashil = asosiy jang amali / ijobiy, ko'k = guruh / ma'lumot, binafsha = do'st dueli,
+   oltin = ELO / liga / peshqadamlar, qizil = xato / mag'lubiyat / xavfli amal.
+   =================================================================== */
+:root {
+  --oct-bg: #060b13;
+  --oct-surface: #0f172a;
+  --oct-surface-2: #1e293b;
+  --oct-surface-glass: rgba(15, 23, 42, 0.85);
+  --oct-border: rgba(148, 163, 184, 0.16);
+  --oct-border-strong: #334155;
+
+  --oct-text: #f8fafc;
+  --oct-text-2: #e2e8f0;
+  --oct-text-3: #cbd5e1;
+  --oct-muted: #94a3b8;
+  --oct-faint: #64748b;
+
+  --oct-green: #10b981;
+  --oct-green-2: #34d399;
+  --oct-green-edge: #047857;
+  --oct-blue: #38bdf8;
+  --oct-blue-2: #0ea5e9;
+  --oct-blue-edge: #0369a1;
+  --oct-purple: #a855f7;
+  --oct-purple-2: #e879f9;
+  --oct-purple-edge: #7e22ce;
+  --oct-gold: #fbbf24;
+  --oct-gold-2: #f59e0b;
+  --oct-gold-edge: #b45309;
+  --oct-red: #ef4444;
+  --oct-red-2: #f87171;
+  --oct-red-edge: #b91c1c;
+
+  --oct-r-sm: 10px;
+  --oct-r-md: 14px;
+  --oct-r-lg: 20px;
+  --oct-r-xl: 24px;
+  --oct-r-pill: 999px;
+
+  --oct-s-1: 4px;
+  --oct-s-2: 8px;
+  --oct-s-3: 12px;
+  --oct-s-4: 16px;
+  --oct-s-5: 20px;
+  --oct-s-6: 24px;
+
+  --oct-fs-xs: 12px;
+  --oct-fs-sm: 13.5px;
+  --oct-fs-md: 15px;
+  --oct-fs-lg: 18px;
+  --oct-fs-xl: 22px;
+  --oct-fs-2xl: 30px;
+
+  --oct-dur-fast: 120ms;
+  --oct-dur: 200ms;
+  --oct-dur-slow: 400ms;
+
+  --oct-z-banner: 50;
+  --oct-z-overlay: 100;
+  --oct-touch: 48px;
+}
+
 /* ==========================================================================
    OCTAGON 1v1 PvP Real-Time Arena Styles (Osonprava / Duolingo 3D Standard)
    100% Native CSS — Zero Tailwind Dependency for Web & Desktop
@@ -7,8 +71,8 @@
 .oct-page-wrapper {
   min-height: calc(100vh - 70px);
   width: 100%;
-  background: #060b13;
-  color: #f8fafc;
+  background: var(--oct-bg);
+  color: var(--oct-text);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -77,8 +141,8 @@
   font-size: 11px;
   font-weight: 900;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  color: #0f172a;
+  background: linear-gradient(135deg, var(--oct-gold) 0%, var(--oct-gold-2) 100%);
+  color: var(--oct-surface);
   padding: 2px 7px;
   border-radius: 6px;
   letter-spacing: 0.5px;
@@ -87,7 +151,7 @@
 
 .oct-header-tagline {
   font-size: 12.5px;
-  color: #94a3b8;
+  color: var(--oct-muted);
   margin-top: 2px;
   text-align: center;
 }
@@ -104,7 +168,7 @@
   border-radius: 12px;
   background: rgba(30, 41, 59, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
+  color: var(--oct-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -135,13 +199,13 @@
 
 .oct-league-badge.bronze {
   background: rgba(217, 119, 6, 0.18);
-  color: #fbbf24;
+  color: var(--oct-gold);
   border: 1px solid rgba(217, 119, 6, 0.4);
 }
 
 .oct-league-badge.silver {
   background: rgba(148, 163, 184, 0.18);
-  color: #e2e8f0;
+  color: var(--oct-text-2);
   border: 1px solid rgba(148, 163, 184, 0.4);
 }
 
@@ -190,8 +254,8 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: #1e293b;
-  border: 2.5px solid #10b981;
+  background: var(--oct-surface-2);
+  border: 2.5px solid var(--oct-green);
   box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
   display: flex;
   align-items: center;
@@ -219,7 +283,7 @@
 .oct-user-edit-btn {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--oct-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -240,14 +304,14 @@
   text-transform: uppercase;
   font-weight: 800;
   letter-spacing: 0.5px;
-  color: #94a3b8;
+  color: var(--oct-muted);
 }
 
 .oct-rating-num {
   font-size: 24px;
   font-weight: 900;
   font-family: monospace;
-  color: #fbbf24;
+  color: var(--oct-gold);
   letter-spacing: -0.5px;
   line-height: 1.1;
   margin-top: 2px;
@@ -255,7 +319,7 @@
 
 .oct-rating-num span {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-weight: 600;
   margin-left: 2px;
 }
@@ -310,10 +374,10 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.oct-stat-icon-wrap.star { background: rgba(251, 191, 36, 0.18); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); }
-.oct-stat-icon-wrap.trophy { background: rgba(16, 185, 129, 0.18); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); }
-.oct-stat-icon-wrap.chart { background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); }
-.oct-stat-icon-wrap.flame { background: rgba(239, 68, 68, 0.18); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.35); }
+.oct-stat-icon-wrap.star { background: rgba(251, 191, 36, 0.18); color: var(--oct-gold); border: 1px solid rgba(251, 191, 36, 0.35); }
+.oct-stat-icon-wrap.trophy { background: rgba(16, 185, 129, 0.18); color: var(--oct-green); border: 1px solid rgba(16, 185, 129, 0.35); }
+.oct-stat-icon-wrap.chart { background: rgba(56, 189, 248, 0.18); color: var(--oct-blue); border: 1px solid rgba(56, 189, 248, 0.35); }
+.oct-stat-icon-wrap.flame { background: rgba(239, 68, 68, 0.18); color: var(--oct-red); border: 1px solid rgba(239, 68, 68, 0.35); }
 
 .oct-stat-val {
   font-size: 19px;
@@ -323,15 +387,15 @@
   letter-spacing: -0.2px;
 }
 
-.oct-stat-val.gold { color: #fbbf24; text-shadow: 0 0 12px rgba(251, 191, 36, 0.35); }
-.oct-stat-val.emerald { color: #34d399; text-shadow: 0 0 12px rgba(52, 211, 153, 0.35); }
-.oct-stat-val.blue { color: #38bdf8; text-shadow: 0 0 12px rgba(56, 189, 248, 0.35); }
-.oct-stat-val.red { color: #f87171; text-shadow: 0 0 12px rgba(248, 113, 113, 0.35); }
+.oct-stat-val.gold { color: var(--oct-gold); text-shadow: 0 0 12px rgba(251, 191, 36, 0.35); }
+.oct-stat-val.emerald { color: var(--oct-green-2); text-shadow: 0 0 12px rgba(52, 211, 153, 0.35); }
+.oct-stat-val.blue { color: var(--oct-blue); text-shadow: 0 0 12px rgba(56, 189, 248, 0.35); }
+.oct-stat-val.red { color: var(--oct-red-2); text-shadow: 0 0 12px rgba(248, 113, 113, 0.35); }
 
 .oct-stat-lbl {
   font-size: 10.5px;
   font-weight: 800;
-  color: #94a3b8;
+  color: var(--oct-muted);
   margin-top: 4px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -342,9 +406,9 @@
   width: 100%;
   height: 64px;
   border-radius: 20px;
-  background: #10b981;
+  background: var(--oct-green);
   border: none;
-  border-bottom: 5px solid #047857;
+  border-bottom: 5px solid var(--oct-green-edge);
   color: #ffffff;
   font-size: 19px;
   font-weight: 900;
@@ -360,7 +424,7 @@
 }
 
 .oct-search-btn-3d:hover {
-  background: #34d399;
+  background: var(--oct-green-2);
   transform: translateY(-2px);
   border-bottom-width: 7px;
 }
@@ -432,8 +496,8 @@
 }
 
 .oct-action-icon.purple { background: rgba(168, 85, 247, 0.16); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); }
-.oct-action-icon.yellow { background: rgba(251, 191, 36, 0.16); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); }
-.oct-action-icon.blue { background: rgba(56, 189, 248, 0.16); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); }
+.oct-action-icon.yellow { background: rgba(251, 191, 36, 0.16); color: var(--oct-gold); border: 1px solid rgba(251, 191, 36, 0.35); }
+.oct-action-icon.blue { background: rgba(56, 189, 248, 0.16); color: var(--oct-blue); border: 1px solid rgba(56, 189, 248, 0.35); }
 
 .oct-action-title {
   font-size: 14px;
@@ -448,7 +512,7 @@
 
 .oct-action-desc {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--oct-muted);
   margin-top: 6px;
   line-height: 1.4;
   flex: 1;
@@ -463,7 +527,7 @@
 .oct-banner-card {
   width: 100%;
   border-radius: 24px;
-  background: linear-gradient(135deg, #1e1b4b 0%, #1e1b4b 25%, #1e293b 70%, #0f172a 100%);
+  background: linear-gradient(135deg, #1e1b4b 0%, #1e1b4b 25%, var(--oct-surface-2) 70%, var(--oct-surface) 100%);
   border: 1.5px solid rgba(129, 140, 248, 0.35);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 25px rgba(99, 102, 241, 0.15);
   position: relative;
@@ -530,7 +594,7 @@
   border-radius: 999px;
   background: rgba(16, 185, 129, 0.15);
   border: 1px solid rgba(16, 185, 129, 0.4);
-  color: #34d399;
+  color: var(--oct-green-2);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.8px;
@@ -541,8 +605,8 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
+  background: var(--oct-green);
+  box-shadow: 0 0 8px var(--oct-green);
   animation: oct-pulse-glow 1.5s infinite;
 }
 
@@ -563,7 +627,7 @@
 
 .oct-banner-desc {
   font-size: 13.5px;
-  color: #cbd5e1;
+  color: var(--oct-text-3);
   line-height: 1.45;
   max-width: 620px;
 }
@@ -594,12 +658,12 @@
   border: 1px solid rgba(148, 163, 184, 0.25);
   font-size: 13.5px;
   font-weight: 800;
-  color: #fbbf24;
+  color: var(--oct-gold);
   white-space: nowrap;
 }
 
 .oct-banner-streak {
-  color: #ef4444;
+  color: var(--oct-red);
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -611,10 +675,10 @@
 }
 
 .oct-banner-btn {
-  background: #10b981;
+  background: var(--oct-green);
   color: #ffffff;
   border: none;
-  border-bottom: 4px solid #047857;
+  border-bottom: 4px solid var(--oct-green-edge);
   border-radius: 14px;
   padding: 12px 24px;
   font-size: 15px;
@@ -629,7 +693,7 @@
 }
 
 .oct-banner-btn:hover {
-  background: #34d399;
+  background: var(--oct-green-2);
   transform: translateY(-1px);
 }
 
@@ -766,8 +830,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #34d399;
-  box-shadow: 0 0 10px #10b981;
+  background: var(--oct-green-2);
+  box-shadow: 0 0 10px var(--oct-green);
   pointer-events: none;
   animation: oct-blip-flash 2.5s infinite ease-in-out;
 }
@@ -787,13 +851,13 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: #0f172a;
-  border: 2px solid #10b981;
+  background: var(--oct-surface);
+  border: 2px solid var(--oct-green);
   box-shadow: 0 0 25px rgba(16, 185, 129, 0.5), inset 0 0 12px rgba(16, 185, 129, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #34d399;
+  color: var(--oct-green-2);
 }
 
 .oct-radar-icon-pulse {
@@ -836,7 +900,7 @@
   font-family: monospace;
   font-size: 15px;
   font-weight: 900;
-  color: #34d399;
+  color: var(--oct-green-2);
   letter-spacing: 1px;
 }
 
@@ -850,7 +914,7 @@
 
 .oct-radar-desc {
   font-size: 13.5px;
-  color: #94a3b8;
+  color: var(--oct-muted);
   line-height: 1.45;
   max-width: 380px;
 }
@@ -860,7 +924,7 @@
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.35);
   border-radius: 999px;
-  color: #f87171;
+  color: var(--oct-red-2);
   font-size: 14px;
   font-weight: 800;
   padding: 10px 22px;
@@ -888,7 +952,7 @@
 .oct-arena-card {
   width: 100%;
   max-width: 720px;
-  background: #0f172a;
+  background: var(--oct-surface);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 28px;
   padding: 24px;
@@ -914,18 +978,18 @@
 }
 
 .oct-dot.is-correct {
-  background: #10b981;
-  box-shadow: 0 0 10px #10b981;
+  background: var(--oct-green);
+  box-shadow: 0 0 10px var(--oct-green);
 }
 
 .oct-dot.is-wrong {
-  background: #ef4444;
-  box-shadow: 0 0 10px #ef4444;
+  background: var(--oct-red);
+  box-shadow: 0 0 10px var(--oct-red);
 }
 
 .oct-dot.is-current {
-  background: #38bdf8;
-  box-shadow: 0 0 12px #38bdf8;
+  background: var(--oct-blue);
+  box-shadow: 0 0 12px var(--oct-blue);
   animation: oct-blink 1s infinite alternate;
 }
 
@@ -939,11 +1003,11 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  background: #1e293b;
+  background: var(--oct-surface-2);
   border: 2px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 5px solid #0f172a;
+  border-bottom: 5px solid var(--oct-surface);
   border-radius: 18px;
-  color: #f8fafc;
+  color: var(--oct-text);
   padding: 14px 18px;
   font-size: 15.5px;
   font-weight: 600;
@@ -954,8 +1018,8 @@
 }
 
 .oct-option-btn:hover {
-  background: #334155;
-  border-color: #38bdf8;
+  background: var(--oct-border-strong);
+  border-color: var(--oct-blue);
   transform: translateY(-2px);
 }
 
@@ -966,8 +1030,8 @@
 
 .oct-option-btn.selected {
   background: #0284c7;
-  border-color: #38bdf8;
-  border-bottom-color: #0369a1;
+  border-color: var(--oct-blue);
+  border-bottom-color: var(--oct-blue-edge);
   color: #ffffff;
 }
 
@@ -978,7 +1042,7 @@
   padding: 3px 8px;
   font-size: 12px;
   font-weight: 800;
-  color: #38bdf8;
+  color: var(--oct-blue);
   flex-shrink: 0;
 }
 
@@ -1098,7 +1162,7 @@
 
 .oct-hud-avatar.opp {
   background: #881337;
-  border: 2px solid #ef4444;
+  border: 2px solid var(--oct-red);
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
 }
 
@@ -1143,7 +1207,7 @@
 }
 
 .oct-hud-score.me { color: #60a5fa; }
-.oct-hud-score.opp { color: #f87171; justify-content: flex-end; }
+.oct-hud-score.opp { color: var(--oct-red-2); justify-content: flex-end; }
 
 .oct-hud-center {
   display: flex;
@@ -1161,16 +1225,16 @@
   font-family: monospace;
   font-weight: 900;
   font-size: 14px;
-  background: #1e293b;
-  color: #fbbf24;
+  background: var(--oct-surface-2);
+  color: var(--oct-gold);
   border: 1px solid rgba(251, 191, 36, 0.3);
   transition: all 0.2s ease;
 }
 
 .oct-timer-pill.urgent {
   background: rgba(239, 68, 68, 0.25);
-  color: #ef4444;
-  border-color: #ef4444;
+  color: var(--oct-red);
+  border-color: var(--oct-red);
   animation: oct-pulse 0.8s infinite;
   box-shadow: 0 0 14px rgba(239, 68, 68, 0.5);
 }
@@ -1184,7 +1248,7 @@
 }
 
 .oct-score-ratio .me { color: #60a5fa; }
-.oct-score-ratio .opp { color: #f87171; }
+.oct-score-ratio .opp { color: var(--oct-red-2); }
 
 .oct-hud-bars {
   display: flex;
@@ -1206,7 +1270,7 @@
 .oct-bars-label {
   font-size: 11px;
   font-weight: 800;
-  color: #94a3b8;
+  color: var(--oct-muted);
   margin-right: 4px;
   white-space: nowrap;
 }
@@ -1215,13 +1279,13 @@
   height: 7px;
   flex: 1;
   border-radius: 999px;
-  background: #334155;
+  background: var(--oct-border-strong);
   transition: all 0.25s ease;
 }
 
 .oct-bar-segment.done-me { background: #3b82f6; box-shadow: 0 0 6px rgba(59, 130, 246, 0.5); }
-.oct-bar-segment.done-opp { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
-.oct-bar-segment.active { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; animation: oct-pulse 1s infinite; }
+.oct-bar-segment.done-opp { background: var(--oct-red); box-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
+.oct-bar-segment.active { background: var(--oct-gold); box-shadow: 0 0 8px var(--oct-gold); animation: oct-pulse 1s infinite; }
 
 /* Options Grid */
 .oct-options-grid {
@@ -1283,7 +1347,7 @@
 .oct-vs-badge {
   font-size: 32px;
   font-weight: 900;
-  color: #fbbf24;
+  color: var(--oct-gold);
   text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
   animation: oct-pulse 1.2s infinite;
 }
@@ -1316,7 +1380,7 @@
 
 .oct-vs-avatar.opp {
   background: #881337;
-  border: 3.5px solid #ef4444;
+  border: 3.5px solid var(--oct-red);
   box-shadow: 0 0 25px rgba(239, 68, 68, 0.5);
 }
 
@@ -1337,7 +1401,7 @@
   height: 100px;
   border-radius: 50%;
   background: rgba(251, 191, 36, 0.18);
-  border: 4px solid #fbbf24;
+  border: 4px solid var(--oct-gold);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1357,7 +1421,7 @@
   height: 52px;
   border-radius: 50%;
   border: 4px solid rgba(16, 185, 129, 0.25);
-  border-top-color: #10b981;
+  border-top-color: var(--oct-green);
   animation: oct-spin 1s linear infinite;
   margin-bottom: 16px;
 }
@@ -1388,23 +1452,23 @@
 
 .oct-result-badge-icon.win {
   background: rgba(16, 185, 129, 0.2);
-  border: 4px solid #10b981;
+  border: 4px solid var(--oct-green);
   box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
-  color: #34d399;
+  color: var(--oct-green-2);
 }
 
 .oct-result-badge-icon.draw {
   background: rgba(245, 158, 11, 0.2);
-  border: 4px solid #f59e0b;
+  border: 4px solid var(--oct-gold-2);
   box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
-  color: #fbbf24;
+  color: var(--oct-gold);
 }
 
 .oct-result-badge-icon.lose {
   background: rgba(239, 68, 68, 0.2);
-  border: 4px solid #ef4444;
+  border: 4px solid var(--oct-red);
   box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
-  color: #f87171;
+  color: var(--oct-red-2);
 }
 
 .oct-result-title {
@@ -1413,9 +1477,9 @@
   letter-spacing: 1.5px;
 }
 
-.oct-result-title.win { color: #34d399; }
-.oct-result-title.draw { color: #fbbf24; }
-.oct-result-title.lose { color: #f87171; }
+.oct-result-title.win { color: var(--oct-green-2); }
+.oct-result-title.draw { color: var(--oct-gold); }
+.oct-result-title.lose { color: var(--oct-red-2); }
 
 .oct-result-card {
   width: 100%;
@@ -1449,7 +1513,7 @@
 }
 
 .oct-result-score.me { color: #60a5fa; }
-.oct-result-score.opp { color: #f87171; }
+.oct-result-score.opp { color: var(--oct-red-2); }
 
 .oct-elo-delta-box {
   margin-top: 20px;
@@ -1468,9 +1532,9 @@
 
 /* --- Duolingo uslubidagi 3D tugmalar --- */
 .oct-3d-btn {
-  --oct-btn: #10b981;
-  --oct-btn-hover: #34d399;
-  --oct-btn-edge: #047857;
+  --oct-btn: var(--oct-green);
+  --oct-btn-hover: var(--oct-green-2);
+  --oct-btn-edge: var(--oct-green-edge);
   --oct-btn-glow: rgba(16, 185, 129, 0.35);
   position: relative;
   display: flex;
@@ -1493,13 +1557,13 @@
   -webkit-tap-highlight-color: transparent;
 }
 .oct-3d-btn.blue {
-  --oct-btn: #0ea5e9;
-  --oct-btn-hover: #38bdf8;
-  --oct-btn-edge: #0369a1;
+  --oct-btn: var(--oct-blue-2);
+  --oct-btn-hover: var(--oct-blue);
+  --oct-btn-edge: var(--oct-blue-edge);
   --oct-btn-glow: rgba(14, 165, 233, 0.32);
 }
 .oct-3d-btn.purple {
-  --oct-btn: #a855f7;
+  --oct-btn: var(--oct-purple);
   --oct-btn-hover: #c084fc;
   --oct-btn-edge: #7e22ce;
   --oct-btn-glow: rgba(168, 85, 247, 0.32);
@@ -1520,7 +1584,7 @@
 }
 .oct-3d-btn:disabled {
   background: #475569;
-  border-bottom-color: #334155;
+  border-bottom-color: var(--oct-border-strong);
   box-shadow: none;
   cursor: not-allowed;
   opacity: 0.75;
@@ -1586,7 +1650,7 @@
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(15, 23, 42, 0.8);
-  color: #e2e8f0;
+  color: var(--oct-text-2);
   font-weight: 800;
   font-size: 13px;
   cursor: pointer;
@@ -1597,7 +1661,7 @@
   border-color: rgba(56, 189, 248, 0.35);
 }
 .oct-secondary-btn:focus-visible {
-  outline: 2px solid #38bdf8;
+  outline: 2px solid var(--oct-blue);
   outline-offset: 2px;
 }
 @media (max-width: 480px) {
@@ -1625,7 +1689,7 @@
   height: 56px;
   border-radius: 50%;
   background: rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
+  color: var(--oct-blue);
 }
 .oct-guest-title {
   font-size: 17px;
@@ -1634,7 +1698,7 @@
 }
 .oct-guest-desc {
   font-size: 13.5px;
-  color: #94a3b8;
+  color: var(--oct-muted);
   line-height: 1.5;
   max-width: 420px;
 }
@@ -1659,7 +1723,7 @@
   width: 72px;
   height: 72px;
   border-radius: 22px;
-  background: linear-gradient(135deg, #10b981, #0ea5e9);
+  background: linear-gradient(135deg, var(--oct-green), var(--oct-blue-2));
   color: #ffffff;
   box-shadow: 0 12px 30px rgba(16, 185, 129, 0.35);
 }
@@ -1673,7 +1737,7 @@
   margin: 0;
   font-size: 15px;
   line-height: 1.55;
-  color: #cbd5e1;
+  color: var(--oct-text-3);
 }
 .oct-auth-gate-methods {
   display: flex;
@@ -1688,7 +1752,7 @@
   padding: 6px 12px;
   border-radius: 999px;
   background: rgba(148, 163, 184, 0.12);
-  color: #e2e8f0;
+  color: var(--oct-text-2);
   font-size: 12.5px;
   font-weight: 700;
 }
@@ -1700,14 +1764,14 @@
 .oct-auth-gate-later {
   border: none;
   background: transparent;
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-weight: 700;
   font-size: 13.5px;
   cursor: pointer;
   padding: 6px 10px;
 }
 .oct-auth-gate-later:hover {
-  color: #e2e8f0;
+  color: var(--oct-text-2);
 }
 
 /* --- Savol rasmi: placeholder va qayta yuklash --- */
@@ -1722,7 +1786,7 @@
   border: 1px dashed rgba(148, 163, 184, 0.35);
 }
 .oct-img-fallback-text {
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-size: 13px;
   font-weight: 700;
 }
@@ -1733,8 +1797,8 @@
   padding: 8px 16px;
   border-radius: 12px;
   border: none;
-  border-bottom: 3px solid #0369a1;
-  background: #0ea5e9;
+  border-bottom: 3px solid var(--oct-blue-edge);
+  background: var(--oct-blue-2);
   color: #ffffff;
   font-weight: 800;
   font-size: 13px;
@@ -1770,7 +1834,7 @@
 /* --- Raqib kartasi qo'shimchalari --- */
 .oct-vs-elo,
 .oct-hud-elo {
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-weight: 800;
   font-size: 12.5px;
   font-variant-numeric: tabular-nums;
@@ -1806,7 +1870,7 @@
   width: 22px;
   text-align: center;
   font-weight: 900;
-  color: #fbbf24;
+  color: var(--oct-gold);
 }
 .oct-standing-name {
   flex: 1;
@@ -1821,7 +1885,7 @@
   white-space: nowrap;
 }
 .oct-standing-score {
-  color: #34d399;
+  color: var(--oct-green-2);
   font-weight: 900;
   white-space: nowrap;
 }
@@ -1868,7 +1932,7 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  color: #e879f9;
+  color: var(--oct-purple-2);
   opacity: 0.8;
 }
 .oct-pick-node {
@@ -1883,7 +1947,7 @@
   border: none;
   border-radius: 14px;
   background: transparent;
-  color: #e2e8f0;
+  color: var(--oct-text-2);
   cursor: pointer;
   animation: oct-pick-pop 0.35s ease both;
   transition: transform 0.18s ease;
@@ -1902,7 +1966,7 @@
   opacity: 0.6;
 }
 .oct-pick-node:focus-visible {
-  outline: 2px solid #e879f9;
+  outline: 2px solid var(--oct-purple-2);
   outline-offset: 2px;
 }
 .oct-pick-avatar {
@@ -1917,13 +1981,13 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 2px solid #0f172a;
+  border: 2px solid var(--oct-surface);
 }
 .oct-pick-dot.on {
-  background: #10b981;
+  background: var(--oct-green);
 }
 .oct-pick-dot.off {
-  background: #64748b;
+  background: var(--oct-faint);
 }
 .oct-pick-name {
   max-width: 92px;
@@ -1936,7 +2000,7 @@
 .oct-pick-elo {
   font-size: 11px;
   font-weight: 700;
-  color: #fbbf24;
+  color: var(--oct-gold);
 }
 @keyframes oct-pick-pop {
   from {
@@ -1961,13 +2025,13 @@
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.25);
   background: rgba(30, 41, 59, 0.8);
-  color: #e2e8f0;
+  color: var(--oct-text-2);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
 .oct-pick-chip.selected {
-  border-color: #e879f9;
+  border-color: var(--oct-purple-2);
   background: rgba(168, 85, 247, 0.2);
 }
 .oct-pick-card {
@@ -1976,7 +2040,7 @@
   gap: 12px;
   padding: 12px;
   border-radius: 16px;
-  background: #1e293b;
+  background: var(--oct-surface-2);
   border: 1px solid rgba(232, 121, 249, 0.35);
   animation: oct-pick-pop-in 0.25s ease both;
 }
@@ -2045,7 +2109,7 @@
   border-radius: 999px;
   font-size: 11px;
   font-weight: 800;
-  color: #cbd5e1;
+  color: var(--oct-text-3);
   background: rgba(148, 163, 184, 0.12);
   white-space: nowrap;
 }
@@ -2053,7 +2117,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #f87171;
+  background: var(--oct-red-2);
 }
 .oct-opp-status.pulse {
   animation: oct-opp-answered 0.9s ease-out;
@@ -2166,20 +2230,20 @@
   border-radius: 14px;
   border: 2px solid rgba(148, 163, 184, 0.35);
   background: rgba(15, 23, 42, 0.6);
-  color: #f8fafc;
+  color: var(--oct-text);
   font-size: 28px;
   font-weight: 900;
   text-align: center;
-  caret-color: #e879f9;
+  caret-color: var(--oct-purple-2);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .oct-pin-cell:focus {
   outline: none;
-  border-color: #e879f9;
+  border-color: var(--oct-purple-2);
   box-shadow: 0 0 0 4px rgba(232, 121, 249, 0.25);
 }
 .oct-pin.error .oct-pin-cell {
-  border-color: #f87171;
+  border-color: var(--oct-red-2);
 }
 .oct-pin-cell:disabled {
   opacity: 0.6;
@@ -2235,18 +2299,18 @@
 
 /* --- 10 segmentli trek: yashil (to'g'ri) / qizil (xato), joriy savol oq nur bilan pulsatsiya --- */
 .oct-bar-segment.done.correct {
-  background: #10b981;
+  background: var(--oct-green);
   box-shadow: 0 0 7px rgba(16, 185, 129, 0.65);
 }
 .oct-bar-segment.done.wrong {
-  background: #ef4444;
+  background: var(--oct-red);
   box-shadow: 0 0 7px rgba(239, 68, 68, 0.6);
 }
 .oct-bar-segment.done.answered {
-  background: #64748b;
+  background: var(--oct-faint);
 }
 .oct-bar-segment.active {
-  background: #f8fafc;
+  background: var(--oct-text);
   box-shadow: 0 0 10px rgba(248, 250, 252, 0.85);
   animation: oct-track-glow 1.1s ease-in-out infinite;
 }
@@ -2262,7 +2326,7 @@
   filter: grayscale(0.8);
 }
 .oct-reactions-bar.muted span {
-  color: #fbbf24 !important;
+  color: var(--oct-gold) !important;
 }
 
 /* --- PIN: xato kodda katakchalar qizil silkinadi --- */
@@ -2291,7 +2355,7 @@
 .oct-elo-big-num {
   font-size: 34px;
   font-weight: 900;
-  color: #fbbf24;
+  color: var(--oct-gold);
   text-shadow: 0 0 18px rgba(251, 191, 36, 0.45);
   font-variant-numeric: tabular-nums;
 }
@@ -2300,7 +2364,7 @@
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 2px;
-  color: #f59e0b;
+  color: var(--oct-gold-2);
 }
 .oct-skel {
   border-radius: 10px;
@@ -2358,8 +2422,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
+  background: var(--oct-green);
+  box-shadow: 0 0 8px var(--oct-green);
   animation: oct-pulse 1.4s infinite;
 }
 .oct-radar-live-sep {
@@ -2390,7 +2454,7 @@
   width: 84px;
   height: 84px;
   border-radius: 50%;
-  color: #fbbf24;
+  color: var(--oct-gold);
   background: rgba(245, 158, 11, 0.12);
   border: 2px solid rgba(245, 158, 11, 0.45);
   box-shadow: 0 0 30px rgba(245, 158, 11, 0.25);
@@ -2405,7 +2469,7 @@
   margin: 0;
   font-size: 14.5px;
   line-height: 1.55;
-  color: #cbd5e1;
+  color: var(--oct-text-3);
 }
 .oct-disconnected-btn {
   min-height: 54px;
@@ -2430,16 +2494,16 @@
   margin-top: 8px;
   font-size: 12.5px;
   font-weight: 700;
-  color: #fbbf24;
+  color: var(--oct-gold);
 }
 .oct-new-elo {
   margin-top: 8px;
   font-size: 13.5px;
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-weight: 700;
 }
 .oct-new-elo strong {
-  color: #fbbf24;
+  color: var(--oct-gold);
   font-weight: 900;
 }
 .oct-elo-glow {
@@ -2452,17 +2516,21 @@
 
 /* --- Qorong'i neon modallar (reyting, tarix, qoidalar, kirish) --- */
 .oct-modal-dark {
-  background: #0f172a !important;
-  color: #f8fafc;
+  background: var(--oct-surface) !important;
+  color: var(--oct-text);
   border: 1px solid rgba(148, 163, 184, 0.16);
   box-shadow: 0 0 40px rgba(56, 189, 248, 0.12), 0 24px 60px rgba(0, 0, 0, 0.55) !important;
 }
 .oct-modal-dark-header {
-  background: #0f172a !important;
-  color: #f8fafc;
+  background: var(--oct-surface) !important;
+  color: var(--oct-text);
 }
 .oct-modal-dark-close {
-  color: #94a3b8 !important;
+  color: var(--oct-muted) !important;
+  /* teginish maydoni ≥ 44 px (Mantine standarti 28 px) */
+  --cb-size: 44px;
+  min-width: 44px;
+  min-height: 44px;
 }
 .oct-modal-dark-close:hover {
   background: rgba(148, 163, 184, 0.12) !important;
@@ -2483,8 +2551,8 @@
   height: 36px;
   border-radius: 12px;
 }
-.oct-modal-title-icon.gold { color: #fbbf24; background: rgba(251, 191, 36, 0.14); }
-.oct-modal-title-icon.green { color: #34d399; background: rgba(16, 185, 129, 0.14); }
+.oct-modal-title-icon.gold { color: var(--oct-gold); background: rgba(251, 191, 36, 0.14); }
+.oct-modal-title-icon.green { color: var(--oct-green-2); background: rgba(16, 185, 129, 0.14); }
 .oct-modal-title-icon.orange { color: #fb923c; background: rgba(249, 115, 22, 0.14); }
 
 .oct-empty {
@@ -2494,7 +2562,7 @@
   gap: 12px;
   padding: 36px 12px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-size: 14px;
   font-weight: 700;
 }
@@ -2504,7 +2572,7 @@
 }
 .oct-empty-text {
   max-width: 320px;
-  color: #e2e8f0;
+  color: var(--oct-text-2);
   font-size: 15px;
   line-height: 1.5;
 }
@@ -2525,11 +2593,11 @@
   background: rgba(30, 41, 59, 0.75);
 }
 .oct-seg-btn {
-  min-height: 40px;
+  min-height: 44px;
   border: none;
   border-radius: 10px;
   background: transparent;
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-weight: 800;
   font-size: 13px;
   cursor: pointer;
@@ -2539,10 +2607,10 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 .oct-seg-btn:hover {
-  color: #e2e8f0;
+  color: var(--oct-text-2);
 }
 .oct-seg-btn.active {
-  background: #fbbf24;
+  background: var(--oct-gold);
   color: #1f1300;
   box-shadow: 0 3px 0 #b45309;
 }
@@ -2562,7 +2630,7 @@
   text-align: center;
 }
 .oct-podium-crown {
-  color: #fbbf24;
+  color: var(--oct-gold);
   filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.8));
   margin-bottom: 2px;
 }
@@ -2577,7 +2645,7 @@
   font-weight: 800;
 }
 .oct-podium-elo {
-  color: #fbbf24;
+  color: var(--oct-gold);
   font-size: 12px;
   font-weight: 900;
 }
@@ -2636,7 +2704,7 @@
 }
 .oct-lb-pos {
   min-width: 38px;
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-size: 13px;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
@@ -2652,19 +2720,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #f8fafc;
+  color: var(--oct-text);
   font-size: 14px;
   font-weight: 800;
 }
 .oct-lb-sub {
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-size: 12px;
   font-weight: 600;
 }
 .oct-lb-elo {
   min-width: 44px;
   text-align: right;
-  color: #fbbf24;
+  color: var(--oct-gold);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
@@ -2686,7 +2754,7 @@
   padding: 12px;
   border-radius: 12px;
   background: rgba(30, 41, 59, 0.6);
-  color: #cbd5e1;
+  color: var(--oct-text-3);
   font-size: 13.5px;
   font-weight: 700;
   text-align: center;
@@ -2706,11 +2774,11 @@
   border-radius: 14px;
   background: rgba(30, 41, 59, 0.7);
   border: 1px solid rgba(148, 163, 184, 0.1);
-  border-left: 5px solid #64748b;
+  border-left: 5px solid var(--oct-faint);
 }
-.oct-history-card.win { border-left-color: #10b981; }
-.oct-history-card.loss { border-left-color: #ef4444; }
-.oct-history-card.draw { border-left-color: #94a3b8; }
+.oct-history-card.win { border-left-color: var(--oct-green); }
+.oct-history-card.loss { border-left-color: var(--oct-red); }
+.oct-history-card.draw { border-left-color: var(--oct-muted); }
 .oct-history-main {
   flex: 1;
   min-width: 0;
@@ -2719,12 +2787,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #f8fafc;
+  color: var(--oct-text);
   font-size: 14px;
   font-weight: 800;
 }
 .oct-history-date {
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-size: 12px;
   font-weight: 600;
 }
@@ -2749,17 +2817,17 @@
 }
 .oct-history-result.win { color: #6ee7b7; background: rgba(16, 185, 129, 0.15); }
 .oct-history-result.loss { color: #fca5a5; background: rgba(239, 68, 68, 0.15); }
-.oct-history-result.draw { color: #cbd5e1; background: rgba(148, 163, 184, 0.15); }
+.oct-history-result.draw { color: var(--oct-text-3); background: rgba(148, 163, 184, 0.15); }
 .oct-history-elo {
   min-width: 64px;
   text-align: right;
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-size: 13px;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
-.oct-history-elo.up { color: #34d399; }
-.oct-history-elo.down { color: #f87171; }
+.oct-history-elo.up { color: var(--oct-green-2); }
+.oct-history-elo.down { color: var(--oct-red-2); }
 .oct-pager {
   display: flex;
   align-items: center;
@@ -2775,7 +2843,7 @@
   border-radius: 10px;
   border: 1px solid rgba(148, 163, 184, 0.25);
   background: rgba(30, 41, 59, 0.8);
-  color: #e2e8f0;
+  color: var(--oct-text-2);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -2785,7 +2853,7 @@
   cursor: not-allowed;
 }
 .oct-pager-info {
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-size: 12.5px;
   font-weight: 700;
 }
@@ -2793,7 +2861,7 @@
 /* --- Qoidalar --- */
 .oct-rules-subtitle {
   margin: 0 0 14px;
-  color: #94a3b8;
+  color: var(--oct-muted);
   font-size: 14px;
 }
 .oct-rules-list {
@@ -2809,11 +2877,11 @@
   border-radius: 14px;
   background: rgba(30, 41, 59, 0.7);
   border: 1px solid rgba(148, 163, 184, 0.12);
-  border-left: 4px solid #38bdf8;
+  border-left: 4px solid var(--oct-blue);
 }
-.oct-rule-card.green { border-left-color: #10b981; }
-.oct-rule-card.gold { border-left-color: #fbbf24; }
-.oct-rule-card.purple { border-left-color: #a855f7; }
+.oct-rule-card.green { border-left-color: var(--oct-green); }
+.oct-rule-card.gold { border-left-color: var(--oct-gold); }
+.oct-rule-card.purple { border-left-color: var(--oct-purple); }
 .oct-rule-icon {
   font-size: 22px;
   line-height: 1.2;
@@ -2825,7 +2893,7 @@
 }
 .oct-rule-desc {
   margin-top: 2px;
-  color: #cbd5e1;
+  color: var(--oct-text-3);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -2835,7 +2903,7 @@
 }
 .oct-rules-confirm.waiting {
   --oct-btn: #475569;
-  --oct-btn-edge: #334155;
+  --oct-btn-edge: var(--oct-border-strong);
   --oct-btn-glow: transparent;
 }
 
@@ -2873,13 +2941,13 @@
   border-radius: 14px;
   border: 1px solid rgba(148, 163, 184, 0.3);
   background: rgba(30, 41, 59, 0.75);
-  color: #e2e8f0;
+  color: var(--oct-text-2);
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
 }
 .oct-auth-gate-other:hover {
-  border-color: #38bdf8;
+  border-color: var(--oct-blue);
   color: #ffffff;
 }
 
@@ -2900,6 +2968,782 @@
   .oct-skel,
   .oct-radar-live-dot,
   .oct-elo-glow {
+    animation: none;
+  }
+}
+
+/* ===================================================================
+   DESIGN SYSTEM 2026-10-22: lobby, radar, VS, natija, tahlil, duel ro'yxati, tarix filtri
+   (barchasi --oct-* tokenlaridan)
+   =================================================================== */
+
+/* --- Qizil 3D tugma (xavfli/bekor qilish amallari) --- */
+.oct-3d-btn.red {
+  --oct-btn: var(--oct-red);
+  --oct-btn-hover: var(--oct-red-2);
+  --oct-btn-edge: var(--oct-red-edge);
+  --oct-btn-glow: rgba(239, 68, 68, 0.32);
+}
+
+/* --- Lobby: profil nishonlari, seriya, liga zinapoyasi --- */
+.oct-user-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--oct-s-2);
+  margin-top: var(--oct-s-1);
+}
+.oct-streak-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: var(--oct-r-pill);
+  background: rgba(249, 115, 22, 0.16);
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  color: #fdba74;
+  font-size: var(--oct-fs-xs);
+  font-weight: 800;
+}
+.oct-league {
+  margin-top: var(--oct-s-4);
+  padding: var(--oct-s-3);
+  border-radius: var(--oct-r-md);
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--oct-border);
+}
+.oct-league-steps {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--oct-s-1);
+  margin: 0 0 var(--oct-s-3);
+  padding: 0;
+  list-style: none;
+}
+.oct-league-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 6px 2px;
+  border-radius: var(--oct-r-sm);
+  border: 1px solid transparent;
+  transition: all var(--oct-dur) ease;
+}
+.oct-league-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+.oct-league-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--oct-muted);
+  font-size: 10.5px;
+  font-weight: 800;
+}
+.oct-league-step.locked {
+  opacity: 0.4;
+  filter: grayscale(0.85);
+}
+.oct-league-step.current {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.55);
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.25);
+}
+.oct-league-step.current .oct-league-name {
+  color: var(--oct-gold);
+}
+.oct-league-bar {
+  height: 8px;
+  border-radius: var(--oct-r-pill);
+  background: var(--oct-surface-2);
+  overflow: hidden;
+}
+.oct-league-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--oct-gold-2), var(--oct-gold));
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+  transition: width var(--oct-dur-slow) ease;
+}
+.oct-league-caption {
+  margin-top: 6px;
+  color: var(--oct-text-3);
+  font-size: var(--oct-fs-xs);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* --- Lobby: asosiy CTA + ikki ikkilamchi rejim yonma-yon --- */
+.oct-mode-primary {
+  min-height: 92px;
+}
+.oct-mode-primary .oct-mode-title {
+  font-size: 21px;
+}
+.oct-modes-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--oct-s-3);
+}
+.oct-mode-tile {
+  position: relative;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: 132px;
+  padding: var(--oct-s-4);
+  text-align: left;
+}
+.oct-mode-tile .oct-mode-icon {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: var(--oct-r-md);
+}
+.oct-mode-tile .oct-mode-title {
+  font-size: 16px;
+}
+.oct-mode-tile .oct-mode-desc {
+  font-size: 12px;
+}
+.oct-mode-tile .oct-mode-lock {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+/* --- Radar: sarlavha, markazda o'yinchi, statistika, maslahat --- */
+.oct-radar-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.oct-sonar-me {
+  width: 76px;
+  height: 76px;
+}
+.oct-radar-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--oct-s-2);
+  width: 100%;
+  margin-top: var(--oct-s-3);
+}
+.oct-radar-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border-radius: var(--oct-r-md);
+  background: var(--oct-surface-glass);
+  border: 1px solid var(--oct-border);
+}
+.oct-radar-stat-val {
+  font-size: var(--oct-fs-lg);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.oct-radar-stat-val.gold { color: var(--oct-gold); }
+.oct-radar-stat-val.green { color: var(--oct-green-2); }
+.oct-radar-stat-val.blue { color: var(--oct-blue); }
+.oct-radar-stat-lbl {
+  color: var(--oct-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.oct-radar-note {
+  margin-top: var(--oct-s-2);
+  color: var(--oct-text-3);
+  font-size: var(--oct-fs-xs);
+  font-weight: 700;
+}
+.oct-radar-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--oct-s-2);
+  width: 100%;
+  margin-top: var(--oct-s-3);
+  padding: var(--oct-s-3);
+  border-radius: var(--oct-r-md);
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  color: var(--oct-text-2);
+  font-size: var(--oct-fs-sm);
+  line-height: 1.45;
+  text-align: left;
+  min-height: 64px;
+  box-sizing: border-box;
+}
+.oct-radar-tip span {
+  animation: oct-tip-in var(--oct-dur-slow) ease;
+}
+.oct-radar-tip-icon {
+  flex-shrink: 0;
+  color: var(--oct-gold);
+}
+@keyframes oct-tip-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.oct-radar-cancel {
+  min-height: 52px;
+  margin-top: var(--oct-s-4);
+}
+
+/* --- VS: oldindan yuklanish chizig'i --- */
+.oct-vs-preload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--oct-s-3);
+  width: 100%;
+  max-width: 420px;
+  margin: var(--oct-s-6) auto 0;
+}
+.oct-vs-found {
+  color: var(--oct-green-2);
+  font-size: var(--oct-fs-lg);
+  font-weight: 900;
+}
+.oct-preload {
+  width: 100%;
+}
+.oct-preload-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--oct-s-2);
+  margin-bottom: 6px;
+  color: var(--oct-muted);
+  font-size: var(--oct-fs-xs);
+  font-weight: 700;
+}
+.oct-preload-count {
+  color: var(--oct-green-2);
+  font-variant-numeric: tabular-nums;
+}
+.oct-preload-bar {
+  height: 10px;
+  border-radius: var(--oct-r-pill);
+  background: var(--oct-surface-2);
+  overflow: hidden;
+}
+.oct-preload-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--oct-green), var(--oct-green-2));
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.55);
+  transition: width var(--oct-dur) ease;
+}
+
+/* --- Natija: o'yinchi kartalari, statistika, ELO, revansh --- */
+.oct-result-sub {
+  max-width: 440px;
+  margin: 6px auto 0;
+  color: var(--oct-muted);
+  font-size: var(--oct-fs-sm);
+}
+.oct-result-players {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--oct-s-3);
+  width: 100%;
+  margin-top: var(--oct-s-5);
+}
+.oct-result-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: var(--oct-s-4) var(--oct-s-2);
+  border-radius: var(--oct-r-lg);
+  background: var(--oct-surface-glass);
+  border: 1.5px solid var(--oct-border);
+}
+.oct-result-player.me { border-color: rgba(56, 189, 248, 0.55); box-shadow: 0 0 18px rgba(56, 189, 248, 0.15); }
+.oct-result-player.opp { border-color: rgba(239, 68, 68, 0.45); box-shadow: 0 0 18px rgba(239, 68, 68, 0.12); }
+.oct-result-player-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--oct-text);
+  font-size: var(--oct-fs-sm);
+  font-weight: 800;
+}
+.oct-result-player-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  color: var(--oct-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.oct-result-player-score {
+  margin-top: 2px;
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.oct-result-player.me .oct-result-player-score { color: var(--oct-blue); }
+.oct-result-player.opp .oct-result-player-score { color: var(--oct-red-2); }
+.oct-result-colon {
+  align-self: center;
+  color: var(--oct-faint);
+  font-size: 28px;
+  font-weight: 900;
+}
+.oct-result-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--oct-s-2);
+  width: 100%;
+  margin-top: var(--oct-s-3);
+}
+.oct-result-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border-radius: var(--oct-r-md);
+  background: var(--oct-surface-glass);
+  border: 1px solid var(--oct-border);
+}
+.oct-result-stat-val {
+  color: var(--oct-text);
+  font-size: var(--oct-fs-lg);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.oct-result-stat-val.good { color: var(--oct-green-2); }
+.oct-result-stat-val.mid { color: var(--oct-gold); }
+.oct-result-stat-val.low { color: var(--oct-red-2); }
+.oct-result-stat-lbl {
+  color: var(--oct-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.oct-result-elo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--oct-s-3);
+  width: 100%;
+  margin-top: var(--oct-s-3);
+  padding: 10px var(--oct-s-3);
+  border-radius: var(--oct-r-md);
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  box-sizing: border-box;
+}
+.oct-result-elo-lbl {
+  color: var(--oct-gold);
+  font-size: var(--oct-fs-xs);
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+.oct-result-elo-flow {
+  color: var(--oct-text-3);
+  font-size: var(--oct-fs-md);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.oct-result-elo-flow strong {
+  color: var(--oct-gold);
+  font-weight: 900;
+}
+.oct-result-elo-delta {
+  padding: 2px 10px;
+  border-radius: var(--oct-r-pill);
+  font-size: var(--oct-fs-sm);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.oct-result-elo-delta.up { color: #052e16; background: var(--oct-green-2); box-shadow: 0 0 14px rgba(52, 211, 153, 0.55); }
+.oct-result-elo-delta.down { color: #fff; background: var(--oct-red); }
+.oct-result-elo-delta.zero { color: var(--oct-text-2); background: var(--oct-surface-2); }
+.oct-result-note {
+  margin-top: 6px;
+  color: var(--oct-muted);
+  font-size: var(--oct-fs-xs);
+  font-weight: 700;
+}
+.oct-result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oct-s-3);
+  width: 100%;
+  margin-top: var(--oct-s-5);
+}
+.oct-result-cta {
+  min-height: 56px;
+}
+.oct-result-cta.pulse {
+  animation: oct-cta-pulse 1.2s ease-in-out infinite;
+}
+@keyframes oct-cta-pulse {
+  0%, 100% { box-shadow: 0 10px 24px rgba(16, 185, 129, 0.35); }
+  50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.25), 0 10px 30px rgba(16, 185, 129, 0.55); }
+}
+.oct-rematch-offer,
+.oct-rematch-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--oct-s-2);
+  padding: 10px var(--oct-s-3);
+  border-radius: var(--oct-r-md);
+  font-size: var(--oct-fs-sm);
+  font-weight: 800;
+}
+.oct-rematch-offer {
+  color: #f5d0fe;
+  background: rgba(168, 85, 247, 0.16);
+  border: 1px solid rgba(232, 121, 249, 0.45);
+}
+.oct-rematch-info {
+  color: var(--oct-text-3);
+  background: var(--oct-surface-glass);
+  border: 1px solid var(--oct-border);
+}
+.oct-result-secondary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--oct-s-2);
+}
+.oct-result-secondary .oct-secondary-btn {
+  min-height: var(--oct-touch);
+}
+
+/* --- Jang tahlili --- */
+.oct-review-summary {
+  margin: 0 0 var(--oct-s-3);
+  color: var(--oct-text-3);
+  font-size: var(--oct-fs-sm);
+  font-weight: 700;
+}
+.oct-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oct-s-2);
+  max-height: 60vh;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.oct-review-item {
+  padding: var(--oct-s-3);
+  border-radius: var(--oct-r-md);
+  background: var(--oct-surface-glass);
+  border: 1px solid var(--oct-border);
+  border-left: 4px solid var(--oct-faint);
+}
+.oct-review-item.right { border-left-color: var(--oct-green); }
+.oct-review-item.wrong { border-left-color: var(--oct-red); }
+.oct-review-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--oct-s-2);
+}
+.oct-review-num {
+  min-width: 22px;
+  color: var(--oct-muted);
+  font-size: var(--oct-fs-xs);
+  font-weight: 900;
+}
+.oct-review-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--oct-faint);
+}
+.oct-review-mark.right { background: var(--oct-green); }
+.oct-review-mark.wrong { background: var(--oct-red); }
+.oct-review-q {
+  color: var(--oct-text);
+  font-size: var(--oct-fs-sm);
+  font-weight: 700;
+  line-height: 1.45;
+}
+.oct-review-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: var(--oct-s-2) 0 0 52px;
+}
+.oct-review-line {
+  font-size: 13px;
+  line-height: 1.45;
+}
+.oct-review-line.right { color: #6ee7b7; }
+.oct-review-line.wrong { color: #fca5a5; }
+.oct-review-line.muted { color: var(--oct-muted); font-style: italic; }
+
+/* --- Duel: qidiruv natijalari ro'yxati --- */
+.oct-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oct-s-2);
+  max-height: 360px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.oct-user-item {
+  display: flex;
+  align-items: center;
+  gap: var(--oct-s-3);
+  min-height: 64px;
+  padding: var(--oct-s-2) var(--oct-s-3);
+  border-radius: var(--oct-r-md);
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid var(--oct-border);
+}
+.oct-user-item-avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+.oct-presence {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--oct-surface);
+  background: var(--oct-faint);
+}
+.oct-presence.on {
+  background: var(--oct-green);
+  box-shadow: 0 0 8px var(--oct-green);
+}
+.oct-user-item-info {
+  flex: 1;
+  min-width: 0;
+}
+.oct-user-item-name {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.oct-user-item-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--oct-text);
+  font-size: var(--oct-fs-sm);
+  font-weight: 800;
+}
+.oct-user-id {
+  flex-shrink: 0;
+  color: var(--oct-faint);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.oct-user-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  color: var(--oct-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.oct-user-status.on {
+  color: var(--oct-green-2);
+}
+.oct-invite-btn {
+  width: auto;
+  min-width: 112px;
+  min-height: 44px;
+  padding: 0 14px;
+  gap: 6px;
+  border-radius: var(--oct-r-md);
+  font-size: 13.5px;
+}
+
+/* --- Tarix filtri: 4 ta yorliq, faol rang ma'noga mos --- */
+.oct-seg.oct-seg-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.oct-seg-btn.active.win { background: var(--oct-green); color: #052e16; box-shadow: 0 3px 0 var(--oct-green-edge); }
+.oct-seg-btn.active.loss { background: var(--oct-red); color: #fff; box-shadow: 0 3px 0 var(--oct-red-edge); }
+.oct-seg-btn.active.draw { background: var(--oct-text-3); color: var(--oct-surface); box-shadow: 0 3px 0 var(--oct-faint); }
+
+/* --- Lobby statistikasi: 4 katak har doim kartaga sig'adi (uzun o'zbekcha yorliqlar) --- */
+.oct-stats-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.oct-stat-cell {
+  min-width: 0;
+}
+.oct-stat-lbl {
+  max-width: 100%;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+/* --- Kichik ekranlar (320–390 px) --- */
+@media (max-width: 480px) {
+  /* Dizayndagidek: 3 ta ikkilamchi amal bir qatorda, ikon tepada */
+  .oct-secondary-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .oct-secondary-btn {
+    flex-direction: column;
+    gap: 4px;
+    min-height: 64px;
+    padding: 8px 4px;
+    font-size: 11.5px;
+    text-align: center;
+  }
+  .oct-stat-cell {
+    padding: 12px 4px;
+    border-radius: 16px;
+  }
+  .oct-stat-lbl {
+    text-transform: none;
+    letter-spacing: 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .oct-modes-pair { gap: var(--oct-s-2); }
+  .oct-mode-tile { min-height: 124px; padding: var(--oct-s-3); }
+  .oct-mode-tile .oct-mode-title { font-size: 15px; }
+  .oct-league-emoji { font-size: 18px; }
+  .oct-league-name { font-size: 9.5px; }
+  .oct-radar-stat-val, .oct-result-stat-val { font-size: 16px; }
+  .oct-result-player-score { font-size: 28px; }
+  .oct-invite-btn { min-width: 44px; padding: 0 10px; }
+  .oct-invite-btn span { display: none; }
+  .oct-review-answers { margin-left: 0; }
+  /* Tarix filtri: "Mag'lubiyat" 4 ustunda ham to'liq ko'rinsin */
+  .oct-seg.oct-seg-4 { grid-template-columns: repeat(4, auto); gap: 4px; padding: 4px; }
+  .oct-seg-4 .oct-seg-btn { padding: 0 2px; font-size: 11.5px; }
+}
+
+/* Arena HUD: o'yinchi bloklari markazdagi taymerni siqib, ekrandan chiqib ketmasin */
+.oct-hud-main { gap: var(--oct-s-2); }
+.oct-hud-player { flex: 1 1 0; min-width: 0; }
+.oct-hud-info { min-width: 0; }
+.oct-hud-name-row { min-width: 0; max-width: 100%; }
+.oct-hud-name { min-width: 0; }
+.oct-hud-center { flex: none; }
+.oct-hud-player.opponent .oct-hud-info { align-items: flex-end; }
+.oct-opp-status { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+
+@media (max-width: 480px) {
+  .oct-arena-hud { padding: var(--oct-s-3); }
+  .oct-hud-player { gap: var(--oct-s-2); }
+  .oct-hud-name { font-size: 13px; }
+  .oct-hud-badge-you { display: none; }
+  .oct-hud-name-row .mantine-Badge-root { display: none; }
+  .oct-timer-pill { padding: 4px 10px; }
+}
+
+/* Oktagon modallaridagi Mantine tugma va yorliqlari ham teginish uchun ≥ 44 px */
+.oct-modal-dark .mantine-Button-root,
+.oct-modal-dark .mantine-Tabs-tab,
+.oct-modal-dark .mantine-SegmentedControl-label {
+  min-height: 44px;
+}
+.oct-modal-dark .mantine-SegmentedControl-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Duel: 2 ta yorliq telefonda ham bir qatorda (uzun "Foydalanuvchini qidirish" ikki qatorga bo'linadi) */
+.oct-modal-dark .mantine-Tabs-list { flex-wrap: nowrap; }
+.oct-modal-dark .mantine-Tabs-tab { flex: 1 1 0; min-width: 0; padding-inline: 8px; }
+.oct-modal-dark .mantine-Tabs-tabLabel { white-space: normal; text-align: center; line-height: 1.2; }
+
+/* AuthGate: dizayndagidek oltin belgi; "Keyinroq" va bot havolasi ham ≥ 44 px */
+.oct-auth-gate-icon {
+  background: linear-gradient(135deg, var(--oct-gold), var(--oct-gold-2));
+  color: #422006;
+  box-shadow: 0 12px 30px rgba(251, 191, 36, 0.35);
+}
+.oct-auth-gate-later {
+  min-height: 44px;
+  padding: 0 var(--oct-s-4);
+}
+.oct-auth-gate-social :is(a, button) {
+  min-height: 44px;
+}
+
+/* Arena: "Jangdan chiqish" — ko'zga tashlanmaydigan, lekin topiladigan; tasdiq oynasi bilan */
+.oct-leave-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  align-self: center;
+  min-height: var(--oct-touch);
+  margin-top: var(--oct-s-2);
+  padding: 0 var(--oct-s-4);
+  border: 1px solid transparent;
+  border-radius: var(--oct-r-pill);
+  background: transparent;
+  color: var(--oct-muted);
+  font-size: var(--oct-fs-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: color var(--oct-dur) ease, border-color var(--oct-dur) ease;
+}
+.oct-leave-btn:hover,
+.oct-leave-btn:focus-visible {
+  color: var(--oct-red-2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+.oct-leave-msg {
+  margin: 0 0 var(--oct-s-4);
+  color: var(--oct-text-3);
+  font-size: var(--oct-fs-sm);
+  line-height: 1.5;
+}
+.oct-leave-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--oct-s-2);
+}
+.oct-leave-actions .oct-3d-btn {
+  min-height: var(--oct-touch);
+  justify-content: center;
+  font-size: var(--oct-fs-sm);
+}
+
+/* 320–359 px: 4 ta statistika 2×2, liga nomi faqat joriy bosqichda (qolganlari — emoji) */
+@media (max-width: 359px) {
+  .oct-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .oct-league-step:not(.current) .oct-league-name { display: none; }
+  .oct-league-step.current .oct-league-name { overflow: visible; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oct-radar-tip span,
+  .oct-result-cta.pulse {
     animation: none;
   }
 }

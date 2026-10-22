@@ -15,4 +15,17 @@ public interface OctagonMatchRepository extends JpaRepository<OctagonMatch, UUID
 
     @Query("SELECT m FROM OctagonMatch m WHERE m.player1Id = :userId OR m.player2Id = :userId ORDER BY m.createdAt DESC")
     Page<OctagonMatch> findUserMatches(@Param("userId") String userId, Pageable pageable);
+
+    /** Tarix filtri: faqat g'alabalar. */
+    @Query("SELECT m FROM OctagonMatch m WHERE (m.player1Id = :userId OR m.player2Id = :userId) AND m.winnerId = :userId ORDER BY m.createdAt DESC")
+    Page<OctagonMatch> findUserWins(@Param("userId") String userId, Pageable pageable);
+
+    /** Tarix filtri: faqat mag'lubiyatlar (durang emas, g'olib — raqib). */
+    @Query("SELECT m FROM OctagonMatch m WHERE (m.player1Id = :userId OR m.player2Id = :userId) "
+            + "AND (m.isDraw = false OR m.isDraw IS NULL) AND m.winnerId IS NOT NULL AND m.winnerId <> :userId ORDER BY m.createdAt DESC")
+    Page<OctagonMatch> findUserLosses(@Param("userId") String userId, Pageable pageable);
+
+    /** Tarix filtri: faqat duranglar. */
+    @Query("SELECT m FROM OctagonMatch m WHERE (m.player1Id = :userId OR m.player2Id = :userId) AND m.isDraw = true ORDER BY m.createdAt DESC")
+    Page<OctagonMatch> findUserDraws(@Param("userId") String userId, Pageable pageable);
 }
