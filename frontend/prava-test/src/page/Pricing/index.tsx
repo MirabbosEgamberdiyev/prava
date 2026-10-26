@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   Badge,
   Box,
@@ -34,6 +34,7 @@ import { getWebAppUrl } from "../../utils/domain";
 
 /** To'lov tizimlari nomlari (brend nomlari — tarjima qilinmaydi). */
 const PAYMENT_BRANDS = [
+  { name: "inPAY", color: "indigo" },
   { name: "Payme", color: "blue" },
   { name: "Click", color: "cyan" },
   { name: "Uzum Bank", color: "grape" },

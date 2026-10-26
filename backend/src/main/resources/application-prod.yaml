@@ -143,6 +143,14 @@ app:
       return-path:       /payment/success
       timeout-seconds:   43200
 
+    inpay:
+      enabled: true
+      merchant-id:      ${INPAY_MERCHANT_ID:}
+      api-token:        ${INPAY_API_TOKEN:}
+      webhook-secret:   ${INPAY_WEBHOOK_SECRET:}
+      api-url:          ${INPAY_API_URL:https://inpay.uz/api/v1}
+      return-path:      /payment/success
+
 # SECURITY: Swagger/OpenAPI production'da O'CHIRILADI.
 # SecurityConfig'da `/swagger-ui/**`, `/v3/api-docs/**`, `/api-docs/**`
 # permitAll qilingan — ya'ni prod'da butun API sxemasi (barcha admin

@@ -263,6 +263,14 @@ app:
       return-path:       /payment/success
       timeout-seconds:   43200
 
+    inpay:
+      enabled: ${INPAY_ENABLED:true}
+      merchant-id:      ${INPAY_MERCHANT_ID:}
+      api-token:        ${INPAY_API_TOKEN:}
+      webhook-secret:   ${INPAY_WEBHOOK_SECRET:}
+      api-url:          ${INPAY_API_URL:https://inpay.uz/api/v1}
+      return-path:      /payment/success
+
   # QR device pairing (B-01): pollSecret'siz poll (eski desktop) — desktop yangilangach false qiling.
   qr:
     allow-legacy-poll: ${QR_ALLOW_LEGACY_POLL:true}

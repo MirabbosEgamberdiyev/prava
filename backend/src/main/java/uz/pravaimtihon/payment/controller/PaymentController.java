@@ -12,6 +12,7 @@ import uz.pravaimtihon.payment.dto.InvoiceResponse;
 import uz.pravaimtihon.payment.dto.PaymentStatusResponse;
 import uz.pravaimtihon.payment.exception.PaymentException;
 import uz.pravaimtihon.payment.service.ClickService;
+import uz.pravaimtihon.payment.service.InPayService;
 import uz.pravaimtihon.payment.service.PaymentService;
 import uz.pravaimtihon.payment.service.PaymeService;
 import uz.pravaimtihon.security.SecurityUtils;
@@ -28,6 +29,7 @@ public class PaymentController {
 
     private final ClickService   clickService;
     private final PaymeService   paymeService;
+    private final InPayService   inPayService;
     private final PaymentService paymentService;
 
     @PostMapping("/click/invoice")
@@ -44,6 +46,14 @@ public class PaymentController {
         User u = currentUser();
         ExamPackage pkg = paymentService.requirePackage(req.getPackageId());
         return paymeService.createCheckoutUrl(u, pkg);
+    }
+
+    @PostMapping("/inpay/invoice")
+    @PreAuthorize("isAuthenticated()")
+    public InvoiceResponse createInPayInvoice(@Valid @RequestBody CreateInvoiceRequest req) {
+        User u = currentUser();
+        ExamPackage pkg = paymentService.requirePackage(req.getPackageId());
+        return inPayService.createInvoice(u, pkg);
     }
 
     @GetMapping("/{paymentId}/status")

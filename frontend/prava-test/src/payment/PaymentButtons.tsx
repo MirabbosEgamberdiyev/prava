@@ -12,13 +12,18 @@ const ALLOWED_REDIRECT_HOSTS = new Set([
   'checkout.paycom.uz',
   'test.paycom.uz',
   'checkout.test.paycom.uz',
+  'inpay.uz',
+  'checkout.inpay.uz',
+  'pay.inpay.uz',
 ]);
 
 function isAllowedPaymentRedirect(url: unknown): url is string {
   if (typeof url !== 'string' || !url) return false;
   try {
     const u = new URL(url);
-    return u.protocol === 'https:' && ALLOWED_REDIRECT_HOSTS.has(u.hostname.toLowerCase());
+    if (u.protocol !== 'https:') return false;
+    const host = u.hostname.toLowerCase();
+    return ALLOWED_REDIRECT_HOSTS.has(host) || host.endsWith('.inpay.uz');
   } catch {
     return false;
   }
@@ -39,7 +44,7 @@ export function PaymentButtons({
   openInNewTab = false,
 }: PaymentButtonsProps) {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState<'click' | 'payme' | null>(null);
+  const [loading, setLoading] = useState<'click' | 'payme' | 'inpay' | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   const go = (url: unknown) => {
@@ -51,6 +56,19 @@ export function PaymentButtons({
     else window.location.href = url;
   };
 
+  const payInPay = async () => {
+    setErr(null);
+    setLoading('inpay');
+    try {
+      const r = await paymentApi.createInPayInvoice(packageId);
+      go(r.redirectUrl);
+    } catch (e: any) {
+      setErr(e?.response?.data?.error ?? e?.response?.data?.message ?? t('errors.serverError'));
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const payClick = async () => {
     setErr(null);
     setLoading('click');
@@ -58,7 +76,7 @@ export function PaymentButtons({
       const r = await paymentApi.createClickInvoice(packageId);
       go(r.redirectUrl);
     } catch (e: any) {
-      setErr(e?.response?.data?.error ?? t('errors.serverError'));
+      setErr(e?.response?.data?.error ?? e?.response?.data?.message ?? t('errors.serverError'));
     } finally {
       setLoading(null);
     }
@@ -71,7 +89,7 @@ export function PaymentButtons({
       const r = await paymentApi.createPaymeInvoice(packageId);
       go(r.redirectUrl);
     } catch (e: any) {
-      setErr(e?.response?.data?.error ?? t('errors.serverError'));
+      setErr(e?.response?.data?.error ?? e?.response?.data?.message ?? t('errors.serverError'));
     } finally {
       setLoading(null);
     }
@@ -84,24 +102,37 @@ export function PaymentButtons({
         <Text fw={600} size="lg">
           {priceSum.toLocaleString('uz-UZ')} {t('common.currency')}
         </Text>
-        <Group grow mt="sm">
+        <Stack gap="sm" mt="sm">
           <Button
-            color="blue"
-            loading={loading === 'click'}
+            size="md"
+            variant="gradient"
+            gradient={{ from: 'indigo', to: 'violet', deg: 45 }}
+            loading={loading === 'inpay'}
             disabled={!!loading}
-            onClick={payClick}
+            onClick={payInPay}
           >
-            {t('payment.payWithClick')}
+            {t('payment.payWithInpay', 'inPAY (Click, Payme, Uzcard, Humo)')}
           </Button>
-          <Button
-            color="teal"
-            loading={loading === 'payme'}
-            disabled={!!loading}
-            onClick={payPayme}
-          >
-            {t('payment.payWithPayme')}
-          </Button>
-        </Group>
+
+          <Group grow>
+            <Button
+              color="blue"
+              loading={loading === 'click'}
+              disabled={!!loading}
+              onClick={payClick}
+            >
+              {t('payment.payWithClick')}
+            </Button>
+            <Button
+              color="teal"
+              loading={loading === 'payme'}
+              disabled={!!loading}
+              onClick={payPayme}
+            >
+              {t('payment.payWithPayme')}
+            </Button>
+          </Group>
+        </Stack>
         {err && (
           <Text c="red" size="sm" mt="xs">
             {err}

@@ -31,3 +31,11 @@ app:
       checkout-base-url: https://checkout.paycom.uz
       return-path:       /payment/success
       timeout-seconds:   43200
+
+    inpay:
+      enabled: true
+      merchant-id:      ${INPAY_MERCHANT_ID:}
+      api-token:        ${INPAY_API_TOKEN:}
+      webhook-secret:   ${INPAY_WEBHOOK_SECRET:}
+      api-url:          ${INPAY_API_URL:https://inpay.uz/api/v1}
+      return-path:      /payment/success

@@ -61,6 +61,14 @@ public class PaymentAccessService {
                 });
     }
 
+    /**
+     * Alias for {@link #grant(User, ExamPackage, Payment)}.
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserPackageAccess grantAccess(User user, ExamPackage pkg, Payment payment) {
+        return grant(user, pkg, payment);
+    }
+
     @Transactional
     public void revoke(Long userId, Long packageId, String reason) {
         accessRepo.findByUserIdAndPackageId(userId, packageId).ifPresent(a -> {

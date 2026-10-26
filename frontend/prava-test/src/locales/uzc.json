@@ -1,4 +1,4 @@
-{
+﻿{
   "auth": {
     "welcome": "Хуш келибсиз!",
     "noAccount": "Аккаунт мавжуд эмасми?",
@@ -2339,6 +2339,7 @@
     "startLearning": "Ўрганишни бошлаш",
     "retry": "Қайта уриниб кўриш",
     "verifyingDesc": "Тўлов текширилмоқда, илтимос кутинг...",
+    "payWithInpay": "inPAY (Click, Payme, Uzcard, Humo) орқали тўлаш",
     "payWithClick": "Click орқали тўлаш",
     "payWithPayme": "Payme орқали тўлаш",
     "invalidRedirect": "Тўлов саҳифаси манзили нотўғри. Илтимос, кейинроқ қайта уриниб кўринг.",
@@ -4196,6 +4197,7 @@
     "freePlanDesc": "Бошланғич танишув учун",
     "proPlanName": "Pro Тариф",
     "proPlanDesc": "Имтиҳондан 100% муваффақиятли ўтиш учун",
+    "payWithInpay": "inPAY (Click, Payme, Uzcard, Humo) орқали тўлаш",
     "payWithClick": "Click орқали тўлаш",
     "payWithPayme": "Payme орқали тўлаш",
     "payWithUzum": "Uzum Bank орқали тўлаш",

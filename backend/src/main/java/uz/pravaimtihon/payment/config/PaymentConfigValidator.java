@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  * <ul>
  *   <li>Prod'da Payme test rejimi yoqilgan bo'lsa — ilova ishga tushmaydi
  *       (sandbox kaliti bilan bepul paket olish xavfi).</li>
- *   <li>To'lov yoqilgan, lekin kalitlar bo'sh bo'lsa — ERROR log. Webhook'lar
+ *   <li>To'lov yoqilgan, lekin kalitlar bo'sh bo'lsa — ERROR/WARN log. Webhook'lar
  *       bo'sh kalitni baribir rad etadi, shuning uchun bu xavfsiz holat,
  *       lekin to'lovlar ishlamaydi.</li>
  * </ul>
@@ -41,6 +41,9 @@ public class PaymentConfigValidator {
         }
         if (props.getClick().isEnabled() && isBlank(props.getClick().getSecretKey())) {
             log.error("[payment] Click enabled but CLICK_SECRET_KEY is blank — all Click callbacks will be rejected");
+        }
+        if (props.getInpay().isEnabled() && isBlank(props.getInpay().getApiToken())) {
+            log.warn("[payment] InPAY enabled but INPAY_API_TOKEN is blank — invoice creation will fail");
         }
     }
 

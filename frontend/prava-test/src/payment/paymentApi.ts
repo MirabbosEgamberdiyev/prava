@@ -5,7 +5,7 @@
  */
 import api from '../api/api';
 
-export type PaymentProvider = 'CLICK' | 'PAYME' | 'MANUAL';
+export type PaymentProvider = 'CLICK' | 'PAYME' | 'INPAY' | 'MANUAL';
 export type PaymentState =
   | 'PENDING'
   | 'CREATED'
@@ -45,7 +45,9 @@ export const paymentApi = {
   createPaymeInvoice: (packageId: number) =>
     api.post<InvoiceResponse>(`${base}/payme/invoice`, { packageId }).then((r) => r.data),
 
+  createInPayInvoice: (packageId: number) =>
+    api.post<InvoiceResponse>(`${base}/inpay/invoice`, { packageId }).then((r) => r.data),
+
   status: (paymentId: number) =>
     api.get<PaymentStatusResponse>(`${base}/${paymentId}/status`).then((r) => r.data),
 };
-

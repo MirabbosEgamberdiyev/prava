@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+﻿import { lazy, Suspense, useEffect } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { nprogress } from "@mantine/nprogress";
 import ProtectedRoute from "../auth/ProtectedRoute";
@@ -328,6 +328,7 @@ export default function AppRoutes() {
                 <Route path="/wrong-exam" element={<WrongExam_Page />} />
                 <Route path="/exam/result/:sessionId" element={<ExamResult_Page />} />
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />
+                <Route path="/payment/failed" element={<PaymentSuccessPage />} />
               </Route>
             </Route>
 
@@ -465,6 +466,7 @@ export default function AppRoutes() {
                 <Route path="/wrong-exam" element={<WrongExam_Page />} />
                 <Route path="/exam/result/:sessionId" element={<ExamResult_Page />} />
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />
+                <Route path="/payment/failed" element={<PaymentSuccessPage />} />
               </Route>
             </Route>
 

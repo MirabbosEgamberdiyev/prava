@@ -1,4 +1,4 @@
-{
+﻿{
   "auth": {
     "welcome": "Добро пожаловать!",
     "noAccount": "Нет аккаунта?",
@@ -2339,6 +2339,7 @@
     "startLearning": "Начать обучение",
     "retry": "Повторить попытку",
     "verifyingDesc": "Проверка платежа, пожалуйста, подождите...",
+    "payWithInpay": "Оплата через inPAY (Click, Payme, Uzcard, Humo)",
     "payWithClick": "Оплатить через Click",
     "payWithPayme": "Оплатить через Payme",
     "invalidRedirect": "Некорректный адрес страницы оплаты. Пожалуйста, попробуйте позже.",
@@ -4196,6 +4197,7 @@
     "freePlanDesc": "Для ознакомления",
     "proPlanName": "Тариф Pro",
     "proPlanDesc": "Для 100% успешной сдачи экзамена",
+    "payWithInpay": "Оплата через inPAY (Click, Payme, Uzcard, Humo)",
     "payWithClick": "Оплатить через Click",
     "payWithPayme": "Оплатить через Payme",
     "payWithUzum": "Оплатить через Uzum Bank",

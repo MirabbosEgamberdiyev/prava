@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * All payment-related config lives under the `app.payment` prefix.
- * See  application.yml  —  `app.payment.click.*`  and  `app.payment.payme.*`.
+ * See application.yml — `app.payment.click.*`, `app.payment.payme.*`, and `app.payment.inpay.*`.
  */
 @Data
 @Configuration
@@ -27,6 +27,7 @@ public class PaymentProperties {
 
     private Click  click = new Click();
     private Payme  payme = new Payme();
+    private Inpay  inpay = new Inpay();
 
     @Data
     public static class Click {
@@ -54,5 +55,15 @@ public class PaymentProperties {
         private String  returnPath      = "/payment/success";
         /** Soft cap — payments older than this (seconds) can be auto-cancelled. */
         private long    timeoutSeconds  = 43_200;   // 12 hours, matches Payme default
+    }
+
+    @Data
+    public static class Inpay {
+        private boolean enabled       = true;
+        private Long    merchantId;
+        private String  apiToken;
+        private String  webhookSecret;
+        private String  apiUrl        = "https://inpay.uz/api/v1";
+        private String  returnPath    = "/payment/success";
     }
 }

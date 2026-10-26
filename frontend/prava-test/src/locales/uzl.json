@@ -1,4 +1,4 @@
-{
+﻿{
   "auth": {
     "welcome": "Xush kelibsiz!",
     "noAccount": "Akkaunt mavjud emasmi?",
@@ -2339,6 +2339,7 @@
     "startLearning": "O'rganishni boshlash",
     "retry": "Qayta urinib ko'rish",
     "verifyingDesc": "To'lov tekshirilmoqda, iltimos kuting...",
+    "payWithInpay": "inPAY (Click, Payme, Uzcard, Humo)",
     "payWithClick": "Click orqali to'lash",
     "payWithPayme": "Payme orqali to'lash",
     "invalidRedirect": "To'lov sahifasi manzili noto'g'ri. Iltimos, keyinroq qayta urinib ko'ring.",
@@ -4196,6 +4197,7 @@
     "freePlanDesc": "Boshlang'ich tanishuv uchun",
     "proPlanName": "Pro Tarif",
     "proPlanDesc": "Imtihondan 100% muvaffaqiyatli o'tish uchun",
+    "payWithInpay": "inPAY (Click, Payme, Uzcard, Humo)",
     "payWithClick": "Click orqali to'lash",
     "payWithPayme": "Payme orqali to'lash",
     "payWithUzum": "Uzum Bank orqali to'lash",
