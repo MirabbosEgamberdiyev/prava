@@ -61,6 +61,7 @@ services:
       DB_USERNAME: ${DB_USERNAME:-prava_user}
       DB_PASSWORD: ${DB_PASSWORD:-prava_password}
       SPRING_PROFILES_ACTIVE: prod
+      JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true"
 
       # SECURITY: JWT_SECRET default'i OLIB TASHLANDI. `${JWT_SECRET:?...}` —
       # agar .env da berilmasa `docker compose up` xato bilan to'xtaydi.
