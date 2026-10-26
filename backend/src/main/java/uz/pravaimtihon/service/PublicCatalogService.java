@@ -62,7 +62,9 @@ public class PublicCatalogService {
         Topic topic = t.getTopic();
         ExamPackage pkg = t.getExamPackage();
         // Paketsiz bilet — bepul; paketdagi bilet — paket bepul bo'lsa bepul (aks holda to'lov kerak).
-        boolean isFree = pkg == null || Boolean.TRUE.equals(pkg.getIsFree());
+        // Paketsiz bilet — 50-gacha bepul; 51-70 pullik. Paketdagi bilet — agar paket bepul bo'lsa va 50 gacha bo'lsa bepul.
+        boolean isFree = (t.getTicketNumber() == null || t.getTicketNumber() <= 50)
+                && (pkg == null || Boolean.TRUE.equals(pkg.getIsFree()));
         return new PublicTicket(
                 t.getId(),
                 t.getTicketNumber(),

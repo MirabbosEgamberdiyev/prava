@@ -12,6 +12,7 @@ export interface User {
   packageActive?: boolean;
   subscriptionPlan?: string;
   subscriptionExpiresAt?: string;
+  remainingRealExamTrials?: number;
   /** Profil rasmi: yuklangan (/api/v1/files/profiles/…), tayyor avatar (/api/v1/public/avatars/…) yoki Google/Telegram. */
   profileImageUrl?: string | null;
 }

@@ -55,7 +55,7 @@ class OctagonApiSecurityTest {
         when(profileRepo.save(any())).thenAnswer(i -> i.getArgument(0));
         when(matchRepo.save(any())).thenAnswer(i -> i.getArgument(0));
         service = new OctagonService(profileRepo, matchRepo, mock(OctagonChallengeRepository.class),
-                mock(OctagonReportRepository.class), mock(QuestionRepository.class), userRepo, new OctagonEloCalculator());
+                mock(OctagonReportRepository.class), mock(QuestionRepository.class), userRepo, new OctagonEloCalculator(), mock(uz.pravaimtihon.payment.service.PaymentAccessService.class));
         guests = new OctagonGuestIdentity("test-secret-for-unit-tests-only-0123456789");
         matchmaker = mock(OctagonMatchmaker.class);
         tickets = new OctagonTicketService();

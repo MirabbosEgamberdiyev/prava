@@ -4250,11 +4250,14 @@
       "marathonFree": "Мавжуд эмас",
       "marathonPro": "Барча {{questions}} та савол кетма-кет",
       "realExam": "Реал ЙҲХБ имтиҳон синови",
-      "realExamFree": "Чекланган",
+      "realExamFree": "1 та бепул синов",
       "realExamPro": "Чексиз синов имтиҳонлари",
       "offline": "Офлайн режим (интернетсиз)",
       "offlineFree": "Мавжуд эмас",
-      "offlinePro": "Desktop ва Мобилда тўлиқ офлайн"
+      "offlinePro": "Desktop ва Мобилда тўлиқ офлайн",
+      "octagon": "OKTAGON PvP жанги",
+      "octagonFree": "Кунига 3 та бепул дуэль",
+      "octagonPro": "Чексиз жанглар & VIP статус"
     }
   },
   "octagon": {

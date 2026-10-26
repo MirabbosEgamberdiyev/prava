@@ -4250,11 +4250,14 @@
       "marathonFree": "Mavjud emas",
       "marathonPro": "Barcha {{questions}} ta savol ketma-ket",
       "realExam": "Real YHXB imtihon sinovi",
-      "realExamFree": "Cheklangan",
+      "realExamFree": "1 ta bepul sinov",
       "realExamPro": "Cheksiz sinov imtihonlari",
       "offline": "Oflayn rejim (internetsiz)",
       "offlineFree": "Mavjud emas",
-      "offlinePro": "Desktop va Mobilda to'liq oflayn"
+      "offlinePro": "Desktop va Mobilda to'liq oflayn",
+      "octagon": "OKTAGON PvP jangi",
+      "octagonFree": "Kuniga 3 ta bepul duel",
+      "octagonPro": "Cheksiz janglar & VIP status"
     }
   },
   "octagon": {

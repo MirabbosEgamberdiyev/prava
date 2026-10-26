@@ -21,6 +21,7 @@ import type { UserStats } from "../types";
 import { OctagonAvatar } from "./OctagonAvatar";
 import { OctagonRankBadge } from "./OctagonRankBadge";
 import { OctagonLeagueLadder } from "./OctagonLeagueLadder";
+import { useTariffPaywall } from "../../../context/TariffPaywallContext";
 import "../octagon.css";
 
 interface Props {
@@ -53,7 +54,29 @@ export const OctagonLobbyView: React.FC<Props> = ({
   onLogin,
 }) => {
   const { t } = useTranslation();
+  const { openPaywall } = useTariffPaywall();
   const [isMuted, setIsMuted] = useState(() => OctagonAudio.getMuted());
+
+  const isVip = Boolean(stats?.isVip || (user as any)?.hasSubscription || (user as any)?.packageActive);
+  const dailyMatchesLeft = isVip ? -1 : (stats?.dailyMatchesLeft != null ? stats.dailyMatchesLeft : 3);
+  const isLimitReached = !user ? false : (!isVip && dailyMatchesLeft <= 0);
+
+  const handleAction = (callback: () => void) => {
+    if (!user) {
+      onLogin();
+      return;
+    }
+    if (isLimitReached) {
+      openPaywall(
+        t(
+          "octagon.limitReachedReason",
+          "Bugungi 3 ta bepul jang limitingiz tugadi. Cheksiz janglar uchun tarifga obuna bo'ling"
+        )
+      );
+      return;
+    }
+    callback();
+  };
 
   const toggleSound = () => {
     const next = !isMuted;
@@ -69,7 +92,11 @@ export const OctagonLobbyView: React.FC<Props> = ({
   // G'alaba foizi — serverdagi bilan bir xil (wins / totalMatches), jadval va profil bilan mos
   const winRate = Math.round(typeof stats?.winRate === "number" ? stats.winRate : total > 0 ? (wins / total) * 100 : 0);
   const isGuest = !user;
-  const lock = isGuest ? <IconLock size={18} className="oct-mode-lock" aria-hidden="true" /> : null;
+  const lock = isGuest ? (
+    <IconLock size={18} className="oct-mode-lock" aria-hidden="true" />
+  ) : isLimitReached ? (
+    <IconLock size={18} className="oct-mode-lock" style={{ color: "#f59e0b" }} aria-hidden="true" />
+  ) : null;
 
   return (
     <div className="oct-page-wrapper">
@@ -160,6 +187,26 @@ export const OctagonLobbyView: React.FC<Props> = ({
                         {t("octagon.lobby.streakChip", { count: streak })}
                       </span>
                     )}
+                    {user && (
+                      isVip ? (
+                        <span className="oct-limit-pill vip" title={t("octagon.lobby.unlimitedBattles", "Cheksiz janglar")}>
+                          ⭐ VIP
+                        </span>
+                      ) : (
+                        <span
+                          className={`oct-limit-pill ${isLimitReached ? "exhausted" : "active"}`}
+                          title={t("octagon.lobby.dailyBattles", "Kunlik bepul janglar")}
+                          onClick={() => {
+                            if (isLimitReached) {
+                              openPaywall(t("octagon.limitReachedReason", "Bugungi 3 ta bepul jang limitingiz tugadi. Cheksiz janglar uchun tarifga obuna bo'ling"));
+                            }
+                          }}
+                          style={{ cursor: isLimitReached ? "pointer" : "default" }}
+                        >
+                          ⚔️ {Math.max(0, dailyMatchesLeft)}/3
+                        </span>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
@@ -206,7 +253,7 @@ export const OctagonLobbyView: React.FC<Props> = ({
 
         {/* Asosiy CTA — tezkor jang; guruh va duel ikkilamchi, yonma-yon */}
         <div className="oct-modes">
-          <button type="button" className="oct-3d-btn green oct-mode-btn oct-mode-primary" onClick={onStartSearch}>
+          <button type="button" className="oct-3d-btn green oct-mode-btn oct-mode-primary" onClick={() => handleAction(onStartSearch)}>
             <span className="oct-mode-icon">
               <IconBolt size={30} stroke={2.5} />
             </span>
@@ -218,7 +265,7 @@ export const OctagonLobbyView: React.FC<Props> = ({
           </button>
 
           <div className="oct-modes-pair">
-            <button type="button" className="oct-3d-btn blue oct-mode-tile" onClick={onOpenGroup}>
+            <button type="button" className="oct-3d-btn blue oct-mode-tile" onClick={() => handleAction(onOpenGroup)}>
               <span className="oct-mode-icon">
                 <IconUsers size={26} stroke={2.5} />
               </span>
@@ -227,7 +274,7 @@ export const OctagonLobbyView: React.FC<Props> = ({
               {lock}
             </button>
 
-            <button type="button" className="oct-3d-btn purple oct-mode-tile" onClick={onOpenDuel}>
+            <button type="button" className="oct-3d-btn purple oct-mode-tile" onClick={() => handleAction(onOpenDuel)}>
               <span className="oct-mode-icon">
                 <IconUserPlus size={26} stroke={2.5} />
               </span>

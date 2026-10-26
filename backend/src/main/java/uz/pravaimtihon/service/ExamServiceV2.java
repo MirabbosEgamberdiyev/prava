@@ -237,6 +237,19 @@ public class ExamServiceV2 {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
 
+        // REAL imtihon uchun payment gate: 1 ta bepul sinov, keyin obuna shart
+        if (mode == ExamMode.REAL) {
+            boolean isMirabbos = user.getEmail() != null && "mirabbosegamberdiyev3@gmail.com".equalsIgnoreCase(user.getEmail().trim());
+            boolean hasSubscription = isMirabbos || paymentAccessService.hasAnyActiveAccess(userId);
+            if (!hasSubscription) {
+                long usedRealExams = sessionRepository.countByUserIdAndExamMode(userId, ExamMode.REAL);
+                if (usedRealExams >= 1) {
+                    throw uz.pravaimtihon.payment.exception.PaymentException
+                            .paymentRequired("error.real.exam.subscription.required");
+                }
+            }
+        }
+
         // Faol sessiyalar bo'lsa barchasini abandon qilamiz (atomic UPDATE, no optimistic lock collision)
         sessionRepository.abandonActiveSessions(userId, LocalDateTime.now());
 

@@ -10,6 +10,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
+import { useTariffPaywall } from "../../context/TariffPaywallContext";
 import type { OfflineQuestion } from "../../types/desktop";
 import {
   getExamQuestions,
@@ -47,7 +48,20 @@ export default function Exam_Page() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const { openPaywall } = useTariffPaywall();
   const userId = resolveUserScopeId(user);
+
+  useEffect(() => {
+    if (user && !user.hasSubscription && user.remainingRealExamTrials === 0) {
+      openPaywall(
+        t(
+          "exam.trialUsedReason",
+          "Davlat imtihoni uchun 1 ta bepul sinov imtihonidan foydalangansiz. Cheksiz topshirish uchun tarifga obuna bo'ling"
+        )
+      );
+      navigate("/me", { replace: true });
+    }
+  }, [user, openPaywall, navigate, t]);
 
   // Exam rules (server-driven, cached; defaults: 20 savol, 60 s/savol, max 3 xato — 4-xato imtihonni tugatadi) — fixed for this page's lifetime
   const [rules] = useState(getExamRules);

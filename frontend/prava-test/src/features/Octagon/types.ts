@@ -192,6 +192,9 @@ export interface UserStats {
   maxWinStreak: number;
   totalMatches: number;
   winRate: number;
+  isVip?: boolean;
+  dailyMatchesLeft?: number;
+  dailyLimit?: number;
 }
 
 export interface LeaderboardUser {

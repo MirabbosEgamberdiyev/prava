@@ -6,6 +6,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import uz.pravaimtihon.dto.response.UserResponse;
 import uz.pravaimtihon.entity.ExamPackage;
 import uz.pravaimtihon.entity.User;
 import uz.pravaimtihon.payment.config.PaymentProperties;
@@ -14,6 +15,7 @@ import uz.pravaimtihon.payment.entity.UserPackageAccess;
 import uz.pravaimtihon.payment.repository.UserPackageAccessRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Idempotent grant/revoke of package access.
@@ -82,6 +84,38 @@ public class PaymentAccessService {
     @Transactional(readOnly = true)
     public boolean hasActiveAccess(Long userId, Long packageId) {
         return accessRepo.hasActiveAccess(userId, packageId);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean hasAnyActiveAccess(Long userId) {
+        if (userId == null) return false;
+        return accessRepo.hasAnyActiveAccess(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public void enrichUserSubscription(UserResponse response, User user) {
+        if (response == null || user == null) return;
+
+        // Superadmin / developer override
+        if (user.getEmail() != null && "mirabbosegamberdiyev3@gmail.com".equalsIgnoreCase(user.getEmail().trim())) {
+            response.setHasSubscription(true);
+            response.setPackageActive(true);
+            response.setSubscriptionPlan("1y");
+            response.setSubscriptionExpiresAt(LocalDateTime.now().plusYears(1));
+            return;
+        }
+
+        List<UserPackageAccess> activeList = accessRepo.findActiveAccesses(user.getId());
+        if (!activeList.isEmpty()) {
+            UserPackageAccess latest = activeList.get(0);
+            response.setHasSubscription(true);
+            response.setPackageActive(true);
+            response.setSubscriptionExpiresAt(latest.getExpiresAt());
+            response.setSubscriptionPlan(latest.getExamPackage() != null ? latest.getExamPackage().getNameUzl() : "PRO");
+        } else {
+            response.setHasSubscription(false);
+            response.setPackageActive(false);
+        }
     }
 
     private LocalDateTime computeExpiry() {

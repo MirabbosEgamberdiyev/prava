@@ -39,6 +39,21 @@ import java.util.UUID;
 @Transactional
 public class AuthService {
 
+    private UserResponse toEnrichedUserResponse(User user, AcceptLanguage language) {
+        UserResponse response = userMapper.toResponse(user, language);
+        paymentAccessService.enrichUserSubscription(response, user);
+        if (user.getEmail() != null && "mirabbosegamberdiyev3@gmail.com".equalsIgnoreCase(user.getEmail().trim())) {
+            response.setRemainingRealExamTrials(-1);
+        } else if (Boolean.TRUE.equals(response.getHasSubscription())) {
+            response.setRemainingRealExamTrials(-1);
+        } else {
+            long usedReal = sessionRepository.countByUserIdAndExamMode(user.getId(), uz.pravaimtihon.enums.ExamMode.REAL);
+            response.setRemainingRealExamTrials((int) Math.max(0, 1 - usedReal));
+        }
+        return response;
+    }
+
+
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
@@ -51,6 +66,8 @@ public class AuthService {
     private final DeviceManagementService deviceManagementService;
     private final uz.pravaimtihon.security.SessionRevocationService sessionRevocationService;
     private final AvatarService avatarService;
+    private final uz.pravaimtihon.payment.service.PaymentAccessService paymentAccessService;
+    private final uz.pravaimtihon.repository.ExamSessionRepository sessionRepository;
 
     @Value("${app.oauth.google.auto-register:true}")
     private boolean autoRegister;
@@ -155,7 +172,7 @@ public class AuthService {
                         if (Boolean.TRUE.equals(activeUser.getIsActive())) {
                             CustomUserDetails userDetails = CustomUserDetails.from(activeUser);
                             String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails, revokedToken.getTokenFamily());
-                            UserResponse userResponse = userMapper.toResponse(activeUser, language);
+                            UserResponse userResponse = toEnrichedUserResponse(activeUser, language);
                             return AuthResponse.builder()
                                     .accessToken(newAccessToken)
                                     .refreshToken(activeToken.getToken())
@@ -205,7 +222,7 @@ public class AuthService {
 
         refreshTokenRepository.save(newRefreshToken);
 
-        UserResponse userResponse = userMapper.toResponse(user, language);
+        UserResponse userResponse = toEnrichedUserResponse(user, language);
 
         return AuthResponse.builder()
                 .accessToken(newAccessToken)
@@ -251,7 +268,7 @@ public class AuthService {
                 .filter(u -> !u.getDeleted() && u.getIsActive())
                 .orElseThrow(() -> new ResourceNotFoundException("error.user.not.found"));
 
-        return userMapper.toResponse(user, language);
+        return toEnrichedUserResponse(user, language);
     }
 
     /**
@@ -331,7 +348,7 @@ public class AuthService {
 
         User saved = userRepository.save(user);
         AcceptLanguage effectiveLang = saved.getPreferredLanguage() != null ? saved.getPreferredLanguage() : defaultLang;
-        return userMapper.toResponse(saved, effectiveLang);
+        return toEnrichedUserResponse(saved, effectiveLang);
     }
 
     /**
@@ -642,7 +659,7 @@ public class AuthService {
 
         refreshTokenRepository.save(refreshToken);
 
-        UserResponse userResponse = userMapper.toResponse(user, language);
+        UserResponse userResponse = toEnrichedUserResponse(user, language);
 
         return AuthResponse.builder()
                 .accessToken(accessToken)

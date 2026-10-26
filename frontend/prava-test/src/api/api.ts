@@ -242,6 +242,18 @@ api.interceptors.response.use(
 
     if (error.response) {
       const status = error.response.status;
+      if (status === 402) {
+        const errorMsg =
+          (error.response.data as any)?.message ||
+          (error.response.data as any)?.error ||
+          i18n.t("payment.required", "Tarifga obuna bo'lish talab qilinadi");
+        window.dispatchEvent(
+          new CustomEvent("prava-payment-required", {
+            detail: { message: errorMsg, url: requestUrl },
+          }),
+        );
+        return Promise.reject(error);
+      }
       if (status === 403) {
         // 403 means authenticated but forbidden — do NOT clear tokens/logout
         if (!isSelfHandled) {

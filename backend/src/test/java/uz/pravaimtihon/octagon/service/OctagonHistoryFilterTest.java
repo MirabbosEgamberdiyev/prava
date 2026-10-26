@@ -34,7 +34,7 @@ class OctagonHistoryFilterTest {
         matches = mock(OctagonMatchRepository.class);
         service = new OctagonService(mock(OctagonProfileRepository.class), matches, mock(OctagonChallengeRepository.class),
                 mock(OctagonReportRepository.class), mock(QuestionRepository.class), mock(UserRepository.class),
-                mock(OctagonEloCalculator.class));
+                mock(OctagonEloCalculator.class), mock(uz.pravaimtihon.payment.service.PaymentAccessService.class));
         Page<OctagonMatch> one = new PageImpl<>(List.of(OctagonMatch.builder().id(UUID.randomUUID()).player1Id("7").player2Id("8")
                 .player1Score(6).player2Score(4).winnerId("7").isDraw(false).p1EloChange(20).p2EloChange(-12)
                 .durationSeconds(140).createdAt(LocalDateTime.now()).build()));

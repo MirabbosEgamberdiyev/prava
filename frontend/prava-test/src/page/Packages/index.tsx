@@ -46,7 +46,7 @@ export default function Packages_Page() {
 
   const [plans, setPlans] = useState<PlanOption[]>(DEFAULT_PLANS);
   const [selectedPlanId, setSelectedPlanId] = useState<PlanOption["id"]>("1m");
-  const [loadingProvider, setLoadingProvider] = useState<"click" | "payme" | null>(null);
+  const [loadingProvider, setLoadingProvider] = useState<"inpay" | "click" | "payme" | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -241,6 +241,18 @@ export default function Packages_Page() {
                     <span className="po-val-badge open">
                       <IconCheck size={16} stroke={2.5} />
                       {t("tariff.compare.mistakesPro", "Xato qilingan savollar tahlili")}
+                    </span>
+                  </td>
+                </tr>
+
+                {/* OKTAGON PvP Battles */}
+                <tr className="po-compare-row">
+                  <td className="po-compare-td feature-title">{t("tariff.compare.octagon", "OKTAGON PvP jangi")}</td>
+                  <td className="po-compare-td free-val">{t("tariff.compare.octagonFree", "Kuniga 3 ta bepul duel")}</td>
+                  <td className="po-compare-td pro-val">
+                    <span className="po-val-badge open">
+                      <IconCheck size={16} stroke={2.5} />
+                      {t("tariff.compare.octagonPro", "Cheksiz janglar & VIP status")}
                     </span>
                   </td>
                 </tr>

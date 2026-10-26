@@ -63,8 +63,28 @@ public class OctagonService {
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
     private final OctagonEloCalculator eloCalculator;
+    private final uz.pravaimtihon.payment.service.PaymentAccessService paymentAccessService;
 
     private final Map<String, Deque<Instant>> reportTimes = new ConcurrentHashMap<>();
+
+    
+    public boolean isVip(String userId) {
+        if (userId == null) return false;
+        try {
+            Long uid = Long.parseLong(userId);
+            User u = userRepository.findById(uid).orElse(null);
+            if (u != null && u.getEmail() != null && "mirabbosegamberdiyev3@gmail.com".equalsIgnoreCase(u.getEmail().trim())) {
+                return true;
+            }
+            return paymentAccessService.hasAnyActiveAccess(uid);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public long getTodayMatchCount(String userId) {
+        return matchRepository.countMatchesSince(userId, java.time.LocalDate.now().atStartOfDay());
+    }
 
     public static boolean isBotId(String userId) {
         return userId != null && userId.startsWith("bot");

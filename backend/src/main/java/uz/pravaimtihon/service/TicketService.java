@@ -342,11 +342,14 @@ public class TicketService {
 
         // Payment gate: bilet pullik paketga tegishli bo'lsa faol ruxsat shart (avval bilet orqali
         // pullik paket savollarini to'lovsiz olish mumkin edi — audit P1-B1).
+        // Payment gate: 50 dan katta biletlar yoki pullik paket biletlari uchun faol ruxsat shart
         ExamPackage ticketPackage = ticket.getExamPackage();
-        if (ticketPackage != null && !Boolean.TRUE.equals(ticketPackage.getIsFree())
-                && !paymentAccessService.hasActiveAccess(userId, ticketPackage.getId())) {
+        boolean isPaidTicket = (ticket.getTicketNumber() != null && ticket.getTicketNumber() > 50)
+                || (ticketPackage != null && !Boolean.TRUE.equals(ticketPackage.getIsFree()));
+        boolean isMirabbos = user.getEmail() != null && "mirabbosegamberdiyev3@gmail.com".equalsIgnoreCase(user.getEmail().trim());
+        if (isPaidTicket && !isMirabbos && !paymentAccessService.hasAnyActiveAccess(userId)) {
             throw uz.pravaimtihon.payment.exception.PaymentException
-                    .paymentRequired("error.payment.required");
+                    .paymentRequired("error.ticket.subscription.required");
         }
 
         // Agar foydalanuvchida faol sessiyalar bo'lsa — barchasini abandon qilamiz (atomic UPDATE, no optimistic lock collision)

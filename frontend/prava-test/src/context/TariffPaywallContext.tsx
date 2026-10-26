@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
 export interface TariffPaywallContextValue {
   /**
@@ -22,6 +22,15 @@ export function TariffPaywallProvider({ children }: { children: ReactNode }) {
     setIsOpen(true);
   };
   const closePaywall = () => setIsOpen(false);
+
+  useEffect(() => {
+    const handlePayReq = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      openPaywall(detail?.message);
+    };
+    window.addEventListener("prava-payment-required", handlePayReq);
+    return () => window.removeEventListener("prava-payment-required", handlePayReq);
+  }, []);
 
   return (
     <TariffPaywallContext.Provider value={{ openPaywall, closePaywall, isOpen, reason }}>

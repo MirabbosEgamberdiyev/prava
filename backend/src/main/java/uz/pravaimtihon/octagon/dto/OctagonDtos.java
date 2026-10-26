@@ -45,6 +45,9 @@ public class OctagonDtos {
         private int maxWinStreak;
         private int totalMatches;
         private double winRate;
+        private boolean isVip;
+        private int dailyMatchesLeft;
+        private int dailyLimit;
     }
 
     @Data

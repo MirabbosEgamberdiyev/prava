@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../auth/AuthContext";
+import { useTariffPaywall } from "../../../context/TariffPaywallContext";
 import type { OfflineQuestion, OfflineTicket } from "../../../types/desktop";
 import {
   getQuestionsByTicket,
@@ -49,6 +50,7 @@ export default function TicketExamPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { openPaywall } = useTariffPaywall();
   const userId = resolveUserScopeId(user);
 
   // Official server ticket id (offline bundle v2) — name/number come from the local DB.
@@ -67,6 +69,17 @@ export default function TicketExamPage() {
       alive = false;
     };
   }, [ticketId]);
+
+useEffect(() => {
+    if (ticketInfo) {
+      const isFree = (ticketInfo.ticket_number || 0) <= 50;
+      const isSubscribed = Boolean(user?.hasSubscription || (user as any)?.packageActive);
+      if (!isFree && !isSubscribed) {
+        openPaywall(t("tariff.unlockTicketReason", "Ushbu biletni ochish uchun tarifga obuna bo'ling"));
+        navigate("/tickets", { replace: true });
+      }
+    }
+  }, [ticketInfo, user, openPaywall, navigate, t]);
 
   const [phase, setPhase] = useState<Phase>("loading");
   const [questions, setQuestions] = useState<OfflineQuestion[]>([]);

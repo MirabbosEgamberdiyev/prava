@@ -28,4 +28,8 @@ public interface OctagonMatchRepository extends JpaRepository<OctagonMatch, UUID
     /** Tarix filtri: faqat duranglar. */
     @Query("SELECT m FROM OctagonMatch m WHERE (m.player1Id = :userId OR m.player2Id = :userId) AND m.isDraw = true ORDER BY m.createdAt DESC")
     Page<OctagonMatch> findUserDraws(@Param("userId") String userId, Pageable pageable);
+
+    /** Foydalanuvchining ma'lum vaqtdan keyingi o'yinlari soni (kunlik limit uchun). */
+    @Query("SELECT COUNT(m) FROM OctagonMatch m WHERE (m.player1Id = :userId OR m.player2Id = :userId) AND m.createdAt >= :since")
+    long countMatchesSince(@Param("userId") String userId, @Param("since") java.time.LocalDateTime since);
 }

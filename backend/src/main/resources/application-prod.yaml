@@ -145,9 +145,9 @@ app:
 
     inpay:
       enabled: true
-      merchant-id:      ${INPAY_MERCHANT_ID:}
-      api-token:        ${INPAY_API_TOKEN:}
-      webhook-secret:   ${INPAY_WEBHOOK_SECRET:}
+      merchant-id:      ${INPAY_MERCHANT_ID:76219}
+      api-token:        ${INPAY_API_TOKEN:6b07b90f249af4907d978c7537743813}
+      webhook-secret:   ${INPAY_WEBHOOK_SECRET:6b07b90f249af4907d978c7537743813}
       api-url:          ${INPAY_API_URL:https://inpay.uz/api/v1}
       return-path:      /payment/success
 

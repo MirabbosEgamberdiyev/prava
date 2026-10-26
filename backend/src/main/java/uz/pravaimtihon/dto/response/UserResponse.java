@@ -34,4 +34,12 @@ public class UserResponse {
     private Boolean packageActive;
     private String subscriptionPlan;
     private LocalDateTime subscriptionExpiresAt;
+
+    /**
+     * Davlat imtihoni (Real Exam) bepul sinovlari soni:
+     * -1: obuna mavjud (cheksiz)
+     * 1: 1 ta bepul sinov qolgan
+     * 0: bepul sinov ishlatilgan (obuna talab qilinadi)
+     */
+    private Integer remainingRealExamTrials;
 }

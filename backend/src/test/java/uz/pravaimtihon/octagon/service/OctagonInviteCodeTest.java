@@ -36,7 +36,7 @@ class OctagonInviteCodeTest {
         challenges = mock(OctagonChallengeRepository.class);
         service = new OctagonService(mock(OctagonProfileRepository.class), mock(OctagonMatchRepository.class), challenges,
                 mock(OctagonReportRepository.class), mock(QuestionRepository.class), mock(UserRepository.class),
-                mock(OctagonEloCalculator.class));
+                mock(OctagonEloCalculator.class), mock(uz.pravaimtihon.payment.service.PaymentAccessService.class));
         when(challenges.findByChallengerIdAndStatus(anyString(), any())).thenReturn(List.of());
         when(challenges.findFirstByInviteCodeAndStatusOrderByCreatedAtDesc(anyString(), any())).thenReturn(Optional.empty());
         when(challenges.saveAndFlush(any())).thenAnswer(inv -> inv.getArgument(0));

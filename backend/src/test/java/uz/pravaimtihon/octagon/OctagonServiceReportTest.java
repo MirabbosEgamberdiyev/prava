@@ -29,7 +29,7 @@ class OctagonServiceReportTest {
 
         OctagonService service = new OctagonService(
                 profileRepo, matchRepo, challengeRepo, reportRepo,
-                questionRepo, userRepo, eloCalc
+                questionRepo, userRepo, eloCalc, mock(uz.pravaimtihon.payment.service.PaymentAccessService.class)
         );
 
         ReportRequest request = ReportRequest.builder()

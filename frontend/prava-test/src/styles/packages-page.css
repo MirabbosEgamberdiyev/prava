@@ -274,6 +274,43 @@
   flex-wrap: wrap;
 }
 
+.po-btn-inpay {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 22px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.po-btn-inpay:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(99, 102, 241, 0.45);
+}
+
+.po-btn-inpay:active {
+  transform: translateY(0);
+}
+
+.po-btn-inpay:disabled,
+.po-btn-click:disabled,
+.po-btn-payme:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .po-btn-click {
   background: #0073ff;
   color: #ffffff;

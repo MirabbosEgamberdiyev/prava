@@ -27,6 +27,23 @@ public interface UserPackageAccessRepository extends JpaRepository<UserPackageAc
     boolean hasActiveAccess(@Param("userId") Long userId,
                             @Param("packageId") Long packageId);
 
+    @Query("""
+           select (count(a) > 0) from UserPackageAccess a
+           where a.user.id = :userId
+             and a.revoked = false
+             and (a.expiresAt is null or a.expiresAt > CURRENT_TIMESTAMP)
+           """)
+    boolean hasAnyActiveAccess(@Param("userId") Long userId);
+
+    @Query("""
+           select a from UserPackageAccess a
+           where a.user.id = :userId
+             and a.revoked = false
+             and (a.expiresAt is null or a.expiresAt > CURRENT_TIMESTAMP)
+           order by a.expiresAt desc
+           """)
+    List<UserPackageAccess> findActiveAccesses(@Param("userId") Long userId);
+
     /** Foydalanuvchi hozir foydalana oladigan (to'langan, bekor qilinmagan, muddati o'tmagan) paketlar. */
     @Query("""
            select a.examPackage.id from UserPackageAccess a

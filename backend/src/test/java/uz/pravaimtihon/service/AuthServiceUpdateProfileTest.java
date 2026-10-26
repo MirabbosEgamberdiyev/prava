@@ -63,8 +63,7 @@ class AuthServiceUpdateProfileTest {
                 telegramTokenStore,
                 deviceManagementService,
                 mock(uz.pravaimtihon.security.SessionRevocationService.class),
-                avatarService
-        );
+                avatarService, mock(uz.pravaimtihon.payment.service.PaymentAccessService.class), mock(uz.pravaimtihon.repository.ExamSessionRepository.class));
 
         existingUser = User.builder()
                 .firstName("Eski")

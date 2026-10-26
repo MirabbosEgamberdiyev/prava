@@ -283,4 +283,10 @@ public interface ExamSessionRepository extends JpaRepository<ExamSession, Long> 
      */
     @Query("SELECT COUNT(es) FROM ExamSession es WHERE es.examPackage IS NULL AND es.ticket IS NULL")
     long countMarathonSessions();
+
+    /**
+     * Foydalanuvchining ma'lum rejimdagi (masalan REAL) sessiyalari soni.
+     */
+    @Query("SELECT COUNT(es) FROM ExamSession es WHERE es.user.id = :userId AND es.examMode = :mode")
+    long countByUserIdAndExamMode(@Param("userId") Long userId, @Param("mode") uz.pravaimtihon.enums.ExamMode mode);
 }

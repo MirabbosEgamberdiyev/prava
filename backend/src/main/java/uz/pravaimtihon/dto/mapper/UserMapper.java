@@ -23,6 +23,7 @@ public interface UserMapper {
                 response.setPackageActive(true);
                 response.setSubscriptionPlan("1y");
                 response.setSubscriptionExpiresAt(java.time.LocalDateTime.now().plusYears(1));
+                response.setRemainingRealExamTrials(-1);
             }
         }
     }

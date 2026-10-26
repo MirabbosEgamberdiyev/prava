@@ -31,7 +31,7 @@ class OctagonLeaderboardMeTest {
         profiles = mock(OctagonProfileRepository.class);
         service = new OctagonService(profiles, mock(OctagonMatchRepository.class), mock(OctagonChallengeRepository.class),
                 mock(OctagonReportRepository.class), mock(QuestionRepository.class), mock(UserRepository.class),
-                mock(OctagonEloCalculator.class));
+                mock(OctagonEloCalculator.class), mock(uz.pravaimtihon.payment.service.PaymentAccessService.class));
     }
 
     private static OctagonProfile profile(int elo, int wins, int total, LocalDateTime updatedAt) {

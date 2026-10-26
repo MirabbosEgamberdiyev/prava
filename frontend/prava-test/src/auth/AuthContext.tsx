@@ -103,6 +103,7 @@ export const enhanceUserWithSubscription = (u: User | null): User | null => {
       packageActive: true,
       subscriptionPlan: u.subscriptionPlan || "1y",
       subscriptionExpiresAt: u.subscriptionExpiresAt || "2027-09-30T23:59:59Z",
+      remainingRealExamTrials: -1,
     };
   }
   return u;
