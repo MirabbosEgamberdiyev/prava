@@ -11,4 +11,13 @@ import lombok.NoArgsConstructor;
 public class CreateInvoiceRequest {
     @NotNull
     private Long packageId;
+
+    /**
+     * Optional preferred payment method: "click", "payme", "plum", or "inpay".
+     */
+    private String method;
+
+    public CreateInvoiceRequest(Long packageId) {
+        this.packageId = packageId;
+    }
 }

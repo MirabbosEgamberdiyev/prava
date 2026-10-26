@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uz.pravaimtihon.entity.ExamPackage;
 import uz.pravaimtihon.entity.User;
+import uz.pravaimtihon.payment.config.PaymentProperties;
 import uz.pravaimtihon.payment.dto.CreateInvoiceRequest;
 import uz.pravaimtihon.payment.dto.InvoiceResponse;
 import uz.pravaimtihon.payment.dto.PaymentStatusResponse;
@@ -27,17 +28,25 @@ import uz.pravaimtihon.security.SecurityUtils;
 @Slf4j
 public class PaymentController {
 
-    private final ClickService   clickService;
-    private final PaymeService   paymeService;
-    private final InPayService   inPayService;
-    private final PaymentService paymentService;
+    private final ClickService      clickService;
+    private final PaymeService      paymeService;
+    private final InPayService      inPayService;
+    private final PaymentService    paymentService;
+    private final PaymentProperties props;
 
     @PostMapping("/click/invoice")
     @PreAuthorize("isAuthenticated()")
     public InvoiceResponse createClickInvoice(@Valid @RequestBody CreateInvoiceRequest req) {
         User u = currentUser();
         ExamPackage pkg = paymentService.requirePackage(req.getPackageId());
-        return clickService.createInvoice(u, pkg);
+        PaymentProperties.Click clickProps = props.getClick();
+        if (clickProps != null && clickProps.isEnabled()
+                && clickProps.getSecretKey() != null && !clickProps.getSecretKey().isBlank()) {
+            return clickService.createInvoice(u, pkg);
+        }
+        // Fallback: route through inPAY Click gateway
+        log.info("[payment] direct Click unconfigured, routing invoice through inPAY gateway for packageId={}", pkg.getId());
+        return inPayService.createInvoice(u, pkg, "click");
     }
 
     @PostMapping("/payme/invoice")
@@ -45,7 +54,14 @@ public class PaymentController {
     public InvoiceResponse createPaymeInvoice(@Valid @RequestBody CreateInvoiceRequest req) {
         User u = currentUser();
         ExamPackage pkg = paymentService.requirePackage(req.getPackageId());
-        return paymeService.createCheckoutUrl(u, pkg);
+        PaymentProperties.Payme paymeProps = props.getPayme();
+        if (paymeProps != null && paymeProps.isEnabled()
+                && paymeProps.getMerchantId() != null && !paymeProps.getMerchantId().isBlank()) {
+            return paymeService.createCheckoutUrl(u, pkg);
+        }
+        // Fallback: route through inPAY Payme gateway
+        log.info("[payment] direct Payme unconfigured, routing invoice through inPAY gateway for packageId={}", pkg.getId());
+        return inPayService.createInvoice(u, pkg, "payme");
     }
 
     @PostMapping("/inpay/invoice")
@@ -53,7 +69,7 @@ public class PaymentController {
     public InvoiceResponse createInPayInvoice(@Valid @RequestBody CreateInvoiceRequest req) {
         User u = currentUser();
         ExamPackage pkg = paymentService.requirePackage(req.getPackageId());
-        return inPayService.createInvoice(u, pkg);
+        return inPayService.createInvoice(u, pkg, req.getMethod());
     }
 
     @GetMapping("/{paymentId}/status")

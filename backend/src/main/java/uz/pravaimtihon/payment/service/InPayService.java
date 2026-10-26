@@ -69,6 +69,11 @@ public class InPayService {
 
     @Transactional
     public InvoiceResponse createInvoice(User user, ExamPackage pkg) {
+        return createInvoice(user, pkg, null);
+    }
+
+    @Transactional
+    public InvoiceResponse createInvoice(User user, ExamPackage pkg, String paymentMethod) {
         assertEnabled();
 
         PaymentProperties.Inpay inpayProps = props.getInpay();
@@ -99,6 +104,10 @@ public class InPayService {
             requestBody.put("merchant_id", merchantId);
         }
         requestBody.put("token", merchantToken);
+
+        if (paymentMethod != null && !paymentMethod.isBlank()) {
+            requestBody.put("payment_method", paymentMethod.trim().toLowerCase());
+        }
 
         if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()) {
             String cleanPhone = user.getPhoneNumber().replaceAll("[^0-9]", "");
@@ -152,7 +161,7 @@ public class InPayService {
             throw PaymentException.badRequest(errorMsg);
         }
 
-        String payUrl = extractPayUrl(responseBody);
+        String payUrl = extractPayUrl(responseBody, paymentMethod);
         if (payUrl == null || payUrl.isBlank()) {
             log.error("[inpay] pay_url missing in inPAY response body: {}", responseBody);
             String errorMsg = extractErrorMessage(root, "inPAY to'lov havolasi qaytmadi");
@@ -386,9 +395,23 @@ public class InPayService {
         return base + "/create/";
     }
 
-    private String extractPayUrl(String responseBody) {
+    private String extractPayUrl(String responseBody, String paymentMethod) {
         try {
             JsonNode root = objectMapper.readTree(responseBody);
+
+            // If specific provider requested (e.g. click, payme), prefer direct link if provided
+            if (paymentMethod != null && !paymentMethod.isBlank()) {
+                String m = paymentMethod.trim().toLowerCase();
+                if (root.has("pay_links") && root.get("pay_links").hasNonNull(m)) {
+                    String directUrl = root.get("pay_links").get(m).asText();
+                    if (directUrl != null && !directUrl.isBlank()) return directUrl;
+                }
+                if (root.hasNonNull("pay_url_link")) {
+                    String directUrl = root.get("pay_url_link").asText();
+                    if (directUrl != null && !directUrl.isBlank()) return directUrl;
+                }
+            }
+
             if (root.hasNonNull("pay_url")) return root.get("pay_url").asText();
             if (root.hasNonNull("url")) return root.get("url").asText();
             if (root.hasNonNull("pay_url_link")) return root.get("pay_url_link").asText();
@@ -398,6 +421,13 @@ public class InPayService {
             // Nested data.pay_url check
             if (root.has("data") && root.get("data").isObject()) {
                 JsonNode data = root.get("data");
+                if (paymentMethod != null && !paymentMethod.isBlank()) {
+                    String m = paymentMethod.trim().toLowerCase();
+                    if (data.has("pay_links") && data.get("pay_links").hasNonNull(m)) {
+                        String directUrl = data.get("pay_links").get(m).asText();
+                        if (directUrl != null && !directUrl.isBlank()) return directUrl;
+                    }
+                }
                 if (data.hasNonNull("pay_url")) return data.get("pay_url").asText();
                 if (data.hasNonNull("url")) return data.get("url").asText();
             }
