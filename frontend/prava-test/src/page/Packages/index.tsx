@@ -19,16 +19,17 @@ import {
 import "../../styles/packages-page.css";
 
 interface PlanOption {
-  id: "1w" | "2w" | "1m" | "3m" | "6m" | "1y";
+  id: "1d" | "1w" | "2w" | "1m" | "3m" | "6m" | "1y";
   days: number;
   price: number;
   daily: number;
   packageId: number;
   discount?: number;
-  badge?: "popular" | "discount";
+  badge?: "popular" | "discount" | "new";
 }
 
 const DEFAULT_PLANS: PlanOption[] = [
+  { id: "1d", days: 1, price: 5000, daily: 5000, packageId: 7, badge: "new" },
   { id: "1w", days: 7, price: 19000, daily: 2714, packageId: 1 },
   { id: "2w", days: 14, price: 29000, daily: 2071, packageId: 2, discount: 25 },
   { id: "1m", days: 30, price: 45000, daily: 1500, packageId: 3, discount: 45, badge: "popular" },
@@ -62,7 +63,7 @@ export default function Packages_Page() {
               const matched = content.find(
                 (c: any) =>
                   c.id === pl.packageId ||
-                  (c.name && c.name.toLowerCase().includes(pl.id === "1w" ? "1 hafta" : pl.id === "2w" ? "2 hafta" : pl.id === "1m" ? "1 oy" : pl.id === "3m" ? "3 oy" : pl.id === "6m" ? "6 oy" : "1 yil"))
+                  (c.name && c.name.toLowerCase().includes(pl.id === "1d" ? "1 kun" : pl.id === "1w" ? "1 hafta" : pl.id === "2w" ? "2 hafta" : pl.id === "1m" ? "1 oy" : pl.id === "3m" ? "3 oy" : pl.id === "6m" ? "6 oy" : "1 yil"))
               );
               if (matched && typeof matched.price === "number") {
                 return {
@@ -83,7 +84,7 @@ export default function Packages_Page() {
     };
   }, []);
 
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[2];
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[3];
 
   const ticketsDisplay = counts.tickets > 0 ? String(counts.tickets) : "64";
   const questionsDisplay = counts.questions > 0 ? new Intl.NumberFormat(i18n.language).format(counts.questions) : "1 243";
@@ -92,7 +93,7 @@ export default function Packages_Page() {
     return new Intl.NumberFormat(i18n.language).format(n) + " " + t("payment.currency", "so'm");
   };
 
-  const handlePay = async (provider: "click" | "payme") => {
+  const handlePay = async (provider: "inpay" | "click" | "payme") => {
     setErrorMsg(null);
     if (!isAuthenticated) {
       openAuthModal({ returnUrl: "/packages" });
@@ -101,7 +102,9 @@ export default function Packages_Page() {
     setLoadingProvider(provider);
     try {
       const res =
-        provider === "click"
+        provider === "inpay"
+          ? await paymentApi.createInPayInvoice(selectedPlan.packageId)
+          : provider === "click"
           ? await paymentApi.createClickInvoice(selectedPlan.packageId)
           : await paymentApi.createPaymeInvoice(selectedPlan.packageId);
 
@@ -163,6 +166,9 @@ export default function Packages_Page() {
                   }}
                   aria-pressed={isSelected}
                 >
+                  {plan.badge === "new" && (
+                    <div className="po-card-badge" style={{ background: "linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)", color: "#fff" }}>{t("tariff.newBadge", "YANGI")}</div>
+                  )}
                   {plan.badge === "popular" && (
                     <div className="po-card-badge popular">{t("tariff.popular", "Eng ommabop ⭐")}</div>
                   )}
@@ -316,6 +322,29 @@ export default function Packages_Page() {
             </div>
 
             <div className="po-checkout-actions">
+              <button
+                type="button"
+                className="po-btn-inpay"
+                onClick={() => handlePay("inpay")}
+                disabled={loadingProvider !== null}
+                style={{
+                  background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: 12,
+                  padding: "12px 20px",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: loadingProvider !== null ? "not-allowed" : "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  boxShadow: "0 4px 14px rgba(99, 102, 241, 0.35)",
+                }}
+              >
+                <IconSparkles size={18} />
+                <span>{loadingProvider === "inpay" ? t("common.loading", "Yuklanmoqda...") : t("tariff.payWithInpay", "inPAY (Click, Payme, Uzcard, Humo)")}</span>
+              </button>
               <button
                 type="button"
                 className="po-btn-click"

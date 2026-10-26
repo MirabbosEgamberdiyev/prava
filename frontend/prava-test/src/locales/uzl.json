@@ -1,4 +1,4 @@
-﻿{
+{
   "auth": {
     "welcome": "Xush kelibsiz!",
     "noAccount": "Akkaunt mavjud emasmi?",
@@ -4206,7 +4206,12 @@
     "officialBase": "Rasmiy 2026 YHQ bazasi",
     "popular": "Eng ommabop ⭐",
     "bestValue": "Eng katta chegirma 🔥",
+    "newBadge": "Yangi",
     "plans": {
+      "1d": {
+        "name": "1 kun",
+        "desc": "1 kunlik sinov"
+      },
       "1w": {
         "name": "1 hafta",
         "desc": "Tezkor tayyorgarlik"

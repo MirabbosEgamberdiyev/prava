@@ -18,16 +18,17 @@ import { useCurriculumCounts } from "../../hooks/useCurriculumCounts";
 import { paymentApi } from "../../payment/paymentApi";
 
 interface PlanOption {
-  id: "1w" | "2w" | "1m" | "3m" | "6m" | "1y";
+  id: "1d" | "1w" | "2w" | "1m" | "3m" | "6m" | "1y";
   days: number;
   price: number;
   daily: number;
   packageId: number;
   discount?: number;
-  badge?: "popular" | "discount";
+  badge?: "popular" | "discount" | "new";
 }
 
 const PLANS: PlanOption[] = [
+  { id: "1d", days: 1, price: 5000, daily: 5000, packageId: 7, badge: "new" },
   { id: "1w", days: 7, price: 19000, daily: 2714, packageId: 1 },
   { id: "2w", days: 14, price: 29000, daily: 2071, packageId: 2, discount: 25 },
   { id: "1m", days: 30, price: 45000, daily: 1500, packageId: 3, discount: 45, badge: "popular" },
@@ -57,7 +58,7 @@ export default function TariffPaywallModal() {
 
   if (!isOpen) return null;
 
-  const selectedPlan = PLANS.find((p) => p.id === selectedPlanId) || PLANS[2];
+  const selectedPlan = PLANS.find((p) => p.id === selectedPlanId) || PLANS[3];
   const ticketsDisplay = counts.tickets > 0 ? String(counts.tickets) : "70";
   const questionsDisplay =
     counts.questions > 0
@@ -216,12 +217,12 @@ export default function TariffPaywallModal() {
           </p>
         </div>
 
-        {/* 6-Reja Tanlov Grid */}
+        {/* 7-Reja Tanlov Grid */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(118px, 1fr))",
-            gap: 10,
+            gridTemplateColumns: "repeat(auto-fit, minmax(102px, 1fr))",
+            gap: 8,
             marginBottom: 20,
           }}
         >
@@ -243,7 +244,7 @@ export default function TariffPaywallModal() {
                     ? "2px solid #0284c7"
                     : "1.5px solid var(--border, #e2e8f0)",
                   borderRadius: 15,
-                  padding: "16px 8px 14px",
+                  padding: "16px 6px 14px",
                   textAlign: "center",
                   cursor: "pointer",
                   transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
@@ -272,6 +273,26 @@ export default function TariffPaywallModal() {
                     }}
                   >
                     {t("tariff.popular", "⭐ TOP")}
+                  </div>
+                )}
+                {plan.badge === "new" && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: -9,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      fontSize: 9.5,
+                      fontWeight: 800,
+                      padding: "2px 7px",
+                      borderRadius: 6,
+                      background: "linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)",
+                      color: "#fff",
+                      whiteSpace: "nowrap",
+                      boxShadow: "0 2px 6px rgba(6, 182, 212, 0.35)",
+                    }}
+                  >
+                    {t("tariff.newBadge", "YANGI")}
                   </div>
                 )}
                 {plan.discount && (
