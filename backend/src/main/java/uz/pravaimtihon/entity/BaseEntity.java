@@ -55,7 +55,7 @@ public abstract class BaseEntity implements Serializable {
 
     @Version
     @Column(name = "version")
-    private Long version;
+    private Long version = 0L;
 
     // Soft delete method
     /**

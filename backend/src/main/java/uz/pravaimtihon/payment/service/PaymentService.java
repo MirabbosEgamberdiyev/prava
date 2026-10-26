@@ -48,6 +48,7 @@ public class PaymentService {
                 .state(PaymentState.PENDING)
                 .merchantOrderId(newMerchantOrderId(provider))
                 .build();
+        p.setVersion(0L);
         Payment saved = paymentRepo.save(p);
         log.info("[payment] created PENDING id={} userId={} packageId={} amount={} provider={}",
                 saved.getId(), user.getId(), pkg.getId(), saved.getAmount(), provider);

@@ -20,6 +20,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -38,11 +39,12 @@ import java.util.Optional;
  *
  * Flow:
  * 1. User selects a package and chooses inPAY.
- * 2. Backend creates a PENDING payment record and requests inPAY via POST /api/v1/create/.
- * 3. inPAY returns a hosted checkout URL (pay_url).
- * 4. User is redirected to pay_url to complete payment.
- * 5. inPAY notifies our webhook POST /api/v1/payment/inpay/webhook with HMAC-SHA256 signature.
- * 6. We verify the signature, mark payment as PERFORMED, and grant package access.
+ * 2. Backend gets/refreshes a dynamic Bearer token from GET /api/v1/authorization/?merchant_id=...&merchant_token=...
+ * 3. Backend creates a PENDING payment record and requests inPAY via POST /api/v1/create/.
+ * 4. inPAY returns a hosted checkout URL (pay_url) and generated order_id.
+ * 5. User is redirected to pay_url to complete payment.
+ * 6. inPAY notifies our webhook POST /api/v1/payment/inpay/webhook with HMAC-SHA256 signature.
+ * 7. We verify the signature, mark payment as PERFORMED, and grant package access.
  */
 @Service
 @RequiredArgsConstructor
@@ -58,6 +60,9 @@ public class InPayService {
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
+    private volatile String cachedBearerToken = null;
+    private volatile long tokenExpiresAt = 0;
+
     /* ------------------------------------------------------------------ */
     /*  PUBLIC API — create invoice                                       */
     /* ------------------------------------------------------------------ */
@@ -67,8 +72,9 @@ public class InPayService {
         assertEnabled();
 
         PaymentProperties.Inpay inpayProps = props.getInpay();
-        String apiToken = inpayProps.getApiToken();
-        if (apiToken == null || apiToken.isBlank()) {
+        String merchantId = inpayProps.getMerchantId() != null ? String.valueOf(inpayProps.getMerchantId()) : null;
+        String merchantToken = inpayProps.getApiToken();
+        if (merchantToken == null || merchantToken.isBlank()) {
             throw PaymentException.badRequest("InPAY API token is not configured");
         }
 
@@ -89,8 +95,16 @@ public class InPayService {
                 : "Paket #" + pkg.getId();
         requestBody.put("description", "Prava Online: " + desc);
 
-        if (inpayProps.getMerchantId() != null) {
-            requestBody.put("merchant_id", inpayProps.getMerchantId());
+        if (merchantId != null && !merchantId.isBlank()) {
+            requestBody.put("merchant_id", merchantId);
+        }
+        requestBody.put("token", merchantToken);
+
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()) {
+            String cleanPhone = user.getPhoneNumber().replaceAll("[^0-9]", "");
+            if (!cleanPhone.isBlank()) {
+                requestBody.put("phone", cleanPhone);
+            }
         }
 
         String jsonPayload;
@@ -105,39 +119,51 @@ public class InPayService {
         log.info("[inpay] creating invoice paymentId={} merchantOrderId={} amount={} endpoint={}",
                 p.getId(), p.getMerchantOrderId(), p.getAmount(), endpoint);
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
-                .timeout(Duration.ofSeconds(15))
-                .header("Authorization", "Bearer " + apiToken.trim())
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonPayload, StandardCharsets.UTF_8))
-                .build();
-
-        HttpResponse<String> response;
-        try {
-            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            log.error("[inpay] HTTP request to inPAY failed for paymentId={}", p.getId(), e);
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            throw PaymentException.badRequest("inPAY to'lov shlyuziga ulanishda xatolik yuz berdi");
-        }
-
+        HttpResponse<String> response = sendCreateRequest(endpoint, jsonPayload, false);
         int statusCode = response.statusCode();
         String responseBody = response.body();
         log.info("[inpay] response received status={} body={}", statusCode, responseBody);
 
+        // Check if Bearer token expired and retry once
+        if (statusCode == 401 || (responseBody != null && responseBody.contains("INVALID_TOKEN"))) {
+            log.warn("[inpay] bearer token expired or invalid, refreshing and retrying...");
+            invalidateBearerToken();
+            response = sendCreateRequest(endpoint, jsonPayload, true);
+            statusCode = response.statusCode();
+            responseBody = response.body();
+            log.info("[inpay] retry response received status={} body={}", statusCode, responseBody);
+        }
+
+        JsonNode root = null;
+        try {
+            if (responseBody != null && !responseBody.isBlank()) {
+                root = objectMapper.readTree(responseBody);
+            }
+        } catch (Exception ignored) {}
+
         if (statusCode < 200 || statusCode >= 300) {
             log.error("[inpay] create invoice returned HTTP error status={} body={}", statusCode, responseBody);
-            throw PaymentException.badRequest("inPAY hisob-faktura yaratishda xatolik (" + statusCode + ")");
+            String errorMsg = extractErrorMessage(root, "inPAY hisob-faktura yaratishda xatolik (" + statusCode + ")");
+            throw PaymentException.badRequest(errorMsg);
+        }
+
+        if (root != null && root.hasNonNull("success") && !root.get("success").asBoolean()) {
+            String errorMsg = extractErrorMessage(root, "inPAY hisob-faktura rad etildi");
+            throw PaymentException.badRequest(errorMsg);
         }
 
         String payUrl = extractPayUrl(responseBody);
         if (payUrl == null || payUrl.isBlank()) {
             log.error("[inpay] pay_url missing in inPAY response body: {}", responseBody);
-            throw PaymentException.badRequest("inPAY to'lov havolasi qaytmadi");
+            String errorMsg = extractErrorMessage(root, "inPAY to'lov havolasi qaytmadi");
+            throw PaymentException.badRequest(errorMsg);
+        }
+
+        if (root != null) {
+            String returnedOrderId = getFirstNonBlank(root, "order_id", "transaction_id", "id");
+            if (returnedOrderId != null && !returnedOrderId.isBlank()) {
+                p.setProviderTransactionId(returnedOrderId);
+            }
         }
 
         p.setRawLastRequest("create_invoice_success");
@@ -153,6 +179,105 @@ public class InPayService {
                 .provider(PaymentProvider.INPAY)
                 .redirectUrl(payUrl)
                 .build();
+    }
+
+    private HttpResponse<String> sendCreateRequest(String endpoint, String jsonPayload, boolean forceRefresh) {
+        String bearerToken = getOrFetchBearerToken(forceRefresh);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(endpoint))
+                .timeout(Duration.ofSeconds(15))
+                .header("Authorization", "Bearer " + bearerToken.trim())
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonPayload, StandardCharsets.UTF_8))
+                .build();
+
+        try {
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            log.error("[inpay] HTTP request to inPAY failed", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw PaymentException.badRequest("inPAY to'lov shlyuziga ulanishda xatolik yuz berdi");
+        }
+    }
+
+    private synchronized void invalidateBearerToken() {
+        this.cachedBearerToken = null;
+        this.tokenExpiresAt = 0;
+    }
+
+    private synchronized String getOrFetchBearerToken(boolean forceRefresh) {
+        long now = System.currentTimeMillis();
+        if (!forceRefresh && cachedBearerToken != null && now < tokenExpiresAt) {
+            return cachedBearerToken;
+        }
+
+        PaymentProperties.Inpay inpayProps = props.getInpay();
+        String merchantId = inpayProps.getMerchantId() != null ? String.valueOf(inpayProps.getMerchantId()) : null;
+        String merchantToken = inpayProps.getApiToken();
+
+        if (merchantId == null || merchantId.isBlank() || merchantToken == null || merchantToken.isBlank()) {
+            throw PaymentException.badRequest("InPAY merchant_id yoki api_token sozlanmagan");
+        }
+
+        String authUrl = buildAuthEndpoint(inpayProps.getApiUrl(), merchantId, merchantToken);
+        log.info("[inpay] requesting bearer token for merchant_id={}", merchantId);
+
+        HttpRequest authRequest = HttpRequest.newBuilder()
+                .uri(URI.create(authUrl))
+                .timeout(Duration.ofSeconds(10))
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(authRequest, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                log.error("[inpay] auth endpoint error: status={} body={}", response.statusCode(), response.body());
+                throw PaymentException.badRequest("InPAY avtorizatsiyadan o'tolmadi (" + response.statusCode() + ")");
+            }
+
+            JsonNode node = objectMapper.readTree(response.body());
+            if (node.hasNonNull("bearer_token")) {
+                String token = node.get("bearer_token").asText();
+                this.cachedBearerToken = token;
+                // InPAY bearer token is valid for 24h, cache for 20h
+                this.tokenExpiresAt = System.currentTimeMillis() + Duration.ofHours(20).toMillis();
+                log.info("[inpay] acquired new bearer token successfully");
+                return token;
+            } else {
+                String msg = extractErrorMessage(node, "InPAY bearer_token olinmadi");
+                throw PaymentException.badRequest(msg);
+            }
+        } catch (IOException | InterruptedException e) {
+            log.error("[inpay] network error requesting bearer token", e);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw PaymentException.badRequest("InPAY avtorizatsiya so'rovida aloqa xatosi");
+        }
+    }
+
+    private String buildAuthEndpoint(String apiUrl, String merchantId, String merchantToken) {
+        String base = (apiUrl != null && !apiUrl.isBlank()) ? apiUrl.trim() : "https://inpay.uz/api/v1";
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        return base + "/authorization/?merchant_id="
+                + URLEncoder.encode(merchantId.trim(), StandardCharsets.UTF_8)
+                + "&merchant_token="
+                + URLEncoder.encode(merchantToken.trim(), StandardCharsets.UTF_8);
+    }
+
+    private String extractErrorMessage(JsonNode node, String defaultMsg) {
+        if (node != null) {
+            if (node.hasNonNull("message")) return node.get("message").asText();
+            if (node.hasNonNull("error")) return node.get("error").asText();
+            if (node.hasNonNull("error_code")) return node.get("error_code").asText();
+        }
+        return defaultMsg;
     }
 
     /* ------------------------------------------------------------------ */
@@ -283,13 +408,29 @@ public class InPayService {
     }
 
     private Optional<Payment> resolvePayment(String orderId, String txId, PaymentRepository repo) {
-        // 1. By merchant order ID
-        Optional<Payment> byMerchantId = repo.findByMerchantOrderId(orderId);
-        if (byMerchantId.isPresent()) {
-            return byMerchantId;
+        // 1. By merchant order ID (e.g. PR-INPAY-...)
+        if (orderId != null && !orderId.isBlank()) {
+            Optional<Payment> byMerchantId = repo.findByMerchantOrderId(orderId);
+            if (byMerchantId.isPresent()) {
+                return byMerchantId;
+            }
         }
 
-        // 2. By numeric ID
+        // 2. By provider transaction ID (matching inPAY's returned order_id or transaction_id)
+        if (orderId != null && !orderId.isBlank()) {
+            Optional<Payment> byTx = repo.findByProviderAndProviderTransactionId(PaymentProvider.INPAY, orderId);
+            if (byTx.isPresent()) {
+                return byTx;
+            }
+        }
+        if (txId != null && !txId.isBlank()) {
+            Optional<Payment> byTx = repo.findByProviderAndProviderTransactionId(PaymentProvider.INPAY, txId);
+            if (byTx.isPresent()) {
+                return byTx;
+            }
+        }
+
+        // 3. By numeric ID
         try {
             Long numericId = Long.parseLong(orderId);
             Optional<Payment> byId = repo.findById(numericId);
@@ -297,14 +438,6 @@ public class InPayService {
                 return byId;
             }
         } catch (NumberFormatException ignored) {}
-
-        // 3. By provider transaction ID
-        if (txId != null && !txId.isBlank()) {
-            Optional<Payment> byTx = repo.findByProviderAndProviderTransactionId(PaymentProvider.INPAY, txId);
-            if (byTx.isPresent()) {
-                return byTx;
-            }
-        }
 
         return Optional.empty();
     }
