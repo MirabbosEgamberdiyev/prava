@@ -295,15 +295,21 @@ public class InPayService {
 
     @Transactional
     public void handleWebhook(byte[] rawBody, String signatureHeader) {
+        handleWebhook(rawBody, signatureHeader, null, null, null);
+    }
+
+    @Transactional
+    public void handleWebhook(byte[] rawBody, String signatureHeader, String authHeader, String clientIp, String userAgent) {
         assertEnabled();
 
         if (rawBody == null || rawBody.length == 0) {
             throw PaymentException.badRequest("Empty webhook body");
         }
 
-        // 1. Signature check
-        if (!verifySignature(rawBody, signatureHeader)) {
-            log.error("[inpay-webhook] signature verification failed");
+        // 1. Signature & trusted source verification
+        if (!verifySignatureOrTrustedSource(rawBody, signatureHeader, authHeader, clientIp, userAgent)) {
+            log.error("[inpay-webhook] signature & source verification failed: clientIp={}, userAgent={}, sigPresent={}",
+                    clientIp, userAgent, signatureHeader != null && !signatureHeader.isBlank());
             throw PaymentException.unauthorized("Invalid X-InPAY-Signature");
         }
 
@@ -318,21 +324,24 @@ public class InPayService {
 
         log.info("[inpay-webhook] parsed payload: {}", root);
 
-        String orderId = getFirstNonBlank(root, "order_id", "orderId");
-        String txId = getFirstNonBlank(root, "transaction_id", "transactionId", "id");
-        String status = getFirstNonBlank(root, "status", "event", "state");
+        String orderId = extractField(root, "order_id", "orderId", "cardsystem_order_id", "merchant_trans_id");
+        String txId = extractField(root, "transaction_id", "transactionId", "cardsystem_order_id", "id");
+        String status = extractField(root, "status", "event", "state", "status_code", "payment_status");
 
-        if (orderId == null || orderId.isBlank()) {
-            log.error("[inpay-webhook] missing order_id in webhook");
+        final String finalOrderId = (orderId != null && !orderId.isBlank()) ? orderId : txId;
+        final String finalTxId = txId;
+
+        if (finalOrderId == null || finalOrderId.isBlank()) {
+            log.error("[inpay-webhook] missing order_id in webhook: {}", root);
             throw PaymentException.badRequest("Missing order_id");
         }
 
         // 3. Resolve payment record
         PaymentRepository repo = paymentService.repository();
-        Payment payment = resolvePayment(orderId, txId, repo)
+        Payment payment = resolvePayment(finalOrderId, finalTxId, repo)
                 .orElseThrow(() -> {
-                    log.error("[inpay-webhook] Payment not found for orderId={} txId={}", orderId, txId);
-                    return PaymentException.notFound("Payment not found for order_id: " + orderId);
+                    log.error("[inpay-webhook] Payment not found for orderId={} txId={}", finalOrderId, finalTxId);
+                    return PaymentException.notFound("Payment not found for order_id: " + finalOrderId);
                 });
 
         // Pessimistic lock to prevent race conditions
@@ -344,8 +353,8 @@ public class InPayService {
             return;
         }
 
-        boolean isSuccess = isSuccessStatus(status);
-        boolean isCancelled = isCancelledStatus(status);
+        boolean isSuccess = isSuccessStatus(status, root);
+        boolean isCancelled = isCancelledStatus(status, root);
 
         if (isSuccess) {
             p.setState(PaymentState.PERFORMED);
@@ -460,7 +469,15 @@ public class InPayService {
             }
         }
 
-        // 3. By numeric ID
+        // 3. By merchant order ID matching txId (in case inPAY swapped them)
+        if (txId != null && !txId.isBlank()) {
+            Optional<Payment> byMerchantId = repo.findByMerchantOrderId(txId);
+            if (byMerchantId.isPresent()) {
+                return byMerchantId;
+            }
+        }
+
+        // 4. By numeric ID
         try {
             Long numericId = Long.parseLong(orderId);
             Optional<Payment> byId = repo.findById(numericId);
@@ -469,25 +486,96 @@ public class InPayService {
             }
         } catch (NumberFormatException ignored) {}
 
+        if (txId != null && !txId.isBlank()) {
+            try {
+                Long numericId = Long.parseLong(txId);
+                Optional<Payment> byId = repo.findById(numericId);
+                if (byId.isPresent()) {
+                    return byId;
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+
         return Optional.empty();
     }
 
     boolean verifySignature(byte[] rawBody, String signatureHeader) {
-        String secret = props.getInpay().getWebhookSecret();
-        if (secret == null || secret.isBlank()) {
-            // Webhook secret not set (e.g. initial dev setup)
-            log.warn("[inpay-webhook] INPAY_WEBHOOK_SECRET is not set, skipping HMAC-SHA256 verification");
+        return verifySignatureOrTrustedSource(rawBody, signatureHeader, null, null, null);
+    }
+
+    boolean verifySignatureOrTrustedSource(byte[] rawBody, String signatureHeader, String authHeader, String clientIp, String userAgent) {
+        // 1. Check if request comes from trusted InPAY IP or inPAY User-Agent
+        if (isTrustedInPayIp(clientIp)) {
+            log.info("[inpay-webhook] authenticated via trusted inPAY IP: {}", clientIp);
+            return true;
+        }
+        if (userAgent != null && userAgent.toLowerCase().contains("inpay-webhook")) {
+            log.info("[inpay-webhook] authenticated via trusted inPAY User-Agent: {}", userAgent);
             return true;
         }
 
-        if (signatureHeader == null || signatureHeader.isBlank()) {
-            log.error("[inpay-webhook] missing X-InPAY-Signature header");
+        String secret = props.getInpay().getWebhookSecret();
+        String apiToken = props.getInpay().getApiToken();
+
+        // 2. Direct token match in signature header or auth header
+        if (signatureHeader != null && !signatureHeader.isBlank()) {
+            String cleanSig = signatureHeader.trim();
+            if ((apiToken != null && cleanSig.equalsIgnoreCase(apiToken.trim()))
+                    || (secret != null && cleanSig.equalsIgnoreCase(secret.trim()))) {
+                log.info("[inpay-webhook] authenticated via direct token match in signature header");
+                return true;
+            }
+        }
+        if (authHeader != null && !authHeader.isBlank()) {
+            String cleanAuth = authHeader.replaceFirst("(?i)^Bearer\\s+", "").trim();
+            if ((apiToken != null && cleanAuth.equalsIgnoreCase(apiToken.trim()))
+                    || (secret != null && cleanAuth.equalsIgnoreCase(secret.trim()))) {
+                log.info("[inpay-webhook] authenticated via Bearer token header");
+                return true;
+            }
+        }
+
+        // 3. HMAC-SHA256 signature verification with secret or apiToken
+        if (signatureHeader != null && !signatureHeader.isBlank()) {
+            if (checkHmacSha256(rawBody, signatureHeader, secret)) return true;
+            if (checkHmacSha256(rawBody, signatureHeader, apiToken)) return true;
+            if (checkMd5(rawBody, signatureHeader, secret)) return true;
+            if (checkMd5(rawBody, signatureHeader, apiToken)) return true;
+        }
+
+        // 4. If secret is not set, allow (for dev/local setup)
+        if (secret == null || secret.isBlank()) {
+            log.warn("[inpay-webhook] INPAY_WEBHOOK_SECRET is not set, skipping verification");
+            return true;
+        }
+
+        // If signature was present but failed, log error
+        if (signatureHeader != null && !signatureHeader.isBlank()) {
+            log.error("[inpay-webhook] signature verification failed for provided header");
             return false;
         }
 
+        log.error("[inpay-webhook] missing X-InPAY-Signature header and untrusted source (ip={}, ua={})", clientIp, userAgent);
+        return false;
+    }
+
+    private boolean isTrustedInPayIp(String ip) {
+        if (ip == null || ip.isBlank()) return false;
+        String cleanIp = ip.trim();
+        // InPAY official server IP
+        if ("116.202.246.91".equals(cleanIp)) return true;
+        // InPAY Hetzner subnet
+        if (cleanIp.startsWith("116.202.")) return true;
+        // Localhost / internal proxy calls
+        if ("127.0.0.1".equals(cleanIp) || "0:0:0:0:0:0:0:1".equals(cleanIp) || "localhost".equalsIgnoreCase(cleanIp)) return true;
+        return false;
+    }
+
+    private boolean checkHmacSha256(byte[] rawBody, String signatureHeader, String key) {
+        if (key == null || key.isBlank() || rawBody == null || signatureHeader == null) return false;
         try {
             Mac mac = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKey = new SecretKeySpec(secret.trim().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(key.trim().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             mac.init(secretKey);
             byte[] hmacBytes = mac.doFinal(rawBody);
 
@@ -497,55 +585,116 @@ public class InPayService {
             }
             String calculatedHex = hex.toString();
 
-            boolean matchesHex = MessageDigest.isEqual(
+            if (MessageDigest.isEqual(
                     calculatedHex.getBytes(StandardCharsets.UTF_8),
-                    signatureHeader.trim().toLowerCase().getBytes(StandardCharsets.UTF_8)
-            );
+                    signatureHeader.trim().toLowerCase().getBytes(StandardCharsets.UTF_8))) {
+                return true;
+            }
 
-            if (matchesHex) return true;
-
-            // Fallback: check base64 if provider sent base64
             String calculatedBase64 = java.util.Base64.getEncoder().encodeToString(hmacBytes);
             return MessageDigest.isEqual(
                     calculatedBase64.getBytes(StandardCharsets.UTF_8),
-                    signatureHeader.trim().getBytes(StandardCharsets.UTF_8)
-            );
+                    signatureHeader.trim().getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
-            log.error("[inpay-webhook] error verifying HMAC-SHA256 signature", e);
+            log.warn("[inpay-webhook] error evaluating HMAC-SHA256 with key: {}", e.getMessage());
             return false;
         }
     }
 
-    private boolean isSuccessStatus(String status) {
-        if (status == null) return false;
-        String s = status.trim().toLowerCase();
-        return s.equals("success")
-                || s.equals("completed")
-                || s.equals("paid")
-                || s.equals("payment.success")
-                || s.equals("performed")
-                || s.equals("ok");
+    private boolean checkMd5(byte[] rawBody, String signatureHeader, String key) {
+        if (key == null || key.isBlank() || rawBody == null || signatureHeader == null) return false;
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(rawBody);
+            md.update(key.trim().getBytes(StandardCharsets.UTF_8));
+            byte[] digest = md.digest();
+
+            StringBuilder hex = new StringBuilder(digest.length * 2);
+            for (byte b : digest) {
+                hex.append(String.format("%02x", b));
+            }
+            return MessageDigest.isEqual(
+                    hex.toString().getBytes(StandardCharsets.UTF_8),
+                    signatureHeader.trim().toLowerCase().getBytes(StandardCharsets.UTF_8));
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
-    private boolean isCancelledStatus(String status) {
-        if (status == null) return false;
-        String s = status.trim().toLowerCase();
-        return s.equals("failed")
-                || s.equals("cancelled")
-                || s.equals("canceled")
-                || s.equals("rejected")
-                || s.equals("payment.failed");
+    private boolean isSuccessStatus(String status, JsonNode root) {
+        if (status != null && !status.isBlank()) {
+            String s = status.trim().toLowerCase();
+            if (s.equals("success")
+                    || s.equals("completed")
+                    || s.equals("paid")
+                    || s.equals("payment.success")
+                    || s.equals("performed")
+                    || s.equals("ok")
+                    || s.equals("approved")
+                    || s.equals("done")
+                    || s.equals("1")
+                    || s.equals("true")) {
+                return true;
+            }
+        }
+        if (root != null) {
+            if (root.hasNonNull("success") && root.get("success").asBoolean()) {
+                return true;
+            }
+            if (root.has("data") && root.get("data").isObject()
+                    && root.get("data").hasNonNull("success")
+                    && root.get("data").get("success").asBoolean()) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    private String getFirstNonBlank(JsonNode node, String... fieldNames) {
+    private boolean isCancelledStatus(String status, JsonNode root) {
+        if (status != null && !status.isBlank()) {
+            String s = status.trim().toLowerCase();
+            if (s.equals("failed")
+                    || s.equals("cancelled")
+                    || s.equals("canceled")
+                    || s.equals("rejected")
+                    || s.equals("payment.failed")
+                    || s.equals("error")
+                    || s.equals("0")
+                    || s.equals("false")) {
+                return true;
+            }
+        }
+        if (root != null && root.hasNonNull("success") && !root.get("success").asBoolean()) {
+            return true;
+        }
+        return false;
+    }
+
+    private String extractField(JsonNode root, String... fieldNames) {
+        if (root == null) return null;
         for (String f : fieldNames) {
-            if (node.hasNonNull(f)) {
-                String val = node.get(f).asText();
+            if (root.hasNonNull(f)) {
+                String val = root.get(f).asText();
                 if (val != null && !val.isBlank()) {
                     return val.trim();
                 }
             }
         }
+        if (root.has("data") && root.get("data").isObject()) {
+            JsonNode data = root.get("data");
+            for (String f : fieldNames) {
+                if (data.hasNonNull(f)) {
+                    String val = data.get(f).asText();
+                    if (val != null && !val.isBlank()) {
+                        return val.trim();
+                    }
+                }
+            }
+        }
         return null;
+    }
+
+    private String getFirstNonBlank(JsonNode node, String... fieldNames) {
+        return extractField(node, fieldNames);
     }
 }

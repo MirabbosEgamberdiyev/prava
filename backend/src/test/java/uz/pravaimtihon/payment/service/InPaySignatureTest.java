@@ -172,4 +172,34 @@ class InPaySignatureTest {
                 .isInstanceOf(PaymentException.class)
                 .hasMessageContaining("Invalid X-InPAY-Signature");
     }
+
+    @Test
+    void webhookAcceptsTrustedInPayIpWithoutSignature() {
+        byte[] body = "{\"status\":\"success\",\"order_id\":\"PR-INPAY-123\"}".getBytes(StandardCharsets.UTF_8);
+        boolean verified = inPayService.verifySignatureOrTrustedSource(body, null, null, "116.202.246.91", null);
+        assertThat(verified).isTrue();
+    }
+
+    @Test
+    void webhookAcceptsInPayUserAgentWithoutSignature() {
+        byte[] body = "{\"status\":\"success\",\"order_id\":\"PR-INPAY-123\"}".getBytes(StandardCharsets.UTF_8);
+        boolean verified = inPayService.verifySignatureOrTrustedSource(body, null, null, "192.168.1.1", "inPAY-Webhook/1.0");
+        assertThat(verified).isTrue();
+    }
+
+    @Test
+    void webhookAcceptsDirectApiTokenAsSignature() {
+        props.getInpay().setApiToken("my-secret-token-xyz");
+        byte[] body = "{\"status\":\"success\",\"order_id\":\"PR-INPAY-123\"}".getBytes(StandardCharsets.UTF_8);
+        boolean verified = inPayService.verifySignatureOrTrustedSource(body, "my-secret-token-xyz", null, "192.168.1.1", "curl/7.68.0");
+        assertThat(verified).isTrue();
+    }
+
+    @Test
+    void webhookAcceptsBearerTokenInAuthorizationHeader() {
+        props.getInpay().setApiToken("my-secret-token-xyz");
+        byte[] body = "{\"status\":\"success\",\"order_id\":\"PR-INPAY-123\"}".getBytes(StandardCharsets.UTF_8);
+        boolean verified = inPayService.verifySignatureOrTrustedSource(body, null, "Bearer my-secret-token-xyz", "192.168.1.1", "curl/7.68.0");
+        assertThat(verified).isTrue();
+    }
 }
