@@ -1,23 +1,19 @@
 import { useState } from "react";
-import useSWR from "swr";
 import { useTranslation } from "react-i18next";
-import i18n from "i18next";
+
 import {
   Badge,
   Box,
   Button,
   Code,
   CopyButton,
-  Divider,
-  Group,
+    Group,
   Modal,
   SimpleGrid,
   Stack,
   Text,
   ThemeIcon,
-  Tooltip,
-  ActionIcon,
-  Table,
+    ActionIcon,
   Paper,
 } from "@mantine/core";
 import {
@@ -31,504 +27,462 @@ import {
   IconExternalLink,
   IconShieldCheck,
   IconQrcode,
-  IconSparkles,
+    IconDeviceMobile,
+  IconCloudCheck,
+  IconWifiOff,
+  IconHeadphones,
 } from "@tabler/icons-react";
-import { useInstallPrompt } from "../../hooks/useInstallPrompt";
-import { getLatestReleases } from "../../api/applicationService";
-import type { AppReleaseResponse } from "../../features/Downloads/types";
 import { QRCodeSVG } from "../../components/common/QRCodeSVG";
 import SEO from "../../components/common/SEO";
+import { DomainLink } from "../../components/common/DomainLink";
+import { getWebAppUrl } from "../../utils/domain";
 
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=uz.prava.online";
-const APP_STORE_URL  = "https://apps.apple.com/app/prava-online/id0000000000";
-const WINDOWS_DIRECT_URL = "/api/v1/files/installers/prava-online-setup.exe";
-const ANDROID_APK_URL = "/api/v1/files/installers/prava-online.apk";
+// ─── Direct Download URLs & App Stores ──────────────────────────────────────────
+const WINDOWS_ONLINE_SETUP_URL  = "/api/v1/files/installers/prava-online-setup.exe";
+const WINDOWS_PORTABLE_URL      = "/api/v1/files/installers/prava-online.exe";
+const WINDOWS_MSI_URL           = "/api/v1/files/installers/prava-online.msi";
+const WINDOWS_OFFLINE_SETUP_URL = "/api/v1/files/installers/prava-offline-setup.exe";
+const ANDROID_UNIVERSAL_APK_URL = "/api/v1/files/installers/prava-online.apk";
+const ANDROID_ARM64_APK_URL     = "/api/v1/files/installers/prava-online-arm64.apk";
+const PLAY_STORE_URL            = "https://play.google.com/store/apps/details?id=uz.prava.online";
+const APP_STORE_URL             = "https://apps.apple.com/app/prava-online/id0000000000";
 
 export default function Downloads_Page() {
   const { t } = useTranslation();
-  const [selectedRelease, setSelectedRelease] = useState<AppReleaseResponse | null>(null);
+  const [checksumModalOpened, setChecksumModalOpened] = useState(false);
   const [qrModalOpened, setQrModalOpened] = useState(false);
+  const [qrTarget, setQrTarget] = useState<"universal" | "arm64" | "offline" | "online">("universal");
 
-  const { isInstallable, install } = useInstallPrompt();
-  const [installingPwa, setInstallingPwa] = useState(false);
-
-  const { data: releases } = useSWR(
-    ["downloads", i18n.language],
-    () => getLatestReleases(i18n.language),
-    { revalidateOnFocus: false, dedupingInterval: 60_000 }
-  );
-
-  const handlePwaInstall = async () => {
-    if (installingPwa) return;
-    setInstallingPwa(true);
-    try {
-      await install();
-    } finally {
-      setInstallingPwa(false);
-    }
+    
+  
+  
+  const getQrUrl = () => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://pravaonline.uz";
+    if (qrTarget === "universal") return origin + ANDROID_UNIVERSAL_APK_URL;
+    if (qrTarget === "arm64") return origin + ANDROID_ARM64_APK_URL;
+    if (qrTarget === "offline") return origin + WINDOWS_OFFLINE_SETUP_URL;
+    if (qrTarget === "online") return origin + WINDOWS_ONLINE_SETUP_URL;
+    return origin + "/downloads";
   };
 
-  const platforms = [
-    {
-      id: "windows",
-      title: "Windows",
-      tag: t("dl.recommended"),
-      badgeColor: "blue",
-      icon: IconBrandWindows,
-      version: "v2.4.0",
-      type: t("dl.windowsType"),
-      desc: t(
-        "dl.windowsFullDesc"
-      ),
-      primaryAction: {
-        label: t("dl.downloadExe"),
-        url: WINDOWS_DIRECT_URL,
-        isExternal: false,
-      },
-      secondaryAction: {
-        label: t("dl.viewChecksum"),
-        action: () => {
-          const winRelease = releases?.find((r) => r.platform === "WINDOWS");
-          // Fallback when the releases API is unavailable: no fabricated
-          // download count / checksum / file size — those are only shown from real data.
-          const fallbackWinRelease: AppReleaseResponse = {
-            id: 1,
-            platform: "WINDOWS",
-            appName: "Prava Online Desktop",
-            appType: "WINDOWS_EXE",
-            version: "2.4.0",
-            versionCode: 240,
-            status: "ACTIVE",
-            isLatest: true,
-            isForceUpdate: false,
-            downloadCount: 0,
-            downloadUrl: WINDOWS_DIRECT_URL,
-            releaseDate: new Date().toISOString(),
-            appCategory: "OFFLINE",
-          };
-          setSelectedRelease(winRelease || fallbackWinRelease);
-        },
-      },
-      features: [
-        t("dl.winF1"),
-        t("dl.winF2"),
-        t("dl.winF3"),
-      ],
-    },
-    {
-      id: "android",
-      title: "Android",
-      tag: "Google Play & APK",
-      badgeColor: "teal",
-      icon: IconBrandAndroid,
-      version: "v2.1.2",
-      type: t("dl.androidType"),
-      desc: t(
-        "dl.androidFullDesc"
-      ),
-      primaryAction: {
-        label: "Google Play",
-        url: PLAY_STORE_URL,
-        isExternal: true,
-        icon: IconBrandGooglePlay,
-      },
-      secondaryAction: {
-        label: t("dl.downloadApk"),
-        url: ANDROID_APK_URL,
-      },
-      features: [
-        t("dl.andF1"),
-        t("dl.andF2"),
-        t("dl.andF3"),
-      ],
-    },
-    {
-      id: "ios",
-      title: "iOS / iPadOS",
-      tag: "Apple App Store & PWA",
-      badgeColor: "gray",
-      icon: IconApple,
-      version: "v2.1.0",
-      type: t("dl.iosType"),
-      desc: t(
-        "dl.iosFullDesc"
-      ),
-      primaryAction: {
-        label: "App Store",
-        url: APP_STORE_URL,
-        isExternal: true,
-        icon: IconApple,
-      },
-      secondaryAction: {
-        label: isInstallable
-          ? t("pwa.installApp")
-          : t("dl.iosGuide"),
-        action: isInstallable ? handlePwaInstall : undefined,
-        url: !isInstallable ? "https://t.me/pravaonlineuz" : undefined,
-      },
-      features: [
-        t("dl.iosF1"),
-        t("dl.iosF2"),
-        t("dl.iosF3"),
-      ],
-    },
-  ];
-
-  const systemRequirements = [
-    {
-      platform: "Windows",
-      minOs: "Windows 10 / 11 (64-bit)",
-      ram: "2 GB RAM",
-      disk: "350 MB",
-      extra: "DirectX 11 yoki undan yuqori",
-    },
-    {
-      platform: "Android",
-      minOs: "Android 8.0 (Oreo) va undan yuqori",
-      ram: "2 GB RAM",
-      disk: "120 MB",
-      extra: "Google Play xizmatlari",
-    },
-    {
-      platform: "iOS",
-      minOs: "iOS 14.0 / iPadOS 14.0 yoki undan yuqori",
-      ram: "2 GB RAM",
-      disk: "100 MB",
-      extra: "Safari PWA yoki App Store",
-    },
+  const checksumList = [
+    { name: "Prava-Online-Setup.exe (Online)", size: "12.6 MB", sha: "DDE9A0F1F9865D99B816EC1FD644F5DFF914C6C8C51816DDB166B9BC9752EA78" },
+    { name: "Prava-Desktop-Offline-Setup.exe (Offline)", size: "160.3 MB", sha: "8E1EE9D159AF4F27BE541DCBC32C4F9052E371D1BD7C622C3CE81ED95C795931" },
+    { name: "PravaOnline.apk (Android Universal)", size: "65.3 MB", sha: "0263062D555B214F9D9CC2A4C00E49FD0701633C0C3504B62900D1679DBB55ED" },
+    { name: "PravaOnline-arm64.apk (Android 64-bit)", size: "38.5 MB", sha: "4B593A79FD824B7763493805754F0397FF7B4C8721DB38A10E6E46D215728524" },
   ];
 
   return (
     <>
       <SEO
-        title={t("seo.downloads.title")}
-        description={t("seo.downloads.desc")}
-        keywords="prava online ilova, prava online dastur, prava online yuklab olish, prava desktop yuklash, prava online windows, haydovchilik testi dasturi, haydovchilik guvohnomasiga tayyorlanish dasturi, prava online android, prava app"
+        title={t("seo.downloads.title", "Yuklab olish — PRAVA-ONLINE ilovalari")}
+        description={t("seo.downloads.desc", "Windows kompyuter (Online va Offline) hamda Android/iOS mobil ilovalari.")}
         canonical="/downloads"
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "SoftwareApplication",
-          name: "Prava Online",
-          operatingSystem: "Windows 10+, Android, iOS",
-          applicationCategory: "EducationalApplication",
-          offers: {
-            "@type": "Offer",
-            price: "0",
-            priceCurrency: "UZS",
-          },
-          downloadUrl: "https://pravaonline.uz/downloads",
-        }}
       />
 
-      <div className="saas-page-container">
-        {/* Header */}
-        <div className="saas-header-block">
-          <div className="saas-badge-pill">
-            <IconSparkles size={13} />
-            <span>{t("dl.badge")}</span>
-          </div>
-          <h1 className="saas-page-title">{t("dl.title")}</h1>
-          <p className="saas-page-subtitle">
-            {t(
-              "dl.subtitle"
-            )}
-          </p>
-
-          <Group gap="sm" mt="xs">
-            <Button
-              variant="light"
-              color="blue"
-              radius="md"
-              leftSection={<IconQrcode size={16} />}
-              onClick={() => setQrModalOpened(true)}
-            >
-              {t("dl.scanQr")}
-            </Button>
-          </Group>
-        </div>
-
-        {/* Primary Platform Cards Grid */}
-        <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="lg" mb={64}>
-          {platforms.map((p) => (
-            <div
-              key={p.id}
-              className="saas-card"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                position: "relative",
-                height: "100%",
-                padding: "24px",
-              }}
-            >
-              <Group justify="space-between" align="flex-start" mb="md" h={48}>
-                <ThemeIcon size={48} radius="md" color={p.badgeColor} variant="light">
-                  <p.icon size={26} />
-                </ThemeIcon>
-                <Badge color={p.badgeColor} variant="light" size="sm">
-                  {p.tag}
-                </Badge>
-              </Group>
-
-              <Text fw={800} size="lg" mb={2}>
-                {p.title}
-              </Text>
-              <Text size="xs" c="dimmed" fw={600} mb="xs">
-                {p.type} • {p.version}
-              </Text>
-              <Text
-                size="sm"
-                c="dimmed"
-                lh={1.6}
-                mb="md"
-                style={{
-                  minHeight: 48,
-                }}
-              >
-                {p.desc}
-              </Text>
-
-              <Divider mb="md" />
-
-              <Stack gap={8} mb="lg">
-                {p.features.map((f, i) => (
-                  <Group key={i} gap={8} wrap="nowrap" align="center">
-                    <ThemeIcon size={18} radius="xl" color="teal" variant="light" style={{ flexShrink: 0 }}>
-                      <IconCheck size={12} stroke={3} />
-                    </ThemeIcon>
-                    <Text size="xs" c="dimmed" style={{ lineHeight: 1.3 }}>
-                      {f}
-                    </Text>
-                  </Group>
-                ))}
-              </Stack>
-
-              <Stack gap="xs" mt="auto">
-                <Button
-                  component="a"
-                  href={p.primaryAction.url}
-                  target={p.primaryAction.isExternal ? "_blank" : undefined}
-                  rel="noopener noreferrer"
-                  fullWidth
-                  size="md"
-                  radius="md"
-                  h={46}
-                  fw={600}
-                  color={p.badgeColor}
-                  className="saas-interactive-btn"
-                  leftSection={<IconDownload size={16} />}
-                  rightSection={p.primaryAction.isExternal ? <IconExternalLink size={14} /> : undefined}
-                >
-                  {p.primaryAction.label}
-                </Button>
-
-                {p.secondaryAction ? (
-                  <Button
-                    variant="subtle"
-                    fullWidth
-                    size="xs"
-                    h={32}
-                    color="gray"
-                    onClick={'action' in p.secondaryAction && p.secondaryAction.action ? p.secondaryAction.action : undefined}
-                    component={'url' in p.secondaryAction && p.secondaryAction.url ? "a" : undefined}
-                    href={'url' in p.secondaryAction && p.secondaryAction.url ? p.secondaryAction.url : undefined}
-                    target={'url' in p.secondaryAction && p.secondaryAction.url?.startsWith("http") ? "_blank" : undefined}
-                    rel="noopener noreferrer"
-                  >
-                    {p.secondaryAction.label}
-                  </Button>
-                ) : (
-                  <Box h={32} />
-                )}
-              </Stack>
-            </div>
-          ))}
-        </SimpleGrid>
-
-        {/* Security & Integrity Banner */}
-        <div className="saas-card" style={{ marginBottom: 64, padding: "32px" }}>
-          <Group justify="space-between" align="center" wrap="wrap" gap="lg">
-            <Group gap="md">
-              <ThemeIcon size={52} radius="lg" color="teal" variant="light">
-                <IconShieldCheck size={28} />
-              </ThemeIcon>
-              <div>
-                <Text fw={700} size="md">
-                  {t("dl.securityTitle")}
-                </Text>
-                <Text size="sm" c="dimmed" maw={620} lh={1.5}>
-                  {t(
-                    "dl.securityDesc"
-                  )}
-                </Text>
-              </div>
-            </Group>
-            <Badge size="lg" color="teal" variant="outline">
-              {t("downloads.virusTotalVerified")}
+      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "40px 20px 80px" }}>
+        {/* Sleek Minimal Header */}
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <Group justify="center" gap="xs" mb="xs">
+            <Badge variant="light" color="blue" size="md" radius="sm">
+              RASMIY RELIZLAR
             </Badge>
           </Group>
+          <Text fw={900} style={{ fontSize: "clamp(24px, 4vw, 36px)", letterSpacing: "-0.5px" }}>
+            Ilova va Dasturlarni Yuklab Olish
+          </Text>
+          <Text c="dimmed" size="sm" mt={6} style={{ maxWidth: 540, margin: "6px auto 16px" }}>
+            Kompyuterda (online yoki internetsiz) va mobil telefonda imtihonga eng qulay formatda tayyorlaning.
+          </Text>
+
+          <Button
+            variant="default"
+            size="xs"
+            radius="md"
+            leftSection={<IconQrcode size={15} color="#2563eb" />}
+            onClick={() => setQrModalOpened(true)}
+          >
+            Telefonga QR-kod bilan yuklab olish
+          </Button>
         </div>
 
-        {/* System Requirements Table */}
-        <div className="saas-card">
-          <Text fw={700} size="md" mb="xs">
-            {t("dl.sysReqTitle")}
-          </Text>
-          <Text size="xs" c="dimmed" mb="md">
-            {t("dl.sysReqSub")}
-          </Text>
-
-          {/* Desktop/Tablet Table View */}
-          <Box visibleFrom="sm">
-            <Table.ScrollContainer minWidth={580}>
-              <Table striped highlightOnHover withTableBorder={false} style={{ fontSize: 13 }}>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>{t("dl.tblPlatform")}</Table.Th>
-                    <Table.Th>{t("dl.tblOs")}</Table.Th>
-                    <Table.Th>{t("dl.tblRam")}</Table.Th>
-                    <Table.Th>{t("dl.tblDisk")}</Table.Th>
-                    <Table.Th>{t("dl.tblExtra")}</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {systemRequirements.map((row) => (
-                    <Table.Tr key={row.platform}>
-                      <Table.Td fw={600}>{row.platform}</Table.Td>
-                      <Table.Td>{row.minOs}</Table.Td>
-                      <Table.Td>{row.ram}</Table.Td>
-                      <Table.Td>{row.disk}</Table.Td>
-                      <Table.Td c="dimmed">{row.extra}</Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
-            </Table.ScrollContainer>
-          </Box>
-
-          {/* Mobile Responsive Cards View */}
-          <Stack gap="xs" hiddenFrom="sm">
-            {systemRequirements.map((row) => (
-              <Paper
-                key={row.platform}
-                withBorder
-                p="sm"
-                radius="md"
-                style={{ backgroundColor: "var(--surface)" }}
-              >
-                <Group justify="space-between" mb={6}>
-                  <Text fw={700} size="sm">
-                    {row.platform}
+        {/* Dual Main Cards Grid */}
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
+          {/* ═════════ 1. WINDOWS DESKTOP (ONLINE & OFFLINE) ═════════ */}
+          <Paper
+            withBorder
+            p="xl"
+            radius="lg"
+            style={{
+              backgroundColor: "var(--surface)",
+              borderColor: "var(--border)",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* Header */}
+            <Group justify="space-between" align="center" mb="lg">
+              <Group gap="sm">
+                <ThemeIcon size={42} radius="md" color="blue" variant="light">
+                  <IconBrandWindows size={24} />
+                </ThemeIcon>
+                <div>
+                  <Text fw={800} size="lg">
+                    Windows Desktop
                   </Text>
-                  <Badge size="xs" variant="light" color="blue">
-                    {row.ram}
+                  <Text size="xs" c="dimmed">
+                    Kompyuter va noutbuklar uchun
+                  </Text>
+                </div>
+              </Group>
+              <Badge color="blue" variant="light" size="sm">
+                WINDOWS 10 / 11
+              </Badge>
+            </Group>
+
+            <Stack gap="lg" style={{ flex: 1 }}>
+              {/* Option A: Windows Online */}
+              <Box
+                p="md"
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  backgroundColor: "rgba(37, 99, 235, 0.03)",
+                }}
+              >
+                <Group justify="space-between" align="center" mb={6}>
+                  <Group gap={6}>
+                    <IconCloudCheck size={18} color="#2563eb" />
+                    <Text fw={700} size="sm">
+                      Online Desktop (Bulutli)
+                    </Text>
+                  </Group>
+                  <Badge color="blue" size="xs" variant="filled">
+                    12.6 MB
                   </Badge>
                 </Group>
-                <Stack gap={4}>
-                  <Group justify="space-between">
-                    <Text size="xs" c="dimmed">
-                      {t("dl.tblOs")}:
-                    </Text>
-                    <Text size="xs" fw={500} ta="right" maw="60%">
-                      {row.minOs}
+                <Text size="xs" c="dimmed" mb="sm" lh={1.4}>
+                  Yengil va tezkor. Natijalar telefon va shaxsiy kabinet bilan real vaqtda sinxronlanadi.
+                </Text>
+
+                <Group gap="xs" wrap="wrap">
+                  <Button
+                    component="a"
+                    href={WINDOWS_ONLINE_SETUP_URL}
+                    download
+                    size="sm"
+                    radius="md"
+                    color="blue"
+                    leftSection={<IconDownload size={15} />}
+                    style={{ flex: 1, minWidth: 150 }}
+                  >
+                    Setup (.exe) — 13 MB
+                  </Button>
+                  <Button
+                    component="a"
+                    href={WINDOWS_PORTABLE_URL}
+                    download
+                    variant="light"
+                    color="blue"
+                    size="sm"
+                    radius="md"
+                  >
+                    Portable (.exe)
+                  </Button>
+                  <Button
+                    component="a"
+                    href={WINDOWS_MSI_URL}
+                    download
+                    variant="subtle"
+                    color="blue"
+                    size="xs"
+                  >
+                    .msi
+                  </Button>
+                </Group>
+              </Box>
+
+              {/* Option B: Windows Offline */}
+              <Box p="md"
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  backgroundColor: "rgba(124, 58, 237, 0.03)",
+                }}
+              >
+                <Group justify="space-between" align="center" mb={6}>
+                  <Group gap={6}>
+                    <IconWifiOff size={18} color="#7c3aed" />
+                    <Text fw={700} size="sm">
+                      Offline Desktop (Avtomaktab)
                     </Text>
                   </Group>
-                  <Group justify="space-between">
-                    <Text size="xs" c="dimmed">
-                      {t("dl.tblDisk")}:
-                    </Text>
-                    <Text size="xs" fw={500}>
-                      {row.disk}
+                  <Badge color="violet" size="xs" variant="filled">
+                    160 MB • 100% OFFLINE
+                  </Badge>
+                </Group>
+                <Text size="xs" c="dimmed" mb="sm" lh={1.4}>
+                  Avtomaktab sinflari uchun to'liq internetsiz ishlaydi. 1000+ ta testlar va rasmlar dastur ichida o'rnatilgan.
+                </Text>
+
+                <Button
+                  component="a"
+                  href={WINDOWS_OFFLINE_SETUP_URL}
+                  download
+                  fullWidth
+                  size="sm"
+                  radius="md"
+                  color="violet"
+                  leftSection={<IconDownload size={15} />}
+                >
+                  Oflayn Setup (.exe) — 160 MB
+                </Button>
+              </Box>
+            </Stack>
+          </Paper>
+
+          {/* ═════════ 2. MOBIL ILOVA (ANDROID & IOS) ═════════ */}
+          <Paper
+            withBorder
+            p="xl"
+            radius="lg"
+            style={{
+              backgroundColor: "var(--surface)",
+              borderColor: "var(--border)",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* Header */}
+            <Group justify="space-between" align="center" mb="lg">
+              <Group gap="sm">
+                <ThemeIcon size={42} radius="md" color="teal" variant="light">
+                  <IconDeviceMobile size={24} />
+                </ThemeIcon>
+                <div>
+                  <Text fw={800} size="lg">
+                    Mobil Ilova
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    Android va Apple iOS uchun
+                  </Text>
+                </div>
+              </Group>
+              <Badge color="teal" variant="light" size="sm">
+                ANDROID &amp; IOS
+              </Badge>
+            </Group>
+
+            <Stack gap="lg" style={{ flex: 1 }}>
+              {/* Option A: Android APK & Play Store */}
+              <Box p="md"
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  backgroundColor: "rgba(16, 185, 129, 0.03)",
+                }}
+              >
+                <Group justify="space-between" align="center" mb={6}>
+                  <Group gap={6}>
+                    <IconBrandAndroid size={18} color="#10b981" />
+                    <Text fw={700} size="sm">
+                      Android (APK &amp; Google Play)
                     </Text>
                   </Group>
-                  <Group justify="space-between">
-                    <Text size="xs" c="dimmed">
-                      {t("dl.tblExtra")}:
-                    </Text>
-                    <Text size="xs" c="dimmed" ta="right" maw="60%">
-                      {row.extra}
+                  <Badge color="teal" size="xs" variant="filled">
+                    68 MB APK
+                  </Badge>
+                </Group>
+                <Text size="xs" c="dimmed" mb="sm" lh={1.4}>
+                  Telefoningizda har qanday joyda test yechish, xatolar ustida ishlash va imtihonga tayyorlanish.
+                </Text>
+
+                <Group gap="xs" wrap="wrap">
+                  <Button
+                    component="a"
+                    href={ANDROID_UNIVERSAL_APK_URL}
+                    download
+                    size="sm"
+                    radius="md"
+                    color="teal"
+                    leftSection={<IconDownload size={15} />}
+                    style={{ flex: 1, minWidth: 150 }}
+                  >
+                    Universal APK (68 MB)
+                  </Button>
+                  <Button
+                    component="a"
+                    href={ANDROID_ARM64_APK_URL}
+                    download
+                    variant="light"
+                    color="teal"
+                    size="sm"
+                    radius="md"
+                  >
+                    ARM64 (38 MB)
+                  </Button>
+                  <Button
+                    component="a"
+                    href={PLAY_STORE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="default"
+                    size="sm"
+                    radius="md"
+                    leftSection={<IconBrandGooglePlay size={14} color="#00e676" />}
+                  >
+                    Google Play
+                  </Button>
+                </Group>
+              </Box>
+
+              {/* Option B: iOS & Web PWA */}
+              <Box p="md"
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: 12,
+                  backgroundColor: "rgba(100, 116, 139, 0.03)",
+                }}
+              >
+                <Group justify="space-between" align="center" mb={6}>
+                  <Group gap={6}>
+                    <IconApple size={18} />
+                    <Text fw={700} size="sm">
+                      Apple iOS (iPhone &amp; iPad)
                     </Text>
                   </Group>
-                </Stack>
-              </Paper>
-            ))}
-          </Stack>
-        </div>
+                  <Badge color="gray" size="xs" variant="light">
+                    APP STORE &amp; PWA
+                  </Badge>
+                </Group>
+                <Text size="xs" c="dimmed" mb="sm" lh={1.4}>
+                  App Store do'koni orqali yoki Safari brauzeridan bir zumda PWA ilova sifatida o'rnating.
+                </Text>
+
+                <Group gap="xs" wrap="wrap">
+                  <Button
+                    component="a"
+                    href={APP_STORE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    size="sm"
+                    radius="md"
+                    variant="default"
+                    leftSection={<IconApple size={15} />}
+                    style={{ flex: 1, minWidth: 130 }}
+                  >
+                    App Store
+                  </Button>
+                  <DomainLink href={getWebAppUrl("/auth/login")} style={{ textDecoration: "none", flex: 1 }}>
+                    <Button
+                      variant="light"
+                      color="blue"
+                      fullWidth
+                      size="sm"
+                      radius="md"
+                      rightSection={<IconExternalLink size={14} />}
+                    >
+                      Web Ilovaga o'tish
+                    </Button>
+                  </DomainLink>
+                </Group>
+              </Box>
+            </Stack>
+          </Paper>
+        </SimpleGrid>
+
+        {/* Clean, Non-intrusive Footer Info */}
+        <Group justify="space-between" align="center" mt={36} p="md" style={{ borderTop: "1px solid var(--border)" }}>
+          <Group gap="xs">
+            <IconHeadphones size={16} color="#64748b" />
+            <Text size="xs" c="dimmed">
+              O'rnatishda yordam yoki savollar bo'lsa: <b>@MirabbosEgamberdiyev</b> | <b>+998 88 999 64 99</b>
+            </Text>
+          </Group>
+
+          <Button
+            variant="subtle"
+            size="xs"
+            color="gray"
+            leftSection={<IconShieldCheck size={14} />}
+            onClick={() => setChecksumModalOpened(true)}
+          >
+            Fayllar xavfsizligi va SHA-256
+          </Button>
+        </Group>
       </div>
 
-      {/* QR Code Modal for Mobile Installation */}
+      {/* ─── Clean QR Code Modal ─── */}
       <Modal
         opened={qrModalOpened}
         onClose={() => setQrModalOpened(false)}
-        title={<Text fw={700}>{t("dl.qrModalTitle")}</Text>}
+        title={<Text fw={700}>Mobil qurilmada yuklab olish</Text>}
         centered
-        radius="md"
+        radius="lg"
         size="sm"
       >
-        <Stack align="center" gap="md" py="sm" ta="center">
-          <Box p="md" style={{ background: "#ffffff", borderRadius: 12, border: "1px solid var(--border)" }}>
-            <QRCodeSVG value="https://pravaonline.uz/downloads" size={180} />
-          </Box>
-          <Text size="sm" c="dimmed">
-            {t(
-              "dl.qrModalDesc"
-            )}
+        <Stack align="center" gap="md" py="xs">
+          <Paper p="md" radius="md" withBorder style={{ backgroundColor: "#ffffff" }}>
+            <QRCodeSVG value={getQrUrl()} size={200} level="H" />
+          </Paper>
+          <Text size="xs" c="dimmed" ta="center">
+            Kamerangizni QR-kodga qarating va faylni to'g'ridan-to'g'ri telefoningizga yuklab oling.
           </Text>
-          <Button variant="light" fullWidth onClick={() => setQrModalOpened(false)}>
-            {t("common.close")}
-          </Button>
+          <Group gap="xs">
+            <Button
+              size="xs"
+              variant={qrTarget === "universal" ? "filled" : "default"}
+              color="teal"
+              onClick={() => setQrTarget("universal")}
+            >
+              Android APK
+            </Button>
+            <Button
+              size="xs"
+              variant={qrTarget === "offline" ? "filled" : "default"}
+              color="violet"
+              onClick={() => setQrTarget("offline")}
+            >
+              Windows Offline
+            </Button>
+          </Group>
         </Stack>
       </Modal>
 
-      {/* Release Details & Checksum Modal */}
-      {selectedRelease && (
-        <Modal
-          opened={!!selectedRelease}
-          onClose={() => setSelectedRelease(null)}
-          title={<Text fw={700}>{selectedRelease.appName} {selectedRelease.version}</Text>}
-          size="md"
-          centered
-          radius="md"
-        >
-          <Stack gap="md">
-            {selectedRelease.fileSizeFormatted && (
-              <Group justify="space-between">
-                <Text size="xs" c="dimmed">{t("dl.size")}:</Text>
-                <Text size="sm" fw={600}>{selectedRelease.fileSizeFormatted}</Text>
+      {/* ─── Checksum Modal (Compact, only on demand) ─── */}
+      <Modal
+        opened={checksumModalOpened}
+        onClose={() => setChecksumModalOpened(false)}
+        title={<Text fw={700}>Fayllarning SHA-256 Nazorat Summalari</Text>}
+        centered
+        radius="lg"
+        size="md"
+      >
+        <Stack gap="sm">
+          {checksumList.map((item, idx) => (
+            <Paper key={idx} p="xs" withBorder radius="md">
+              <Group justify="space-between" mb={4}>
+                <Text fw={600} size="xs">
+                  {item.name}
+                </Text>
+                <Badge size="xs" variant="light">
+                  {item.size}
+                </Badge>
               </Group>
-            )}
-            {selectedRelease.checksum && (
-              <Box>
-                <Text size="xs" c="dimmed" mb={4}>{t("dl.sha256")}</Text>
-                <Group gap="xs" wrap="nowrap">
-                  <Code style={{ fontSize: 10, wordBreak: "break-all", flex: 1 }}>
-                    {selectedRelease.checksum}
-                  </Code>
-                  <CopyButton value={selectedRelease.checksum} timeout={2000}>
-                    {({ copied, copy }) => (
-                      <Tooltip label={copied ? t("common.copied") : t("common.copy")}>
-                        <ActionIcon variant={copied ? "filled" : "default"} color={copied ? "green" : "gray"} size="sm" onClick={copy}>
-                          {copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
-                        </ActionIcon>
-                      </Tooltip>
-                    )}
-                  </CopyButton>
-                </Group>
-              </Box>
-            )}
-            <Divider />
-            <Button
-              component="a"
-              href={selectedRelease.downloadUrl || WINDOWS_DIRECT_URL}
-              fullWidth
-              color="blue"
-              leftSection={<IconDownload size={16} />}
-            >
-              {t("dl.downloadNow")}
-            </Button>
-          </Stack>
-        </Modal>
-      )}
+              <Group gap="xs">
+                <Code style={{ fontSize: 10, wordBreak: "break-all", flex: 1 }}>{item.sha}</Code>
+                <CopyButton value={item.sha}>
+                  {({ copied, copy }) => (
+                    <ActionIcon size="sm" color={copied ? "teal" : "gray"} variant="subtle" onClick={copy}>
+                      {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
+                    </ActionIcon>
+                  )}
+                </CopyButton>
+              </Group>
+            </Paper>
+          ))}
+        </Stack>
+      </Modal>
     </>
   );
 }

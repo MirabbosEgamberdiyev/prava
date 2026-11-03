@@ -1,5 +1,6 @@
 import {
   IconArrowRight,
+  IconBrandAndroid,
   IconBrandApple,
   IconBrandGooglePlay,
   IconBrandTelegram,
@@ -18,6 +19,7 @@ import { useCurriculumCountParams } from "@/hooks/useCurriculumCounts";
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=uz.prava.online";
 const APP_STORE_URL = "https://apps.apple.com/app/prava-online/id0000000000";
 const WINDOWS_DIRECT_URL = "/api/v1/files/installers/prava-online-setup.exe";
+const ANDROID_DIRECT_URL = "/api/v1/files/installers/prava-online.apk";
 const TELEGRAM_BOT_URL = "https://t.me/pravaonlineuzbot";
 
 export function Hero_Banner() {
@@ -106,6 +108,16 @@ export function Hero_Banner() {
             >
               <IconBrandWindows size={16} />
               <span>Windows (.exe)</span>
+            </a>
+
+            <a
+              href={ANDROID_DIRECT_URL}
+              download
+              className={classes.storeBadgeLink}
+              title="Android (.apk)"
+            >
+              <IconBrandAndroid size={16} color="#10b981" />
+              <span>Android (.apk)</span>
             </a>
 
             <a

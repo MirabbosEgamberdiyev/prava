@@ -18,7 +18,9 @@ import classes from "./Home.module.css";
 
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=uz.prava.online";
 const APP_STORE_URL = "https://apps.apple.com/app/prava-online/id0000000000";
-const WINDOWS_DIRECT_URL = "/api/v1/files/installers/prava-online-setup.exe";
+const WINDOWS_ONLINE_URL = "/api/v1/files/installers/prava-online-setup.exe";
+const WINDOWS_OFFLINE_URL = "/api/v1/files/installers/prava-offline-setup.exe";
+const ANDROID_DIRECT_URL = "/api/v1/files/installers/prava-online.apk";
 const TELEGRAM_BOT_URL = "https://t.me/pravaonlineuzbot";
 
 export const Device_Platforms = React.memo(() => {
@@ -82,7 +84,7 @@ export const Device_Platforms = React.memo(() => {
           </div>
         </div>
 
-        {/* 2. Windows Desktop Card */}
+        {/* 2. Windows Desktop Card (Both Online & Offline) */}
         <div className={classes.platformCardModern}>
           <div className={classes.platformCardHeader}>
             <div
@@ -91,35 +93,55 @@ export const Device_Platforms = React.memo(() => {
             >
               <IconBrandWindows size={26} stroke={1.9} />
             </div>
-            <span className={`${classes.platformPillBadge} ${classes.pillWindows}`}>
-              {t("home.devices.windowsBadge")}
+            <span
+              className={`${classes.platformPillBadge} ${classes.pillWindows}`}
+              style={{ background: "linear-gradient(135deg, rgba(37,99,235,0.15), rgba(124,58,237,0.15))", color: "#4f46e5", fontWeight: 700 }}
+            >
+              ONLINE &amp; OFFLINE
             </span>
           </div>
 
           <h3 className={classes.platformTitleModern}>
-            {t("home.devices.windowsTitle")}
+            Windows Desktop
           </h3>
           <p className={classes.platformDescModern}>
             {t(
-              "home.devices.windowsDesc"
+              "home.devices.windowsDescDual",
+              "Online (yengil, bulutli sinxron) yoki Offline (avtomaktab uchun 100% internetsiz) versiyalari."
             )}
           </p>
 
           <div className={classes.platformActionRow}>
-            <Button
-              component="a"
-              href={WINDOWS_DIRECT_URL}
-              download
-              variant="filled"
-              color="blue"
-              fullWidth
-              radius="md"
-              size="sm"
-              leftSection={<IconDownload size={16} />}
-              className={classes.platformActionBtn}
-            >
-              {t("home.devices.windowsAction")}
-            </Button>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
+              <Button
+                component="a"
+                href={WINDOWS_ONLINE_URL}
+                download
+                variant="filled"
+                color="blue"
+                fullWidth
+                radius="md"
+                size="sm"
+                leftSection={<IconDownload size={15} />}
+                className={classes.platformActionBtn}
+              >
+                Online (.exe — 13 MB)
+              </Button>
+              <Button
+                component="a"
+                href={WINDOWS_OFFLINE_URL}
+                download
+                variant="light"
+                color="indigo"
+                fullWidth
+                radius="md"
+                size="sm"
+                leftSection={<IconDownload size={15} />}
+                className={classes.platformActionBtn}
+              >
+                Offline (.exe — 160 MB)
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -147,33 +169,49 @@ export const Device_Platforms = React.memo(() => {
           </p>
 
           <div className={classes.platformActionRow}>
-            <div className={classes.mobileStoreButtonsGrid}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
               <Button
                 component="a"
-                href={PLAY_STORE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="default"
+                href={ANDROID_DIRECT_URL}
+                download
+                variant="filled"
+                color="teal"
+                fullWidth
                 radius="md"
-                size="xs"
-                className={classes.storeSmallBtn}
-                leftSection={<IconBrandGooglePlay size={15} color="#00e676" />}
+                size="sm"
+                leftSection={<IconDownload size={16} />}
+                className={classes.platformActionBtn}
               >
-                Google Play
+                Android APK (68 MB)
               </Button>
-              <Button
-                component="a"
-                href={APP_STORE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="default"
-                radius="md"
-                size="xs"
-                className={classes.storeSmallBtn}
-                leftSection={<IconBrandApple size={15} />}
-              >
-                App Store
-              </Button>
+              <div className={classes.mobileStoreButtonsGrid}>
+                <Button
+                  component="a"
+                  href={PLAY_STORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="default"
+                  radius="md"
+                  size="xs"
+                  className={classes.storeSmallBtn}
+                  leftSection={<IconBrandGooglePlay size={15} color="#00e676" />}
+                >
+                  Google Play
+                </Button>
+                <Button
+                  component="a"
+                  href={APP_STORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="default"
+                  radius="md"
+                  size="xs"
+                  className={classes.storeSmallBtn}
+                  leftSection={<IconBrandApple size={15} />}
+                >
+                  App Store
+                </Button>
+              </div>
             </div>
           </div>
         </div>

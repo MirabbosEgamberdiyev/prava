@@ -31,6 +31,7 @@ import uz.pravaimtihon.service.impl.CachedFileService;
 import uz.pravaimtihon.service.impl.FileService;
 import uz.pravaimtihon.service.impl.FileStorageManager;
 
+import java.io.IOException;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -437,14 +438,12 @@ public class SecureFileController {
         }
 
         try {
-            Path filePath = Paths.get(uploadDir).toAbsolutePath().normalize()
-                    .resolve("installers")
-                    .resolve(filename)
-                    .normalize();
-
-            // Security: installers papkasidan chiqib ketmaslik
             Path installersDir = Paths.get(uploadDir).toAbsolutePath().normalize()
                     .resolve("installers");
+
+            Path filePath = resolveInstallerFilePath(installersDir, filename);
+
+            // Security: installers papkasidan chiqib ketmaslik
             if (!filePath.startsWith(installersDir)) {
                 return ResponseEntity.badRequest().build();
             }
@@ -455,19 +454,19 @@ public class SecureFileController {
 
             FileSystemResource resource = new FileSystemResource(filePath.toFile());
 
-            // Content-Type: fayl kengaytmasidan aniqlash
-            String contentType = URLConnection.guessContentTypeFromName(filename);
-            if (contentType == null) contentType = "application/octet-stream";
+            // Content-Type: kengaytma bo'yicha to'g'ri MIME (ayniqsa .apk uchun package-archive)
+            String actualFilename = filePath.getFileName().toString();
+            String contentType = resolveInstallerContentType(actualFilename);
 
-            // Yuklab olishda ko'rsatiladigan nom: agar ?name= berilgan bo'lsa (masalan
-            // "PravaOnline-1.0.0.msi"), diskdagi UUID nomi o'rniga shu ishlatiladi —
-            // brauzer faylni tasodifiy UUID bilan emas, tushunarli nom bilan saqlaydi.
-            String downloadName = buildContentDisposition(filename, name);
+            // Yuklab olishda ko'rsatiladigan nom: agar ?name= berilgan bo'lsa
+            // "PravaOnline-1.0.0.msi" kabi, aks holda faylning haqiqiy nomi ishlatiladi.
+            String downloadName = buildContentDisposition(actualFilename, name);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, downloadName)
-                    .header(HttpHeaders.CACHE_CONTROL, "no-cache")
+                    .header(HttpHeaders.CACHE_CONTROL, "public, max-age=3600")
+                    .header(HttpHeaders.ACCEPT_RANGES, "bytes")
                     .contentLength(Files.size(filePath))
                     .body(resource);
 
@@ -475,6 +474,98 @@ public class SecureFileController {
             log.error("❌ Installer fayl yuborishda xato: {}", filename, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    /**
+     * Linux ext4 case-sensitive fayl tizimida harflar kattaligi farqi yoki
+     * mos keluvchi aliaslarni avtomatik aniqlaydi.
+     */
+    private Path resolveInstallerFilePath(Path installersDir, String filename) {
+        Path directPath = installersDir.resolve(filename).normalize();
+        if (Files.exists(directPath) && Files.isRegularFile(directPath)) {
+            return directPath;
+        }
+
+        // 1. Linux ext4 uchun case-insensitive qidiruv
+        if (Files.isDirectory(installersDir)) {
+            try (java.util.stream.Stream<Path> stream = Files.list(installersDir)) {
+                java.util.Optional<Path> found = stream
+                        .filter(Files::isRegularFile)
+                        .filter(p -> p.getFileName().toString().equalsIgnoreCase(filename))
+                        .findFirst();
+                if (found.isPresent()) {
+                    return found.get();
+                }
+            } catch (IOException ignored) {}
+        }
+
+        // 2. Taniqli aliaslar bo'yicha fallback (frontend / user qulayligi uchun)
+        String lower = filename.toLowerCase();
+        String fallbackName = null;
+        if (lower.equals("prava-online-setup.exe") || lower.equals("pravaonline-setup.exe") || lower.equals("setup.exe")) {
+            fallbackName = "Prava-Online-Setup.exe";
+        } else if (lower.equals("prava-online.exe") || lower.equals("pravaonline.exe") || lower.equals("desktop.exe")) {
+            fallbackName = "Prava-Online.exe";
+        } else if (lower.equals("prava-online.msi") || lower.equals("pravaonline.msi")) {
+            fallbackName = "Prava-Online.msi";
+        } else if (lower.equals("prava-online.apk") || lower.equals("pravaonline.apk") || lower.equals("app.apk") || lower.equals("prava-online-universal.apk")) {
+            fallbackName = "PravaOnline-Mobile.apk";
+        } else if (lower.equals("prava-online-arm64.apk") || lower.equals("pravaonline-arm64.apk") || lower.equals("arm64.apk")) {
+            fallbackName = "PravaOnline-Mobile-arm64.apk";
+        }
+
+        if (fallbackName != null) {
+            Path aliasPath = installersDir.resolve(fallbackName).normalize();
+            if (Files.exists(aliasPath) && Files.isRegularFile(aliasPath)) {
+                return aliasPath;
+            }
+            if (Files.isDirectory(installersDir)) {
+                try (java.util.stream.Stream<Path> stream = Files.list(installersDir)) {
+                    final String target = fallbackName;
+                    java.util.Optional<Path> found = stream
+                            .filter(Files::isRegularFile)
+                            .filter(p -> p.getFileName().toString().equalsIgnoreCase(target))
+                            .findFirst();
+                    if (found.isPresent()) {
+                        return found.get();
+                    }
+                } catch (IOException ignored) {}
+            }
+        }
+
+        return directPath;
+    }
+
+    /**
+     * Installer fayllar uchun rasmiy MIME turlarini aniqlaydi.
+     * Ayniqsa Android .apk uchun 'application/vnd.android.package-archive' bo'lishi
+     * smartfonlarda to'g'ridan-to'g'ri o'rnatish oynasini ochish uchun juda muhimdir.
+     */
+    private String resolveInstallerContentType(String filename) {
+        String lower = filename.toLowerCase();
+        if (lower.endsWith(".apk")) {
+            return "application/vnd.android.package-archive";
+        }
+        if (lower.endsWith(".msi")) {
+            return "application/x-msi";
+        }
+        if (lower.endsWith(".exe")) {
+            return "application/vnd.microsoft.portable-executable";
+        }
+        if (lower.endsWith(".deb")) {
+            return "application/vnd.debian.binary-package";
+        }
+        if (lower.endsWith(".rpm")) {
+            return "application/x-rpm";
+        }
+        if (lower.endsWith(".dmg")) {
+            return "application/x-apple-diskimage";
+        }
+        if (lower.endsWith(".zip")) {
+            return "application/zip";
+        }
+        String guessed = URLConnection.guessContentTypeFromName(filename);
+        return guessed != null ? guessed : "application/octet-stream";
     }
 
     /**
